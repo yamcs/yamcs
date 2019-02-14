@@ -24,7 +24,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
     'receivedPackets',
     'lastReceivedUTC',
     'lastPacketTimeUTC',
-    'subscribedParameterCount',
+    // 'subscribedParameterCount',
   ];
 
   ngAfterViewInit() {

@@ -128,9 +128,11 @@ export interface Link {
   spec: string;
   stream: string;
   disabled: boolean;
-  dataCount: number;
+  dataInCount: number;
+  dataOutCount: number;
   status: string;
   detailedStatus: string;
+  parentName?: string;
 }
 
 export interface Processor {

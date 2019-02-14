@@ -83,7 +83,7 @@ body {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
-  padding: 7px 0 8px 0;
+  padding: 7px 8px 8px 0;
 }
 
 .ya-data-table mat-icon {
@@ -96,7 +96,9 @@ body {
   background-color: #f0f4fd !important;
 }
 
-.ya-data-table .mat-button, .ya-data-table .mat-stroked-button {
+.ya-data-table .mat-button,
+.ya-data-table .mat-stroked-button,
+.ya-data-table .mat-raised-button {
   line-height: 16px;
   min-width: 0;
 }

@@ -121,9 +121,8 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                 (click)="selectAlarm(row)"
-                 [class.selected]="row.parameter.qualifiedName === (selectedAlarm$ | async)?.parameter.qualifiedName"
-                 (click)="toggleOne(row)">
+                 (click)="selectAlarm(row) && toggleOne(row)"
+                 [class.selected]="row.parameter.qualifiedName === (selectedAlarm$ | async)?.parameter.qualifiedName">
         </tr>
       </table>
 

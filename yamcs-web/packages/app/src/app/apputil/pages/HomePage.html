@@ -98,7 +98,7 @@
         <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 300px">Instance</th>
         <td mat-cell *cdkCellDef="let row">
           <a *ngIf="row.state !== 'OFFLINE'"
-            routerLink="/monitor/displays/browse"
+            routerLink="/instance"
             [queryParams]="{instance: row.name}">
             {{ row.name }}
           </a>

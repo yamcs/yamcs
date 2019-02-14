@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { TmStatistics } from '@yamcs/client';
+import { GeneralInfo, TmStatistics } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { YamcsService } from '../core/services/YamcsService';
@@ -14,6 +14,8 @@ export class InstanceHomePage implements OnDestroy {
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
 
+  info$: Promise<GeneralInfo>;
+
   constructor(yamcs: YamcsService) {
     const processor = yamcs.getProcessor();
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
@@ -24,6 +26,8 @@ export class InstanceHomePage implements OnDestroy {
         this.tmstats$.next(tmstats);
       });
     });
+
+    this.info$ = yamcs.yamcsClient.getGeneralInfo();
   }
 
   ngOnDestroy() {

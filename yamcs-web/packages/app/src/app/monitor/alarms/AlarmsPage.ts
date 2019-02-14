@@ -8,8 +8,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
 import { AlarmsDataSource } from './AlarmsDataSource';
 
-
-
 @Component({
   templateUrl: './AlarmsPage.html',
   styleUrls: ['./AlarmsPage.css'],

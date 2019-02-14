@@ -2,27 +2,76 @@
   <app-instance-toolbar>Home</app-instance-toolbar>
 
   <div class="panel-content">
-    <div style="float: left; width: 80%">
-      <mat-card>
-        <mat-card-subtitle>Links</mat-card-subtitle>
-      </mat-card>
-    </div>
-    <div style="float: right; width: 20%">
-      <mat-card style="margin-left: 8px">
-        Yamcs v4.x.x
-      </mat-card>
-    </div>
-    <div style="clear: both"></div>
+    <div class="card-list-container">
+      <div class="card-list">
+        <div class="card big">
+          <mat-card>
+            <mat-card-subtitle>TM Statistics</mat-card-subtitle>
+            <mat-card-content>
+              <app-tmstats-table [tmstats$]="tmstats$"></app-tmstats-table>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card>
+            <mat-card-subtitle>Links</mat-card-subtitle>
+          </mat-card>
+        </div>
+        <div class="card" *ngIf="info$ | async as info">
+          <mat-card>
+            <mat-card-subtitle>Server Info</mat-card-subtitle>
+            <mat-list dense>
+              <mat-list-item>
+                <h3 matLine>Yamcs version</h3>
+                <p matLine>
+                  {{ info.yamcsVersion }}, build {{ info.revision }}
+                </p>
+              </mat-list-item>
 
-    <div style="float: left; width: 80%">
-      <mat-card>
-        <mat-card-subtitle>TM Statistics</mat-card-subtitle>
-        <mat-card-content>
-          <app-tmstats-table [tmstats$]="tmstats$"></app-tmstats-table>
-        </mat-card-content>
-      </mat-card>
+              <mat-list-item>
+                <h3 matLine>Server ID</h3>
+                <p matLine>
+                  {{ info.serverId }}
+                </p>
+              </mat-list-item>
+
+              <mat-list-item *ngIf="info.plugin">
+                <h3 matLine>Plugins</h3>
+              </mat-list-item>
+
+              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Vendor</th>
+                </tr>
+                <tr *ngFor="let plugin of info.plugin">
+                  <td>{{ plugin.name }}</td>
+                  <td>{{ plugin.version || '-' }}</td>
+                  <td>{{ plugin.vendor || '-' }}</td>
+                </tr>
+              </table>
+
+              <br>
+            </mat-list>
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card>card4</mat-card>
+        </div>
+        <div class="card">
+          <mat-card>card5</mat-card>
+        </div>
+        <div class="card">
+          <mat-card>card6</mat-card>
+        </div>
+        <div class="card">
+          <mat-card>card7</mat-card>
+        </div>
+      </div>
     </div>
-    <div style="float: right; width: 20%">
+
+    <div style="float: right; width: 20%; padding-top: 1em">
       <mat-card style="margin-left: 8px">
         <mat-card-subtitle>MDB</mat-card-subtitle>
         <mat-card-content>
