@@ -13,6 +13,12 @@ services:
         numPackets: 0 
         packetSize: 1476 #length of the performance testing packets
         interval: 10 
+      frame: #send TM UDP frames 
+          tmPort: 10016
+          tmHost: "localhost"
+          type: AOS # AOS, TM or USLP
+          tmFrameLength: 512
+          tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
   - class: org.yamcs.tse.TseCommander
     args:
       tctm:
