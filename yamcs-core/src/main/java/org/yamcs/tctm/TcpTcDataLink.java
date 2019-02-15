@@ -126,12 +126,10 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         Object commandPostprocessorArgs = null;
 
         if (config != null) {
-            if(config.containsKey("commandPostprocessorClassName")) {
-                commandPostprocessorClassName = config.getString("commandPostprocessorClassName");
-            } else {
-                commandPostprocessorClassName =  IssCommandPostprocessor.class.getName();
+            commandPostprocessorClassName = config.getString("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
+            if(config.containsKey("commandPostprocessorArgs")) {
+                commandPostprocessorArgs = config.getMap("commandPostprocessorArgs");
             }
-            commandPostprocessorArgs = config.getMap("commandPostprocessorArgs");
         }
 
         try {

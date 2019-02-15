@@ -8,8 +8,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
-import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 
 /**
  * Handles incoming TM frames by distributing them to different VirtualChannelHandlers

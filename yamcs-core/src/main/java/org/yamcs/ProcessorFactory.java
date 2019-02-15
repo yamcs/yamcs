@@ -61,7 +61,7 @@ public class ProcessorFactory {
             } else {
                 log.warn("Deprecated configuration in {}. Please use services", conf.getFilename());
                 if (conf.containsKey(type, "telemetryProvider")) {
-                    Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "telemetryProvider");
+                    Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "telemetryProvider");
                     String tmClass = YConfiguration.getString(m, "class");
                     Object tmArgs = m.get("args");
                     serviceList.add(YamcsServer.createService(yamcsInstance, tmClass, tmClass, tmArgs));
@@ -72,14 +72,14 @@ public class ProcessorFactory {
                             YamcsServer.createServices(yamcsInstance, conf.getList(type, "parameterProviders")));
                 }
                 if (conf.containsKey(type, "commandReleaser")) {
-                    Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "commandReleaser");
+                    Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "commandReleaser");
                     String commandClass = YConfiguration.getString(m, "class");
                     Object commandArgs = m.get("args");
                     serviceList.add(YamcsServer.createService(yamcsInstance, commandClass, commandClass, commandArgs));
                 }
             }
             if (conf.containsKey(type, "config")) {
-                processorConfig = (Map<String, Object>) conf.getMap(type, "config");
+                processorConfig = (Map<String, Object>) conf.getSubMap(type, "config");
             }
         } catch (IOException e) {
             throw new ConfigurationException("Cannot load service", e);

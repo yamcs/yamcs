@@ -97,7 +97,7 @@ public class YamcsServer {
     static CrashHandler loadCrashHandler(YConfiguration conf) throws ConfigurationException, IOException {
         if (conf.containsKey("crashHandler", "args")) {
             return YObjectLoader.loadObject(conf.getSubString("crashHandler", "class"),
-                    conf.getMap("crashHandler", "args"));
+                    conf.getSubMap("crashHandler", "args"));
         } else {
             return YObjectLoader.loadObject(conf.getSubString("crashHandler", "class"));
         }

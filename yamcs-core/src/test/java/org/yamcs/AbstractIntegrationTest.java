@@ -53,7 +53,6 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
@@ -257,11 +256,13 @@ public abstract class AbstractIntegrationTest {
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
         YConfiguration config;
-
+        String name;
+        
         public PacketProvider(String yinstance, String name, YConfiguration args) {
             instance = this;
             this.config = args;
             mdbPacketGenerator.setTmProcessor(this);
+            this.name = name;
         }
 
         @Override
@@ -325,8 +326,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public String getName() {
-            // TODO Auto-generated method stub
-            return null;
+            return name;
         }
     }
 
@@ -339,10 +339,12 @@ public abstract class AbstractIntegrationTest {
         XtceDb xtcedb;
         YConfiguration config;
         
+        String name;
         public ParameterProvider(String yamcsInstance, String name, YConfiguration args) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
             this.config = args;
+            this.name = name;
         }
 
         @Override
@@ -433,8 +435,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public String getName() {
-            // TODO Auto-generated method stub
-            return null;
+            return name;
         }
     }
 }

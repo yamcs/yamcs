@@ -351,7 +351,7 @@ public class YConfiguration {
         return getMap(root, key);
     }
 
-    public Map<String, Object> getMap(String key, String key1) throws ConfigurationException {
+    public Map<String, Object> getSubMap(String key, String key1) throws ConfigurationException {
         Map<String, Object> m = getMap(key);
         return getMap(m, key1);
     }
@@ -399,11 +399,6 @@ public class YConfiguration {
     public String getSubString(String key, String subkey) throws ConfigurationException {
         Map<String, Object> m = getMap(key);
         return getString(m, subkey);
-    }
-
-    public String getString(String key, String key1, String key2) throws ConfigurationException {
-        Map<String, Object> m = getMap(key, key1);
-        return getString(m, key2);
     }
 
     /***************** List configs */
@@ -458,7 +453,7 @@ public class YConfiguration {
     }
 
     public <T> List<T> getList(String key, String key1, String key2) throws ConfigurationException {
-        Map<String, Object> m = getMap(key, key1);
+        Map<String, Object> m = getSubMap(key, key1);
         return getList(m, key2);
     }
 
@@ -512,11 +507,6 @@ public class YConfiguration {
     public boolean getBoolean(String key, String key1) throws ConfigurationException {
         Map<String, Object> m = getMap(key);
         return getBoolean(m, key1);
-    }
-
-    public boolean getBoolean(String key, String key1, String key2) throws ConfigurationException {
-        Map<String, Object> m = getMap(key, key1);
-        return getBoolean(m, key2);
     }
 
     public boolean getBoolean(String key, boolean defaultValue) {

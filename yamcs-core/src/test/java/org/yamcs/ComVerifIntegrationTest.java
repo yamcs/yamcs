@@ -3,7 +3,6 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -152,8 +151,9 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     public static class MyTcDataLink implements TcDataLink {
         static short seqNum = 5000;
         CommandHistoryPublisher commandHistoryPublisher;
-
-        public MyTcDataLink(String yamcsInstance, String name, Map<String, Object> args) {
+        String name;
+        public MyTcDataLink(String yamcsInstance, String name, YConfiguration config) {
+            this.name = name;
         }
 
         @Override
@@ -211,8 +211,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         @Override
         public String getName() {
-            // TODO Auto-generated method stub
-            return null;
+            return name;
         }
     }
 }
