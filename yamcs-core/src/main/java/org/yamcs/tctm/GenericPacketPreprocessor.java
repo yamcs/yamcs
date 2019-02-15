@@ -68,7 +68,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             seqCount = -1;
             corrupted = true;
         } else {
-            seqCount = ByteArrayUtils.decodeInt(packet, timestampOffset);
+            seqCount = ByteArrayUtils.decodeInt(packet, seqCountOffset);
         }
 
         PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), gentime, seqCount, packet);

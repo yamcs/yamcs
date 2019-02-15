@@ -160,8 +160,6 @@ public class ReedSolomon {
      *            - data to be corrected
      * @param eras_pos
      *            - erasures positions (can be null)
-     * @param pad
-     *            - number of symbols of padding
      * @return
      * @throws ReedSolomonException
      *             - thrown if the data cannot be corrected

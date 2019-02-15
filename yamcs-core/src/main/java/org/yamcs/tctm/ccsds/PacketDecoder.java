@@ -21,7 +21,6 @@ import org.yamcs.utils.ByteArrayUtils;
  * The minimum packet length is 7 bytes.
  * 
  * <p>
- * <p>
  * <strong>Encapsulation Service. CCSDS 133.1-B-2. October 2009.</strong>
  * <p>
  * The first 3 bits of these packets are 111.
@@ -31,7 +30,6 @@ import org.yamcs.utils.ByteArrayUtils;
  * Depending on the last 2 bits of the first byte, the size of the header can be 1,2,4 or 8 bytes with the length of the
  * packet read from the last 0,1,2 or 4 header bytes respectively
  *
- * <p>
  * <p>
  * The two types can be both present on the same stream.
  * 

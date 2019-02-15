@@ -80,8 +80,7 @@ public interface Link {
     }
     
     /**
-     * If this link is a sublink of an aggregated link, get the parent link.
-     * @return
+     * Set the parent link if this is a sublink of an aggregated link.
      */
     default void setParent(AggregatedDataLink parent) {
     }

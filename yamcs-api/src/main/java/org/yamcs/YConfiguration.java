@@ -95,9 +95,9 @@ public class YConfiguration {
 
     /**
      * 
-     * @param yConfiguration
-     * @param m
-     * @param key
+     * @param parent
+     * @param parentKey
+     * @param root
      */
     public YConfiguration(YConfiguration parent, String parentKey, Map<String, Object> root) {
         this.root = root;
