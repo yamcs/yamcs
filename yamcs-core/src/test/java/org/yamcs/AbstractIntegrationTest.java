@@ -252,13 +252,16 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    public static class PacketProvider extends AbstractService implements TmPacketDataLink, TmProcessor {
+    public static class PacketProvider implements TmPacketDataLink, TmProcessor {
         static volatile PacketProvider instance;
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
+        YConfiguration config;
 
-        public PacketProvider(String yinstance, String name, Map<String, Object> args) {
+        public PacketProvider(String yinstance, String name, YConfiguration args) {
             instance = this;
+            this.config = args;
+            mdbPacketGenerator.setTmProcessor(this);
         }
 
         @Override
@@ -301,17 +304,6 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        protected void doStart() {
-            mdbPacketGenerator.setTmProcessor(this);
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            notifyStopped();
-        }
-
-        @Override
         public void processPacket(PacketWithTime pwrt) {
             tmSink.processPacket(pwrt);
         }
@@ -325,19 +317,32 @@ public abstract class AbstractIntegrationTest {
         public void finished() {
 
         }
+
+        @Override
+        public YConfiguration getConfig() {
+            return config;
+        }
+
+        @Override
+        public String getName() {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
 
-    public static class ParameterProvider extends AbstractService implements ParameterDataLink {
+    public static class ParameterProvider implements ParameterDataLink {
         int seqNum = 0;
         ParameterSink ppListener;
         long generationTime;
 
         static volatile ParameterProvider instance;
         XtceDb xtcedb;
-
-        public ParameterProvider(String yamcsInstance, String name, Map<String, Object> args) {
+        YConfiguration config;
+        
+        public ParameterProvider(String yamcsInstance, String name, YConfiguration args) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            this.config = args;
         }
 
         @Override
@@ -376,16 +381,6 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void setParameterSink(ParameterSink ppListener) {
             this.ppListener = ppListener;
-        }
-
-        @Override
-        protected void doStart() {
-            notifyStarted();
-        }
-
-        @Override
-        protected void doStop() {
-            notifyStopped();
         }
 
         public void setGenerationTime(long genTime) {
@@ -431,5 +426,15 @@ public abstract class AbstractIntegrationTest {
             seqNum++;
         }
 
+        @Override
+        public YConfiguration getConfig() {
+            return config;
+        }
+
+        @Override
+        public String getName() {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
 }

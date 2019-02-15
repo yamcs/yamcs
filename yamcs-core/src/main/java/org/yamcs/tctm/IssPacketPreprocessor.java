@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
@@ -54,7 +56,8 @@ import org.yamcs.utils.CcsdsPacket;
 public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     ErrorDetectionWordCalculator errorDetectionCalculator;
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
-
+    private static final Logger log = LoggerFactory.getLogger(IssPacketPreprocessor.class);
+    
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
     }
@@ -79,11 +82,11 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         int seq = (apidseqcount) & 0x3FFF;
         AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
         int oldseq = ai.getAndSet(seq);
-        if (((seq - oldseq) & 0x3FFF) != 1) {
-            eventProducer.sendWarning("SEQ_COUNT_JUMP",
-                    "Sequence count jump for apid: "+apid+" old seq: "+oldseq+" newseq: "+seq);
+        
+        if(log.isTraceEnabled()) {
+            log.trace("processing packet apid: {}, seqCount:{}, length: {}", apid, seq, packet.length);
         }
-
+        
         boolean checksumIndicator = CcsdsPacket.getChecksumIndicator(packet);
         boolean corrupted = false;
 
@@ -106,6 +109,14 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
 
+        
+        if (((seq - oldseq) & 0x3FFF) != 1) {
+            eventProducer.sendWarning("SEQ_COUNT_JUMP",
+                    "Sequence count jump for apid: "+apid+" old seq: "+oldseq+" newseq: "+seq);
+        }
+        
+
+      
         PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
                 apidseqcount, packet);
         pwt.setCorrupted(corrupted);

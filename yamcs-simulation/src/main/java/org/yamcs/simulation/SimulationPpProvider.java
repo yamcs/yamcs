@@ -15,6 +15,7 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -57,12 +58,14 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     private Random rand = new Random();
 
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    String name;
 
     public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String, String> args)
             throws ConfigurationException {
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
         setSimulationData((String) args.get("simulationDataPath"));
         simulationData = loadSimulationData(simulationDataPath);
+        this.name = name;
     }
 
     public SimulationPpProvider() {
@@ -419,4 +422,13 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         return !isRunning() || disabled;
     }
 
+    @Override
+    public YConfiguration getConfig() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

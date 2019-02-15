@@ -57,7 +57,7 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
                         bb.putInt(r.nextInt(packetSize - 4), r.nextInt());
                     }
                     packet.setTime(TimeEncoding.getWallclockTime());
-                    simulator.transmitTM(packet);
+                    simulator.transmitRealtimeTM(packet);
                 }
                 Thread.sleep(interval);
             }

@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsds;
+package org.yamcs.tctm.ccsds.error;
 
 import org.yamcs.utils.ByteArrayUtils;
 

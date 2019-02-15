@@ -53,14 +53,13 @@ public class GenericPacketInputStream implements PacketInputStream {
         this.initialBytesToStrip = YConfiguration.getInt(args, "initialBytesToStrip");
         lengthFieldEndOffset = lengthFieldOffset + lengthFieldLength;
 
-        if (lengthFieldLength != 1 && lengthFieldLength != 2 && lengthFieldLength != 3 && lengthFieldLength != 4
-                && lengthFieldLength != 8) {
+        if (lengthFieldLength != 1 && lengthFieldLength != 2 && lengthFieldLength != 3 && lengthFieldLength != 4) {
             throw new ConfigurationException("Unsupported legnthFieldLength, supported values are 1,2,3 or 4");
         }
     }
 
     @Override
-    public byte[] readPacket() throws IOException {
+    public byte[] readPacket() throws IOException, PacketTooLongException {
         byte[] b = new byte[lengthFieldEndOffset];
         dataInputStream.readFully(b);
         int length;
@@ -83,8 +82,7 @@ public class GenericPacketInputStream implements PacketInputStream {
         length+=lengthAdjustment;
         
         if(length>maxPacketLength) {
-            throw new IOException("Invalid packet read: "
-                    + "packetLength (" + length + ") > maxPacketLength(" + maxPacketLength + ")");
+            throw new PacketTooLongException(maxPacketLength, length);
         }
         byte[] packet = new byte[length-initialBytesToStrip];
         int offset;

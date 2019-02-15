@@ -7,7 +7,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.tctm.ccsds.CrcCciitCalculator;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.time.TimeService;
 
 public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {

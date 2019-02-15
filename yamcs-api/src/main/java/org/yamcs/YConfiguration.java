@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -18,7 +21,12 @@ import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
+import com.google.gson.Gson;
+
 /**
+ * A configuration object is a wrapper around a Map&ltString, Object&gt which keeps track to a parent and its original
+ * file (if any).
+ * 
  * This class loads yamcs configurations. There are a number of "subsystems", each using a corresponding subsystem.yaml
  * file
  *
@@ -33,7 +41,6 @@ import org.yaml.snakeyaml.error.YAMLException;
  */
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
-    Map<String, Object> root;
     static String userConfigDirectory; // This is used by the users to overwrite
     static YConfigurationResolver resolver = new DefaultConfigurationResolver();
 
@@ -45,6 +52,16 @@ public class YConfiguration {
     // the path is something like filename->key1->subkey2[3]->...
     static private IdentityHashMap<Object, String> confPath = new IdentityHashMap<>();
 
+    static final private YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
+    /**
+     * The parent configuration
+     */
+    YConfiguration parent;
+    // the key with which this object can be found in its parent
+    String parentKey;
+    // the root map
+    Map<String, Object> root;
+
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         this(subsystem, resolver.getConfigurationStream("/" + subsystem + ".yaml"), subsystem + ".yaml");
     }
@@ -52,7 +69,8 @@ public class YConfiguration {
     /**
      * Constructs a new configuration object parsing the input stream
      * 
-     * @param is - input stream where the configuration is loaded from
+     * @param is
+     *            - input stream where the configuration is loaded from
      * @param confpath
      *            - configuration path - it is remembered together with the configuration in case of error to indicate
      *            where it is coming from (i.e. which file)
@@ -73,6 +91,18 @@ public class YConfiguration {
             throw new ConfigurationException(confpath, e.toString(), e);
         }
         configurations.put(subsystem, this);
+    }
+
+    /**
+     * 
+     * @param yConfiguration
+     * @param m
+     * @param key
+     */
+    public YConfiguration(YConfiguration parent, String parentKey, Map<String, Object> root) {
+        this.root = root;
+        this.parent = parent;
+        this.parentKey = parentKey;
     }
 
     /**
@@ -285,6 +315,20 @@ public class YConfiguration {
         return root;
     }
 
+    /**
+     * If the key is pointing to a map, creates and returns a configuration object out of that map
+     * 
+     * <p>
+     * The returned object will have its parent set to this object
+     * 
+     * @param key
+     * @return
+     */
+    public YConfiguration getConfig(String key) {
+        Map<String, Object> m = getMap(key);
+        return new YConfiguration(this, key, m);
+    }
+
     /****************************** Map configs */
 
     @SuppressWarnings("unchecked")
@@ -346,10 +390,13 @@ public class YConfiguration {
         return getString(root, key);
     }
 
+    public String getString(String key, String defaultValue) throws ConfigurationException {
+        return getString(root, key, defaultValue);
+    }
     /*
      * The key has to point to a map that contains the subkey that points to a string
      */
-    public String getString(String key, String subkey) throws ConfigurationException {
+    public String getSubString(String key, String subkey) throws ConfigurationException {
         Map<String, Object> m = getMap(key);
         return getString(m, subkey);
     }
@@ -359,15 +406,37 @@ public class YConfiguration {
         return getString(m, key2);
     }
 
+    /***************** List configs */
+    /*
+     * The key has to point to a list
+     */
     @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) throws ConfigurationException {
         return (List<T>) getList(root, key);
     }
 
-    /***************** List configs */
-    /*
-     * The key has to point to a list
-     */
+    @SuppressWarnings("unchecked")
+    public List<YConfiguration> getConfigList(String key) throws ConfigurationException {
+        checkKey(root, key);
+        List<YConfiguration> r = new ArrayList<>();
+        Object o = root.get(key);
+        if (o instanceof List) {
+            List l = (List) o;
+            for (int i = 0; i < l.size(); i++) {
+                Object o1 = l.get(i);
+                if (o1 instanceof Map) {
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) o1));
+                } else {
+                    throw new ConfigurationException(this, "One element of the list is not a map: " + o1);
+                }
+            }
+        } else {
+            throw new ConfigurationException(confPath.get(root),
+                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+        }
+        return r;
+    }
+
     @SuppressWarnings("unchecked")
     static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
@@ -455,6 +524,29 @@ public class YConfiguration {
     }
 
     /********************** int configs */
+    public int getInt(String key) throws ConfigurationException {
+        return getInt(root, key);
+    }
+
+    public int getInt(String key, int defaultValue) throws ConfigurationException {
+        return getInt(root, key, defaultValue);
+    }
+
+    public int getInt(String key, String key1) throws ConfigurationException {
+        Map<String, Object> m = getMap(key);
+        return getInt(m, key1);
+    }
+
+    public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
+        if (!root.containsKey(key)) {
+            return defaultValue;
+        }
+
+        Map<String, Object> m = getMap(key);
+
+        return getInt(m, key1, defaultValue);
+    }
+
     static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
@@ -489,6 +581,15 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not Integer");
         }
+    }
+
+    /********************** long configs */
+    public long getLong(String key) {
+        return getLong(root, key);
+    }
+
+    public long getLong(String key, long defaultValue) {
+        return getLong(root, key, defaultValue);
     }
 
     static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
@@ -529,25 +630,21 @@ public class YConfiguration {
         }
     }
 
-    public int getInt(String key) throws ConfigurationException {
-        return getInt(root, key);
-    }
-
-    public int getInt(String key, String key1) throws ConfigurationException {
-        Map<String, Object> m = getMap(key);
-        return getInt(m, key1);
-    }
-
-    public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
-        if (!root.containsKey(key)) {
-            return defaultValue;
+    
+    static public double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
+        if (!m.containsKey(key)) {
+            return v;
         }
-
-        Map<String, Object> m = getMap(key);
-
-        return getInt(m, key1, defaultValue);
+        Object o = m.get(key);
+        if (o instanceof Number) {
+            return ((Number) o).doubleValue();
+        } else {
+            throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+                    + getUnqualfiedClassName(o) + " and not Integer or Long");
+        }
     }
-
+    
+    
     public boolean isList(String key) {
         return isList(root, key);
     }
@@ -613,4 +710,63 @@ public class YConfiguration {
             super(message, t);
         }
     }
+
+    public <T extends Enum<T>> T  getEnum(String key, Class<T> enumClass) {
+        return getEnum(root, key, enumClass);
+    }
+    /**
+     * Returns a value of an enumeration that matches ignoring case the string obtained from the config with the given
+     * key.
+     * Throws an Configurationexception if the key does not exist in config or if it does not map to a valid enumeration
+     * value
+     * 
+     * @param config
+     * @param key
+     * @param enumClass
+     * @return
+     */
+    public static <T extends Enum<T>> T getEnum(Map<String, Object> config, String key, Class<T> enumClass) {
+        String sk = getString(config, key);
+
+        T[] values = enumClass.getEnumConstants();
+        for (T v : values) {
+            if (v.toString().equalsIgnoreCase(sk)) {
+                return v;
+            }
+        }
+        throw new ConfigurationException("Invalid value '" + sk + "'. Valid values are: " + Arrays.toString(values));
+    }
+
+    /**
+     * 
+     * @param key
+     * @return root.get(key)
+     */
+    public Object get(String key) {
+        return root.get(key);
+    }
+
+    /**
+     * Create a new configuration wrapping around a map
+     * The resulting config will have no parent
+     * 
+     * @param m
+     * @return
+     */
+    public static YConfiguration wrap(Map<String, Object> m) {
+        return new YConfiguration(null, null, m);
+    }
+
+    public static YConfiguration emptyConfig() {
+        return EMPTY_CONFIG;
+    }
+
+    /**
+     * 
+     * @return json representation of the cconfiguration
+     */
+    public String toJson() {
+        return new Gson().toJson(root);
+    }
+    
 }

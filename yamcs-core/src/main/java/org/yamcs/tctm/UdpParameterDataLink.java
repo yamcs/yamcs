@@ -48,7 +48,8 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     int MAX_LENGTH = 10 * 1024;
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
-
+    YConfiguration config;
+    final String name;
     /**
      * Creates a new UDP data link
      * 
@@ -58,11 +59,13 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      * @throws ConfigurationException
      *             if port is not defined in the config
      */
-    public UdpParameterDataLink(String instance, String name, Map<String, Object> config)
+    public UdpParameterDataLink(String instance, String name, YConfiguration config)
             throws ConfigurationException {
+        this.config = config;
+        this.name = name;
         timeService = YamcsServer.getTimeService(instance);
-        port = YConfiguration.getInt(config, "port");
-        defaultRecordingGroup = YConfiguration.getString(config, "recordingGroup", "DEFAULT");
+        port = config.getInt("port");
+        defaultRecordingGroup = config.getString("recordingGroup", "DEFAULT");
     }
 
     @Override
@@ -192,5 +195,15 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     @Override
     public void setParameterSink(ParameterSink parameterSink) {
         this.parameterSink = parameterSink;
+    }
+
+    @Override
+    public YConfiguration getConfig() {
+        return config;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

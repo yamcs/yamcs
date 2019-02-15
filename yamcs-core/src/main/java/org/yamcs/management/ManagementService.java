@@ -1,6 +1,5 @@
 package org.yamcs.management;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,11 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,7 +26,6 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorListener;
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
@@ -38,14 +34,12 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.tctm.Link;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
@@ -113,10 +107,13 @@ public class ManagementService implements ProcessorListener {
                 .setType(link.getClass().getName())
                 .setSpec(spec)
                 .setDataInCount(link.getDataInCount())
-                .setDataOutCount(link.getDataOutCount())
-                .setDataCount(link.getDataInCount() + link.getDataOutCount());
+                .setDataOutCount(link.getDataOutCount());
         if (link.getDetailedStatus() != null) {
             linkb.setDetailedStatus(link.getDetailedStatus());
+        }
+        Link parent = link.getParent();
+        if(parent!=null) {
+            linkb.setParentName(parent.getName());
         }
         LinkInfo linkInfo = linkb.build();
         links.add(new LinkWithInfo(link, linkInfo));
@@ -499,7 +496,6 @@ public class ManagementService implements ProcessorListener {
         ys.addStateListener(instanceListener);
     }
 
-
     public void registerTable(String instance, TableDefinition tblDef) {
         tableStreamListeners.forEach(l -> l.tableRegistered(instance, tblDef));
     }
@@ -532,13 +528,17 @@ public class ManagementService implements ProcessorListener {
                     || linkInfo.getDataOutCount() != link.getDataOutCount()
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
 
-                linkInfo = LinkInfo.newBuilder(linkInfo)
+                LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
                         .setDisabled(link.isDisabled())
                         .setStatus(link.getLinkStatus().name())
-                        .setDetailedStatus(link.getDetailedStatus())
                         .setDataInCount(link.getDataInCount())
-                        .setDataOutCount(link.getDataOutCount())
-                        .setDataCount(link.getDataInCount() + link.getDataOutCount()).build();
+                        .setDataOutCount(link.getDataOutCount());
+                String ds = link.getDetailedStatus();
+                if (ds != null) {
+                    lib.setDetailedStatus(ds);
+                }
+                linkInfo = lib.build();
+
                 return true;
             } else {
                 return false;

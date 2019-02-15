@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +36,19 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     final int maxLength;
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
-
+    
     /**
      * Creates a new UDP TM Data Link
      * 
      * @throws ConfigurationException
      *             if port is not defined in the configuration
      */
-    public UdpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
-        super(instance, name);
-        port = YConfiguration.getInt(args, "port");
-        maxLength = YConfiguration.getInt(args, "maxLength", MAX_LENGTH);
+    public UdpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super(instance, name, config);
+        port = config.getInt("port");
+        maxLength = config.getInt("maxLength", MAX_LENGTH);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
-        initPreprocessor(instance, args);
+        initPreprocessor(instance, config);
     }
 
     @Override

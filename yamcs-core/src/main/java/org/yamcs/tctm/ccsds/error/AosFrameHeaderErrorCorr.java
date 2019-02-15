@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsds;
+package org.yamcs.tctm.ccsds.error;
 
 import org.yamcs.rs.ReedSolomon;
 import org.yamcs.rs.ReedSolomonException;
@@ -19,19 +19,19 @@ public class AosFrameHeaderErrorCorr {
     /**
      * Compute the Error Control word based on the virtual channel id and signaling field byte
      * 
-     * @param vcid
+     * @param gvcid
      *            10-bit Master Channel Identifier followed by the Virtual Channel Identifier in the lowest 16 bits of
      *            the variable
      * @param signalingField
-     *            - 8 bit signaling byte in the lowest 8 bits of the variable
+     *            - 8 bit signalling byte in the lowest 8 bits of the variable
      * @return
      */
-    static int encode(int vcid, int signalingField) {
+    public static int encode(int gvcid, int signalingField) {
         byte[] data = new byte[] {
-                (byte) ((vcid >> 12) & 0xF),
-                (byte) ((vcid >> 8) & 0xF),
-                (byte) ((vcid >> 4) & 0xF),
-                (byte) ((vcid) & 0xF),
+                (byte) ((gvcid >> 12) & 0xF),
+                (byte) ((gvcid >> 8) & 0xF),
+                (byte) ((gvcid >> 4) & 0xF),
+                (byte) ((gvcid) & 0xF),
                 (byte) ((signalingField >> 4) & 0xF),
                 (byte) ((signalingField) & 0xF) };
 
@@ -44,22 +44,22 @@ public class AosFrameHeaderErrorCorr {
     /**
      * Based on the received header information, reconstitutes the correct header if possible
      * 
-     * @param vcid
+     * @param gvcid
      *            10-bit Master Channel Identifier followed by the Virtual Channel Identifier
      * @param signalingField
-     *            8 bit signaling byte
+     *            8 bit signalling byte
      * @param errControl
      *            16 bits error control
      * @return
      * @throws ReedSolomonException
      *             thrown if data cannot be decoded/corrected
      */
-    static DecoderResult decode(int vcid, int signalingField, int errControl) throws ReedSolomonException {
+    public static DecoderResult decode(int gvcid, int signalingField, int errControl) throws ReedSolomonException {
         byte[] data = new byte[] {
-                (byte) ((vcid >> 12) & 0xF),
-                (byte) ((vcid >> 8) & 0xF),
-                (byte) ((vcid >> 4) & 0xF),
-                (byte) ((vcid) & 0xF),
+                (byte) ((gvcid >> 12) & 0xF),
+                (byte) ((gvcid >> 8) & 0xF),
+                (byte) ((gvcid >> 4) & 0xF),
+                (byte) ((gvcid) & 0xF),
                 (byte) ((signalingField >> 4) & 0xF),
                 (byte) ((signalingField) & 0xF),
                 (byte) ((errControl >> 12) & 0xF),
@@ -76,13 +76,13 @@ public class AosFrameHeaderErrorCorr {
     }
 
     public static class DecoderResult {
-        public final int vcid;
+        public final int gvcid;
         public final int signalingField;
         public final int numErrorsCorrected;
 
-        public DecoderResult(int vcid, int signalingField, int numErrs) {
+        public DecoderResult(int gvcid, int signalingField, int numErrs) {
             super();
-            this.vcid = vcid;
+            this.gvcid = gvcid;
             this.signalingField = signalingField;
             this.numErrorsCorrected = numErrs;
         }

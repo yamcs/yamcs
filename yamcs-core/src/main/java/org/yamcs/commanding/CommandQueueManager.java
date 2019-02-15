@@ -109,7 +109,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     queues.put(qn, new CommandQueue(yproc, qn, initialState));
                 }
                 CommandQueue q = queues.get(qn);
-                String state = config.getString(qn, "state");
+                String state = config.getSubString(qn, "state");
                 q.state = CommandQueueManager.stringToQueueState(state);
                 q.defaultState = q.state;
                 if (config.containsKey(qn, "stateExpirationTimeS")) {

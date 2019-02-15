@@ -1,7 +1,5 @@
 package org.yamcs.tctm;
 
-import java.util.Map;
-
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -39,19 +37,20 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     ServerLocator locator;
 
     boolean preserveIncomingReceptionTime = false;
-
+    YConfiguration config;
+    final String linkName;
+    
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         this.artemisAddress = artemisAddress;
+        this.linkName = name;
         timeService = YamcsServer.getTimeService(instance);
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+      
     }
 
-    public ArtemisTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
-        this(instance, name, YConfiguration.getString(args, "address"));
-
-        if (YConfiguration.getBoolean(args, "preserveIncomingReceptionTime", false)) {
-            preserveIncomingReceptionTime = true;
-        }
+    public ArtemisTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
+        this(instance, name, config.getString("address"));
+        preserveIncomingReceptionTime = config.getBoolean("preserveIncomingReceptionTime", false);
     }
 
     @Override
@@ -149,6 +148,16 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
             log.error("Got exception when quiting:", e);
             notifyFailed(e);
         }
+    }
+
+    @Override
+    public String getName() {
+        return linkName;
+    }
+
+    @Override
+    public YConfiguration getConfig() {
+        return config;
     }
 
 }

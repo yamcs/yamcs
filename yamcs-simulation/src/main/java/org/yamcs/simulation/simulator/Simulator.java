@@ -12,7 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.ccsds.CrcCciitCalculator;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.utils.ByteArrayUtils;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -28,6 +29,7 @@ public class Simulator extends AbstractExecutionThreadService {
     private TmTcLink tmLink;
     private TmTcLink tm2Link;
     private TmTcLink losLink;
+    private UdpFrameLink frameLink;
 
     private boolean los;
     private Date lastLosStart;
@@ -49,10 +51,10 @@ public class Simulator extends AbstractExecutionThreadService {
     private boolean exeTransmitted = true;
 
     private BatteryCommand batteryCommand;
-    int tmCycle = 0;     
+    int tmCycle = 0;
     AtomicInteger tm2SeqCount = new AtomicInteger(0);
     ErrorDetectionWordCalculator edwc2 = new CrcCciitCalculator();
-    
+
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
         losRecorder = new LosRecorder(dataDir);
         powerDataHandler = new PowerHandler();
@@ -67,7 +69,7 @@ public class Simulator extends AbstractExecutionThreadService {
         int tm2trigger = 0;
         while (isRunning()) {
             try {
-                while(!pendingCommands.isEmpty()) { 
+                while (!pendingCommands.isEmpty()) {
                     executePendingCommands();
                 }
             } catch (InterruptedException e) {
@@ -77,10 +79,10 @@ public class Simulator extends AbstractExecutionThreadService {
 
             try {
                 sendTm();
-                if(tm2trigger==0) {
+                if (tm2trigger == 0) {
                     sendTm2();
                 }
-                tm2trigger = (tm2trigger+1)%5;
+                tm2trigger = (tm2trigger + 1) % 5;
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 log.warn("Send TM interrupted.", e);
@@ -125,19 +127,37 @@ public class Simulator extends AbstractExecutionThreadService {
         }
     }
 
-    protected void transmitTM(CCSDSPacket packet) {
+    protected void transmitRealtimeTM(CCSDSPacket packet) {
         packet.fillChecksum();
-        if(isLOS()) {
-           losRecorder.record(packet);
+        if (isLOS()) {
+            losRecorder.record(packet);
         } else {
             tmLink.sendPacket(packet.toByteArray());
+            if (frameLink != null) {
+                frameLink.queuePacket(0, packet.toByteArray());
+            }
+
         }
     }
 
     protected void transmitTM2(byte[] packet) {
-        if(!isLOS()) {
+        if (!isLOS()) {
             tm2Link.sendPacket(packet);
+            if (frameLink != null) {
+                frameLink.queuePacket(1, encapsulate(packet));
+            }
         }
+
+    }
+
+    // encapsulate packet
+    byte[] encapsulate(byte[] p) {
+
+        byte[] p1 = new byte[p.length + 4];
+        System.arraycopy(p, 0, p1, 4, p.length);
+        p1[0] = (byte) 0xFE;
+        ByteArrayUtils.encodeShort(p1.length, p1, 2);
+        return p1;
     }
 
     public void dumpLosDataFile(String filename) {
@@ -154,15 +174,18 @@ public class Simulator extends AbstractExecutionThreadService {
                 CCSDSPacket packet = readLosPacket(dataStream);
                 if (packet != null) {
                     losLink.sendPacket(packet.toByteArray());
+                    if (frameLink != null) {
+                        frameLink.queuePacket(2, packet.toByteArray());
+                    }
                 }
             }
 
             // add packet notifying that the file has been downloaded entirely
             CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
-            tmLink.sendPacket(confirmationPacket.toByteArray());
+            transmitRealtimeTM(confirmationPacket);
         } catch (IOException e) {
             e.printStackTrace();
-        } 
+        }
     }
 
     private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
@@ -177,7 +200,7 @@ public class Simulator extends AbstractExecutionThreadService {
         losRecorder.deleteDump(filename);
         // add packet notifying that the file has been deleted
         CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
-        tmLink.sendPacket(confirmationPacket.toByteArray());
+        transmitRealtimeTM(confirmationPacket);
     }
 
     private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
@@ -207,8 +230,8 @@ public class Simulator extends AbstractExecutionThreadService {
     private void sendTm() {
         CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
         flightDataHandler.fillPacket(flightpacket);
-        transmitTM(flightpacket);
-        
+        transmitRealtimeTM(flightpacket);
+
         if (tmCycle < 30) {
             ++tmCycle;
         } else {
@@ -221,19 +244,19 @@ public class Simulator extends AbstractExecutionThreadService {
                 if (batteryCommand.batteryOn) {
                     if (!exeTransmitted) {
                         CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                        transmitTM(exeCompPacket);
+                        transmitRealtimeTM(exeCompPacket);
                         exeTransmitted = true;
                     }
                 } else {
                     powerDataHandler.setBattOneOff(powerpacket);
                     if (!exeTransmitted) {
                         CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                        transmitTM(exeCompPacket);
+                        transmitRealtimeTM(exeCompPacket);
                         exeTransmitted = true;
                     }
                 }
 
-                transmitTM(powerpacket);
+                transmitRealtimeTM(powerpacket);
 
                 engageHoldOneCycle = false;
                 waitToEngage = 0;
@@ -241,7 +264,7 @@ public class Simulator extends AbstractExecutionThreadService {
             } else if (waitToUnengage == 2 || unengaged) {
                 CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
                 powerDataHandler.fillPacket(powerpacket);
-                transmitTM(powerpacket);
+                transmitRealtimeTM(powerpacket);
                 unengaged = true;
                 // engaged = false;
 
@@ -251,15 +274,15 @@ public class Simulator extends AbstractExecutionThreadService {
 
             CCSDSPacket packet = new CCSDSPacket(9, 2);
             dhsHandler.fillPacket(packet);
-            transmitTM(packet);
+            transmitRealtimeTM(packet);
 
             packet = new CCSDSPacket(36, 3);
             rcsHandler.fillPacket(packet);
-            transmitTM(packet);
+            transmitRealtimeTM(packet);
 
             packet = new CCSDSPacket(6, 4);
             epslvpduHandler.fillPacket(packet);
-            transmitTM(packet);
+            transmitRealtimeTM(packet);
 
             if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
                 waitToEngage = waitToEngage + 1;
@@ -288,15 +311,16 @@ public class Simulator extends AbstractExecutionThreadService {
     private void sendTm2() {
         int n = 28;
         ByteBuffer bb = ByteBuffer.allocate(n);
-        bb.putShort((short)(n-2));
+        bb.putShort((short) (n - 2));
         bb.putLong(System.currentTimeMillis());
         int seq = tm2SeqCount.getAndIncrement();
         bb.putInt(seq);
-        bb.putInt(seq+1000);
-        bb.putDouble(Math.sin(seq/10.0));
-        bb.putShort((short)edwc2.compute(bb.array(), 0, n-2));
+        bb.putInt(seq + 1000);
+        bb.putDouble(Math.sin(seq / 10.0));
+        bb.putShort((short) edwc2.compute(bb.array(), 0, n - 2));
         transmitTM2(bb.array());
     }
+
     /**
      * runs in the main TM thread, executes commands from the queue (if any)
      */
@@ -325,7 +349,7 @@ public class Simulator extends AbstractExecutionThreadService {
                 log.error("Invalid command packet id: {}", commandPacket.getPacketId());
             }
         } else {
-            log.warn("Unknown command type "+commandPacket.getPacketType());
+            log.warn("Unknown command type " + commandPacket.getPacketType());
         }
     }
 
@@ -403,7 +427,7 @@ public class Simulator extends AbstractExecutionThreadService {
         packet.appendUserDataBuffer(joined.getBytes());
         packet.appendUserDataBuffer(new byte[1]); // terminate with \0
 
-        transmitTM(packet);
+        transmitRealtimeTM(packet);
         tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
 
@@ -440,12 +464,13 @@ public class Simulator extends AbstractExecutionThreadService {
     public void setTm2Link(TmTcLink tm2Link) {
         this.tm2Link = tm2Link;
     }
+
     public void processTc(CCSDSPacket tc) {
         tmLink.ackPacketSend(ackPacket(tc, 0, 0));
         try {
             pendingCommands.put(tc);
         } catch (InterruptedException e) {
-           Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -469,6 +494,10 @@ public class Simulator extends AbstractExecutionThreadService {
     }
 
     public void setLosLink(TmTcLink losLink) {
-       this.losLink = losLink;
+        this.losLink = losLink;
+    }
+
+    public void setFrameLink(UdpFrameLink aosLink) {
+        this.frameLink = aosLink;
     }
 }

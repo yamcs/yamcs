@@ -36,6 +36,10 @@ public class ConfigurationException extends RuntimeException {
         this.confpath=confpath;
     }
 
+    public ConfigurationException(YConfiguration config, String message) {
+        super(message);
+    }
+
     @Override
     public String toString() {
         String message = getLocalizedMessage();

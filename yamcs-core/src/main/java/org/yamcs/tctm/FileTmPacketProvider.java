@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -32,9 +33,11 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 
     static Logger log = LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
     TimeService timeService;
-
+    String name;
+    
     public FileTmPacketProvider(String instance, String name, String fileName) throws IOException {
         this(fileName, "STOP", 1000);
+        this.name = name;
         timeService = YamcsServer.getTimeService(instance);
     }
 
@@ -163,5 +166,15 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public YConfiguration getConfig() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

@@ -1,13 +1,14 @@
-package org.yamcs.tctm.ccsds;
+package org.yamcs.tctm.ccsds.error;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.yamcs.tctm.ccsds.error.Ldpc64Encoder;
 import org.yamcs.utils.ByteArrayUtils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.yamcs.tctm.ccsds.BitMatrix.*;
+import static org.yamcs.tctm.ccsds.error.BitMatrix.*;
 
 import java.util.Arrays;
 import java.util.Random;

@@ -1,8 +1,5 @@
 package org.yamcs.tctm;
 
-import com.google.common.util.concurrent.Service;
-
-
 /**
  * 
  * @author nm
@@ -10,7 +7,7 @@ import com.google.common.util.concurrent.Service;
  * Interface for components reading packets from external parties.
  * 
  */
-public interface TmPacketDataLink extends Link, Service {
+public interface TmPacketDataLink extends Link {
     /**
      * sets the tm processor that should get all the tm packets
      * @param tmSink 

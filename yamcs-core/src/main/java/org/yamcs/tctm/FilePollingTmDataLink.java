@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -27,23 +28,29 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     boolean deleteAfterImport = true;
     long delayBetweenPackets = -1;
 
-    public FilePollingTmDataLink(String yamcsInstance, String name, Map<String, Object> args) {
-        super(yamcsInstance, name);
+    public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
+        super(yamcsInstance, name, config);
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
-        this.incomingDir = YConfiguration.getString(args, "incomingDir", getDefaultIncomingDir(yamcsInstance));
-        this.deleteAfterImport = YConfiguration.getBoolean(args, "deleteAfterImport", true);
-        this.delayBetweenPackets = YConfiguration.getLong(args, "delayBetweenPackets", -1);
+        this.incomingDir = config.getString("incomingDir", getDefaultIncomingDir(yamcsInstance));
+        this.deleteAfterImport = config.getBoolean("deleteAfterImport", true);
+        this.delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
-        initPreprocessor(yamcsInstance, args);
+        initPreprocessor(yamcsInstance, config);
     }
 
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
-        super(yamcsInstance, name);
+        super(yamcsInstance, name, getConfig(incomingDir));
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.incomingDir = incomingDir;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         initPreprocessor(yamcsInstance, null);
+    }
+
+    private static YConfiguration getConfig(String incomingDir) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("incomingDir", incomingDir);
+        return YConfiguration.wrap(m);
     }
 
     /**

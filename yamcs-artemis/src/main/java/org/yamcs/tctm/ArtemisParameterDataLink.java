@@ -1,7 +1,5 @@
 package org.yamcs.tctm;
 
-import java.util.Map;
-
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -37,16 +35,20 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     final String artemisAddress;
     ClientSession artemisSession;
     ServerLocator locator;
-
+    YConfiguration config;
+    final String linkName;
+    
     public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         ppdb = XtceDbFactory.getInstance(instance);
         this.artemisAddress = artemisAddress;
+        this.linkName = name;
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
-    public ArtemisParameterDataLink(String instance, String name, Map<String, Object> args)
+    public ArtemisParameterDataLink(String instance, String name, YConfiguration config)
             throws ConfigurationException {
-        this(instance, name, YConfiguration.getString(args, "address"));
+        this(instance, name, config.getString("address"));
+        this.config = config;
     }
 
     @Override
@@ -162,5 +164,15 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
             log.error("Got exception when quiting:", e);
             notifyFailed(e);
         }
+    }
+
+    @Override
+    public String getName() {
+        return linkName;
+    }
+
+    @Override
+    public YConfiguration getConfig() {
+        return config;
     }
 }

@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -112,7 +113,7 @@ public class TcpTcDataLinkTest {
         config.put("tcHost", "localhost");
         config.put("tcPort", mtc.port);
 
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
+        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);
@@ -141,7 +142,7 @@ public class TcpTcDataLinkTest {
         config.put("tcHost", "localhost");
         config.put("tcPort", mtc.port);
 
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
+        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);

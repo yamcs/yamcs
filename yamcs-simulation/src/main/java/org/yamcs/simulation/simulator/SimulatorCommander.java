@@ -51,6 +51,20 @@ public class SimulatorCommander extends ProcessRunner {
                     "--tm-port", "" + tmPort,
                     "--los-port", "" + losPort));
         }
+        if (userArgs.containsKey("frame")) {
+            Map<String, Object> frameArgs = YConfiguration.getMap(userArgs, "frame");
+            String tmFrameType = YConfiguration.getString(frameArgs, "type", defaultOptions.tmFrameType);
+            int tmFramePort = YConfiguration.getInt(frameArgs, "tmPort", defaultOptions.tmFramePort);
+            String tmFrameHost = YConfiguration.getString(frameArgs, "tmHost", defaultOptions.tmFrameHost);
+            int tmFrameSize = YConfiguration.getInt(frameArgs, "tmFrameLength", defaultOptions.tmFrameLength);
+            double tmFrameFreq = YConfiguration.getDouble(frameArgs, "tmFrameFreq", defaultOptions.tmFrameFreq);
+            cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
+                    "--tm-frame-host", "" + tmFrameHost,
+                    "--tm-frame-port", "" + tmFramePort,
+                    "--tm-frame-length", "" + tmFrameSize,
+                    "--tm-frame-freq", "" + tmFrameFreq));
+            
+        }
         if (userArgs.containsKey("perfTest")) {
             Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "perfTest");
             int numPackets = YConfiguration.getInt(yamcsArgs, "numPackets", defaultOptions.perfNp);
@@ -135,13 +149,19 @@ public class SimulatorCommander extends ProcessRunner {
         TelnetServer telnetServer = new TelnetServer(simulator);
         telnetServer.setPort(runtimeOptions.telnetPort);
         services.add(telnetServer);
+        
+        if (runtimeOptions.tmFrameLength > 0) {
+            UdpFrameLink frameLink = new UdpFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost, runtimeOptions.tmFramePort,
+                    runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq);
+            services.add(frameLink);
+            simulator.setFrameLink(frameLink);
+        }
 
         if (runtimeOptions.perfNp > 0) {
             PerfPacketGenerator ppg = new PerfPacketGenerator(simulator, runtimeOptions.perfNp, runtimeOptions.perfPs,
                     runtimeOptions.perfMs);
             services.add(ppg);
         }
-
         return services;
     }
 }

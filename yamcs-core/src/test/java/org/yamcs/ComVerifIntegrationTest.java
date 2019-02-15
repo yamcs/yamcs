@@ -17,8 +17,6 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.tctm.TcDataLink;
 
-import com.google.common.util.concurrent.AbstractService;
-
 import io.netty.handler.codec.http.HttpMethod;
 
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
@@ -151,7 +149,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Verifier Complete result: NOK", cha.getValue().getStringValue());
     }
 
-    public static class MyTcDataLink extends AbstractService implements TcDataLink {
+    public static class MyTcDataLink implements TcDataLink {
         static short seqNum = 5000;
         CommandHistoryPublisher commandHistoryPublisher;
 
@@ -207,13 +205,14 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Override
-        protected void doStart() {
-            notifyStarted();
+        public YConfiguration getConfig() {
+            return null;
         }
 
         @Override
-        protected void doStop() {
-            notifyStopped();
+        public String getName() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsds;
+package org.yamcs.tctm.ccsds.error;
 
 public class Crc16Calculator {
     final int polynomial;

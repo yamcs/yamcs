@@ -10,7 +10,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -67,37 +66,38 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     TcDequeueAndSend tcSender;
 
     CommandPostprocessor cmdPostProcessor;
+    final YConfiguration config;
 
-    public TcpTcDataLink(String yamcsInstance, String name, Map<String, Object> config) throws ConfigurationException {
+    public TcpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
-
+        this.config = config;
         configure(yamcsInstance, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-        this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
+        this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getConfig(spec));
     }
 
-    private void configure(String yamcsInstance, Map<String, Object> config) {
+    private void configure(String yamcsInstance, YConfiguration config) {
         if (config.containsKey("tcHost")) {// this is when the config is specified in tcp.yaml
-            host = YConfiguration.getString(config, "tcHost");
-            port = YConfiguration.getInt(config, "tcPort");
+            host = config.getString("tcHost");
+            port = config.getInt("tcPort");
         } else {
-            host = YConfiguration.getString(config, "host");
-            port = YConfiguration.getInt(config, "port");
+            host = config.getString("host");
+            port = config.getInt("port");
         }
         initPostprocessor(yamcsInstance, config);
 
         if (config.containsKey("tcQueueSize")) {
-            commandQueue = new LinkedBlockingQueue<>(YConfiguration.getInt(config, "tcQueueSize"));
+            commandQueue = new LinkedBlockingQueue<>(config.getInt("tcQueueSize"));
         } else {
             commandQueue = new LinkedBlockingQueue<>();
         }
         if (config.containsKey("tcMaxRate")) {
-            rateLimiter = RateLimiter.create(YConfiguration.getInt(config, "tcMaxRate"));
+            rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
 
     }
@@ -121,14 +121,17 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         notifyStarted();
     }
 
-    protected void initPostprocessor(String instance, Map<String, Object> args) {
+    protected void initPostprocessor(String instance, YConfiguration config) {
         String commandPostprocessorClassName = IssCommandPostprocessor.class.getName();
         Object commandPostprocessorArgs = null;
 
-        if (args != null) {
-            commandPostprocessorClassName = YConfiguration.getString(args, "commandPostprocessorClassName",
-                    IssCommandPostprocessor.class.getName());
-            commandPostprocessorArgs = args.get("commandPostprocessorArgs");
+        if (config != null) {
+            if(config.containsKey("commandPostprocessorClassName")) {
+                commandPostprocessorClassName = config.getString("commandPostprocessorClassName");
+            } else {
+                commandPostprocessorClassName =  IssCommandPostprocessor.class.getName();
+            }
+            commandPostprocessorArgs = config.getMap("commandPostprocessorArgs");
         }
 
         try {
@@ -412,5 +415,14 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
         return Arrays.asList(linkStatus, dataCount);
+    }
+    
+    public YConfiguration getConfig() {
+        return config;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

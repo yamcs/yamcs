@@ -28,6 +28,7 @@ services:
 
 dataLinks:
   - name: tm_realtime
+    enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
     args:
       stream: tm_realtime
@@ -85,6 +86,47 @@ dataLinks:
     args:
       host: localhost
       port: 8135
+  # The link below receives AOS frames (CCSDS 732.0-B-3) on three virtual channels and
+  # distributes them on the the three streams like the TCP links above
+  # This works as alternative to the TCP links 
+  - name: UDP_FRAME_IN
+    class: org.yamcs.tctm.UdpTmFrameLink
+    args:
+       port: 10016 #UDP port to listen to
+       #one of AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
+       frameType: "TM"
+       spacecraftId: 0xAB
+       frameLength: 512
+       frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
+       insertZoneLength: 0
+       errorCorrection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+       virtualChannels:
+          - vcId: 0
+            ocfPresent: true
+            service: "PACKET"  #supported services for AOS are M_PDU, B_PDU or VCA_SDU
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            stream: "tm_realtime" #which yamcs stream to put the data on
+          - vcId: 1
+            ocfPresent: true
+            service: "PACKET"  #supported services for AOS are PACKET(M_PDU), B_PDU or VCA_SDU
+            maxPacketLength: 2048
+            stripEncapsulationHeader: true # drop the header before passing the packet to the preprocessor
+            packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+            packetPreprocessorArgs:
+                timestampOffset: 2 #where to read the 8 bytes timestamp offset from
+                seqCountOffset: 10 #where to read the 4 bytes sequence count from
+                errorDetection: #last two bytes are used for the error detection
+                   type: "CRC-16-CCIIT" 
+            stream: "tm2_realtime"
+          - vcId: 2
+            ocfPresent: true
+            service: "PACKET" 
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            stream: "tm_dump"
+          #vcId 63 is reserved for idle data and it does not have to be defined
+
 
 mdb:
   # Configuration of the active loaders

@@ -1,7 +1,6 @@
 package org.yamcs.tctm;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -69,22 +68,27 @@ public class TseDataLink extends AbstractService implements Link {
     private Channel channel;
 
     private String yamcsInstance;
+    YConfiguration config;
+    final String name;
 
     public TseDataLink(String yamcsInstance, String name) {
-        this(yamcsInstance, name, Collections.emptyMap());
+        this(yamcsInstance, name, YConfiguration.wrap(Collections.emptyMap()));
     }
 
-    public TseDataLink(String yamcsInstance, String name, Map<String, Object> args) {
+    public TseDataLink(String yamcsInstance, String name, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
+        this.config = config;
+        this.name = name;
+        
         log = LoggingUtils.getLogger(getClass(), yamcsInstance);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
-        host = YConfiguration.getString(args, "host");
-        port = YConfiguration.getInt(args, "port");
+        host = config.getString("host");
+        port = config.getInt("port");
 
-        String tcStreamName = YConfiguration.getString(args, "tcStream", "tc_tse");
+        String tcStreamName = config.getString("tcStream", "tc_tse");
         Stream tcStream = ydb.getStream(tcStreamName);
         if (tcStream == null) {
             throw new ConfigurationException("Cannot find stream '" + tcStreamName + "'");
@@ -101,7 +105,7 @@ public class TseDataLink extends AbstractService implements Link {
             }
         });
 
-        String ppStreamName = YConfiguration.getString(args, "ppStream", "pp_tse");
+        String ppStreamName = config.getString("ppStream", "pp_tse");
         ppStream = ydb.getStream(ppStreamName);
         if (ppStream == null) {
             throw new ConfigurationException("Cannot find stream '" + ppStreamName + "'");
@@ -258,5 +262,15 @@ public class TseDataLink extends AbstractService implements Link {
                 notifyFailed(f.cause());
             }
         });
+    }
+
+    @Override
+    public YConfiguration getConfig() {
+        return config;
+    }
+    
+    @Override
+    public String getName() {
+        return name;
     }
 }

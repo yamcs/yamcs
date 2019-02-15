@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.yamcs.YConfiguration;
 
 public class TcpTcUplinkerTest {
 
@@ -14,7 +15,7 @@ public class TcpTcUplinkerTest {
         Map<String, Object> config = new HashMap<>();
         config.put("host", "localhost");
         config.put("port", 10025);
-        TcpTcDataLink tcuplink = new TcpTcDataLink("testinst", "name0", config);
+        TcpTcDataLink tcuplink = new TcpTcDataLink("testinst", "name0", YConfiguration.wrap(config));
         IssCommandPostprocessor icpp = (IssCommandPostprocessor) tcuplink.cmdPostProcessor;
         assertEquals(-1, icpp.getMiniminimumTcPacketLength());
     }
@@ -29,7 +30,7 @@ public class TcpTcUplinkerTest {
         postProcessorArgs.put("minimumTcPacketLength", 48);
         config.put("commandPostprocessorArgs", postProcessorArgs);
 
-        TcpTcDataLink tcuplink = new TcpTcDataLink("testinst", "test1", config);
+        TcpTcDataLink tcuplink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
         IssCommandPostprocessor icpp = (IssCommandPostprocessor) tcuplink.cmdPostProcessor;
         assertEquals(48, icpp.getMiniminimumTcPacketLength());
     }

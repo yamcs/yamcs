@@ -130,7 +130,7 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
         YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
         String partSchema = "";
         if (yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
-            partSchema = "('" + yconfig.getString("archiveConfig", "timePartitioningSchema") + "')";
+            partSchema = "('" + yconfig.getSubString("archiveConfig", "timePartitioningSchema") + "')";
         }
         return partSchema;
     }

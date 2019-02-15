@@ -8,7 +8,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
@@ -35,33 +34,30 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
-    protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
-        super(instance, name);
-        this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
-        this.packetInputStreamArgs = null;
-        log = LoggingUtils.getLogger(this.getClass(), instance);
-        initPreprocessor(instance, null);
-    }
 
     @Deprecated
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
-        this(instance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
+        this(instance, name, YConfiguration.getConfiguration("tcp").getConfig(spec));
     }
 
-    public TcpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
-        this(instance, name);
-        if (args.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
-            host = YConfiguration.getString(args, "tmHost");
-            port = YConfiguration.getInt(args, "tmPort");
+    public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super(instance, name, config);
+        log = LoggingUtils.getLogger(this.getClass(), instance);
+        if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
+            host = config.getString("tmHost");
+            port = config.getInt("tmPort");
         } else {
-            host = YConfiguration.getString(args, "host");
-            port = YConfiguration.getInt(args, "port");
+            host = config.getString("host");
+            port = config.getInt("port");
         }
-        this.packetInputStreamClassName = YConfiguration.getString(args, "packetInputStreamClassName",
-                CcsdsPacketInputStream.class.getName());
-        this.packetInputStreamArgs = args.get("packetInputStreamArgs");
+        if(config.containsKey("packetInputStreamClassName")) {
+            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");    
+        } else {
+            this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+        }
+        this.packetInputStreamArgs = config.get("packetInputStreamArgs");
 
-        initPreprocessor(instance, args);
+        initPreprocessor(instance, config);
     }
 
     protected void openSocket() throws IOException {
@@ -141,6 +137,13 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                     Thread.currentThread().interrupt();
                     return null;
                 }
+            } catch (PacketTooLongException e) {
+                log.warn(e.toString());
+                try {
+                    tmSocket.close();
+                } catch (Exception e2) {
+                }
+                tmSocket = null;
             }
         }
         return pwt;
