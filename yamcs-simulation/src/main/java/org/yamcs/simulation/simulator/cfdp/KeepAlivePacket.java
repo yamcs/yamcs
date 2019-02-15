@@ -2,11 +2,11 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
-public class KeepAlivePacket extends Packet {
+public class KeepAlivePacket extends CfdpPacket {
 
     private long progress;
 
-    public KeepAlivePacket(ByteBuffer buffer, Header header) {
+    public KeepAlivePacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         this.progress = Utils.getUnsignedInt(buffer);
@@ -15,6 +15,12 @@ public class KeepAlivePacket extends Packet {
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         Utils.writeUnsignedInt(buffer, progress);
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

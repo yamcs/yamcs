@@ -151,6 +151,10 @@ public class SimulatorCommander extends ProcessRunner {
         services.add(tm2Link);
         simulator.setTm2Link(tm2Link);
 
+        TmTcLink cfdpLink = new TmTcLink("CFDP", simulator, runtimeOptions.cfdpPort);
+        services.add(cfdpLink);
+        simulator.setCfdpLink(cfdpLink);
+
         TmTcLink losLink = new TmTcLink("LOS", simulator, runtimeOptions.losPort);
         services.add(losLink);
         simulator.setLosLink(losLink);

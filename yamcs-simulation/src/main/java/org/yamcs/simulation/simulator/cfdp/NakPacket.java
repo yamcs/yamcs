@@ -4,13 +4,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NakPacket extends Packet {
+public class NakPacket extends CfdpPacket {
 
     private long scopeStart;
     private long scopeEnd;
     private List<SegmentRequest> segmentRequests = new ArrayList<SegmentRequest>();
 
-    public NakPacket(ByteBuffer buffer, Header header) {
+    public NakPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         this.scopeStart = Utils.getUnsignedInt(buffer);
@@ -26,5 +26,11 @@ public class NakPacket extends Packet {
         Utils.writeUnsignedInt(buffer, scopeStart);
         Utils.writeUnsignedInt(buffer, scopeEnd);
         segmentRequests.forEach(x -> x.writeToBuffer(buffer));
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

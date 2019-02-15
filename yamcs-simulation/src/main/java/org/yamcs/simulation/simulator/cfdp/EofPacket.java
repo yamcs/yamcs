@@ -2,14 +2,14 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
-public class EofPacket extends Packet {
+public class EofPacket extends CfdpPacket {
 
     private ConditionCode conditionCode;
     private long fileChecksum;
     private long fileSize;
     private TLV faultLocation = null;
 
-    public EofPacket(ByteBuffer buffer, Header header) {
+    public EofPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         this.conditionCode = ConditionCode.readConditionCode(buffer);
@@ -30,6 +30,12 @@ public class EofPacket extends Packet {
         if (this.faultLocation != null) {
             faultLocation.writeToBuffer(buffer);
         }
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

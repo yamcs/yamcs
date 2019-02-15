@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetadataPacket extends Packet {
+public class MetadataPacket extends CfdpPacket {
 
     private boolean segmentationControl;
     private long fileSize;
@@ -15,7 +15,7 @@ public class MetadataPacket extends Packet {
     private List<FaultHandlerOverride> faultHandlerOverrides = new ArrayList<FaultHandlerOverride>();
     private TLV flowLabel;
 
-    public MetadataPacket(ByteBuffer buffer, Header header) {
+    public MetadataPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         byte temp = buffer.get();
@@ -53,6 +53,12 @@ public class MetadataPacket extends Packet {
         messagesToUser.forEach(x -> x.toTLV().writeToBuffer(buffer));
         faultHandlerOverrides.forEach(x -> x.toTLV().writeToBuffer(buffer));
         flowLabel.writeToBuffer(buffer);
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

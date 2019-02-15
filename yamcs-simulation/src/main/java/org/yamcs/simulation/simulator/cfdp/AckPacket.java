@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-public class AckPacket extends Packet {
+public class AckPacket extends CfdpPacket {
 
     private FileDirectiveCode directiveCode;
     private FileDirectiveSubtypeCode directiveSubtypeCode;
@@ -71,7 +71,7 @@ public class AckPacket extends Packet {
         }
     }
 
-    public AckPacket(ByteBuffer buffer, Header header) {
+    public AckPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
         byte temp = buffer.get();
         this.directiveCode = FileDirectiveCode.readFileDirectiveCode(temp);
@@ -83,5 +83,11 @@ public class AckPacket extends Packet {
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
         buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -13,9 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.simulation.simulator.cfdp.CfdpPacket;
+import org.yamcs.simulation.simulator.cfdp.FileDataPacket;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
+
 import com.google.common.util.concurrent.AbstractService;
 
 public class Simulator extends AbstractService {
@@ -29,6 +32,7 @@ public class Simulator extends AbstractService {
     int maxLength = DEFAULT_MAX_LENGTH;
     private TmTcLink tmLink;
     private TmTcLink tm2Link;
+    private TmTcLink cfdpLink;
     private TmTcLink losLink;
     private UdpFrameLink frameLink;
 
@@ -61,7 +65,6 @@ public class Simulator extends AbstractService {
     /**
      * this runs in a separate thread but pushes commands to the main TM thread
      */
-
     public LosRecorder getLosDataRecorder() {
         return losRecorder;
     }
@@ -105,6 +108,10 @@ public class Simulator extends AbstractService {
             }
 
         }
+    }
+
+    protected void transmitCfdp(CfdpPacket packet) {
+        cfdpLink.sendPacket(packet.toByteArray());
     }
 
     protected void transmitTM2(byte[] packet) {
@@ -200,6 +207,12 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(flightpacket);
     }
 
+    private void sendCfdp() {
+        byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't', '.' };
+        CfdpPacket cfdpFileData = new FileDataPacket(filedata, 0).init();
+        transmitCfdp(cfdpFileData);
+    }
+
     private void sendHkTm() {
         CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
         powerDataHandler.fillPacket(powerpacket);
@@ -247,7 +260,7 @@ public class Simulator extends AbstractService {
      */
     private void executePendingCommands() {
         CCSDSPacket commandPacket;
-        while ((commandPacket = pendingCommands.poll()) != null)
+        while ((commandPacket = pendingCommands.poll()) != null) {
             if (commandPacket.getPacketType() == 10) {
                 log.info("BATT COMMAND: " + commandPacket.getPacketId());
 
@@ -273,6 +286,7 @@ public class Simulator extends AbstractService {
             } else {
                 log.warn("Unknown command type " + commandPacket.getPacketType());
             }
+        }
     }
 
     private void switchBatteryOn(CCSDSPacket commandPacket) {
@@ -340,6 +354,10 @@ public class Simulator extends AbstractService {
         this.tm2Link = tm2Link;
     }
 
+    public void setCfdpLink(TmTcLink cfdpLink) {
+        this.cfdpLink = cfdpLink;
+    }
+
     public void processTc(CCSDSPacket tc) {
         tmLink.ackPacketSend(ackPacket(tc, 0, 0));
         try {
@@ -382,6 +400,7 @@ public class Simulator extends AbstractService {
         executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> sendTm2(), 0, 1000, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
 
         notifyStarted();

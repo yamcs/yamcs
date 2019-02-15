@@ -1,12 +1,8 @@
 package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Map;
 
-import com.google.common.collect.Maps;
-
-public class Header {
+public class CfdpHeader {
 
     /*
     Header (Variable size):
@@ -30,50 +26,22 @@ public class Header {
     private boolean fileDirective, towardsSender, acknowledged, withCrc;
     private int dataLength, entityIdLength, sequenceNumberLength;
     private Long sourceId, destinationId, sequenceNr;
-    private FileDirectiveParameter fileDirectiveParameter = null;
 
-    private interface FileDirectiveParameter {}
-
-    private enum FileDirectiveConditionCode {
-        NoError(0),
-        PositiveAckLimitReached(1),
-        KeepAliveLimitReached(2),
-        InvalidTransmissionMode(3),
-        FilestoreRejection(4),
-        FileChecksumFailure(5),
-        FileSizeError(6),
-        NakLimitReached(7),
-        InactivityDetected(8),
-        InvalidFileStructure(9),
-        CheckLimitReached(10),
-        SuspendRequestReceived(14),
-        CancelRequestReceived(15),
-        Reserved(11);
-
-        private int code;
-
-        public static final Map<Integer, FileDirectiveConditionCode> Lookup = Maps.uniqueIndex(
-                Arrays.asList(FileDirectiveConditionCode.values()),
-                FileDirectiveConditionCode::getCode);
-
-        private FileDirectiveConditionCode(int code) {
-            this.code = code;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public static FileDirectiveConditionCode fromCode(int code) {
-            if (Lookup.containsKey(code)) {
-                return Lookup.get(code);
-            } else {
-                return Reserved;
-            }
-        }
+    public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc, int dataLength,
+            int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
+        this.fileDirective = fileDirective;
+        this.towardsSender = towardsSender;
+        this.acknowledged = acknowledged;
+        this.withCrc = withCrc;
+        this.dataLength = dataLength;
+        this.entityIdLength = entityIdLength;
+        this.sequenceNumberLength = sequenceNumberLength;
+        this.sourceId = sourceId;
+        this.destinationId = destinationId;
+        this.sequenceNr = sequenceNumber;
     }
 
-    public Header(ByteBuffer buffer) {
+    public CfdpHeader(ByteBuffer buffer) {
         readPduHeader(buffer);
     }
 

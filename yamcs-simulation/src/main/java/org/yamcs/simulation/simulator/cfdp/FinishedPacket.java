@@ -8,7 +8,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-public class FinishedPacket extends Packet {
+public class FinishedPacket extends CfdpPacket {
 
     private ConditionCode conditionCode;
     private boolean generatedByEndSystem;
@@ -42,7 +42,7 @@ public class FinishedPacket extends Packet {
         }
     }
 
-    public FinishedPacket(ByteBuffer buffer, Header header) {
+    public FinishedPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         byte temp = buffer.get();
@@ -76,6 +76,12 @@ public class FinishedPacket extends Packet {
         if (faultLocation != null) {
             faultLocation.writeToBuffer(buffer);
         }
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

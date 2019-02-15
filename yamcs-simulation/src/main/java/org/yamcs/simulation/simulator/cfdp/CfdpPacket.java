@@ -5,10 +5,10 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class Packet {
+public abstract class CfdpPacket {
 
     protected ByteBuffer buffer;
-    protected Header header;
+    protected CfdpHeader header;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
 
@@ -30,18 +30,29 @@ public abstract class Packet {
         }
     }
 
-    protected Packet(ByteBuffer buffer, Header header) {
+    protected CfdpPacket() {
+        this.header = null;
+    }
+
+    public CfdpPacket init() {
+        this.header = createHeader();
+        return this;
+    }
+
+    protected CfdpPacket(ByteBuffer buffer, CfdpHeader header) {
         this.header = header;
         this.buffer = buffer;
     }
 
-    private Header getHeader() {
+    protected abstract CfdpHeader createHeader();
+
+    private CfdpHeader getHeader() {
         return this.header;
     }
 
-    public static Packet getCFDPPacket(ByteBuffer buffer) {
-        Header header = new Header(buffer);
-        Packet toReturn = null;
+    public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
+        CfdpHeader header = new CfdpHeader(buffer);
+        CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
             switch (FileDirectiveCode.readFileDirectiveCode(buffer)) {
             case EOF:
@@ -79,12 +90,18 @@ public abstract class Packet {
         return toReturn;
     }
 
-    public void writePacket(ByteBuffer buffer) {
+    public byte[] toByteArray() {
+        // TODO, 65536 is just a random number, find out what it should be
+        ByteBuffer buffer = ByteBuffer.allocate(65536);
         getHeader().writeToBuffer(buffer);
         writeCFDPPacket(buffer);
         if (getHeader().withCrc()) {
             calculateAndAddCrc(buffer);
         }
+        byte[] toReturn = new byte[buffer.position()];
+        buffer.rewind();
+        buffer.get(toReturn);
+        return toReturn;
     }
 
     private boolean crcValid() {
@@ -100,22 +117,6 @@ public abstract class Packet {
         // the CRC
         buffer.put((byte) 0x00).put((byte) 0x00);
     }
-
-    /*  public CFDPPacket(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
-            int dataLength, int entityIdLength, int sequenceNumberLength, int sourceId, int destinationId,
-            int sequenceNr) {
-        this.fileDirective = fileDirective;
-        this.towardsSender = towardsSender;
-        this.acknowledged = acknowledged;
-        this.withCrc = withCrc;
-        this.dataLength = dataLength;
-        this.entityIdLength = entityIdLength;
-        this.sequenceNumberLength = sequenceNumberLength;
-        this.sourceId = sourceId;
-        this.destinationId = destinationId;
-        this.sequenceNr = sequenceNr;
-        putHeader();
-    }*/
 
     /*   @Override
     public String toString() {

@@ -2,12 +2,18 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
-public class FileDataPacket extends Packet {
+public class FileDataPacket extends CfdpPacket {
 
     private long offset;
     private byte[] filedata;
 
-    public FileDataPacket(ByteBuffer buffer, Header header) {
+    public FileDataPacket(byte[] data, long offset) {
+        super();
+        this.offset = offset;
+        this.filedata = data;
+    }
+
+    public FileDataPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
         this.offset = Utils.getUnsignedInt(buffer);
@@ -20,6 +26,11 @@ public class FileDataPacket extends Packet {
     protected void writeCFDPPacket(ByteBuffer buffer) {
         Utils.writeUnsignedInt(buffer, offset);
         buffer.put(filedata);
+    }
+
+    @Override
+    protected CfdpHeader createHeader() {
+        return new CfdpHeader(false, false, false, false, 1, 1, this.filedata.length, 123, 1001, 456);
     }
 
 }
