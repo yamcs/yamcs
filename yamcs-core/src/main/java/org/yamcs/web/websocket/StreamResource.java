@@ -1,7 +1,7 @@
 package org.yamcs.web.websocket;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -18,13 +18,13 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 /**
  * Capable of producing and consuming yarch Stream data (Tuples) over web socket
  */
-public class StreamResource implements WebSocketResource {
+public class StreamResource implements StreamSubscriber, WebSocketResource {
 
     public static final String RESOURCE_NAME = "stream";
 
     private ConnectedWebSocketClient client;
 
-    private List<Subscription> subscriptions = new ArrayList<>();
+    private Set<Stream> subscribedStreams = new HashSet<>();
 
     private String yamcsInstance;
 
@@ -50,27 +50,28 @@ public class StreamResource implements WebSocketResource {
             throw new WebSocketException(ctx.getRequestId(), "No stream was provided");
         }
 
-        StreamSubscriber subscriber = new StreamSubscriber() {
+        if (!subscribedStreams.contains(stream)) {
+            stream.addSubscriber(this);
+            subscribedStreams.add(stream);
+        }
 
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                StreamData data = ArchiveHelper.toStreamData(stream, tuple);
-                client.sendData(ProtoDataType.STREAM_DATA, data);
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-            }
-        };
-
-        stream.addSubscriber(subscriber);
-        subscriptions.add(new Subscription(stream, subscriber));
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override
+    public void onTuple(Stream stream, Tuple tuple) {
+        StreamData data = ArchiveHelper.toStreamData(stream, tuple);
+        client.sendData(ProtoDataType.STREAM_DATA, data);
+    }
+
+    @Override
+    public void streamClosed(Stream stream) {
+    }
+
+    @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        return null;
+        unsubscribeAll();
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override
@@ -85,18 +86,12 @@ public class StreamResource implements WebSocketResource {
 
     @Override
     public void socketClosed() {
-        for (Subscription subscription : subscriptions) {
-            subscription.stream.removeSubscriber(subscription.subscriber);
-        }
+        unsubscribeAll();
     }
 
-    private static class Subscription {
-        Stream stream;
-        StreamSubscriber subscriber;
-
-        Subscription(Stream stream, StreamSubscriber subscriber) {
-            this.stream = stream;
-            this.subscriber = subscriber;
+    private void unsubscribeAll() {
+        for (Stream subscribedStream : subscribedStreams) {
+            subscribedStream.removeSubscriber(this);
         }
     }
 }
