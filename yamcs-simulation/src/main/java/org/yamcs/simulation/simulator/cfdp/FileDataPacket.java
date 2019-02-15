@@ -30,7 +30,8 @@ public class FileDataPacket extends CfdpPacket {
 
     @Override
     protected CfdpHeader createHeader() {
-        return new CfdpHeader(false, false, false, false, 1, 1, this.filedata.length, 123, 1001, 456);
+        // the '+4' originates from the length of the offset bytes
+        return new CfdpHeader(false, false, false, false, this.filedata.length + 4, 1, 1, 123, 111, 246);
     }
 
 }
