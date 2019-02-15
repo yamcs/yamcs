@@ -27,10 +27,10 @@
             [ngClass]="{selected: (record === (selectedRecord$ | async))}"
             (click)="selectRecord(record)">
           <td *ngFor="let column of table.keyColumn">
-            {{ (getColumnValue(record, column.name) | value) || '-' }}
+            {{ (record.column | columnValue:column.name | value) || '-' }}
           </td>
           <td *ngFor="let column of table.valueColumn">
-            {{ (getColumnValue(record, column.name) | value) || '-' }}
+            {{ (record.column | columnValue:column.name | value) || '-' }}
           </td>
         </tr>
       </table>

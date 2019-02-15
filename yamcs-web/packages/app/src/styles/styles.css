@@ -79,11 +79,16 @@ body {
   background: #fafafa;
 }
 
-.ya-data-table td.mat-cell, .ya-data-table th.mat-cell {
+.ya-data-table td.mat-cell,
+.ya-data-table th.mat-cell {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
   padding: 7px 8px 8px 0;
+}
+
+.ya-data-table th.mat-header-cell {
+  padding-right: 8px;
 }
 
 .ya-data-table mat-icon {

@@ -35,7 +35,6 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     }, 1000 /* update rate */);
 
     this.eventBuffer = new EventBuffer(() => {
-      console.log('Compacting event buffer');
 
       // Best solution for now, alternative is to re-establish
       // the offscreenRecord after compacting.

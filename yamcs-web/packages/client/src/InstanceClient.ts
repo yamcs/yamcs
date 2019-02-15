@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
@@ -313,6 +313,11 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/streams/${name}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Stream;
+  }
+
+  async getStreamUpdates(name: string): Promise<StreamSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.getStreamUpdates(name);
   }
 
   async getTables() {

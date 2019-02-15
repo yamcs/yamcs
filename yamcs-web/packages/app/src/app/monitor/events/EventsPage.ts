@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { rowAnimation } from '../../animations';
 import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -12,7 +13,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { Option, Select } from '../../shared/template/Select';
 import { subtractDuration } from '../../shared/utils';
-import { rowAnimation } from '../animations';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
 

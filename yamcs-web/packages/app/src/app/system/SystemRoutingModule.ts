@@ -8,6 +8,7 @@ import { InstancePage } from '../shared/template/InstancePage';
 import { JvmPage } from './jvm/JvmPage';
 import { ServicesPage } from './services/ServicesPage';
 import { StreamColumnsTab } from './stream/StreamColumnsTab';
+import { StreamDataTab } from './stream/StreamDataTab';
 import { StreamPage } from './stream/StreamPage';
 import { StreamScriptTab } from './stream/StreamScriptTab';
 import { StreamsPage } from './streams/StreamsPage';
@@ -68,6 +69,9 @@ const routes: Routes = [
             path: 'columns',
             component: StreamColumnsTab,
           }, {
+            path: 'data',
+            component: StreamDataTab,
+          }, {
             path: 'script',
             component: StreamScriptTab,
           }
@@ -99,6 +103,7 @@ export const routingComponents = [
   StreamsPage,
   StreamPage,
   StreamColumnsTab,
+  StreamDataTab,
   StreamScriptTab,
   TablesPage,
   TablePage,

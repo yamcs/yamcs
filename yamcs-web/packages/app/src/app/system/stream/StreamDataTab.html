@@ -1,0 +1,15 @@
+<div class="panel-content">
+  <table mat-table #table [dataSource]="dataSource" class="ya-data-table">
+
+    <ng-container *ngFor="let column of (availableColumns$ | async)" [cdkColumnDef]="column">
+      <th mat-header-cell *cdkHeaderCellDef style="white-space: nowrap">{{ column }}</th>
+      <td mat-cell *cdkCellDef="let item">
+        {{ (item.column | columnValue:column | value) || '-' }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+            [@rowAnimation]="row.animate"></tr>
+  </table>
+</div>

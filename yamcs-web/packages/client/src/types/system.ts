@@ -180,9 +180,18 @@ export interface LinkSubscriptionResponse {
   linkEvent$: Observable<LinkEvent>;
 }
 
+export interface StreamSubscriptionResponse {
+  streamData$: Observable<StreamData>;
+}
+
 export interface Stream {
   name: string;
   column: Column[];
+}
+
+export interface StreamData {
+  stream: string;
+  column: ColumnData[];
 }
 
 export interface Column {

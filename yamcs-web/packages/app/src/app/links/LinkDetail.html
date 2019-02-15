@@ -45,9 +45,8 @@
   </button>
   <button mat-raised-button
           (click)="disableLink()"
-          *ngIf="link.status === 'OK'"
+          *ngIf="link.status !== 'DISABLED'"
           color="warn">
     DISABLE LINK
   </button>
 </ng-container>
-

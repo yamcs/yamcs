@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Alarm, Instance } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
 import { AlarmsDataSource } from './AlarmsDataSource';
@@ -13,7 +13,7 @@ import { AlarmsDataSource } from './AlarmsDataSource';
   styleUrls: ['./AlarmsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlarmsPage implements OnInit {
+export class AlarmsPage implements OnInit, OnDestroy {
 
   instance: Instance;
 
@@ -33,6 +33,8 @@ export class AlarmsPage implements OnInit {
   dataSource: AlarmsDataSource;
   selection = new SelectionModel<Alarm>(true, []);
 
+  alarmDetailSubscription: Subscription;
+
   constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
     title.setTitle('Alarms - Yamcs');
     this.instance = this.yamcs.getInstance();
@@ -44,6 +46,23 @@ export class AlarmsPage implements OnInit {
   ngOnInit() {
     this.dataSource = new AlarmsDataSource(this.yamcs);
     this.dataSource.loadAlarms('realtime');
+
+    this.alarmDetailSubscription = this.dataSource.alarms$.subscribe(alarms => {
+      const selectedAlarm = this.selectedAlarm$.value;
+      if (selectedAlarm) {
+        for (const alarm of alarms) {
+          if (this.isSameAlarm(alarm, selectedAlarm)) {
+            this.selectedAlarm$.next(alarm);
+          }
+        }
+      }
+    });
+  }
+
+  private isSameAlarm(alarm1: Alarm, alarm2: Alarm) {
+    return alarm1.seqNum === alarm2.seqNum
+      && alarm1.parameter.qualifiedName === alarm2.parameter.qualifiedName
+      && alarm1.triggerValue.generationTimeUTC === alarm2.triggerValue.generationTimeUTC;
   }
 
   isAllSelected() {
@@ -81,5 +100,11 @@ export class AlarmsPage implements OnInit {
 
   selectAlarm(alarm: Alarm) {
     this.selectedAlarm$.next(alarm);
+  }
+
+  ngOnDestroy() {
+    if (this.alarmDetailSubscription) {
+      this.alarmDetailSubscription.unsubscribe();
+    }
   }
 }

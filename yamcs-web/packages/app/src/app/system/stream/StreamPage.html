@@ -15,10 +15,18 @@
     </a>
 
     <a mat-tab-link
-      routerLink="./script"
+      routerLink="./data"
       routerLinkActive #rlb="routerLinkActive"
       [queryParams]="{instance: instance.name}"
       [active]="rlb.isActive">
+      Data
+    </a>
+
+    <a mat-tab-link
+      routerLink="./script"
+      routerLinkActive #rlc="routerLinkActive"
+      [queryParams]="{instance: instance.name}"
+      [active]="rlc.isActive">
       Script
     </a>
   </nav>
