@@ -2,8 +2,8 @@
   <app-instance-toolbar>
     <ng-container *ngFor="let alias of algorithm.alias">
       <ng-container *ngIf="algorithm.qualifiedName.startsWith(alias.namespace)">
-        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'algorithms']"
-            [queryParams]="{instance: instance.name}"
+        <a routerLink="/mdb/algorithms"
+            [queryParams]="{instance: instance.name, filter: alias.namespace}"
             class="ya-link ya-header-link">
           {{ alias.namespace }}
         </a>/{{ alias.name }}

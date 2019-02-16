@@ -2,8 +2,8 @@
   <app-instance-toolbar>
     <ng-container *ngFor="let alias of parameter.alias">
       <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'parameters']"
-            [queryParams]="{instance: instance.name}"
+        <a routerLink="/mdb/parameters"
+            [queryParams]="{instance: instance.name, filter: alias.namespace}"
             class="ya-link ya-header-link">
           {{ alias.namespace }}
         </a>/{{ alias.name }}

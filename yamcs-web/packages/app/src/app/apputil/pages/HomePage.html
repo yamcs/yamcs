@@ -38,9 +38,9 @@
 
   <div class="panel-content">
     <div style="margin-bottom: 12px;">
-      <input placeholder="Filter instances"
-             style="width: 400px"
-             (keyup)="applyFilter($event.target.value)">
+      <input #filter
+             placeholder="Filter instances"
+             style="width: 400px">
     </div>
     <table mat-table
            [dataSource]="dataSource"

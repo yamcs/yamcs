@@ -1,9 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GetContainersOptions, Instance } from '@yamcs/client';
 import { fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
@@ -13,11 +14,14 @@ import { ContainersDataSource } from './ContainersDataSource';
   templateUrl: './ContainersPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContainersPage implements OnInit, AfterViewInit {
+export class ContainersPage implements AfterViewInit {
 
   instance: Instance;
   shortName = false;
   pageSize = 100;
+
+  @ViewChild('top')
+  top: ElementRef;
 
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
@@ -44,7 +48,13 @@ export class ContainersPage implements OnInit, AfterViewInit {
     'restrictionCriteria',
   ];
 
-  constructor(yamcs: YamcsService, title: Title, private preferenceStore: PreferenceStore) {
+  constructor(
+    yamcs: YamcsService,
+    title: Title,
+    private preferenceStore: PreferenceStore,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
     title.setTitle('Containers - Yamcs');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('containers');
@@ -54,25 +64,32 @@ export class ContainersPage implements OnInit, AfterViewInit {
     this.dataSource = new ContainersDataSource(yamcs);
   }
 
-
-  ngOnInit() {
-    this.dataSource.loadContainers({
-      limit: this.pageSize,
-    });
-  }
-
   ngAfterViewInit() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter.nativeElement.value = queryParams.get('filter');
+    }
+    if (queryParams.has('page')) {
+      this.paginator.pageIndex = Number(queryParams.get('page'));
+    }
+    this.updateDataSource();
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
+      this.top.nativeElement.scrollIntoView();
     });
 
     fromEvent(this.filter.nativeElement, 'keyup').pipe(
       debounceTime(400),
+      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
       distinctUntilChanged(),
-    ).subscribe(() => this.updateDataSource());
+    ).subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.updateDataSource();
+    });
   }
 
-  updateDataSource() {
+  private updateDataSource() {
+    this.updateURL();
     const options: GetContainersOptions = {
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
@@ -82,6 +99,18 @@ export class ContainersPage implements OnInit, AfterViewInit {
       options.q = filterValue;
     }
     this.dataSource.loadContainers(options);
+  }
+
+  private updateURL() {
+    const filterValue = this.filter.nativeElement.value.trim();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        page: this.paginator.pageIndex || null,
+        filter: filterValue || null,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   updateColumns(displayedColumns: string[]) {

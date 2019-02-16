@@ -29,7 +29,7 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
         this.streamData$.next(this.streamBuffer.snapshot().reverse());
         this.streamBuffer.dirty = false;
       }
-    }, 500 /* update rate */);
+    }, 1000 /* update rate */);
   }
 
   connect(collectionViewer: CollectionViewer) {

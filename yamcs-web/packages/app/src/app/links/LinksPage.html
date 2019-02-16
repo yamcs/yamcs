@@ -20,9 +20,9 @@
   <div class="table-wrapper">
     <div class="panel-content">
       <div style="margin-bottom: 12px;">
-        <input placeholder="Filter links"
-                style="width: 400px"
-                (keyup)="applyFilter($event.target.value)">
+        <input #filter
+               placeholder="Filter links"
+               style="width: 400px">
       </div>
       <table mat-table
             [dataSource]="dataSource"

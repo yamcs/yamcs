@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Link, LinkEvent } from '@yamcs/client';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, fromEvent, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { LinkItem } from './LinkItem';
@@ -12,7 +14,10 @@ import { LinkItem } from './LinkItem';
   styleUrls: ['./LinksPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LinksPage implements OnDestroy {
+export class LinksPage implements AfterViewInit, OnDestroy {
+
+  @ViewChild('filter')
+  filter: ElementRef;
 
   selectedItem$ = new BehaviorSubject<LinkItem | null>(null);
 
@@ -24,8 +29,28 @@ export class LinksPage implements OnDestroy {
 
   private itemsByName: { [key: string]: LinkItem } = {};
 
-  constructor(private yamcs: YamcsService, private authService: AuthService, title: Title, private changeDetection: ChangeDetectorRef) {
+  constructor(
+    private yamcs: YamcsService,
+    private authService: AuthService,
+    title: Title,
+    private changeDetection: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
     title.setTitle('Links - Yamcs');
+
+    this.dataSource.filterPredicate = (item, filter) => {
+      return item.link.name.toLowerCase().indexOf(filter) >= 0
+        || item.link.type.toLowerCase().indexOf(filter) >= 0;
+    };
+  }
+
+  ngAfterViewInit() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter.nativeElement.value = queryParams.get('filter');
+      this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
+    }
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
@@ -41,6 +66,7 @@ export class LinksPage implements OnDestroy {
           this.itemsByName[link.name].parentLink = parent.link;
         }
       }
+
       this.updateDataSource();
 
       this.yamcs.getInstanceClient()!.getLinkUpdates().then(response => {
@@ -50,10 +76,14 @@ export class LinksPage implements OnDestroy {
       });
     });
 
-    this.dataSource.filterPredicate = (item, filter) => {
-      return item.link.name.toLowerCase().indexOf(filter) >= 0
-        || item.link.type.toLowerCase().indexOf(filter) >= 0;
-    };
+    fromEvent(this.filter.nativeElement, 'keyup').pipe(
+      debounceTime(150), // Keep low -- Client-side filter
+      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
+      distinctUntilChanged(),
+    ).subscribe(value => {
+      this.updateURL();
+      this.dataSource.filter = value.toLowerCase();
+    });
   }
 
   // trackBy is needed to prevent menu from closing when
@@ -75,10 +105,6 @@ export class LinksPage implements OnDestroy {
 
   mayControlLinks() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlLinks');
-  }
-
-  applyFilter(value: string) {
-    this.dataSource.filter = value.trim().toLowerCase();
   }
 
   private processLinkEvent(evt: LinkEvent) {
@@ -127,6 +153,17 @@ export class LinksPage implements OnDestroy {
       return x.link.name.localeCompare(y.link.name);
     });
     this.dataSource.data = data;
+  }
+
+  private updateURL() {
+    const filterValue = this.filter.nativeElement.value.trim();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filter: filterValue || null,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   selectLink(item: LinkItem) {
