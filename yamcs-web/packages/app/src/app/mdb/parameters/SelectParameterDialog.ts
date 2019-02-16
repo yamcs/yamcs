@@ -50,6 +50,7 @@ export class SelectParameterDialog implements OnInit {
         q: val,
         limit: this.limit,
       })),
+      map(page => page.parameter || []),
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {

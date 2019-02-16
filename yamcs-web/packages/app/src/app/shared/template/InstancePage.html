@@ -75,12 +75,6 @@
         MDB
       </mat-list-item>
       <div *ngIf="mdbExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/mdb/space-systems"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Space Systems
-        </app-sidebar-nav-item>
-
         <app-sidebar-nav-item routerLink="/mdb/parameters"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">

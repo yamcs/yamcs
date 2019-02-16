@@ -19,6 +19,12 @@ export interface SpaceSystem extends NameDescription {
   sub: SpaceSystem[];
 }
 
+export interface SpaceSystemsPage {
+  spaceSystem?: SpaceSystem[]
+  continuationToken?: string;
+  totalSize: number;
+}
+
 export interface HistoryInfo {
   version: string;
   date: string;
@@ -254,20 +260,50 @@ export interface GetParametersOptions {
   limit?: number;
 }
 
+export interface ParametersPage {
+  parameter?: Parameter[]
+  continuationToken?: string;
+  totalSize: number;
+}
+
 export interface GetAlgorithmsOptions {
   namespace?: string;
   recurse?: boolean;
   q?: string;
+  pos?: number;
+  limit?: number;
+}
+
+export interface AlgorithmsPage {
+  algorithm?: Algorithm[]
+  continuationToken?: string;
+  totalSize: number;
 }
 
 export interface GetContainersOptions {
   namespace?: string;
   recurse?: boolean;
   q?: string;
+  pos?: number;
+  limit?: number;
+}
+
+export interface ContainersPage {
+  container?: Container[]
+  continuationToken?: string;
+  totalSize: number;
 }
 
 export interface GetCommandsOptions {
   namespace?: string;
   recurse?: boolean;
   q?: string;
+  pos?: number;
+  limit?: number;
+}
+
+export interface CommandsPage {
+  command?: Command[]
+  continuationToken?: string;
+  totalSize: number;
 }

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
-import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
+import { AlarmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
@@ -369,8 +369,7 @@ export class InstanceClient {
   async getSpaceSystems() {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems`;
     const response = await this.yamcs.doFetch(url);
-    const wrapper = await response.json() as SpaceSystemsWrapper;
-    return wrapper.spaceSystem || [];
+    return await response.json() as SpaceSystemsPage;
   }
 
   async getSpaceSystem(qualifiedName: string) {
@@ -382,8 +381,7 @@ export class InstanceClient {
   async getParameters(options: GetParametersOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as ParametersWrapper;
-    return wrapper.parameter || [];
+    return await response.json() as ParametersPage;
   }
 
   async getParameter(qualifiedName: string) {
@@ -451,8 +449,7 @@ export class InstanceClient {
   async getCommands(options: GetCommandsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/commands`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as CommandsWrapper;
-    return wrapper.command || []
+    return await response.json() as CommandsPage;
   }
 
   async getCommand(qualifiedName: string) {
@@ -464,8 +461,7 @@ export class InstanceClient {
   async getContainers(options: GetContainersOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/containers`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as ContainersWrapper;
-    return wrapper.container || [];
+    return await response.json() as ContainersPage;
   }
 
   async getContainer(qualifiedName: string) {
@@ -477,8 +473,7 @@ export class InstanceClient {
   async getAlgorithms(options: GetAlgorithmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as AlgorithmsWrapper;
-    return wrapper.algorithm || [];
+    return await response.json() as AlgorithmsPage;
   }
 
   async getAlgorithm(qualifiedName: string) {

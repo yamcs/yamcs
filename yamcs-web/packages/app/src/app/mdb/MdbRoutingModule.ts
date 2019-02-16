@@ -15,13 +15,6 @@ import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
-import { SpaceSystemAlgorithmsTab } from './space-system-detail/SpaceSystemAlgorithmsTab';
-import { SpaceSystemChangelogTab } from './space-system-detail/SpaceSystemChangelogTab';
-import { SpaceSystemCommandsTab } from './space-system-detail/SpaceSystemCommandsTab';
-import { SpaceSystemContainersTab } from './space-system-detail/SpaceSystemContainersTab';
-import { SpaceSystemPage } from './space-system-detail/SpaceSystemPage';
-import { SpaceSystemParametersTab } from './space-system-detail/SpaceSystemParametersTab';
-import { SpaceSystemsPage } from './space-systems/SpaceSystemsPage';
 
 
 const routes = [{
@@ -32,39 +25,7 @@ const routes = [{
   children: [{
     path: '',
     pathMatch: 'full',
-    redirectTo: 'space-systems',
-  }, {
-    path: 'space-systems',
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        component: SpaceSystemsPage,
-      }, {
-        path: ':qualifiedName',
-        component: SpaceSystemPage,
-        children: [{
-          path: '',
-          pathMatch: 'full',
-          redirectTo: 'parameters'
-        }, {
-          path: 'algorithms',
-          component: SpaceSystemAlgorithmsTab,
-        }, {
-          path: 'changelog',
-          component: SpaceSystemChangelogTab,
-        }, {
-          path: 'commands',
-          component: SpaceSystemCommandsTab,
-        }, {
-          path: 'containers',
-          component: SpaceSystemContainersTab,
-        }, {
-          path: 'parameters',
-          component: SpaceSystemParametersTab,
-        }]
-      }
-    ]
+    redirectTo: 'parameters',
   }, {
     path: 'algorithms',
     pathMatch: 'full',
@@ -133,11 +94,4 @@ export const routingComponents = [
   ParameterDataTab,
   ParameterChartTab,
   ParameterSummaryTab,
-  SpaceSystemsPage,
-  SpaceSystemPage,
-  SpaceSystemAlgorithmsTab,
-  SpaceSystemChangelogTab,
-  SpaceSystemCommandsTab,
-  SpaceSystemContainersTab,
-  SpaceSystemParametersTab,
 ];
