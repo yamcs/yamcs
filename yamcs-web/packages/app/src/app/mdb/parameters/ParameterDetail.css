@@ -1,15 +1,23 @@
-.current-value-pane {
-  text-align: center;
-  padding: 12px;
-}
-
-.current-value-pane.has-alarm {
-  background-color: #feeef0;
-  border: 1px solid crimson;
-}
-
 .meter-size-constrainer {
   display: inline-block;
   width: 160px; /* about as large as the timestamp */
   position: relative;
+}
+
+.dl-horizontal dt {
+  text-align: left;
+}
+
+span.pval {
+  font-size: 16px;
+  line-height: 20px;
+  margin: -8px 0 16px;
+  bottom: -5px;
+  color: rgba(0,0,0,.987);
+  font-weight: 400;
+}
+
+.subtext {
+  font-size: smaller;
+  white-space: nowrap;
 }

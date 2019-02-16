@@ -142,6 +142,8 @@ message ParameterTypeInfo {
   repeated EnumValue enumValue = 5;
   optional AbsoluteTimeInfo absoluteTimeInfo = 6;
   repeated ContextAlarmInfo contextAlarm = 7;
+  repeated MemberInfo member = 8;
+  optional ArrayInfo arrayInfo = 9;
 }
 
 message AbsoluteTimeInfo {
@@ -150,6 +152,20 @@ message AbsoluteTimeInfo {
   optional double offset = 3;
   optional ParameterInfo offsetFrom = 4;
   optional string epoch = 5;
+}
+
+message MemberInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+}
+
+message ArrayInfo {
+  optional ParameterTypeInfo type = 1;
+  optional int32 dimensions = 2;
 }
 
 message UsedByInfo {
@@ -169,21 +185,21 @@ message ParameterInfo {
 }
 
 message ArgumentTypeInfo {
-    optional string engType = 1;
-    optional DataEncodingInfo dataEncoding = 2;
-    repeated UnitInfo unitSet = 3;
-    repeated EnumValue enumValue = 5;
-    optional double rangeMin = 6;
-    optional double rangeMax = 7;
+  optional string engType = 1;
+  optional DataEncodingInfo dataEncoding = 2;
+  repeated UnitInfo unitSet = 3;
+  repeated EnumValue enumValue = 5;
+  optional double rangeMin = 6;
+  optional double rangeMax = 7;
 }
 
 message ArgumentInfo {
-    optional string name = 1;
-    optional string description = 2;
-    //optional string type = 3;
-    optional string initialValue = 4;
-    // repeated UnitInfo unitSet = 5;
-    optional ArgumentTypeInfo type = 6;
+  optional string name = 1;
+  optional string description = 2;
+  //optional string type = 3;
+  optional string initialValue = 4;
+  // repeated UnitInfo unitSet = 5;
+  optional ArgumentTypeInfo type = 6;
 }
 
 message ArgumentAssignmentInfo {

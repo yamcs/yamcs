@@ -16,6 +16,7 @@ public class AggregateDataType extends NameDescription implements DataType {
     public AggregateDataType(String name) {
         super(name);
     }
+
     protected AggregateDataType(AggregateDataType t) {
         super(t);
         this.memberList = t.memberList;
@@ -32,21 +33,7 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     @Override
     public String getTypeAsString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("aggregate {");
-        boolean first = true;
-        for (Member m : getMemberList()) {
-            if (first) {
-                first = false;
-            } else {
-                sb.append("; ");
-            }
-            sb.append(m.getType().getName());
-            sb.append(" ");
-            sb.append(m.getName());
-        }
-        sb.append("}");
-        return sb.toString();
+        return "aggregate";
     }
 
     /**
@@ -86,8 +73,7 @@ public class AggregateDataType extends NameDescription implements DataType {
      * 
      * @param path
      *            - the path to be traversed. Its length has to be at least 1 - otherwise an
-     *            {@link IllegalArgumentException}
-     *            will be thrown.
+     *            {@link IllegalArgumentException} will be thrown.
      * @return the member obtained by traversing the path or null if not such member exist.
      */
     public Member getMember(String[] path) {
@@ -118,7 +104,7 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     /**
      * 
-     * @return the (unique) object encoding the member names 
+     * @return the (unique) object encoding the member names
      * 
      */
     public AggregateMemberNames getMemberNames() {

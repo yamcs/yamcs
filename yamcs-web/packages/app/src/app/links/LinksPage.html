@@ -41,7 +41,8 @@
             <button mat-stroked-button class="more"
                     *ngIf="row.hasChildren"
                     (click)="expandItem(row)">
-              <mat-icon>more_horiz</mat-icon>
+              <mat-icon *ngIf="row.expanded">expand_less</mat-icon>
+              <mat-icon *ngIf="!row.expanded">expand_more</mat-icon>
             </button>
           </td>
         </ng-container>

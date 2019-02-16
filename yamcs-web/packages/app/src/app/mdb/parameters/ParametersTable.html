@@ -23,15 +23,25 @@
       <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 400px">Name</th>
       <td mat-cell *matCellDef="let parameter">
         <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-          [queryParams]="{instance: instance.name}">
-          {{ shortName ? parameter.name : parameter.qualifiedName }}
-        </a>
+          [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
+        <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
+          <button mat-stroked-button class="more"
+                  (click)="parameter.expanded = !parameter.expanded">
+            <mat-icon *ngIf="parameter.expanded">expand_less</mat-icon>
+            <mat-icon *ngIf="!parameter.expanded">expand_more</mat-icon>
+          </button><br>
+          <ng-container *ngIf="parameter.expanded">
+            <ng-container *ngFor="let member of parameter.type.member">
+              &nbsp;&bull; {{ member.name }}<br>
+            </ng-container>
+          </ng-container>
+        </ng-container>
       </td>
     </ng-container>
 
     <ng-container matColumnDef="type">
       <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 120px">Type</th>
-      <td mat-cell *matCellDef="let parameter">{{ (parameter.type?.engType | titlecase) || '-' }}</td>
+      <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="units">

@@ -2,26 +2,35 @@ import { Observable } from 'rxjs';
 import { AlarmRange, ArgumentAssignment, NamedObjectId, Parameter } from './mdb';
 
 export interface Value {
-  type: 'FLOAT'
-  | 'DOUBLE'
-  | 'UINT32'
-  | 'SINT32'
+  type: 'AGGREGATE'
+  | 'ARRAY'
   | 'BINARY'
+  | 'BOOLEAN'
+  | 'DOUBLE'
+  | 'FLOAT'
+  | 'SINT32'
+  | 'SINT64'
   | 'STRING'
   | 'TIMESTAMP'
-  | 'UINT64'
-  | 'SINT64'
-  | 'BOOLEAN';
-  floatValue?: number;
-  doubleValue?: number;
-  sint32Value?: number;
-  uint32Value?: number;
+  | 'UINT32'
+  | 'UINT64';
+  aggregateValue?: AggregateValue;
+  arrayValue?: Value[];
   binaryValue?: string;
+  booleanValue?: boolean;
+  doubleValue?: number;
+  floatValue?: number;
+  sint32Value?: number;
+  sint64Value?: number;
   stringValue?: string;
   timestampValue?: number;
+  uint32Value?: number;
   uint64Value?: number;
-  sint64Value?: number;
-  booleanValue?: boolean;
+}
+
+export interface AggregateValue {
+  name: string[];
+  value: Value[];
 }
 
 export type EventSeverity =

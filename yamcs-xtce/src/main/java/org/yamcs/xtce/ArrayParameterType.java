@@ -1,14 +1,14 @@
 package org.yamcs.xtce;
 
 /**
- * Describe an array parameter type. 
- * The size and number of dimensions are described here. See ArrayParameterRefEntryType, NameReferenceType and ArrayDataType.
+ * Describe an array parameter type. The size and number of dimensions are described here. See
+ * ArrayParameterRefEntryType, NameReferenceType and ArrayDataType.
  * 
  * @author nm
  *
  */
 public class ArrayParameterType extends ArrayDataType implements ParameterType {
-    
+
     public ArrayParameterType(String name) {
         super(name);
     }
@@ -21,7 +21,7 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
 
     @Override
     public String getTypeAsString() {
-        return null;
+        return getElementType().getTypeAsString() + "[]";
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     public ArrayParameterType copy() {
         return new ArrayParameterType(this);
     }
-    
+
     @Override
     public void setInitialValue(String initialValue) {
     }
