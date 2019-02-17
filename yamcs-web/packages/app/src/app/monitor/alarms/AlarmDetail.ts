@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Alarm, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 
@@ -20,13 +21,13 @@ export class AlarmDetail implements OnChanges, OnDestroy {
 
   plotDataSource$ = new BehaviorSubject<DyDataSource | null>(null);
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, private synchronizer: Synchronizer) {
   }
 
   ngOnChanges() {
     this.disconnectCurrentDataSource();
 
-    const plotDataSource = new DyDataSource(this.yamcs);
+    const plotDataSource = new DyDataSource(this.yamcs, this.synchronizer);
     plotDataSource.addParameter(this.alarm.parameter);
 
     // TODO disabled because plot does not follow selection yet.

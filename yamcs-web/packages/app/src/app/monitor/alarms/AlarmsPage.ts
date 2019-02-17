@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatDialog, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Alarm, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -13,11 +13,15 @@ import { AlarmsDataSource } from './AlarmsDataSource';
   styleUrls: ['./AlarmsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlarmsPage implements OnInit, OnDestroy {
+export class AlarmsPage implements OnInit, AfterViewInit, OnDestroy {
+
+  @ViewChild(MatSort)
+  sort: MatSort;
 
   instance: Instance;
 
-  selectedAlarm$ = new BehaviorSubject<Alarm | null>(null);
+  // Alarm to show in detail pane (only on single selection)
+  detailAlarm$ = new BehaviorSubject<Alarm | null>(null);
 
   displayedColumns = [
     'select',
@@ -33,11 +37,20 @@ export class AlarmsPage implements OnInit, OnDestroy {
   dataSource: AlarmsDataSource;
   selection = new SelectionModel<Alarm>(true, []);
 
-  alarmDetailSubscription: Subscription;
+  private selectionSubscription: Subscription;
+  private alarmsSubscription: Subscription;
 
   constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
     title.setTitle('Alarms - Yamcs');
     this.instance = this.yamcs.getInstance();
+    this.selectionSubscription = this.selection.changed.subscribe(() => {
+      const selected = this.selection.selected;
+      if (selected.length === 1) {
+        this.detailAlarm$.next(selected[0]);
+      } else {
+        this.detailAlarm$.next(null);
+      }
+    });
   }
 
   // Used in table trackBy to prevent continuous row recreation
@@ -47,15 +60,35 @@ export class AlarmsPage implements OnInit, OnDestroy {
     this.dataSource = new AlarmsDataSource(this.yamcs);
     this.dataSource.loadAlarms('realtime');
 
-    this.alarmDetailSubscription = this.dataSource.alarms$.subscribe(alarms => {
-      const selectedAlarm = this.selectedAlarm$.value;
-      if (selectedAlarm) {
+    this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
+      // Update detail pane
+      const detailAlarm = this.detailAlarm$.value;
+      if (detailAlarm) {
         for (const alarm of alarms) {
-          if (this.isSameAlarm(alarm, selectedAlarm)) {
-            this.selectedAlarm$.next(alarm);
+          if (this.isSameAlarm(alarm, detailAlarm)) {
+            this.detailAlarm$.next(alarm);
+            break;
           }
         }
       }
+
+      // Adjust selection model (object identities may have changed)
+      const oldAlarms = this.selection.selected;
+      this.selection.clear();
+      for (const oldAlarm of oldAlarms) {
+        for (const newAlarm of alarms) {
+          if (this.isSameAlarm(oldAlarm, newAlarm)) {
+            this.selection.toggle(newAlarm);
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    this.sort.sortChange.subscribe(() => {
+      this.dataSource.setSort(this.sort.active, this.sort.direction);
     });
   }
 
@@ -78,9 +111,6 @@ export class AlarmsPage implements OnInit, OnDestroy {
   }
 
   toggleOne(row: Alarm) {
-    if (true) {
-      return;
-    }
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();
     }
@@ -88,23 +118,20 @@ export class AlarmsPage implements OnInit, OnDestroy {
   }
 
   acknowledgeSelectedAlarms() {
-    const dialogRef = this.dialog.open(AcknowledgeAlarmDialog, {
+    this.dialog.open(AcknowledgeAlarmDialog, {
       width: '400px',
+      data: {
+        alarms: this.selection.selected,
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // this.loadLayouts();
-      }
-    });
-  }
-
-  selectAlarm(alarm: Alarm) {
-    this.selectedAlarm$.next(alarm);
   }
 
   ngOnDestroy() {
-    if (this.alarmDetailSubscription) {
-      this.alarmDetailSubscription.unsubscribe();
+    if (this.selectionSubscription) {
+      this.selectionSubscription.unsubscribe();
+    }
+    if (this.alarmsSubscription) {
+      this.alarmsSubscription.unsubscribe();
     }
   }
 }

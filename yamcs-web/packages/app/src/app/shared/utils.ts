@@ -1,4 +1,5 @@
 import { Value } from '@yamcs/client';
+const PREVIEW_LENGTH = 5;
 
 /**
  * Deep clones an object.
@@ -96,4 +97,83 @@ export function generateRandomName() {
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   const animal = animals[Math.floor(Math.random() * animals.length)];
   return `${adjective}_${animal}`;
+}
+
+export function printValue(value: Value) {
+  if (value.type === 'AGGREGATE') {
+    let preview = '{';
+    if (value.aggregateValue) {
+      const n = Math.min(value.aggregateValue.name.length, PREVIEW_LENGTH);
+      for (let i = 0; i < n; i++) {
+        if (i !== 0) {
+          preview += ', ';
+        }
+        preview += printValueWithoutPreview(value.aggregateValue.value[i]);
+      }
+      if (n < value.aggregateValue.value.length) {
+        preview += `, …`;
+      }
+    }
+    return preview + '}';
+  } else if (value.type === 'ARRAY') {
+    let preview = '[';
+    if (value.arrayValue) {
+      const n = Math.min(value.arrayValue.length, PREVIEW_LENGTH);
+      for (let i = 0; i < n; i++) {
+        if (i !== 0) {
+          preview += ', ';
+        }
+        preview += printValueWithoutPreview(value.arrayValue[i]);
+      }
+      if (n < value.arrayValue.length) {
+        preview += ', …]';
+      }
+      preview += ` (${value.arrayValue.length})`;
+    } else {
+      preview += ' (0)';
+    }
+    return preview;
+  } else {
+    return printValueWithoutPreview(value);
+  }
+}
+
+function printValueWithoutPreview(value: Value): string {
+  switch (value.type) {
+    case 'AGGREGATE':
+      return 'aggregate';
+    case 'ARRAY':
+      return 'array';
+    case 'BOOLEAN':
+      return '' + value.booleanValue;
+    case 'FLOAT':
+      return '' + value.floatValue;
+    case 'DOUBLE':
+      return '' + value.doubleValue;
+    case 'UINT32':
+      return '' + value.uint32Value;
+    case 'SINT32':
+      return '' + value.sint32Value;
+    case 'BINARY':
+      return '<binary>';
+    case 'STRING':
+      return value.stringValue!;
+    case 'TIMESTAMP':
+      return printDateTime(value.stringValue!);
+    case 'UINT64':
+      return '' + value.uint64Value;
+    case 'SINT64':
+      return '' + value.sint64Value;
+    default:
+      return 'Unsupported data type';
+  }
+}
+
+export function printDateTime(date: Date | string, addTimezone = true): string {
+  if (typeof date === 'string') {
+    return date.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+  } else {
+    const dateString = date.toISOString();
+    return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+  }
 }

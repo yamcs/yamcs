@@ -15,6 +15,7 @@ import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
+import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
@@ -25,6 +26,7 @@ import { ValuePipe } from './pipes/ValuePipe';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 import { ActionLink } from './template/ActionLink';
+import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
 import { YaDataTableComponent } from './template/DataTableDirective';
@@ -91,6 +93,7 @@ const sharedDirectives = [
 
 const sharedComponents = [
   ActionLink,
+  Ago,
   AlarmLevel,
   ColumnChooser,
   DetailToolbar,
@@ -120,6 +123,7 @@ const sharedComponents = [
 ];
 
 const pipes = [
+  AgoPipe,
   DateTimePipe,
   FilenamePipe,
   FormatBytesPipe,

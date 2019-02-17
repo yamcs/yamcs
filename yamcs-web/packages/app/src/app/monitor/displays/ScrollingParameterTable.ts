@@ -3,6 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material';
 import { Instance, ParameterValue } from '@yamcs/client';
 import { Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 
@@ -50,18 +51,18 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
   bufferSizeControl = new FormControl('10');
   private bufferSizeControlSubscription: Subscription;
 
-  private dataSynchronizer: number;
+  private syncSubscription: Subscription;
 
   displayedColumns = [
     'generationTimeUTC',
   ];
 
-  constructor(private changeDetector: ChangeDetectorRef) {
-    this.dataSynchronizer = window.setInterval(() => {
+  constructor(private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
+    this.syncSubscription = synchronizer.syncFast(() => {
       if (!this.paused) {
         this.refreshTable();
       }
-    }, 500 /* update rate */);
+    });
 
     this.bufferSizeControl.valueChanges.subscribe(() => {
       const val = this.bufferSizeControl.value;
@@ -114,8 +115,8 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.dataSynchronizer) {
-      window.clearInterval(this.dataSynchronizer);
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
     if (this.bufferSizeControlSubscription) {
       this.bufferSizeControlSubscription.unsubscribe();

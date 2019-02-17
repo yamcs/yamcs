@@ -2,6 +2,8 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Instance, ParameterValue } from '@yamcs/client';
+import { Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 
@@ -43,7 +45,7 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
 
   dataSource = new MatTableDataSource<ParameterTableRecord>([]);
 
-  private dataSynchronizer: number;
+  private syncSubscription: Subscription;
 
   private defaultColumns = [
     'severity',
@@ -56,12 +58,12 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
 
   displayedColumns: string[];
 
-  constructor(private changeDetector: ChangeDetectorRef) {
-    this.dataSynchronizer = window.setInterval(() => {
+  constructor(private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
+    this.syncSubscription = synchronizer.syncFast(() => {
       if (!this.paused) {
         this.refreshTable();
       }
-    }, 500 /* update rate */);
+    });
   }
 
   ngOnInit() {
@@ -105,8 +107,8 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.dataSynchronizer) {
-      window.clearInterval(this.dataSynchronizer);
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
   }
 }

@@ -272,3 +272,7 @@ button.more {
   margin-left: 0.5em;
   padding: 0 8px;
 }
+
+.hide {
+  display: none;
+}

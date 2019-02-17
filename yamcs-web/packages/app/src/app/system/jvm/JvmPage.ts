@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { GeneralInfo, Parameter } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 
@@ -22,7 +23,7 @@ export class JvmPage implements OnDestroy {
   jvmMemoryUsedDataSource: DyDataSource;
   jvmThreadCountDataSource: DyDataSource;
 
-  constructor(yamcs: YamcsService, title: Title, private authService: AuthService) {
+  constructor(yamcs: YamcsService, title: Title, private authService: AuthService, synchronizer: Synchronizer) {
     title.setTitle('JVM Stats - Yamcs');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
@@ -38,14 +39,14 @@ export class JvmPage implements OnDestroy {
 
     Promise.all([this.jvmMemoryUsedParameter$, this.jvmTotalMemoryParameter$]).then(results => {
       if (results[0] && results[1]) {
-        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs);
+        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs, synchronizer);
         this.jvmMemoryUsedDataSource.addParameter(results[0]!, results[1]!);
       }
     });
 
     this.jvmThreadCountParameter$.then(parameter => {
       if (parameter) {
-        this.jvmThreadCountDataSource = new DyDataSource(yamcs);
+        this.jvmThreadCountDataSource = new DyDataSource(yamcs, synchronizer);
         this.jvmThreadCountDataSource.addParameter(parameter);
       }
     });

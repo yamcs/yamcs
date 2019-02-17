@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import * as utils from '../utils';
 
 @Pipe({ name: 'datetime' })
 export class DateTimePipe implements PipeTransform {
@@ -7,11 +8,6 @@ export class DateTimePipe implements PipeTransform {
     if (!date) {
       return null;
     }
-    if (typeof date === 'string') {
-      return date.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
-    } else {
-      const dateString = date.toISOString();
-      return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
-    }
+    return utils.printDateTime(date, addTimezone);
   }
 }

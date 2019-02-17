@@ -38,6 +38,14 @@ export type EventSeverity =
   'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
   ;
 
+export type MonitoringResult = 'DISABLED'
+  | 'IN_LIMITS'
+  | 'WATCH'
+  | 'WARNING'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE';
+
 export interface Event {
   source: string;
   generationTimeUTC: string;
@@ -68,7 +76,7 @@ export interface ParameterValue {
 
   acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
   processingStatus: boolean;
-  monitoringResult: any;
+  monitoringResult: MonitoringResult;
   alarmRange: AlarmRange[];
   rangeCondition?: 'LOW' | 'HIGH';
   expireMillis: number;
@@ -184,6 +192,11 @@ export interface GetAlarmsOptions {
   pos?: number;
   limit?: number;
   order?: 'asc' | 'desc';
+}
+
+export interface EditAlarmOptions {
+  state: 'acknowledged' | 'unacknowledged';
+  comment?: string;
 }
 
 export interface GetCommandHistoryOptions {

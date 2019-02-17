@@ -10,6 +10,7 @@ import { rowAnimation } from '../../animations';
 import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { Option, Select } from '../../shared/template/Select';
@@ -115,6 +116,7 @@ export class EventsPage {
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
+    synchronizer: Synchronizer,
   ) {
     title.setTitle('Events - Yamcs');
 
@@ -159,7 +161,7 @@ export class EventsPage {
       }
     });
 
-    this.dataSource = new EventsDataSource(yamcs);
+    this.dataSource = new EventsDataSource(yamcs, synchronizer);
 
     this.initializeOptions();
     this.loadData();

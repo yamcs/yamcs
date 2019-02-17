@@ -1,7 +1,7 @@
-import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
 import { StreamData } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { StreamBuffer } from './StreamBuffer';
 
@@ -20,19 +20,19 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
   private streamSubscription: Subscription;
   private streamBuffer = new StreamBuffer();
 
-  private synchronizer: number;
+  private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, private stream: string) {
+  constructor(private yamcs: YamcsService, synchronizer: Synchronizer, private stream: string) {
     super();
-    this.synchronizer = window.setInterval(() => {
+    this.syncSubscription = synchronizer.sync(() => {
       if (this.streamBuffer.dirty && !this.loading$.getValue()) {
         this.streamData$.next(this.streamBuffer.snapshot().reverse());
         this.streamBuffer.dirty = false;
       }
-    }, 1000 /* update rate */);
+    });
   }
 
-  connect(collectionViewer: CollectionViewer) {
+  connect() {
     return this.streamData$;
   }
 
@@ -63,12 +63,12 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
     this.streaming$.next(false);
   }
 
-  disconnect(collectionViewer: CollectionViewer) {
+  disconnect() {
     if (this.streamSubscription) {
       this.streamSubscription.unsubscribe();
     }
-    if (this.synchronizer) {
-      window.clearInterval(this.synchronizer);
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
     this.streamData$.complete();
     this.loading$.complete();

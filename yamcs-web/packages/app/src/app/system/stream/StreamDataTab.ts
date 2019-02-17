@@ -3,6 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, QueryList, ViewChild
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { rowAnimation } from '../../animations';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { StreamDataDataSource } from './StreamDataDataSource';
 
@@ -21,10 +22,10 @@ export class StreamDataTab implements AfterViewInit {
   @ViewChildren(CdkColumnDef)
   private columnDefinitions: QueryList<CdkColumnDef>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, synchronizer: Synchronizer) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.dataSource = new StreamDataDataSource(yamcs, name);
+    this.dataSource = new StreamDataDataSource(yamcs, synchronizer, name);
     this.availableColumns$ = this.dataSource.columns$;
   }
 
