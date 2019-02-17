@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
 import { User } from '../../shared/User';
+import { ConfigService } from './ConfigService';
 import { YamcsService } from './YamcsService';
 
 export interface Claims {
@@ -18,13 +18,11 @@ export interface Claims {
 })
 export class AuthService {
 
-  public authInfo$ = new BehaviorSubject<AuthInfo | null>(null);
+  private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
 
-  constructor(private yamcsService: YamcsService, private router: Router) {
-    yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
-      this.authInfo$.next(authInfo);
-    });
+  constructor(private yamcsService: YamcsService, configService: ConfigService,  private router: Router) {
+    this.authInfo = configService.getAuthInfo();
 
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
@@ -86,12 +84,7 @@ export class AuthService {
    * The promise will be rejected when the automatic login failed.
    */
   public async loginAutomatically(): Promise<any> {
-    const authInfo = await this.authInfo$.pipe(
-      filter(x => x !== null),
-      take(1),
-    ).toPromise();
-
-    if (!authInfo!.requireAuthentication) {
+    if (!this.authInfo.requireAuthentication) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const response = await fetch('/api/user');
@@ -142,7 +135,7 @@ export class AuthService {
     // This is done before any other flows, because it does not
     // require user intervention when successful.
     let spnego = false;
-    for (const flow of authInfo!.flow) {
+    for (const flow of this.authInfo.flow) {
       if (flow.type === 'SPNEGO') {
         spnego = true;
       }

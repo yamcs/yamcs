@@ -1,5 +1,6 @@
 package org.yamcs.web;
 
+import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.web.rest.Router;
 
 import io.netty.channel.ChannelInitializer;
@@ -14,11 +15,14 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
     private Router apiRouter;
     private CorsConfig corsConfig;
     private WebSocketConfig wsConfig;
+    private WebsiteConfig websiteConfig;
 
-    public HttpServerChannelInitializer(Router apiRouter, CorsConfig corsConfig, WebSocketConfig wsConfig) {
+    public HttpServerChannelInitializer(Router apiRouter, CorsConfig corsConfig, WebSocketConfig wsConfig,
+            WebsiteConfig websiteConfig) {
         this.apiRouter = apiRouter;
         this.corsConfig = corsConfig;
         this.wsConfig = wsConfig;
+        this.websiteConfig = websiteConfig;
     }
 
     @Override
@@ -30,6 +34,6 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         }
 
         // this has to be the last handler in the pipeline
-        pipeline.addLast(new HttpRequestHandler(apiRouter, wsConfig));
+        pipeline.addLast(new HttpRequestHandler(apiRouter, wsConfig, websiteConfig));
     }
 }

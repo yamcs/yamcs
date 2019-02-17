@@ -4,6 +4,7 @@ import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Instance, ObjectInfo, StorageClient } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateLayoutDialog } from './CreateLayoutDialog';
 import { RenameLayoutDialog } from './RenameLayoutDialog';
@@ -16,6 +17,7 @@ import { RenameLayoutDialog } from './RenameLayoutDialog';
 export class LayoutsPage {
 
   instance: Instance;
+  bucketInstance: string;
 
   displayedColumns = ['select', 'name', 'visibility', 'modified', 'actions'];
   dataSource = new MatTableDataSource<ObjectInfo>([]);
@@ -25,19 +27,24 @@ export class LayoutsPage {
 
   constructor(
     title: Title,
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
+    private configService: ConfigService,
   ) {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
+    this.bucketInstance = this.instance.name;
+    if (configService.getDisplayScope() === 'GLOBAL') {
+      this.bucketInstance = '_global';
+    }
     this.storageClient = yamcs.createStorageClient();
     this.loadLayouts();
   }
 
   private loadLayouts() {
     const username = this.authService.getUser()!.getUsername();
-    this.storageClient.listObjects(this.instance.name, `user.${username}`, {
+    this.storageClient.listObjects(this.bucketInstance, `user.${username}`, {
       prefix: 'layouts',
     }).then(response => {
       this.dataSource.data = response.object || [];
@@ -75,7 +82,7 @@ export class LayoutsPage {
     if (confirm('Are you sure you want to delete the selected layouts?')) {
       const deletePromises = [];
       for (const object of this.selection.selected) {
-        const promise = this.storageClient.deleteObject(this.instance.name, bucket, object.name);
+        const promise = this.storageClient.deleteObject(this.bucketInstance, bucket, object.name);
         deletePromises.push(promise);
       }
 

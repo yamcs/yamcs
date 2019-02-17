@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@an
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Instance, StorageClient } from '@yamcs/client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -30,6 +31,7 @@ export class CreateDisplayDialog {
     yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
+    private configService: ConfigService,
   ) {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
@@ -38,7 +40,6 @@ export class CreateDisplayDialog {
     });
     this.filenameForm = formBuilder.group({
       path: [data.path, Validators.required],
-      scope: ['global', Validators.required],
       name: ['', [Validators.required, Validators.pattern(/.*\.par/i)]],
     });
   }
@@ -55,7 +56,6 @@ export class CreateDisplayDialog {
 
   save() {
     let path: string = this.filenameForm.get('path')!.value.trim();
-    const scope: string = this.filenameForm.get('scope')!.value.trim();
     const name: string = this.filenameForm.get('name')!.value.trim();
 
     // Full path should not have a leading slash
@@ -75,14 +75,12 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
-    if (scope === 'global') {
-      this.storageClient.uploadObject('_global', 'displays', fullPath, b).then(() => {
-        this.dialogRef.close(fullPath);
-      });
-    } else {
-      this.storageClient.uploadObject(this.instance.name, 'displays', fullPath, b).then(() => {
-        this.dialogRef.close(fullPath);
-      });
+    let instance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      instance = '_global';
     }
+    this.storageClient.uploadObject(instance, 'displays', fullPath, b).then(() => {
+      this.dialogRef.close(fullPath);
+    });
   }
 }

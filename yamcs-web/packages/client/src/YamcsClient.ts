@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo, WebsiteConfig } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -28,6 +28,11 @@ export default class YamcsClient implements HttpHandler {
   async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient!.getInstanceUpdates();
+  }
+
+  async getWebsiteConfig() {
+    const response = await this.doFetch(`${this.baseUrl}/websiteConfig`);
+    return await response.json() as WebsiteConfig;
   }
 
   /**

@@ -7,6 +7,7 @@ import { Instance, ListObjectsOptions, ListObjectsResponse, StorageClient } from
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
 import { RenameDisplayDialog } from './RenameDisplayDialog';
@@ -20,10 +21,11 @@ import { UploadFilesDialog } from './UploadFilesDialog';
 export class DisplayFolderPage implements OnDestroy {
 
   instance: Instance;
+  bucketInstance: string;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
-  displayedColumns = ['select', 'name', 'type', 'scope', 'modified', 'actions'];
+  displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
@@ -32,15 +34,21 @@ export class DisplayFolderPage implements OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private configService: ConfigService,
   ) {
     title.setTitle('Displays - Yamcs');
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
+
+    this.bucketInstance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      this.bucketInstance = '_global';
+    }
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -58,7 +66,8 @@ export class DisplayFolderPage implements OnDestroy {
     if (routeSegments.length) {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
-    this.storageClient.listObjects(this.instance.name, 'displays', options).then(dir => {
+
+    this.storageClient.listObjects(this.bucketInstance, 'displays', options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -143,7 +152,7 @@ export class DisplayFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects(this.instance.name, 'displays', {
+        findObjectPromises.push(this.storageClient.listObjects(this.bucketInstance, 'displays', {
           prefix: item.name,
         }).then(response => {
           const objects = response.object || [];
@@ -158,7 +167,7 @@ export class DisplayFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject(this.instance.name, 'displays', object));
+          deletePromises.push(this.storageClient.deleteObject(this.bucketInstance, 'displays', object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -184,7 +193,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
       if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-        this.storageClient.deleteObject(this.instance.name, 'displays', item.name).then(() => {
+        this.storageClient.deleteObject(this.bucketInstance, 'displays', item.name).then(() => {
           this.loadCurrentFolder();
         });
       }

@@ -1,6 +1,14 @@
 import { Observable } from 'rxjs';
 import { CommandQueueEntry, Value } from './monitoring';
 
+export interface WebsiteConfig {
+  auth: AuthInfo;
+  displayScope: BucketScope;
+  stackScope: BucketScope;
+}
+
+export type BucketScope = 'GLOBAL' | 'INSTANCE';
+
 export interface AuthInfo {
   requireAuthentication: boolean;
   flow: AuthFlow[];

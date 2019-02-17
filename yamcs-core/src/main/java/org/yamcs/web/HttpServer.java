@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
+import org.yamcs.protobuf.Web.WebsiteConfig;
+import org.yamcs.protobuf.Web.WebsiteConfig.BucketScope;
 import org.yamcs.web.rest.Router;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -65,6 +67,8 @@ public class HttpServer extends AbstractService implements YamcsService {
     private CorsConfig corsConfig;
 
     private WebSocketConfig wsConfig;
+
+    private WebsiteConfig websiteConfig;
 
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
@@ -142,6 +146,34 @@ public class HttpServer extends AbstractService implements YamcsService {
             corsConfig = corsb.build();
         }
 
+        WebsiteConfig.Builder configb = WebsiteConfig.newBuilder()
+                .setDisplayScope(BucketScope.GLOBAL)
+                .setStackScope(BucketScope.GLOBAL);
+        if (args.containsKey("website")) {
+            Map<String, Object> ywebsite = YConfiguration.getMap(args, "website");
+            if (ywebsite.containsKey("displayScope")) {
+                switch (YConfiguration.getString(ywebsite, "displayScope")) {
+                case "INSTANCE":
+                    configb.setDisplayScope(BucketScope.INSTANCE);
+                    break;
+                case "GLOBAL":
+                    configb.setDisplayScope(BucketScope.GLOBAL);
+                    break;
+                }
+            }
+            if (ywebsite.containsKey("stackScope")) {
+                switch (YConfiguration.getString(ywebsite, "stackScope")) {
+                case "INSTANCE":
+                    configb.setStackScope(BucketScope.INSTANCE);
+                    break;
+                case "GLOBAL":
+                    configb.setStackScope(BucketScope.GLOBAL);
+                    break;
+                }
+            }
+        }
+        websiteConfig = configb.build();
+
         wsConfig = new WebSocketConfig();
         if (args.containsKey("webSocket")) {
             Map<String, Object> wsArgs = YConfiguration.getMap(args, "webSocket");
@@ -192,7 +224,7 @@ public class HttpServer extends AbstractService implements YamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(apiRouter, corsConfig, wsConfig));
+                .childHandler(new HttpServerChannelInitializer(apiRouter, corsConfig, wsConfig, websiteConfig));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();

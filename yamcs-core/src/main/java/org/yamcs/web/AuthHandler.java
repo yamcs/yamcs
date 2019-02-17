@@ -85,18 +85,23 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
      */
     private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         if (req.method() == HttpMethod.GET) {
-            AuthInfo.Builder responseb = AuthInfo.newBuilder();
-            responseb.setRequireAuthentication(SecurityStore.getInstance().isEnabled());
-            for (AuthModule authModule : SecurityStore.getInstance().getAuthModules()) {
-                if (authModule instanceof SpnegoAuthModule) {
-                    responseb.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
-                }
-            }
-            responseb.addFlow(AuthFlow.newBuilder().setType(Type.PASSWORD));
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
+            AuthInfo info = createAuthInfo();
+            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, info, true);
         } else {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
         }
+    }
+
+    public static AuthInfo createAuthInfo() {
+        AuthInfo.Builder infob = AuthInfo.newBuilder();
+        infob.setRequireAuthentication(SecurityStore.getInstance().isEnabled());
+        for (AuthModule authModule : SecurityStore.getInstance().getAuthModules()) {
+            if (authModule instanceof SpnegoAuthModule) {
+                infob.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
+            }
+        }
+        infob.addFlow(AuthFlow.newBuilder().setType(Type.PASSWORD));
+        return infob.build();
     }
 
     /**

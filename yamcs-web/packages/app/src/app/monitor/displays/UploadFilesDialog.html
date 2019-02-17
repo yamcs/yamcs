@@ -11,12 +11,6 @@
       Path
       <input type="text" formControlName="path">
     </label>
-    <br>
-    <label>
-      Scope<br>
-      <input type="radio" formControlName="scope" value="global"> Global
-      <input type="radio" formControlName="scope" value="instance"> Instance
-    </label>
   </form>
   <app-dots *ngIf="uploading$ | async"></app-dots>
   <p>&nbsp;</p>

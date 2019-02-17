@@ -180,3 +180,14 @@ message TokenResponse {
   optional string refresh_token = 4;
   optional yamcsManagement.UserInfo user = 5;
 }
+
+message WebsiteConfig {
+  enum BucketScope {
+    GLOBAL = 1;
+    INSTANCE = 2;
+  }
+  optional AuthInfo auth = 1;
+  optional BucketScope displayScope = 2;
+  optional BucketScope stackScope = 3;
+}
+

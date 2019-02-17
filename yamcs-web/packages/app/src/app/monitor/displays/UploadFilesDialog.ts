@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -25,20 +26,19 @@ export class UploadFilesDialog {
     private dialogRef: MatDialogRef<UploadFilesDialog>,
     formBuilder: FormBuilder,
     yamcs: YamcsService,
+    private configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
     this.formGroup = formBuilder.group({
       path: [data.path, Validators.required],
-      scope: ['global', Validators.required],
       files: [null, Validators.required],
     });
   }
 
   save() {
     let path: string = this.formGroup.get('path')!.value.trim();
-    const scope: string = this.formGroup.get('scope')!.value.trim();
 
     // Full path should not have a leading slash
     if (path.startsWith('/')) {
@@ -57,13 +57,12 @@ export class UploadFilesDialog {
         const file = files[key];
         const fullPath = path ? path + '/' + file.name : file.name;
 
-        if (scope === 'global') {
-          const promise = this.storageClient.uploadObject('_global', 'displays', fullPath, file);
-          uploadPromises.push(promise);
-        } else {
-          const promise = this.storageClient.uploadObject(this.instance.name, 'displays', fullPath, file);
-          uploadPromises.push(promise);
+        let instance = this.instance.name;
+        if (this.configService.getDisplayScope() === 'GLOBAL') {
+          instance = '_global';
         }
+        const promise = this.storageClient.uploadObject(instance, 'displays', fullPath, file);
+        uploadPromises.push(promise);
       }
     }
 

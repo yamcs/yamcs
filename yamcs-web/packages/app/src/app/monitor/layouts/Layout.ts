@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewRef } from '@angular/core';
 import { Instance, ListObjectsOptions, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from './DisplayFolder';
 import { Coordinates, Frame } from './Frame';
@@ -38,6 +39,7 @@ export class Layout implements OnInit, OnDestroy {
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
   private instance: Instance;
+  private bucketInstance: string;
   private storageClient: StorageClient;
 
   private componentsById = new Map<string, ComponentRef<Frame>>();
@@ -52,14 +54,19 @@ export class Layout implements OnInit, OnDestroy {
   constructor(
     private yamcs: YamcsService,
     private componentFactoryResolver: ComponentFactoryResolver,
+    configService: ConfigService,
   ) {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
+    this.bucketInstance = this.instance.name;
+    if (configService.getDisplayScope() === 'GLOBAL') {
+      this.bucketInstance = '_global';
+    }
   }
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
-    this.storageClient.listObjects(this.instance.name, 'displays', {
+    this.storageClient.listObjects(this.bucketInstance, 'displays', {
       delimiter: '/',
     }).then(response => {
       this.currentFolder$.next({
@@ -105,7 +112,7 @@ export class Layout implements OnInit, OnDestroy {
     if (path) {
       options.prefix = path;
     }
-    this.storageClient.listObjects(this.instance.name, 'displays', options).then(response => {
+    this.storageClient.listObjects(this.bucketInstance, 'displays', options).then(response => {
       this.currentFolder$.next({
         location: path,
         prefixes: response.prefix || [],

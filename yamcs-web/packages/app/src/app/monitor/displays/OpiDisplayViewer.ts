@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } 
 import { Router } from '@angular/router';
 import { NavigationHandler, OpiDisplay } from '@yamcs/displays';
 import { Subscription } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DefaultNavigationHandler } from './DefaultNavigationHandler';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
@@ -39,6 +40,7 @@ export class OpiDisplayViewer implements Viewer, OnDestroy {
 
   constructor(
     private yamcs: YamcsService,
+    private configService: ConfigService,
     private router: Router,
   ) { }
 
@@ -56,7 +58,7 @@ export class OpiDisplayViewer implements Viewer, OnDestroy {
     }
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
-    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
+    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.configService, this.router);
     this.display = new OpiDisplay(objectName, this.navigationHandler, container, displayCommunicator);
     return this.display.parseAndDraw(objectName).then(() => {
       const ids = this.display.getParameterIds();
