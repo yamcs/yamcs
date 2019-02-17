@@ -4,7 +4,7 @@
     {{ column.name }}
   </h6>
   <div class="block">
-      {{ (getColumnValue(record, column.name) | value) || '-' }}
+    {{ (record.column | columnValue:column.name | value) || '-' }}
   </div>
 </ng-container>
 
@@ -12,10 +12,16 @@
   <h6>{{ column.name }}</h6>
   <div class="block">
     <ng-container *ngIf="column.type !== 'BINARY' && !column.type.startsWith('PROTOBUF')">
-      {{ (getColumnValue(record, column.name) | value) || '-' }}
+      {{ (record.column | columnValue:column.name | value) || '-' }}
     </ng-container>
     <ng-container *ngIf="column.type === 'BINARY' || column.type.startsWith('PROTOBUF')">
-      <app-hex [base64String]="getBinaryColumnValue(record, column.name)"></app-hex>
+      <ng-container *ngIf="(record.column | columnValue:column.name) as value; else dash">
+        <app-hex [base64String]="value.binaryValue"></app-hex>
+      </ng-container>
     </ng-container>
   </div>
 </ng-container>
+
+<p>&nbsp;</p>
+
+<ng-template #dash>-</ng-template>

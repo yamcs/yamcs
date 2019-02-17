@@ -1,15 +1,35 @@
-<div class="panel-content">
-  <table mat-table #table [dataSource]="dataSource" class="ya-data-table">
+<div class="detail">
+  <ng-container *ngIf="selectedStreamData$ | async as selectedStreamData; else noSelection">
+    <app-detail-toolbar>
+      Tuple
+    </app-detail-toolbar>
+    <div style="padding: 0 16px">
+      <app-stream-data [streamData]="selectedStreamData">
+      </app-stream-data>
+    </div>
+  </ng-container>
+  <ng-template #noSelection>
+    <app-detail-toolbar>
+      Select a tuple
+    </app-detail-toolbar>
+  </ng-template>
+</div>
+<div class="data-table-wrapper">
+  <div class="panel-content">
+    <table mat-table #table [dataSource]="dataSource" class="ya-data-table">
 
-    <ng-container *ngFor="let column of (availableColumns$ | async)" [cdkColumnDef]="column">
-      <th mat-header-cell *cdkHeaderCellDef style="white-space: nowrap">{{ column }}</th>
-      <td mat-cell *cdkCellDef="let item">
-        {{ (item.column | columnValue:column | value) || '-' }}
-      </td>
-    </ng-container>
+      <ng-container *ngFor="let column of (availableColumns$ | async)" [cdkColumnDef]="column">
+        <th mat-header-cell *cdkHeaderCellDef style="white-space: nowrap">{{ column }}</th>
+        <td mat-cell *cdkCellDef="let item">
+          {{ (item.column | columnValue:column | value) || '-' }}
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-            [@rowAnimation]="row.animate"></tr>
-  </table>
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+              [@rowAnimation]="row.animate"
+              [ngClass]="{selected: (row === (selectedStreamData$ | async))}"
+              (click)="selectStreamData(row)"></tr>
+    </table>
+  </div>
 </div>

@@ -19,6 +19,5 @@
 }
 
 .data-table-wrapper tr:hover td {
-  background: #fafafa;
   cursor: pointer;
 }
