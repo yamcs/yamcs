@@ -35,9 +35,9 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     private List<WebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
 
-    public ConnectedWebSocketClient(User user, String applicationName, Processor processor,
+    public ConnectedWebSocketClient(User user, String applicationName, String address, Processor processor,
             WebSocketFrameHandler wsHandler) {
-        super(user, applicationName, processor);
+        super(user, applicationName, address, processor);
         this.wsHandler = wsHandler;
 
         // Built-in resources, we could consider moving this to services so that

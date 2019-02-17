@@ -14,16 +14,18 @@ public class ConnectedClient {
 
     private User user;
     private String applicationName;
+    private String address;
     private long loginTime;
     private Processor processor;
 
-    public ConnectedClient(User user, String applicationName) {
-        this(user, applicationName, null);
+    public ConnectedClient(User user, String applicationName, String address) {
+        this(user, applicationName, address, null);
     }
 
-    public ConnectedClient(User user, String applicationName, Processor processor) {
+    public ConnectedClient(User user, String applicationName, String address, Processor processor) {
         this.user = user;
         this.applicationName = applicationName;
+        this.address = address;
         this.processor = processor;
         loginTime = TimeEncoding.getWallclockTime();
     }
@@ -48,6 +50,10 @@ public class ConnectedClient {
      */
     public String getApplicationName() {
         return applicationName;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     /**

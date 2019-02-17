@@ -86,6 +86,7 @@ export interface ClientInfo {
   instance: string;
   username: string;
   applicationName: string;
+  address: string;
   processorName: string;
   state: 'CONNECTED' | 'DISCONNECTED';
   loginTimeUTC: string;
