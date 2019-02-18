@@ -54,6 +54,7 @@ public class AosFrameDecoderTest {
 
     AosManagedParameters getParams() {
         Map<String, Object> m = new HashMap<>();
+        m.put("spacecraftId", 3);
         m.put("frameLength", 128);
         m.put("errorCorrection", "CRC16");
         m.put("insertZoneLength", 0);
@@ -82,7 +83,7 @@ public class AosFrameDecoderTest {
 
     }
 
-    static byte[] intToByteArray(int[] b) {
+    public static byte[] intToByteArray(int[] b) {
         byte[] data = new byte[b.length];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) b[i];

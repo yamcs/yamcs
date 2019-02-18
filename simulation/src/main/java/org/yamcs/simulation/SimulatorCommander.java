@@ -43,6 +43,7 @@ public class SimulatorCommander extends ProcessRunner {
         frameSpec.addOption("tmHost", OptionType.STRING);
         frameSpec.addOption("tmFrameLength", OptionType.INTEGER);
         frameSpec.addOption("tmFrameFreq", OptionType.FLOAT);
+        frameSpec.addOption("tcPort", OptionType.INTEGER);
 
         Spec perfTestSpec = new Spec();
         perfTestSpec.addOption("numPackets", OptionType.INTEGER);
@@ -91,12 +92,14 @@ public class SimulatorCommander extends ProcessRunner {
             String tmFrameHost = frameArgs.getString("tmHost", defaultOptions.tmFrameHost);
             int tmFrameSize = frameArgs.getInt("tmFrameLength", defaultOptions.tmFrameLength);
             double tmFrameFreq = frameArgs.getDouble("tmFrameFreq", defaultOptions.tmFrameFreq);
+            int tcFramePort = frameArgs.getInt("tcFramePort", defaultOptions.tcFramePort);
+            
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
                     "--tm-frame-host", "" + tmFrameHost,
                     "--tm-frame-port", "" + tmFramePort,
+                    "--tc-frame-port", "" + tcFramePort,
                     "--tm-frame-length", "" + tmFrameSize,
                     "--tm-frame-freq", "" + tmFrameFreq));
-
         }
         if (config.containsKey("perfTest")) {
             YConfiguration yamcsArgs = config.getConfig("perfTest");
@@ -170,30 +173,34 @@ public class SimulatorCommander extends ProcessRunner {
         Simulator simulator = new Simulator(new File("losData"), runtimeOptions.tmPort,
                 runtimeOptions.tcPort, runtimeOptions.losPort);
         services.add(simulator);
-        TmTcLink tmLink = new TmTcLink("TM", simulator, runtimeOptions.tmPort);
+        TcpTmTcLink tmLink = new TcpTmTcLink("TM", simulator, runtimeOptions.tmPort);
         services.add(tmLink);
         simulator.setTmLink(tmLink);
 
-        TmTcLink tm2Link = new TmTcLink("TM2", simulator, runtimeOptions.tm2Port);
+        TcpTmTcLink tm2Link = new TcpTmTcLink("TM2", simulator, runtimeOptions.tm2Port);
         services.add(tm2Link);
         simulator.setTm2Link(tm2Link);
 
-        TmTcLink losLink = new TmTcLink("LOS", simulator, runtimeOptions.losPort);
+        TcpTmTcLink losLink = new TcpTmTcLink("LOS", simulator, runtimeOptions.losPort);
         services.add(losLink);
         simulator.setLosLink(losLink);
 
-        services.add(new TmTcLink("TC", simulator, runtimeOptions.tcPort));
+        services.add(new TcpTmTcLink("TC", simulator, runtimeOptions.tcPort));
 
         TelnetServer telnetServer = new TelnetServer(simulator);
         telnetServer.setPort(runtimeOptions.telnetPort);
         services.add(telnetServer);
 
         if (runtimeOptions.tmFrameLength > 0) {
-            UdpFrameLink frameLink = new UdpFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
+            UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(simulator, runtimeOptions.tcFramePort);
+            UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
                     runtimeOptions.tmFramePort,
-                    runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq);
+                    runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
+                        return tcFrameLink.getClcw();
+                    });
+            services.add(tcFrameLink);
             services.add(frameLink);
-            simulator.setFrameLink(frameLink);
+            simulator.setTmFrameLink(frameLink);
         }
 
         if (runtimeOptions.perfNp > 0) {

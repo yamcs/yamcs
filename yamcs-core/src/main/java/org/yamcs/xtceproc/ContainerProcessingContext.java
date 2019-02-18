@@ -96,4 +96,8 @@ public class ContainerProcessingContext {
     public XtceDb getXtceDb() {
         return pdata.getXtceDb();
     }
+
+    public ProcessorData getProcessorData() {
+        return pdata;
+    }
 }

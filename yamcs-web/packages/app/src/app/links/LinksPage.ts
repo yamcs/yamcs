@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Link, LinkEvent } from '@yamcs/client';
+import { Instance, Link, LinkEvent } from '@yamcs/client';
 import { BehaviorSubject, fromEvent, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AuthService } from '../core/services/AuthService';
@@ -18,6 +18,8 @@ import { LinkItem } from './LinkItem';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
+
+  instance: Instance;
 
   @ViewChild('filter', { static: true })
   filter: ElementRef;
@@ -62,6 +64,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private preferenceStore: PreferenceStore,
   ) {
     title.setTitle('Links');
+    this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('links');
     if (cols.length) {
       this.displayedColumns = cols;

@@ -11,27 +11,6 @@ public class PowerData {
     public float batteryVoltage2, batteryTemp2, batteryCapacity2;
     public float batteryVoltage3, batteryTemp3, batteryCapacity3;
 
-    public PowerData(CCSDSPacket packet) {
-        ByteBuffer buffer = packet.getUserDataBuffer();
-
-        busStatus = buffer.get(0);
-
-        busVoltage = (float) buffer.get(1);
-        busCurrent = (float) buffer.get(2);
-        systemCurrent = (float) buffer.get(3);
-
-        batteryVoltage1 = (float) buffer.get(4);
-        batteryTemp1 = (float) buffer.get(5);
-        batteryCapacity1 = (float) buffer.getShort(6);
-
-        batteryVoltage2 = (float) buffer.get(8);
-        batteryTemp2 = (float) buffer.get(9);
-        batteryCapacity2 = (float) buffer.getShort(10);
-
-        batteryVoltage3 = (float) buffer.get(12);
-        batteryTemp3 = (float) buffer.get(13);
-        batteryCapacity3 = (float) buffer.getShort(14);
-    }
 
     public PowerData() {
     }

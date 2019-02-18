@@ -7,7 +7,7 @@ import java.util.Map;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-public class TmManagedParameters extends ManagedParameters {
+public class TmManagedParameters extends DownlinkManagedParameters {
     int frameLength;
     int fshLength; //0 means not present
     boolean ocfPresent;
@@ -21,10 +21,8 @@ public class TmManagedParameters extends ManagedParameters {
     
 
     public TmManagedParameters(YConfiguration config) {
+        super(config);
 
-        if (config.containsKey("physicalChannelName")) {
-            physicalChannelName = config.getString("physicalChannelName");
-        }
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
@@ -56,13 +54,13 @@ public class TmManagedParameters extends ManagedParameters {
     }
     
     @Override
-    public Map<Integer, VirtualChannelHandler> createVcHandlers(String yamcsInstance, String linkName) {
-        Map<Integer, VirtualChannelHandler> m = new HashMap<>();
+    public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName) {
+        Map<Integer, VcDownlinkHandler> m = new HashMap<>();
         for (Map.Entry<Integer, TmVcManagedParameters> me : vcParams.entrySet()) {
             TmVcManagedParameters vmp = me.getValue();
             switch (vmp.service) {
             case PACKET:
-                VirtualChannelPacketHandler vcph = new VirtualChannelPacketHandler(yamcsInstance, linkName+".vc"+vmp.vcId, vmp);
+                VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance, linkName+".vc"+vmp.vcId, vmp);
                 m.put(vmp.vcId, vcph);
                 break;
             case VCA_SDU:
@@ -74,7 +72,7 @@ public class TmManagedParameters extends ManagedParameters {
     
     
     
-    static class TmVcManagedParameters  extends VcManagedParameters {
+    static class TmVcManagedParameters  extends VcDownlinkManagedParameters {
         ServiceType service;
         
         public TmVcManagedParameters(YConfiguration config) {

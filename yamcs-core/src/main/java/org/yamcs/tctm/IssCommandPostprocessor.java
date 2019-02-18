@@ -4,7 +4,6 @@ import static org.yamcs.tctm.AbstractPacketPreprocessor.CONFIG_KEY_ERROR_DETECTI
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
     final ErrorDetectionWordCalculator errorDetectionCalculator;
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
 
-    protected CommandHistoryPublisher commandHistoryListener;
+    protected CommandHistoryPublisher commandHistory;
     boolean enforceEvenNumberOfBytes;
 
     public IssCommandPostprocessor(String yamcsInstance) {
@@ -32,16 +31,11 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
     public IssCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
         enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
-        if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
+        if (config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = GenericPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {
             errorDetectionCalculator = new Running16BitChecksumCalculator();
         }
-    }
-
-    @Deprecated
-    public IssCommandPostprocessor(String yamcsInstance, Map<String, Object> config) {
-        this(yamcsInstance, YConfiguration.wrap(config));
     }
 
     @Override
@@ -52,19 +46,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         if (secHeaderFlag) {
             checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
         }
-        int newLength = binary.length;
-        if (checksumIndicator) { // 2 extra bytes for the checkword
-            newLength += 2;
-            binary = Arrays.copyOf(binary, binary.length + 2);
-        }
-
-        if (newLength < minimumTcPacketLength) { // enforce the minimum packet length
-            newLength = minimumTcPacketLength;
-        }
-        if (enforceEvenNumberOfBytes && (newLength & 1) == 1) {
-            newLength += 1;
-        }
-
+        int newLength = getBinaryLength(pc);
         if (newLength > binary.length) {
             binary = Arrays.copyOf(binary, newLength);
         }
@@ -76,7 +58,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         bb.putInt(6, gpsTime.coarseTime);
         bb.put(10, gpsTime.fineTime);
 
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        commandHistory.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
         if (checksumIndicator) {
             int pos = binary.length - 2;
             try {
@@ -94,14 +76,37 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
                 log.debug("Not appending a checkword since checksumIndicator is false");
             }
         }
-
-        commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
+       
+        commandHistory.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
         return binary;
+    }
+    
+    @Override
+    public int getBinaryLength(PreparedCommand pc) {
+        byte[] binary = pc.getBinary();
+        int length = binary.length;
+        boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
+        boolean checksumIndicator = false;
+        if (secHeaderFlag) {
+            checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
+        }
+       
+        if (checksumIndicator) { // 2 extra bytes for the checkword
+            length += 2;
+        }
+
+        if (length < minimumTcPacketLength) { // enforce the minimum packet length
+            length = minimumTcPacketLength;
+        }
+        if (enforceEvenNumberOfBytes && (length & 1) == 1) {
+            length += 1;
+        }
+        return length;
     }
 
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
-        this.commandHistoryListener = commandHistoryListener;
+        this.commandHistory = commandHistoryListener;
     }
 
     public int getMiniminimumTcPacketLength() {

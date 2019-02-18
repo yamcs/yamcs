@@ -28,10 +28,11 @@ public class Simulator extends AbstractService {
 
     static int DEFAULT_MAX_LENGTH = 65542;
     int maxLength = DEFAULT_MAX_LENGTH;
-    private TmTcLink tmLink;
-    private TmTcLink tm2Link;
-    private TmTcLink losLink;
-    private UdpFrameLink frameLink;
+    private TcpTmTcLink tmLink;
+    private TcpTmTcLink tm2Link;
+    private TcpTmTcLink losLink;
+    private UdpTmFrameLink tmFrameLink;
+    private UdpTcFrameLink tcFrameLink;
 
     private boolean los;
     private Date lastLosStart;
@@ -104,8 +105,8 @@ public class Simulator extends AbstractService {
             losRecorder.record(packet);
         } else {
             tmLink.sendPacket(packet.toByteArray());
-            if (frameLink != null) {
-                frameLink.queuePacket(0, packet.toByteArray());
+            if (tmFrameLink != null) {
+                tmFrameLink.queuePacket(0, packet.toByteArray());
             }
 
         }
@@ -116,8 +117,8 @@ public class Simulator extends AbstractService {
     protected void transmitTM2(byte[] packet) {
         if (!isLOS()) {
             tm2Link.sendPacket(packet);
-            if (frameLink != null) {
-                frameLink.queuePacket(1, encapsulate(packet));
+            if (tmFrameLink != null) {
+                tmFrameLink.queuePacket(1, encapsulate(packet));
             }
         }
 
@@ -147,8 +148,8 @@ public class Simulator extends AbstractService {
                 CCSDSPacket packet = readLosPacket(dataStream);
                 if (packet != null) {
                     losLink.sendPacket(packet.toByteArray());
-                    if (frameLink != null) {
-                        frameLink.queuePacket(2, packet.toByteArray());
+                    if (tmFrameLink != null) {
+                        tmFrameLink.queuePacket(2, packet.toByteArray());
                     }
                 }
             }
@@ -345,11 +346,11 @@ public class Simulator extends AbstractService {
         transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
-    public void setTmLink(TmTcLink tmLink) {
+    public void setTmLink(TcpTmTcLink tmLink) {
         this.tmLink = tmLink;
     }
 
-    public void setTm2Link(TmTcLink tm2Link) {
+    public void setTm2Link(TcpTmTcLink tm2Link) {
         this.tm2Link = tm2Link;
     }
 
@@ -385,12 +386,15 @@ public class Simulator extends AbstractService {
         return null;
     }
 
-    public void setLosLink(TmTcLink losLink) {
+    public void setLosLink(TcpTmTcLink losLink) {
         this.losLink = losLink;
     }
 
-    public void setFrameLink(UdpFrameLink aosLink) {
-        this.frameLink = aosLink;
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        this.tmFrameLink = tmFrameLink;
+    }
+    public void setTcFrameLink(UdpTcFrameLink tcFrameLink) {
+        this.tcFrameLink = tcFrameLink;
     }
 
     @Override

@@ -5,9 +5,8 @@ import java.nio.BufferUnderflowException;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
@@ -15,10 +14,11 @@ import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
     ContainerProcessingContext pcontext;
+    private Log log;
 
     SequenceContainerProcessor(ContainerProcessingContext pcontext) {
+        log = new Log(this.getClass(),pcontext.getProcessorData().getYamcsInstance());
         this.pcontext = pcontext;
     }
 

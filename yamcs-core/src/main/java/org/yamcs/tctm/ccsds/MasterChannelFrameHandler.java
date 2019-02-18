@@ -18,19 +18,25 @@ import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 public class MasterChannelFrameHandler {
     CcsdsFrameType frameType;
     TransferFrameDecoder frameDecoder;
-    Map<Integer, VirtualChannelHandler> handlers = new HashMap<>();
+    Map<Integer, VcDownlinkHandler> handlers = new HashMap<>();
     int idleFrameCount;
     int frameCount;
-    ManagedParameters params;
-    
+    DownlinkManagedParameters params;
+    ClcwStreamHelper clcwHelper;
     String yamcsInstance;
+
     /**
      * Constructs based on the configuration
+     * 
      * @param config
      */
     public MasterChannelFrameHandler(String yamcsInstance, String linkName, YConfiguration config) {
         frameType = config.getEnum("frameType", CcsdsFrameType.class);
-        switch(frameType) {
+        String clcwStreamName = config.getString("clcwStream", null);
+        if(clcwStreamName!=null) {
+            clcwHelper = new ClcwStreamHelper(yamcsInstance, clcwStreamName);
+        }
+        switch (frameType) {
         case AOS:
             AosManagedParameters amp = new AosManagedParameters(config);
             frameDecoder = new AosFrameDecoder(amp);
@@ -46,25 +52,27 @@ public class MasterChannelFrameHandler {
             frameDecoder = new UslpFrameDecoder(ump);
             params = ump;
             break;
-            default:
-                throw new ConfigurationException("Unsupported frame type '"+frameType+"'");
+        default:
+            throw new ConfigurationException("Unsupported frame type '" + frameType + "'");
         }
         handlers = params.createVcHandlers(yamcsInstance, linkName);
     }
 
     public void handleFrame(byte[] data, int offset, int length) throws TcTmException {
-        TransferFrame frame = frameDecoder.decode(data, offset, length);
+        DownlinkTransferFrame frame = frameDecoder.decode(data, offset, length);
         frameCount++;
-        if(frame.containsOnlyIdleData()) {
+        if (frame.containsOnlyIdleData()) {
             idleFrameCount++;
             return;
         }
-        
-       
+        if (frame.hasOcf() && clcwHelper != null) {
+            clcwHelper.sendClcw(frame.getOcf());
+        }
+
         int vcid = frame.getVirtualChannelId();
-        VirtualChannelHandler vch = handlers.get(vcid);
-        if(vch == null) {
-            throw new TcTmException("No handler for vcId: "+vcid);
+        VcDownlinkHandler vch = handlers.get(vcid);
+        if (vch == null) {
+            throw new TcTmException("No handler for vcId: " + vcid);
         }
         vch.handle(frame);
     }
@@ -72,12 +80,12 @@ public class MasterChannelFrameHandler {
     public int getMaxFrameSize() {
         return params.getMaxFrameLength();
     }
-    
+
     public int getMinFrameSize() {
         return params.getMinFrameLength();
     }
 
-    public Collection<VirtualChannelHandler> getVcHandlers() {
+    public Collection<VcDownlinkHandler> getVcHandlers() {
         return handlers.values();
     }
 }

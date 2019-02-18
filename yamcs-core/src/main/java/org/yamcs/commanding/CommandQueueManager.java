@@ -330,7 +330,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *            notify or not the monitoring clients.
      */
     private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
-        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, reason);
+        commandHistoryPublisher.commandFailed(pc.getCommandId(), reason);
         addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
         // Notify the monitoring clients
         if (notify) {

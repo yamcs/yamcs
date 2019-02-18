@@ -268,6 +268,11 @@ public class PreparedCommand {
     }
 
     public void addAttribute(CommandHistoryAttribute cha) {
+        String  name = cha.getName();
+        if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
+                || CNAME_ASSIGNMENTS.equals(name)) {
+            throw new IllegalArgumentException("Cannot use '"+name+"' as a command attribute");
+        }
         attributes.add(cha);
     }
 

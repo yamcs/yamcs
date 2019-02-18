@@ -43,7 +43,9 @@ public class MetaCommand extends NameDescription {
      * From XTCE:
      * Many commands have one or more options. These are called command arguments. Command arguments may be of any of
      * the standard data types.
+     * <p>
      * MetaCommand arguments are local to the MetaCommand. Arguments are the visible to the user or processing software.
+     * <p>
      * This can be somewhat subjective -- for example a checksum that is always part of the command format is probably
      * not an argument.
      */
@@ -52,8 +54,10 @@ public class MetaCommand extends NameDescription {
     /**
      * From XTCE:
      * Tells how to package this command.
+     * <p>
      * May not be referred to in the EntryList of a SequenceContainer, CommandContainerSet/CommandContainer or another
      * MetaCommandContainer.
+     * <p>
      * May be extended by another MetaCommand/CommandContainer.
      */
     CommandContainer commandContainer;

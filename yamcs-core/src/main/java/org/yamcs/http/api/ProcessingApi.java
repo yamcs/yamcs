@@ -229,7 +229,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             if (comment != null && !comment.trim().isEmpty()) {
                 preparedCommand.setComment(comment);
             }
-
+            request.getAttributeList().forEach(cha-> preparedCommand.addAttribute(cha));
+            
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
             sb.append(cmd.getQualifiedName());

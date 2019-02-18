@@ -1,7 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.Map;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
@@ -10,8 +8,8 @@ import org.yamcs.YConfiguration;
  * @author nm
  *
  */
-public class VcManagedParameters {
-    int vcId;
+public class VcDownlinkManagedParameters {
+    protected int vcId;
     //if set to true, the encapsulation packets sent to the preprocessor will be without the encapsulation header(CCSDS 133.1-B-2)
     boolean stripEncapsulationHeader;
     
@@ -22,7 +20,12 @@ public class VcManagedParameters {
     YConfiguration packetPreprocessorArgs;
     final YConfiguration config;
     
-    public VcManagedParameters(YConfiguration config) {
+    public VcDownlinkManagedParameters(int vcId) {
+        this.vcId = vcId;
+        this.config = null;
+    }
+    
+    public VcDownlinkManagedParameters(YConfiguration config) {
         this.config = config;
         this.vcId = config.getInt("vcId");
     }

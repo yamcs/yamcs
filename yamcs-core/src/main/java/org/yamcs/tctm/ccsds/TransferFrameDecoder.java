@@ -25,6 +25,5 @@ public interface TransferFrameDecoder {
      * @return
      * @throws TcTmException
      */
-    TransferFrame decode(byte[] data, int offset, int length) throws TcTmException;
-        
+    DownlinkTransferFrame decode(byte[] data, int offset, int length) throws TcTmException;
 }
