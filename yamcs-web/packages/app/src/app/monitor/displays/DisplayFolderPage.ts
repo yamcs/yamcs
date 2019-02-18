@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import * as dnd from '../../shared/dnd';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
 import { RenameDisplayDialog } from './RenameDisplayDialog';
 import { UploadFilesDialog } from './UploadFilesDialog';
@@ -20,10 +21,14 @@ import { UploadFilesDialog } from './UploadFilesDialog';
 })
 export class DisplayFolderPage implements OnDestroy {
 
+  @ViewChild('droparea')
+  dropArea: ElementRef;
+
   instance: Instance;
   bucketInstance: string;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
+  dragActive$ = new BehaviorSubject<boolean>(false);
 
   displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
@@ -112,14 +117,10 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   createDisplay() {
-    let path = '';
-    for (const segment of this.route.snapshot.url) {
-      path += '/' + segment.path;
-    }
     const dialogRef = this.dialog.open(CreateDisplayDialog, {
       width: '400px',
       data: {
-        path: path || '/',
+        path: this.getCurrentPath(),
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -130,14 +131,10 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   uploadFiles() {
-    let path = '';
-    for (const segment of this.route.snapshot.url) {
-      path += '/' + segment.path;
-    }
     const dialogRef = this.dialog.open(UploadFilesDialog, {
       width: '400px',
       data: {
-        path: path || '/',
+        path: this.getCurrentPath(),
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -145,6 +142,14 @@ export class DisplayFolderPage implements OnDestroy {
         this.loadCurrentFolder();
       }
     });
+  }
+
+  private getCurrentPath() {
+    let path = '';
+    for (const segment of this.route.snapshot.url) {
+      path += '/' + segment.path;
+    }
+    return path || '/';
   }
 
   deleteSelectedDisplays() {
@@ -192,11 +197,62 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   deleteFile(item: BrowseItem) {
-      if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-        this.storageClient.deleteObject(this.bucketInstance, 'displays', item.name).then(() => {
+    if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+      this.storageClient.deleteObject(this.bucketInstance, 'displays', item.name).then(() => {
+        this.loadCurrentFolder();
+      });
+    }
+  }
+
+  dragEnter(evt: DragEvent) {
+    this.dragActive$.next(true);
+    evt.preventDefault();
+    evt.stopPropagation();
+    return false;
+  }
+
+  dragOver(evt: DragEvent) { // This event must be prevented. Otherwise drop doesn't trigger.
+    evt.preventDefault();
+    evt.stopPropagation();
+    return false;
+  }
+
+  dragLeave(evt: DragEvent) {
+    this.dragActive$.next(false);
+    evt.preventDefault();
+    evt.stopPropagation();
+    return false;
+  }
+
+  drop(evt: DragEvent) {
+    const dataTransfer: any = evt.dataTransfer || {};
+    if (dataTransfer) {
+      let objectPrefix = this.getCurrentPath().substring(1);
+      if (objectPrefix !== '') {
+        objectPrefix += '/';
+      }
+
+      let bucketInstance = this.instance.name;
+      if (this.configService.getDisplayScope() === 'GLOBAL') {
+        bucketInstance = '_global';
+      }
+
+      dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
+        const uploadPromises: any[] = [];
+        for (const droppedFile of droppedFiles) {
+          const objectPath = objectPrefix + droppedFile._fullPath;
+          const promise = this.storageClient.uploadObject(bucketInstance, 'displays', objectPath, droppedFile);
+          uploadPromises.push(promise);
+        }
+        Promise.all(uploadPromises).finally(() => {
           this.loadCurrentFolder();
         });
-      }
+      });
+    }
+    this.dragActive$.next(false);
+    evt.preventDefault();
+    evt.stopPropagation();
+    return false;
   }
 
   mayManageDisplays() {

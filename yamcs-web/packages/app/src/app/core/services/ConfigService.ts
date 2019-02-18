@@ -7,13 +7,10 @@ export class ConfigService {
   private websiteConfig: WebsiteConfig;
 
   async loadWebsiteConfig() {
-    console.log('loading..');
-    if (!this.websiteConfig) {
-      const client = new YamcsClient();
-      return client.getWebsiteConfig().then(websiteConfig => {
-        this.websiteConfig = websiteConfig;
-      });
-    }
+    const client = new YamcsClient();
+    return client.getWebsiteConfig().then(websiteConfig => {
+      this.websiteConfig = websiteConfig;
+    });
   }
 
   getAuthInfo() {

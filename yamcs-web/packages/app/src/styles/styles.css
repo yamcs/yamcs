@@ -179,9 +179,10 @@ a.ya-link.ya-header-link {
   padding: 0 7px 1px;
 }
 
-/*.ya-form input[type="radio"] {
-  vertical-align: baseline;
-}*/
+.ya-form input[type="radio"] {
+  margin-right: 10px;
+  /*vertical-align: baseline;*/
+}
 
 .ya-form .error-message {
   color: crimson;
