@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -84,9 +85,17 @@ public class TcpIpDriver extends InstrumentDriver {
             // Ignore
         }
 
-        OutputStream out = socket.getOutputStream();
-        out.write((cmd + "\n").getBytes(encoding));
-        out.flush();
+        try {
+            OutputStream out = socket.getOutputStream();
+            out.write((cmd + "\n").getBytes(encoding));
+            out.flush();
+        } catch (SocketException e) { // Broken pipe
+            disconnect();
+            connect();
+            OutputStream out = socket.getOutputStream();
+            out.write((cmd + "\n").getBytes(encoding));
+            out.flush();
+        }
     }
 
     @Override
