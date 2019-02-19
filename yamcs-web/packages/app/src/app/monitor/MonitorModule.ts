@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { SelectParameterDialog } from '../mdb/parameters/SelectParameterDialog';
 import { AcknowledgeAlarmDialog } from './alarms/AcknowledgeAlarmDialog';
 import { AlarmDetail } from './alarms/AlarmDetail';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
@@ -41,7 +40,6 @@ const dialogComponents = [
   ExportArchiveDataDialog,
   RenameDisplayDialog,
   RenameLayoutDialog,
-  SelectParameterDialog,
   UploadFilesDialog,
 ];
 

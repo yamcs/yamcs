@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
+import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';
 import { ExportArchiveDataDialog } from './ExportArchiveDataDialog';
 import { ParameterTableViewer } from './ParameterTableViewer';
 
