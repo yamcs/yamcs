@@ -6,8 +6,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Tse.TseCommandResponse;
+import org.yamcs.protobuf.Tse.TseCommanderMessage;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -19,22 +22,44 @@ import org.yamcs.yarch.TupleDefinition;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<ParameterData> {
+public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCommanderMessage> {
 
     private static final Logger log = LoggerFactory.getLogger(TseDataLinkInboundHandler.class);
 
     private final TimeService timeService;
     private final Stream stream;
     private final XtceDb xtcedb;
+    private final CommandHistoryPublisher cmdhistPublisher;
 
-    public TseDataLinkInboundHandler(XtceDb xtcedb, TimeService timeService, Stream stream) {
+    public TseDataLinkInboundHandler(CommandHistoryPublisher cmdhistPublisher, XtceDb xtcedb, TimeService timeService,
+            Stream stream) {
+        this.cmdhistPublisher = cmdhistPublisher;
         this.timeService = timeService;
         this.stream = stream;
         this.xtcedb = xtcedb;
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ParameterData pdata) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, TseCommanderMessage message) throws Exception {
+        if (message.hasCommandResponse()) {
+            handleCommandResponse(message.getCommandResponse());
+        }
+        if (message.hasParameterData()) {
+            handleParameterData(message.getParameterData());
+        }
+    }
+
+    private void handleCommandResponse(TseCommandResponse cmdResponse) {
+        if (cmdResponse.getSuccess()) {
+            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
+        } else {
+            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
+            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandFailed_KEY,
+                    cmdResponse.getErrorMessage());
+        }
+    }
+
+    private void handleParameterData(ParameterData pdata) {
         long now = timeService.getMissionTime();
 
         TupleDefinition tdef = null;
@@ -46,7 +71,7 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<Param
             ParameterValue pv = ParameterValue.fromGpb(qualifiedName, proto);
             Parameter p = xtcedb.getParameter(qualifiedName);
             if (p == null) {
-                log.warn("Ignorning unknown parameter {}", qualifiedName);
+                log.warn("Ignoring unknown parameter {}", qualifiedName);
                 continue;
             }
             String newGroup = p.getRecordingGroup();

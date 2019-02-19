@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Tse.TseCommand;
+import org.yamcs.protobuf.Tse.TseCommandResponse;
+import org.yamcs.protobuf.Tse.TseCommanderMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -93,24 +95,50 @@ public class TcTmServer extends AbstractService {
         InstrumentDriver instrument = instrumentController.getInstrument(command.getInstrument());
         boolean expectResponse = command.hasResponse();
 
+        TseCommanderMessage.Builder msgb = TseCommanderMessage.newBuilder();
+
         String commandString = replaceArguments(command.getCommand(), command);
         ListenableFuture<List<String>> f = instrumentController.queueCommand(instrument, commandString, expectResponse);
         f.addListener(() -> {
+            TseCommandResponse.Builder responseb = TseCommandResponse.newBuilder()
+                    .setId(command.getId());
+
             try {
                 List<String> responses = f.get();
                 if (expectResponse) {
-                    if (instrument.getCommandSeparation() == null) {
-                        parseResponse(ctx, command, responses.get(0));
-                    } else { // Compound command where distinct responses were sent
-                        String response = String.join(";", responses);
-                        parseResponse(ctx, command, response);
+                    try {
+                        String fullResponse;
+                        if (instrument.getCommandSeparation() == null) {
+                            fullResponse = responses.get(0);
+                        } else { // Compound command where distinct responses were sent
+                            fullResponse = String.join(";", responses);
+                        }
+                        ParameterData pdata = parseResponse(command, fullResponse);
+                        msgb.setParameterData(pdata);
+                        responseb.setSuccess(true);
+                    } catch (MatchException e) {
+                        responseb.setSuccess(false);
+                        responseb.setErrorMessage(e.getMessage());
                     }
+                } else {
+                    responseb.setSuccess(true);
                 }
             } catch (ExecutionException e) {
                 log.error("Failed to execute command", e.getCause());
+                responseb.setSuccess(false);
+                String errorMessage = e.getCause().getClass().getSimpleName();
+                if (e.getCause().getMessage() != null) {
+                    errorMessage += ": " + e.getCause().getMessage();
+                }
+                responseb.setErrorMessage(errorMessage);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                return;
             }
+
+            msgb.setCommandResponse(responseb);
+            ctx.writeAndFlush(msgb);
+
         }, directExecutor());
     }
 
@@ -131,7 +159,7 @@ public class TcTmServer extends AbstractService {
         return replaced.isEmpty() ? template : replaced;
     }
 
-    private void parseResponse(ChannelHandlerContext ctx, TseCommand command, String response) {
+    private ParameterData parseResponse(TseCommand command, String response) throws MatchException {
         long now = TimeEncoding.getWallclockTime();
         ParameterData.Builder pdata = ParameterData.newBuilder();
         pdata.setGenerationTime(now)
@@ -156,22 +184,24 @@ public class TcTmServer extends AbstractService {
 
         Pattern p = Pattern.compile(regex.toString());
         m = p.matcher(response);
-        if (m.matches()) {
-            for (Entry<String, String> entry : group2name.entrySet()) {
-                String value = m.group(entry.getKey());
 
-                String name = entry.getValue();
-                String qname = command.getParameterMappingMap().get(name);
-                qname = replaceArguments(qname, command);
-                pdata.addParameter(ParameterValue.newBuilder()
-                        .setGenerationTime(now)
-                        .setId(NamedObjectId.newBuilder().setName(qname))
-                        .setRawValue(Value.newBuilder().setType(Type.STRING).setStringValue(value)));
-            }
-            ctx.writeAndFlush(pdata);
-        } else {
-            log.warn("Instrument response '{}' could not be matched to pattern '{}'.", response, command.getResponse());
+        if (!m.matches()) {
+            throw new MatchException(String.format("Instrument response '%s' could not be matched to pattern '%s'.",
+                    response, command.getResponse()));
         }
+
+        for (Entry<String, String> entry : group2name.entrySet()) {
+            String value = m.group(entry.getKey());
+
+            String name = entry.getValue();
+            String qname = command.getParameterMappingMap().get(name);
+            qname = replaceArguments(qname, command);
+            pdata.addParameter(ParameterValue.newBuilder()
+                    .setGenerationTime(now)
+                    .setId(NamedObjectId.newBuilder().setName(qname))
+                    .setRawValue(Value.newBuilder().setType(Type.STRING).setStringValue(value)));
+        }
+        return pdata.build();
     }
 
     @Override
@@ -183,5 +213,13 @@ public class TcTmServer extends AbstractService {
                 notifyFailed(future.cause());
             }
         });
+    }
+
+    @SuppressWarnings("serial")
+    private static class MatchException extends Exception {
+
+        MatchException(String message) {
+            super(message);
+        }
     }
 }
