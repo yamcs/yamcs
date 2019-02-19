@@ -5,8 +5,6 @@ import { ClientInfo } from '@yamcs/client';
 import { Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
-
 @Component({
   templateUrl: './ClientsPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,7 +14,15 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  displayedColumns = ['id', 'username', 'applicationName', 'instance', 'processorName', 'loginTime'];
+  displayedColumns = [
+    'id',
+    'username',
+    'applicationName',
+    'address',
+    // 'instance',
+    // 'processorName',
+    'loginTime',
+  ];
 
   dataSource = new MatTableDataSource<ClientInfo>();
 

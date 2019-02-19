@@ -1,0 +1,26 @@
+.card-list-container {
+  max-width: 1500px;
+  margin: auto;
+}
+
+.card-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: auto;
+  justify-content: center;
+}
+
+.card {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.card .mat-card {
+  width: 300px;
+  height: 500px;
+  margin: 8px;
+}
+
+.card.big .mat-card {
+  width: 648px;
+}

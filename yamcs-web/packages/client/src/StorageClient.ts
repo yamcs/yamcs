@@ -43,7 +43,7 @@ export class StorageClient {
     return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/${name}`;
   }
 
-  async uploadObject(instance: string, bucket: string, name: string, value: Blob) {
+  async uploadObject(instance: string, bucket: string, name: string, value: Blob | File) {
     const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`;
     const formData = new FormData();
     formData.set(name, value, name);

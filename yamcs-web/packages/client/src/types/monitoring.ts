@@ -2,32 +2,49 @@ import { Observable } from 'rxjs';
 import { AlarmRange, ArgumentAssignment, NamedObjectId, Parameter } from './mdb';
 
 export interface Value {
-  type: 'FLOAT'
-  | 'DOUBLE'
-  | 'UINT32'
-  | 'SINT32'
+  type: 'AGGREGATE'
+  | 'ARRAY'
   | 'BINARY'
+  | 'BOOLEAN'
+  | 'DOUBLE'
+  | 'FLOAT'
+  | 'SINT32'
+  | 'SINT64'
   | 'STRING'
   | 'TIMESTAMP'
-  | 'UINT64'
-  | 'SINT64'
-  | 'BOOLEAN';
-  floatValue?: number;
-  doubleValue?: number;
-  sint32Value?: number;
-  uint32Value?: number;
+  | 'UINT32'
+  | 'UINT64';
+  aggregateValue?: AggregateValue;
+  arrayValue?: Value[];
   binaryValue?: string;
+  booleanValue?: boolean;
+  doubleValue?: number;
+  floatValue?: number;
+  sint32Value?: number;
+  sint64Value?: number;
   stringValue?: string;
   timestampValue?: number;
+  uint32Value?: number;
   uint64Value?: number;
-  sint64Value?: number;
-  booleanValue?: boolean;
+}
+
+export interface AggregateValue {
+  name: string[];
+  value: Value[];
 }
 
 export type EventSeverity =
   'INFO' | 'WARNING' | 'ERROR' |
   'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
   ;
+
+export type MonitoringResult = 'DISABLED'
+  | 'IN_LIMITS'
+  | 'WATCH'
+  | 'WARNING'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE';
 
 export interface Event {
   source: string;
@@ -59,7 +76,7 @@ export interface ParameterValue {
 
   acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
   processingStatus: boolean;
-  monitoringResult: any;
+  monitoringResult: MonitoringResult;
   alarmRange: AlarmRange[];
   rangeCondition?: 'LOW' | 'HIGH';
   expireMillis: number;
@@ -159,6 +176,7 @@ export interface Alarm {
   mostSevereValue: ParameterValue;
   currentValue: ParameterValue;
   violations: number;
+  valueCount: number;
   acknowledgeInfo: AcknowledgeInfo;
   parameter: Parameter;
 }
@@ -175,6 +193,11 @@ export interface GetAlarmsOptions {
   pos?: number;
   limit?: number;
   order?: 'asc' | 'desc';
+}
+
+export interface EditAlarmOptions {
+  state: 'acknowledged' | 'unacknowledged';
+  comment?: string;
 }
 
 export interface GetCommandHistoryOptions {

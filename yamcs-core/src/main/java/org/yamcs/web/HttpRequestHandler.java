@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
+import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.web.rest.Router;
@@ -72,6 +73,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private static final String API_PATH = "api";
     private static final String AUTH_PATH = "auth";
+    private static final String WEBSITE_CONFIG_PATH = "websiteConfig";
     private static final String STATIC_PATH = "static";
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
@@ -84,6 +86,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
     private AuthHandler authHandler = new AuthHandler();
+    private WebsiteConfigHandler websiteConfigHandler;
     private boolean contentExpected = false;
 
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
@@ -100,9 +103,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     WebSocketConfig wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, WebSocketConfig wsConfig) {
+    public HttpRequestHandler(Router apiRouter, WebSocketConfig wsConfig, WebsiteConfig websiteConfig) {
         this.apiRouter = apiRouter;
         this.wsConfig = wsConfig;
+        websiteConfigHandler = new WebsiteConfigHandler(websiteConfig);
     }
 
     public static HttpAuthorizationChecker getAuthorizationChecker() {
@@ -187,6 +191,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
             ctx.pipeline().addLast(new HttpObjectAggregator(65536));
             ctx.pipeline().addLast(authHandler);
+            ctx.fireChannelRead(req);
+            contentExpected = true;
+            return;
+        case WEBSITE_CONFIG_PATH:
+            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
+            ctx.pipeline().addLast(websiteConfigHandler);
             ctx.fireChannelRead(req);
             contentExpected = true;
             return;

@@ -6,8 +6,8 @@
 
       <dt>Space System</dt>
       <dd>
-        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'algorithms']"
-           [queryParams]="{instance: instance.name}"
+        <a routerLink="/mdb/algorithms"
+           [queryParams]="{instance: instance.name, filter: alias.namespace}"
            class="ya-link">
           {{ alias.namespace }}
         </a>

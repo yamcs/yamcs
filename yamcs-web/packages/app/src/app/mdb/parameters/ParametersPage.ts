@@ -1,41 +1,118 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { Instance, Parameter } from '@yamcs/client';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GetParametersOptions, Instance } from '@yamcs/client';
+import { fromEvent } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
-
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({
   templateUrl: './ParametersPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParametersPage {
+export class ParametersPage implements AfterViewInit {
 
   instance: Instance;
-  parameters$: Promise<Parameter[]>;
+  shortName = false;
+  pageSize = 100;
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  @ViewChild('top')
+  top: ElementRef;
+
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
+
+  @ViewChild('filter')
+  filter: ElementRef;
+
+  dataSource: ParametersDataSource;
+
+  columns: ColumnInfo[] = [
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'type', label: 'Type' },
+    { id: 'units', label: 'Units' },
+    { id: 'dataSource', label: 'Data Source' },
+    { id: 'shortDescription', label: 'Description' },
+  ];
+
+  displayedColumns = [
+    'name',
+    'type',
+    'units',
+    'dataSource',
+  ];
+
+  constructor(
+    yamcs: YamcsService,
+    title: Title,
+    private preferenceStore: PreferenceStore,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
     title.setTitle('Parameters - Yamcs');
     this.instance = yamcs.getInstance();
-    this.parameters$ = this.loadParameters();
+    const cols = preferenceStore.getVisibleColumns('parameters');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+    this.dataSource = new ParametersDataSource(yamcs);
   }
 
-  // FIXME use proper pagination
-  private async loadParameters() {
-    const allParameters = [];
-    let page = 1;
-    const pageSize = 500;
-    while (true) {
-      const limit = pageSize + 1;
-      const pos = (page - 1) * pageSize;
-      const parameters = await this.yamcs.getInstanceClient()!.getParameters({ limit, pos });
-      if (parameters.length === limit) {
-        allParameters.push(...parameters.slice(0, -1));
-        page += 1;
-      } else {
-        allParameters.push(...parameters);
-        break;
-      }
+  ngAfterViewInit() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter.nativeElement.value = queryParams.get('filter');
     }
-    return allParameters;
+    if (queryParams.has('page')) {
+      this.paginator.pageIndex = Number(queryParams.get('page'));
+    }
+    this.updateDataSource();
+    this.paginator.page.subscribe(() => {
+      this.updateDataSource();
+      this.top.nativeElement.scrollIntoView();
+    });
+
+    fromEvent(this.filter.nativeElement, 'keyup').pipe(
+      debounceTime(400),
+      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
+      distinctUntilChanged(),
+    ).subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.updateDataSource();
+    });
+  }
+
+  private updateDataSource() {
+    this.updateURL();
+    const options: GetParametersOptions = {
+      pos: this.paginator.pageIndex * this.pageSize,
+      limit: this.pageSize,
+    };
+    const filterValue = this.filter.nativeElement.value.trim().toLowerCase();
+    if (filterValue) {
+      options.q = filterValue;
+    }
+    this.dataSource.loadParameters(options);
+  }
+
+  private updateURL() {
+    const filterValue = this.filter.nativeElement.value.trim();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        page: this.paginator.pageIndex || null,
+        filter: filterValue || null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  updateColumns(displayedColumns: string[]) {
+    this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('parameters', displayedColumns);
   }
 }

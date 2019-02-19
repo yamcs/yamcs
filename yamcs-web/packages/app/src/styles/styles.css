@@ -79,11 +79,16 @@ body {
   background: #fafafa;
 }
 
-.ya-data-table td.mat-cell, .ya-data-table th.mat-cell {
+.ya-data-table td.mat-cell,
+.ya-data-table th.mat-cell {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
-  padding: 7px 0 8px 0;
+  padding: 7px 8px 8px 0;
+}
+
+.ya-data-table th.mat-header-cell {
+  padding-right: 8px;
 }
 
 .ya-data-table mat-icon {
@@ -96,7 +101,9 @@ body {
   background-color: #f0f4fd !important;
 }
 
-.ya-data-table .mat-button, .ya-data-table .mat-stroked-button {
+.ya-data-table .mat-button,
+.ya-data-table .mat-stroked-button,
+.ya-data-table .mat-raised-button {
   line-height: 16px;
   min-width: 0;
 }
@@ -172,9 +179,10 @@ a.ya-link.ya-header-link {
   padding: 0 7px 1px;
 }
 
-/*.ya-form input[type="radio"] {
-  vertical-align: baseline;
-}*/
+.ya-form input[type="radio"] {
+  margin-right: 10px;
+  /*vertical-align: baseline;*/
+}
 
 .ya-form .error-message {
   color: crimson;
@@ -259,4 +267,13 @@ a.ya-link.ya-header-link {
 .ace_scrollbar-inner {
   background-color: white;
   opacity: 0.01;
+}
+
+button.more {
+  margin-left: 0.5em;
+  padding: 0 8px;
+}
+
+.hide {
+  display: none;
 }

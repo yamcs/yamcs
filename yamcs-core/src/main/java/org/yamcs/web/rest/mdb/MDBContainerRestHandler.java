@@ -113,12 +113,15 @@ public class MDBContainerRestHandler extends RestHandler {
         int totalSize = matchedContainers.size();
 
         String next = req.getQueryParameter("next", null);
+        int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedContainers = matchedContainers.stream().filter(p -> {
                 return p.getQualifiedName().compareTo(pageToken.name) > 0;
             }).collect(Collectors.toList());
+        } else if (pos > 0) {
+            matchedContainers = matchedContainers.subList(pos, matchedContainers.size());
         }
 
         NamedObjectPageToken continuationToken = null;

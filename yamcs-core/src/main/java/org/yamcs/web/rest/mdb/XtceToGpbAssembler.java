@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
+import org.yamcs.protobuf.Mdb.ArrayInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
 import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
@@ -31,6 +32,7 @@ import org.yamcs.protobuf.Mdb.FixedValueInfo;
 import org.yamcs.protobuf.Mdb.HistoryInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
+import org.yamcs.protobuf.Mdb.MemberInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
@@ -49,12 +51,14 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryDataType;
@@ -90,6 +94,7 @@ import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
+import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -489,7 +494,6 @@ public class XtceToGpbAssembler {
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
         ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
-
         infob.setEngType(parameterType.getTypeAsString());
 
         if (parameterType instanceof BaseDataType) {
@@ -497,6 +501,45 @@ public class XtceToGpbAssembler {
             for (UnitType ut : bdt.getUnitSet()) {
                 infob.addUnitSet(toUnitInfo(ut));
             }
+        }
+        if (parameterType instanceof AggregateParameterType) {
+            AggregateParameterType apt = (AggregateParameterType) parameterType;
+            for (Member member : apt.getMemberList()) {
+                MemberInfo.Builder memberb = MemberInfo.newBuilder();
+                memberb.setName(member.getName());
+                if (member.getQualifiedName() != null) {
+                    memberb.setQualifiedName(member.getQualifiedName());
+                }
+                if (member.getType() instanceof ParameterType) {
+                    ParameterType ptype = (ParameterType) member.getType();
+                    memberb.setType(toParameterTypeInfo(ptype, detail));
+                }
+                if (member.getShortDescription() != null) {
+                    memberb.setShortDescription(member.getShortDescription());
+                }
+                if (member.getLongDescription() != null) {
+                    memberb.setLongDescription(member.getLongDescription());
+                }
+                if (member.getAliasSet() != null) {
+                    Map<String, String> aliases = member.getAliasSet().getAliases();
+                    for (Entry<String, String> me : aliases.entrySet()) {
+                        memberb.addAlias(NamedObjectId.newBuilder()
+                                .setName(me.getValue()).setNamespace(me.getKey()));
+                    }
+                }
+                infob.addMember(memberb);
+            }
+        }
+        if (parameterType instanceof ArrayParameterType) {
+            ArrayParameterType apt = (ArrayParameterType) parameterType;
+            ArrayInfo.Builder arrayInfob = ArrayInfo.newBuilder();
+            arrayInfob.setDimensions(apt.getNumberOfDimensions());
+
+            if (apt.getElementType() instanceof ParameterType) {
+                ParameterType elementType = (ParameterType) apt.getElementType();
+                arrayInfob.setType(toParameterTypeInfo(elementType, detail));
+            }
+            infob.setArrayInfo(arrayInfob);
         }
         if (detail == DetailLevel.FULL) {
             if (parameterType instanceof BaseDataType) {

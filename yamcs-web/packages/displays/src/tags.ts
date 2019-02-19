@@ -24,6 +24,10 @@ export class Tag {
     this.attributes[name] = value;
   }
 
+  asMask(id: string) {
+    return new Mask({ id }).addChild(this);
+  }
+
   /**
    * Recursively transforms this tag and its children into DOM elements
    */
@@ -118,6 +122,36 @@ export class Ellipse extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('ellipse', attributes, innerText);
   }
+
+  /**
+   * Sets the specified attributes assuming they use border-box
+   * coordinates. They will automatically be converted to content-box
+   * based on the border thickness.
+   *
+   * Attention: stroke-width must already be set, or this method will
+   * have no effect.
+   */
+  withBorderBox(cx: number, cy: number, rx: number, ry: number) {
+    if ('stroke-width' in this.attributes) {
+      const strokeWidth = Number(this.attributes['stroke-width']);
+      if (strokeWidth) {
+        rx = rx - (strokeWidth / 2.0);
+        ry = ry - (strokeWidth / 2.0);
+      }
+    }
+
+    this.attributes['cx'] = String(cx);
+    this.attributes['cy'] = String(cy);
+    this.attributes['rx'] = String(rx);
+    this.attributes['ry'] = String(ry);
+    return this;
+  }
+}
+
+export class ForeignObject extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('foreignObject', attributes, innerText);
+  }
 }
 
 export class G extends Tag {
@@ -144,6 +178,12 @@ export class Marker extends Tag {
   }
 }
 
+export class Mask extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('mask', attributes, innerText);
+  }
+}
+
 export class Path extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('path', attributes, innerText);
@@ -165,6 +205,18 @@ export class Polygon extends Tag {
 export class Polyline extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('polyline', attributes, innerText);
+  }
+}
+
+export class Tspan extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('tspan', attributes, innerText);
+  }
+}
+
+export class LinearGradient extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('linearGradient', attributes, innerText);
   }
 }
 

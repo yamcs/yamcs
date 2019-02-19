@@ -15,6 +15,7 @@ import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
+import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
@@ -25,6 +26,7 @@ import { ValuePipe } from './pipes/ValuePipe';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 import { ActionLink } from './template/ActionLink';
+import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
 import { YaDataTableComponent } from './template/DataTableDirective';
@@ -32,9 +34,13 @@ import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
 import { EmptyMessage } from './template/EmptyMessage';
 import { Expirable } from './template/Expirable';
+import { InstancePage } from './template/InstancePage';
+import { InstancePageTemplate } from './template/InstancePageTemplate';
+import { InstanceToolbar } from './template/InstanceToolbar';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
+import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
@@ -87,6 +93,7 @@ const sharedDirectives = [
 
 const sharedComponents = [
   ActionLink,
+  Ago,
   AlarmLevel,
   ColumnChooser,
   DetailToolbar,
@@ -96,6 +103,9 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  InstancePage,
+  InstancePageTemplate,
+  InstanceToolbar,
   Labels,
   ParameterLegend,
   ParameterPlot,
@@ -105,6 +115,7 @@ const sharedComponents = [
   SidebarNavItem,
   SelectInstanceDialog,
   Select,
+  StartReplayDialog,
   TabDetailIcon,
   TextAction,
   TimestampTracker,
@@ -112,6 +123,7 @@ const sharedComponents = [
 ];
 
 const pipes = [
+  AgoPipe,
   DateTimePipe,
   FilenamePipe,
   FormatBytesPipe,
@@ -157,6 +169,7 @@ const guards = [
   entryComponents: [
     HelpDialog,
     SelectInstanceDialog,
+    StartReplayDialog,
   ],
   providers: [
     guards,

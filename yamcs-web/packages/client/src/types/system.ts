@@ -1,6 +1,14 @@
 import { Observable } from 'rxjs';
 import { CommandQueueEntry, Value } from './monitoring';
 
+export interface WebsiteConfig {
+  auth: AuthInfo;
+  displayScope: BucketScope;
+  stackScope: BucketScope;
+}
+
+export type BucketScope = 'GLOBAL' | 'INSTANCE';
+
 export interface AuthInfo {
   requireAuthentication: boolean;
   flow: AuthFlow[];
@@ -86,6 +94,7 @@ export interface ClientInfo {
   instance: string;
   username: string;
   applicationName: string;
+  address: string;
   processorName: string;
   state: 'CONNECTED' | 'DISCONNECTED';
   loginTimeUTC: string;
@@ -128,9 +137,11 @@ export interface Link {
   spec: string;
   stream: string;
   disabled: boolean;
-  dataCount: number;
+  dataInCount: number;
+  dataOutCount: number;
   status: string;
   detailedStatus: string;
+  parentName?: string;
 }
 
 export interface Processor {
@@ -178,9 +189,18 @@ export interface LinkSubscriptionResponse {
   linkEvent$: Observable<LinkEvent>;
 }
 
+export interface StreamSubscriptionResponse {
+  streamData$: Observable<StreamData>;
+}
+
 export interface Stream {
   name: string;
   column: Column[];
+}
+
+export interface StreamData {
+  stream: string;
+  column: ColumnData[];
 }
 
 export interface Column {

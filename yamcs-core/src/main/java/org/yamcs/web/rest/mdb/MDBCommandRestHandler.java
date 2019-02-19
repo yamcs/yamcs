@@ -92,12 +92,15 @@ public class MDBCommandRestHandler extends RestHandler {
         int totalSize = matchedCommands.size();
 
         String next = req.getQueryParameter("next", null);
+        int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedCommands = matchedCommands.stream().filter(p -> {
                 return p.getQualifiedName().compareTo(pageToken.name) > 0;
             }).collect(Collectors.toList());
+        } else if (pos > 0) {
+            matchedCommands = matchedCommands.subList(pos, matchedCommands.size());
         }
 
         NamedObjectPageToken continuationToken = null;

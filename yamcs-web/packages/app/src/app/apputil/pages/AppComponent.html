@@ -10,20 +10,6 @@
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
-    <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-      <a mat-button routerLink="monitor/displays"
-         [queryParams]="{instance: connectionInfo.instance.name}">
-        <mat-icon>dashboard</mat-icon>
-        Monitor
-      </a>
-      <a mat-button routerLink="mdb"
-         [queryParams]="{instance: connectionInfo.instance.name}"
-         *ngIf="showMdbItem$ | async">
-        <mat-icon>book</mat-icon>
-        MDB
-      </a>
-    </ng-container>
-
     <mat-menu #appMenu="matMenu" overlapTrigger="false">
       <button mat-menu-item (click)="toggleDarkTheme()">
         <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>

@@ -85,12 +85,15 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         int totalSize = matchedSpaceSystems.size();
 
         String next = req.getQueryParameter("next", null);
+        int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedSpaceSystems = matchedSpaceSystems.stream().filter(p -> {
                 return p.getQualifiedName().compareTo(pageToken.name) > 0;
             }).collect(Collectors.toList());
+        } else if (pos > 0) {
+            matchedSpaceSystems = matchedSpaceSystems.subList(pos, matchedSpaceSystems.size());
         }
 
         NamedObjectPageToken continuationToken = null;

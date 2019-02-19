@@ -2,7 +2,9 @@
    routerLinkActive="link-active"
    [routerLinkActiveOptions]="{exact: exact}"
    [routerLink]="routerLink"
-   [queryParams]="queryParams">
+   [queryParams]="queryParams"
+   [class.subitem]="subitem">
+  <div *ngIf="subitem" style="display: inline-block; width: 60px"></div>
   <ng-content></ng-content>
   <div class="hl"></div>
 </a>

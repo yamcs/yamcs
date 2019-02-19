@@ -2,17 +2,19 @@ import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { rowAnimation } from '../../animations';
 import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { Option, Select } from '../../shared/template/Select';
 import { subtractDuration } from '../../shared/utils';
-import { rowAnimation } from '../animations';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
 
@@ -38,8 +40,8 @@ export class EventsPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filter = new FormGroup({
-    textSearch: new FormControl(),
+  filterForm = new FormGroup({
+    filter: new FormControl(),
     severity: new FormControl('INFO'),
     source: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
@@ -85,9 +87,9 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
-  sourceOptions: Option[] = [
+  sourceOptions$ = new BehaviorSubject<Option[]>([
     { id: 'ANY', label: 'Any source', selected: true },
-  ];
+  ]);
 
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour', selected: true },
@@ -103,7 +105,7 @@ export class EventsPage {
   // only is updated after the callback...
   private severity = 'INFO';
   private source: string;
-  private textSearch: string;
+  private filter: string;
 
   constructor(
     private yamcs: YamcsService,
@@ -111,7 +113,10 @@ export class EventsPage {
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
     @Inject(APP_CONFIG) appConfig: AppConfig,
+    private router: Router,
+    private route: ActivatedRoute,
     title: Title,
+    synchronizer: Synchronizer,
   ) {
     title.setTitle('Events - Yamcs');
 
@@ -146,40 +151,44 @@ export class EventsPage {
 
     yamcs.getInstanceClient()!.getEventSources().then(sources => {
       for (const source of sources) {
-        this.sourceOptions.push({ id: source, label: source });
+        this.sourceOptions$.next([
+          ...this.sourceOptions$.value,
+          {
+            id: source,
+            label: source,
+            selected: this.filterForm.get('source')!.value === source,
+          }]);
       }
     });
 
-    this.dataSource = new EventsDataSource(yamcs);
+    this.dataSource = new EventsDataSource(yamcs, synchronizer);
 
-    this.validStop = yamcs.getMissionTime();
-    this.validStart = subtractDuration(this.validStop, defaultInterval);
-    this.appliedInterval = defaultInterval;
+    this.initializeOptions();
     this.loadData();
 
-    this.filter.get('textSearch')!.valueChanges.pipe(
+    this.filterForm.get('filter')!.valueChanges.pipe(
       debounceTime(400),
-    ).forEach(textSearch => {
-      this.textSearch = textSearch;
+    ).forEach(filter => {
+      this.filter = filter;
       this.loadData();
     });
 
-    this.filter.get('severity')!.valueChanges.forEach(severity => {
+    this.filterForm.get('severity')!.valueChanges.forEach(severity => {
       this.severity = severity;
       this.loadData();
     });
 
-    this.filter.get('source')!.valueChanges.forEach(source => {
+    this.filterForm.get('source')!.valueChanges.forEach(source => {
       this.source = (source !== 'ANY') ? source : null;
       this.loadData();
     });
 
-    this.filter.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filter.get('customStart')!.setValue(customStart.toISOString());
-        this.filter.get('customStop')!.setValue(customStop.toISOString());
+        this.filterForm.get('customStart')!.setValue(customStart.toISOString());
+        this.filterForm.get('customStop')!.setValue(customStop.toISOString());
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -194,8 +203,55 @@ export class EventsPage {
     });
   }
 
+  private initializeOptions() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter = queryParams.get('filter') || '';
+      this.filterForm.get('filter')!.setValue(this.filter);
+    }
+    if (queryParams.has('severity')) {
+      this.severity = queryParams.get('severity')!;
+      for (const option of this.severityOptions) {
+        option.selected = (option.id === this.severity);
+      }
+      this.filterForm.get('severity')!.setValue(this.severity);
+    }
+    if (queryParams.has('source')) {
+      this.source = queryParams.get('source')!;
+      for (const option of this.sourceOptions$.value) {
+        option.selected = (option.id === this.source);
+      }
+      this.filterForm.get('source')!.setValue(this.source);
+    }
+    if (queryParams.has('interval')) {
+      this.appliedInterval = queryParams.get('interval')!;
+      for (const option of this.intervalOptions) {
+        option.selected = (option.id === this.appliedInterval);
+      }
+      this.filterForm.get('interval')!.setValue(this.appliedInterval);
+      if (this.appliedInterval === 'CUSTOM') {
+        const customStart = queryParams.get('customStart')!;
+        this.filterForm.get('customStart')!.setValue(customStart);
+        this.validStart = new Date(customStart);
+        const customStop = queryParams.get('customStop')!;
+        this.filterForm.get('customStop')!.setValue(customStop);
+        this.validStop = new Date(customStop);
+      } else if (this.appliedInterval === 'NO_LIMIT') {
+        this.validStart = null;
+        this.validStop = null;
+      } else {
+        this.validStop = this.yamcs.getMissionTime();
+        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+      }
+    } else {
+      this.appliedInterval = defaultInterval;
+      this.validStop = this.yamcs.getMissionTime();
+      this.validStart = subtractDuration(this.validStop, defaultInterval);
+    }
+  }
+
   jumpToNow() {
-    const interval = this.filter.value['interval'];
+    const interval = this.filterForm.value['interval'];
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
@@ -211,7 +267,7 @@ export class EventsPage {
   }
 
   startStreaming() {
-    this.filter.get('interval')!.setValue('NO_LIMIT');
+    this.filterForm.get('interval')!.setValue('NO_LIMIT');
     this.dataSource.startStreaming();
   }
 
@@ -220,8 +276,8 @@ export class EventsPage {
   }
 
   applyCustomDates() {
-    this.validStart = new Date(this.filter.value['customStart']);
-    this.validStop = new Date(this.filter.value['customStop']);
+    this.validStart = new Date(this.filterForm.value['customStart']);
+    this.validStop = new Date(this.filterForm.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -230,6 +286,7 @@ export class EventsPage {
    * Loads the first page of data within validStart and validStop
    */
   loadData() {
+    this.updateURL();
     const options: GetEventsOptions = {
       severity: this.severity as any,
     };
@@ -239,8 +296,8 @@ export class EventsPage {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.textSearch) {
-      options.q = this.textSearch;
+    if (this.filter) {
+      options.q = this.filter;
     }
     if (this.source) {
       options.source = this.source;
@@ -256,8 +313,8 @@ export class EventsPage {
     if (this.validStop) {
       dlOptions.stop = this.validStop.toISOString();
     }
-    if (this.textSearch) {
-      dlOptions.q = this.textSearch;
+    if (this.filter) {
+      dlOptions.q = this.filter;
     }
     if (this.source) {
       dlOptions.source = this.source;
@@ -277,8 +334,8 @@ export class EventsPage {
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
-    if (this.textSearch) {
-      options.q = this.textSearch;
+    if (this.filter) {
+      options.q = this.filter;
     }
     if (this.source) {
       options.source = this.source;
@@ -287,21 +344,36 @@ export class EventsPage {
     this.dataSource.loadMoreData(options);
   }
 
+  private updateURL() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filter: this.filter || null,
+        severity: this.severity,
+        source: this.source || null,
+        interval: this.appliedInterval,
+        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
     this.preferenceStore.setVisibleColumns('events', displayedColumns);
   }
 
   updateSeverity(severity: string) {
-    this.filter.get('severity')!.setValue(severity);
+    this.filterForm.get('severity')!.setValue(severity);
   }
 
   updateSource(source: string) {
-    this.filter.get('source')!.setValue(source);
+    this.filterForm.get('source')!.setValue(source);
   }
 
   updateInterval(interval: string) {
-    this.filter.get('interval')!.setValue(interval);
+    this.filterForm.get('interval')!.setValue(interval);
   }
 
   mayWriteEvents() {

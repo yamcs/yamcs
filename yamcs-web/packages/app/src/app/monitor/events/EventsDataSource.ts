@@ -1,7 +1,7 @@
-import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { EventBuffer } from './EventBuffer';
 
@@ -22,20 +22,19 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   public loading$ = new BehaviorSubject<boolean>(false);
   public streaming$ = new BehaviorSubject<boolean>(false);
 
-  private realtimeSynchronizer: number;
   private realtimeSubscription: Subscription;
+  private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
     super();
-    this.realtimeSynchronizer = window.setInterval(() => {
+    this.syncSubscription = synchronizer.sync(() => {
       if (this.eventBuffer.dirty && !this.loading$.getValue()) {
         this.events$.next(this.eventBuffer.snapshot());
         this.eventBuffer.dirty = false;
       }
-    }, 1000 /* update rate */);
+    });
 
     this.eventBuffer = new EventBuffer(() => {
-      console.log('Compacting event buffer');
 
       // Best solution for now, alternative is to re-establish
       // the offscreenRecord after compacting.
@@ -45,7 +44,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     });
   }
 
-  connect(collectionViewer: CollectionViewer) {
+  connect() {
     return this.events$;
   }
 
@@ -169,12 +168,12 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     this.streaming$.next(false);
   }
 
-  disconnect(collectionViewer: CollectionViewer) {
+  disconnect() {
     if (this.realtimeSubscription) {
       this.realtimeSubscription.unsubscribe();
     }
-    if (this.realtimeSynchronizer) {
-      window.clearInterval(this.realtimeSynchronizer);
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
     this.events$.complete();
     this.loading$.complete();

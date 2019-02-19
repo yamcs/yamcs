@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavigationHandler, OpenDisplayCommandOptions, OpiDisplay } from '@yamcs/displays';
+import { NavigationHandler, OpiDisplay } from '@yamcs/displays';
 import { Subscription } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { DefaultNavigationHandler } from './DefaultNavigationHandler';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
 
@@ -16,14 +18,14 @@ import { Viewer } from './Viewer';
   styles: [`
     .wrapper {
       position: absolute;
-      top: 50%;
+      top: 0%;
       left: 50%;
-      transform: translate(-50%,-50%);
+      transform: translate(-50%,0%);
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpiDisplayViewer implements NavigationHandler, Viewer, OnDestroy {
+export class OpiDisplayViewer implements Viewer, OnDestroy {
 
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;
@@ -34,20 +36,30 @@ export class OpiDisplayViewer implements NavigationHandler, Viewer, OnDestroy {
 
   private parameterSubscription: Subscription;
 
+  private navigationHandler: NavigationHandler;
+
   constructor(
     private yamcs: YamcsService,
+    private configService: ConfigService,
     private router: Router,
   ) { }
 
   /**
    * Don't call before ngAfterViewInit()
    */
-  public init(objectName: string) {
+  public init(objectName: string, navigationHandler?: NavigationHandler) {
     this.objectName = objectName;
 
+    if (navigationHandler) {
+      this.navigationHandler = navigationHandler;
+    } else {
+      const instance = this.yamcs.getInstance().name;
+      this.navigationHandler = new DefaultNavigationHandler(objectName, instance, this.router);
+    }
+
     const container: HTMLDivElement = this.displayContainer.nativeElement;
-    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    this.display = new OpiDisplay(this, container, displayCommunicator);
+    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.configService, this.router);
+    this.display = new OpiDisplay(objectName, this.navigationHandler, container, displayCommunicator);
     return this.display.parseAndDraw(objectName).then(() => {
       const ids = this.display.getParameterIds();
       if (ids.length) {
@@ -75,18 +87,6 @@ export class OpiDisplayViewer implements NavigationHandler, Viewer, OnDestroy {
 
   public hasPendingChanges() {
     return false;
-  }
-
-  getBaseId() { // DisplayHolder
-    return this.objectName;
-  }
-
-  openDisplay(options: OpenDisplayCommandOptions) { // DisplayHolder
-    // TODO (called via e.g. NavigationButton)
-  }
-
-  closeDisplay() { // DisplayHolder
-    // NOP
   }
 
   ngOnDestroy() {

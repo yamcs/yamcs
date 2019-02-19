@@ -1,0 +1,79 @@
+<app-instance-page>
+  <app-instance-toolbar>Home</app-instance-toolbar>
+
+  <div class="panel-content">
+    <div class="card-list-container">
+      <div class="card-list">
+        <div class="card big">
+          <mat-card>
+            <mat-card-subtitle>TM Statistics</mat-card-subtitle>
+            <mat-card-content>
+              <app-tmstats-table [tmstats$]="tmstats$"></app-tmstats-table>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card>
+            <mat-card-subtitle>Alarms</mat-card-subtitle>
+            WIP
+          </mat-card>
+        </div>
+        <div class="card" *ngIf="info$ | async as info">
+          <mat-card>
+            <mat-card-subtitle>Server Info</mat-card-subtitle>
+            <mat-list dense>
+              <mat-list-item>
+                <h3 matLine>Yamcs version</h3>
+                <p matLine>
+                  {{ info.yamcsVersion }}, build {{ info.revision.substring(0, 8) }}
+                </p>
+              </mat-list-item>
+
+              <mat-list-item>
+                <h3 matLine>Server ID</h3>
+                <p matLine>
+                  {{ info.serverId }}
+                </p>
+              </mat-list-item>
+
+              <mat-list-item *ngIf="info.plugin">
+                <h3 matLine>Plugins</h3>
+              </mat-list-item>
+
+              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
+                <tr>
+                  <th>Name</th>
+                  <th>Version</th>
+                  <th>Vendor</th>
+                </tr>
+                <tr *ngFor="let plugin of info.plugin">
+                  <td>{{ plugin.name }}</td>
+                  <td>{{ plugin.version || '-' }}</td>
+                  <td>{{ plugin.vendor || '-' }}</td>
+                </tr>
+              </table>
+            </mat-list>
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card>
+            <mat-card-subtitle>Links</mat-card-subtitle>
+            WIP
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card>
+            <mat-card-subtitle>MDB</mat-card-subtitle>
+            WIP
+          </mat-card>
+        </div>
+        <div class="card">
+          <mat-card></mat-card>
+        </div>
+        <div class="card">
+          <mat-card></mat-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-instance-page>

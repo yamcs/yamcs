@@ -1,13 +1,18 @@
 package org.yamcs.web.rest.mdb;
 
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toCalibrator;
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toContextCalibratorList;
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toEnumerationAlarm;
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toEnumerationContextAlarm;
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toNumericAlarm;
+import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.toNumericContextAlarm;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +50,6 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import static org.yamcs.web.rest.mdb.GbpToXtceAssembler.*;
 
 /**
  * Handles incoming requests related to parameter info from the MDB
@@ -259,7 +262,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if (cpr.hasDefaultCalibrator()) {
                 pdata.setDefaultCalibrator(p, toCalibrator(cpr.getDefaultCalibrator()));
             } else {
-                pdata.removeDefaultCalibrator(p);                
+                pdata.removeDefaultCalibrator(p);
             }
             break;
         case RESET_ALARMS:

@@ -1,4 +1,4 @@
-import { Algorithm, Command, Container, Parameter, SpaceSystem } from './mdb';
+import { SpaceSystem } from './mdb';
 import { Alarm, CommandHistoryEntry, Event, IndexGroup, Range, Sample } from './monitoring';
 import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, Service, Stream, Table } from './system';
 
@@ -32,10 +32,6 @@ export interface CommandHistoryEntryWrapper {
   entry: CommandHistoryEntry[];
 }
 
-export interface ContainersWrapper {
-  container: Container[];
-}
-
 export interface InstancesWrapper {
   instance: Instance[];
 }
@@ -56,16 +52,8 @@ export interface SpaceSystemsWrapper {
   spaceSystem: SpaceSystem[];
 }
 
-export interface AlgorithmsWrapper {
-  algorithm: Algorithm[];
-}
-
 export interface AlarmsWrapper {
   alarm: Alarm[];
-}
-
-export interface ParametersWrapper {
-  parameter: Parameter[];
 }
 
 export interface ClientsWrapper {
@@ -74,10 +62,6 @@ export interface ClientsWrapper {
 
 export interface CommandQueuesWrapper {
   queue: CommandQueue[];
-}
-
-export interface CommandsWrapper {
-  command: Command[];
 }
 
 export interface ProcessorsWrapper {

@@ -1,0 +1,39 @@
+<ng-container *ngIf="table$ | async as table">
+  <div class="detail">
+    <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
+      <app-detail-toolbar>
+        Record
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-record [table]="table"
+                    [record]="selectedRecord">
+        </app-record>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select a record
+      </app-detail-toolbar>
+    </ng-template>
+  </div>
+  <div class="data-table-wrapper">
+    <div class="panel-content">
+      <table yaDataTable *ngIf="records$ | async as records">
+        <tr>
+          <th *ngFor="let column of table.keyColumn">{{ column.name }}</th>
+          <th *ngFor="let column of table.valueColumn">{{ column.name }}</th>
+        </tr>
+        <tr *ngFor="let record of records"
+            [ngClass]="{selected: (record === (selectedRecord$ | async))}"
+            (click)="selectRecord(record)">
+          <td *ngFor="let column of table.keyColumn">
+            {{ (record.column | columnValue:column.name | value) || '-' }}
+          </td>
+          <td *ngFor="let column of table.valueColumn">
+            {{ (record.column | columnValue:column.name | value) || '-' }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</ng-container>

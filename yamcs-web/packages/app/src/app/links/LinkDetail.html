@@ -1,0 +1,52 @@
+<h6>Name</h6>
+<div class="block">
+  {{ link.name }}
+</div>
+
+<h6>Class</h6>
+<div class="block">
+  {{ link.type }}
+</div>
+
+<!--h6>Args</h6>
+<div class="block">
+  <span [innerHTML]="link.spec | printJson"></span>
+</div-->
+
+<br>
+<mat-divider></mat-divider>
+
+<h6>Status</h6>
+<div class="block">
+  <app-link-status [link]="link"></app-link-status>
+  {{ link.status }}
+</div>
+
+<h6>In Count</h6>
+<div class="block">
+  {{ link.dataInCount | number }}
+</div>
+
+<h6>Out Count</h6>
+<div class="block">
+  {{ link.dataOutCount | number }}
+</div>
+
+<ng-container *ngIf="mayControlLinks()">
+  <br>
+  <mat-divider></mat-divider>
+  <br>
+
+  <button mat-raised-button
+          (click)="enableLink()"
+          *ngIf="link.status === 'DISABLED'"
+          color="primary">
+    ENABLE LINK
+  </button>
+  <button mat-raised-button
+          (click)="disableLink()"
+          *ngIf="link.status !== 'DISABLED'"
+          color="warn">
+    DISABLE LINK
+  </button>
+</ng-container>

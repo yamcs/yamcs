@@ -1,11 +1,7 @@
 import { NgModule } from '@angular/core';
-import { MdbModule } from '../mdb/MdbModule';
 import { SharedModule } from '../shared/SharedModule';
 import { AcknowledgeAlarmDialog } from './alarms/AcknowledgeAlarmDialog';
 import { AlarmDetail } from './alarms/AlarmDetail';
-import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
-import { JumpToDialog } from './archive/JumpToDialog';
-import { TimelineTooltip } from './archive/TimelineTooltip';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
 import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
@@ -18,6 +14,7 @@ import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
 import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
+import { UploadFilesDialog } from './displays/UploadFilesDialog';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
 import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
@@ -33,14 +30,6 @@ import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
-import { CommandQueuesTable } from './processors/CommandQueuesTable';
-import { QueuedCommandsTable } from './processors/QueuedCommandsTable';
-import { TmStatsTable } from './processors/TmStatsTable';
-import { RecordComponent } from './table/RecordComponent';
-import { ShowEnumDialog } from './table/ShowEnumDialog';
-import { MonitorPageTemplate } from './template/MonitorPageTemplate';
-import { MonitorToolbar } from './template/MonitorToolbar';
-import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
   AcknowledgeAlarmDialog,
@@ -48,13 +37,10 @@ const dialogComponents = [
   CreateEventDialog,
   CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
-  DownloadDumpDialog,
   ExportArchiveDataDialog,
-  JumpToDialog,
   RenameDisplayDialog,
   RenameLayoutDialog,
-  ShowEnumDialog,
-  StartReplayDialog,
+  UploadFilesDialog,
 ];
 
 const pipes = [
@@ -82,7 +68,6 @@ const viewers = [
 @NgModule({
   imports: [
     SharedModule,
-    MdbModule,
     MonitorRoutingModule,
   ],
   declarations: [
@@ -92,28 +77,17 @@ const viewers = [
     pipes,
     viewers,
     AlarmDetail,
-    CommandQueuesTable,
     DisplayNavigator,
     Frame,
     EventSeverity,
     Layout,
-    MonitorPageTemplate,
     MultipleParameterTable,
-    QueuedCommandsTable,
-    RecordComponent,
     ScrollingParameterTable,
-    TimelineTooltip,
-    TmStatsTable,
-  ],
-  exports: [
-    MonitorPageTemplate,
-    MonitorToolbar,
   ],
   entryComponents: [
     dialogComponents,
     viewers,
     Frame,
-    TimelineTooltip,
   ]
 })
 export class MonitorModule {

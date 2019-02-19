@@ -86,12 +86,15 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         int totalSize = matchedAlgorithms.size();
 
         String next = req.getQueryParameter("next", null);
+        int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedAlgorithms = matchedAlgorithms.stream().filter(p -> {
                 return p.getQualifiedName().compareTo(pageToken.name) > 0;
             }).collect(Collectors.toList());
+        } else if (pos > 0) {
+            matchedAlgorithms = matchedAlgorithms.subList(pos, matchedAlgorithms.size());
         }
 
         NamedObjectPageToken continuationToken = null;

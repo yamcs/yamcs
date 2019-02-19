@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Parameter } from '@yamcs/client';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
@@ -39,6 +39,7 @@ export class CompareParameterDialog implements OnInit {
         q: val,
         limit: 10,
       })),
+      map(page => page.parameter || []),
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {

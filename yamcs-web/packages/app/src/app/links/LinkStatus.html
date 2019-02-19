@@ -1,0 +1,18 @@
+<mat-icon *ngIf="link.status === 'OK'"
+          class="success"
+          [matTooltip]="link.status"
+          [class.fade]="parentLink && parentLink.status !== 'OK'">
+  check_circle
+</mat-icon>
+<mat-icon *ngIf="link.status === 'UNAVAIL'"
+          class="alert"
+          [matTooltip]="link.status"
+          [class.fade]="parentLink && parentLink.status !== 'OK'">
+  highlight_off
+</mat-icon>
+<mat-icon *ngIf="link.status === 'DISABLED'"
+          class="down"
+          [matTooltip]="link.status"
+          [class.fade]="parentLink && parentLink.status !== 'OK'">
+  lens
+</mat-icon>

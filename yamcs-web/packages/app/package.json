@@ -33,11 +33,12 @@
     "roboto-fontface": "^0.10.0",
     "rxjs": "^6.2.0",
     "screenfull": "^4.0.0",
+    "systemjs": "^0.21.4",
     "whatwg-fetch": "^3.0.0",
     "zone.js": "^0.8.20"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.12.1",
+    "@angular-devkit/build-angular": "~0.13.0",
     "@angular/cli": "^7.0.0",
     "@angular/compiler-cli": "^7.0.0",
     "@angular/language-service": "^7.0.0",

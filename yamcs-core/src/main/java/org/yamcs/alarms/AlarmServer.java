@@ -127,6 +127,7 @@ public class AlarmServer extends AbstractService {
                 }
                 activeAlarms.remove(pv.getParameter());
             } else {
+                activeAlarm.valueCount++;
                 for (AlarmListener l : alarmListeners) {
                     l.notifyParameterValueUpdate(activeAlarm);
                 }
@@ -139,6 +140,7 @@ public class AlarmServer extends AbstractService {
             } else {
                 activeAlarm.currentValue = pv;
                 activeAlarm.violations++;
+                activeAlarm.valueCount++;
             }
             if (activeAlarm.violations < minViolations) {
                 return;

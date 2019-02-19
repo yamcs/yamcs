@@ -1,34 +1,13 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Display, NavigationHandler, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
+import { Display, NavigationHandler, UssDisplay } from '@yamcs/displays';
 import { Subscription } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { DefaultNavigationHandler } from './DefaultNavigationHandler';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
 
-/**
- * Simple nav handler that relocates the browser to the standalone display pages.
- */
-export class DefaultNavigationHandler implements NavigationHandler {
-
-  constructor(
-    private objectName: string,
-    private instance: string,
-    private router: Router,
-  ) {}
-
-  getBaseId() {
-    return this.objectName;
-  }
-
-  openDisplay(options: OpenDisplayCommandOptions) {
-    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${this.instance}`);
-  }
-
-  closeDisplay() {
-    this.router.navigateByUrl(`/monitor/displays/browse?instance=${this.instance}`);
-  }
-}
 
 @Component({
   selector: 'app-uss-display-viewer',
@@ -75,6 +54,7 @@ export class UssDisplayViewer implements Viewer, OnDestroy {
 
   constructor(
     private yamcs: YamcsService,
+    private configService: ConfigService,
     private router: Router,
   ) {}
 
@@ -92,7 +72,7 @@ export class UssDisplayViewer implements Viewer, OnDestroy {
     }
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
-    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
+    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.configService, this.router);
     this.display = new UssDisplay(this.navigationHandler, container, displayCommunicator);
     return this.display.parseAndDraw(this.objectName).then(() => {
       const ids = this.display.getParameterIds();

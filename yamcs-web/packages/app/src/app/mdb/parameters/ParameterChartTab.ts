@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 import { Parameter } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { subtractDuration } from '../../shared/utils';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
@@ -29,10 +30,10 @@ export class ParameterChartTab implements OnDestroy {
   customStart$ = new BehaviorSubject<Date | null>(null);
   customStop$ = new BehaviorSubject<Date | null>(null);
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService, private dialog: MatDialog) {
+  constructor(route: ActivatedRoute, private yamcs: YamcsService, private dialog: MatDialog, synchronizer: Synchronizer) {
     this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new DyDataSource(yamcs);
+    this.dataSource = new DyDataSource(yamcs, synchronizer);
     this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
     this.parameter$.then(parameter => {
       this.dataSource.addParameter(parameter);

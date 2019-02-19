@@ -4,7 +4,7 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse } from './types/system';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -251,6 +251,38 @@ export class WebSocketClient {
     });
   }
 
+  async getStreamUpdates(stream: string) {
+    this.subscriptionModel.stream = true;
+    this.subscriptionModel.streamName = stream;
+    const requestId = this.emit({
+      stream: 'subscribe',
+      data: { stream },
+    });
+
+    return new Promise<StreamSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as StreamSubscriptionResponse;
+          response.streamData$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'STREAM_DATA'),
+            map(msg => msg[3].data as StreamData),
+            filter(streamData => streamData.stream === stream),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getInstanceUpdates() {
     this.subscriptionModel.instance = true;
     const requestId = this.emit({ instance: 'subscribe' });
@@ -451,6 +483,9 @@ export class WebSocketClient {
     if (this.subscriptionModel.alarms) {
       this.emit({ alarms: 'subscribe' });
     }
+    if (this.subscriptionModel.commandQueues) {
+      this.emit({ cqueues: 'subscribe' });
+    }
     if (this.subscriptionModel.events) {
       this.emit({ events: 'subscribe' });
     }
@@ -466,11 +501,15 @@ export class WebSocketClient {
     if (this.subscriptionModel.management) {
       this.emit({ management: 'subscribe' });
     }
-    if (this.subscriptionModel.commandQueues) {
-      this.emit({ cqueues: 'subscribe' });
-    }
     if (this.subscriptionModel.parameters) {
       this.emit({ parameter: 'subscribe', data: this.subscriptionModel.parameters });
+    }
+    if (this.subscriptionModel.stream) {
+      this.emit({
+        stream: 'subscribe',
+        data: {
+          stream: this.subscriptionModel.streamName,
+        }});
     }
     if (this.subscriptionModel.time) {
       this.emit({ time: 'subscribe' });

@@ -1,5 +1,6 @@
 import { Alarm, NamedObjectId, Parameter, ParameterValue, Sample } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
 import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
@@ -33,14 +34,14 @@ export class DyDataSource {
 
   // Realtime
   private subscriptionId: number;
-  private realtimeSynchronizer: number;
   private realtimeSubscription: Subscription;
+  private syncSubscription: Subscription;
   // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
 
-  constructor(private yamcs: YamcsService) {
-    this.realtimeSynchronizer = window.setInterval(() => {
+  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+    this.syncSubscription = synchronizer.sync(() => {
       if (this.plotBuffer.dirty && !this.loading$.getValue()) {
         const plotData = this.plotBuffer.snapshot();
         this.data$.next({
@@ -50,7 +51,7 @@ export class DyDataSource {
         });
         this.plotBuffer.dirty = false;
       }
-    }, 1000 /* update rate */);
+    });
 
     this.plotBuffer = new PlotBuffer(() => {
       this.reloadVisibleRange();
@@ -200,8 +201,8 @@ export class DyDataSource {
     if (this.realtimeSubscription) {
       this.realtimeSubscription.unsubscribe();
     }
-    if (this.realtimeSynchronizer) {
-      window.clearInterval(this.realtimeSynchronizer);
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
   }
 

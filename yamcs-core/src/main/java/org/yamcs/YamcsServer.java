@@ -118,14 +118,13 @@ public class YamcsServer {
     @SuppressWarnings("unchecked")
     static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig)
             throws ConfigurationException, IOException {
-        int count = 1;
         ManagementService managementService = ManagementService.getInstance();
         Set<String> names = new HashSet<>();
         List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
         for (Object servobj : servicesConfig) {
             String servclass;
             Object args = null;
-            String name = "service" + count;
+            String name = null;
             if (servobj instanceof String) {
                 servclass = (String) servobj;
             } else if (servobj instanceof Map<?, ?>) {
@@ -140,10 +139,18 @@ public class YamcsServer {
                         "Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "
                                 + servobj);
             }
-            if (names.contains(name)) {
-                throw new ConfigurationException(
-                        "There is already a service named '" + name + "'");
+
+            if (name == null) {
+                name = servclass.substring(servclass.lastIndexOf('.') + 1);
             }
+
+            String candidateName = name;
+            int count = 1;
+            while (names.contains(candidateName)) {
+                candidateName = name + "-" + count;
+                count++;
+            }
+            name = candidateName;
 
             staticlog.info("Loading {} service {}", (instance == null) ? "global" : instance, servclass);
             ServiceWithConfig swc;
@@ -162,7 +169,6 @@ public class YamcsServer {
                 managementService.registerService(instance, name, swc.service);
             }
             names.add(name);
-            count++;
         }
 
         return serviceList;
@@ -513,7 +519,7 @@ public class YamcsServer {
      */
     public synchronized YamcsServerInstance createInstance(String name, YConfiguration conf)
             throws IOException {
-        
+
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
@@ -16,6 +16,7 @@ import { ParameterSeries } from './ParameterSeries';
   selector: 'app-parameter-plot',
   templateUrl: './ParameterPlot.html',
   styleUrls: ['./ParameterPlot.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterPlot implements AfterViewInit, OnDestroy {
 

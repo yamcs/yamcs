@@ -1,5 +1,5 @@
-<app-monitor-page *ngIf="layoutState$ | async as layoutState">
-  <app-monitor-toolbar>
+<app-instance-page *ngIf="layoutState$ | async as layoutState">
+  <app-instance-toolbar>
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> {{ layoutName }}
@@ -25,11 +25,11 @@
       <mat-icon>fullscreen</mat-icon>
       FULL SCREEN
     </button>
-  </app-monitor-toolbar>
+  </app-instance-toolbar>
 
   <app-layout #layout
               [startWithOpenedNavigator]="true"
               [layoutState]="layoutState"
               (stateChange)="onStateChange($event)">
   </app-layout>
-</app-monitor-page>
+</app-instance-page>

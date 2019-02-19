@@ -1,6 +1,5 @@
 import * as ast from './ast';
 import { CompiledFormula } from './CompiledFormula';
-
 import { parse } from './parser';
 
 export class FormulaCompiler {

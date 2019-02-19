@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,6 +86,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         String processorName = originalRequestInfo.getProcessor();
         User user = originalRequestInfo.getUser();
+        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+        String hostAddress = address.getAddress().getHostAddress();
         if (yamcsInstance != null) {
             Processor processor;
             if (processorName == null) {
@@ -92,9 +95,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             } else {
                 processor = Processor.getInstance(yamcsInstance, processorName);
             }
-            wsClient = new ConnectedWebSocketClient(user, applicationName, processor, this);
+            wsClient = new ConnectedWebSocketClient(user, applicationName, hostAddress, processor, this);
         } else {
-            wsClient = new ConnectedWebSocketClient(user, applicationName, null, this);
+            wsClient = new ConnectedWebSocketClient(user, applicationName, hostAddress, null, this);
         }
 
         ManagementService managementService = ManagementService.getInstance();

@@ -1,6 +1,5 @@
 import commonjs from 'rollup-plugin-commonjs';
 import resolve from 'rollup-plugin-node-resolve';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
 
@@ -13,9 +12,6 @@ export default {
     include: 'src/**',
   },
   plugins: [
-    // Add peerDependencies to its bundle's externals
-    peerDepsExternal(),
-
     // Compile TypeScript files
     typescript({ useTsconfigDeclarationDir: true }),
 
@@ -30,4 +26,9 @@ export default {
     // Resolve source maps to the original source
     sourceMaps(),
   ],
+  external: [
+    '@yamcs/client',
+    'dygraphs',
+    'fontfaceobserver'
+  ]
 };

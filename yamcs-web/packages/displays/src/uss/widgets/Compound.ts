@@ -1,8 +1,7 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
 import { G } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
 
 export class Compound extends AbstractWidget {
 

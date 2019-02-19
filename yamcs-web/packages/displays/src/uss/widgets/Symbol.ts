@@ -4,7 +4,6 @@ import { DataSourceBinding } from '../DataSourceBinding';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
-
 export class Symbol extends AbstractWidget {
 
   libraryName: string;

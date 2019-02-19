@@ -87,13 +87,17 @@ public class MDBParameterTypeRestHandler extends RestHandler {
         int totalSize = matchedTypes.size();
 
         String next = req.getQueryParameter("next", null);
+        int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedTypes = matchedTypes.stream().filter(t -> {
                 return ((NameDescription) t).getQualifiedName().compareTo(pageToken.name) > 0;
             }).collect(Collectors.toList());
+        } else if (pos > 0) {
+            matchedTypes = matchedTypes.subList(pos, matchedTypes.size());
         }
+
         NamedObjectPageToken continuationToken = null;
         if (limit < matchedTypes.size()) {
             matchedTypes = matchedTypes.subList(0, limit);

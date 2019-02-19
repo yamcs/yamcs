@@ -1,8 +1,7 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
-import { Tag, G, Defs, Marker, Path } from '../../tags';
+import { Defs, G, Marker, Path, Tag } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
 
 export class Polyline extends AbstractWidget {
 
@@ -12,7 +11,6 @@ export class Polyline extends AbstractWidget {
     const strokeWidth = utils.parseFloatChild(drawStyleNode, 'Width');
     const arrowStart = utils.parseBooleanChild(this.node, 'ArrowStart');
     const arrowEnd = utils.parseBooleanChild(this.node, 'ArrowEnd');
-
 
     const points: string[] = [];
     const pointsEl = utils.findChild(this.node, 'Points');

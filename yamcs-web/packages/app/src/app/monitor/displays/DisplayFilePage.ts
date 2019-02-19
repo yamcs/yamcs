@@ -9,6 +9,7 @@ import 'brace/theme/twilight';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as screenfull from 'screenfull';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
 import { OpiDisplayViewer } from './OpiDisplayViewer';
@@ -45,13 +46,14 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   filename: string;
   folderLink: string;
 
+  private prevFilename: string;
+
   fullscreenSupported$ = new BehaviorSubject<boolean>(false);
   fullscreen$ = new BehaviorSubject<boolean>(false);
   fullscreenListener: () => void;
 
   private routerSubscription: Subscription;
-
-  private displayRefresher: number;
+  private syncSubscription: Subscription;
 
   constructor(
     yamcs: YamcsService,
@@ -59,6 +61,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     router: Router,
     private componentFactoryResolver: ComponentFactoryResolver,
     private title: Title,
+    private synchronizer: Synchronizer,
   ) {
     this.instance = yamcs.getInstance();
     this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
@@ -92,21 +95,27 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.title.setTitle(this.filename + ' - Yamcs');
 
     if (reloadViewer) {
-      this.ngAfterViewInit();
+      console.log('force reload');
+      ///this.ngAfterViewInit();
     }
   }
 
   ngAfterViewInit() {
+    console.log('initing....');
     if (this.filename.toLowerCase().endsWith('.uss')) {
       const ussDisplayViewer = this.createViewer(UssDisplayViewer);
       const controls = this.createViewerControls(UssDisplayViewerControls);
       controls.init(ussDisplayViewer);
       this.viewer = ussDisplayViewer;
-      this.displayRefresher = window.setInterval(() => {
+      this.syncSubscription = this.synchronizer.syncFast(() => {
         ussDisplayViewer.display.digest();
-      }, 500 /* update rate */);
+      });
     } else if (this.filename.toLowerCase().endsWith('.opi')) {
-      this.viewer = this.createViewer(OpiDisplayViewer);
+      const opiDisplayViewer = this.createViewer(OpiDisplayViewer);
+      this.viewer = opiDisplayViewer;
+      this.syncSubscription = this.synchronizer.syncFast(() => {
+        opiDisplayViewer.display.digest();
+      });
     } else if (this.filename.toLowerCase().endsWith('.par')) {
       const parameterTableViewer = this.createViewer(ParameterTableViewer);
       const controls = this.createViewerControls(ParameterTableViewerControls);
@@ -160,9 +169,11 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     screenfull.off('change', this.fullscreenListener);
-    window.clearInterval(this.displayRefresher);
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
+    }
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
   }
 }

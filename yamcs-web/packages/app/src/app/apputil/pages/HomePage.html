@@ -38,9 +38,9 @@
 
   <div class="panel-content">
     <div style="margin-bottom: 12px;">
-      <input placeholder="Filter instances"
-             style="width: 400px"
-             (keyup)="applyFilter($event.target.value)">
+      <input #filter
+             placeholder="Filter instances"
+             style="width: 400px">
     </div>
     <table mat-table
            [dataSource]="dataSource"
@@ -98,7 +98,7 @@
         <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 300px">Instance</th>
         <td mat-cell *cdkCellDef="let row">
           <a *ngIf="row.state !== 'OFFLINE'"
-            routerLink="/monitor/displays/browse"
+            routerLink="/instance"
             [queryParams]="{instance: row.name}">
             {{ row.name }}
           </a>

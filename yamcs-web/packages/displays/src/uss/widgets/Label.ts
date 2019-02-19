@@ -68,7 +68,6 @@ export class Label extends AbstractWidget {
       text.setAttribute('font-size', fontSize);
     }
 
-
     const fm = this.getFontMetrics(innerText, fontFamily, fontStyle, fontWeight, fontSize);
 
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');

@@ -1,0 +1,37 @@
+<app-instance-page *ngIf="table$ | async as table">
+  <app-instance-toolbar>
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Tables / {{ table.name }}
+  </app-instance-toolbar>
+
+  <nav mat-tab-nav-bar>
+    <a mat-tab-link
+        routerLink="./info"
+        routerLinkActive #rla="routerLinkActive"
+        [queryParams]="{instance: instance.name}"
+        [active]="rla.isActive">
+      Info
+    </a>
+
+    <a mat-tab-link
+        routerLink="./data"
+        routerLinkActive #rlb="routerLinkActive"
+        [queryParams]="{instance: instance.name}"
+        [active]="rlb.isActive">
+      Data
+    </a>
+
+    <a mat-tab-link
+        routerLink="./script"
+        routerLinkActive #rlc="routerLinkActive"
+        [queryParams]="{instance: instance.name}"
+        [active]="rlc.isActive">
+      Script
+    </a>
+  </nav>
+
+  <div class="outlet-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+</app-instance-page>

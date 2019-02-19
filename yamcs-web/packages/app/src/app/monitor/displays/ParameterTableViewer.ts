@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from
 import { MatDialog } from '@angular/material';
 import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
@@ -38,6 +39,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     private yamcs: YamcsService,
     private changeDetector: ChangeDetectorRef,
     private dialog: MatDialog,
+    private configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
   }
@@ -45,7 +47,11 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   public init(objectName: string) {
     this.objectName = objectName;
     this.instance = this.yamcs.getInstance();
-    this.storageClient.getObject(this.instance.name, 'displays', objectName).then(response => {
+    let bucketInstance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      bucketInstance = '_global';
+    }
+    this.storageClient.getObject(bucketInstance, 'displays', objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
         this.model$.next(model);
@@ -194,9 +200,14 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   save() {
+    let bucketInstance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      bucketInstance = '_global';
+    }
+
     const model = this.model$.value!;
     const b = new Blob([JSON.stringify(model, undefined, 2)]);
-    return this.storageClient.uploadObject(this.instance.name, 'displays', this.objectName, b).then(() => {
+    return this.storageClient.uploadObject(bucketInstance, 'displays', this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
   }

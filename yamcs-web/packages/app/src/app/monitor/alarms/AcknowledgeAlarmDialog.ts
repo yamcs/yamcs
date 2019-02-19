@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { Alarm, EditAlarmOptions } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -23,7 +24,19 @@ export class AcknowledgeAlarmDialog {
   }
 
   async acknowledge() {
-    console.log('do ack');
+    const alarms = this.data.alarms as Alarm[];
+    const comment = this.formGroup.get('comment')!.value;
+
+    for (const alarm of alarms) {
+      const processor = this.yamcs.getProcessor();
+      const options: EditAlarmOptions = {
+        state: 'acknowledged',
+      };
+      if (comment) {
+        options.comment = comment;
+      }
+      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarm.parameter.qualifiedName, alarm.seqNum, options);
+    }
     this.dialogRef.close();
   }
 }

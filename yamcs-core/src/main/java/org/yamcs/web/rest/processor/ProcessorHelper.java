@@ -24,6 +24,7 @@ public class ProcessorHelper {
         alarmb.setMostSevereValue(activeAlarm.mostSevereValue.toGpb(parameterId));
         alarmb.setCurrentValue(activeAlarm.currentValue.toGpb(parameterId));
         alarmb.setViolations(activeAlarm.violations);
+        alarmb.setValueCount(activeAlarm.valueCount);
 
         if (activeAlarm.acknowledged) {
             AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();

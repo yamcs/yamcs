@@ -77,6 +77,7 @@ message ClientInfo {
   optional int32 id = 2;
   optional string username = 3;
   optional string applicationName = 4;
+  optional string address = 10;
 
   optional string instance = 1;  
   optional string processorName = 5;

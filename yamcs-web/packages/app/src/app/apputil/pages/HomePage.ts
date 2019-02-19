@@ -1,9 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { Subscription } from 'rxjs';
+import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -14,6 +16,9 @@ import { YamcsService } from '../../core/services/YamcsService';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomePage implements AfterViewInit, OnDestroy {
+
+  @ViewChild('filter')
+  filter: ElementRef;
 
   @ViewChild(MatSort)
   sort: MatSort;
@@ -37,21 +42,14 @@ export class HomePage implements AfterViewInit, OnDestroy {
     'actions',
   ];
 
-  constructor(private yamcs: YamcsService, title: Title, private authService: AuthService) {
-    title.setTitle('Yamcs');
-    this.yamcs.yamcsClient.getInstances().then(instances => {
-      for (const instance of instances) {
-        this.instancesByName[instance.name] = instance;
-      }
-      this.dataSource.data = Object.values(this.instancesByName);
-    });
-
-    this.yamcs.yamcsClient.getInstanceUpdates().then(response => {
-      this.instanceSubscription = response.instance$.subscribe(instance => {
-        this.instancesByName[instance.name] = instance;
-        this.dataSource.data = Object.values(this.instancesByName);
-      });
-    });
+  constructor(
+    private yamcs: YamcsService,
+    title: Title,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
+    title.setTitle('Instances - Yamcs');
 
     this.dataSource.filterPredicate = (instance, filter) => {
       return instance.name.toLowerCase().indexOf(filter) >= 0;
@@ -59,12 +57,37 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    if (queryParams.has('filter')) {
+      this.filter.nativeElement.value = queryParams.get('filter');
+      this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
+    }
+
+    this.yamcs.yamcsClient.getInstances().then(instances => {
+      for (const instance of instances) {
+        this.instancesByName[instance.name] = instance;
+      }
+      this.dataSource.data = Object.values(this.instancesByName);
+
+      this.yamcs.yamcsClient.getInstanceUpdates().then(response => {
+        this.instanceSubscription = response.instance$.subscribe(instance => {
+          this.instancesByName[instance.name] = instance;
+          this.dataSource.data = Object.values(this.instancesByName);
+        });
+      });
+    });
+
+    fromEvent(this.filter.nativeElement, 'keyup').pipe(
+      debounceTime(150), // Keep low -- Client-side filter
+      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
+      distinctUntilChanged(),
+    ).subscribe(value => {
+      this.updateURL();
+      this.dataSource.filter = value.toLowerCase();
+    });
+
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-  }
-
-  applyFilter(value: string) {
-    this.dataSource.filter = value.trim().toLowerCase();
   }
 
   isAllSelected() {
@@ -189,6 +212,17 @@ export class HomePage implements AfterViewInit, OnDestroy {
   mayCreateInstances() {
     const user = this.authService.getUser()!;
     return user.hasSystemPrivilege('CreateInstances');
+  }
+
+  private updateURL() {
+    const filterValue = this.filter.nativeElement.value.trim();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filter: filterValue || null,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   ngOnDestroy() {

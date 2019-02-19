@@ -1,0 +1,9 @@
+<app-instance-page>
+  <app-instance-toolbar>Services</app-instance-toolbar>
+
+  <div class="panel-content">
+    <app-services-table [dataSource]="dataSource"
+                        (startService)="startService($event)"
+                        (stopService)="stopService($event)"></app-services-table>
+  </div>
+</app-instance-page>

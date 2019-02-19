@@ -1,6 +1,7 @@
 import { Router } from '@angular/router';
 import { Instance, NamedObjectId, StorageClient } from '@yamcs/client';
 import { DisplayCommunicator } from '@yamcs/displays';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 /**
@@ -11,7 +12,9 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   private instance: Instance;
   private storageClient: StorageClient;
 
-  constructor(private yamcs: YamcsService, private router: Router) {
+  constructor(private yamcs: YamcsService, private configService: ConfigService, private router: Router) {
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
   }
 
   triggerParameterAction(id: NamedObjectId) {
@@ -24,11 +27,19 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   }
 
   getObjectURL(bucketName: string, objectName: string) {
-    return this.storageClient.getObjectURL(this.instance.name, bucketName, objectName);
+    let instance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      instance = '_global';
+    }
+    return this.storageClient.getObjectURL(instance, bucketName, objectName);
   }
 
   async getObject(bucketName: string, objectName: string) {
-    return await this.storageClient.getObject(this.instance.name, bucketName, objectName);
+    let instance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      instance = '_global';
+    }
+    return await this.storageClient.getObject(instance, bucketName, objectName);
   }
 
   async getXMLObject(bucketName: string, objectName: string) {

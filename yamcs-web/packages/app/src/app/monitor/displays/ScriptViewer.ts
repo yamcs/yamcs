@@ -5,6 +5,7 @@ import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
+import { ConfigService } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
@@ -35,6 +36,7 @@ export class ScriptViewer implements Viewer, OnDestroy {
 
   constructor(
     yamcs: YamcsService,
+    private configService: ConfigService,
     private preferenceStore: PreferenceStore,
     private changeDetector: ChangeDetectorRef,
   ) {
@@ -43,7 +45,11 @@ export class ScriptViewer implements Viewer, OnDestroy {
   }
 
   public init(objectName: string) {
-    this.storageClient.getObject(this.instance.name, 'displays', objectName).then(response => {
+    let instance = this.instance.name;
+    if (this.configService.getDisplayScope() === 'GLOBAL') {
+      instance = '_global';
+    }
+    this.storageClient.getObject(instance, 'displays', objectName).then(response => {
       response.text().then(text => {
         this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);

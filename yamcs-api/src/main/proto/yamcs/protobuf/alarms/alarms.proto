@@ -30,4 +30,5 @@ message AlarmData {
   optional uint32 violations = 6;
   optional AcknowledgeInfo acknowledgeInfo = 7;
   optional mdb.ParameterInfo parameter = 8;
+  optional uint32 valueCount = 9;
 }
