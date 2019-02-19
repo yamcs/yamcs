@@ -48,6 +48,7 @@ mkdir -p $TARGET/lib/ext
 cp -an $YAMCS_HOME/yamcs-server/bin/* $TARGET/bin
 cp -an $YAMCS_HOME/yamcs-client/bin/* $TARGET/bin
 cp -an $YAMCS_HOME/yamcs-tse/bin/* $TARGET/bin
+cp -an $YAMCS_HOME/yamcs-cfdp/bin/* $TARGET/bin
 
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 
@@ -56,6 +57,7 @@ ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/dependency/*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-cfdp/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-server/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-server/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
