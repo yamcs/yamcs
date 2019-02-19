@@ -14,7 +14,8 @@
         </div>
         <div class="card">
           <mat-card>
-            <mat-card-subtitle>Links</mat-card-subtitle>
+            <mat-card-subtitle>Alarms</mat-card-subtitle>
+            WIP
           </mat-card>
         </div>
         <div class="card" *ngIf="info$ | async as info">
@@ -24,7 +25,7 @@
               <mat-list-item>
                 <h3 matLine>Yamcs version</h3>
                 <p matLine>
-                  {{ info.yamcsVersion }}, build {{ info.revision }}
+                  {{ info.yamcsVersion }}, build {{ info.revision.substring(0, 8) }}
                 </p>
               </mat-list-item>
 
@@ -51,38 +52,28 @@
                   <td>{{ plugin.vendor || '-' }}</td>
                 </tr>
               </table>
-
-              <br>
             </mat-list>
           </mat-card>
         </div>
         <div class="card">
-          <mat-card>card4</mat-card>
+          <mat-card>
+            <mat-card-subtitle>Links</mat-card-subtitle>
+            WIP
+          </mat-card>
         </div>
         <div class="card">
-          <mat-card>card5</mat-card>
+          <mat-card>
+            <mat-card-subtitle>MDB</mat-card-subtitle>
+            WIP
+          </mat-card>
         </div>
         <div class="card">
-          <mat-card>card6</mat-card>
+          <mat-card></mat-card>
         </div>
         <div class="card">
-          <mat-card>card7</mat-card>
+          <mat-card></mat-card>
         </div>
       </div>
     </div>
-
-    <div style="float: right; width: 20%; padding-top: 1em">
-      <mat-card style="margin-left: 8px">
-        <mat-card-subtitle>MDB</mat-card-subtitle>
-        <mat-card-content>
-          x parameters
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-button>MDB Overview</button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-    <div style="clear: both"></div>
-
   </div>
 </app-instance-page>

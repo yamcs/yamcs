@@ -56,6 +56,12 @@
         Commanding
       </mat-list-item>
       <div *ngIf="commandingExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/commanding/command-stack"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true"
+                              *ngIf="false">
+          Command Stack
+        </app-sidebar-nav-item>
         <app-sidebar-nav-item routerLink="/commanding/command-history"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">

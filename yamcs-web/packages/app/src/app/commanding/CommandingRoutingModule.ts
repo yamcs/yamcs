@@ -5,19 +5,19 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandQueuesPage } from './command-queues/CommandQueuesPage';
+import { CommandStackPage } from './command-stack/CommandStackPage';
 
 const routes: Routes = [
   {
     path: '',
     canActivate: [AuthGuard, InstanceExistsGuard],
     canActivateChild: [AuthGuard],
-    runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
+    runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [
       {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'command-history',
+        path: 'command-stack',
+        component: CommandStackPage,
       },
       {
         path: 'command-history',
@@ -38,6 +38,7 @@ const routes: Routes = [
 export class CommandingRoutingModule { }
 
 export const routingComponents = [
+  CommandStackPage,
   CommandHistoryPage,
   CommandQueuesPage,
 ];

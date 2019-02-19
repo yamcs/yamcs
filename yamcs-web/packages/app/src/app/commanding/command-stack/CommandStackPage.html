@@ -1,0 +1,41 @@
+<app-instance-page>
+  <app-instance-toolbar>Command Stack</app-instance-toolbar>
+
+  <div class="detail">
+    <ng-container>
+      <app-detail-toolbar>
+        Command Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select a command
+      </app-detail-toolbar>
+    </ng-template>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <table mat-table
+             [dataSource]="dataSource"
+             class="ya-data-table">
+        <ng-container cdkColumnDef="name">
+          <th mat-header-cell *cdkHeaderCellDef style="width: 300px">Command</th>
+          <td mat-cell *cdkCellDef="let row">
+            {{ row.command }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row
+            *cdkRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <button mat-stroked-button>
+        <mat-icon>playlist_add</mat-icon>
+        Add Command
+      </button>
+    </div>
+  </div>
+</app-instance-page>
