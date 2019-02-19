@@ -176,6 +176,7 @@ export interface Alarm {
   mostSevereValue: ParameterValue;
   currentValue: ParameterValue;
   violations: number;
+  valueCount: number;
   acknowledgeInfo: AcknowledgeInfo;
   parameter: Parameter;
 }

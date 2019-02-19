@@ -1110,6 +1110,15 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.mdb.ParameterInfo parameter = 8;</code>
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
+
+    /**
+     * <code>optional uint32 valueCount = 9;</code>
+     */
+    boolean hasValueCount();
+    /**
+     * <code>optional uint32 valueCount = 9;</code>
+     */
+    int getValueCount();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.alarms.AlarmData}
@@ -1127,6 +1136,7 @@ public final class Alarms {
       seqNum_ = 0;
       type_ = 1;
       violations_ = 0;
+      valueCount_ = 0;
     }
 
     @java.lang.Override
@@ -1238,6 +1248,11 @@ public final class Alarms {
                 parameter_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000080;
+              break;
+            }
+            case 72: {
+              bitField0_ |= 0x00000100;
+              valueCount_ = input.readUInt32();
               break;
             }
             default: {
@@ -1599,6 +1614,21 @@ public final class Alarms {
       return parameter_ == null ? org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance() : parameter_;
     }
 
+    public static final int VALUECOUNT_FIELD_NUMBER = 9;
+    private int valueCount_;
+    /**
+     * <code>optional uint32 valueCount = 9;</code>
+     */
+    public boolean hasValueCount() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional uint32 valueCount = 9;</code>
+     */
+    public int getValueCount() {
+      return valueCount_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -1661,6 +1691,9 @@ public final class Alarms {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeMessage(8, getParameter());
       }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeUInt32(9, valueCount_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -1701,6 +1734,10 @@ public final class Alarms {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, getParameter());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(9, valueCount_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1757,6 +1794,11 @@ public final class Alarms {
         result = result && getParameter()
             .equals(other.getParameter());
       }
+      result = result && (hasValueCount() == other.hasValueCount());
+      if (hasValueCount()) {
+        result = result && (getValueCount()
+            == other.getValueCount());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -1799,6 +1841,10 @@ public final class Alarms {
       if (hasParameter()) {
         hash = (37 * hash) + PARAMETER_FIELD_NUMBER;
         hash = (53 * hash) + getParameter().hashCode();
+      }
+      if (hasValueCount()) {
+        hash = (37 * hash) + VALUECOUNT_FIELD_NUMBER;
+        hash = (53 * hash) + getValueCount();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -1974,6 +2020,8 @@ public final class Alarms {
           parameterBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
+        valueCount_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -2054,6 +2102,10 @@ public final class Alarms {
         } else {
           result.parameter_ = parameterBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.valueCount_ = valueCount_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2126,6 +2178,9 @@ public final class Alarms {
         }
         if (other.hasParameter()) {
           mergeParameter(other.getParameter());
+        }
+        if (other.hasValueCount()) {
+          setValueCount(other.getValueCount());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -2867,6 +2922,38 @@ public final class Alarms {
         }
         return parameterBuilder_;
       }
+
+      private int valueCount_ ;
+      /**
+       * <code>optional uint32 valueCount = 9;</code>
+       */
+      public boolean hasValueCount() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional uint32 valueCount = 9;</code>
+       */
+      public int getValueCount() {
+        return valueCount_;
+      }
+      /**
+       * <code>optional uint32 valueCount = 9;</code>
+       */
+      public Builder setValueCount(int value) {
+        bitField0_ |= 0x00000100;
+        valueCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 valueCount = 9;</code>
+       */
+      public Builder clearValueCount() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        valueCount_ = 0;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -2945,7 +3032,7 @@ public final class Alarms {
       "proto\"z\n\017AcknowledgeInfo\022\026\n\016acknowledged" +
       "By\030\001 \001(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t\022\027\n\017" +
       "acknowledgeTime\030\003 \001(\003\022\032\n\022acknowledgeTime" +
-      "UTC\030\004 \001(\t\"\201\004\n\tAlarmData\022\016\n\006seqNum\030\001 \001(\r\022" +
+      "UTC\030\004 \001(\t\"\225\004\n\tAlarmData\022\016\n\006seqNum\030\001 \001(\r\022" +
       "3\n\004type\030\002 \001(\0162%.yamcs.protobuf.alarms.Al" +
       "armData.Type\022;\n\014triggerValue\030\003 \001(\0132%.yam" +
       "cs.protobuf.pvalue.ParameterValue\022>\n\017mos" +
@@ -2955,10 +3042,11 @@ public final class Alarms {
       "\n\nviolations\030\006 \001(\r\022?\n\017acknowledgeInfo\030\007 " +
       "\001(\0132&.yamcs.protobuf.alarms.AcknowledgeI" +
       "nfo\0224\n\tparameter\030\010 \001(\0132!.yamcs.protobuf." +
-      "mdb.ParameterInfo\"j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n" +
-      "\tTRIGGERED\020\002\022\026\n\022SEVERITY_INCREASED\020\003\022\020\n\014" +
-      "PVAL_UPDATED\020\004\022\020\n\014ACKNOWLEDGED\020\005\022\013\n\007CLEA" +
-      "RED\020\006B\024\n\022org.yamcs.protobuf"
+      "mdb.ParameterInfo\022\022\n\nvalueCount\030\t \001(\r\"j\n" +
+      "\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SEVE" +
+      "RITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014AC" +
+      "KNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs.p" +
+      "rotobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2985,7 +3073,7 @@ public final class Alarms {
     internal_static_yamcs_protobuf_alarms_AlarmData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_alarms_AlarmData_descriptor,
-        new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", "Parameter", });
+        new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", "Parameter", "ValueCount", });
     org.yamcs.protobuf.Mdb.getDescriptor();
     org.yamcs.protobuf.Pvalue.getDescriptor();
   }

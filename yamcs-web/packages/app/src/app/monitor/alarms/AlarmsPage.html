@@ -75,7 +75,7 @@
         </ng-container>
 
         <ng-container matColumnDef="time">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Alarm Time</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Alarm Time</th>
           <td mat-cell *matCellDef="let alarm">
             <span [matTooltip]="alarm.triggerValue.generationTimeUTC | datetime">
               <app-ago [time]="alarm.triggerValue.generationTimeUTC"></app-ago>
@@ -117,9 +117,10 @@
         </ng-container>
 
         <ng-container matColumnDef="violations">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Violations</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 90px">Violations</th>
           <td mat-cell *matCellDef="let alarm" style="text-align: right">
             {{ alarm.violations | number }}
+            ({{ ((alarm.violations / alarm.valueCount) * 100) | number: '1.2-2' }}%)
           </td>
         </ng-container>
 
