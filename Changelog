@@ -1,3 +1,7 @@
+Version 4.9.0 released 19-February-2019
+- added support for CCSDS TM frame protocols (TM, AOS and USLP frames)
+- various improvements in yamcs-web
+
 Version 4.8.1 released 28-January-2019
 - allow multiple TSE commands in one telecommand
 - various bugfixes
