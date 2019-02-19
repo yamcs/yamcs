@@ -62,7 +62,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         timeService = YamcsServer.getTimeService(yamcsInstance);
 
         if (c.containsKey("dataLinks")) {
-           List<YConfiguration> links = c.getConfigList("dataLinks");
+            List<YConfiguration> links = c.getConfigList("dataLinks");
             for (YConfiguration linkConfig : links) {
                 createDataLink(linkConfig);
             }
@@ -89,37 +89,47 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         String className = linkConfig.getString("class");
         YConfiguration args = null;
         args = linkConfig.getConfig("args");
-        
+
         String name = linkConfig.getString("name");
         if (linksByName.containsKey(name)) {
             throw new ConfigurationException(
                     "Instance " + yamcsInstance + ": there is already a link named '" + name + "'");
         }
-       
+
+        // this is maintained for compatibility with DaSS which defines no stream name because the config is specified
+        // in a separate file
+        String linkLevelStreamName = null;
+        if (linkConfig.containsKey("stream")) {
+            log.warn("DEPRECATION ALERT: Define 'stream' under 'args'.");
+            linkLevelStreamName = linkConfig.getString("stream");
+        }
         Link link;
         if (args != null) {
             link = YObjectLoader.loadObject(className, yamcsInstance, name, args);
         } else {
             link = YObjectLoader.loadObject(className, yamcsInstance, name);
         }
-        
+
         boolean enabledAtStartup = linkConfig.getBoolean("enabledAtStartup", true);
 
         if (!enabledAtStartup) {
             link.disable();
         }
-        
-        configureDataLink(link, args);
+
+        configureDataLink(link, args, linkLevelStreamName);
     }
-    
-    void configureDataLink(Link link, YConfiguration linkArgs) {
-        if(linkArgs==null) {
+
+    void configureDataLink(Link link, YConfiguration linkArgs, String linkLevelStreamName) {
+        if (linkArgs == null) {
             linkArgs = YConfiguration.emptyConfig();
         }
 
         Stream s = null;
+        String streamName = linkLevelStreamName;
         if (linkArgs.containsKey("stream")) {
-            String streamName = linkArgs.getString("stream");
+            streamName = linkArgs.getString("stream");
+        }
+        if (streamName != null) {
             s = ydb.getStream(streamName);
             if (s == null) {
                 throw new ConfigurationException("Cannot find stream '" + streamName + "'");
@@ -168,10 +178,10 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 ((ParameterDataLink) link).setParameterSink(new MyPpListener(s));
             }
         }
-        
+
         if (link instanceof AggregatedDataLink) {
-            for(Link l: ((AggregatedDataLink) link).getSubLinks()) {
-                configureDataLink(l, l.getConfig());
+            for (Link l : ((AggregatedDataLink) link).getSubLinks()) {
+                configureDataLink(l, l.getConfig(), null);
             }
         }
 
@@ -366,8 +376,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
     @Override
     protected void doStart() {
         linksByName.forEach((name, link) -> {
-            if(link instanceof Service) {
-                ((Service)link).startAsync();
+            if (link instanceof Service) {
+                ((Service) link).startAsync();
             }
         });
         notifyStarted();
@@ -378,8 +388,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         ManagementService mgrsrv = ManagementService.getInstance();
         linksByName.forEach((name, link) -> {
             mgrsrv.unregisterLink(yamcsInstance, name);
-            if(link instanceof Service) {
-                ((Service)link).stopAsync();
+            if (link instanceof Service) {
+                ((Service) link).stopAsync();
             }
         });
         notifyStopped();
