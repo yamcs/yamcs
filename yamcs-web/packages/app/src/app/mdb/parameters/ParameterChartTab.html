@@ -16,6 +16,22 @@
           </ng-container>
         </ng-container>
       </app-text-action>
+      <app-text-action (click)="loadLatest('PT1M')"
+                       [active]="range === 'PT1M'">
+        1 minute
+      </app-text-action>
+      <app-text-action (click)="loadLatest('PT5M')"
+                       [active]="range === 'PT5M'">
+        5 minutes
+      </app-text-action>
+      <app-text-action (click)="loadLatest('PT15M')"
+                       [active]="range === 'PT15M'">
+        15 minutes
+      </app-text-action>
+      <app-text-action (click)="loadLatest('PT30M')"
+                       [active]="range === 'PT30M'">
+        30 minutes
+      </app-text-action>
       <app-text-action (click)="loadLatest('PT1H')"
                        [active]="range === 'PT1H'">
         1 hour
@@ -77,6 +93,10 @@
           <span class="mat-caption" *ngIf="range$ | async as range" style="color: #777;">
             There is no data for this chart in
             <ng-container [ngSwitch]="range">
+              <span *ngSwitchCase="'PT1M'">the last minute</span>
+              <span *ngSwitchCase="'PT5M'">the last 5 minutes</span>
+              <span *ngSwitchCase="'PT15M'">the last 15 minutes</span>
+              <span *ngSwitchCase="'PT30M'">the last 30 minutes</span>
               <span *ngSwitchCase="'PT1H'">the last hour</span>
               <span *ngSwitchCase="'PT6H'">the last 6 hours</span>
               <span *ngSwitchCase="'PT12H'">the last 12 hours</span>
