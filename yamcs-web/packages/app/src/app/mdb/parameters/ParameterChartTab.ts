@@ -26,7 +26,7 @@ export class ParameterChartTab implements OnDestroy {
   dataSource: DyDataSource;
   missionTime: Date;
 
-  range$ = new BehaviorSubject<string>('PT1H');
+  range$ = new BehaviorSubject<string>('PT15M');
   customStart$ = new BehaviorSubject<Date | null>(null);
   customStop$ = new BehaviorSubject<Date | null>(null);
 
