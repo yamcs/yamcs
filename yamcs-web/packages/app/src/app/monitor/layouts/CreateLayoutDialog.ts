@@ -2,8 +2,9 @@ import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
-import { Instance, StorageClient } from '@yamcs/client';
+import { StorageClient } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { LayoutState } from './LayoutState';
 
@@ -15,7 +16,7 @@ export class CreateLayoutDialog {
 
   name = new FormControl();
 
-  private instance: Instance;
+  private bucketInstance: string;
   private storageClient: StorageClient;
 
   constructor(
@@ -23,10 +24,11 @@ export class CreateLayoutDialog {
     private yamcs: YamcsService,
     private router: Router,
     private authService: AuthService,
+    configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
+    this.bucketInstance = configService.getDisplayBucketInstance();
   }
 
   save() {
@@ -40,7 +42,7 @@ export class CreateLayoutDialog {
       type: 'application/json',
     });
     const username = this.authService.getUser()!.getUsername();
-    this.storageClient.uploadObject(this.instance.name, `user.${username}`, objectName, objectValue).then(() => {
+    this.storageClient.uploadObject(this.bucketInstance, `user.${username}`, objectName, objectValue).then(() => {
       this.dialogRef.close();
       this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);
     });

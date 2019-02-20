@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewRef } from '@angular/core';
-import { Instance, ListObjectsOptions, StorageClient } from '@yamcs/client';
+import { ListObjectsOptions, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -38,7 +38,6 @@ export class Layout implements OnInit, OnDestroy {
   showNavigator$: BehaviorSubject<boolean>;
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
-  private instance: Instance;
   private bucketInstance: string;
   private storageClient: StorageClient;
 
@@ -52,16 +51,12 @@ export class Layout implements OnInit, OnDestroy {
   private updateRate = 500;
 
   constructor(
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     private componentFactoryResolver: ComponentFactoryResolver,
     configService: ConfigService,
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
-    this.bucketInstance = this.instance.name;
-    if (configService.getDisplayScope() === 'GLOBAL') {
-      this.bucketInstance = '_global';
-    }
+    this.bucketInstance = configService.getDisplayBucketInstance();
   }
 
   ngOnInit() {

@@ -27,19 +27,13 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   }
 
   getObjectURL(bucketName: string, objectName: string) {
-    let instance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      instance = '_global';
-    }
-    return this.storageClient.getObjectURL(instance, bucketName, objectName);
+    const bucketInstance = this.configService.getDisplayBucketInstance();
+    return this.storageClient.getObjectURL(bucketInstance, bucketName, objectName);
   }
 
   async getObject(bucketName: string, objectName: string) {
-    let instance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      instance = '_global';
-    }
-    return await this.storageClient.getObject(instance, bucketName, objectName);
+    const bucketInstance = this.configService.getDisplayBucketInstance();
+    return await this.storageClient.getObject(bucketInstance, bucketName, objectName);
   }
 
   async getXMLObject(bucketName: string, objectName: string) {

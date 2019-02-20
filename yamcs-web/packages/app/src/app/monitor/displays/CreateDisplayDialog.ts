@@ -75,11 +75,8 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
-    let instance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      instance = '_global';
-    }
-    this.storageClient.uploadObject(instance, 'displays', fullPath, b).then(() => {
+    const bucketInstance = this.configService.getDisplayBucketInstance();
+    this.storageClient.uploadObject(bucketInstance, 'displays', fullPath, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }
