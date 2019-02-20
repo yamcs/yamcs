@@ -47,10 +47,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   public init(objectName: string) {
     this.objectName = objectName;
     this.instance = this.yamcs.getInstance();
-    let bucketInstance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      bucketInstance = '_global';
-    }
+    const bucketInstance = this.configService.getDisplayBucketInstance();
     this.storageClient.getObject(bucketInstance, 'displays', objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
@@ -200,11 +197,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   save() {
-    let bucketInstance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      bucketInstance = '_global';
-    }
-
+    const bucketInstance = this.configService.getDisplayBucketInstance();
     const model = this.model$.value!;
     const b = new Blob([JSON.stringify(model, undefined, 2)]);
     return this.storageClient.uploadObject(bucketInstance, 'displays', this.objectName, b).then(() => {

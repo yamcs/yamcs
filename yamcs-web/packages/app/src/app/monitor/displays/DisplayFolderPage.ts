@@ -50,10 +50,7 @@ export class DisplayFolderPage implements OnDestroy {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
 
-    this.bucketInstance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      this.bucketInstance = '_global';
-    }
+    this.bucketInstance = configService.getDisplayBucketInstance();
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -232,10 +229,7 @@ export class DisplayFolderPage implements OnDestroy {
         objectPrefix += '/';
       }
 
-      let bucketInstance = this.instance.name;
-      if (this.configService.getDisplayScope() === 'GLOBAL') {
-        bucketInstance = '_global';
-      }
+      const bucketInstance = this.configService.getDisplayBucketInstance();
 
       dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
         const uploadPromises: any[] = [];

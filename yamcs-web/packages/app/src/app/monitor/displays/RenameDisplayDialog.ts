@@ -26,11 +26,7 @@ export class RenameDisplayDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
-
-    this.bucketInstance = yamcs.getInstance().name;
-    if (configService.getDisplayScope() === 'GLOBAL') {
-      this.bucketInstance = '_global';
-    }
+    this. bucketInstance = configService.getDisplayBucketInstance();
 
     const filename = filenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({

@@ -19,6 +19,19 @@ public final class Tse {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    boolean hasId();
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    org.yamcs.protobuf.Commanding.CommandId getId();
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder();
+
+    /**
      * <code>optional string instrument = 1;</code>
      */
     boolean hasInstrument();
@@ -172,27 +185,27 @@ public final class Tse {
               break;
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
+              bitField0_ |= 0x00000002;
               instrument_ = bs;
               break;
             }
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000004;
               command_ = bs;
               break;
             }
             case 26: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000008;
               response_ = bs;
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
                 argumentMapping_ = com.google.protobuf.MapField.newMapField(
                     ArgumentMappingDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               com.google.protobuf.MapEntry<java.lang.String, org.yamcs.protobuf.Yamcs.Value>
               argumentMapping__ = input.readMessage(
@@ -202,16 +215,29 @@ public final class Tse {
               break;
             }
             case 42: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
                 parameterMapping_ = com.google.protobuf.MapField.newMapField(
                     ParameterMappingDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000010;
+                mutable_bitField0_ |= 0x00000020;
               }
               com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
               parameterMapping__ = input.readMessage(
                   ParameterMappingDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               parameterMapping_.getMutableMap().put(
                   parameterMapping__.getKey(), parameterMapping__.getValue());
+              break;
+            }
+            case 50: {
+              org.yamcs.protobuf.Commanding.CommandId.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = id_.toBuilder();
+              }
+              id_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandId.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(id_);
+                id_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
               break;
             }
             default: {
@@ -261,13 +287,34 @@ public final class Tse {
     }
 
     private int bitField0_;
+    public static final int ID_FIELD_NUMBER = 6;
+    private org.yamcs.protobuf.Commanding.CommandId id_;
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    public boolean hasId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    public org.yamcs.protobuf.Commanding.CommandId getId() {
+      return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+    }
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+     */
+    public org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder() {
+      return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+    }
+
     public static final int INSTRUMENT_FIELD_NUMBER = 1;
     private volatile java.lang.Object instrument_;
     /**
      * <code>optional string instrument = 1;</code>
      */
     public boolean hasInstrument() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional string instrument = 1;</code>
@@ -309,7 +356,7 @@ public final class Tse {
      * <code>optional string command = 2;</code>
      */
     public boolean hasCommand() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional string command = 2;</code>
@@ -351,7 +398,7 @@ public final class Tse {
      * <code>optional string response = 3;</code>
      */
     public boolean hasResponse() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
      * <code>optional string response = 3;</code>
@@ -546,6 +593,12 @@ public final class Tse {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (hasId()) {
+        if (!getId().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       for (org.yamcs.protobuf.Yamcs.Value item : getArgumentMappingMap().values()) {
         if (!item.isInitialized()) {
           memoizedIsInitialized = 0;
@@ -559,13 +612,13 @@ public final class Tse {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, instrument_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, command_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, response_);
       }
       com.google.protobuf.GeneratedMessageV3
@@ -580,6 +633,9 @@ public final class Tse {
           internalGetParameterMapping(),
           ParameterMappingDefaultEntryHolder.defaultEntry,
           5);
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(6, getId());
+      }
       unknownFields.writeTo(output);
     }
 
@@ -589,13 +645,13 @@ public final class Tse {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, instrument_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, command_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, response_);
       }
       for (java.util.Map.Entry<java.lang.String, org.yamcs.protobuf.Yamcs.Value> entry
@@ -618,6 +674,10 @@ public final class Tse {
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(5, parameterMapping__);
       }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, getId());
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -634,6 +694,11 @@ public final class Tse {
       org.yamcs.protobuf.Tse.TseCommand other = (org.yamcs.protobuf.Tse.TseCommand) obj;
 
       boolean result = true;
+      result = result && (hasId() == other.hasId());
+      if (hasId()) {
+        result = result && getId()
+            .equals(other.getId());
+      }
       result = result && (hasInstrument() == other.hasInstrument());
       if (hasInstrument()) {
         result = result && getInstrument()
@@ -664,6 +729,10 @@ public final class Tse {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasId()) {
+        hash = (37 * hash) + ID_FIELD_NUMBER;
+        hash = (53 * hash) + getId().hashCode();
+      }
       if (hasInstrument()) {
         hash = (37 * hash) + INSTRUMENT_FIELD_NUMBER;
         hash = (53 * hash) + getInstrument().hashCode();
@@ -838,17 +907,24 @@ public final class Tse {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getIdFieldBuilder();
         }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        instrument_ = "";
+        if (idBuilder_ == null) {
+          id_ = null;
+        } else {
+          idBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000001);
-        command_ = "";
+        instrument_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        response_ = "";
+        command_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        response_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         internalGetMutableArgumentMapping().clear();
         internalGetMutableParameterMapping().clear();
         return this;
@@ -882,13 +958,21 @@ public final class Tse {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.instrument_ = instrument_;
+        if (idBuilder_ == null) {
+          result.id_ = id_;
+        } else {
+          result.id_ = idBuilder_.build();
+        }
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.command_ = command_;
+        result.instrument_ = instrument_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
+        }
+        result.command_ = command_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
         }
         result.response_ = response_;
         result.argumentMapping_ = internalGetArgumentMapping();
@@ -944,18 +1028,21 @@ public final class Tse {
 
       public Builder mergeFrom(org.yamcs.protobuf.Tse.TseCommand other) {
         if (other == org.yamcs.protobuf.Tse.TseCommand.getDefaultInstance()) return this;
+        if (other.hasId()) {
+          mergeId(other.getId());
+        }
         if (other.hasInstrument()) {
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
           instrument_ = other.instrument_;
           onChanged();
         }
         if (other.hasCommand()) {
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
           command_ = other.command_;
           onChanged();
         }
         if (other.hasResponse()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
           response_ = other.response_;
           onChanged();
         }
@@ -970,6 +1057,11 @@ public final class Tse {
 
       @java.lang.Override
       public final boolean isInitialized() {
+        if (hasId()) {
+          if (!getId().isInitialized()) {
+            return false;
+          }
+        }
         for (org.yamcs.protobuf.Yamcs.Value item : getArgumentMappingMap().values()) {
           if (!item.isInitialized()) {
             return false;
@@ -998,12 +1090,130 @@ public final class Tse {
       }
       private int bitField0_;
 
+      private org.yamcs.protobuf.Commanding.CommandId id_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> idBuilder_;
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public boolean hasId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandId getId() {
+        if (idBuilder_ == null) {
+          return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+        } else {
+          return idBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public Builder setId(org.yamcs.protobuf.Commanding.CommandId value) {
+        if (idBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          id_ = value;
+          onChanged();
+        } else {
+          idBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public Builder setId(
+          org.yamcs.protobuf.Commanding.CommandId.Builder builderForValue) {
+        if (idBuilder_ == null) {
+          id_ = builderForValue.build();
+          onChanged();
+        } else {
+          idBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public Builder mergeId(org.yamcs.protobuf.Commanding.CommandId value) {
+        if (idBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              id_ != null &&
+              id_ != org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance()) {
+            id_ =
+              org.yamcs.protobuf.Commanding.CommandId.newBuilder(id_).mergeFrom(value).buildPartial();
+          } else {
+            id_ = value;
+          }
+          onChanged();
+        } else {
+          idBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public Builder clearId() {
+        if (idBuilder_ == null) {
+          id_ = null;
+          onChanged();
+        } else {
+          idBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandId.Builder getIdBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getIdFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder() {
+        if (idBuilder_ != null) {
+          return idBuilder_.getMessageOrBuilder();
+        } else {
+          return id_ == null ?
+              org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> 
+          getIdFieldBuilder() {
+        if (idBuilder_ == null) {
+          idBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder>(
+                  getId(),
+                  getParentForChildren(),
+                  isClean());
+          id_ = null;
+        }
+        return idBuilder_;
+      }
+
       private java.lang.Object instrument_ = "";
       /**
        * <code>optional string instrument = 1;</code>
        */
       public boolean hasInstrument() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional string instrument = 1;</code>
@@ -1046,7 +1256,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         instrument_ = value;
         onChanged();
         return this;
@@ -1055,7 +1265,7 @@ public final class Tse {
        * <code>optional string instrument = 1;</code>
        */
       public Builder clearInstrument() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         instrument_ = getDefaultInstance().getInstrument();
         onChanged();
         return this;
@@ -1068,7 +1278,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         instrument_ = value;
         onChanged();
         return this;
@@ -1079,7 +1289,7 @@ public final class Tse {
        * <code>optional string command = 2;</code>
        */
       public boolean hasCommand() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional string command = 2;</code>
@@ -1122,7 +1332,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         command_ = value;
         onChanged();
         return this;
@@ -1131,7 +1341,7 @@ public final class Tse {
        * <code>optional string command = 2;</code>
        */
       public Builder clearCommand() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         command_ = getDefaultInstance().getCommand();
         onChanged();
         return this;
@@ -1144,7 +1354,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         command_ = value;
         onChanged();
         return this;
@@ -1155,7 +1365,7 @@ public final class Tse {
        * <code>optional string response = 3;</code>
        */
       public boolean hasResponse() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
        * <code>optional string response = 3;</code>
@@ -1198,7 +1408,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         response_ = value;
         onChanged();
         return this;
@@ -1207,7 +1417,7 @@ public final class Tse {
        * <code>optional string response = 3;</code>
        */
       public Builder clearResponse() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         response_ = getDefaultInstance().getResponse();
         onChanged();
         return this;
@@ -1220,7 +1430,7 @@ public final class Tse {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         response_ = value;
         onChanged();
         return this;
@@ -1524,6 +1734,1725 @@ public final class Tse {
 
   }
 
+  public interface TseCommandResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.tse.TseCommandResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    boolean hasId();
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    org.yamcs.protobuf.Commanding.CommandId getId();
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder();
+
+    /**
+     * <code>optional bool success = 2;</code>
+     */
+    boolean hasSuccess();
+    /**
+     * <code>optional bool success = 2;</code>
+     */
+    boolean getSuccess();
+
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    boolean hasErrorMessage();
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    java.lang.String getErrorMessage();
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getErrorMessageBytes();
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.tse.TseCommandResponse}
+   */
+  public  static final class TseCommandResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.tse.TseCommandResponse)
+      TseCommandResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use TseCommandResponse.newBuilder() to construct.
+    private TseCommandResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private TseCommandResponse() {
+      success_ = false;
+      errorMessage_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TseCommandResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              org.yamcs.protobuf.Commanding.CommandId.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = id_.toBuilder();
+              }
+              id_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandId.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(id_);
+                id_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              success_ = input.readBool();
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              errorMessage_ = bs;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommandResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Tse.TseCommandResponse.class, org.yamcs.protobuf.Tse.TseCommandResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int ID_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Commanding.CommandId id_;
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    public boolean hasId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    public org.yamcs.protobuf.Commanding.CommandId getId() {
+      return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+    }
+    /**
+     * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+     */
+    public org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder() {
+      return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+    }
+
+    public static final int SUCCESS_FIELD_NUMBER = 2;
+    private boolean success_;
+    /**
+     * <code>optional bool success = 2;</code>
+     */
+    public boolean hasSuccess() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool success = 2;</code>
+     */
+    public boolean getSuccess() {
+      return success_;
+    }
+
+    public static final int ERRORMESSAGE_FIELD_NUMBER = 3;
+    private volatile java.lang.Object errorMessage_;
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    public boolean hasErrorMessage() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    public java.lang.String getErrorMessage() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          errorMessage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string errorMessage = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getErrorMessageBytes() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        errorMessage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (hasId()) {
+        if (!getId().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, getId());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, success_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, errorMessage_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getId());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, success_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, errorMessage_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Tse.TseCommandResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Tse.TseCommandResponse other = (org.yamcs.protobuf.Tse.TseCommandResponse) obj;
+
+      boolean result = true;
+      result = result && (hasId() == other.hasId());
+      if (hasId()) {
+        result = result && getId()
+            .equals(other.getId());
+      }
+      result = result && (hasSuccess() == other.hasSuccess());
+      if (hasSuccess()) {
+        result = result && (getSuccess()
+            == other.getSuccess());
+      }
+      result = result && (hasErrorMessage() == other.hasErrorMessage());
+      if (hasErrorMessage()) {
+        result = result && getErrorMessage()
+            .equals(other.getErrorMessage());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasId()) {
+        hash = (37 * hash) + ID_FIELD_NUMBER;
+        hash = (53 * hash) + getId().hashCode();
+      }
+      if (hasSuccess()) {
+        hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getSuccess());
+      }
+      if (hasErrorMessage()) {
+        hash = (37 * hash) + ERRORMESSAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getErrorMessage().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommandResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Tse.TseCommandResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.tse.TseCommandResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.tse.TseCommandResponse)
+        org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommandResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Tse.TseCommandResponse.class, org.yamcs.protobuf.Tse.TseCommandResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Tse.TseCommandResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getIdFieldBuilder();
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (idBuilder_ == null) {
+          id_ = null;
+        } else {
+          idBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        success_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        errorMessage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommandResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommandResponse build() {
+        org.yamcs.protobuf.Tse.TseCommandResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommandResponse buildPartial() {
+        org.yamcs.protobuf.Tse.TseCommandResponse result = new org.yamcs.protobuf.Tse.TseCommandResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (idBuilder_ == null) {
+          result.id_ = id_;
+        } else {
+          result.id_ = idBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.success_ = success_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.errorMessage_ = errorMessage_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Tse.TseCommandResponse) {
+          return mergeFrom((org.yamcs.protobuf.Tse.TseCommandResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Tse.TseCommandResponse other) {
+        if (other == org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance()) return this;
+        if (other.hasId()) {
+          mergeId(other.getId());
+        }
+        if (other.hasSuccess()) {
+          setSuccess(other.getSuccess());
+        }
+        if (other.hasErrorMessage()) {
+          bitField0_ |= 0x00000004;
+          errorMessage_ = other.errorMessage_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        if (hasId()) {
+          if (!getId().isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Tse.TseCommandResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Tse.TseCommandResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.yamcs.protobuf.Commanding.CommandId id_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> idBuilder_;
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public boolean hasId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandId getId() {
+        if (idBuilder_ == null) {
+          return id_ == null ? org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+        } else {
+          return idBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public Builder setId(org.yamcs.protobuf.Commanding.CommandId value) {
+        if (idBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          id_ = value;
+          onChanged();
+        } else {
+          idBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public Builder setId(
+          org.yamcs.protobuf.Commanding.CommandId.Builder builderForValue) {
+        if (idBuilder_ == null) {
+          id_ = builderForValue.build();
+          onChanged();
+        } else {
+          idBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public Builder mergeId(org.yamcs.protobuf.Commanding.CommandId value) {
+        if (idBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              id_ != null &&
+              id_ != org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance()) {
+            id_ =
+              org.yamcs.protobuf.Commanding.CommandId.newBuilder(id_).mergeFrom(value).buildPartial();
+          } else {
+            id_ = value;
+          }
+          onChanged();
+        } else {
+          idBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public Builder clearId() {
+        if (idBuilder_ == null) {
+          id_ = null;
+          onChanged();
+        } else {
+          idBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandId.Builder getIdBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getIdFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandIdOrBuilder getIdOrBuilder() {
+        if (idBuilder_ != null) {
+          return idBuilder_.getMessageOrBuilder();
+        } else {
+          return id_ == null ?
+              org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance() : id_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.commanding.CommandId id = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> 
+          getIdFieldBuilder() {
+        if (idBuilder_ == null) {
+          idBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder>(
+                  getId(),
+                  getParentForChildren(),
+                  isClean());
+          id_ = null;
+        }
+        return idBuilder_;
+      }
+
+      private boolean success_ ;
+      /**
+       * <code>optional bool success = 2;</code>
+       */
+      public boolean hasSuccess() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool success = 2;</code>
+       */
+      public boolean getSuccess() {
+        return success_;
+      }
+      /**
+       * <code>optional bool success = 2;</code>
+       */
+      public Builder setSuccess(boolean value) {
+        bitField0_ |= 0x00000002;
+        success_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool success = 2;</code>
+       */
+      public Builder clearSuccess() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        success_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object errorMessage_ = "";
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public boolean hasErrorMessage() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public java.lang.String getErrorMessage() {
+        java.lang.Object ref = errorMessage_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            errorMessage_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getErrorMessageBytes() {
+        java.lang.Object ref = errorMessage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          errorMessage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public Builder setErrorMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public Builder clearErrorMessage() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        errorMessage_ = getDefaultInstance().getErrorMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string errorMessage = 3;</code>
+       */
+      public Builder setErrorMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.tse.TseCommandResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.tse.TseCommandResponse)
+    private static final org.yamcs.protobuf.Tse.TseCommandResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Tse.TseCommandResponse();
+    }
+
+    public static org.yamcs.protobuf.Tse.TseCommandResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TseCommandResponse>
+        PARSER = new com.google.protobuf.AbstractParser<TseCommandResponse>() {
+      @java.lang.Override
+      public TseCommandResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TseCommandResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<TseCommandResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TseCommandResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.yamcs.protobuf.Tse.TseCommandResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface TseCommanderMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.tse.TseCommanderMessage)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    boolean hasCommandResponse();
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    org.yamcs.protobuf.Tse.TseCommandResponse getCommandResponse();
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder getCommandResponseOrBuilder();
+
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    boolean hasParameterData();
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterData getParameterData();
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder getParameterDataOrBuilder();
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.tse.TseCommanderMessage}
+   */
+  public  static final class TseCommanderMessage extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.tse.TseCommanderMessage)
+      TseCommanderMessageOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use TseCommanderMessage.newBuilder() to construct.
+    private TseCommanderMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private TseCommanderMessage() {
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TseCommanderMessage(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              org.yamcs.protobuf.Tse.TseCommandResponse.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = commandResponse_.toBuilder();
+              }
+              commandResponse_ = input.readMessage(org.yamcs.protobuf.Tse.TseCommandResponse.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(commandResponse_);
+                commandResponse_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Pvalue.ParameterData.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = parameterData_.toBuilder();
+              }
+              parameterData_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterData.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(parameterData_);
+                parameterData_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommanderMessage_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Tse.TseCommanderMessage.class, org.yamcs.protobuf.Tse.TseCommanderMessage.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int COMMANDRESPONSE_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Tse.TseCommandResponse commandResponse_;
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    public boolean hasCommandResponse() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    public org.yamcs.protobuf.Tse.TseCommandResponse getCommandResponse() {
+      return commandResponse_ == null ? org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance() : commandResponse_;
+    }
+    /**
+     * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+     */
+    public org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder getCommandResponseOrBuilder() {
+      return commandResponse_ == null ? org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance() : commandResponse_;
+    }
+
+    public static final int PARAMETERDATA_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Pvalue.ParameterData parameterData_;
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    public boolean hasParameterData() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterData getParameterData() {
+      return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
+    }
+    /**
+     * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder getParameterDataOrBuilder() {
+      return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (hasCommandResponse()) {
+        if (!getCommandResponse().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasParameterData()) {
+        if (!getParameterData().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, getCommandResponse());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, getParameterData());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getCommandResponse());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getParameterData());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Tse.TseCommanderMessage)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Tse.TseCommanderMessage other = (org.yamcs.protobuf.Tse.TseCommanderMessage) obj;
+
+      boolean result = true;
+      result = result && (hasCommandResponse() == other.hasCommandResponse());
+      if (hasCommandResponse()) {
+        result = result && getCommandResponse()
+            .equals(other.getCommandResponse());
+      }
+      result = result && (hasParameterData() == other.hasParameterData());
+      if (hasParameterData()) {
+        result = result && getParameterData()
+            .equals(other.getParameterData());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasCommandResponse()) {
+        hash = (37 * hash) + COMMANDRESPONSE_FIELD_NUMBER;
+        hash = (53 * hash) + getCommandResponse().hashCode();
+      }
+      if (hasParameterData()) {
+        hash = (37 * hash) + PARAMETERDATA_FIELD_NUMBER;
+        hash = (53 * hash) + getParameterData().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Tse.TseCommanderMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.tse.TseCommanderMessage}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.tse.TseCommanderMessage)
+        org.yamcs.protobuf.Tse.TseCommanderMessageOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommanderMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Tse.TseCommanderMessage.class, org.yamcs.protobuf.Tse.TseCommanderMessage.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Tse.TseCommanderMessage.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getCommandResponseFieldBuilder();
+          getParameterDataFieldBuilder();
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        if (commandResponseBuilder_ == null) {
+          commandResponse_ = null;
+        } else {
+          commandResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (parameterDataBuilder_ == null) {
+          parameterData_ = null;
+        } else {
+          parameterDataBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Tse.internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommanderMessage getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Tse.TseCommanderMessage.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommanderMessage build() {
+        org.yamcs.protobuf.Tse.TseCommanderMessage result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Tse.TseCommanderMessage buildPartial() {
+        org.yamcs.protobuf.Tse.TseCommanderMessage result = new org.yamcs.protobuf.Tse.TseCommanderMessage(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (commandResponseBuilder_ == null) {
+          result.commandResponse_ = commandResponse_;
+        } else {
+          result.commandResponse_ = commandResponseBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (parameterDataBuilder_ == null) {
+          result.parameterData_ = parameterData_;
+        } else {
+          result.parameterData_ = parameterDataBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Tse.TseCommanderMessage) {
+          return mergeFrom((org.yamcs.protobuf.Tse.TseCommanderMessage)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Tse.TseCommanderMessage other) {
+        if (other == org.yamcs.protobuf.Tse.TseCommanderMessage.getDefaultInstance()) return this;
+        if (other.hasCommandResponse()) {
+          mergeCommandResponse(other.getCommandResponse());
+        }
+        if (other.hasParameterData()) {
+          mergeParameterData(other.getParameterData());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        if (hasCommandResponse()) {
+          if (!getCommandResponse().isInitialized()) {
+            return false;
+          }
+        }
+        if (hasParameterData()) {
+          if (!getParameterData().isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Tse.TseCommanderMessage parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Tse.TseCommanderMessage) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.yamcs.protobuf.Tse.TseCommandResponse commandResponse_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Tse.TseCommandResponse, org.yamcs.protobuf.Tse.TseCommandResponse.Builder, org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder> commandResponseBuilder_;
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public boolean hasCommandResponse() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public org.yamcs.protobuf.Tse.TseCommandResponse getCommandResponse() {
+        if (commandResponseBuilder_ == null) {
+          return commandResponse_ == null ? org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance() : commandResponse_;
+        } else {
+          return commandResponseBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public Builder setCommandResponse(org.yamcs.protobuf.Tse.TseCommandResponse value) {
+        if (commandResponseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          commandResponse_ = value;
+          onChanged();
+        } else {
+          commandResponseBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public Builder setCommandResponse(
+          org.yamcs.protobuf.Tse.TseCommandResponse.Builder builderForValue) {
+        if (commandResponseBuilder_ == null) {
+          commandResponse_ = builderForValue.build();
+          onChanged();
+        } else {
+          commandResponseBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public Builder mergeCommandResponse(org.yamcs.protobuf.Tse.TseCommandResponse value) {
+        if (commandResponseBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              commandResponse_ != null &&
+              commandResponse_ != org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance()) {
+            commandResponse_ =
+              org.yamcs.protobuf.Tse.TseCommandResponse.newBuilder(commandResponse_).mergeFrom(value).buildPartial();
+          } else {
+            commandResponse_ = value;
+          }
+          onChanged();
+        } else {
+          commandResponseBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public Builder clearCommandResponse() {
+        if (commandResponseBuilder_ == null) {
+          commandResponse_ = null;
+          onChanged();
+        } else {
+          commandResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public org.yamcs.protobuf.Tse.TseCommandResponse.Builder getCommandResponseBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getCommandResponseFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      public org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder getCommandResponseOrBuilder() {
+        if (commandResponseBuilder_ != null) {
+          return commandResponseBuilder_.getMessageOrBuilder();
+        } else {
+          return commandResponse_ == null ?
+              org.yamcs.protobuf.Tse.TseCommandResponse.getDefaultInstance() : commandResponse_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.tse.TseCommandResponse commandResponse = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Tse.TseCommandResponse, org.yamcs.protobuf.Tse.TseCommandResponse.Builder, org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder> 
+          getCommandResponseFieldBuilder() {
+        if (commandResponseBuilder_ == null) {
+          commandResponseBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Tse.TseCommandResponse, org.yamcs.protobuf.Tse.TseCommandResponse.Builder, org.yamcs.protobuf.Tse.TseCommandResponseOrBuilder>(
+                  getCommandResponse(),
+                  getParentForChildren(),
+                  isClean());
+          commandResponse_ = null;
+        }
+        return commandResponseBuilder_;
+      }
+
+      private org.yamcs.protobuf.Pvalue.ParameterData parameterData_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder> parameterDataBuilder_;
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public boolean hasParameterData() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterData getParameterData() {
+        if (parameterDataBuilder_ == null) {
+          return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
+        } else {
+          return parameterDataBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public Builder setParameterData(org.yamcs.protobuf.Pvalue.ParameterData value) {
+        if (parameterDataBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          parameterData_ = value;
+          onChanged();
+        } else {
+          parameterDataBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public Builder setParameterData(
+          org.yamcs.protobuf.Pvalue.ParameterData.Builder builderForValue) {
+        if (parameterDataBuilder_ == null) {
+          parameterData_ = builderForValue.build();
+          onChanged();
+        } else {
+          parameterDataBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public Builder mergeParameterData(org.yamcs.protobuf.Pvalue.ParameterData value) {
+        if (parameterDataBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              parameterData_ != null &&
+              parameterData_ != org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance()) {
+            parameterData_ =
+              org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(parameterData_).mergeFrom(value).buildPartial();
+          } else {
+            parameterData_ = value;
+          }
+          onChanged();
+        } else {
+          parameterDataBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public Builder clearParameterData() {
+        if (parameterDataBuilder_ == null) {
+          parameterData_ = null;
+          onChanged();
+        } else {
+          parameterDataBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterData.Builder getParameterDataBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getParameterDataFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder getParameterDataOrBuilder() {
+        if (parameterDataBuilder_ != null) {
+          return parameterDataBuilder_.getMessageOrBuilder();
+        } else {
+          return parameterData_ == null ?
+              org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.pvalue.ParameterData parameterData = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder> 
+          getParameterDataFieldBuilder() {
+        if (parameterDataBuilder_ == null) {
+          parameterDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder>(
+                  getParameterData(),
+                  getParentForChildren(),
+                  isClean());
+          parameterData_ = null;
+        }
+        return parameterDataBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.tse.TseCommanderMessage)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.tse.TseCommanderMessage)
+    private static final org.yamcs.protobuf.Tse.TseCommanderMessage DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Tse.TseCommanderMessage();
+    }
+
+    public static org.yamcs.protobuf.Tse.TseCommanderMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TseCommanderMessage>
+        PARSER = new com.google.protobuf.AbstractParser<TseCommanderMessage>() {
+      @java.lang.Override
+      public TseCommanderMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TseCommanderMessage(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<TseCommanderMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TseCommanderMessage> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.yamcs.protobuf.Tse.TseCommanderMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_tse_TseCommand_descriptor;
   private static final 
@@ -1539,6 +3468,16 @@ public final class Tse {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_tse_TseCommand_ParameterMappingEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_tse_TseCommandResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_tse_TseCommanderMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1549,17 +3488,27 @@ public final class Tse {
   static {
     java.lang.String[] descriptorData = {
       "\n\034yamcs/protobuf/tse/tse.proto\022\022yamcs.pr" +
-      "otobuf.tse\032\032yamcs/protobuf/yamcs.proto\"\351" +
-      "\002\n\nTseCommand\022\022\n\ninstrument\030\001 \001(\t\022\017\n\007com" +
-      "mand\030\002 \001(\t\022\020\n\010response\030\003 \001(\t\022L\n\017argument" +
-      "Mapping\030\004 \003(\01323.yamcs.protobuf.tse.TseCo" +
-      "mmand.ArgumentMappingEntry\022N\n\020parameterM" +
-      "apping\030\005 \003(\01324.yamcs.protobuf.tse.TseCom" +
-      "mand.ParameterMappingEntry\032M\n\024ArgumentMa" +
-      "ppingEntry\022\013\n\003key\030\001 \001(\t\022$\n\005value\030\002 \001(\0132\025" +
-      ".yamcs.protobuf.Value:\0028\001\0327\n\025ParameterMa" +
-      "ppingEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\002" +
-      "8\001B\024\n\022org.yamcs.protobuf"
+      "otobuf.tse\032\032yamcs/protobuf/yamcs.proto\032*" +
+      "yamcs/protobuf/commanding/commanding.pro" +
+      "to\032\"yamcs/protobuf/pvalue/pvalue.proto\"\233" +
+      "\003\n\nTseCommand\0220\n\002id\030\006 \001(\0132$.yamcs.protob" +
+      "uf.commanding.CommandId\022\022\n\ninstrument\030\001 " +
+      "\001(\t\022\017\n\007command\030\002 \001(\t\022\020\n\010response\030\003 \001(\t\022L" +
+      "\n\017argumentMapping\030\004 \003(\01323.yamcs.protobuf" +
+      ".tse.TseCommand.ArgumentMappingEntry\022N\n\020" +
+      "parameterMapping\030\005 \003(\01324.yamcs.protobuf." +
+      "tse.TseCommand.ParameterMappingEntry\032M\n\024" +
+      "ArgumentMappingEntry\022\013\n\003key\030\001 \001(\t\022$\n\005val" +
+      "ue\030\002 \001(\0132\025.yamcs.protobuf.Value:\0028\001\0327\n\025P" +
+      "arameterMappingEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005val" +
+      "ue\030\002 \001(\t:\0028\001\"m\n\022TseCommandResponse\0220\n\002id" +
+      "\030\001 \001(\0132$.yamcs.protobuf.commanding.Comma" +
+      "ndId\022\017\n\007success\030\002 \001(\010\022\024\n\014errorMessage\030\003 " +
+      "\001(\t\"\223\001\n\023TseCommanderMessage\022?\n\017commandRe" +
+      "sponse\030\001 \001(\0132&.yamcs.protobuf.tse.TseCom" +
+      "mandResponse\022;\n\rparameterData\030\002 \001(\0132$.ya" +
+      "mcs.protobuf.pvalue.ParameterDataB\024\n\022org" +
+      ".yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1573,13 +3522,15 @@ public final class Tse {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
+          org.yamcs.protobuf.Commanding.getDescriptor(),
+          org.yamcs.protobuf.Pvalue.getDescriptor(),
         }, assigner);
     internal_static_yamcs_protobuf_tse_TseCommand_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_yamcs_protobuf_tse_TseCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_tse_TseCommand_descriptor,
-        new java.lang.String[] { "Instrument", "Command", "Response", "ArgumentMapping", "ParameterMapping", });
+        new java.lang.String[] { "Id", "Instrument", "Command", "Response", "ArgumentMapping", "ParameterMapping", });
     internal_static_yamcs_protobuf_tse_TseCommand_ArgumentMappingEntry_descriptor =
       internal_static_yamcs_protobuf_tse_TseCommand_descriptor.getNestedTypes().get(0);
     internal_static_yamcs_protobuf_tse_TseCommand_ArgumentMappingEntry_fieldAccessorTable = new
@@ -1592,7 +3543,21 @@ public final class Tse {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_tse_TseCommand_ParameterMappingEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_yamcs_protobuf_tse_TseCommandResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_tse_TseCommandResponse_descriptor,
+        new java.lang.String[] { "Id", "Success", "ErrorMessage", });
+    internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_yamcs_protobuf_tse_TseCommanderMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_tse_TseCommanderMessage_descriptor,
+        new java.lang.String[] { "CommandResponse", "ParameterData", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
+    org.yamcs.protobuf.Commanding.getDescriptor();
+    org.yamcs.protobuf.Pvalue.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

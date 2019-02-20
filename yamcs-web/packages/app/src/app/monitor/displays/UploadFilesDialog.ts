@@ -57,10 +57,7 @@ export class UploadFilesDialog {
         const file = files[key];
         const fullPath = path ? path + '/' + file.name : file.name;
 
-        let bucketInstance = this.instance.name;
-        if (this.configService.getDisplayScope() === 'GLOBAL') {
-          bucketInstance = '_global';
-        }
+        const bucketInstance = this.configService.getDisplayBucketInstance();
         const promise = this.storageClient.uploadObject(bucketInstance, 'displays', fullPath, file);
         uploadPromises.push(promise);
       }

@@ -45,11 +45,8 @@ export class ScriptViewer implements Viewer, OnDestroy {
   }
 
   public init(objectName: string) {
-    let instance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      instance = '_global';
-    }
-    this.storageClient.getObject(instance, 'displays', objectName).then(response => {
+    const bucketInstance = this.configService.getDisplayBucketInstance();
+    this.storageClient.getObject(bucketInstance, 'displays', objectName).then(response => {
       response.text().then(text => {
         this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);

@@ -30,14 +30,11 @@ export class LayoutsPage {
     yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private configService: ConfigService,
+    configService: ConfigService,
   ) {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
-    this.bucketInstance = this.instance.name;
-    if (configService.getDisplayScope() === 'GLOBAL') {
-      this.bucketInstance = '_global';
-    }
+    this.bucketInstance = configService.getDisplayBucketInstance();
     this.storageClient = yamcs.createStorageClient();
     this.loadLayouts();
   }

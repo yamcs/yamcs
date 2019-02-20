@@ -29,11 +29,8 @@ export class TextViewer implements Viewer {
   }
 
   public init(objectName: string) {
-    let instance = this.instance.name;
-    if (this.configService.getDisplayScope() === 'GLOBAL') {
-      instance = '_global';
-    }
-    this.storageClient.getObject(instance, 'displays', objectName).then(response => {
+    const bucketInstance = this.configService.getDisplayBucketInstance();
+    this.storageClient.getObject(bucketInstance, 'displays', objectName).then(response => {
       response.text().then(text => {
         this.text = text;
         this.changeDetector.detectChanges();

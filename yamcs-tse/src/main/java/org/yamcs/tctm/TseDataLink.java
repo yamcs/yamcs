@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Tse.TseCommand;
+import org.yamcs.protobuf.Tse.TseCommanderMessage;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
@@ -71,6 +73,9 @@ public class TseDataLink extends AbstractService implements Link {
     YConfiguration config;
     final String name;
 
+    private TimeService timeService;
+    private CommandHistoryPublisher cmdhistPublisher;
+
     public TseDataLink(String yamcsInstance, String name) {
         this(yamcsInstance, name, YConfiguration.wrap(Collections.emptyMap()));
     }
@@ -79,7 +84,10 @@ public class TseDataLink extends AbstractService implements Link {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
         this.name = name;
-        
+
+        timeService = YamcsServer.getTimeService(yamcsInstance);
+        cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
+
         log = LoggingUtils.getLogger(getClass(), yamcsInstance);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -112,9 +120,11 @@ public class TseDataLink extends AbstractService implements Link {
         }
     }
 
-    public void sendTc(PreparedCommand pc) {
+    private void sendTc(PreparedCommand pc) {
         if (getLinkStatus() != Status.OK) {
             log.warn("Dropping command (link is not OK)");
+            cmdhistPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
+            cmdhistPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "Link is not OK");
             return;
         }
 
@@ -123,6 +133,7 @@ public class TseDataLink extends AbstractService implements Link {
         SpaceSystem subsystem = xtcedb.getSpaceSystem(subsystemName);
 
         TseCommand.Builder msgb = TseCommand.newBuilder()
+                .setId(pc.getCommandId())
                 .setInstrument(subsystem.getName());
 
         for (Entry<Argument, Value> entry : pc.getArgAssignment().entrySet()) {
@@ -150,7 +161,14 @@ public class TseDataLink extends AbstractService implements Link {
         }
 
         TseCommand command = msgb.build();
-        channel.writeAndFlush(command);
+        channel.writeAndFlush(command).addListener(f -> {
+            long missionTime = timeService.getMissionTime();
+            if (f.isSuccess()) {
+                cmdhistPublisher.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", missionTime, "OK");
+            } else {
+                cmdhistPublisher.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", missionTime, "NOK");
+            }
+        });
         outCount++;
     }
 
@@ -225,12 +243,13 @@ public class TseDataLink extends AbstractService implements Link {
                         ChannelPipeline pipeline = ch.pipeline();
 
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
-                        pipeline.addLast(new ProtobufDecoder(ParameterData.getDefaultInstance()));
+                        pipeline.addLast(new ProtobufDecoder(TseCommanderMessage.getDefaultInstance()));
 
                         pipeline.addLast(new LengthFieldPrepender(4));
                         pipeline.addLast(new ProtobufEncoder());
 
-                        pipeline.addLast(new TseDataLinkInboundHandler(xtcedb, timeService, ppStream));
+                        pipeline.addLast(new TseDataLinkInboundHandler(
+                                cmdhistPublisher, xtcedb, timeService, ppStream));
                     }
                 });
 
@@ -268,7 +287,7 @@ public class TseDataLink extends AbstractService implements Link {
     public YConfiguration getConfig() {
         return config;
     }
-    
+
     @Override
     public String getName() {
         return name;
