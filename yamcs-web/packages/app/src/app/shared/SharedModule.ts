@@ -15,6 +15,7 @@ import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
+import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
@@ -114,6 +115,7 @@ const sharedComponents = [
   ServicesTable,
   SidebarNavItem,
   SelectInstanceDialog,
+  SelectParameterDialog,
   Select,
   StartReplayDialog,
   TabDetailIcon,
@@ -169,6 +171,7 @@ const guards = [
   entryComponents: [
     HelpDialog,
     SelectInstanceDialog,
+    SelectParameterDialog,
     StartReplayDialog,
   ],
   providers: [

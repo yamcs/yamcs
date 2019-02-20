@@ -5,7 +5,7 @@ import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
+import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 import { Viewer } from './Viewer';

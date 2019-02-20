@@ -12,7 +12,6 @@ import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
-import { SelectParameterDialog } from './parameters/SelectParameterDialog';
 import { SelectRangeDialog } from './parameters/SelectRangeDialog';
 import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
@@ -28,7 +27,6 @@ const dialogComponents = [
   CompareParameterDialog,
   IssueCommandDialog,
   ModifyParameterDialog,
-  SelectParameterDialog,
   SelectRangeDialog,
   SetParameterDialog,
 ];
