@@ -177,7 +177,7 @@ public abstract class RestHandler extends RouteHandler {
         return verifyInstance(req, instance);
     }
 
-    static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
+    protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
         }

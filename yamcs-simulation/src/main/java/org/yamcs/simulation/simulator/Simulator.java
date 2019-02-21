@@ -32,7 +32,7 @@ public class Simulator extends AbstractService {
     int maxLength = DEFAULT_MAX_LENGTH;
     private TmTcLink tmLink;
     private TmTcLink tm2Link;
-    private TmTcLink cfdpLink;
+    private UdpLink cfdpLink;
     private TmTcLink losLink;
     private UdpFrameLink frameLink;
 
@@ -112,6 +112,11 @@ public class Simulator extends AbstractService {
 
     protected void transmitCfdp(CfdpPacket packet) {
         cfdpLink.sendPacket(packet.toByteArray());
+    }
+
+    protected void processCfdp(CfdpPacket packet) {
+        // TODO
+        log.debug("test");
     }
 
     protected void transmitTM2(byte[] packet) {
@@ -354,7 +359,7 @@ public class Simulator extends AbstractService {
         this.tm2Link = tm2Link;
     }
 
-    public void setCfdpLink(TmTcLink cfdpLink) {
+    public void setCfdpLink(UdpLink cfdpLink) {
         this.cfdpLink = cfdpLink;
     }
 
