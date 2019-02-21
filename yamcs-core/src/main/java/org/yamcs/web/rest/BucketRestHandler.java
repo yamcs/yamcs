@@ -297,6 +297,10 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
+    public void checkReadBucketPrivilege(String bucketName, String username) {
+
+    }
+
     private void checkManageBucketPrivilege(RestRequest req) throws HttpException {
         String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
         if (bucketName.equals(getUserBucketName(req.getUser()))) {
