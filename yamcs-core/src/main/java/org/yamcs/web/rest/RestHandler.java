@@ -169,7 +169,7 @@ public abstract class RestHandler extends RouteHandler {
         return exceptionb;
     }
 
-    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
+    static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
             throws NotFoundException {
         if (allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
             return instance;
@@ -177,7 +177,7 @@ public abstract class RestHandler extends RouteHandler {
         return verifyInstance(req, instance);
     }
 
-    protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
+    static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
         }

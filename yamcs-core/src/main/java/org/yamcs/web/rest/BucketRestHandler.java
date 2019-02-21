@@ -15,21 +15,15 @@ import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ObjectInfo;
-import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.ServiceUnavailableException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
@@ -60,7 +54,7 @@ public class BucketRestHandler extends RestHandler {
     public void listBuckets(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
-        BucketDatabase bdb = getBucketDb(req);
+        BucketDatabase bdb = BucketHelper.getBucketDb(req);
         try {
             List<BucketProperties> l = bdb.listBuckets();
             ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
@@ -79,8 +73,8 @@ public class BucketRestHandler extends RestHandler {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
-        verifyBucketName(crb.getName());
-        BucketDatabase bdb = getBucketDb(req);
+        BucketHelper.verifyBucketName(crb.getName());
+        BucketDatabase bdb = BucketHelper.getBucketDb(req);
         try {
             if (bdb.getBucket(crb.getName()) != null) {
                 throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
@@ -97,8 +91,8 @@ public class BucketRestHandler extends RestHandler {
     public void deleteBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
-        BucketDatabase bdb = getBucketDb(req);
-        Bucket b = verifyAndGetBucket(req);
+        BucketDatabase bdb = BucketHelper.getBucketDb(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         try {
             bdb.deleteBucket(b.getName());
         } catch (IOException e) {
@@ -111,7 +105,7 @@ public class BucketRestHandler extends RestHandler {
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
-        checkManageBucketPrivilege(req);
+        BucketHelper.checkManageBucketPrivilege(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (contentType.startsWith("multipart/form-data")) {
@@ -124,7 +118,7 @@ public class BucketRestHandler extends RestHandler {
     }
 
     private void uploadObjectSimple(RestRequest req) throws HttpException {
-        Bucket b = verifyAndGetBucket(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         String objName = null;
@@ -139,7 +133,7 @@ public class BucketRestHandler extends RestHandler {
 
     private void uploadObjectMultipartFormData(RestRequest req) throws HttpException {
         HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(req.getHttpRequest());
-        Bucket b = verifyAndGetBucket(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         FileUpload fup = null;
         Map<String, String> metadata = new HashMap<>();
         int metadataSize = 0;
@@ -185,7 +179,7 @@ public class BucketRestHandler extends RestHandler {
 
     private void saveObject(Bucket bucket, String objName, String contentType, ByteBuf buf,
             Map<String, String> metadata) throws HttpException {
-        verifyObjectName(objName);
+        BucketHelper.verifyObjectName(objName);
         byte[] objectData = new byte[buf.readableBytes()];
         buf.readBytes(objectData);
 
@@ -199,8 +193,8 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "GET" })
     public void listObjects(RestRequest req) throws HttpException {
-        checkReadBucketPrivilege(req);
-        Bucket b = verifyAndGetBucket(req);
+        BucketHelper.checkReadBucketPrivilege(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         try {
             String delimiter = req.getQueryParameter("delimiter");
             String prefix = req.getQueryParameter("prefix");
@@ -246,10 +240,10 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "GET" })
     public void getObject(RestRequest req) throws HttpException {
-        checkReadBucketPrivilege(req);
+        BucketHelper.checkReadBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
-        Bucket b = verifyAndGetBucket(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         try {
             ObjectProperties props = b.findObject(objName);
             if (props == null) {
@@ -266,10 +260,10 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "DELETE" })
     public void deleteObject(RestRequest req) throws HttpException {
-        checkManageBucketPrivilege(req);
+        BucketHelper.checkManageBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
-        Bucket b = verifyAndGetBucket(req);
+        Bucket b = BucketHelper.verifyAndGetBucket(req);
         try {
             ObjectProperties props = b.findObject(objName);
             if (props == null) {
@@ -280,102 +274,6 @@ public class BucketRestHandler extends RestHandler {
         } catch (IOException e) {
             log.error("Error when retrieving object {} from bucket {} ", objName, b.getName(), e);
             throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
-        }
-    }
-
-    private void checkReadBucketPrivilege(RestRequest req) throws HttpException {
-        String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
-        if (bucketName.equals(getUserBucketName(req.getUser()))) {
-            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
-                    // anyway)
-        }
-
-        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
-                && !req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
-            throw new ForbiddenException("Insufficient privileges to read bucket '" + bucketName + "'");
-        }
-    }
-
-    public void checkReadBucketPrivilege(String bucketName, String username) {
-
-    }
-
-    private void checkManageBucketPrivilege(RestRequest req) throws HttpException {
-        String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
-        if (bucketName.equals(getUserBucketName(req.getUser()))) {
-            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
-                    // anyway)
-        }
-
-        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
-            throw new ForbiddenException("Insufficient privileges to manage bucket '" + bucketName + "'");
-        }
-    }
-
-    private static String getUserBucketName(User user) {
-        return "user." + user.getUsername();
-    }
-
-    static private BucketDatabase getBucketDb(RestRequest req) throws HttpException {
-        String yamcsInstance = verifyInstance(req, req.getRouteParam("instance"), true);
-        YarchDatabaseInstance ydi = YarchDatabase.getInstance(yamcsInstance);
-        try {
-            BucketDatabase bdb = ydi.getBucketDatabase();
-            if (bdb == null) {
-                throw new NotFoundException(req);
-            }
-            return bdb;
-        } catch (YarchException e) {
-            throw new InternalServerErrorException("Bucket database not available", e);
-        }
-    }
-
-    static Bucket verifyAndGetBucket(RestRequest req) throws HttpException {
-        BucketDatabase bdb = getBucketDb(req);
-        String bucketName = req.getRouteParam("bucketName");
-        try {
-            Bucket bucket = bdb.getBucket(bucketName);
-            if (bucket == null) {
-                if (bucketName.equals(getUserBucketName(req.getUser()))) {
-                    try {
-                        bucket = bdb.createBucket(bucketName);
-                    } catch (IOException e) {
-                        throw new InternalServerErrorException("Error creating user bucket", e);
-                    }
-                } else if (bucketName.equals("displays")) {
-                    try {
-                        bucket = bdb.createBucket(bucketName);
-                    } catch (IOException e) {
-                        throw new InternalServerErrorException("Error creating displays bucket", e);
-                    }
-                } else {
-                    throw new NotFoundException(req);
-                }
-            }
-
-            return bucket;
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error while resolving bucket", e);
-        }
-    }
-
-    static private void verifyBucketName(String bucketName) throws BadRequestException {
-        if (bucketName == null) {
-            throw new BadRequestException("No bucketName specified");
-        }
-        if (!BUCKET_NAME_REGEXP.matcher(bucketName).matches()) {
-            throw new BadRequestException("Invalid bucket name specified");
-        }
-    }
-
-    static private void verifyObjectName(String objName) throws BadRequestException {
-        if (objName == null) {
-            throw new BadRequestException("No object name specified");
-        }
-        if (!OBJ_NAME_REGEXP.matcher(objName).matches()) {
-            throw new BadRequestException("Invalid object name specified");
         }
     }
 }
