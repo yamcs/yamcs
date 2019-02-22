@@ -1,8 +1,7 @@
 package org.yamcs.tctm;
 
-import java.util.Arrays;
-
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.utils.CfdpUtils;
 
 /**
  * CFDP packet preprocessor.
@@ -18,12 +17,13 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
 
     @Override
     public PacketWithTime process(byte[] packet) {
-        int entityIdLength = (packet[3] >> 4) & 0x07;
-        int sequenceNumberLength = packet[3] & 0x07;
+        int entityIdLength = ((packet[3] >> 4) & 0x07) + 1;
+        int sequenceNumberLength = (packet[3] & 0x07) + 1;
         byte[] seqnr = java.util.Arrays.copyOfRange(packet, 4 + entityIdLength,
                 4 + entityIdLength + sequenceNumberLength);
-        long sequenceNr = Long.parseUnsignedLong(Arrays.toString(seqnr), 16);
+        long sequenceNr = CfdpUtils.getUnsignedLongFromByteArray(seqnr);
 
-        return new PacketWithTime(timeService.getMissionTime(), System.currentTimeMillis(), sequenceNr, packet);
+        // T
+        return new PacketWithTime(timeService.getMissionTime(), System.currentTimeMillis(), (int) sequenceNr, packet);
     }
 }

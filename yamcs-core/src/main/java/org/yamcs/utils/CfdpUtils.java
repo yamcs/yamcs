@@ -1,7 +1,6 @@
 package org.yamcs.utils;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class CfdpUtils {
 
@@ -59,7 +58,17 @@ public class CfdpUtils {
     public static Long getUnsignedLongFromBuffer(ByteBuffer buffer, int nrOfBytesToRead) {
         byte[] temp = new byte[nrOfBytesToRead];
         buffer.get(temp);
-        return Long.parseUnsignedLong(Arrays.toString(temp), 16);
+        return getUnsignedLongFromByteArray(temp);
+    }
+
+    public static Long getUnsignedLongFromByteArray(byte[] b) {
+        long toReturn = 0;
+        for (int i = 0; i < b.length - 1; i++) {
+            toReturn |= b[i] & 0xFF;
+            toReturn <<= 8;
+        }
+        toReturn |= b[b.length - 1] & 0xFF;
+        return toReturn;
     }
 
     public static byte boolToByte(boolean bool) {
