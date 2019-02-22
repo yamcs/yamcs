@@ -2,14 +2,20 @@ package org.yamcs.web.rest;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
+import org.yamcs.protobuf.Cfdp.TransferStatus;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.CfdpDatabase;
+import org.yamcs.yarch.CfdpDatabaseInstance;
+import org.yamcs.yarch.CfdpTransfer;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 /**
@@ -80,25 +86,56 @@ public class CfdpRestHandler extends RestHandler {
 
     }
 
+    // TODO update rest doc (add the :instance)
     @Route(path = "/api/cfdp/:instance/list", method = "GET")
     public void CfdpList(RestRequest req) throws HttpException {
-        System.out.println("BUMBUMBUM in get list");
-        // TODO
+        log.info("CfdpList");
+
+        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+
+        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
+
+        List<CfdpTransfer> transfers = ci.getCfdpTransfers();
+
+        ListTransfersResponse.Builder ltr = ListTransfersResponse.newBuilder();
+
+        for (CfdpTransfer transfer : transfers) {
+            ltr.addTransfers(TransferStatus.newBuilder()
+                    .setTransferId(transfer.getId())
+                    .setState(transfer.getState().getState())
+                    .setLocalBucketName(transfer.getBucket().getName())
+                    .setLocalObjectName(transfer.getObjectName())
+                    .setRemotePath(transfer.getRemotePath())
+                    .setDirection(transfer.getDirection())
+                    .setTotalSize(transfer.getTotalSize())
+                    .setSizeTransferred(transfer.getState().getTransferredSize()));
+        }
+        completeOK(req, ltr.build());
     }
-/*
+    /*
     @Route(path = "/api/cfdp/info", method = "GET")
     public void CfdpInfo(RestRequest req) throws HttpException {
         // TODO
     }
-
+    
     @Route(path = "/api/cfdp/cancel", method = "POST")
     public void CfdpCancel(RestRequest req) throws HttpException {
         // TODO
     }
-
+    
     @Route(path = "/api/cfdp/delete", method = "POST")
     public void CfdpDelete(RestRequest req) throws HttpException {
         // TODO
     }
-*/
+    
+    @Route(path = "/api/cfdp/pause", method = "POST")
+    public void CfdpDelete(RestRequest req) throws HttpException {
+        // TODO
+    }
+    
+    @Route(path = "/api/cfdp/resume", method = "POST")
+    public void CfdpDelete(RestRequest req) throws HttpException {
+        // TODO
+    }
+    */
 }

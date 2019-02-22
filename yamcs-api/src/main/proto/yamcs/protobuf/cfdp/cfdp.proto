@@ -19,7 +19,7 @@ enum TransferState {
 //message sent as reponse to the info and also when starting a new transfer
 message TransferStatus {
 
-  optional uint32 transferId = 1;
+  optional uint64 transferId = 1;
   optional TransferState state = 2;
 
   optional string localBucketName = 3;
@@ -28,8 +28,8 @@ message TransferStatus {
   optional string remotePath = 5;
   optional TransferDirection direction = 6;
 
-  optional uint32 totalSize = 7;
-  optional uint32 sizeTransferred = 8;
+  optional uint64 totalSize = 7;
+  optional uint64 sizeTransferred = 8;
   
 }
 
