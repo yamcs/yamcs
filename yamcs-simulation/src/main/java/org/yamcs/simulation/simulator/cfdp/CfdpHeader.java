@@ -2,6 +2,8 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.utils.CfdpUtils;
+
 public class CfdpHeader {
 
     /*
@@ -27,7 +29,8 @@ public class CfdpHeader {
     private int dataLength, entityIdLength, sequenceNumberLength;
     private Long sourceId, destinationId, sequenceNr;
 
-    public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc, int dataLength,
+    public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
+            int dataLength,
             int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
         this.fileDirective = fileDirective;
         this.towardsSender = towardsSender;
@@ -60,32 +63,32 @@ public class CfdpHeader {
     private void readPduHeader(ByteBuffer buffer) {
         buffer.position(0);
         byte tempByte = buffer.get();
-        fileDirective = !Utils.getBitOfByte(tempByte, 4);
-        towardsSender = Utils.getBitOfByte(tempByte, 5);
-        acknowledged = !Utils.getBitOfByte(tempByte, 6);
-        withCrc = Utils.getBitOfByte(tempByte, 7);
-        dataLength = Utils.getUnsignedShort(buffer);
+        fileDirective = !CfdpUtils.getBitOfByte(tempByte, 4);
+        towardsSender = CfdpUtils.getBitOfByte(tempByte, 5);
+        acknowledged = !CfdpUtils.getBitOfByte(tempByte, 6);
+        withCrc = CfdpUtils.getBitOfByte(tempByte, 7);
+        dataLength = CfdpUtils.getUnsignedShort(buffer);
         tempByte = buffer.get();
         entityIdLength = (tempByte >> 4) & 0x07;
         sequenceNumberLength = tempByte & 0x07;
-        sourceId = Utils.getUnsignedLongFromBuffer(buffer, entityIdLength);
-        sequenceNr = Utils.getUnsignedLongFromBuffer(buffer, sequenceNumberLength);
-        destinationId = Utils.getUnsignedLongFromBuffer(buffer, entityIdLength);
+        sourceId = CfdpUtils.getUnsignedLongFromBuffer(buffer, entityIdLength);
+        sequenceNr = CfdpUtils.getUnsignedLongFromBuffer(buffer, sequenceNumberLength);
+        destinationId = CfdpUtils.getUnsignedLongFromBuffer(buffer, entityIdLength);
     }
 
     protected void writeToBuffer(ByteBuffer buffer) {
-        byte b = (byte) ((Utils.boolToByte(!fileDirective) << 4) |
-                (Utils.boolToByte(towardsSender) << 3) |
-                (Utils.boolToByte(!acknowledged) << 2) |
-                (Utils.boolToByte(withCrc) << 1));
+        byte b = (byte) ((CfdpUtils.boolToByte(!fileDirective) << 4) |
+                (CfdpUtils.boolToByte(towardsSender) << 3) |
+                (CfdpUtils.boolToByte(!acknowledged) << 2) |
+                (CfdpUtils.boolToByte(withCrc) << 1));
         buffer.put(b);
         buffer.putShort((short) dataLength);
         b = (byte) ((entityIdLength - 1 << 4) |
                 (sequenceNumberLength - 1));
         buffer.put(b);
-        buffer.put(Utils.longToBytes(sourceId, entityIdLength));
-        buffer.put(Utils.longToBytes(sequenceNr, sequenceNumberLength));
-        buffer.put(Utils.longToBytes(destinationId, entityIdLength));
+        buffer.put(CfdpUtils.longToBytes(sourceId, entityIdLength));
+        buffer.put(CfdpUtils.longToBytes(sequenceNr, sequenceNumberLength));
+        buffer.put(CfdpUtils.longToBytes(destinationId, entityIdLength));
     }
 
 }

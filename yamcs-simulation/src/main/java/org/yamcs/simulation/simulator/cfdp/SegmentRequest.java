@@ -2,6 +2,8 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.utils.CfdpUtils;
+
 public class SegmentRequest {
     private long segmentStart;
     private long segmentEnd;
@@ -20,7 +22,7 @@ public class SegmentRequest {
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
-        Utils.writeUnsignedInt(buffer, segmentStart);
-        Utils.writeUnsignedInt(buffer, segmentEnd);
+        CfdpUtils.writeUnsignedInt(buffer, segmentStart);
+        CfdpUtils.writeUnsignedInt(buffer, segmentEnd);
     }
 }

@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.utils.CfdpUtils;
+
 public class NakPacket extends CfdpPacket {
 
     private long scopeStart;
@@ -13,18 +15,18 @@ public class NakPacket extends CfdpPacket {
     public NakPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
-        this.scopeStart = Utils.getUnsignedInt(buffer);
-        this.scopeEnd = Utils.getUnsignedInt(buffer);
+        this.scopeStart = CfdpUtils.getUnsignedInt(buffer);
+        this.scopeEnd = CfdpUtils.getUnsignedInt(buffer);
         while (buffer.hasRemaining()) {
-            segmentRequests.add(new SegmentRequest(Utils.getUnsignedInt(buffer),
-                    Utils.getUnsignedInt(buffer)));
+            segmentRequests.add(new SegmentRequest(CfdpUtils.getUnsignedInt(buffer),
+                    CfdpUtils.getUnsignedInt(buffer)));
         }
     }
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        Utils.writeUnsignedInt(buffer, scopeStart);
-        Utils.writeUnsignedInt(buffer, scopeEnd);
+        CfdpUtils.writeUnsignedInt(buffer, scopeStart);
+        CfdpUtils.writeUnsignedInt(buffer, scopeEnd);
         segmentRequests.forEach(x -> x.writeToBuffer(buffer));
     }
 

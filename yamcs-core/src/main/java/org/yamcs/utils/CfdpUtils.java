@@ -1,9 +1,9 @@
-package org.yamcs.simulation.simulator.cfdp;
+package org.yamcs.utils;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class Utils {
+public class CfdpUtils {
 
     // counting from zero, get the bitnr't bit of the input byte
     public static boolean getBitOfByte(Byte input, int bitnr) {

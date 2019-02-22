@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.utils.CfdpUtils;
+
 public class MetadataPacket extends CfdpPacket {
 
     private boolean segmentationControl;
@@ -20,7 +22,7 @@ public class MetadataPacket extends CfdpPacket {
 
         byte temp = buffer.get();
         this.segmentationControl = (temp & 0x01) == 1;
-        this.fileSize = Utils.getUnsignedInt(buffer);
+        this.fileSize = CfdpUtils.getUnsignedInt(buffer);
         this.sourceFileName = LV.readLV(buffer);
         this.destinationFileName = LV.readLV(buffer);
 
@@ -46,7 +48,7 @@ public class MetadataPacket extends CfdpPacket {
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
-        Utils.writeUnsignedInt(buffer, fileSize);
+        CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
         destinationFileName.writeToBuffer(buffer);
         filestoreRequests.forEach(x -> x.toTLV().writeToBuffer(buffer));

@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.utils.CfdpUtils;
+
 import com.google.common.collect.Maps;
 
 public class FinishedPacket extends CfdpPacket {
@@ -47,8 +49,8 @@ public class FinishedPacket extends CfdpPacket {
 
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
-        this.generatedByEndSystem = Utils.getBitOfByte(temp, 5);
-        this.dataComplete = !Utils.getBitOfByte(temp, 6);
+        this.generatedByEndSystem = CfdpUtils.getBitOfByte(temp, 5);
+        this.dataComplete = !CfdpUtils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
 
         while (buffer.hasRemaining()) {

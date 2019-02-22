@@ -13,11 +13,11 @@ import org.yamcs.utils.TimeEncoding;
 public class PacketWithTime {
     private long rectime = TimeEncoding.INVALID_INSTANT; // reception time
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
-    private int seqCount;
+    private long seqCount;
     private byte[] pkt;
     boolean corrupted = false;
 
-    public PacketWithTime(long rectime, long gentime, int seqCount, byte[] pkt) {
+    public PacketWithTime(long rectime, long gentime, long seqCount, byte[] pkt) {
         this.rectime = rectime;
         this.gentime = gentime;
         this.seqCount = seqCount;
@@ -32,7 +32,7 @@ public class PacketWithTime {
         return rectime;
     }
 
-    public int getSeqCount() {
+    public long getSeqCount() {
         return seqCount;
     }
 

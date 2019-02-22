@@ -2,6 +2,8 @@ package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.utils.CfdpUtils;
+
 public class EofPacket extends CfdpPacket {
 
     private ConditionCode conditionCode;
@@ -13,8 +15,8 @@ public class EofPacket extends CfdpPacket {
         super(buffer, header);
 
         this.conditionCode = ConditionCode.readConditionCode(buffer);
-        this.fileChecksum = Utils.getUnsignedInt(buffer);
-        this.fileSize = Utils.getUnsignedShort(buffer);
+        this.fileChecksum = CfdpUtils.getUnsignedInt(buffer);
+        this.fileSize = CfdpUtils.getUnsignedShort(buffer);
 
         if (conditionCode != ConditionCode.NoError
                 && conditionCode != ConditionCode.Reserved) {
@@ -25,8 +27,8 @@ public class EofPacket extends CfdpPacket {
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         this.conditionCode.writeAsByteToBuffer(buffer);
-        Utils.writeUnsignedInt(buffer, this.fileChecksum);
-        Utils.writeUnsignedInt(buffer, this.fileSize);
+        CfdpUtils.writeUnsignedInt(buffer, this.fileChecksum);
+        CfdpUtils.writeUnsignedInt(buffer, this.fileSize);
         if (this.faultLocation != null) {
             faultLocation.writeToBuffer(buffer);
         }
