@@ -1,0 +1,39 @@
+syntax="proto2";
+  
+option java_package = "org.yamcs.protobuf";
+
+package yamcs.protobuf.cfdp;
+
+enum TransferDirection {
+    UPLOAD = 1;
+    DOWNLOAD = 2;
+}
+
+enum TransferState {
+   RUNNING = 1;
+   PAUSED = 2;
+   FAILED = 3 ;
+}
+
+
+//message sent as reponse to the info and also when starting a new transfer
+message TransferStatus {
+
+  optional uint32 transferId = 1;
+  optional TransferState state = 2;
+
+  optional string localBucketName = 3;
+  optional string localObjectName = 4;
+
+  optional string remotePath = 5;
+  optional TransferDirection direction = 6;
+
+  optional uint32 totalSize = 7;
+  optional uint32 sizeTransferred = 8;
+  
+}
+
+//message sent as the response to the list transfers
+message ListTransfersResponse {
+  repeated TransferStatus transfers = 1;
+}
