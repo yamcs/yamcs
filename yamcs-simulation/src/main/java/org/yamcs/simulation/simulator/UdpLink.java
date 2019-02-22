@@ -33,7 +33,10 @@ public class UdpLink extends AbstractExecutionThreadService {
     public void sendPacket(byte[] packet) {
         try {
             if (connected) {
-                socket.send(new DatagramPacket(packet, packet.length, InetAddress.getByName("localhost"), this.port));
+                int x = packet.length;
+                DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName("localhost"),
+                        this.port);
+                socket.send(dp);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -63,7 +66,7 @@ public class UdpLink extends AbstractExecutionThreadService {
         }
         try {
             log.info("Waiting for {} connection from server on port {}", name, port);
-            socket = new DatagramSocket(this.port);
+            socket = new DatagramSocket(8765);
             connected = true;
         } catch (Exception e) {
             if (isRunning()) {

@@ -95,33 +95,14 @@ public class UdpTmDataLink extends AbstractTmDataLink {
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
-                if (datagram.getLength() < 16) { // 6 for the primary CCSDS header plus 10 for secondary CCSDS header
+                if (datagram.getLength() < 16) {
                     log.warn("Incomplete packet received on the multicast, discarded: {}", datagram);
                     continue;
                 }
 
-                byte[] data = datagram.getData();
-                int offset = datagram.getOffset();
-
-                // the time sent by TMR is not really GPS, it's the unix local computer time shifted to GPS epoch
-                int pktLength = 7 + ((data[4 + offset] & 0xFF) << 8) + (data[5 + offset] & 0xFF);
-                if ((pktLength < 16) || pktLength > maxLength) {
-                    invalidDatagramCount++;
-                    log.warn(
-                            "Invalid packet received on the multicast, pktLength: {}. Expecting minimum 16 bytes and maximum {} bytes",
-                            pktLength, maxLength);
-                    continue;
-                }
-
-                if (datagram.getLength() < pktLength) {
-                    invalidDatagramCount++;
-                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength,
-                            datagram.getLength());
-                    continue;
-                }
                 validDatagramCount++;
-                packet = ByteBuffer.allocate(pktLength);
-                packet.put(data, offset, pktLength);
+                packet = ByteBuffer.allocate(datagram.getLength());
+                packet.put(datagram.getData(), datagram.getOffset(), datagram.getLength());
                 break;
             } catch (IOException e) {
                 if (!isRunning()) {// the triggerShutdown will close the socket and that will generate an exception
