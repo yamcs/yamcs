@@ -7,10 +7,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Future;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.LoggingUtils;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
@@ -39,7 +44,7 @@ public class CfdpIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        // LoggingUtils.enableLogging();
+      //  enableLogging();
 
         File dataDir = new File("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursively(dataDir.toPath());
@@ -63,7 +68,7 @@ public class CfdpIntegrationTest {
     }
 
     private void uploadAndCheck(String objName, byte[] data) throws Exception {
-        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
+        Future<String> responseFuture = restClient.doRequest("/cfdp/cfdp-test-inst/list", HttpMethod.GET, "");
 
         // Future<String> responseFuture =
         // restClient.doRequest("/cfdp/"+yamcsInstance+"/"+bucketName+"/"+objName+"?target=cfdp-tgt1", HttpMethod.POST,
@@ -121,6 +126,27 @@ public class CfdpIntegrationTest {
     <T extends Message.Builder> T fromJson(String json, T builder) throws IOException {
         JsonFormat.parser().merge(json, builder);
         return builder;
+    }
+    
+    
+    public static void enableLogging() {
+
+        Logger logger = Logger.getLogger("org.yamcs");
+        logger.setLevel(Level.ALL);
+        ConsoleHandler ch = null;
+        
+        for (Handler h: Logger.getLogger("").getHandlers()) {
+            if(h instanceof ConsoleHandler) {
+                ch = (ConsoleHandler) h;
+                break;
+            }
+        }
+        if(ch==null) {
+            ch = new ConsoleHandler();
+            Logger.getLogger("").addHandler(ch);
+        }
+        ch.setLevel(Level.ALL);
+
     }
 
 }

@@ -80,24 +80,25 @@ public class CfdpRestHandler extends RestHandler {
 
     }
 
-    @Route(path = "api/cfdp/list", method = "GET")
+    @Route(path = "/api/cfdp/:instance/list", method = "GET")
     public void CfdpList(RestRequest req) throws HttpException {
+        System.out.println("BUMBUMBUM in get list");
         // TODO
     }
-
-    @Route(path = "api/cfdp/info", method = "GET")
+/*
+    @Route(path = "/api/cfdp/info", method = "GET")
     public void CfdpInfo(RestRequest req) throws HttpException {
         // TODO
     }
 
-    @Route(path = "api/cfdp/cancel", method = "POST")
+    @Route(path = "/api/cfdp/cancel", method = "POST")
     public void CfdpCancel(RestRequest req) throws HttpException {
         // TODO
     }
 
-    @Route(path = "api/cfdp/delete", method = "POST")
+    @Route(path = "/api/cfdp/delete", method = "POST")
     public void CfdpDelete(RestRequest req) throws HttpException {
         // TODO
     }
-
+*/
 }

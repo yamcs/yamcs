@@ -26,8 +26,8 @@ public class DummyCfdpService extends AbstractService implements YamcsService {
         log.info("DummyCfdpService.doStart");
 
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
-
-        httpServer.registerRouteHandler(yamcsInstance, new CfdpRestHandler() {});
+        System.out.println("registerign CFDP web service for "+yamcsInstance);
+        httpServer.registerRouteHandler(yamcsInstance, new CfdpRestHandler());
 
         notifyStarted();
     }

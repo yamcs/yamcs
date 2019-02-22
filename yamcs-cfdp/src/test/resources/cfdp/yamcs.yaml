@@ -8,4 +8,4 @@ services:
 dataDir: /tmp/yamcs-cfdp-data/
 
 instances:
-  - cfdp
+  - cfdp-test-inst
