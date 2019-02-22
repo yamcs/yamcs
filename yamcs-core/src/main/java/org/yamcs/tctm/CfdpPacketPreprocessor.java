@@ -23,7 +23,6 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
                 4 + entityIdLength + sequenceNumberLength);
         long sequenceNr = CfdpUtils.getUnsignedLongFromByteArray(seqnr);
 
-        // T
         return new PacketWithTime(timeService.getMissionTime(), System.currentTimeMillis(), (int) sequenceNr, packet);
     }
 }

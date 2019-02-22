@@ -34,13 +34,13 @@ public class CfdpIntegrationTest {
     String bucketName = "cfdp-bucket";
     String yamcsInstance = "cfdp-test-inst";
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9193, yamcsInstance);
-    
+
     RestClient restClient;
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         // LoggingUtils.enableLogging();
-        
+
         File dataDir = new File("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursively(dataDir.toPath());
         YConfiguration.setup("cfdp");
@@ -59,67 +59,65 @@ public class CfdpIntegrationTest {
     public void testEmptyFileUpload() throws Exception {
         byte[] data = createObject("zerofile", 0);
         uploadAndCheck("zerofile", data);
-        
+
     }
 
     private void uploadAndCheck(String objName, byte[] data) throws Exception {
-        Future<String> responseFuture = restClient.doRequest("/cfdp/"+yamcsInstance+"/"+bucketName+"/"+objName+"?target=cfdp-tgt1", HttpMethod.POST, "");
-        
+        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
+
+        // Future<String> responseFuture =
+        // restClient.doRequest("/cfdp/"+yamcsInstance+"/"+bucketName+"/"+objName+"?target=cfdp-tgt1", HttpMethod.POST,
+        // "");
+
         TransferStatus ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
         int id = 5;
         MyFileReceiver rx = new MyFileReceiver();
-        
 
-        //TODO ...check maybe in a loop that the transfer is progressing until finished
-        
-        while(ts.getSizeTransferred()<ts.getTotalSize()) {
-            responseFuture = restClient.doRequest("/cfdp/"+yamcsInstance+"/info?id="+id, HttpMethod.GET, "");
+        // TODO ...check maybe in a loop that the transfer is progressing until finished
+
+        while (ts.getSizeTransferred() < ts.getTotalSize()) {
+            responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/info?id=" + id, HttpMethod.GET, "");
             ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
-            //TODO assert this assert that
+            // TODO assert this assert that
             Thread.sleep(1000);
-        } 
-       
-        
+        }
 
         assertEquals(data, rx.data);
-        
-        //more checks
-        
+
+        // more checks
+
     }
-    
-    
-    //create an object in a bucket
+
+    // create an object in a bucket
     private byte[] createObject(String objName, int size) throws Exception {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        BucketDatabase bd  = ydb.getBucketDatabase();
+        BucketDatabase bd = ydb.getBucketDatabase();
         Bucket bucket = bd.createBucket(bucketName);
         byte[] data = new byte[size];
         random.nextBytes(data);
         bucket.putObject(objName, "bla", Collections.emptyMap(), data);
-        
+
         return data;
     }
-    
-    //this should retrieve the file
+
+    // this should retrieve the file
     class MyFileReceiver {
         byte[] data;
-        
+
         MyFileReceiver() {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream cfdpIn = ydb.getStream("cfdp_in");
             Stream cfdpOut = ydb.getStream("cfdp_out");
-            
-            
-            //TODO start a receiver with those two streams
+
+            // TODO start a receiver with those two streams
         }
-        
+
     }
-    
+
     protected static String getYamcsInstance() {
         return "cfdp";
     }
-    
-    
+
     <T extends Message.Builder> T fromJson(String json, T builder) throws IOException {
         JsonFormat.parser().merge(json, builder);
         return builder;
