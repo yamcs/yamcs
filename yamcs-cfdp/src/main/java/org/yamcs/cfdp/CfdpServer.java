@@ -82,7 +82,7 @@ public class CfdpServer extends ProcessRunner {
 
     private static List<Service> createServices(YConfiguration yconf, CfdpServerArgs runtimeOptions) {
         List<Service> services = new ArrayList<>();
-        services.add(new DummyCfdpService());
+        services.add(new DummyCfdpService(null, null));
         return services;
     }
 }

@@ -1,0 +1,12 @@
+services:
+   - class: org.yamcs.cfdp.DummyCfdpService
+     args: 
+         data_in_stream: cdfp_in
+         data_out_stream: cdfp_out
+
+
+mdb:
+  - type: "emptyNode"
+    spec: "CFDP"
+
+

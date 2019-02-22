@@ -1,0 +1,12 @@
+# If false, all actions use the identity of the unauthenticatedUser
+enabled: false
+
+# Implicit user when security is not enabled
+unauthenticatedUser:
+  username: admin
+  superuser: true
+
+authModules:
+  - class: org.yamcs.security.YamlAuthModule
+    #config:
+    #  hasher: org.yamcs.security.PBKDF2PasswordHasher
