@@ -89,6 +89,7 @@ export class DisplayFolderPage implements OnDestroy {
         folder: false,
         name: object.name,
         modified: object.created,
+        objectUrl: this.storageClient.getObjectURL(this.bucketInstance, 'displays', object.name),
       });
     }
     this.dataSource.data = items;
@@ -280,6 +281,7 @@ export class BrowseItem {
   folder: boolean;
   name: string;
   modified?: string;
+  objectUrl?: string;
 }
 
 export interface BreadCrumbItem {
