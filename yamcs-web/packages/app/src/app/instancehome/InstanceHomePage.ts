@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { GeneralInfo, TmStatistics } from '@yamcs/client';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Alarm, GeneralInfo, Instance, TmStatistics } from '@yamcs/client';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { YamcsService } from '../core/services/YamcsService';
+import { AlarmsDataSource } from '../monitor/alarms/AlarmsDataSource';
 
 @Component({
   templateUrl: './InstanceHomePage.html',
@@ -11,13 +12,19 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class InstanceHomePage implements OnDestroy {
 
+  instance: Instance;
+
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
+
+  unacknowledgedAlarms$: Observable<Alarm[]>;
+  alarmsDataSource: AlarmsDataSource;
 
   info$: Promise<GeneralInfo>;
 
   constructor(yamcs: YamcsService) {
     const processor = yamcs.getProcessor();
+    this.instance = yamcs.getInstance();
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
         filter(stats => stats.yProcessorName === processor.name),
@@ -27,12 +34,23 @@ export class InstanceHomePage implements OnDestroy {
       });
     });
 
+    this.alarmsDataSource = new AlarmsDataSource(yamcs);
+    this.alarmsDataSource.loadAlarms('realtime');
+    this.unacknowledgedAlarms$ = this.alarmsDataSource.alarms$.pipe(
+      map(alarms => {
+        return alarms.filter(alarm => alarm.type !== 'CLEARED' && alarm.type !== 'ACKNOWLEDGED');
+      }),
+    );
+
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
   }
 
   ngOnDestroy() {
     if (this.tmstatsSubscription) {
       this.tmstatsSubscription.unsubscribe();
+    }
+    if (this.alarmsDataSource) {
+      this.alarmsDataSource.disconnect();
     }
   }
 }

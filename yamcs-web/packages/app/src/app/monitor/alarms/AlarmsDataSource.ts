@@ -97,6 +97,20 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     }
   }
 
+  getUnacknowledgedCount() {
+    let total = 0;
+    for (const alarm of this.alarms$.getValue()) {
+      if (alarm.type !== 'CLEARED' && alarm.type !== 'ACKNOWLEDGED') {
+        total++;
+      }
+    }
+    return total;
+  }
+
+  getActiveAlarmCount() {
+    return this.alarms$.getValue().length;
+  }
+
   isEmpty() {
     return !this.alarms$.getValue().length;
   }
