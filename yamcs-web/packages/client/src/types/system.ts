@@ -256,6 +256,7 @@ export interface StatisticsSubscriptionResponse {
 
 export interface TmStatistics {
   packetName: string;
+  qualifiedName: string;
   receivedPackets: number;
   lastReceivedUTC: string;
   lastPacketTimeUTC: string;

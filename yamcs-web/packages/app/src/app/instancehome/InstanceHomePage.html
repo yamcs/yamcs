@@ -40,16 +40,14 @@
                 <h3 matLine>Plugins</h3>
               </mat-list-item>
 
-              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
+              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px">
                 <tr>
                   <th>Name</th>
                   <th>Version</th>
-                  <th>Vendor</th>
                 </tr>
                 <tr *ngFor="let plugin of info.plugin">
                   <td>{{ plugin.name }}</td>
                   <td>{{ plugin.version || '-' }}</td>
-                  <td>{{ plugin.vendor || '-' }}</td>
                 </tr>
               </table>
             </mat-list>

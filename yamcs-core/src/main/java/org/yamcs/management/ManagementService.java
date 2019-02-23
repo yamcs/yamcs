@@ -112,7 +112,7 @@ public class ManagementService implements ProcessorListener {
             linkb.setDetailedStatus(link.getDetailedStatus());
         }
         Link parent = link.getParent();
-        if(parent!=null) {
+        if (parent != null) {
             linkb.setParentName(parent.getName());
         }
         LinkInfo linkInfo = linkb.build();
