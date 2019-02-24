@@ -1,13 +1,20 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'durationDelta' })
-export class DurationDeltaPipe implements PipeTransform {
+@Pipe({ name: 'deltaWith' })
+export class DeltaWithPipe implements PipeTransform {
 
-  transform(millis: number | null): string | null {
-    if (millis == null) {
+  transform(second: Date | string, first: Date | string): string | null {
+    if (!first || !second) {
       return null;
     }
+
+    const firstDate = this.toDate(first);
+    const secondDate = this.toDate(second);
+    let millis = secondDate.getTime() - firstDate.getTime();
+
     const sign = (millis >= 0) ? '+' : '-';
+    millis = Math.abs(millis);
+
     const totalSeconds = Math.floor(millis / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
@@ -28,6 +35,22 @@ export class DurationDeltaPipe implements PipeTransform {
     } else {
       const prefixed = '00' + milliseconds;
       return `${sign}${seconds}.${prefixed.substr(prefixed.length - 3)}`;
+    }
+  }
+
+  private toDate(obj: any): Date {
+    if (!obj) {
+      return obj;
+    }
+
+    if (obj instanceof Date) {
+      return obj;
+    } else if (typeof obj === 'number') {
+      return new Date(obj);
+    } else if (typeof obj === 'string') {
+      return new Date(Date.parse(obj));
+    } else {
+      throw new Error(`Cannot convert '${obj}' to Date`);
     }
   }
 }

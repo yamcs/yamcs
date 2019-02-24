@@ -1,37 +1,35 @@
-import { BehaviorSubject } from 'rxjs';
 import { DataSource } from '@angular/cdk/table';
-import { CommandHistoryEntry } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { CollectionViewer } from '@angular/cdk/collections';
+import { CommandHistoryRecord } from './CommandHistoryRecord';
 
-export class CommandHistoryDataSource extends DataSource<CommandHistoryEntry> {
+export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
 
-  entries$ = new BehaviorSubject<CommandHistoryEntry[]>([]);
+  records$ = new BehaviorSubject<CommandHistoryRecord[]>([]);
   loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(private yamcs: YamcsService) {
     super();
   }
 
-  connect(collectionViewer: CollectionViewer) {
-    return this.entries$;
+  connect() {
+    return this.records$;
   }
 
   loadEntries(processorName: string) {
     this.loading$.next(true);
     this.yamcs.getInstanceClient()!.getCommandHistoryEntries().then(entries => {
-      // console.log(entries);
       this.loading$.next(false);
-      this.entries$.next(entries);
+      this.records$.next(entries.map(entry => new CommandHistoryRecord(entry)));
     });
   }
 
-  disconnect(collectionViewer: CollectionViewer) {
-    this.entries$.complete();
+  disconnect() {
+    this.records$.complete();
     this.loading$.complete();
   }
 
   isEmpty() {
-    return !this.entries$.getValue().length;
+    return !this.records$.getValue().length;
   }
 }

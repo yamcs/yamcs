@@ -27,7 +27,7 @@
   <ng-container matColumnDef="lastReceivedUTC">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Received</th>
     <td mat-cell *matCellDef="let tmstats">
-      {{ (tmstats.lastReceived - tmstats.lastPacketTime) | durationDelta }}
+      {{ tmstats.lastReceivedUTC | deltaWith:tmstats.lastPacketTimeUTC }}
     </td>
   </ng-container>
 

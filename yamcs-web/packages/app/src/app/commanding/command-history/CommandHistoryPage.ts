@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { CommandHistoryEntry, Instance } from '@yamcs/client';
+import { Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
+import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
 @Component({
@@ -15,15 +16,16 @@ export class CommandHistoryPage implements OnInit {
 
   instance: Instance;
 
-  selectedEntry$ = new BehaviorSubject<CommandHistoryEntry | null>(null);
+  selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   displayedColumns = [
     'completion',
     'generationTimeUTC',
+    'comment',
     'command',
-    'source',
-    'sourceID',
-    'sequenceNumber',
+    // 'source',
+    // 'sourceID',
+    'verifiers',
   ];
 
   dataSource: CommandHistoryDataSource;
@@ -41,63 +43,7 @@ export class CommandHistoryPage implements OnInit {
     this.dataSource.loadEntries('realtime');
   }
 
-  selectEntry(entry: CommandHistoryEntry) {
-    this.selectedEntry$.next(entry);
-  }
-
-  getUsername(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'username') {
-        return attr.value.stringValue;
-      }
-    }
-  }
-
-  getCommandString(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'source') {
-        return attr.value.stringValue;
-      }
-    }
-  }
-
-  getCommandBinary(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'binary') {
-        return attr.value.binaryValue;
-      }
-    }
-  }
-
-  getFailedReason(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'CommandFailed') {
-        return attr.value.stringValue;
-      }
-    }
-  }
-
-  getFinalSequenceCount(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'Final_Sequence_Count') {
-        return attr.value.stringValue;
-      }
-    }
-  }
-
-  isCompleted(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'CommandComplete') {
-        return attr.value.stringValue === 'OK';
-      }
-    }
-  }
-
-  isFailed(entry: CommandHistoryEntry) {
-    for (const attr of entry.attr) {
-      if (attr.name === 'CommandComplete') {
-        return attr.value.stringValue === 'NOK';
-      }
-    }
+  selectRecord(rec: CommandHistoryRecord) {
+    this.selectedRecord$.next(rec);
   }
 }

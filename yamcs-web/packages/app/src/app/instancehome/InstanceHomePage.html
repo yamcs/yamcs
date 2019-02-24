@@ -75,17 +75,31 @@
             </mat-list>
           </mat-card>
         </div>
-        <div class="card">
+        <div class="card" class="card" *ngIf="mdb$ | async as mdb">
           <mat-card>
-            <mat-card-subtitle>Links</mat-card-subtitle>
-            WIP
+            <mat-card-subtitle>MDB</mat-card-subtitle>
+            <dl class="dl-horizontal">
+              <dt>Parameters:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/parameters" [queryParams]="{instance: instance.name}">{{ mdb.parameterCount }}</a>
+              </dd>
+              <dt>Containers:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/containers" [queryParams]="{instance: instance.name}">{{ mdb.containerCount }}</a>
+              </dd>
+              <dt>Commands:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/commands" [queryParams]="{instance: instance.name}">{{ mdb.commandCount }}</a>
+              </dd>
+              <dt>Algorithms:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/algorithms" [queryParams]="{instance: instance.name}">{{ mdb.algorithmCount }}</a>
+              </dd>
+            </dl>
           </mat-card>
         </div>
         <div class="card">
-          <mat-card>
-            <mat-card-subtitle>MDB</mat-card-subtitle>
-            WIP
-          </mat-card>
+          <mat-card></mat-card>
         </div>
         <div class="card">
           <mat-card></mat-card>

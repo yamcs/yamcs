@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { Alarm, GeneralInfo, Instance, TmStatistics } from '@yamcs/client';
+import { Alarm, GeneralInfo, Instance, MissionDatabase, TmStatistics } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { YamcsService } from '../core/services/YamcsService';
@@ -21,6 +21,7 @@ export class InstanceHomePage implements OnDestroy {
   alarmsDataSource: AlarmsDataSource;
 
   info$: Promise<GeneralInfo>;
+  mdb$: Promise<MissionDatabase>;
 
   constructor(yamcs: YamcsService) {
     const processor = yamcs.getProcessor();
@@ -41,6 +42,8 @@ export class InstanceHomePage implements OnDestroy {
         return alarms.filter(alarm => alarm.type !== 'CLEARED' && alarm.type !== 'ACKNOWLEDGED');
       }),
     );
+
+    this.mdb$ = yamcs.getInstanceClient()!.getMissionDatabase();
 
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
   }

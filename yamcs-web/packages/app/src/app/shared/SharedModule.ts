@@ -18,7 +18,7 @@ import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
-import { DurationDeltaPipe } from './pipes/DurationDeltaPipe';
+import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
@@ -129,7 +129,7 @@ const sharedComponents = [
 const pipes = [
   AgoPipe,
   DateTimePipe,
-  DurationDeltaPipe,
+  DeltaWithPipe,
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,

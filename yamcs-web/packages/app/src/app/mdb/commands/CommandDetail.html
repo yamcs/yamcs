@@ -116,6 +116,51 @@
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
+  <dt>Verifiers</dt>
+  <dd>
+    <table *ngIf="command.verifier?.length" yaDataTable>
+      <tr>
+        <th>Stage</th>
+        <th>Type</th>
+        <th>Ref</th>
+        <th>Check window</th>
+        <th>Relative to</th>
+        <th>On success</th>
+        <th>On fail</th>
+        <th>On timeout</th>
+      </tr>
+      <tr *ngFor="let verifier of command.verifier">
+        <td>{{ verifier.stage }}</td>
+        <td>
+          <ng-container *ngIf="verifier.algorithm">Algorithm</ng-container>
+          <ng-container *ngIf="verifier.container">Container</ng-container>
+        </td>
+        <td>
+          <ng-container *ngIf="verifier.algorithm">
+            <a [routerLink]="['/mdb/algorithms/', verifier.algorithm?.qualifiedName]"
+               [queryParams]="{instance: instance.name}">{{ verifier.algorithm?.qualifiedName }}</a>
+          </ng-container>
+          <ng-container *ngIf="verifier.container">
+            <a [routerLink]="['/mdb/containers/', verifier.container?.qualifiedName]"
+               [queryParams]="{instance: instance.name}">{{ verifier.container?.qualifiedName }}</a>
+          </ng-container>
+        </td>
+        <td>
+          [{{ verifier.checkWindow.timeToStartChecking || '0' }},{{ verifier.checkWindow.timeToStopChecking || '0' }}]
+        </td>
+        <td>{{ verifier.checkWindow.relativeTo }}</td>
+        <td>{{ verifier.onSuccess || '-' }}</td>
+        <td>{{ verifier.onFail || '-' }}</td>
+        <td>{{ verifier.onTimeout || '-' }}</td>
+      </tr>
+    </table>
+    <ng-container *ngIf="!command.verifier?.length">-</ng-container>
+  </dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
   <dt>Sequence entries</dt>
   <dd>
     <table *ngIf="command.commandContainer.entry" yaDataTable>
