@@ -155,15 +155,55 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpDelete(RestRequest req) throws HttpException {
         // TODO
     }
-    
-    @Route(path = "/api/cfdp/pause", method = "POST")
-    public void CfdpDelete(RestRequest req) throws HttpException {
-        // TODO
-    }
-    
-    @Route(path = "/api/cfdp/resume", method = "POST")
-    public void CfdpDelete(RestRequest req) throws HttpException {
-        // TODO
-    }
     */
+
+    // TODO update rest documentation
+    @Route(path = "/api/cfdp/:instance/pause", method = "POST")
+    public void CfdpPause(RestRequest req) throws HttpException {
+        log.info("CfdpPause");
+
+        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+
+        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
+
+        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
+        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+                ? ci.getCfdpTransfers(true)
+                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+
+        List<CfdpTransfer> pausedTransfers = transfers.stream().map(CfdpTransfer::pause).filter(x -> x != null)
+                .collect(Collectors.toList());
+
+        PausedTransfersResponse.Builder ctr = PausedTransfersResponse.newBuilder();
+
+        for (CfdpTransfer transfer : pausedTransfers) {
+            ctr.addTransfers(transfer.getId());
+        }
+        completeOK(req, ctr.build());
+    }
+
+    // TODO update rest documentation
+    @Route(path = "/api/cfdp/:instance/pause", method = "POST")
+    public void CfdpResume(RestRequest req) throws HttpException {
+        log.info("CfdpResume");
+
+        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+
+        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
+
+        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
+        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+                ? ci.getCfdpTransfers(true)
+                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+
+        List<CfdpTransfer> resumedTransfers = transfers.stream().map(CfdpTransfer::resume).filter(x -> x != null)
+                .collect(Collectors.toList());
+
+        ResumedTransfersResponse.Builder ctr = ResumedTransfersResponse.newBuilder();
+
+        for (CfdpTransfer transfer : resumedTransfers) {
+            ctr.addTransfers(transfer.getId());
+        }
+        completeOK(req, ctr.build());
+    }
 }

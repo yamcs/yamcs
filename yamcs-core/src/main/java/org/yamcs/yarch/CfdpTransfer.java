@@ -46,4 +46,15 @@ public class CfdpTransfer {
         // IF cancelled, return myself, otherwise return null id, otherwise return null
         return this;
     }
+
+    public CfdpTransfer pause() {
+        // IF cancelled, return myself, otherwise return null id, otherwise return null
+        return this;
+    }
+
+    public CfdpTransfer resume() {
+        // IF cancelled, return myself, otherwise return null id, otherwise return null
+        return this;
+    }
+
 }

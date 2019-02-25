@@ -42,3 +42,13 @@ message ListTransfersResponse {
 message CancelTransfersResponse {
   repeated uint64 transfers = 1;
 }
+
+// message sent as the response to the pause transfers
+message PausedTransfersResponse {
+  repeated uint64 transfers = 1;
+}
+
+//message sent as the response to the resume transfers
+message ResumedTransfersResponse {
+  repeated uint64 transfers = 1;
+}
