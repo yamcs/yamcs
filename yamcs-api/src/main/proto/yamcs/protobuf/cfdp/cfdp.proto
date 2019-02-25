@@ -37,3 +37,8 @@ message TransferStatus {
 message ListTransfersResponse {
   repeated TransferStatus transfers = 1;
 }
+
+//message sent as the response to the cancel transfers
+message CancelTransfersResponse {
+  repeated uint64 transfers = 1;
+}

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
 import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
 import org.yamcs.protobuf.Cfdp.TransferStatus;
 import org.yamcs.web.HttpException;
@@ -125,29 +126,29 @@ public class CfdpRestHandler extends RestHandler {
         completeOK(req, ltr.build());
     }
 
-    @Route(path = "/api/cfdp/cancel", method = "POST")
+    // TODO update rest doc
+    @Route(path = "/api/cfdp/:instance/cancel", method = "POST")
     public void CfdpCancel(RestRequest req) throws HttpException {
         log.info("CfdpCancel");
 
+        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
-        List<CfdpTransfer> transfers = ci.getCfdpTransfers();
+        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
+        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+                ? ci.getCfdpTransfers(true)
+                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        ListTransfersResponse.Builder ltr = ListTransfersResponse.newBuilder();
+        List<CfdpTransfer> cancelledTransfers = transfers.stream().map(CfdpTransfer::cancel).filter(x -> x != null)
+                .collect(Collectors.toList());
 
-        for (CfdpTransfer transfer : transfers) {
-            ltr.addTransfers(TransferStatus.newBuilder()
-                    .setTransferId(transfer.getId())
-                    .setState(transfer.getState().getState())
-                    .setLocalBucketName(transfer.getBucket().getName())
-                    .setLocalObjectName(transfer.getObjectName())
-                    .setRemotePath(transfer.getRemotePath())
-                    .setDirection(transfer.getDirection())
-                    .setTotalSize(transfer.getTotalSize())
-                    .setSizeTransferred(transfer.getState().getTransferredSize()));
+        CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();
+
+        for (CfdpTransfer transfer : cancelledTransfers) {
+            ctr.addTransfers(transfer.getId());
         }
-        completeOK(req, ltr.build());
-
+        completeOK(req, ctr.build());
     }
     /*
     @Route(path = "/api/cfdp/delete", method = "POST")

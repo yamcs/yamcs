@@ -41,4 +41,9 @@ public class CfdpTransfer {
     public long getTotalSize() {
         return this.totalSize;
     }
+
+    public CfdpTransfer cancel() {
+        // IF cancelled, return myself, otherwise return null id, otherwise return null
+        return this;
+    }
 }

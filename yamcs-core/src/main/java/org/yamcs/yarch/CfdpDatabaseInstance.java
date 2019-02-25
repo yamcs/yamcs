@@ -47,9 +47,5 @@ public class CfdpDatabaseInstance {
                 .collect(Collectors.toList());
     }
 
-    void cancelCfdpTransfer(int transferId) {
-        // TODO
-    }
-
     // TODO, add more, obviously
 }
