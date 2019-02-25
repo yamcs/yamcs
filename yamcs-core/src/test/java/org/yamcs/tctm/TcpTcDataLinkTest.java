@@ -60,6 +60,7 @@ public class TcpTcDataLinkTest {
             serverSocket.setSoTimeout(100000);
         }
 
+        @Override
         public void run() {
             Socket server = null;
             try {
@@ -76,9 +77,10 @@ public class TcpTcDataLinkTest {
                     byte hdr[] = new byte[6];
                     in.readFully(hdr);
                     int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-                    if (remaining > maxLength - 6)
+                    if (remaining > maxLength - 6) {
                         throw new IOException("Remaining packet length too big: " + remaining + " maximum allowed is "
                                 + (maxLength - 6));
+                    }
                     byte[] b = new byte[6 + remaining];
                     System.arraycopy(hdr, 0, b, 0, 6);
                     in.readFully(b, 6, remaining);
@@ -201,12 +203,14 @@ public class TcpTcDataLinkTest {
 
         @Override
         public void publish(CommandId cmdId, String key, int value) {
-            ;
+        }
+
+        @Override
+        public void publish(CommandId cmdId, String key, byte[] binary) {
         }
 
         @Override
         public void addCommand(PreparedCommand pc) {
-            ;
         }
     }
 }
