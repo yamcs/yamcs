@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Cfdp.PausedTransfersResponse;
 import org.yamcs.protobuf.Cfdp.RemoteFile;
 import org.yamcs.protobuf.Cfdp.ResumedTransfersResponse;
 import org.yamcs.protobuf.Cfdp.TransferStatus;
+import org.yamcs.protobuf.Cfdp.UploadResponse;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -60,9 +61,14 @@ public class CfdpRestHandler extends RestHandler {
         }
         /** /copied */
 
-        // TODO, do the CFDP transfer with objData
+        // TODO, get the transferId using the CFDP service
+        long transferId = 0;
 
-        // TODO, return value
+        UploadResponse.Builder ur = UploadResponse.newBuilder();
+
+        ur.setTransferId(transferId);
+
+        completeOK(req, ur.build());
     }
 
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "GET")

@@ -67,3 +67,8 @@ message ListRemoteFilesResponse {
 message DownloadResponse {
   required uint64 transferId = 1;
 }
+
+//message sent as the response to the upload call
+message UploadResponse {
+  required uint64 transferId = 1;
+}
