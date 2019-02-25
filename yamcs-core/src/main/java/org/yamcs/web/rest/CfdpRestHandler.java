@@ -1,9 +1,12 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,12 +89,45 @@ public class CfdpRestHandler extends RestHandler {
 
     }
 
-    // TODO update rest doc (add the :instance)
-    @Route(path = "/api/cfdp/:instance/list", method = "GET")
+    @Route(path = "/api/cfdp/list", method = "GET")
     public void CfdpList(RestRequest req) throws HttpException {
+        log.info("CfdpInfo");
+        // TODO
+    }
+
+    // TODO update rest doc
+    @Route(path = "/api/cfdp/:instance/info", method = "GET")
+    public void CfdpInfo(RestRequest req) throws HttpException {
         log.info("CfdpList");
 
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+
+        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
+
+        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
+        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+                ? ci.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
+                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+
+        ListTransfersResponse.Builder ltr = ListTransfersResponse.newBuilder();
+
+        for (CfdpTransfer transfer : transfers) {
+            ltr.addTransfers(TransferStatus.newBuilder()
+                    .setTransferId(transfer.getId())
+                    .setState(transfer.getState().getState())
+                    .setLocalBucketName(transfer.getBucket().getName())
+                    .setLocalObjectName(transfer.getObjectName())
+                    .setRemotePath(transfer.getRemotePath())
+                    .setDirection(transfer.getDirection())
+                    .setTotalSize(transfer.getTotalSize())
+                    .setSizeTransferred(transfer.getState().getTransferredSize()));
+        }
+        completeOK(req, ltr.build());
+    }
+
+    @Route(path = "/api/cfdp/cancel", method = "POST")
+    public void CfdpCancel(RestRequest req) throws HttpException {
+        log.info("CfdpCancel");
 
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
@@ -111,18 +147,9 @@ public class CfdpRestHandler extends RestHandler {
                     .setSizeTransferred(transfer.getState().getTransferredSize()));
         }
         completeOK(req, ltr.build());
+
     }
     /*
-    @Route(path = "/api/cfdp/info", method = "GET")
-    public void CfdpInfo(RestRequest req) throws HttpException {
-        // TODO
-    }
-    
-    @Route(path = "/api/cfdp/cancel", method = "POST")
-    public void CfdpCancel(RestRequest req) throws HttpException {
-        // TODO
-    }
-    
     @Route(path = "/api/cfdp/delete", method = "POST")
     public void CfdpDelete(RestRequest req) throws HttpException {
         // TODO

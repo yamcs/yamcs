@@ -13,4 +13,8 @@ public class CfdpTransferState {
     public long getTransferredSize() {
         return this.transferred;
     }
+
+    public boolean isOngoing() {
+        return state == TransferState.RUNNING || state == TransferState.PAUSED;
+    }
 }
