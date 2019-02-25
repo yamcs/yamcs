@@ -11,8 +11,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
-import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
+import org.yamcs.protobuf.Cfdp.InfoTransfersResponse;
+import org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse;
 import org.yamcs.protobuf.Cfdp.PausedTransfersResponse;
+import org.yamcs.protobuf.Cfdp.RemoteFile;
 import org.yamcs.protobuf.Cfdp.ResumedTransfersResponse;
 import org.yamcs.protobuf.Cfdp.TransferStatus;
 import org.yamcs.web.HttpException;
@@ -95,7 +97,19 @@ public class CfdpRestHandler extends RestHandler {
     @Route(path = "/api/cfdp/list", method = "GET")
     public void CfdpList(RestRequest req) throws HttpException {
         log.info("CfdpInfo");
-        // TODO
+
+        ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
+
+        String remotePath = req.getRouteParam("target");
+
+        // TODO get the remote files using CFDP
+        Collection<RemoteFile> remoteFiles = null;
+
+        lrfr.setRemotePath(remotePath);
+        for (RemoteFile rf : remoteFiles) {
+            lrfr.addFilepaths(rf);
+        }
+        completeOK(req, lrfr.build());
     }
 
     // TODO update rest doc
@@ -112,10 +126,10 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        ListTransfersResponse.Builder ltr = ListTransfersResponse.newBuilder();
+        InfoTransfersResponse.Builder itr = InfoTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : transfers) {
-            ltr.addTransfers(TransferStatus.newBuilder()
+            itr.addTransfers(TransferStatus.newBuilder()
                     .setTransferId(transfer.getId())
                     .setState(transfer.getState().getState())
                     .setLocalBucketName(transfer.getBucket().getName())
@@ -125,7 +139,7 @@ public class CfdpRestHandler extends RestHandler {
                     .setTotalSize(transfer.getTotalSize())
                     .setSizeTransferred(transfer.getState().getTransferredSize()));
         }
-        completeOK(req, ltr.build());
+        completeOK(req, itr.build());
     }
 
     // TODO update rest doc

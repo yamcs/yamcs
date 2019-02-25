@@ -15,6 +15,10 @@ enum TransferState {
    FAILED = 3 ;
 }
 
+message RemoteFile {
+   required string filepath = 1;
+   required bool isDirectory = 2;
+}
 
 //message sent as reponse to the info and also when starting a new transfer
 message TransferStatus {
@@ -33,8 +37,8 @@ message TransferStatus {
   
 }
 
-//message sent as the response to the list transfers
-message ListTransfersResponse {
+//message sent as the response to the info transfers
+message InfoTransfersResponse {
   repeated TransferStatus transfers = 1;
 }
 
@@ -51,4 +55,10 @@ message PausedTransfersResponse {
 //message sent as the response to the resume transfers
 message ResumedTransfersResponse {
   repeated uint64 transfers = 1;
+}
+
+//message sent as the reponse to the list call
+message ListRemoteFilesResponse {
+  required string remotePath = 1;
+  repeated RemoteFile filepaths = 2;
 }

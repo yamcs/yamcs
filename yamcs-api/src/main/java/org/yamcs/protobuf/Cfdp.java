@@ -203,6 +203,689 @@ public final class Cfdp {
     // @@protoc_insertion_point(enum_scope:yamcs.protobuf.cfdp.TransferState)
   }
 
+  public interface RemoteFileOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.cfdp.RemoteFile)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    boolean hasFilepath();
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    java.lang.String getFilepath();
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getFilepathBytes();
+
+    /**
+     * <code>required bool isDirectory = 2;</code>
+     */
+    boolean hasIsDirectory();
+    /**
+     * <code>required bool isDirectory = 2;</code>
+     */
+    boolean getIsDirectory();
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.cfdp.RemoteFile}
+   */
+  public  static final class RemoteFile extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.cfdp.RemoteFile)
+      RemoteFileOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RemoteFile.newBuilder() to construct.
+    private RemoteFile(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RemoteFile() {
+      filepath_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private RemoteFile(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              filepath_ = bs;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              isDirectory_ = input.readBool();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_RemoteFile_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Cfdp.RemoteFile.class, org.yamcs.protobuf.Cfdp.RemoteFile.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int FILEPATH_FIELD_NUMBER = 1;
+    private volatile java.lang.Object filepath_;
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    public boolean hasFilepath() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    public java.lang.String getFilepath() {
+      java.lang.Object ref = filepath_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          filepath_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string filepath = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFilepathBytes() {
+      java.lang.Object ref = filepath_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        filepath_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int ISDIRECTORY_FIELD_NUMBER = 2;
+    private boolean isDirectory_;
+    /**
+     * <code>required bool isDirectory = 2;</code>
+     */
+    public boolean hasIsDirectory() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>required bool isDirectory = 2;</code>
+     */
+    public boolean getIsDirectory() {
+      return isDirectory_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasFilepath()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasIsDirectory()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, filepath_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeBool(2, isDirectory_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, filepath_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, isDirectory_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Cfdp.RemoteFile)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Cfdp.RemoteFile other = (org.yamcs.protobuf.Cfdp.RemoteFile) obj;
+
+      if (hasFilepath() != other.hasFilepath()) return false;
+      if (hasFilepath()) {
+        if (!getFilepath()
+            .equals(other.getFilepath())) return false;
+      }
+      if (hasIsDirectory() != other.hasIsDirectory()) return false;
+      if (hasIsDirectory()) {
+        if (getIsDirectory()
+            != other.getIsDirectory()) return false;
+      }
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasFilepath()) {
+        hash = (37 * hash) + FILEPATH_FIELD_NUMBER;
+        hash = (53 * hash) + getFilepath().hashCode();
+      }
+      if (hasIsDirectory()) {
+        hash = (37 * hash) + ISDIRECTORY_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getIsDirectory());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.RemoteFile parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Cfdp.RemoteFile prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.cfdp.RemoteFile}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.cfdp.RemoteFile)
+        org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_RemoteFile_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Cfdp.RemoteFile.class, org.yamcs.protobuf.Cfdp.RemoteFile.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Cfdp.RemoteFile.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        filepath_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        isDirectory_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.RemoteFile getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Cfdp.RemoteFile.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.RemoteFile build() {
+        org.yamcs.protobuf.Cfdp.RemoteFile result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.RemoteFile buildPartial() {
+        org.yamcs.protobuf.Cfdp.RemoteFile result = new org.yamcs.protobuf.Cfdp.RemoteFile(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.filepath_ = filepath_;
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.isDirectory_ = isDirectory_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Cfdp.RemoteFile) {
+          return mergeFrom((org.yamcs.protobuf.Cfdp.RemoteFile)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Cfdp.RemoteFile other) {
+        if (other == org.yamcs.protobuf.Cfdp.RemoteFile.getDefaultInstance()) return this;
+        if (other.hasFilepath()) {
+          bitField0_ |= 0x00000001;
+          filepath_ = other.filepath_;
+          onChanged();
+        }
+        if (other.hasIsDirectory()) {
+          setIsDirectory(other.getIsDirectory());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        if (!hasFilepath()) {
+          return false;
+        }
+        if (!hasIsDirectory()) {
+          return false;
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Cfdp.RemoteFile parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Cfdp.RemoteFile) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object filepath_ = "";
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public boolean hasFilepath() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public java.lang.String getFilepath() {
+        java.lang.Object ref = filepath_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            filepath_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFilepathBytes() {
+        java.lang.Object ref = filepath_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          filepath_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public Builder setFilepath(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filepath_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public Builder clearFilepath() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        filepath_ = getDefaultInstance().getFilepath();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string filepath = 1;</code>
+       */
+      public Builder setFilepathBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filepath_ = value;
+        onChanged();
+        return this;
+      }
+
+      private boolean isDirectory_ ;
+      /**
+       * <code>required bool isDirectory = 2;</code>
+       */
+      public boolean hasIsDirectory() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>required bool isDirectory = 2;</code>
+       */
+      public boolean getIsDirectory() {
+        return isDirectory_;
+      }
+      /**
+       * <code>required bool isDirectory = 2;</code>
+       */
+      public Builder setIsDirectory(boolean value) {
+        bitField0_ |= 0x00000002;
+        isDirectory_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bool isDirectory = 2;</code>
+       */
+      public Builder clearIsDirectory() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        isDirectory_ = false;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.cfdp.RemoteFile)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.cfdp.RemoteFile)
+    private static final org.yamcs.protobuf.Cfdp.RemoteFile DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Cfdp.RemoteFile();
+    }
+
+    public static org.yamcs.protobuf.Cfdp.RemoteFile getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<RemoteFile>
+        PARSER = new com.google.protobuf.AbstractParser<RemoteFile>() {
+      @java.lang.Override
+      public RemoteFile parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new RemoteFile(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RemoteFile> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RemoteFile> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.yamcs.protobuf.Cfdp.RemoteFile getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface TransferStatusOrBuilder extends
       // @@protoc_insertion_point(interface_extends:yamcs.protobuf.cfdp.TransferStatus)
       com.google.protobuf.MessageOrBuilder {
@@ -1584,8 +2267,8 @@ public final class Cfdp {
 
   }
 
-  public interface ListTransfersResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.cfdp.ListTransfersResponse)
+  public interface InfoTransfersResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.cfdp.InfoTransfersResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -1614,21 +2297,21 @@ public final class Cfdp {
   }
   /**
    * <pre>
-   *message sent as the response to the list transfers
+   *message sent as the response to the info transfers
    * </pre>
    *
-   * Protobuf type {@code yamcs.protobuf.cfdp.ListTransfersResponse}
+   * Protobuf type {@code yamcs.protobuf.cfdp.InfoTransfersResponse}
    */
-  public  static final class ListTransfersResponse extends
+  public  static final class InfoTransfersResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:yamcs.protobuf.cfdp.ListTransfersResponse)
-      ListTransfersResponseOrBuilder {
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.cfdp.InfoTransfersResponse)
+      InfoTransfersResponseOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use ListTransfersResponse.newBuilder() to construct.
-    private ListTransfersResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use InfoTransfersResponse.newBuilder() to construct.
+    private InfoTransfersResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private ListTransfersResponse() {
+    private InfoTransfersResponse() {
       transfers_ = java.util.Collections.emptyList();
     }
 
@@ -1637,7 +2320,7 @@ public final class Cfdp {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ListTransfersResponse(
+    private InfoTransfersResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1689,15 +2372,15 @@ public final class Cfdp {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor;
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_fieldAccessorTable
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Cfdp.ListTransfersResponse.class, org.yamcs.protobuf.Cfdp.ListTransfersResponse.Builder.class);
+              org.yamcs.protobuf.Cfdp.InfoTransfersResponse.class, org.yamcs.protobuf.Cfdp.InfoTransfersResponse.Builder.class);
     }
 
     public static final int TRANSFERS_FIELD_NUMBER = 1;
@@ -1775,10 +2458,10 @@ public final class Cfdp {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.yamcs.protobuf.Cfdp.ListTransfersResponse)) {
+      if (!(obj instanceof org.yamcs.protobuf.Cfdp.InfoTransfersResponse)) {
         return super.equals(obj);
       }
-      org.yamcs.protobuf.Cfdp.ListTransfersResponse other = (org.yamcs.protobuf.Cfdp.ListTransfersResponse) obj;
+      org.yamcs.protobuf.Cfdp.InfoTransfersResponse other = (org.yamcs.protobuf.Cfdp.InfoTransfersResponse) obj;
 
       if (!getTransfersList()
           .equals(other.getTransfersList())) return false;
@@ -1802,69 +2485,69 @@ public final class Cfdp {
       return hash;
     }
 
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(byte[] data)
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseDelimitedFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse parseFrom(
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1877,7 +2560,7 @@ public final class Cfdp {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.yamcs.protobuf.Cfdp.ListTransfersResponse prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.Cfdp.InfoTransfersResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1894,29 +2577,29 @@ public final class Cfdp {
     }
     /**
      * <pre>
-     *message sent as the response to the list transfers
+     *message sent as the response to the info transfers
      * </pre>
      *
-     * Protobuf type {@code yamcs.protobuf.cfdp.ListTransfersResponse}
+     * Protobuf type {@code yamcs.protobuf.cfdp.InfoTransfersResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.cfdp.ListTransfersResponse)
-        org.yamcs.protobuf.Cfdp.ListTransfersResponseOrBuilder {
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.cfdp.InfoTransfersResponse)
+        org.yamcs.protobuf.Cfdp.InfoTransfersResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor;
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_fieldAccessorTable
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Cfdp.ListTransfersResponse.class, org.yamcs.protobuf.Cfdp.ListTransfersResponse.Builder.class);
+                org.yamcs.protobuf.Cfdp.InfoTransfersResponse.class, org.yamcs.protobuf.Cfdp.InfoTransfersResponse.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.Cfdp.ListTransfersResponse.newBuilder()
+      // Construct using org.yamcs.protobuf.Cfdp.InfoTransfersResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1947,17 +2630,17 @@ public final class Cfdp {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor;
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor;
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.Cfdp.ListTransfersResponse getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Cfdp.ListTransfersResponse.getDefaultInstance();
+      public org.yamcs.protobuf.Cfdp.InfoTransfersResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Cfdp.InfoTransfersResponse.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.Cfdp.ListTransfersResponse build() {
-        org.yamcs.protobuf.Cfdp.ListTransfersResponse result = buildPartial();
+      public org.yamcs.protobuf.Cfdp.InfoTransfersResponse build() {
+        org.yamcs.protobuf.Cfdp.InfoTransfersResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1965,8 +2648,8 @@ public final class Cfdp {
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.Cfdp.ListTransfersResponse buildPartial() {
-        org.yamcs.protobuf.Cfdp.ListTransfersResponse result = new org.yamcs.protobuf.Cfdp.ListTransfersResponse(this);
+      public org.yamcs.protobuf.Cfdp.InfoTransfersResponse buildPartial() {
+        org.yamcs.protobuf.Cfdp.InfoTransfersResponse result = new org.yamcs.protobuf.Cfdp.InfoTransfersResponse(this);
         int from_bitField0_ = bitField0_;
         if (transfersBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
@@ -2015,16 +2698,16 @@ public final class Cfdp {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Cfdp.ListTransfersResponse) {
-          return mergeFrom((org.yamcs.protobuf.Cfdp.ListTransfersResponse)other);
+        if (other instanceof org.yamcs.protobuf.Cfdp.InfoTransfersResponse) {
+          return mergeFrom((org.yamcs.protobuf.Cfdp.InfoTransfersResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.Cfdp.ListTransfersResponse other) {
-        if (other == org.yamcs.protobuf.Cfdp.ListTransfersResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.Cfdp.InfoTransfersResponse other) {
+        if (other == org.yamcs.protobuf.Cfdp.InfoTransfersResponse.getDefaultInstance()) return this;
         if (transfersBuilder_ == null) {
           if (!other.transfers_.isEmpty()) {
             if (transfers_.isEmpty()) {
@@ -2066,11 +2749,11 @@ public final class Cfdp {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.Cfdp.ListTransfersResponse parsedMessage = null;
+        org.yamcs.protobuf.Cfdp.InfoTransfersResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Cfdp.ListTransfersResponse) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.Cfdp.InfoTransfersResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2333,41 +3016,41 @@ public final class Cfdp {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.cfdp.ListTransfersResponse)
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.cfdp.InfoTransfersResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:yamcs.protobuf.cfdp.ListTransfersResponse)
-    private static final org.yamcs.protobuf.Cfdp.ListTransfersResponse DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.cfdp.InfoTransfersResponse)
+    private static final org.yamcs.protobuf.Cfdp.InfoTransfersResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.yamcs.protobuf.Cfdp.ListTransfersResponse();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Cfdp.InfoTransfersResponse();
     }
 
-    public static org.yamcs.protobuf.Cfdp.ListTransfersResponse getDefaultInstance() {
+    public static org.yamcs.protobuf.Cfdp.InfoTransfersResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListTransfersResponse>
-        PARSER = new com.google.protobuf.AbstractParser<ListTransfersResponse>() {
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<InfoTransfersResponse>
+        PARSER = new com.google.protobuf.AbstractParser<InfoTransfersResponse>() {
       @java.lang.Override
-      public ListTransfersResponse parsePartialFrom(
+      public InfoTransfersResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ListTransfersResponse(input, extensionRegistry);
+        return new InfoTransfersResponse(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<ListTransfersResponse> parser() {
+    public static com.google.protobuf.Parser<InfoTransfersResponse> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<ListTransfersResponse> getParserForType() {
+    public com.google.protobuf.Parser<InfoTransfersResponse> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public org.yamcs.protobuf.Cfdp.ListTransfersResponse getDefaultInstanceForType() {
+    public org.yamcs.protobuf.Cfdp.InfoTransfersResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2407,7 +3090,7 @@ public final class Cfdp {
       super(builder);
     }
     private CancelTransfersResponse() {
-      transfers_ = java.util.Collections.emptyList();
+      transfers_ = emptyLongList();
     }
 
     @java.lang.Override
@@ -2434,32 +3117,32 @@ public final class Cfdp {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              transfers_.add(input.readUInt64());
+              transfers_.addLong(input.readUInt64());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                transfers_.add(input.readUInt64());
+                transfers_.addLong(input.readUInt64());
               }
               input.popLimit(limit);
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -2470,8 +3153,8 @@ public final class Cfdp {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -2482,6 +3165,7 @@ public final class Cfdp {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_fieldAccessorTable
@@ -2490,7 +3174,7 @@ public final class Cfdp {
     }
 
     public static final int TRANSFERS_FIELD_NUMBER = 1;
-    private java.util.List<java.lang.Long> transfers_;
+    private com.google.protobuf.Internal.LongList transfers_;
     /**
      * <code>repeated uint64 transfers = 1;</code>
      */
@@ -2508,10 +3192,11 @@ public final class Cfdp {
      * <code>repeated uint64 transfers = 1;</code>
      */
     public long getTransfers(int index) {
-      return transfers_.get(index);
+      return transfers_.getLong(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2521,14 +3206,16 @@ public final class Cfdp {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < transfers_.size(); i++) {
-        output.writeUInt64(1, transfers_.get(i));
+        output.writeUInt64(1, transfers_.getLong(i));
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2538,7 +3225,7 @@ public final class Cfdp {
         int dataSize = 0;
         for (int i = 0; i < transfers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt64SizeNoTag(transfers_.get(i));
+            .computeUInt64SizeNoTag(transfers_.getLong(i));
         }
         size += dataSize;
         size += 1 * getTransfersList().size();
@@ -2558,11 +3245,10 @@ public final class Cfdp {
       }
       org.yamcs.protobuf.Cfdp.CancelTransfersResponse other = (org.yamcs.protobuf.Cfdp.CancelTransfersResponse) obj;
 
-      boolean result = true;
-      result = result && getTransfersList()
-          .equals(other.getTransfersList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTransfersList()
+          .equals(other.getTransfersList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -2651,6 +3337,7 @@ public final class Cfdp {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -2658,6 +3345,7 @@ public final class Cfdp {
     public static Builder newBuilder(org.yamcs.protobuf.Cfdp.CancelTransfersResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2685,6 +3373,7 @@ public final class Cfdp {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_fieldAccessorTable
@@ -2707,22 +3396,26 @@ public final class Cfdp {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.CancelTransfersResponse getDefaultInstanceForType() {
         return org.yamcs.protobuf.Cfdp.CancelTransfersResponse.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.CancelTransfersResponse build() {
         org.yamcs.protobuf.Cfdp.CancelTransfersResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -2731,11 +3424,12 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.CancelTransfersResponse buildPartial() {
         org.yamcs.protobuf.Cfdp.CancelTransfersResponse result = new org.yamcs.protobuf.Cfdp.CancelTransfersResponse(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.transfers_ = transfers_;
@@ -2743,32 +3437,39 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Cfdp.CancelTransfersResponse) {
           return mergeFrom((org.yamcs.protobuf.Cfdp.CancelTransfersResponse)other);
@@ -2795,10 +3496,12 @@ public final class Cfdp {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2818,10 +3521,10 @@ public final class Cfdp {
       }
       private int bitField0_;
 
-      private java.util.List<java.lang.Long> transfers_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.LongList transfers_ = emptyLongList();
       private void ensureTransfersIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = new java.util.ArrayList<java.lang.Long>(transfers_);
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          transfers_ = mutableCopy(transfers_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -2830,7 +3533,8 @@ public final class Cfdp {
        */
       public java.util.List<java.lang.Long>
           getTransfersList() {
-        return java.util.Collections.unmodifiableList(transfers_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(transfers_) : transfers_;
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -2842,7 +3546,7 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public long getTransfers(int index) {
-        return transfers_.get(index);
+        return transfers_.getLong(index);
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -2850,7 +3554,7 @@ public final class Cfdp {
       public Builder setTransfers(
           int index, long value) {
         ensureTransfersIsMutable();
-        transfers_.set(index, value);
+        transfers_.setLong(index, value);
         onChanged();
         return this;
       }
@@ -2859,7 +3563,7 @@ public final class Cfdp {
        */
       public Builder addTransfers(long value) {
         ensureTransfersIsMutable();
-        transfers_.add(value);
+        transfers_.addLong(value);
         onChanged();
         return this;
       }
@@ -2878,16 +3582,18 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public Builder clearTransfers() {
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2909,6 +3615,7 @@ public final class Cfdp {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<CancelTransfersResponse>
         PARSER = new com.google.protobuf.AbstractParser<CancelTransfersResponse>() {
+      @java.lang.Override
       public CancelTransfersResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2926,6 +3633,7 @@ public final class Cfdp {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Cfdp.CancelTransfersResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -2966,7 +3674,7 @@ public final class Cfdp {
       super(builder);
     }
     private PausedTransfersResponse() {
-      transfers_ = java.util.Collections.emptyList();
+      transfers_ = emptyLongList();
     }
 
     @java.lang.Override
@@ -2993,32 +3701,32 @@ public final class Cfdp {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              transfers_.add(input.readUInt64());
+              transfers_.addLong(input.readUInt64());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                transfers_.add(input.readUInt64());
+                transfers_.addLong(input.readUInt64());
               }
               input.popLimit(limit);
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -3029,8 +3737,8 @@ public final class Cfdp {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3041,6 +3749,7 @@ public final class Cfdp {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_fieldAccessorTable
@@ -3049,7 +3758,7 @@ public final class Cfdp {
     }
 
     public static final int TRANSFERS_FIELD_NUMBER = 1;
-    private java.util.List<java.lang.Long> transfers_;
+    private com.google.protobuf.Internal.LongList transfers_;
     /**
      * <code>repeated uint64 transfers = 1;</code>
      */
@@ -3067,10 +3776,11 @@ public final class Cfdp {
      * <code>repeated uint64 transfers = 1;</code>
      */
     public long getTransfers(int index) {
-      return transfers_.get(index);
+      return transfers_.getLong(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3080,14 +3790,16 @@ public final class Cfdp {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < transfers_.size(); i++) {
-        output.writeUInt64(1, transfers_.get(i));
+        output.writeUInt64(1, transfers_.getLong(i));
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3097,7 +3809,7 @@ public final class Cfdp {
         int dataSize = 0;
         for (int i = 0; i < transfers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt64SizeNoTag(transfers_.get(i));
+            .computeUInt64SizeNoTag(transfers_.getLong(i));
         }
         size += dataSize;
         size += 1 * getTransfersList().size();
@@ -3117,11 +3829,10 @@ public final class Cfdp {
       }
       org.yamcs.protobuf.Cfdp.PausedTransfersResponse other = (org.yamcs.protobuf.Cfdp.PausedTransfersResponse) obj;
 
-      boolean result = true;
-      result = result && getTransfersList()
-          .equals(other.getTransfersList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTransfersList()
+          .equals(other.getTransfersList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3210,6 +3921,7 @@ public final class Cfdp {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3217,6 +3929,7 @@ public final class Cfdp {
     public static Builder newBuilder(org.yamcs.protobuf.Cfdp.PausedTransfersResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3244,6 +3957,7 @@ public final class Cfdp {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_fieldAccessorTable
@@ -3266,22 +3980,26 @@ public final class Cfdp {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.PausedTransfersResponse getDefaultInstanceForType() {
         return org.yamcs.protobuf.Cfdp.PausedTransfersResponse.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.PausedTransfersResponse build() {
         org.yamcs.protobuf.Cfdp.PausedTransfersResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -3290,11 +4008,12 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.PausedTransfersResponse buildPartial() {
         org.yamcs.protobuf.Cfdp.PausedTransfersResponse result = new org.yamcs.protobuf.Cfdp.PausedTransfersResponse(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.transfers_ = transfers_;
@@ -3302,32 +4021,39 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Cfdp.PausedTransfersResponse) {
           return mergeFrom((org.yamcs.protobuf.Cfdp.PausedTransfersResponse)other);
@@ -3354,10 +4080,12 @@ public final class Cfdp {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3377,10 +4105,10 @@ public final class Cfdp {
       }
       private int bitField0_;
 
-      private java.util.List<java.lang.Long> transfers_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.LongList transfers_ = emptyLongList();
       private void ensureTransfersIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = new java.util.ArrayList<java.lang.Long>(transfers_);
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          transfers_ = mutableCopy(transfers_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -3389,7 +4117,8 @@ public final class Cfdp {
        */
       public java.util.List<java.lang.Long>
           getTransfersList() {
-        return java.util.Collections.unmodifiableList(transfers_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(transfers_) : transfers_;
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -3401,7 +4130,7 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public long getTransfers(int index) {
-        return transfers_.get(index);
+        return transfers_.getLong(index);
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -3409,7 +4138,7 @@ public final class Cfdp {
       public Builder setTransfers(
           int index, long value) {
         ensureTransfersIsMutable();
-        transfers_.set(index, value);
+        transfers_.setLong(index, value);
         onChanged();
         return this;
       }
@@ -3418,7 +4147,7 @@ public final class Cfdp {
        */
       public Builder addTransfers(long value) {
         ensureTransfersIsMutable();
-        transfers_.add(value);
+        transfers_.addLong(value);
         onChanged();
         return this;
       }
@@ -3437,16 +4166,18 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public Builder clearTransfers() {
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3468,6 +4199,7 @@ public final class Cfdp {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<PausedTransfersResponse>
         PARSER = new com.google.protobuf.AbstractParser<PausedTransfersResponse>() {
+      @java.lang.Override
       public PausedTransfersResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3485,6 +4217,7 @@ public final class Cfdp {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Cfdp.PausedTransfersResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3525,7 +4258,7 @@ public final class Cfdp {
       super(builder);
     }
     private ResumedTransfersResponse() {
-      transfers_ = java.util.Collections.emptyList();
+      transfers_ = emptyLongList();
     }
 
     @java.lang.Override
@@ -3552,32 +4285,32 @@ public final class Cfdp {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              transfers_.add(input.readUInt64());
+              transfers_.addLong(input.readUInt64());
               break;
             }
             case 10: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                transfers_ = new java.util.ArrayList<java.lang.Long>();
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                transfers_ = newLongList();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                transfers_.add(input.readUInt64());
+                transfers_.addLong(input.readUInt64());
               }
               input.popLimit(limit);
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -3588,8 +4321,8 @@ public final class Cfdp {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3600,6 +4333,7 @@ public final class Cfdp {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_fieldAccessorTable
@@ -3608,7 +4342,7 @@ public final class Cfdp {
     }
 
     public static final int TRANSFERS_FIELD_NUMBER = 1;
-    private java.util.List<java.lang.Long> transfers_;
+    private com.google.protobuf.Internal.LongList transfers_;
     /**
      * <code>repeated uint64 transfers = 1;</code>
      */
@@ -3626,10 +4360,11 @@ public final class Cfdp {
      * <code>repeated uint64 transfers = 1;</code>
      */
     public long getTransfers(int index) {
-      return transfers_.get(index);
+      return transfers_.getLong(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3639,14 +4374,16 @@ public final class Cfdp {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < transfers_.size(); i++) {
-        output.writeUInt64(1, transfers_.get(i));
+        output.writeUInt64(1, transfers_.getLong(i));
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3656,7 +4393,7 @@ public final class Cfdp {
         int dataSize = 0;
         for (int i = 0; i < transfers_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeUInt64SizeNoTag(transfers_.get(i));
+            .computeUInt64SizeNoTag(transfers_.getLong(i));
         }
         size += dataSize;
         size += 1 * getTransfersList().size();
@@ -3676,11 +4413,10 @@ public final class Cfdp {
       }
       org.yamcs.protobuf.Cfdp.ResumedTransfersResponse other = (org.yamcs.protobuf.Cfdp.ResumedTransfersResponse) obj;
 
-      boolean result = true;
-      result = result && getTransfersList()
-          .equals(other.getTransfersList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTransfersList()
+          .equals(other.getTransfersList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3769,6 +4505,7 @@ public final class Cfdp {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3776,6 +4513,7 @@ public final class Cfdp {
     public static Builder newBuilder(org.yamcs.protobuf.Cfdp.ResumedTransfersResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3803,6 +4541,7 @@ public final class Cfdp {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_fieldAccessorTable
@@ -3825,22 +4564,26 @@ public final class Cfdp {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.ResumedTransfersResponse getDefaultInstanceForType() {
         return org.yamcs.protobuf.Cfdp.ResumedTransfersResponse.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.ResumedTransfersResponse build() {
         org.yamcs.protobuf.Cfdp.ResumedTransfersResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -3849,11 +4592,12 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Cfdp.ResumedTransfersResponse buildPartial() {
         org.yamcs.protobuf.Cfdp.ResumedTransfersResponse result = new org.yamcs.protobuf.Cfdp.ResumedTransfersResponse(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = java.util.Collections.unmodifiableList(transfers_);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          transfers_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.transfers_ = transfers_;
@@ -3861,32 +4605,39 @@ public final class Cfdp {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Cfdp.ResumedTransfersResponse) {
           return mergeFrom((org.yamcs.protobuf.Cfdp.ResumedTransfersResponse)other);
@@ -3913,10 +4664,12 @@ public final class Cfdp {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3936,10 +4689,10 @@ public final class Cfdp {
       }
       private int bitField0_;
 
-      private java.util.List<java.lang.Long> transfers_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.LongList transfers_ = emptyLongList();
       private void ensureTransfersIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          transfers_ = new java.util.ArrayList<java.lang.Long>(transfers_);
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          transfers_ = mutableCopy(transfers_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -3948,7 +4701,8 @@ public final class Cfdp {
        */
       public java.util.List<java.lang.Long>
           getTransfersList() {
-        return java.util.Collections.unmodifiableList(transfers_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(transfers_) : transfers_;
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -3960,7 +4714,7 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public long getTransfers(int index) {
-        return transfers_.get(index);
+        return transfers_.getLong(index);
       }
       /**
        * <code>repeated uint64 transfers = 1;</code>
@@ -3968,7 +4722,7 @@ public final class Cfdp {
       public Builder setTransfers(
           int index, long value) {
         ensureTransfersIsMutable();
-        transfers_.set(index, value);
+        transfers_.setLong(index, value);
         onChanged();
         return this;
       }
@@ -3977,7 +4731,7 @@ public final class Cfdp {
        */
       public Builder addTransfers(long value) {
         ensureTransfersIsMutable();
-        transfers_.add(value);
+        transfers_.addLong(value);
         onChanged();
         return this;
       }
@@ -3996,16 +4750,18 @@ public final class Cfdp {
        * <code>repeated uint64 transfers = 1;</code>
        */
       public Builder clearTransfers() {
-        transfers_ = java.util.Collections.emptyList();
+        transfers_ = emptyLongList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -4027,6 +4783,7 @@ public final class Cfdp {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ResumedTransfersResponse>
         PARSER = new com.google.protobuf.AbstractParser<ResumedTransfersResponse>() {
+      @java.lang.Override
       public ResumedTransfersResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4044,22 +4801,1003 @@ public final class Cfdp {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Cfdp.ResumedTransfersResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
+  public interface ListRemoteFilesResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.cfdp.ListRemoteFilesResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    boolean hasRemotePath();
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    java.lang.String getRemotePath();
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getRemotePathBytes();
+
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile> 
+        getFilepathsList();
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    org.yamcs.protobuf.Cfdp.RemoteFile getFilepaths(int index);
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    int getFilepathsCount();
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder> 
+        getFilepathsOrBuilderList();
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder getFilepathsOrBuilder(
+        int index);
+  }
+  /**
+   * <pre>
+   *message sent as the reponse to the list call
+   * </pre>
+   *
+   * Protobuf type {@code yamcs.protobuf.cfdp.ListRemoteFilesResponse}
+   */
+  public  static final class ListRemoteFilesResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.cfdp.ListRemoteFilesResponse)
+      ListRemoteFilesResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ListRemoteFilesResponse.newBuilder() to construct.
+    private ListRemoteFilesResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListRemoteFilesResponse() {
+      remotePath_ = "";
+      filepaths_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListRemoteFilesResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              remotePath_ = bs;
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                filepaths_ = new java.util.ArrayList<org.yamcs.protobuf.Cfdp.RemoteFile>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              filepaths_.add(
+                  input.readMessage(org.yamcs.protobuf.Cfdp.RemoteFile.PARSER, extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
+          filepaths_ = java.util.Collections.unmodifiableList(filepaths_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.class, org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int REMOTEPATH_FIELD_NUMBER = 1;
+    private volatile java.lang.Object remotePath_;
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    public boolean hasRemotePath() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    public java.lang.String getRemotePath() {
+      java.lang.Object ref = remotePath_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          remotePath_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string remotePath = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRemotePathBytes() {
+      java.lang.Object ref = remotePath_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        remotePath_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int FILEPATHS_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile> filepaths_;
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile> getFilepathsList() {
+      return filepaths_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder> 
+        getFilepathsOrBuilderList() {
+      return filepaths_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    public int getFilepathsCount() {
+      return filepaths_.size();
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    public org.yamcs.protobuf.Cfdp.RemoteFile getFilepaths(int index) {
+      return filepaths_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+     */
+    public org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder getFilepathsOrBuilder(
+        int index) {
+      return filepaths_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasRemotePath()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getFilepathsCount(); i++) {
+        if (!getFilepaths(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, remotePath_);
+      }
+      for (int i = 0; i < filepaths_.size(); i++) {
+        output.writeMessage(2, filepaths_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, remotePath_);
+      }
+      for (int i = 0; i < filepaths_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, filepaths_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse other = (org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse) obj;
+
+      if (hasRemotePath() != other.hasRemotePath()) return false;
+      if (hasRemotePath()) {
+        if (!getRemotePath()
+            .equals(other.getRemotePath())) return false;
+      }
+      if (!getFilepathsList()
+          .equals(other.getFilepathsList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasRemotePath()) {
+        hash = (37 * hash) + REMOTEPATH_FIELD_NUMBER;
+        hash = (53 * hash) + getRemotePath().hashCode();
+      }
+      if (getFilepathsCount() > 0) {
+        hash = (37 * hash) + FILEPATHS_FIELD_NUMBER;
+        hash = (53 * hash) + getFilepathsList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *message sent as the reponse to the list call
+     * </pre>
+     *
+     * Protobuf type {@code yamcs.protobuf.cfdp.ListRemoteFilesResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.cfdp.ListRemoteFilesResponse)
+        org.yamcs.protobuf.Cfdp.ListRemoteFilesResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.class, org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getFilepathsFieldBuilder();
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        remotePath_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (filepathsBuilder_ == null) {
+          filepaths_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          filepathsBuilder_.clear();
+        }
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Cfdp.internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse build() {
+        org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse buildPartial() {
+        org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse result = new org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.remotePath_ = remotePath_;
+        if (filepathsBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) != 0)) {
+            filepaths_ = java.util.Collections.unmodifiableList(filepaths_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.filepaths_ = filepaths_;
+        } else {
+          result.filepaths_ = filepathsBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse) {
+          return mergeFrom((org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse other) {
+        if (other == org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse.getDefaultInstance()) return this;
+        if (other.hasRemotePath()) {
+          bitField0_ |= 0x00000001;
+          remotePath_ = other.remotePath_;
+          onChanged();
+        }
+        if (filepathsBuilder_ == null) {
+          if (!other.filepaths_.isEmpty()) {
+            if (filepaths_.isEmpty()) {
+              filepaths_ = other.filepaths_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureFilepathsIsMutable();
+              filepaths_.addAll(other.filepaths_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.filepaths_.isEmpty()) {
+            if (filepathsBuilder_.isEmpty()) {
+              filepathsBuilder_.dispose();
+              filepathsBuilder_ = null;
+              filepaths_ = other.filepaths_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              filepathsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getFilepathsFieldBuilder() : null;
+            } else {
+              filepathsBuilder_.addAllMessages(other.filepaths_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        if (!hasRemotePath()) {
+          return false;
+        }
+        for (int i = 0; i < getFilepathsCount(); i++) {
+          if (!getFilepaths(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object remotePath_ = "";
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public boolean hasRemotePath() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public java.lang.String getRemotePath() {
+        java.lang.Object ref = remotePath_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            remotePath_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRemotePathBytes() {
+        java.lang.Object ref = remotePath_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          remotePath_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public Builder setRemotePath(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        remotePath_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public Builder clearRemotePath() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        remotePath_ = getDefaultInstance().getRemotePath();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string remotePath = 1;</code>
+       */
+      public Builder setRemotePathBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        remotePath_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile> filepaths_ =
+        java.util.Collections.emptyList();
+      private void ensureFilepathsIsMutable() {
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          filepaths_ = new java.util.ArrayList<org.yamcs.protobuf.Cfdp.RemoteFile>(filepaths_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Cfdp.RemoteFile, org.yamcs.protobuf.Cfdp.RemoteFile.Builder, org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder> filepathsBuilder_;
+
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile> getFilepathsList() {
+        if (filepathsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(filepaths_);
+        } else {
+          return filepathsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public int getFilepathsCount() {
+        if (filepathsBuilder_ == null) {
+          return filepaths_.size();
+        } else {
+          return filepathsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public org.yamcs.protobuf.Cfdp.RemoteFile getFilepaths(int index) {
+        if (filepathsBuilder_ == null) {
+          return filepaths_.get(index);
+        } else {
+          return filepathsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder setFilepaths(
+          int index, org.yamcs.protobuf.Cfdp.RemoteFile value) {
+        if (filepathsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFilepathsIsMutable();
+          filepaths_.set(index, value);
+          onChanged();
+        } else {
+          filepathsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder setFilepaths(
+          int index, org.yamcs.protobuf.Cfdp.RemoteFile.Builder builderForValue) {
+        if (filepathsBuilder_ == null) {
+          ensureFilepathsIsMutable();
+          filepaths_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          filepathsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder addFilepaths(org.yamcs.protobuf.Cfdp.RemoteFile value) {
+        if (filepathsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFilepathsIsMutable();
+          filepaths_.add(value);
+          onChanged();
+        } else {
+          filepathsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder addFilepaths(
+          int index, org.yamcs.protobuf.Cfdp.RemoteFile value) {
+        if (filepathsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFilepathsIsMutable();
+          filepaths_.add(index, value);
+          onChanged();
+        } else {
+          filepathsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder addFilepaths(
+          org.yamcs.protobuf.Cfdp.RemoteFile.Builder builderForValue) {
+        if (filepathsBuilder_ == null) {
+          ensureFilepathsIsMutable();
+          filepaths_.add(builderForValue.build());
+          onChanged();
+        } else {
+          filepathsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder addFilepaths(
+          int index, org.yamcs.protobuf.Cfdp.RemoteFile.Builder builderForValue) {
+        if (filepathsBuilder_ == null) {
+          ensureFilepathsIsMutable();
+          filepaths_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          filepathsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder addAllFilepaths(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Cfdp.RemoteFile> values) {
+        if (filepathsBuilder_ == null) {
+          ensureFilepathsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, filepaths_);
+          onChanged();
+        } else {
+          filepathsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder clearFilepaths() {
+        if (filepathsBuilder_ == null) {
+          filepaths_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          filepathsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public Builder removeFilepaths(int index) {
+        if (filepathsBuilder_ == null) {
+          ensureFilepathsIsMutable();
+          filepaths_.remove(index);
+          onChanged();
+        } else {
+          filepathsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public org.yamcs.protobuf.Cfdp.RemoteFile.Builder getFilepathsBuilder(
+          int index) {
+        return getFilepathsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder getFilepathsOrBuilder(
+          int index) {
+        if (filepathsBuilder_ == null) {
+          return filepaths_.get(index);  } else {
+          return filepathsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder> 
+           getFilepathsOrBuilderList() {
+        if (filepathsBuilder_ != null) {
+          return filepathsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(filepaths_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public org.yamcs.protobuf.Cfdp.RemoteFile.Builder addFilepathsBuilder() {
+        return getFilepathsFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Cfdp.RemoteFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public org.yamcs.protobuf.Cfdp.RemoteFile.Builder addFilepathsBuilder(
+          int index) {
+        return getFilepathsFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Cfdp.RemoteFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.cfdp.RemoteFile filepaths = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Cfdp.RemoteFile.Builder> 
+           getFilepathsBuilderList() {
+        return getFilepathsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Cfdp.RemoteFile, org.yamcs.protobuf.Cfdp.RemoteFile.Builder, org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder> 
+          getFilepathsFieldBuilder() {
+        if (filepathsBuilder_ == null) {
+          filepathsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Cfdp.RemoteFile, org.yamcs.protobuf.Cfdp.RemoteFile.Builder, org.yamcs.protobuf.Cfdp.RemoteFileOrBuilder>(
+                  filepaths_,
+                  ((bitField0_ & 0x00000002) != 0),
+                  getParentForChildren(),
+                  isClean());
+          filepaths_ = null;
+        }
+        return filepathsBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.cfdp.ListRemoteFilesResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.cfdp.ListRemoteFilesResponse)
+    private static final org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse();
+    }
+
+    public static org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListRemoteFilesResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListRemoteFilesResponse>() {
+      @java.lang.Override
+      public ListRemoteFilesResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ListRemoteFilesResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListRemoteFilesResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListRemoteFilesResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_cfdp_RemoteFile_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_cfdp_TransferStatus_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_cfdp_TransferStatus_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor;
+    internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_fieldAccessorTable;
+      internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor;
   private static final 
@@ -4075,6 +5813,11 @@ public final class Cfdp {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4085,22 +5828,26 @@ public final class Cfdp {
   static {
     java.lang.String[] descriptorData = {
       "\n\036yamcs/protobuf/cfdp/cfdp.proto\022\023yamcs." +
-      "protobuf.cfdp\"\204\002\n\016TransferStatus\022\022\n\ntran" +
-      "sferId\030\001 \001(\004\0221\n\005state\030\002 \001(\0162\".yamcs.prot" +
-      "obuf.cfdp.TransferState\022\027\n\017localBucketNa" +
-      "me\030\003 \001(\t\022\027\n\017localObjectName\030\004 \001(\t\022\022\n\nrem" +
-      "otePath\030\005 \001(\t\0229\n\tdirection\030\006 \001(\0162&.yamcs" +
-      ".protobuf.cfdp.TransferDirection\022\021\n\ttota" +
-      "lSize\030\007 \001(\004\022\027\n\017sizeTransferred\030\010 \001(\004\"O\n\025" +
-      "ListTransfersResponse\0226\n\ttransfers\030\001 \003(\013" +
-      "2#.yamcs.protobuf.cfdp.TransferStatus\",\n" +
-      "\027CancelTransfersResponse\022\021\n\ttransfers\030\001 " +
-      "\003(\004\",\n\027PausedTransfersResponse\022\021\n\ttransf" +
-      "ers\030\001 \003(\004\"-\n\030ResumedTransfersResponse\022\021\n" +
-      "\ttransfers\030\001 \003(\004*-\n\021TransferDirection\022\n\n" +
-      "\006UPLOAD\020\001\022\014\n\010DOWNLOAD\020\002*4\n\rTransferState" +
-      "\022\013\n\007RUNNING\020\001\022\n\n\006PAUSED\020\002\022\n\n\006FAILED\020\003B\024\n" +
-      "\022org.yamcs.protobuf"
+      "protobuf.cfdp\"3\n\nRemoteFile\022\020\n\010filepath\030" +
+      "\001 \002(\t\022\023\n\013isDirectory\030\002 \002(\010\"\204\002\n\016TransferS" +
+      "tatus\022\022\n\ntransferId\030\001 \001(\004\0221\n\005state\030\002 \001(\016" +
+      "2\".yamcs.protobuf.cfdp.TransferState\022\027\n\017" +
+      "localBucketName\030\003 \001(\t\022\027\n\017localObjectName" +
+      "\030\004 \001(\t\022\022\n\nremotePath\030\005 \001(\t\0229\n\tdirection\030" +
+      "\006 \001(\0162&.yamcs.protobuf.cfdp.TransferDire" +
+      "ction\022\021\n\ttotalSize\030\007 \001(\004\022\027\n\017sizeTransfer" +
+      "red\030\010 \001(\004\"O\n\025InfoTransfersResponse\0226\n\ttr" +
+      "ansfers\030\001 \003(\0132#.yamcs.protobuf.cfdp.Tran" +
+      "sferStatus\",\n\027CancelTransfersResponse\022\021\n" +
+      "\ttransfers\030\001 \003(\004\",\n\027PausedTransfersRespo" +
+      "nse\022\021\n\ttransfers\030\001 \003(\004\"-\n\030ResumedTransfe" +
+      "rsResponse\022\021\n\ttransfers\030\001 \003(\004\"a\n\027ListRem" +
+      "oteFilesResponse\022\022\n\nremotePath\030\001 \002(\t\0222\n\t" +
+      "filepaths\030\002 \003(\0132\037.yamcs.protobuf.cfdp.Re" +
+      "moteFile*-\n\021TransferDirection\022\n\n\006UPLOAD\020" +
+      "\001\022\014\n\010DOWNLOAD\020\002*4\n\rTransferState\022\013\n\007RUNN" +
+      "ING\020\001\022\n\n\006PAUSED\020\002\022\n\n\006FAILED\020\003B\024\n\022org.yam" +
+      "cs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4114,36 +5861,48 @@ public final class Cfdp {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_yamcs_protobuf_cfdp_TransferStatus_descriptor =
+    internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor =
       getDescriptor().getMessageTypes().get(0);
+    internal_static_yamcs_protobuf_cfdp_RemoteFile_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_cfdp_RemoteFile_descriptor,
+        new java.lang.String[] { "Filepath", "IsDirectory", });
+    internal_static_yamcs_protobuf_cfdp_TransferStatus_descriptor =
+      getDescriptor().getMessageTypes().get(1);
     internal_static_yamcs_protobuf_cfdp_TransferStatus_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_cfdp_TransferStatus_descriptor,
         new java.lang.String[] { "TransferId", "State", "LocalBucketName", "LocalObjectName", "RemotePath", "Direction", "TotalSize", "SizeTransferred", });
-    internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(1);
-    internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_fieldAccessorTable = new
+    internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_yamcs_protobuf_cfdp_ListTransfersResponse_descriptor,
+        internal_static_yamcs_protobuf_cfdp_InfoTransfersResponse_descriptor,
         new java.lang.String[] { "Transfers", });
     internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_cfdp_CancelTransfersResponse_descriptor,
         new java.lang.String[] { "Transfers", });
     internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_cfdp_PausedTransfersResponse_descriptor,
         new java.lang.String[] { "Transfers", });
     internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_cfdp_ResumedTransfersResponse_descriptor,
         new java.lang.String[] { "Transfers", });
+    internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_cfdp_ListRemoteFilesResponse_descriptor,
+        new java.lang.String[] { "RemotePath", "Filepaths", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
