@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
 import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
+import org.yamcs.protobuf.Cfdp.PausedTransfersResponse;
+import org.yamcs.protobuf.Cfdp.ResumedTransfersResponse;
 import org.yamcs.protobuf.Cfdp.TransferStatus;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
@@ -150,12 +152,16 @@ public class CfdpRestHandler extends RestHandler {
         }
         completeOK(req, ctr.build());
     }
-    /*
+
     @Route(path = "/api/cfdp/delete", method = "POST")
     public void CfdpDelete(RestRequest req) throws HttpException {
-        // TODO
+        log.info("CfdpDelete");
+
+        String pathToDelete = req.getQueryParameter("target");
+        // TODO issue delete command
+
+        completeOK(req);
     }
-    */
 
     // TODO update rest documentation
     @Route(path = "/api/cfdp/:instance/pause", method = "POST")
@@ -174,12 +180,12 @@ public class CfdpRestHandler extends RestHandler {
         List<CfdpTransfer> pausedTransfers = transfers.stream().map(CfdpTransfer::pause).filter(x -> x != null)
                 .collect(Collectors.toList());
 
-        PausedTransfersResponse.Builder ctr = PausedTransfersResponse.newBuilder();
+        PausedTransfersResponse.Builder ptr = PausedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : pausedTransfers) {
-            ctr.addTransfers(transfer.getId());
+            ptr.addTransfers(transfer.getId());
         }
-        completeOK(req, ctr.build());
+        completeOK(req, ptr.build());
     }
 
     // TODO update rest documentation
@@ -199,11 +205,11 @@ public class CfdpRestHandler extends RestHandler {
         List<CfdpTransfer> resumedTransfers = transfers.stream().map(CfdpTransfer::resume).filter(x -> x != null)
                 .collect(Collectors.toList());
 
-        ResumedTransfersResponse.Builder ctr = ResumedTransfersResponse.newBuilder();
+        ResumedTransfersResponse.Builder rtr = ResumedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : resumedTransfers) {
-            ctr.addTransfers(transfer.getId());
+            rtr.addTransfers(transfer.getId());
         }
-        completeOK(req, ctr.build());
+        completeOK(req, rtr.build());
     }
 }
