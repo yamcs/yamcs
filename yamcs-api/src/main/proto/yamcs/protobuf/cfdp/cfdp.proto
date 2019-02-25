@@ -62,3 +62,8 @@ message ListRemoteFilesResponse {
   required string remotePath = 1;
   repeated RemoteFile filepaths = 2;
 }
+
+//message sent as the response to the download call
+message DownloadResponse {
+  required uint64 transferId = 1;
+}

@@ -1,5 +1,6 @@
 package org.yamcs.web.rest;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -96,6 +97,12 @@ public abstract class RestHandler extends RouteHandler {
         HttpUtil.setContentLength(httpResponse, txSize);
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
+    }
+
+    protected static <T extends Message> void completeCREATED(RestRequest restRequest, T responseMsg) {
+        sendMessageResponse(restRequest, CREATED, responseMsg).addListener(l -> {
+            restRequest.getCompletableFuture().complete(null);
+        });
     }
 
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {

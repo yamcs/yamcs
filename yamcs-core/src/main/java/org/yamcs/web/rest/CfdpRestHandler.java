@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
+import org.yamcs.protobuf.Cfdp.DownloadResponse;
 import org.yamcs.protobuf.Cfdp.InfoTransfersResponse;
 import org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse;
 import org.yamcs.protobuf.Cfdp.PausedTransfersResponse;
@@ -90,8 +91,14 @@ public class CfdpRestHandler extends RestHandler {
             throw new InternalServerErrorException("Error when uploading object to bucket: " + e.getMessage());
         }
 
-        // TODO, return value
+        // TODO, get the transferId using the CFDP service
+        long transferId = 0;
 
+        DownloadResponse.Builder dr = DownloadResponse.newBuilder();
+
+        dr.setTransferId(transferId);
+
+        completeCREATED(req, dr.build());
     }
 
     @Route(path = "/api/cfdp/list", method = "GET")
