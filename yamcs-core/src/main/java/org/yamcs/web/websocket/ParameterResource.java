@@ -149,10 +149,10 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         req = decoder.decodeMessageData(ctx, ParameterSubscriptionRequest.newBuilder()).build();
         int subscriptionId = getSubscriptionId(req);
 
-        NamedObjectList paraList = decoder.decodeMessageData(ctx, NamedObjectList.newBuilder()).build();
+        List<NamedObjectId> paraList = req.getIdList();
         if (subscriptionId != -1) {
             try {
-                pidrm.removeItemsFromRequest(subscriptionId, paraList.getListList(), client.getUser());
+                pidrm.removeItemsFromRequest(subscriptionId, paraList, client.getUser());
             } catch (NoPermissionException e) {
                 throw new WebSocketException(ctx.getRequestId(), "No permission", e);
             }
