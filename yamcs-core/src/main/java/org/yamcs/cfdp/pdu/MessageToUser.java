@@ -1,4 +1,4 @@
-package org.yamcs.simulation.simulator.cfdp;
+package org.yamcs.cfdp.pdu;
 
 public class MessageToUser {
 

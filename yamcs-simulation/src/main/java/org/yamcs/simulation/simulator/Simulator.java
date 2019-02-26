@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.simulation.simulator.cfdp.CfdpPacket;
-import org.yamcs.simulation.simulator.cfdp.FileDataPacket;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;

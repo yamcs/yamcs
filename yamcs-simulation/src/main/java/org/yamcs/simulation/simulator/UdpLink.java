@@ -1,13 +1,14 @@
 package org.yamcs.simulation.simulator;
 
 import java.io.IOException;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.simulation.simulator.cfdp.CfdpPacket;
+import org.yamcs.cfdp.pdu.CfdpPacket;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 

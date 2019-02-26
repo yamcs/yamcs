@@ -144,6 +144,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
+
+        registerRouteHandler(null, new CfdpRestHandler());
     }
 
     // Using method handles for better invoke performance

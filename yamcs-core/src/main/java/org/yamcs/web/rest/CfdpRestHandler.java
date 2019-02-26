@@ -42,6 +42,11 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpUpload(RestRequest req) throws HttpException {
         byte[] objData;
 
+        log.info("CfdpUpload");
+
+        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
+        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
+
         /**
          * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
          * BucketRestHandler.getObject
@@ -61,8 +66,11 @@ public class CfdpRestHandler extends RestHandler {
         }
         /** /copied */
 
-        // TODO, get the transferId using the CFDP service
-        long transferId = 0;
+        String target = req.getQueryParameter("target");
+        boolean overwrite = req.getQueryParameterAsBoolean("overwrite", true);
+        boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
+
+        long transferId = ci.initiateUploadCfdpTransfer(objData, target, overwrite, createpath);
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
@@ -73,6 +81,7 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "GET")
     public void CfdpDownload(RestRequest req) throws HttpException {
+        log.info("CfdpDownload");
 
         /**
          * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
@@ -113,7 +122,7 @@ public class CfdpRestHandler extends RestHandler {
 
         ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
 
-        String remotePath = req.getRouteParam("target");
+        String remotePath = req.getQueryParameter("target");
 
         // TODO get the remote files using CFDP
         Collection<RemoteFile> remoteFiles = null;
