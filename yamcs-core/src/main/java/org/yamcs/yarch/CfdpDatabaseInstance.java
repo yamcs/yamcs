@@ -50,8 +50,9 @@ public class CfdpDatabaseInstance {
 
     public long initiateUploadCfdpTransfer(byte[] data, String target, boolean overwrite, boolean createPath) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
-        Stream cfdpIn = ydb.getStream("cfdp_in");
         Stream cfdpOut = ydb.getStream("cfdp_out");
+
+        Stream cfdpIn = ydb.getStream("cfdp_in");
 
         return 0;
     }

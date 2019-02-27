@@ -1,7 +1,6 @@
 package org.yamcs.simulation.simulator;
 
 import java.io.IOException;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -17,7 +16,6 @@ public class UdpLink extends AbstractExecutionThreadService {
     private static final Logger log = LoggerFactory.getLogger(UdpLink.class);
 
     private DatagramSocket socket;
-    private boolean running;
     // TODO, sensical size;
     private byte[] buf = new byte[65536];
     volatile boolean connected;
@@ -34,7 +32,6 @@ public class UdpLink extends AbstractExecutionThreadService {
     public void sendPacket(byte[] packet) {
         try {
             if (connected) {
-                int x = packet.length;
                 DatagramPacket dp = new DatagramPacket(packet, packet.length, InetAddress.getByName("localhost"),
                         this.port);
                 socket.send(dp);
