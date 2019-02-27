@@ -1,9 +1,13 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 
 public abstract class CfdpPacket {
 
@@ -102,6 +106,15 @@ public abstract class CfdpPacket {
         buffer.rewind();
         buffer.get(toReturn);
         return toReturn;
+    }
+
+    public Tuple toTuple(int transferId) {
+        TupleDefinition td = StandardTupleDefinitions.CFDP.copy();
+        ArrayList<Object> al = new ArrayList<>();
+        al.add(transferId);
+        al.add(this.getHeader().getSequenceNumber());
+        al.add(this.toByteArray());
+        return new Tuple(td, al);
     }
 
     private boolean crcValid() {

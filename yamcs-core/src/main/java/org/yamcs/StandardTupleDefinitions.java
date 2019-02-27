@@ -64,4 +64,12 @@ public class StandardTupleDefinitions {
         ALARM.addColumn("seqNum", DataType.INT);
         ALARM.addColumn("event", DataType.STRING);
     }
+
+    public static final TupleDefinition CFDP = new TupleDefinition();
+    // outgoing CFDP packets
+    static {
+        CFDP.addColumn("transferId", DataType.INT);
+        CFDP.addColumn("seqNum", DataType.LONG);
+        CFDP.addColumn("packet", DataType.BINARY);
+    }
 }

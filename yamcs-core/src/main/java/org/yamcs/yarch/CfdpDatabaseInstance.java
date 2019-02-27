@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
 
 public class CfdpDatabaseInstance {
     static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
@@ -51,6 +53,11 @@ public class CfdpDatabaseInstance {
     public long initiateUploadCfdpTransfer(byte[] data, String target, boolean overwrite, boolean createPath) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         Stream cfdpOut = ydb.getStream("cfdp_out");
+
+        byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 'c', 'f', 'd', 'p', ' ', 't', 'e', 's',
+                't', '.' };
+        CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
+        cfdpOut.emitTuple(fdp.toTuple(1001));
 
         Stream cfdpIn = ydb.getStream("cfdp_in");
 

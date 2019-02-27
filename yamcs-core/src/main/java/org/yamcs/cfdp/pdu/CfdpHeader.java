@@ -56,6 +56,10 @@ public class CfdpHeader {
         return withCrc;
     }
 
+    public long getSequenceNumber() {
+        return sequenceNr;
+    }
+
     /*
      * Reads the header of the incoming buffer, which is assumed to be a complete PDU
      * Afterwards puts the buffer position right after the header 
