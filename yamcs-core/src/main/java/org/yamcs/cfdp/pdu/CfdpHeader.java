@@ -67,14 +67,14 @@ public class CfdpHeader {
     private void readPduHeader(ByteBuffer buffer) {
         buffer.position(0);
         byte tempByte = buffer.get();
-        fileDirective = !CfdpUtils.getBitOfByte(tempByte, 4);
-        towardsSender = CfdpUtils.getBitOfByte(tempByte, 5);
-        acknowledged = !CfdpUtils.getBitOfByte(tempByte, 6);
-        withCrc = CfdpUtils.getBitOfByte(tempByte, 7);
+        fileDirective = !CfdpUtils.getBitOfByte(tempByte, 3);
+        towardsSender = CfdpUtils.getBitOfByte(tempByte, 4);
+        acknowledged = !CfdpUtils.getBitOfByte(tempByte, 5);
+        withCrc = CfdpUtils.getBitOfByte(tempByte, 6);
         dataLength = CfdpUtils.getUnsignedShort(buffer);
         tempByte = buffer.get();
-        entityIdLength = (tempByte >> 4) & 0x07;
-        sequenceNumberLength = tempByte & 0x07;
+        entityIdLength = ((tempByte >> 4) & 0x07) + 1;
+        sequenceNumberLength = (tempByte & 0x07) + 1;
         sourceId = CfdpUtils.getUnsignedLongFromBuffer(buffer, entityIdLength);
         sequenceNr = CfdpUtils.getUnsignedLongFromBuffer(buffer, sequenceNumberLength);
         destinationId = CfdpUtils.getUnsignedLongFromBuffer(buffer, entityIdLength);

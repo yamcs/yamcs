@@ -117,6 +117,10 @@ public abstract class CfdpPacket {
         return new Tuple(td, al);
     }
 
+    public static CfdpPacket fromTuple(Tuple tuple) {
+        return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("packet"))));
+    }
+
     private boolean crcValid() {
         // TODO implement
         return true;

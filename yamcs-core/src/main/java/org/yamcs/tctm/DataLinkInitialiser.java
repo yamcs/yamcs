@@ -11,6 +11,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
+import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
@@ -163,6 +164,23 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 });
             }
             tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
+        }
+
+        if (link instanceof UdpTcDataLink) {
+            UdpTcDataLink udtl = (UdpTcDataLink) link;
+            if (s != null) {
+                s.addSubscriber(new StreamSubscriber() {
+                    @Override
+                    public void onTuple(Stream s, Tuple tuple) {
+                        udtl.sendCfdpPacket(CfdpPacket.fromTuple(tuple));
+                    }
+
+                    @Override
+                    public void streamClosed(Stream stream) {
+                        stopAsync();
+                    }
+                });
+            }
         }
 
         if (link instanceof ParameterDataLink) {
