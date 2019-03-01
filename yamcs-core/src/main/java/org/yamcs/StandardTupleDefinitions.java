@@ -69,7 +69,7 @@ public class StandardTupleDefinitions {
     // outgoing CFDP packets
     static {
         CFDP.addColumn("transferId", DataType.INT);
-        CFDP.addColumn("seqNum", DataType.LONG);
+        CFDP.addColumn("seqNum", DataType.INT);
         CFDP.addColumn("packet", DataType.BINARY);
     }
 }

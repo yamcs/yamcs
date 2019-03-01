@@ -23,7 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class StreamConfig {
     public enum StandardStreamType {
-        cmdHist, tm, param, tc, event, alarm, sqlFile;
+        cmdHist, tm, param, tc, event, alarm, sqlFile, cfdp;
     }
 
     List<StreamConfigEntry> entries = new ArrayList<>();

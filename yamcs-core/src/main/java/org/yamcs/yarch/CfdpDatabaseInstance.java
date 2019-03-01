@@ -60,6 +60,22 @@ public class CfdpDatabaseInstance {
         cfdpOut.emitTuple(fdp.toTuple(1001));
 
         Stream cfdpIn = ydb.getStream("cfdp_in");
+        cfdpIn.addSubscriber(new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                // Log.info("got a fancy CFDP packet");
+                int i = 4;
+                i = i++;
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         return 0;
     }

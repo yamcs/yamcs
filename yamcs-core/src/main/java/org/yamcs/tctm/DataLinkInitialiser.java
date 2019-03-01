@@ -138,11 +138,18 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                     if (pwrt.isCorrupted() && dropCorrupted) {
                         return;
                     }
-                    long time = pwrt.getGenerationTime();
-                    byte[] pkt = pwrt.getPacket();
-                    Tuple t = new Tuple(StandardTupleDefinitions.TM,
-                            new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
-                    stream.emitTuple(t);
+                    // TODO the ugliness is strong with this one
+                    if (link instanceof CfdpUdpTmDataLink) {
+                        Tuple t = new Tuple(StandardTupleDefinitions.CFDP,
+                                new Object[] { (long) 1, (long) pwrt.getSeqCount(), pwrt.getPacket() });
+                        stream.emitTuple(t);
+                    } else {
+                        long time = pwrt.getGenerationTime();
+                        byte[] pkt = pwrt.getPacket();
+                        Tuple t = new Tuple(StandardTupleDefinitions.TM,
+                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
+                        stream.emitTuple(t);
+                    }
                 });
             }
         }
@@ -166,6 +173,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
         }
 
+        // TODO this should probably become CfdpUdpTcDataLink
         if (link instanceof UdpTcDataLink) {
             UdpTcDataLink udtl = (UdpTcDataLink) link;
             if (s != null) {

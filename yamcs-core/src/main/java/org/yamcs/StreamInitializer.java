@@ -7,10 +7,10 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -50,21 +50,32 @@ public class StreamInitializer {
     public void createStreams() throws StreamSqlException, ParseException, IOException {
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         for (StreamConfigEntry sce : sc.getEntries()) {
-            if (sce.type == StreamConfig.StandardStreamType.cmdHist) {
+            switch (sce.type) {
+            case cmdHist:
                 createCmdHistoryStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.tm) {
+                break;
+            case tm:
                 createTmStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.param) {
+                break;
+            case param:
                 createParamStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.tc) {
+                break;
+            case tc:
                 createTcStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.event) {
+                break;
+            case event:
                 createEventStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.alarm) {
+                break;
+            case alarm:
                 createAlarmStream(sce.name);
-            } else if (sce.type == StreamConfig.StandardStreamType.sqlFile) {
-                loadSqlFile(sce.name); // filename in fact
-            } else {
+                break;
+            case sqlFile:
+                loadSqlFile(sce.name);
+                break; // filename in fact
+            case cfdp:
+                createCfdpStream(sce.name);
+                break;
+            default:
                 throw new IllegalArgumentException("Unknown stream type " + sce.type);
             }
         }
@@ -77,6 +88,10 @@ public class StreamInitializer {
 
     private void createTcStream(String streamName) throws StreamSqlException, ParseException {
         ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
+    }
+
+    private void createCfdpStream(String streamName) throws StreamSqlException, ParseException {
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.CFDP.getStringDefinition());
     }
 
     private void createTmStream(String streamName) throws StreamSqlException, ParseException {
