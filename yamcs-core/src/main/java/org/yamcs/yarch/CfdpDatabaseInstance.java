@@ -11,15 +11,19 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 
-public class CfdpDatabaseInstance {
+public class CfdpDatabaseInstance implements StreamSubscriber {
     static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
 
     Map<Long, CfdpTransfer> transfers = new HashMap<Long, CfdpTransfer>();
 
+    private Stream cfdpIn, cfdpOut;
     private String instanceName;
 
     CfdpDatabaseInstance(String instanceName) throws YarchException {
-        this.instanceName = instanceName;
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
+        cfdpOut = ydb.getStream("cfdp_out");
+        cfdpIn = ydb.getStream("cfdp_in");
+        cfdpIn.addSubscriber(this);
     }
 
     public String getName() {
@@ -51,32 +55,22 @@ public class CfdpDatabaseInstance {
     }
 
     public long initiateUploadCfdpTransfer(byte[] data, String target, boolean overwrite, boolean createPath) {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
-        Stream cfdpOut = ydb.getStream("cfdp_out");
-
         byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 'c', 'f', 'd', 'p', ' ', 't', 'e', 's',
                 't', '.' };
         CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
         cfdpOut.emitTuple(fdp.toTuple(1001));
-
-        Stream cfdpIn = ydb.getStream("cfdp_in");
-        cfdpIn.addSubscriber(new StreamSubscriber() {
-
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                // Log.info("got a fancy CFDP packet");
-                int i = 4;
-                i = i++;
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-                // TODO Auto-generated method stub
-
-            }
-
-        });
-
         return 0;
+    }
+
+    @Override
+    public void onTuple(Stream stream, Tuple tuple) {
+        CfdpPacket packet = CfdpPacket.fromTuple(tuple);
+        log.error(packet.toString());
+    }
+
+    @Override
+    public void streamClosed(Stream stream) {
+        // TODO Auto-generated method stub
+
     }
 }
