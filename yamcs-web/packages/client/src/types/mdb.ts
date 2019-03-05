@@ -166,7 +166,7 @@ export interface CommandContainer extends NameDescription {
 export interface Argument {
   name: string;
   description: string;
-  initialValue: string;
+  initialValue?: string;
   type: ArgumentType;
 }
 
