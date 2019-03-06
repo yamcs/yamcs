@@ -1,4 +1,4 @@
-package org.yamcs.yarch;
+package org.yamcs.cfdp;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,22 +8,21 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
 
-public class CfdpDatabaseInstance implements StreamSubscriber {
+public class CfdpDatabaseInstance {
     static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
 
     Map<Long, CfdpTransfer> transfers = new HashMap<Long, CfdpTransfer>();
 
-    private Stream cfdpIn, cfdpOut;
     private String instanceName;
+    private CfdpHandler handler;
 
     CfdpDatabaseInstance(String instanceName) throws YarchException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
-        cfdpOut = ydb.getStream("cfdp_out");
-        cfdpIn = ydb.getStream("cfdp_in");
-        cfdpIn.addSubscriber(this);
+        handler = new CfdpHandler(ydb.getStream("cfdp_in"), ydb.getStream("cfdp_out"));
     }
 
     public String getName() {
@@ -45,7 +44,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
         return all
                 ? this.transfers.values()
-                : this.transfers.values().stream().filter(transfer -> transfer.getState().isOngoing())
+                : this.transfers.values().stream().filter(transfer -> transfer.isOngoing())
                         .collect(Collectors.toList());
     }
 
@@ -55,22 +54,13 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     }
 
     public long initiateUploadCfdpTransfer(byte[] data, String target, boolean overwrite, boolean createPath) {
-        byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 'c', 'f', 'd', 'p', ' ', 't', 'e', 's',
-                't', '.' };
-        CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
-        cfdpOut.emitTuple(fdp.toTuple(1001));
-        return 0;
-    }
+        // TODO, the '2' in the line below should be a true destinationId
+        PutRequest putRequest = new PutRequest(CfdpDatabase.mySourceId, 2, target, data);
+        CfdpTransfer transfer = (CfdpTransfer) handler.processRequest(putRequest);
+        transfers.put(transfer.getId(), transfer);
+        return transfer.getId();
 
-    @Override
-    public void onTuple(Stream stream, Tuple tuple) {
-        CfdpPacket packet = CfdpPacket.fromTuple(tuple);
-        log.error(packet.toString());
-    }
-
-    @Override
-    public void streamClosed(Stream stream) {
-        // TODO Auto-generated method stub
-
+        // CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
+        // cfdpOut.emitTuple(fdp.toTuple(1001));
     }
 }

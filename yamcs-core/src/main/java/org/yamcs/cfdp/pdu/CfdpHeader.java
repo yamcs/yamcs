@@ -26,22 +26,33 @@ public class CfdpHeader {
 
     // header types
     private boolean fileDirective, towardsSender, acknowledged, withCrc;
-    private int dataLength, entityIdLength, sequenceNumberLength;
+    private int dataLength = -1;
+    private int entityIdLength, sequenceNumberLength;
     private Long sourceId, destinationId, sequenceNr;
 
     public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
-            int dataLength,
             int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
         this.fileDirective = fileDirective;
         this.towardsSender = towardsSender;
         this.acknowledged = acknowledged;
         this.withCrc = withCrc;
-        this.dataLength = dataLength;
         this.entityIdLength = entityIdLength;
         this.sequenceNumberLength = sequenceNumberLength;
         this.sourceId = sourceId;
         this.destinationId = destinationId;
         this.sequenceNr = sequenceNumber;
+    }
+
+    public CfdpHeader(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
+            int datalength,
+            int entityIdLength, int sequenceNumberLength, long sourceId, long destinationId, long sequenceNumber) {
+        this(fileDirective, towardsSender, acknowledged, withCrc, entityIdLength, sequenceNumberLength, sourceId,
+                destinationId, sequenceNumber);
+        this.dataLength = datalength;
+    }
+
+    public void setDataLength(int datalength) {
+        this.dataLength = datalength;
     }
 
     public CfdpHeader(ByteBuffer buffer) {
@@ -81,6 +92,9 @@ public class CfdpHeader {
     }
 
     protected void writeToBuffer(ByteBuffer buffer) {
+        if (this.dataLength == -1) {
+            throw new IllegalStateException("CFDP header needs a valid 'PDU Data field length' value.");
+        }
         byte b = (byte) ((CfdpUtils.boolToByte(!fileDirective) << 4) |
                 (CfdpUtils.boolToByte(towardsSender) << 3) |
                 (CfdpUtils.boolToByte(!acknowledged) << 2) |

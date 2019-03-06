@@ -43,6 +43,10 @@ public abstract class CfdpPacket {
         return this;
     }
 
+    protected CfdpPacket(CfdpHeader header) {
+        this(null, header);
+    }
+
     protected CfdpPacket(ByteBuffer buffer, CfdpHeader header) {
         this.header = header;
         this.buffer = buffer;

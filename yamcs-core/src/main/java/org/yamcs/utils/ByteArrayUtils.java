@@ -123,6 +123,17 @@ public class ByteArrayUtils {
         return a;
     }
 
+    /**
+     * write a long in to a byte array of 8 bytes
+     * 
+     * @param x
+     * @return
+     */
+    public static byte[] encodeLong(long x) {
+        byte[] toReturn = new byte[8];
+        return encodeLong(x, toReturn, 0);
+    }
+
     public static long decodeLong(byte[] a, int offset) {
         return ((a[offset] & 0xFFl) << 56) +
                 ((a[offset + 1] & 0xFFl) << 48) +
@@ -142,7 +153,7 @@ public class ByteArrayUtils {
     }
 
     public static int decodeIntLE(byte[] a, int offset) {
-        return ((a[offset+3] & 0xFF) << 24) +
+        return ((a[offset + 3] & 0xFF) << 24) +
                 ((a[offset + 2] & 0xFF) << 16) +
                 ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
@@ -171,20 +182,20 @@ public class ByteArrayUtils {
 
     }
 
-    
     public static int decodeShort(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
     }
-    
+
     /**
      * Decode short little endian
+     * 
      * @param a
      * @param offset
      * @return
      */
     public static int decodeShortLE(byte[] a, int offset) {
-        return ((a[offset+1] & 0xFF) << 8) +
+        return ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
     }
 }

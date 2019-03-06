@@ -61,24 +61,24 @@ public class CfdpUtils {
         return getUnsignedLongFromByteArray(temp);
     }
 
-    public static Long getUnsignedLongFromByteArray(byte[] b) {
-        long toReturn = 0;
-        for (int i = 0; i < b.length - 1; i++) {
-            toReturn |= b[i] & 0xFF;
-            toReturn <<= 8;
-        }
-        toReturn |= b[b.length - 1] & 0xFF;
-        return toReturn;
-    }
-
     public static byte boolToByte(boolean bool) {
         return (byte) (bool ? 1 : 0);
     }
 
-    public static byte[] longToBytes(Long input, int length) {
+    public static long getUnsignedLongFromByteArray(byte[] input) {
+        long toReturn = 0;
+        for (int i = 0; i < input.length; i++) {
+            toReturn <<= 8;
+            toReturn |= (input[i] & 0xFF);
+        }
+        return toReturn;
+    }
+
+    public static byte[] longToBytes(long input, int length) {
         byte[] toReturn = new byte[length];
-        for (int i = 0; i < length; i++) {
-            toReturn[i] = (byte) (input >> i * 8);
+        for (int i = length - 1; i >= 0; i--) {
+            toReturn[i] = (byte) (input & 0xFF);
+            input >>= 8;
         }
         return toReturn;
     }

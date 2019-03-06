@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cfdp.CfdpDatabase;
+import org.yamcs.cfdp.CfdpDatabaseInstance;
+import org.yamcs.cfdp.CfdpTransfer;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
 import org.yamcs.protobuf.Cfdp.DownloadResponse;
 import org.yamcs.protobuf.Cfdp.InfoTransfersResponse;
@@ -23,9 +26,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.CfdpDatabase;
-import org.yamcs.yarch.CfdpDatabaseInstance;
-import org.yamcs.yarch.CfdpTransfer;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 /**
@@ -153,13 +153,13 @@ public class CfdpRestHandler extends RestHandler {
         for (CfdpTransfer transfer : transfers) {
             itr.addTransfers(TransferStatus.newBuilder()
                     .setTransferId(transfer.getId())
-                    .setState(transfer.getState().getState())
+                    .setState(transfer.getState())
                     .setLocalBucketName(transfer.getBucket().getName())
                     .setLocalObjectName(transfer.getObjectName())
                     .setRemotePath(transfer.getRemotePath())
                     .setDirection(transfer.getDirection())
                     .setTotalSize(transfer.getTotalSize())
-                    .setSizeTransferred(transfer.getState().getTransferredSize()));
+                    .setSizeTransferred(transfer.getTransferredSize()));
         }
         completeOK(req, itr.build());
     }
@@ -178,7 +178,8 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        List<CfdpTransfer> cancelledTransfers = transfers.stream().map(CfdpTransfer::cancel).filter(x -> x != null)
+        List<CfdpTransfer> cancelledTransfers = transfers.stream().map(CfdpTransfer::cancel)
+                .filter(x -> x != null)
                 .collect(Collectors.toList());
 
         CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();

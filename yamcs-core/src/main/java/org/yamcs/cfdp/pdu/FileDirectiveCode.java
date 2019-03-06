@@ -43,7 +43,7 @@ public enum FileDirectiveCode {
     }
 
     public static FileDirectiveCode readFileDirectiveCode(byte b) {
-        return FileDirectiveCode.fromCode((byte) (b >> 4));
+        return FileDirectiveCode.fromCode(b);
     }
 
 }

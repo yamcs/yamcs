@@ -11,6 +11,10 @@ public class LV {
         this.value = value;
     }
 
+    public LV(String value) {
+        this(value.getBytes());
+    }
+
     public byte[] getValue() {
         return value;
     }

@@ -1,17 +1,20 @@
-package org.yamcs.yarch;
+package org.yamcs.cfdp;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.yamcs.yarch.YarchException;
 
 /**
  * Handles all tables/streams/indexes for a Yamcs server
  * 
  */
 public class CfdpDatabase {
-    CfdpDatabase instance;
-
     static Map<String, CfdpDatabaseInstance> databases = new HashMap<>();
+
+    // TODO, how to uniquely identify entities
+    static int mySourceId = 1;
 
     /**
      * 

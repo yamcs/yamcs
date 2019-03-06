@@ -45,15 +45,27 @@ public class FileStoreRequest {
     }
 
     public TLV toTLV() {
-        return new TLV(FileStoreRequest.TYPE,
-                ByteBuffer
-                        .allocate(1
-                                + firstFileName.getValue().length
-                                + secondFileName.getValue().length)
-                        .put((byte) (actionCode.getCode() << 4))
-                        .put(firstFileName.getValue())
-                        .put(secondFileName.getValue())
-                        .array());
-
+        if (secondFileName != null) {
+            return new TLV(FileStoreRequest.TYPE,
+                    ByteBuffer
+                            .allocate(1
+                                    + firstFileName.getValue().length + 1
+                                    + secondFileName.getValue().length + 1)
+                            .put((byte) (actionCode.getCode() << 4))
+                            .put((byte) firstFileName.getValue().length)
+                            .put(firstFileName.getValue())
+                            .put((byte) secondFileName.getValue().length)
+                            .put(secondFileName.getValue())
+                            .array());
+        } else {
+            return new TLV(FileStoreRequest.TYPE,
+                    ByteBuffer
+                            .allocate(1
+                                    + firstFileName.getValue().length + 1)
+                            .put((byte) (actionCode.getCode() << 4))
+                            .put((byte) firstFileName.getValue().length)
+                            .put(firstFileName.getValue())
+                            .array());
+        }
     }
 }

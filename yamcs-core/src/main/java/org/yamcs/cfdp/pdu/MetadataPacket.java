@@ -17,6 +17,21 @@ public class MetadataPacket extends CfdpPacket {
     private List<FaultHandlerOverride> faultHandlerOverrides = new ArrayList<FaultHandlerOverride>();
     private TLV flowLabel;
 
+    public MetadataPacket(boolean segmentationControl, int fileSize, String source, String destination,
+            List<FileStoreRequest> fsrs, List<MessageToUser> mtus, List<FaultHandlerOverride> fhos,
+            TLV flowLabel, CfdpHeader header) {
+        super(header);
+        this.segmentationControl = segmentationControl;
+        this.fileSize = fileSize;
+        this.sourceFileName = new LV(source);
+        this.destinationFileName = new LV(destination);
+        this.filestoreRequests = fsrs;
+        this.messagesToUser = mtus;
+        this.faultHandlerOverrides = fhos;
+        this.flowLabel = flowLabel;
+        header.setDataLength(calculateDataFieldLength());
+    }
+
     public MetadataPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
@@ -45,8 +60,31 @@ public class MetadataPacket extends CfdpPacket {
         }
     }
 
+    private int calculateDataFieldLength() {
+        int toReturn = 5 // first byte + File size
+                + this.sourceFileName.getValue().length
+                + this.destinationFileName.getValue().length;
+        for (FileStoreRequest fsr : this.filestoreRequests) {
+            toReturn += 2 // first byte of the FileStoreRequest + 1 time a LV length
+                    + fsr.getFirstFileName().getValue().length;
+            if (fsr.getSecondFileName() != null) {
+                toReturn += 1 + fsr.getSecondFileName().getValue().length;
+            }
+        }
+        for (MessageToUser mtu : this.messagesToUser) {
+            toReturn += 2 // type and length of a TLV message
+                    + mtu.getMessage().length;
+        }
+        for (FaultHandlerOverride fho : this.faultHandlerOverrides) {
+            toReturn += 3;
+        }
+        toReturn += 2 + flowLabel.getValue().length;
+        return toReturn;
+    }
+
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.Metadata.getCode());
         buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
