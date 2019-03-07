@@ -1,5 +1,7 @@
 package org.yamcs.cfdp;
 
+import java.util.Objects;
+
 public class CfdpTransactionId {
     private long sequenceNumber;
     private long initiatorEntity;
@@ -21,5 +23,20 @@ public class CfdpTransactionId {
 
     public long getInitiatorEntity() {
         return initiatorEntity;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        CfdpTransactionId other = (CfdpTransactionId) o;
+        return Objects.equals(sequenceNumber, other.sequenceNumber)
+                && Objects.equals(initiatorEntity, other.initiatorEntity);
     }
 }
