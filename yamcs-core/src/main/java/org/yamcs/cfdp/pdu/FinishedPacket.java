@@ -44,6 +44,18 @@ public class FinishedPacket extends CfdpPacket {
         }
     }
 
+    public FinishedPacket(ConditionCode code, boolean generatedByEndSystem, boolean deliveryCode, FileStatus status,
+            List<FileStoreResponse> responses, TLV faultLocation, CfdpHeader header) {
+        super(header);
+        this.conditionCode = code;
+        this.generatedByEndSystem = generatedByEndSystem;
+        this.dataComplete = deliveryCode;
+        this.fileStatus = status;
+        this.filestoreResponses = responses;
+        this.faultLocation = faultLocation;
+        finishConstruction();
+    }
+
     public FinishedPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
@@ -81,9 +93,20 @@ public class FinishedPacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
+    protected int calculateDataFieldLength() {
+        int toReturn = 1; // condition code + some status bits
+        for (FileStoreResponse fsr : this.filestoreResponses) {
+            toReturn += 2 // first byte of the FileStoreResponse + 1 time a LV length
+                    + fsr.getFirstFileName().getValue().length;
+            if (fsr.getSecondFileName() != null) {
+                toReturn += 1 + fsr.getSecondFileName().getValue().length;
+            }
+            toReturn += 1 + fsr.getFilestoreMessage().getValue().length;
+        }
+        if (faultLocation != null) {
+            toReturn += 2 + faultLocation.getValue().length;
+        }
+        return toReturn;
     }
 
 }

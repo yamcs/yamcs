@@ -47,12 +47,6 @@ public class EofPacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     protected int calculateDataFieldLength() {
         return 9 // condition code (1) + checksum (4) + file size (4)
                 + ((faultLocation != null) ? 2 + faultLocation.getValue().length : 0);

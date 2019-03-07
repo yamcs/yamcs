@@ -159,13 +159,19 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
         case EOF_SENT:
             // Do nothing, we're waiting for a FINISHED_RECEIVED packet
+            // TODO for now we just go to FINISHED_RECEIVED
+            this.currentState = CfdpTransferState.FINISHED_RECEIVED;
             break;
         case FINISHED_RECEIVED:
             // TODO Send FINISHED_Ack_packet and go to FINISHED_ACK_SENT
+            // TODO, for now we don't send acknowledgements, so just move on
+            this.currentState = CfdpTransferState.FINISHED_ACK_SENT;
+            break;
+        case FINISHED_ACK_SENT:
+            // we're done;
             break;
         default:
-            // TODO
-            break;
+            throw new IllegalStateException("packet in unknown/illegal state");
         }
     }
 

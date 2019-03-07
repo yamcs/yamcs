@@ -42,11 +42,6 @@ public abstract class CfdpPacket {
         header.setDataLength(calculateDataFieldLength());
     }
 
-    public CfdpPacket init() {
-        this.header = createHeader();
-        return this;
-    }
-
     protected CfdpPacket(CfdpHeader header) {
         this(null, header);
     }
@@ -55,8 +50,6 @@ public abstract class CfdpPacket {
         this.header = header;
         this.buffer = buffer;
     }
-
-    protected abstract CfdpHeader createHeader();
 
     private CfdpHeader getHeader() {
         return this.header;

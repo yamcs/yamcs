@@ -96,10 +96,4 @@ public class MetadataPacket extends CfdpPacket {
         flowLabel.writeToBuffer(buffer);
     }
 
-    @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
