@@ -8,6 +8,12 @@ public class PromptPacket extends CfdpPacket {
     // 1 = Keep Alive
     private boolean responseRequired;
 
+    public PromptPacket(boolean responseRequired, CfdpHeader header) {
+        super(header);
+        this.responseRequired = responseRequired;
+        finishConstruction();
+    }
+
     public PromptPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
@@ -20,9 +26,8 @@ public class PromptPacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
+    protected int calculateDataFieldLength() {
+        return 2;
     }
 
 }
