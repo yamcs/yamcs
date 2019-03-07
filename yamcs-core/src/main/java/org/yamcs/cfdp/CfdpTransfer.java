@@ -6,6 +6,8 @@ import java.util.List;
 import org.yamcs.cfdp.pdu.ActionCode;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FaultHandlerOverride;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileStoreRequest;
@@ -30,6 +32,12 @@ public class CfdpTransfer extends CfdpTransaction {
         FINISHED_RECEIVED,
         FINISHED_ACK_SENT
     }
+
+    private final boolean withCrc = false;
+    private final boolean acknowledged = false;
+    private final boolean withSegmentation = false;
+    private final int entitySize = 4;
+    private final int seqNrSize = 4;
 
     private long startTime;
 
@@ -75,10 +83,10 @@ public class CfdpTransfer extends CfdpTransaction {
             header = new CfdpHeader(
                     true, // it's a file directive
                     false, // it's sent towards the receiver
-                    false, // not acknowledged // TODO, is this okay?
-                    false, // no CRC
-                    4, // TODO, hardcoded entity length
-                    4, // TODO, hardcoded sequence number length
+                    acknowledged, // not acknowledged // TODO, is this okay?
+                    withCrc, // no CRC
+                    entitySize, // TODO, hardcoded entity length
+                    seqNrSize, // TODO, hardcoded sequence number length
                     getId(), // my Entity Id
                     request.getDestinationId(), // the id of the target
                     getNextSequenceNumber());
@@ -88,7 +96,7 @@ public class CfdpTransfer extends CfdpTransaction {
             fsrs.add(new FileStoreRequest(ActionCode.CreateFile, new LV(request.getTargetPath())));
 
             CfdpPacket metadata = new MetadataPacket(
-                    false, // TODO no segmentation
+                    withSegmentation, // TODO no segmentation
                     request.getPacketLength(),
                     "", // no source file name, the data will come from a bucket
                     request.getTargetPath(),
@@ -105,10 +113,10 @@ public class CfdpTransfer extends CfdpTransaction {
             header = new CfdpHeader(
                     false, // it's file data
                     false, // it's sent towards the receiver
-                    false, // not acknowledged // TODO, is this okay?
-                    false, // no CRC
-                    4, // TODO, hardcoded entity length
-                    4, // TODO, hardcoded sequence number length
+                    acknowledged, // not acknowledged // TODO, is this okay?
+                    withCrc, // no CRC
+                    entitySize, // TODO, hardcoded entity length
+                    seqNrSize, // TODO, hardcoded sequence number length
                     getId(), // my Entity Id
                     request.getDestinationId(), // the id of the target
                     getNextSequenceNumber());
@@ -128,7 +136,26 @@ public class CfdpTransfer extends CfdpTransaction {
             }
             break;
         case SENDING_FINISHED:
+            header = new CfdpHeader(
+                    true, // file directive
+                    false, // towards receiver
+                    acknowledged,
+                    withCrc,
+                    entitySize,
+                    seqNrSize,
+                    getId(),
+                    request.getDestinationId(),
+                    getNextSequenceNumber());
 
+            CfdpPacket eofPacket = new EofPacket(
+                    ConditionCode.NoError, // TODO, we assume no errors
+                    0, // TODO checksum
+                    request.getPacketLength(), // TODO, currently assumes that all data is sent exactly once
+                    null, // TODO, only if ConditionCode.NoError is sent
+                    header);
+
+            sendPacket(eofPacket);
+            this.currentState = CfdpTransferState.EOF_SENT;
             break;
         case EOF_SENT:
             // Do nothing, we're waiting for a FINISHED_RECEIVED packet

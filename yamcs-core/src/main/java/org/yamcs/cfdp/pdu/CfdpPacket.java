@@ -38,6 +38,10 @@ public abstract class CfdpPacket {
         this.header = null;
     }
 
+    protected void finishConstruction() {
+        header.setDataLength(calculateDataFieldLength());
+    }
+
     public CfdpPacket init() {
         this.header = createHeader();
         return this;

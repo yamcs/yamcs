@@ -29,7 +29,7 @@ public class MetadataPacket extends CfdpPacket {
         this.messagesToUser = mtus;
         this.faultHandlerOverrides = fhos;
         this.flowLabel = flowLabel;
-        header.setDataLength(calculateDataFieldLength());
+        finishConstruction();
     }
 
     public MetadataPacket(ByteBuffer buffer, CfdpHeader header) {
