@@ -38,7 +38,7 @@ public abstract class CfdpPacket {
         this.header = null;
     }
 
-    protected void finishConstruction() {
+    protected final void finishConstruction() {
         header.setDataLength(calculateDataFieldLength());
     }
 

@@ -8,6 +8,12 @@ public class KeepAlivePacket extends CfdpPacket {
 
     private long progress;
 
+    public KeepAlivePacket(long progress, CfdpHeader header) {
+        super(header);
+        this.progress = progress;
+        finishConstruction();
+    }
+
     public KeepAlivePacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
@@ -20,9 +26,8 @@ public class KeepAlivePacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
+    protected int calculateDataFieldLength() {
+        return 5;
     }
 
 }
