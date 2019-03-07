@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -111,17 +112,21 @@ public abstract class CfdpPacket {
         return toReturn;
     }
 
-    public Tuple toTuple(int transferId) {
+    public Tuple toTuple(CfdpTransactionId transferId) {
         TupleDefinition td = StandardTupleDefinitions.CFDP.copy();
         ArrayList<Object> al = new ArrayList<>();
-        al.add(transferId);
-        al.add(this.getHeader().getSequenceNumber());
+        al.add(transferId.getInitiatorEntity());
+        al.add(transferId.getSequenceNumber());
         al.add(this.toByteArray());
         return new Tuple(td, al);
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {
         return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("packet"))));
+    }
+
+    public CfdpTransactionId getTransactionId() {
+        return getHeader().getTransactionId();
     }
 
     private boolean crcValid() {

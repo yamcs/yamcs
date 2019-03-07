@@ -2,6 +2,7 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.utils.CfdpUtils;
 
 public class CfdpHeader {
@@ -57,6 +58,10 @@ public class CfdpHeader {
 
     public CfdpHeader(ByteBuffer buffer) {
         readPduHeader(buffer);
+    }
+
+    public CfdpTransactionId getTransactionId() {
+        return new CfdpTransactionId(this.sourceId, this.sequenceNr);
     }
 
     public boolean isFileDirective() {

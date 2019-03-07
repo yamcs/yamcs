@@ -5,29 +5,28 @@ import org.yamcs.yarch.Stream;
 
 public abstract class CfdpTransaction {
 
-    static private IdGenerator transactionNrGenerator = new IdGenerator();
-
-    private int id;
+    private CfdpTransactionId myId;
     private Stream cfdpOut;
     private IdGenerator sequenceNumberGenerator;
 
-    public CfdpTransaction(Stream cfdpOut) {
+    public CfdpTransaction(int initiatorEntity, Stream cfdpOut) {
+        this.myId = new CfdpTransactionId(initiatorEntity);
         this.cfdpOut = cfdpOut;
         this.sequenceNumberGenerator = new IdGenerator();
     }
 
-    public long getId() {
-        return this.id;
+    public CfdpTransactionId getId() {
+        return this.myId;
     }
 
-    public CfdpTransaction() {
-        this.id = transactionNrGenerator.generate();
-    }
+    // public CfdpTransaction() {
+    // this.transactionId = transactionNrGenerator.generate();
+    // }
 
     public abstract void step();
 
     void sendPacket(CfdpPacket p) {
-        cfdpOut.emitTuple(p.toTuple(this.id));
+        cfdpOut.emitTuple(p.toTuple(this.myId));
     }
 
     public int getNextSequenceNumber() {

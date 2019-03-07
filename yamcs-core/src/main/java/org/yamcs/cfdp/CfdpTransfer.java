@@ -55,7 +55,7 @@ public class CfdpTransfer extends CfdpTransaction {
     private PutRequest request;
 
     public CfdpTransfer(PutRequest request, Stream cfdpOut) {
-        super(cfdpOut);
+        super(request.getSourceId(), cfdpOut);
         this.request = request;
         this.currentState = CfdpTransferState.START;
         this.state = Cfdp.TransferState.RUNNING;
@@ -87,7 +87,7 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc, // no CRC
                     entitySize, // TODO, hardcoded entity length
                     seqNrSize, // TODO, hardcoded sequence number length
-                    getId(), // my Entity Id
+                    getId().getInitiatorEntity(), // my Entity Id
                     request.getDestinationId(), // the id of the target
                     getNextSequenceNumber());
 
@@ -117,7 +117,7 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc, // no CRC
                     entitySize, // TODO, hardcoded entity length
                     seqNrSize, // TODO, hardcoded sequence number length
-                    getId(), // my Entity Id
+                    getId().getInitiatorEntity(), // my Entity Id
                     request.getDestinationId(), // the id of the target
                     getNextSequenceNumber());
 
@@ -143,7 +143,7 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc,
                     entitySize,
                     seqNrSize,
-                    getId(),
+                    getId().getInitiatorEntity(),
                     request.getDestinationId(),
                     getNextSequenceNumber());
 

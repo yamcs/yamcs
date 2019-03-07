@@ -152,7 +152,7 @@ public class CfdpRestHandler extends RestHandler {
 
         for (CfdpTransfer transfer : transfers) {
             itr.addTransfers(TransferStatus.newBuilder()
-                    .setTransferId(transfer.getId())
+                    .setTransferId(transfer.getId().getSequenceNumber())
                     .setState(transfer.getState())
                     .setLocalBucketName(transfer.getBucket().getName())
                     .setLocalObjectName(transfer.getObjectName())
@@ -185,7 +185,7 @@ public class CfdpRestHandler extends RestHandler {
         CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : cancelledTransfers) {
-            ctr.addTransfers(transfer.getId());
+            ctr.addTransfers(transfer.getId().getSequenceNumber());
         }
         completeOK(req, ctr.build());
     }
@@ -220,7 +220,7 @@ public class CfdpRestHandler extends RestHandler {
         PausedTransfersResponse.Builder ptr = PausedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : pausedTransfers) {
-            ptr.addTransfers(transfer.getId());
+            ptr.addTransfers(transfer.getId().getSequenceNumber());
         }
         completeOK(req, ptr.build());
     }
@@ -245,7 +245,7 @@ public class CfdpRestHandler extends RestHandler {
         ResumedTransfersResponse.Builder rtr = ResumedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : resumedTransfers) {
-            rtr.addTransfers(transfer.getId());
+            rtr.addTransfers(transfer.getId().getSequenceNumber());
         }
         completeOK(req, rtr.build());
     }
