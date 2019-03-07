@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -213,9 +212,9 @@ public class Simulator extends AbstractService {
     }
 
     private void sendCfdp() {
-        byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't', '.' };
-        CfdpPacket cfdpFileData = new FileDataPacket(filedata, 0).init();
-        transmitCfdp(cfdpFileData);
+        // byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't', '.' };
+        // CfdpPacket cfdpFileData = new FileDataPacket(filedata, 0).init();
+        // transmitCfdp(cfdpFileData);
     }
 
     private void sendHkTm() {

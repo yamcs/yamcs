@@ -9,10 +9,11 @@ public class FileDataPacket extends CfdpPacket {
     private long offset;
     private byte[] filedata;
 
-    public FileDataPacket(byte[] data, long offset) {
-        super();
+    public FileDataPacket(byte[] data, long offset, CfdpHeader header) {
+        super(header);
         this.offset = offset;
         this.filedata = data;
+        header.setDataLength(calculateDataFieldLength());
     }
 
     public FileDataPacket(ByteBuffer buffer, CfdpHeader header) {
@@ -34,6 +35,11 @@ public class FileDataPacket extends CfdpPacket {
     protected CfdpHeader createHeader() {
         // the '+4' originates from the length of the offset bytes
         return new CfdpHeader(false, false, false, false, this.filedata.length + 4, 1, 1, 123, 111, 246);
+    }
+
+    @Override
+    protected int calculateDataFieldLength() {
+        return 4 + this.filedata.length;
     }
 
 }

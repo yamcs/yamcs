@@ -60,7 +60,8 @@ public class MetadataPacket extends CfdpPacket {
         }
     }
 
-    private int calculateDataFieldLength() {
+    @Override
+    protected int calculateDataFieldLength() {
         int toReturn = 5 // first byte + File size
                 + this.sourceFileName.getValue().length
                 + this.destinationFileName.getValue().length;

@@ -38,4 +38,8 @@ public class PutRequest extends CfdpRequest {
         return packetData.length;
     }
 
+    public byte[] getPacketData() {
+        return packetData;
+    }
+
 }

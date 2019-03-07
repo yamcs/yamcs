@@ -30,7 +30,9 @@ public class CfdpHandler implements StreamSubscriber {
     public CfdpTransfer processPutRequest(PutRequest request) {
         // TODO processing and returning should be asynchronous
         CfdpTransfer transfer = new CfdpTransfer(request, this.cfdpOut);
-        transfer.step();
+        while (transfer.isOngoing()) {
+            transfer.step();
+        }
         return transfer;
     }
 

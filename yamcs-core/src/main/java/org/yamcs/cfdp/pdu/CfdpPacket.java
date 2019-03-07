@@ -58,6 +58,8 @@ public abstract class CfdpPacket {
         return this.header;
     }
 
+    protected abstract int calculateDataFieldLength();
+
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
         CfdpHeader header = new CfdpHeader(buffer);
         CfdpPacket toReturn = null;
