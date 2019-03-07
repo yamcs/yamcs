@@ -71,6 +71,16 @@ public class AckPacket extends CfdpPacket {
         }
     }
 
+    public AckPacket(FileDirectiveCode code, FileDirectiveSubtypeCode subcode, ConditionCode conditionCode,
+            TransactionStatus status, CfdpHeader header) {
+        super(header);
+        this.directiveCode = code;
+        this.directiveSubtypeCode = subcode;
+        this.conditionCode = conditionCode;
+        this.transactionStatus = status;
+        finishConstruction();
+    }
+
     public AckPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
         byte temp = buffer.get();
@@ -86,8 +96,7 @@ public class AckPacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
+    protected int calculateDataFieldLength() {
+        return 3;
     }
 }
