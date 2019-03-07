@@ -12,6 +12,14 @@ public class NakPacket extends CfdpPacket {
     private long scopeEnd;
     private List<SegmentRequest> segmentRequests = new ArrayList<SegmentRequest>();
 
+    public NakPacket(long scopeStart, long scopeEnd, List<SegmentRequest> requests, CfdpHeader header) {
+        super(header);
+        this.scopeStart = scopeStart;
+        this.scopeEnd = scopeEnd;
+        this.segmentRequests = requests;
+        finishConstruction();
+    }
+
     public NakPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
@@ -31,8 +39,7 @@ public class NakPacket extends CfdpPacket {
     }
 
     @Override
-    protected CfdpHeader createHeader() {
-        // TODO Auto-generated method stub
-        return null;
+    protected int calculateDataFieldLength() {
+        return 9 + 8 * segmentRequests.size();
     }
 }
