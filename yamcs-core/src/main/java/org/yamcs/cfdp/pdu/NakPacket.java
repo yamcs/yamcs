@@ -33,6 +33,7 @@ public class NakPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.NAK.getCode());
         CfdpUtils.writeUnsignedInt(buffer, scopeStart);
         CfdpUtils.writeUnsignedInt(buffer, scopeEnd);
         segmentRequests.forEach(x -> x.writeToBuffer(buffer));

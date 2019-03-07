@@ -22,6 +22,7 @@ public class KeepAlivePacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.KeepAlive.getCode());
         CfdpUtils.writeUnsignedInt(buffer, progress);
     }
 

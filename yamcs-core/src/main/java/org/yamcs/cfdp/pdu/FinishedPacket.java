@@ -81,6 +81,7 @@ public class FinishedPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.Finished.getCode());
         byte temp = (byte) ((this.conditionCode.getCode() << 4));
         temp |= ((this.generatedByEndSystem ? 1 : 0) << 3);
         temp |= ((this.dataComplete ? 0 : 1) << 2);

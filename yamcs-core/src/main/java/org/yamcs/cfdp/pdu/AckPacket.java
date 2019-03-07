@@ -91,6 +91,7 @@ public class AckPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.ACK.getCode());
         buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
         buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
     }

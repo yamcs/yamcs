@@ -22,6 +22,7 @@ public class PromptPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
+        buffer.put(FileDirectiveCode.Prompt.getCode());
         buffer.put((byte) ((responseRequired ? 1 : 0) << 7));
     }
 
