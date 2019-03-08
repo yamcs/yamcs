@@ -4,9 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.cfdp.FileDirective;
 import org.yamcs.utils.CfdpUtils;
 
-public class MetadataPacket extends CfdpPacket {
+public class MetadataPacket extends CfdpPacket implements FileDirective {
 
     private boolean segmentationControl;
     private long fileSize;
@@ -85,7 +86,7 @@ public class MetadataPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.Metadata.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
@@ -94,6 +95,11 @@ public class MetadataPacket extends CfdpPacket {
         messagesToUser.forEach(x -> x.toTLV().writeToBuffer(buffer));
         faultHandlerOverrides.forEach(x -> x.toTLV().writeToBuffer(buffer));
         flowLabel.writeToBuffer(buffer);
+    }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.Metadata;
     }
 
 }

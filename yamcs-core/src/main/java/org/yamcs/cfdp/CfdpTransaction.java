@@ -25,7 +25,9 @@ public abstract class CfdpTransaction {
 
     public abstract void step();
 
-    void sendPacket(CfdpPacket p) {
+    public abstract void processPacket(CfdpPacket packet);
+
+    protected void sendPacket(CfdpPacket p) {
         cfdpOut.emitTuple(p.toTuple(this.myId));
     }
 

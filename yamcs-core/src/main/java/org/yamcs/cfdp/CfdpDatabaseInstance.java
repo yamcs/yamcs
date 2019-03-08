@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -97,9 +98,27 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
 
         CfdpTransactionId id = packet.getTransactionId();
 
-        // 1) determine the transaction (or create a new one)
-        // 2) send the packet to the transaction
+        CfdpTransaction transaction = null;
+        if (transfers.containsKey(id)) {
+            transaction = transfers.get(id);
+        } else {
+            transaction = instantiateTransaction(packet);
+        }
 
+        if (transaction != null) {
+            transaction.processPacket(packet);
+        }
+    }
+
+    private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
+        if (packet.isFileDirective()
+                && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
+            log.error("Only CFDP transactions that are initiated by YAMCS are supported.");
+            return null;
+        } else {
+            log.error("Rogue CFDP packet received.");
+            return null;
+        }
     }
 
     @Override

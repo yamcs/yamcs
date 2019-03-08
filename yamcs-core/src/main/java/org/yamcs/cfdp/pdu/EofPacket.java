@@ -2,9 +2,10 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.cfdp.FileDirective;
 import org.yamcs.utils.CfdpUtils;
 
-public class EofPacket extends CfdpPacket {
+public class EofPacket extends CfdpPacket implements FileDirective {
 
     private ConditionCode conditionCode;
     private long fileChecksum;
@@ -37,7 +38,7 @@ public class EofPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.EOF.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         this.conditionCode.writeAsByteToBuffer(buffer);
         CfdpUtils.writeUnsignedInt(buffer, this.fileChecksum);
         CfdpUtils.writeUnsignedInt(buffer, this.fileSize);
@@ -50,6 +51,11 @@ public class EofPacket extends CfdpPacket {
     protected int calculateDataFieldLength() {
         return 9 // condition code (1) + checksum (4) + file size (4)
                 + ((faultLocation != null) ? 2 + faultLocation.getValue().length : 0);
+    }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.EOF;
     }
 
 }

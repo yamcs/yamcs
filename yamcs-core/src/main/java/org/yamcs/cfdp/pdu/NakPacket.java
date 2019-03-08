@@ -4,9 +4,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.cfdp.FileDirective;
 import org.yamcs.utils.CfdpUtils;
 
-public class NakPacket extends CfdpPacket {
+public class NakPacket extends CfdpPacket implements FileDirective {
 
     private long scopeStart;
     private long scopeEnd;
@@ -33,7 +34,7 @@ public class NakPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.NAK.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         CfdpUtils.writeUnsignedInt(buffer, scopeStart);
         CfdpUtils.writeUnsignedInt(buffer, scopeEnd);
         segmentRequests.forEach(x -> x.writeToBuffer(buffer));
@@ -43,4 +44,10 @@ public class NakPacket extends CfdpPacket {
     protected int calculateDataFieldLength() {
         return 9 + 8 * segmentRequests.size();
     }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.NAK;
+    }
+
 }

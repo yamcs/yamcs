@@ -6,11 +6,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.cfdp.FileDirective;
 import org.yamcs.utils.CfdpUtils;
 
 import com.google.common.collect.Maps;
 
-public class FinishedPacket extends CfdpPacket {
+public class FinishedPacket extends CfdpPacket implements FileDirective {
 
     private ConditionCode conditionCode;
     private boolean generatedByEndSystem;
@@ -81,7 +82,7 @@ public class FinishedPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.Finished.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         byte temp = (byte) ((this.conditionCode.getCode() << 4));
         temp |= ((this.generatedByEndSystem ? 1 : 0) << 3);
         temp |= ((this.dataComplete ? 0 : 1) << 2);
@@ -108,6 +109,11 @@ public class FinishedPacket extends CfdpPacket {
             toReturn += 2 + faultLocation.getValue().length;
         }
         return toReturn;
+    }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.Finished;
     }
 
 }

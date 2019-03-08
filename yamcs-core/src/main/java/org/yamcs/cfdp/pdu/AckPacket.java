@@ -4,9 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.yamcs.cfdp.FileDirective;
+
 import com.google.common.collect.Maps;
 
-public class AckPacket extends CfdpPacket {
+public class AckPacket extends CfdpPacket implements FileDirective {
 
     private FileDirectiveCode directiveCode;
     private FileDirectiveSubtypeCode directiveSubtypeCode;
@@ -91,7 +93,7 @@ public class AckPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.ACK.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
         buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
     }
@@ -99,5 +101,10 @@ public class AckPacket extends CfdpPacket {
     @Override
     protected int calculateDataFieldLength() {
         return 3;
+    }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.ACK;
     }
 }

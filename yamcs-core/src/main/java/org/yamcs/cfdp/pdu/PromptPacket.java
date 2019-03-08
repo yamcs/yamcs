@@ -2,7 +2,9 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 
-public class PromptPacket extends CfdpPacket {
+import org.yamcs.cfdp.FileDirective;
+
+public class PromptPacket extends CfdpPacket implements FileDirective {
 
     // 0 = NAK
     // 1 = Keep Alive
@@ -22,13 +24,18 @@ public class PromptPacket extends CfdpPacket {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        buffer.put(FileDirectiveCode.Prompt.getCode());
+        buffer.put(getFileDirectiveCode().getCode());
         buffer.put((byte) ((responseRequired ? 1 : 0) << 7));
     }
 
     @Override
     protected int calculateDataFieldLength() {
         return 2;
+    }
+
+    @Override
+    public FileDirectiveCode getFileDirectiveCode() {
+        return FileDirectiveCode.Prompt;
     }
 
 }
