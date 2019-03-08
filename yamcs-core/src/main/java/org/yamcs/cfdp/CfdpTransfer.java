@@ -19,7 +19,6 @@ import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.protobuf.Cfdp;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpTransfer extends CfdpTransaction {
@@ -51,9 +50,6 @@ public class CfdpTransfer extends CfdpTransaction {
 
     private final int pauseBetweenFileDataPackets = 2000;
 
-    private Bucket bucket;
-    private String object;
-    private String remotePath;
     private TransferDirection transferDirection;
 
     private long totalSize;
@@ -65,10 +61,15 @@ public class CfdpTransfer extends CfdpTransaction {
         this.request = request;
         this.currentState = CfdpTransferState.START;
         this.state = Cfdp.TransferState.RUNNING;
+        this.transferDirection = TransferDirection.UPLOAD;
     }
 
     public TransferState getTransferState() {
         return this.state;
+    }
+
+    public PutRequest getRequest() {
+        return request;
     }
 
     public long getTransferredSize() {
@@ -217,18 +218,6 @@ public class CfdpTransfer extends CfdpTransaction {
 
     public CfdpTransferState getCfdpState() {
         return this.currentState;
-    }
-
-    public Bucket getBucket() {
-        return this.bucket;
-    }
-
-    public String getObjectName() {
-        return this.object;
-    }
-
-    public String getRemotePath() {
-        return this.remotePath;
     }
 
     public TransferDirection getDirection() {

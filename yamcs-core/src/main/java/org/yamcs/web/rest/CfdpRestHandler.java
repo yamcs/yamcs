@@ -70,7 +70,7 @@ public class CfdpRestHandler extends RestHandler {
         boolean overwrite = req.getQueryParameterAsBoolean("overwrite", true);
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
 
-        long transferId = ci.initiateUploadCfdpTransfer(objData, target, overwrite, createpath);
+        long transferId = ci.initiateUploadCfdpTransfer(objData, b, objName, target, overwrite, createpath);
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
@@ -154,9 +154,9 @@ public class CfdpRestHandler extends RestHandler {
             itr.addTransfers(TransferStatus.newBuilder()
                     .setTransferId(transfer.getTransactionId().getSequenceNumber())
                     .setState(transfer.getTransferState())
-                    .setLocalBucketName(transfer.getBucket().getName())
-                    .setLocalObjectName(transfer.getObjectName())
-                    .setRemotePath(transfer.getRemotePath())
+                    .setLocalBucketName(transfer.getRequest().getBucket().getName())
+                    .setLocalObjectName(transfer.getRequest().getObjectName())
+                    .setRemotePath(transfer.getRequest().getTargetPath())
                     .setDirection(transfer.getDirection())
                     .setTotalSize(transfer.getTotalSize())
                     .setSizeTransferred(transfer.getTransferredSize()));

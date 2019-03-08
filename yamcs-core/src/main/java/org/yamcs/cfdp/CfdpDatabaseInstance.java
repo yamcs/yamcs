@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -63,9 +64,10 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
                 .collect(Collectors.toList());
     }
 
-    public long initiateUploadCfdpTransfer(byte[] data, String target, boolean overwrite, boolean createPath) {
+    public long initiateUploadCfdpTransfer(byte[] data, Bucket b, String objectName, String target, boolean overwrite,
+            boolean createPath) {
         // TODO, the '2' in the line below should be a true destinationId
-        PutRequest putRequest = new PutRequest(CfdpDatabase.mySourceId, 2, target, data);
+        PutRequest putRequest = new PutRequest(CfdpDatabase.mySourceId, 2, objectName, target, b, data);
         CfdpTransfer transfer = (CfdpTransfer) processRequest(putRequest);
         transfers.put(transfer.getTransactionId(), transfer);
         return transfer.getTransactionId().getSequenceNumber();
