@@ -13,7 +13,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cfdp.FileDirective;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -114,8 +116,36 @@ public class Simulator extends AbstractService {
     }
 
     protected void processCfdp(CfdpPacket packet) {
-        // TODO
-        log.debug("test");
+        if (packet.isFileDirective()) {
+            switch (((FileDirective) packet).getFileDirectiveCode()) {
+            case EOF:
+                log.info("EOF CFDP packet received");
+                break;
+            case Finished:
+                log.info("Finished CFDP packet received");
+                break;
+            case ACK:
+                log.info("ACK CFDP packet received");
+                break;
+            case Metadata:
+                log.info("Metadata CFDP packet received");
+                break;
+            case NAK:
+                log.info("NAK CFDP packet received");
+                break;
+            case Prompt:
+                log.info("Prompt CFDP packet received");
+                break;
+            case KeepAlive:
+                log.info("KeepAlive CFDP packet received");
+                break;
+            default:
+                log.error("CFDP packet of unknown type received");
+                break;
+            }
+        } else {
+            log.info("file data received: " + new String(((FileDataPacket) packet).getData()).toString());
+        }
     }
 
     protected void transmitTM2(byte[] packet) {
@@ -213,7 +243,7 @@ public class Simulator extends AbstractService {
 
     private void sendCfdp() {
         // byte[] filedata = { 'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't', '.' };
-        // CfdpPacket cfdpFileData = new FileDataPacket(filedata, 0).init();
+        // CfdpPacket cfdpFileData = new FileDataPacket(filedata, 0, FileDataPacket.createHeader(filedata));
         // transmitCfdp(cfdpFileData);
     }
 

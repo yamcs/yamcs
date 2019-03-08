@@ -22,7 +22,10 @@ public class FileDataPacket extends CfdpPacket {
         this.offset = CfdpUtils.getUnsignedInt(buffer);
         this.filedata = new byte[buffer.limit() - buffer.position()];
         buffer.get(this.filedata);
+    }
 
+    public byte[] getData() {
+        return filedata;
     }
 
     @Override
@@ -31,9 +34,9 @@ public class FileDataPacket extends CfdpPacket {
         buffer.put(filedata);
     }
 
-    protected CfdpHeader createHeader() {
+    public static CfdpHeader createHeader(byte[] filedata) {
         // the '+4' originates from the length of the offset bytes
-        return new CfdpHeader(false, false, false, false, this.filedata.length + 4, 1, 1, 123, 111, 246);
+        return new CfdpHeader(false, false, false, false, filedata.length + 4, 1, 1, 123, 111, 246);
     }
 
     @Override

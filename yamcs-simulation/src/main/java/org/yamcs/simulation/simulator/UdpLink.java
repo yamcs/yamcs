@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +64,8 @@ public class UdpLink extends AbstractExecutionThreadService {
             socket.close();
         }
         try {
-            log.info("Waiting for {} connection from server on port {}", name, port);
-            socket = new DatagramSocket(8765);
+            log.info("Waiting for UDP {} connection from server on port {}", name, port);
+            socket = new DatagramSocket(10013);
             connected = true;
         } catch (Exception e) {
             if (isRunning()) {
@@ -74,8 +75,7 @@ public class UdpLink extends AbstractExecutionThreadService {
     }
 
     private CfdpPacket readPacket(DatagramPacket packet) {
-        // TODO
-        return null;
+        return CfdpPacket.getCFDPPacket(ByteBuffer.wrap(packet.getData(), 0, packet.getLength()));
     }
 
 }
