@@ -159,7 +159,6 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
         case EOF_SENT:
             // Do nothing, we're waiting for a FINISHED_RECEIVED packet
-            // TODO for now we just go to FINISHED_RECEIVED
             this.currentState = CfdpTransferState.FINISHED_RECEIVED;
             break;
         case FINISHED_RECEIVED:
@@ -169,6 +168,7 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
         case FINISHED_ACK_SENT:
             // we're done;
+            state = TransferState.COMPLETED;
             break;
         default:
             throw new IllegalStateException("packet in unknown/illegal state");
@@ -212,6 +212,23 @@ public class CfdpTransfer extends CfdpTransaction {
     public CfdpTransfer resume() {
         // IF cancelled, return myself, otherwise return null id, otherwise return null
         return this;
+    }
+
+    @Override
+    public void processPacket(CfdpPacket packet) {
+        if (packet.isFileDirective()) {
+            switch (((FileDirective) packet).getFileDirectiveCode()) {
+            case Finished:
+                if (currentState == CfdpTransferState.EOF_SENT) {
+                    currentState = CfdpTransferState.FINISHED_RECEIVED;
+                }
+                break;
+            default:
+                break;
+            }
+        } else {
+            // TODO incoming data
+        }
     }
 
 }

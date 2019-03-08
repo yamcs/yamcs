@@ -121,6 +121,10 @@ public final class Cfdp {
      * <code>FAILED = 3;</code>
      */
     FAILED(3),
+    /**
+     * <code>COMPLETED = 4;</code>
+     */
+    COMPLETED(4),
     ;
 
     /**
@@ -135,6 +139,10 @@ public final class Cfdp {
      * <code>FAILED = 3;</code>
      */
     public static final int FAILED_VALUE = 3;
+    /**
+     * <code>COMPLETED = 4;</code>
+     */
+    public static final int COMPLETED_VALUE = 4;
 
 
     public final int getNumber() {
@@ -154,6 +162,7 @@ public final class Cfdp {
         case 1: return RUNNING;
         case 2: return PAUSED;
         case 3: return FAILED;
+        case 4: return COMPLETED;
         default: return null;
       }
     }
@@ -6849,9 +6858,9 @@ public final class Cfdp {
       "moteFile\"&\n\020DownloadResponse\022\022\n\ntransfer" +
       "Id\030\001 \002(\004\"$\n\016UploadResponse\022\022\n\ntransferId" +
       "\030\001 \002(\004*-\n\021TransferDirection\022\n\n\006UPLOAD\020\001\022" +
-      "\014\n\010DOWNLOAD\020\002*4\n\rTransferState\022\013\n\007RUNNIN" +
-      "G\020\001\022\n\n\006PAUSED\020\002\022\n\n\006FAILED\020\003B\024\n\022org.yamcs" +
-      ".protobuf"
+      "\014\n\010DOWNLOAD\020\002*C\n\rTransferState\022\013\n\007RUNNIN" +
+      "G\020\001\022\n\n\006PAUSED\020\002\022\n\n\006FAILED\020\003\022\r\n\tCOMPLETED" +
+      "\020\004B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

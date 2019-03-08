@@ -113,9 +113,11 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
         if (packet.isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
+            // TODO, probably an exception is better
             log.error("Only CFDP transactions that are initiated by YAMCS are supported.");
             return null;
         } else {
+            // TODO, probably an exception is better
             log.error("Rogue CFDP packet received.");
             return null;
         }

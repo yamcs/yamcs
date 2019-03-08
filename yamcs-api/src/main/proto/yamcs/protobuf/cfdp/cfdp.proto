@@ -12,7 +12,8 @@ enum TransferDirection {
 enum TransferState {
    RUNNING = 1;
    PAUSED = 2;
-   FAILED = 3 ;
+   FAILED = 3;
+   COMPLETED = 4;
 }
 
 message RemoteFile {
