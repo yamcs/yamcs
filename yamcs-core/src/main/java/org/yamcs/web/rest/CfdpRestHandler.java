@@ -226,7 +226,7 @@ public class CfdpRestHandler extends RestHandler {
     }
 
     // TODO update rest documentation
-    @Route(path = "/api/cfdp/:instance/pause", method = "POST")
+    @Route(path = "/api/cfdp/:instance/resume", method = "POST")
     public void CfdpResume(RestRequest req) throws HttpException {
         log.info("CfdpResume");
 

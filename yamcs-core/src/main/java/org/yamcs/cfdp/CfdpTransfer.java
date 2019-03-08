@@ -53,6 +53,7 @@ public class CfdpTransfer extends CfdpTransaction {
     private TransferDirection transferDirection;
 
     private long totalSize;
+    private boolean sleeping = false;
 
     private PutRequest request;
 
@@ -151,6 +152,9 @@ public class CfdpTransfer extends CfdpTransaction {
                 this.currentState = CfdpTransferState.SENDING_FINISHED;
             } else {
                 try {
+                    while (sleeping) {
+                        Thread.sleep(100);
+                    }
                     Thread.sleep(pauseBetweenFileDataPackets);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -234,12 +238,12 @@ public class CfdpTransfer extends CfdpTransaction {
     }
 
     public CfdpTransfer pause() {
-        // IF cancelled, return myself, otherwise return null id, otherwise return null
+        sleeping = true;
         return this;
     }
 
     public CfdpTransfer resumeTransfer() {
-        // IF cancelled, return myself, otherwise return null id, otherwise return null
+        sleeping = false;
         return this;
     }
 
