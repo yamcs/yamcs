@@ -52,12 +52,8 @@ public abstract class CfdpPacket {
         this.buffer = buffer;
     }
 
-    private CfdpHeader getHeader() {
+    public CfdpHeader getHeader() {
         return this.header;
-    }
-
-    public boolean isFileDirective() {
-        return this.header.isFileDirective();
     }
 
     protected abstract int calculateDataFieldLength();

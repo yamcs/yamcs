@@ -42,7 +42,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     }
 
     public void addCfdpTransfer(CfdpTransfer transfer) {
-        transfers.put(transfer.getId(), transfer);
+        transfers.put(transfer.getTransactionId(), transfer);
     }
 
     public CfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
@@ -67,8 +67,8 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         // TODO, the '2' in the line below should be a true destinationId
         PutRequest putRequest = new PutRequest(CfdpDatabase.mySourceId, 2, target, data);
         CfdpTransfer transfer = (CfdpTransfer) processRequest(putRequest);
-        transfers.put(transfer.getId(), transfer);
-        return transfer.getId().getSequenceNumber();
+        transfers.put(transfer.getTransactionId(), transfer);
+        return transfer.getTransactionId().getSequenceNumber();
 
         // CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
         // cfdpOut.emitTuple(fdp.toTuple(1001));
@@ -85,9 +85,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     private CfdpTransfer processPutRequest(PutRequest request) {
         // TODO processing and returning should be asynchronous
         CfdpTransfer transfer = new CfdpTransfer(request, this.cfdpOut);
-        while (transfer.isOngoing()) {
-            transfer.step();
-        }
+        transfer.start();
         return transfer;
     }
 
@@ -111,7 +109,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     }
 
     private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
-        if (packet.isFileDirective()
+        if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
             // TODO, probably an exception is better
             log.error("Only CFDP transactions that are initiated by YAMCS are supported.");

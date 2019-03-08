@@ -15,7 +15,9 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
 
     private ConditionCode conditionCode;
     private boolean generatedByEndSystem;
-    private boolean dataComplete;
+
+    // false = delivery incomplete; true = delivery complete
+    private boolean dataInComplete;
     private FileStatus fileStatus;
     private TLV faultLocation = null;
     private List<FileStoreResponse> filestoreResponses = new ArrayList<FileStoreResponse>();
@@ -50,7 +52,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         super(header);
         this.conditionCode = code;
         this.generatedByEndSystem = generatedByEndSystem;
-        this.dataComplete = deliveryCode;
+        this.dataInComplete = deliveryCode;
         this.fileStatus = status;
         this.filestoreResponses = responses;
         this.faultLocation = faultLocation;
@@ -63,7 +65,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
         this.generatedByEndSystem = CfdpUtils.getBitOfByte(temp, 5);
-        this.dataComplete = !CfdpUtils.getBitOfByte(temp, 6);
+        this.dataInComplete = CfdpUtils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
 
         while (buffer.hasRemaining()) {
@@ -85,7 +87,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         buffer.put(getFileDirectiveCode().getCode());
         byte temp = (byte) ((this.conditionCode.getCode() << 4));
         temp |= ((this.generatedByEndSystem ? 1 : 0) << 3);
-        temp |= ((this.dataComplete ? 0 : 1) << 2);
+        temp |= ((this.dataInComplete ? 1 : 0) << 2);
         temp |= ((this.fileStatus.getCode() & 0x03));
         buffer.put(temp);
         this.filestoreResponses.forEach(x -> x.toTLV().writeToBuffer(buffer));

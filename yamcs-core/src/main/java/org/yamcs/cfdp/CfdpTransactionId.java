@@ -39,4 +39,9 @@ public class CfdpTransactionId {
         return Objects.equals(sequenceNumber, other.sequenceNumber)
                 && Objects.equals(initiatorEntity, other.initiatorEntity);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceNumber, initiatorEntity);
+    }
 }

@@ -61,7 +61,7 @@ public class CfdpTransfer extends CfdpTransaction {
         this.state = Cfdp.TransferState.RUNNING;
     }
 
-    public TransferState getState() {
+    public TransferState getTransferState() {
         return this.state;
     }
 
@@ -71,6 +71,13 @@ public class CfdpTransfer extends CfdpTransaction {
 
     public boolean isOngoing() {
         return state == TransferState.RUNNING || state == TransferState.PAUSED;
+    }
+
+    @Override
+    public void run() {
+        while (isOngoing()) {
+            step();
+        }
     }
 
     @Override
@@ -87,9 +94,9 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc, // no CRC
                     entitySize, // TODO, hardcoded entity length
                     seqNrSize, // TODO, hardcoded sequence number length
-                    getId().getInitiatorEntity(), // my Entity Id
+                    getTransactionId().getInitiatorEntity(), // my Entity Id
                     request.getDestinationId(), // the id of the target
-                    getNextSequenceNumber());
+                    this.myId.getSequenceNumber());
 
             // TODO, only supports the creation of new files at the moment
             List<FileStoreRequest> fsrs = new ArrayList<FileStoreRequest>();
@@ -117,9 +124,9 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc, // no CRC
                     entitySize, // TODO, hardcoded entity length
                     seqNrSize, // TODO, hardcoded sequence number length
-                    getId().getInitiatorEntity(), // my Entity Id
+                    getTransactionId().getInitiatorEntity(), // my Entity Id
                     request.getDestinationId(), // the id of the target
-                    getNextSequenceNumber());
+                    this.myId.getSequenceNumber());
 
             CfdpPacket filedata = new FileDataPacket(
                     request.getPacketData(),
@@ -143,9 +150,9 @@ public class CfdpTransfer extends CfdpTransaction {
                     withCrc,
                     entitySize,
                     seqNrSize,
-                    getId().getInitiatorEntity(),
+                    getTransactionId().getInitiatorEntity(),
                     request.getDestinationId(),
-                    getNextSequenceNumber());
+                    this.myId.getSequenceNumber());
 
             CfdpPacket eofPacket = new EofPacket(
                     ConditionCode.NoError, // TODO, we assume no errors
@@ -159,7 +166,6 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
         case EOF_SENT:
             // Do nothing, we're waiting for a FINISHED_RECEIVED packet
-            this.currentState = CfdpTransferState.FINISHED_RECEIVED;
             break;
         case FINISHED_RECEIVED:
             // TODO Send FINISHED_Ack_packet and go to FINISHED_ACK_SENT
@@ -209,14 +215,14 @@ public class CfdpTransfer extends CfdpTransaction {
         return this;
     }
 
-    public CfdpTransfer resume() {
+    public CfdpTransfer resumeTransfer() {
         // IF cancelled, return myself, otherwise return null id, otherwise return null
         return this;
     }
 
     @Override
     public void processPacket(CfdpPacket packet) {
-        if (packet.isFileDirective()) {
+        if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case Finished:
                 if (currentState == CfdpTransferState.EOF_SENT) {

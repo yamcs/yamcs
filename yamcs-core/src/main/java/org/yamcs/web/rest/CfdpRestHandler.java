@@ -152,8 +152,8 @@ public class CfdpRestHandler extends RestHandler {
 
         for (CfdpTransfer transfer : transfers) {
             itr.addTransfers(TransferStatus.newBuilder()
-                    .setTransferId(transfer.getId().getSequenceNumber())
-                    .setState(transfer.getState())
+                    .setTransferId(transfer.getTransactionId().getSequenceNumber())
+                    .setState(transfer.getTransferState())
                     .setLocalBucketName(transfer.getBucket().getName())
                     .setLocalObjectName(transfer.getObjectName())
                     .setRemotePath(transfer.getRemotePath())
@@ -185,7 +185,7 @@ public class CfdpRestHandler extends RestHandler {
         CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : cancelledTransfers) {
-            ctr.addTransfers(transfer.getId().getSequenceNumber());
+            ctr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, ctr.build());
     }
@@ -220,7 +220,7 @@ public class CfdpRestHandler extends RestHandler {
         PausedTransfersResponse.Builder ptr = PausedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : pausedTransfers) {
-            ptr.addTransfers(transfer.getId().getSequenceNumber());
+            ptr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, ptr.build());
     }
@@ -239,13 +239,14 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        List<CfdpTransfer> resumedTransfers = transfers.stream().map(CfdpTransfer::resume).filter(x -> x != null)
+        List<CfdpTransfer> resumedTransfers = transfers.stream().map(CfdpTransfer::resumeTransfer)
+                .filter(x -> x != null)
                 .collect(Collectors.toList());
 
         ResumedTransfersResponse.Builder rtr = ResumedTransfersResponse.newBuilder();
 
         for (CfdpTransfer transfer : resumedTransfers) {
-            rtr.addTransfers(transfer.getId().getSequenceNumber());
+            rtr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, rtr.build());
     }

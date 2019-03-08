@@ -3,19 +3,17 @@ package org.yamcs.cfdp;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.yarch.Stream;
 
-public abstract class CfdpTransaction {
+public abstract class CfdpTransaction extends Thread {
 
-    private CfdpTransactionId myId;
+    protected CfdpTransactionId myId;
     private Stream cfdpOut;
-    private IdGenerator sequenceNumberGenerator;
 
     public CfdpTransaction(int initiatorEntity, Stream cfdpOut) {
         this.myId = new CfdpTransactionId(initiatorEntity);
         this.cfdpOut = cfdpOut;
-        this.sequenceNumberGenerator = new IdGenerator();
     }
 
-    public CfdpTransactionId getId() {
+    public CfdpTransactionId getTransactionId() {
         return this.myId;
     }
 
@@ -29,10 +27,6 @@ public abstract class CfdpTransaction {
 
     protected void sendPacket(CfdpPacket p) {
         cfdpOut.emitTuple(p.toTuple(this.myId));
-    }
-
-    public int getNextSequenceNumber() {
-        return sequenceNumberGenerator.generate();
     }
 
 }

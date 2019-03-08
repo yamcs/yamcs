@@ -72,8 +72,24 @@ public class CfdpHeader {
         return withCrc;
     }
 
+    public int getEntityIdLength() {
+        return this.entityIdLength;
+    }
+
+    public int getSequenceNumberLength() {
+        return this.sequenceNumberLength;
+    }
+
     public long getSequenceNumber() {
         return sequenceNr;
+    }
+
+    public long getDestinationId() {
+        return this.destinationId;
+    }
+
+    public long getSourceId() {
+        return this.sourceId;
     }
 
     /*
