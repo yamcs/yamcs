@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.cfdp.pdu.ActionCode;
@@ -38,12 +39,17 @@ public class CfdpTransfer extends CfdpTransaction {
     private final boolean withSegmentation = false;
     private final int entitySize = 4;
     private final int seqNrSize = 4;
+    private final int maxDataSize = 10;
 
     private long startTime;
 
     private CfdpTransferState currentState;
     private TransferState state;
     private long transferred;
+
+    private int offset = 0;
+
+    private final int pauseBetweenFileDataPackets = 2000;
 
     private Bucket bucket;
     private String object;
@@ -128,18 +134,46 @@ public class CfdpTransfer extends CfdpTransaction {
                     request.getDestinationId(), // the id of the target
                     this.myId.getSequenceNumber());
 
+            offset = 0; // first file data packet starts at the start of the data
+            int end = Math.min(maxDataSize, request.getPacketLength() - 1);
             CfdpPacket filedata = new FileDataPacket(
-                    request.getPacketData(),
-                    0, // TODO, hardcoded offset, no support for data splitting yet
+                    Arrays.copyOfRange(request.getPacketData(), offset, end),
+                    offset,
                     header);
+            offset = end;
 
             sendPacket(filedata);
             this.currentState = CfdpTransferState.SENDING_DATA;
             break;
         case SENDING_DATA:
-            boolean TODO_finished = true; // TODO
-            if (TODO_finished) {
+            if (offset == request.getPacketLength() - 1) {
                 this.currentState = CfdpTransferState.SENDING_FINISHED;
+            } else {
+                try {
+                    Thread.sleep(pauseBetweenFileDataPackets);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                // create packet header
+                header = new CfdpHeader(
+                        false, // it's file data
+                        false, // it's sent towards the receiver
+                        acknowledged, // not acknowledged // TODO, is this okay?
+                        withCrc, // no CRC
+                        entitySize, // TODO, hardcoded entity length
+                        seqNrSize, // TODO, hardcoded sequence number length
+                        getTransactionId().getInitiatorEntity(), // my Entity Id
+                        request.getDestinationId(), // the id of the target
+                        this.myId.getSequenceNumber());
+
+                end = Math.min(offset + maxDataSize, request.getPacketLength() - 1);
+                filedata = new FileDataPacket(
+                        Arrays.copyOfRange(request.getPacketData(), offset, end),
+                        offset,
+                        header);
+                offset = end;
+                sendPacket(filedata);
             }
             break;
         case SENDING_FINISHED:
