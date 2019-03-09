@@ -14,7 +14,7 @@ public class CfdpDatabase {
     static Map<String, CfdpDatabaseInstance> databases = new HashMap<>();
 
     // TODO, how to uniquely identify entities
-    static int mySourceId = 1;
+    public final static int mySourceId = 1;
 
     /**
      * 

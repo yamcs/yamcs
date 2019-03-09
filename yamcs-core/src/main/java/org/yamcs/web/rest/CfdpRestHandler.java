@@ -12,7 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CfdpDatabase;
 import org.yamcs.cfdp.CfdpDatabaseInstance;
+import org.yamcs.cfdp.CfdpTransaction;
 import org.yamcs.cfdp.CfdpTransfer;
+import org.yamcs.cfdp.PauseRequest;
+import org.yamcs.cfdp.PutRequest;
+import org.yamcs.cfdp.ResumeRequest;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
 import org.yamcs.protobuf.Cfdp.DownloadResponse;
 import org.yamcs.protobuf.Cfdp.InfoTransfersResponse;
@@ -70,11 +74,12 @@ public class CfdpRestHandler extends RestHandler {
         boolean overwrite = req.getQueryParameterAsBoolean("overwrite", true);
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
 
-        long transferId = ci.initiateUploadCfdpTransfer(objData, b, objName, target, overwrite, createpath);
+        CfdpTransfer transfer = (CfdpTransfer) ci.processRequest(
+                new PutRequest(CfdpDatabase.mySourceId, 2, objName, target, overwrite, createpath, b, objData));
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
-        ur.setTransferId(transferId);
+        ur.setTransferId(transfer.getTransactionId().getSequenceNumber());
 
         completeOK(req, ur.build());
     }
@@ -214,12 +219,15 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        List<CfdpTransfer> pausedTransfers = transfers.stream().map(CfdpTransfer::pause).filter(x -> x != null)
+        List<CfdpTransaction> pausedTransfers = transfers.stream()
+                .map(PauseRequest::new)
+                .map(ci::processRequest)
+                .filter(x -> x != null)
                 .collect(Collectors.toList());
 
         PausedTransfersResponse.Builder ptr = PausedTransfersResponse.newBuilder();
 
-        for (CfdpTransfer transfer : pausedTransfers) {
+        for (CfdpTransaction transfer : pausedTransfers) {
             ptr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, ptr.build());
@@ -239,13 +247,15 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        List<CfdpTransfer> resumedTransfers = transfers.stream().map(CfdpTransfer::resumeTransfer)
+        List<CfdpTransaction> resumedTransfers = transfers.stream()
+                .map(ResumeRequest::new)
+                .map(ci::processRequest)
                 .filter(x -> x != null)
                 .collect(Collectors.toList());
 
         ResumedTransfersResponse.Builder rtr = ResumedTransfersResponse.newBuilder();
 
-        for (CfdpTransfer transfer : resumedTransfers) {
+        for (CfdpTransaction transfer : resumedTransfers) {
             rtr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, rtr.build());

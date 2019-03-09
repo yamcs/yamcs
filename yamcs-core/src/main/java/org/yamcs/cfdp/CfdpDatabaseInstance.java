@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -64,30 +63,35 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
                 .collect(Collectors.toList());
     }
 
-    public long initiateUploadCfdpTransfer(byte[] data, Bucket b, String objectName, String target, boolean overwrite,
-            boolean createPath) {
-        // TODO, the '2' in the line below should be a true destinationId
-        PutRequest putRequest = new PutRequest(CfdpDatabase.mySourceId, 2, objectName, target, b, data);
-        CfdpTransfer transfer = (CfdpTransfer) processRequest(putRequest);
-        transfers.put(transfer.getTransactionId(), transfer);
-        return transfer.getTransactionId().getSequenceNumber();
-
-        // CfdpPacket fdp = new FileDataPacket(filedata, 0).init();
-        // cfdpOut.emitTuple(fdp.toTuple(1001));
-    }
-
-    private CfdpTransaction processRequest(CfdpRequest request) {
+    public CfdpTransaction processRequest(CfdpRequest request) {
         switch (request.getType()) {
         case PUT:
             return processPutRequest((PutRequest) request);
+        case PAUSE:
+            return processPauseRequest((PauseRequest) request);
+        case RESUME:
+            return processResumeRequest((ResumeRequest) request);
+        default:
+            return null;
         }
-        return null;
     }
 
     private CfdpTransfer processPutRequest(PutRequest request) {
-        // TODO processing and returning should be asynchronous
         CfdpTransfer transfer = new CfdpTransfer(request, this.cfdpOut);
+        transfers.put(transfer.getTransactionId(), transfer);
         transfer.start();
+        return transfer;
+    }
+
+    private CfdpTransfer processPauseRequest(PauseRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
+        transfer.pause();
+        return transfer;
+    }
+
+    private CfdpTransfer processResumeRequest(ResumeRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
+        transfer.resume();
         return transfer;
     }
 

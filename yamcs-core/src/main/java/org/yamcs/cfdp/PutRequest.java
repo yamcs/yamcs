@@ -17,13 +17,18 @@ public class PutRequest extends CfdpRequest {
     private byte[] packetData;
     private String objectName;
     private Bucket bucket;
+    private boolean overwrite;
+    private boolean createpath;
 
-    public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, Bucket b, byte[] data) {
+    public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, boolean overwrite,
+            boolean createpath, Bucket b, byte[] data) {
         super(CfdpRequestType.PUT);
         this.sourceId = sourceId;
         this.destinationId = destinationId;
         this.objectName = objectName;
         this.targetPath = targetPath;
+        this.overwrite = overwrite;
+        this.createpath = createpath;
         this.bucket = b;
         this.packetData = data;
     }
@@ -54,6 +59,14 @@ public class PutRequest extends CfdpRequest {
 
     public Bucket getBucket() {
         return bucket;
+    }
+
+    public boolean getOverwrite() {
+        return overwrite;
+    }
+
+    public boolean getCreatePath() {
+        return createpath;
     }
 
 }
