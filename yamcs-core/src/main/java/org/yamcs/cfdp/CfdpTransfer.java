@@ -40,7 +40,7 @@ public class CfdpTransfer extends CfdpTransaction {
     private final boolean withSegmentation = false;
     private final int entitySize = 4;
     private final int seqNrSize = 4;
-    private final int maxDataSize = 10;
+    private final int maxDataSize = 7;
 
     private long startTime;
 
@@ -55,7 +55,6 @@ public class CfdpTransfer extends CfdpTransaction {
 
     private TransferDirection transferDirection;
 
-    private long totalSize;
     private boolean sleeping = false;
 
     private PutRequest request;
@@ -101,13 +100,14 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
         case METADATA_SENT:
             offset = 0; // first file data packet starts at the start of the data
-            end = Math.min(maxDataSize, request.getPacketLength() - 1);
+            end = Math.min(maxDataSize, request.getPacketLength());
             sendPacket(getNextFileDataPacket());
+            transferred = end;
             offset = end;
             this.currentState = CfdpTransferState.SENDING_DATA;
             break;
         case SENDING_DATA:
-            if (offset == request.getPacketLength() - 1) {
+            if (offset == request.getPacketLength()) {
                 this.currentState = CfdpTransferState.SENDING_FINISHED;
             } else {
                 try {
@@ -119,8 +119,9 @@ public class CfdpTransfer extends CfdpTransaction {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                end = Math.min(offset + maxDataSize, request.getPacketLength() - 1);
+                end = Math.min(offset + maxDataSize, request.getPacketLength());
                 sendPacket(getNextFileDataPacket());
+                transferred += (end - offset);
                 offset = end;
             }
             break;
@@ -230,7 +231,7 @@ public class CfdpTransfer extends CfdpTransaction {
     }
 
     public long getTotalSize() {
-        return this.totalSize;
+        return this.request.getPacketLength();
     }
 
     public CfdpTransfer cancel() {
@@ -252,6 +253,10 @@ public class CfdpTransfer extends CfdpTransaction {
         sleeping = false; // wake up if sleeping
         currentState = CfdpTransferState.CANCELING;
         return this;
+    }
+
+    public long getTransferredBytes() {
+        return transferred;
     }
 
     @Override
