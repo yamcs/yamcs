@@ -71,6 +71,8 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
             return processPauseRequest((PauseRequest) request);
         case RESUME:
             return processResumeRequest((ResumeRequest) request);
+        case CANCEL:
+            return processCancelRequest((CancelRequest) request);
         default:
             return null;
         }
@@ -91,7 +93,13 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
 
     private CfdpTransfer processResumeRequest(ResumeRequest request) {
         CfdpTransfer transfer = request.getTransfer();
-        transfer.resume();
+        transfer.resumeTransfer();
+        return transfer;
+    }
+
+    private CfdpTransfer processCancelRequest(CancelRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
+        transfer.cancelTransfer();
         return transfer;
     }
 

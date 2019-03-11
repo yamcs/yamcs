@@ -30,7 +30,9 @@ public class CfdpTransfer extends CfdpTransaction {
         SENDING_FINISHED,
         EOF_SENT,
         FINISHED_RECEIVED,
-        FINISHED_ACK_SENT
+        FINISHED_ACK_SENT,
+        CANCELING,
+        CANCELED
     }
 
     private final boolean withCrc = false;
@@ -215,6 +217,32 @@ public class CfdpTransfer extends CfdpTransaction {
             // we're done;
             state = TransferState.COMPLETED;
             break;
+        case CANCELING:
+            header = new CfdpHeader(
+                    true, // file directive
+                    false, // towards receiver
+                    acknowledged,
+                    withCrc,
+                    entitySize,
+                    seqNrSize,
+                    getTransactionId().getInitiatorEntity(),
+                    request.getDestinationId(),
+                    this.myId.getSequenceNumber());
+
+            eofPacket = new EofPacket(
+                    ConditionCode.CancelRequestReceived,
+                    0, // TODO checksum
+                    request.getPacketLength(), // TODO, should contain the already sent data length, see 4.2.11.2.2
+                    null, // TODO, only if ConditionCode.NoError is sent
+                    header);
+
+            sendPacket(eofPacket);
+            this.currentState = CfdpTransferState.CANCELED;
+            break;
+
+        case CANCELED:
+            this.state = Cfdp.TransferState.FAILED;
+            break;
         default:
             throw new IllegalStateException("packet in unknown/illegal state");
         }
@@ -244,6 +272,12 @@ public class CfdpTransfer extends CfdpTransaction {
 
     public CfdpTransfer resumeTransfer() {
         sleeping = false;
+        return this;
+    }
+
+    public CfdpTransfer cancelTransfer() {
+        sleeping = false; // wake up if sleeping
+        currentState = CfdpTransferState.CANCELING;
         return this;
     }
 

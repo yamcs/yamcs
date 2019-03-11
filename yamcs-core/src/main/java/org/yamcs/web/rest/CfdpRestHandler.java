@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpDatabase;
 import org.yamcs.cfdp.CfdpDatabaseInstance;
 import org.yamcs.cfdp.CfdpTransaction;
@@ -183,13 +184,15 @@ public class CfdpRestHandler extends RestHandler {
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
-        List<CfdpTransfer> cancelledTransfers = transfers.stream().map(CfdpTransfer::cancel)
+        List<CfdpTransaction> cancelledTransfers = transfers.stream()
+                .map(CancelRequest::new)
+                .map(ci::processRequest)
                 .filter(x -> x != null)
                 .collect(Collectors.toList());
 
         CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();
 
-        for (CfdpTransfer transfer : cancelledTransfers) {
+        for (CfdpTransaction transfer : cancelledTransfers) {
             ctr.addTransfers(transfer.getTransactionId().getSequenceNumber());
         }
         completeOK(req, ctr.build());

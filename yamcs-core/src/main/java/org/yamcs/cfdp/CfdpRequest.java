@@ -7,7 +7,8 @@ public abstract class CfdpRequest {
     enum CfdpRequestType {
         PUT,
         PAUSE,
-        RESUME
+        RESUME,
+        CANCEL
     }
 
     protected CfdpRequest(CfdpRequestType type) {
