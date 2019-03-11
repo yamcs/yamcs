@@ -1,7 +1,5 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -43,7 +41,7 @@ public class CfdpIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-      //  enableLogging();
+        // enableLogging();
 
         File dataDir = new File("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursively(dataDir.toPath());
@@ -60,35 +58,39 @@ public class CfdpIntegrationTest {
     }
 
     @Test
-    public void testEmptyFileUpload() throws Exception {
-        byte[] data = createObject("zerofile", 0);
-        uploadAndCheck("zerofile", data);
+    public void testRandomFileUpload() throws Exception {
+        byte[] data = createObject("randomfile", 1000);
+        uploadAndCheck("randomfile", data);
 
     }
 
     private void uploadAndCheck(String objName, byte[] data) throws Exception {
-        Future<String> responseFuture = restClient.doRequest("/cfdp/cfdp-test-inst/list", HttpMethod.GET, "");
+        Future<String> responseFuture = restClient.doRequest(
+                "/cfdp/" + yamcsInstance + "/" + bucketName + "/" + objName + "?target=cfdp-tgt1", HttpMethod.POST, "");
+        TransferStatus ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
 
+        /*        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
+        
         // Future<String> responseFuture =
         // restClient.doRequest("/cfdp/"+yamcsInstance+"/"+bucketName+"/"+objName+"?target=cfdp-tgt1", HttpMethod.POST,
         // "");
-
+        
         TransferStatus ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
         int id = 5;
         MyFileReceiver rx = new MyFileReceiver();
-
+        
         // TODO ...check maybe in a loop that the transfer is progressing until finished
-
+        
         while (ts.getSizeTransferred() < ts.getTotalSize()) {
             responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/info?id=" + id, HttpMethod.GET, "");
             ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
             // TODO assert this assert that
             Thread.sleep(1000);
         }
-
+        
         assertEquals(data, rx.data);
-
-        // more checks
+        
+        */ // more checks
 
     }
 
@@ -126,21 +128,20 @@ public class CfdpIntegrationTest {
         JsonFormat.parser().merge(json, builder);
         return builder;
     }
-    
-    
+
     public static void enableLogging() {
 
         Logger logger = Logger.getLogger("org.yamcs");
         logger.setLevel(Level.ALL);
         ConsoleHandler ch = null;
-        
-        for (Handler h: Logger.getLogger("").getHandlers()) {
-            if(h instanceof ConsoleHandler) {
+
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            if (h instanceof ConsoleHandler) {
                 ch = (ConsoleHandler) h;
                 break;
             }
         }
-        if(ch==null) {
+        if (ch == null) {
             ch = new ConsoleHandler();
             Logger.getLogger("").addHandler(ch);
         }
