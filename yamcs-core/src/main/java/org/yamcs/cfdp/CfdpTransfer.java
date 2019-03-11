@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.yamcs.cfdp.pdu.AckPacket;
+import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.ActionCode;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
@@ -29,6 +31,7 @@ public class CfdpTransfer extends CfdpTransaction {
         SENDING_DATA,
         SENDING_FINISHED,
         EOF_SENT,
+        EOF_ACK_RECEIVED,
         FINISHED_RECEIVED,
         FINISHED_ACK_SENT,
         CANCELING,
@@ -51,7 +54,7 @@ public class CfdpTransfer extends CfdpTransaction {
     private int offset = 0;
     private int end = 0;
 
-    private final int pauseBetweenFileDataPackets = 2000;
+    private final int pauseBetweenFileDataPackets = 1000;
 
     private TransferDirection transferDirection;
 
@@ -130,7 +133,11 @@ public class CfdpTransfer extends CfdpTransaction {
             this.currentState = CfdpTransferState.EOF_SENT;
             break;
         case EOF_SENT:
-            // Do nothing, we're waiting for a FINISHED_RECEIVED packet
+            // wait for the EOF_ACK
+            // TODO start timer
+            break;
+        case EOF_ACK_RECEIVED:
+            // DO nothing, we're waiting for a finished packet
             break;
         case FINISHED_RECEIVED:
             // TODO Send FINISHED_Ack_packet and go to FINISHED_ACK_SENT
@@ -263,8 +270,14 @@ public class CfdpTransfer extends CfdpTransaction {
     public void processPacket(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
+            case ACK:
+                if (currentState == CfdpTransferState.EOF_SENT && ((AckPacket) packet)
+                        .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FinishedByWaypointOrOther) {
+                    currentState = CfdpTransferState.EOF_ACK_RECEIVED;
+                }
+                break;
             case Finished:
-                if (currentState == CfdpTransferState.EOF_SENT) {
+                if (currentState == CfdpTransferState.EOF_ACK_RECEIVED) {
                     currentState = CfdpTransferState.FINISHED_RECEIVED;
                 }
                 break;

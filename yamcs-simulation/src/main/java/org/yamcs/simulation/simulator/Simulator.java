@@ -15,11 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.FileDirective;
+import org.yamcs.cfdp.pdu.AckPacket;
+import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
+import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FileStoreResponse;
 import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
@@ -126,9 +130,36 @@ public class Simulator extends AbstractService {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case EOF:
-                log.info("EOF CFDP packet received, sending back Finished packet");
+                log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
                 EofPacket p = (EofPacket) packet;
+
                 CfdpHeader header = new CfdpHeader(
+                        true,
+                        true,
+                        false,
+                        false,
+                        packet.getHeader().getEntityIdLength(),
+                        packet.getHeader().getSequenceNumberLength(),
+                        packet.getHeader().getSourceId(),
+                        packet.getHeader().getDestinationId(),
+                        packet.getHeader().getSequenceNumber());
+                AckPacket finishAck = new AckPacket(
+                        FileDirectiveCode.EOF,
+                        FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
+                        ConditionCode.NoError,
+                        TransactionStatus.Active,
+                        header);
+                transmitCfdp(finishAck);
+
+                log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+                header = new CfdpHeader(
                         true, // file directive
                         true, // towards sender
                         false, // not acknowledged
