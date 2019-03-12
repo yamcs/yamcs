@@ -130,6 +130,11 @@ public class Simulator extends AbstractService {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case EOF:
+                // 1 in 2 chance that we did not receive the EOF packet
+                if (Math.random() > 0.5) {
+                    break;
+                }
+
                 log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
                 EofPacket p = (EofPacket) packet;
 
@@ -143,13 +148,13 @@ public class Simulator extends AbstractService {
                         packet.getHeader().getSourceId(),
                         packet.getHeader().getDestinationId(),
                         packet.getHeader().getSequenceNumber());
-                AckPacket finishAck = new AckPacket(
+                AckPacket EofAck = new AckPacket(
                         FileDirectiveCode.EOF,
                         FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
                         ConditionCode.NoError,
                         TransactionStatus.Active,
                         header);
-                transmitCfdp(finishAck);
+                transmitCfdp(EofAck);
 
                 log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
                 try {

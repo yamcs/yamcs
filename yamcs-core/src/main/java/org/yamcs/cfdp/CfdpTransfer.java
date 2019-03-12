@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.ActionCode;
@@ -25,6 +27,8 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpTransfer extends CfdpTransaction {
 
+    private static final Logger log = LoggerFactory.getLogger(CfdpTransfer.class);
+
     private enum CfdpTransferState {
         START,
         METADATA_SENT,
@@ -43,9 +47,15 @@ public class CfdpTransfer extends CfdpTransaction {
     private final boolean withSegmentation = false;
     private final int entitySize = 4;
     private final int seqNrSize = 4;
-    private final int maxDataSize = 7;
+    private final int maxDataSize = 20;
 
     private long startTime;
+
+    private EofPacket eofPacket;
+    private long EOFAckTimer;
+    private final long EOFAckTimeoutMs = 3000;
+    private final int maxEOFResendAttempts = 5;
+    private int EOFSendAttempts = 0;
 
     private CfdpTransferState currentState;
     private TransferState state;
@@ -129,14 +139,31 @@ public class CfdpTransfer extends CfdpTransaction {
             }
             break;
         case SENDING_FINISHED:
-            sendPacket(getEofPacket(ConditionCode.NoError));
+            eofPacket = getEofPacket(ConditionCode.NoError);
+            sendPacket(eofPacket);
             this.currentState = CfdpTransferState.EOF_SENT;
+            EOFAckTimer = System.currentTimeMillis();
+            EOFSendAttempts = 1;
             break;
         case EOF_SENT:
             // wait for the EOF_ACK
-            // TODO start timer
+            if (System.currentTimeMillis() > EOFAckTimer + EOFAckTimeoutMs) {
+                if (EOFSendAttempts < maxEOFResendAttempts) {
+                    log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEOFResendAttempts);
+                    sendPacket(eofPacket);
+                    EOFSendAttempts++;
+                    EOFAckTimer = System.currentTimeMillis();
+                } else {
+                    log.info("Resend attempts ({}) of EOF reached", maxEOFResendAttempts);
+                    // resend attempts exceeded the limit
+                    // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
+                    // appropriate sender FaultHandler. See 4.1.7.1.d
+                    this.state = Cfdp.TransferState.FAILED;
+                }
+            } // else, we wait some more
             break;
         case EOF_ACK_RECEIVED:
+            EOFSendAttempts = 0;
             // DO nothing, we're waiting for a finished packet
             break;
         case FINISHED_RECEIVED:
@@ -154,6 +181,7 @@ public class CfdpTransfer extends CfdpTransaction {
             break;
 
         case CANCELED:
+            // TODO, we should we not issue Condition Code (or even call an appropriate sender FaultHandler)?
             this.state = Cfdp.TransferState.FAILED;
             break;
         default:
