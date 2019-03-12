@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
+import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.ActionCode;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
@@ -15,6 +16,7 @@ import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FaultHandlerOverride;
 import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FileStoreRequest;
 import org.yamcs.cfdp.pdu.LV;
 import org.yamcs.cfdp.pdu.MessageToUser;
@@ -167,8 +169,7 @@ public class CfdpTransfer extends CfdpTransaction {
             // DO nothing, we're waiting for a finished packet
             break;
         case FINISHED_RECEIVED:
-            // TODO Send FINISHED_Ack_packet and go to FINISHED_ACK_SENT
-            // TODO, for now we don't send acknowledgements, so just move on
+            sendPacket(getAckPacket());
             this.currentState = CfdpTransferState.FINISHED_ACK_SENT;
             break;
         case FINISHED_ACK_SENT:
@@ -254,6 +255,26 @@ public class CfdpTransfer extends CfdpTransaction {
                 0, // TODO checksum
                 request.getPacketLength(), // TODO, currently assumes that all data is sent exactly once
                 null, // TODO, only if ConditionCode.NoError is sent
+                header);
+    }
+
+    private AckPacket getAckPacket() {
+        CfdpHeader header = new CfdpHeader(
+                true, // file directive
+                false, // towards receiver
+                acknowledged,
+                withCrc,
+                entitySize,
+                seqNrSize,
+                getTransactionId().getInitiatorEntity(),
+                request.getDestinationId(),
+                this.myId.getSequenceNumber());
+
+        return new AckPacket(
+                FileDirectiveCode.Finished,
+                FileDirectiveSubtypeCode.FinishedByEndSystem,
+                ConditionCode.NoError,
+                TransactionStatus.Active,
                 header);
     }
 

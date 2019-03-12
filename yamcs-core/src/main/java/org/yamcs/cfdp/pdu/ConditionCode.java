@@ -45,10 +45,6 @@ public enum ConditionCode {
         }
     }
 
-    public static ConditionCode readConditionCode(ByteBuffer buffer) {
-        return ConditionCode.fromCode(buffer.get());
-    }
-
     public static ConditionCode readConditionCode(byte b) {
         return ConditionCode.fromCode((byte) (b >> 4));
     }

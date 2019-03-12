@@ -87,7 +87,9 @@ public class AckPacket extends CfdpPacket implements FileDirective {
         byte temp = buffer.get();
         this.directiveCode = FileDirectiveCode.readFileDirectiveCode(temp);
         this.directiveSubtypeCode = FileDirectiveSubtypeCode.readSubtypeCode(temp);
-        this.conditionCode = ConditionCode.readConditionCode(buffer.get());
+        temp = buffer.get();
+        this.conditionCode = ConditionCode.readConditionCode(temp);
+        this.transactionStatus = TransactionStatus.readTransactionStatus(temp);
     }
 
     @Override

@@ -26,7 +26,8 @@ public class EofPacket extends CfdpPacket implements FileDirective {
     public EofPacket(ByteBuffer buffer, CfdpHeader header) {
         super(buffer, header);
 
-        this.conditionCode = ConditionCode.readConditionCode(buffer);
+        byte temp = buffer.get();
+        this.conditionCode = ConditionCode.readConditionCode(temp);
         this.fileChecksum = CfdpUtils.getUnsignedInt(buffer);
         this.fileSize = CfdpUtils.getUnsignedShort(buffer);
 
