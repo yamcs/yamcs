@@ -26,6 +26,15 @@ public class SimulatorCommander extends ProcessRunner {
     public SimulatorCommander() {
         this(Collections.emptyMap());
     }
+    
+    /**
+     * Constructor used when the simulator is started as an instance service
+     * @param yamcsInstance
+     * @param args
+     */
+    public SimulatorCommander(String yamcsInstance, Map<String, Object> args) {
+        super(superArgs(args));
+    }
 
     public SimulatorCommander(Map<String, Object> args) {
         super(superArgs(args));
@@ -47,9 +56,12 @@ public class SimulatorCommander extends ProcessRunner {
             int tcPort = YConfiguration.getInt(yamcsArgs, "tcPort", defaultOptions.tcPort);
             int tmPort = YConfiguration.getInt(yamcsArgs, "tmPort", defaultOptions.tmPort);
             int losPort = YConfiguration.getInt(yamcsArgs, "losPort", defaultOptions.losPort);
+            int tm2Port = YConfiguration.getInt(yamcsArgs, "tm2Port", defaultOptions.tm2Port);
+            
             cmdl.addAll(Arrays.asList("--tc-port", "" + tcPort,
                     "--tm-port", "" + tmPort,
-                    "--los-port", "" + losPort));
+                    "--los-port", "" + losPort,
+                    "--tm2-port", "" + tm2Port));
         }
         if (userArgs.containsKey("frame")) {
             Map<String, Object> frameArgs = YConfiguration.getMap(userArgs, "frame");
