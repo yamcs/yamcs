@@ -1,0 +1,54 @@
+services:  
+  - class: org.yamcs.tctm.DataLinkInitialiser
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.IndexServer
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.simulation.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: {{telnetPort}}
+      tctm:
+          tmPort: {{tmPort}}
+          tcPort: {{tcPort}}
+          losPort: {{losPort}}
+          tm2Port: {{tm2Port}}
+dataLinks:
+  - name: tm_realtime
+    enabledAtStartup: false
+    class: org.yamcs.tctm.TcpTmDataLink
+    args:
+      stream: tm_realtime
+      host: localhost
+      port: {{tmPort}}
+
+
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+      - type: "sheet"
+        spec: "mdb/GS-tmtc.xls"
+  - type: "org.yamcs.xtce.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/tse/simulator.xls"
+  
+streamConfig:
+  tm: ["tm_realtime", "tm_dump"]
+  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["sys_param", "pp_realtime"]
+  alarm: ["alarms_realtime"]
+  tc: ["tc_realtime"]

@@ -22,6 +22,28 @@ services:
       backFiller:
         enabled: true
         warmupTime: 60
+  - class: org.yamcs.simulation.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: 10023
+      tctm:
+          tmPort: 10015
+          tcPort: 10025
+          losPort: 10115
+          tm2Port: 10016
+      # Simulator can send some packets to test the performance of Yamcs. 
+      # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
+      # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
+      perfTest: 
+        numPackets: 0 
+        packetSize: 1476 #length of the performance testing packets
+        interval: 10 
+      frame: #send TM UDP frames 
+          tmPort: 10016
+          tmHost: "localhost"
+          type: AOS # AOS, TM or USLP
+          tmFrameLength: 512
+          tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
