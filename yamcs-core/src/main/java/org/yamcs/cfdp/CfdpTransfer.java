@@ -3,9 +3,11 @@ package org.yamcs.cfdp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ public class CfdpTransfer extends CfdpTransaction {
         START,
         METADATA_SENT,
         SENDING_DATA,
+        RESENDING,
         SENDING_FINISHED,
         EOF_SENT,
         EOF_ACK_RECEIVED,
@@ -59,6 +62,7 @@ public class CfdpTransfer extends CfdpTransaction {
 
     // maps offsets to FileDataPackets
     private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<Long, FileDataPacket>();
+    private Queue<FileDataPacket> toResend;
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
@@ -149,6 +153,12 @@ public class CfdpTransfer extends CfdpTransaction {
                 transferred += (end - offset);
                 offset = end;
             }
+            break;
+        case RESENDING:
+            if (!toResend.isEmpty()) {
+                sendPacket(toResend.poll());
+            }
+            // else do nothing, we should wait for a FinishPacket
             break;
         case SENDING_FINISHED:
             eofPacket = getEofPacket(ConditionCode.NoError);
@@ -337,17 +347,21 @@ public class CfdpTransfer extends CfdpTransaction {
                 }
                 break;
             case Finished:
-                if (currentState == CfdpTransferState.EOF_ACK_RECEIVED) {
+                if (currentState == CfdpTransferState.EOF_ACK_RECEIVED ||
+                        currentState == CfdpTransferState.RESENDING) {
                     currentState = CfdpTransferState.FINISHED_RECEIVED;
                 }
                 break;
             case NAK:
-                List<FileDataPacket> toResend = new ArrayList<FileDataPacket>();
+                toResend = new LinkedList<FileDataPacket>();
                 for (SegmentRequest segment : ((NakPacket) packet).getSegmentRequests()) {
                     toResend.addAll(sentFileDataPackets.entrySet().stream()
                             .filter(x -> segment.isInRange(x.getKey()))
                             .map(Entry::getValue)
                             .collect(Collectors.toList()));
+                }
+                if (!toResend.isEmpty()) {
+                    currentState = CfdpTransferState.RESENDING;
                 }
                 break;
             default:

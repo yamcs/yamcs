@@ -1,6 +1,7 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.yamcs.utils.CfdpUtils;
 
@@ -30,5 +31,25 @@ public class SegmentRequest {
     public void writeToBuffer(ByteBuffer buffer) {
         CfdpUtils.writeUnsignedInt(buffer, segmentStart);
         CfdpUtils.writeUnsignedInt(buffer, segmentEnd);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof SegmentRequest)) {
+            return false;
+        }
+        if (o == this) {
+            return true;
+        }
+        return this.getSegmentStart() == ((SegmentRequest) o).getSegmentStart()
+                && this.getSegmentEnd() == ((SegmentRequest) o).getSegmentEnd();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSegmentStart(), getSegmentEnd());
     }
 }
