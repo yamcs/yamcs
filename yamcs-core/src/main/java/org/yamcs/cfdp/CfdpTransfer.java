@@ -2,7 +2,11 @@ package org.yamcs.cfdp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,8 @@ import org.yamcs.cfdp.pdu.FileStoreRequest;
 import org.yamcs.cfdp.pdu.LV;
 import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.NakPacket;
+import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.protobuf.Cfdp;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
@@ -51,7 +57,8 @@ public class CfdpTransfer extends CfdpTransaction {
     private final int seqNrSize = 4;
     private final int maxDataSize = 20;
 
-    private long startTime;
+    // maps offsets to FileDataPackets
+    private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<Long, FileDataPacket>();
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
@@ -63,8 +70,8 @@ public class CfdpTransfer extends CfdpTransaction {
     private TransferState state;
     private long transferred;
 
-    private int offset = 0;
-    private int end = 0;
+    private long offset = 0;
+    private long end = 0;
 
     private final int pauseBetweenFileDataPackets = 1000;
 
@@ -109,14 +116,15 @@ public class CfdpTransfer extends CfdpTransaction {
     public void step() {
         switch (currentState) {
         case START:
-            this.startTime = System.currentTimeMillis();
             sendPacket(getMetadataPacket());
             this.currentState = CfdpTransferState.METADATA_SENT;
             break;
         case METADATA_SENT:
             offset = 0; // first file data packet starts at the start of the data
             end = Math.min(maxDataSize, request.getPacketLength());
-            sendPacket(getNextFileDataPacket());
+            FileDataPacket nextPacket = getNextFileDataPacket();
+            sentFileDataPackets.put(0l, nextPacket);
+            sendPacket(nextPacket);
             transferred = end;
             offset = end;
             this.currentState = CfdpTransferState.SENDING_DATA;
@@ -135,7 +143,9 @@ public class CfdpTransfer extends CfdpTransaction {
                     e.printStackTrace();
                 }
                 end = Math.min(offset + maxDataSize, request.getPacketLength());
-                sendPacket(getNextFileDataPacket());
+                nextPacket = getNextFileDataPacket();
+                sentFileDataPackets.put(offset, nextPacket);
+                sendPacket(nextPacket);
                 transferred += (end - offset);
                 offset = end;
             }
@@ -232,7 +242,8 @@ public class CfdpTransfer extends CfdpTransaction {
                 this.myId.getSequenceNumber());
 
         FileDataPacket filedata = new FileDataPacket(
-                Arrays.copyOfRange(request.getPacketData(), offset, end),
+                // TODO, these casts should not be needed
+                Arrays.copyOfRange(request.getPacketData(), (int) offset, (int) end),
                 offset,
                 header);
         return filedata;
@@ -328,6 +339,15 @@ public class CfdpTransfer extends CfdpTransaction {
             case Finished:
                 if (currentState == CfdpTransferState.EOF_ACK_RECEIVED) {
                     currentState = CfdpTransferState.FINISHED_RECEIVED;
+                }
+                break;
+            case NAK:
+                List<FileDataPacket> toResend = new ArrayList<FileDataPacket>();
+                for (SegmentRequest segment : ((NakPacket) packet).getSegmentRequests()) {
+                    toResend.addAll(sentFileDataPackets.entrySet().stream()
+                            .filter(x -> segment.isInRange(x.getKey()))
+                            .map(Entry::getValue)
+                            .collect(Collectors.toList()));
                 }
                 break;
             default:

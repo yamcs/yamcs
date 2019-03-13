@@ -24,8 +24,12 @@ public class FileDataPacket extends CfdpPacket {
         buffer.get(this.filedata);
     }
 
+    public long getOffset() {
+        return this.offset;
+    }
+
     public byte[] getData() {
-        return filedata;
+        return this.filedata;
     }
 
     @Override

@@ -61,6 +61,11 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         }
     }
 
+    public long getPacketLength() {
+        // TODO, add support for "unbounded data files"
+        return this.fileSize;
+    }
+
     @Override
     protected int calculateDataFieldLength() {
         int toReturn = 5 // first byte + File size

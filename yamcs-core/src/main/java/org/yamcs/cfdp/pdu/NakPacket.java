@@ -50,4 +50,8 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.NAK;
     }
 
+    public List<SegmentRequest> getSegmentRequests() {
+        return this.segmentRequests;
+    }
+
 }
