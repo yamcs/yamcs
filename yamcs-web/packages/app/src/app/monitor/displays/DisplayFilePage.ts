@@ -64,11 +64,15 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
     screenfull.on('change', this.fullscreenListener);
 
-    this.loadFile();
+    const initialObject = this.getObjectNameFromUrl();
+    this.loadFile(initialObject);
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe(() => {
-      this.loadFile(true);
+      const newObjectName = this.getObjectNameFromUrl();
+      if (newObjectName !== this.objectName) {
+        this.loadFile(newObjectName, true);
+      }
     });
 
     // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
@@ -78,15 +82,24 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     }
   }
 
-  private loadFile(reloadViewer = false) {
+  private getObjectNameFromUrl() {
     const url = this.route.snapshot.url;
-    this.objectName = '';
+    let objectName = '';
     for (let i = 0; i < url.length; i++) {
-      if (i === url.length - 1) {
-        this.filename = url[i].path;
-        this.folderLink = '/monitor/displays/browse/' + this.objectName;
-      }
-      this.objectName += (i > 0) ? '/' + url[i].path : url[i].path;
+      objectName += (i > 0) ? '/' + url[i].path : url[i].path;
+    }
+    return objectName;
+  }
+
+  private loadFile(objectName: string, reloadViewer = false) {
+    this.objectName = objectName;
+    const idx = this.objectName.lastIndexOf('/');
+    if (idx === -1) {
+      this.folderLink = '/monitor/displays/browse/';
+      this.filename = this.objectName;
+    } else {
+      this.folderLink = '/monitor/displays/browse/' + this.objectName.substring(0, idx);
+      this.filename = this.objectName.substring(idx);
     }
 
     this.title.setTitle(this.filename + ' - Yamcs');
