@@ -64,6 +64,11 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
         publish(cmdId, key, DataType.INT, value);
     }
 
+    @Override
+    public void publish(CommandId cmdId, String key, byte[] binary) {
+        publish(cmdId, key, DataType.BINARY, binary);
+    }
+
     public void publish(CommandId cmdId, String key, DataType dt, Object value) {
         TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key, dt);

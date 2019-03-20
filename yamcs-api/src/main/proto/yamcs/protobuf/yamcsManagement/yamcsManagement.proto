@@ -102,6 +102,7 @@ message UserInfo {
 
 message TmStatistics {
   optional string packetName = 1;
+  optional string qualifiedName = 9;
   optional int64 receivedPackets = 2;
   optional int64 lastReceived = 3;
   optional string lastReceivedUTC = 8;

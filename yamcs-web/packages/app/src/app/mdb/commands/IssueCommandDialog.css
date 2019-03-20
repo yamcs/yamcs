@@ -1,0 +1,7 @@
+.hasInitial {
+  display: none;
+}
+
+.showAll .hasInitial {
+  display: block;
+}

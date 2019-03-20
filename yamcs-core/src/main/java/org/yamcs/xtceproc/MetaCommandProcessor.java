@@ -62,7 +62,7 @@ public class MetaCommandProcessor {
             throw new ErrorInCommand("Error when encoding command: " + e.getMessage());
         }
 
-        int length = (bitbuf.getPosition() + 7) / 8;
+        int length = pcontext.size;
         byte[] b = new byte[length];
         System.arraycopy(bitbuf.array(), 0, b, 0, length);
 

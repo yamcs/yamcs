@@ -3,6 +3,11 @@ export interface MissionDatabase {
   name: string;
   version: string;
   spaceSystem: SpaceSystem[];
+  parameterCount: number;
+  containerCount: number;
+  commandCount: number;
+  algorithmCount: number;
+  parameterTypeCount: number;
 }
 
 export interface NameDescription {
@@ -131,6 +136,25 @@ export interface Command extends NameDescription {
   significance: Significance;
   constraint: TransmissionConstraint[];
   commandContainer: CommandContainer;
+  verifier: Verifier[];
+}
+
+export type TerminationActionType = 'SUCCESS' | 'FAIL';
+
+export interface Verifier {
+  stage: string;
+  container?: Container;
+  algorithm?: Algorithm;
+  onSuccess: TerminationActionType;
+  onFail: TerminationActionType;
+  onTimeout: TerminationActionType;
+  checkWindow: CheckWindow;
+}
+
+export interface CheckWindow {
+  timeToStartChecking?: number;
+  timeToStopChecking: number;
+  relativeTo: string;
 }
 
 export interface CommandContainer extends NameDescription {
@@ -142,7 +166,7 @@ export interface CommandContainer extends NameDescription {
 export interface Argument {
   name: string;
   description: string;
-  initialValue: string;
+  initialValue?: string;
   type: ArgumentType;
 }
 

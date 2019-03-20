@@ -21,6 +21,11 @@ public class YamcsToGpbAssembler {
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         MissionDatabase.Builder b = MissionDatabase.newBuilder(instanceInfo.getMissionDatabase());
+        b.setParameterCount(mdb.getParameters().size());
+        b.setContainerCount(mdb.getSequenceContainers().size());
+        b.setCommandCount(mdb.getMetaCommands().size());
+        b.setAlgorithmCount(mdb.getAlgorithms().size());
+        b.setParameterTypeCount(mdb.getParameterTypes().size());
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
             b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, sub));

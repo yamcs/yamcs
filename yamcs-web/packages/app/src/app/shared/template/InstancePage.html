@@ -1,7 +1,23 @@
 <mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
-  <mat-sidenav mode="side" opened="true">
+  <mat-sidenav mode="side" opened="true" [disableClose]="true">
     <mat-toolbar class="module-title">
       <mat-toolbar-row>
+        <mat-icon>search</mat-icon>
+        <input type="text"
+               class="search-input"
+               placeholder="Search parameter"
+               autocomplete="off"
+               spellcheck="false"
+               [formControl]="searchControl"
+               [matAutocomplete]="auto">
+        <mat-autocomplete #auto
+                          class="ya-autocomplete"
+                          panelWidth="400px"
+                          (optionSelected)="onSearchSelect($event)">
+          <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
+            {{ option.qualifiedName }}
+          </mat-option>
+        </mat-autocomplete>
       </mat-toolbar-row>
     </mat-toolbar>
 

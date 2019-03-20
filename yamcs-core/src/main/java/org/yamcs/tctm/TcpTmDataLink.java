@@ -18,7 +18,7 @@ import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 
 public class TcpTmDataLink extends AbstractTmDataLink {
-  
+
     protected Socket tmSocket;
     protected String host = "localhost";
     protected int port = 10031;
@@ -29,11 +29,10 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     ParameterValue svConnectionStatus;
     List<ParameterValue> sysVariables = new ArrayList<>();
-   
+
     String packetInputStreamClassName;
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
-
 
     @Deprecated
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
@@ -50,8 +49,8 @@ public class TcpTmDataLink extends AbstractTmDataLink {
             host = config.getString("host");
             port = config.getInt("port");
         }
-        if(config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");    
+        if (config.containsKey("packetInputStreamClassName")) {
+            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
         } else {
             this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
         }
@@ -211,5 +210,4 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         }
     }
 
-   
 }

@@ -1,7 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { TmStatistics } from '@yamcs/client';
+import { Instance, TmStatistics } from '@yamcs/client';
 import { Observable, Subscription } from 'rxjs';
+import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   selector: 'app-tmstats-table',
@@ -19,13 +20,19 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
 
   dataSource = new MatTableDataSource<TmStatistics>();
 
+  instance: Instance;
+
   displayedColumns = [
     'packetName',
     'receivedPackets',
-    'lastReceivedUTC',
     'lastPacketTimeUTC',
+    'lastReceivedUTC',
     // 'subscribedParameterCount',
   ];
+
+  constructor(yamcs: YamcsService) {
+    this.instance = yamcs.getInstance();
+  }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;

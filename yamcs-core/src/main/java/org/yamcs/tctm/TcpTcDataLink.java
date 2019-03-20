@@ -126,8 +126,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         Object commandPostprocessorArgs = null;
 
         if (config != null) {
-            commandPostprocessorClassName = config.getString("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
-            if(config.containsKey("commandPostprocessorArgs")) {
+            commandPostprocessorClassName = config.getString("commandPostprocessorClassName",
+                    IssCommandPostprocessor.class.getName());
+            if (config.containsKey("commandPostprocessorArgs")) {
                 commandPostprocessorArgs = config.getMap("commandPostprocessorArgs");
             }
         }
@@ -342,6 +343,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
         public void send() {
             byte[] binary = cmdPostProcessor.process(pc);
+            commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
+
             int retries = 5;
             boolean sent = false;
 
@@ -414,7 +417,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
         return Arrays.asList(linkStatus, dataCount);
     }
-    
+
+    @Override
     public YConfiguration getConfig() {
         return config;
     }

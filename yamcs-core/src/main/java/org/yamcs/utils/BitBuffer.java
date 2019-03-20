@@ -268,6 +268,9 @@ public class BitBuffer {
      * set position in bits
      */
     public void setPosition(int position) {
+        if (position < 0) {
+            throw new IllegalArgumentException("Position may not be negative");
+        }
         this.position = position;
     }
 

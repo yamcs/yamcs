@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.yamcs.utils.TimeEncoding;
-
 public class CcsdsPacket implements Comparable<CcsdsPacket> {
     static public final int DATA_OFFSET = 16;
 
@@ -132,10 +130,11 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
     }
 
     public int getPacketID() {
-        if (getSecondaryHeaderFlag() != 0)
+        if (getSecondaryHeaderFlag() != 0) {
             return bb.getInt(12);
-        else
+        } else {
             return 0;
+        }
     }
 
     public void setPacketID(int id) {
@@ -160,6 +159,20 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
 
     public int getPrivateHeaderSource() {
         return ((int) bb.get(16)) & 0xFF;
+    }
+
+    public void fillCheckword() {
+        if (checksumPresent()) {
+            int checksum = 0;
+            for (int i = 0; i < bb.limit() - 2; i += 2) {
+                checksum += bb.getShort(i);
+            }
+            bb.putShort(bb.limit() - 2, (short) checksum);
+        }
+    }
+
+    private boolean checksumPresent() {
+        return ((bb.get(11) >> 5) & 1) == 1;
     }
 
     public static CcsdsPacket getPacketFromStream(InputStream input) throws IOException {
@@ -218,8 +231,9 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
             }
 
             // For every 2 bytes, insert an extra space
-            if ((i & 1) == 0)
+            if ((i & 1) == 0) {
                 sb.append(" ");
+            }
 
             // If we did not reach the end of the buffer
             if (i < len) {

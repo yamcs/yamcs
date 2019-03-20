@@ -1,24 +1,24 @@
 <h2 mat-dialog-title>Issue command</h2>
 
 <mat-dialog-content class="mat-typography">
-  <form [formGroup]="form" class="ya-form">
+  <form [formGroup]="form" class="ya-form" [class.showAll]="showAll$ | async">
     <ng-container *ngFor="let argument of arguments">
       <ng-container [ngSwitch]="argument.type?.engType">
 
-        <label *ngSwitchCase="'enumeration'">
+        <label *ngSwitchCase="'enumeration'" [class.hasInitial]="argument.initialValue !== undefined">
           {{ argument.name }}
           <select [formControlName]="argument.name">
             <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
           </select>
         </label>
 
-        <label *ngSwitchCase="'boolean'">
+        <label *ngSwitchCase="'boolean'" [class.hasInitial]="argument.initialValue !== undefined">
           {{ argument.name }}<br>
           <input type="radio" [formControlName]="argument.name" value="true"> true
           <input type="radio" [formControlName]="argument.name" value="false"> false
         </label>
 
-        <label *ngSwitchDefault>
+        <label *ngSwitchDefault [class.hasInitial]="argument.initialValue !== undefined">
           {{ argument.name }}
           <input type="text" [formControlName]="argument.name">
         </label>
@@ -26,6 +26,12 @@
       </ng-container>
     </ng-container>
   </form>
+  <p>&nbsp;</p>
+  <app-text-action (click)="showAll$.next(true)"
+                   *ngIf="initialValueCount && !(showAll$ | async)"
+                   icon="add_circle_outline">
+    Show {{ initialValueCount }} argument<ng-container *ngIf="initialValueCount !== 1">s</ng-container> with defaults
+  </app-text-action>
   <p>&nbsp;</p>
 </mat-dialog-content>
 
