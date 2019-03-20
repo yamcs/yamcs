@@ -55,7 +55,6 @@ import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.ContextCalibrator;
