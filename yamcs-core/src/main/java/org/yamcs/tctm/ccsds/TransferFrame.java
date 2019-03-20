@@ -8,7 +8,6 @@ package org.yamcs.tctm.ccsds;
  * <li>UNIFIED ( 732.1-B-1)</li>
  * </ul>
  * <p>
- * <p>
  * All three of them have the following structure:
  * <ul>
  * <li>Primary Header</li>
@@ -29,7 +28,6 @@ package org.yamcs.tctm.ccsds;
  * <p>
  * For the purpose of packet extraction each frame has defined three offsets:<br>
  * dataStart &lt;= firstSduStart &lt; dataEnd
- * <p>
  * <p>
  * firstSduStart refers to the first SDU that starts in this frame.
  * <p>

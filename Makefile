@@ -20,7 +20,7 @@ rebuild: clean all
 
 .PHONY: test
 test:
-	@mvn test
+	@mvn test javadoc:javadoc
 
 .PHONY: live
 live:
