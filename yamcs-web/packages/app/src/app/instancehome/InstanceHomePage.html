@@ -15,7 +15,29 @@
         <div class="card">
           <mat-card>
             <mat-card-subtitle>Alarms</mat-card-subtitle>
-            WIP
+            Requiring acknowledgment:<br>
+            <ng-container *ngIf="unacknowledgedAlarms$ | async as alarms">
+              <table yaDataTable *ngIf="alarms.length">
+                <tr *ngFor="let alarm of alarms">
+                  <td><app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level></td>
+                  <td>
+                    <a [routerLink]="['/mdb/parameters/', alarm.parameter.qualifiedName]"
+                       [queryParams]="{instance: instance.name}">
+                      {{ alarm.parameter.qualifiedName }}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </ng-container>
+            <p style="margin-top: 1em">
+              Total active alarms: <strong>{{ alarmsDataSource.getActiveAlarmCount() }}</strong>
+            </p>
+            <div class="actions">
+              <a mat-button
+                 color="primary"
+                 routerLink="/monitor/alarms"
+                 [queryParams]="{instance: instance.name}">VIEW ALARMS &gt;</a>
+            </div>
           </mat-card>
         </div>
         <div class="card" *ngIf="info$ | async as info">
@@ -40,32 +62,44 @@
                 <h3 matLine>Plugins</h3>
               </mat-list-item>
 
-              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
+              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px">
                 <tr>
                   <th>Name</th>
                   <th>Version</th>
-                  <th>Vendor</th>
                 </tr>
                 <tr *ngFor="let plugin of info.plugin">
                   <td>{{ plugin.name }}</td>
                   <td>{{ plugin.version || '-' }}</td>
-                  <td>{{ plugin.vendor || '-' }}</td>
                 </tr>
               </table>
             </mat-list>
           </mat-card>
         </div>
-        <div class="card">
+        <div class="card" class="card" *ngIf="mdb$ | async as mdb">
           <mat-card>
-            <mat-card-subtitle>Links</mat-card-subtitle>
-            WIP
+            <mat-card-subtitle>MDB</mat-card-subtitle>
+            <dl class="dl-horizontal">
+              <dt>Parameters:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/parameters" [queryParams]="{instance: instance.name}">{{ mdb.parameterCount }}</a>
+              </dd>
+              <dt>Containers:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/containers" [queryParams]="{instance: instance.name}">{{ mdb.containerCount }}</a>
+              </dd>
+              <dt>Commands:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/commands" [queryParams]="{instance: instance.name}">{{ mdb.commandCount }}</a>
+              </dd>
+              <dt>Algorithms:</dt>
+              <dd>
+                <a class="ya-link" routerLink="/mdb/algorithms" [queryParams]="{instance: instance.name}">{{ mdb.algorithmCount }}</a>
+              </dd>
+            </dl>
           </mat-card>
         </div>
         <div class="card">
-          <mat-card>
-            <mat-card-subtitle>MDB</mat-card-subtitle>
-            WIP
-          </mat-card>
+          <mat-card></mat-card>
         </div>
         <div class="card">
           <mat-card></mat-card>

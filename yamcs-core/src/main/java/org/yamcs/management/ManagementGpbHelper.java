@@ -36,6 +36,7 @@ public final class ManagementGpbHelper {
         for (ProcessingStatistics.TmStats t : tmstats) {
             TmStatistics ts = TmStatistics.newBuilder()
                     .setPacketName(t.packetName)
+                    .setQualifiedName(t.qualifiedName)
                     .setLastPacketTime(t.lastPacketTime)
                     .setLastReceived(t.lastReceived)
                     .setReceivedPackets(t.receivedPackets)

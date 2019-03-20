@@ -10,6 +10,11 @@ message MissionDatabase {
   optional string name = 2; //XTCE root SpaceSystem name
   optional string version = 3; //XTCE root SpaceSystem header version
   repeated SpaceSystemInfo spaceSystem = 4;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  optional int32 algorithmCount = 9;
+  optional int32 parameterTypeCount = 10;
 }
 
 message HistoryInfo {
@@ -252,6 +257,27 @@ message CommandInfo {
   optional SignificanceInfo significance = 10;
   repeated TransmissionConstraintInfo constraint = 11;
   optional CommandContainerInfo commandContainer = 13;
+  repeated VerifierInfo verifier = 14;
+}
+
+message VerifierInfo {
+  enum TerminationActionType {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  optional string stage = 1;
+  optional ContainerInfo container = 2;
+  optional AlgorithmInfo algorithm = 3;
+  optional TerminationActionType onSuccess = 4;
+  optional TerminationActionType onFail = 5;
+  optional TerminationActionType onTimeout = 6;
+  optional CheckWindowInfo checkWindow = 7;
+}
+
+message CheckWindowInfo {
+  optional int64 timeToStartChecking = 1;
+  optional int64 timeToStopChecking = 2;
+  optional string relativeTo = 3;
 }
 
 message RepeatInfo {
@@ -326,6 +352,7 @@ message AlgorithmInfo {
   enum Scope {
     GLOBAL = 0;
     COMMAND_VERIFICATION = 1;
+    CONTAINER_PROCESSING = 2;
   }
   optional string name = 1;
   optional string qualifiedName = 2;

@@ -2,16 +2,20 @@ import { Component, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Argument, ArgumentAssignment, Command } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-issue-command-dialog',
   templateUrl: './IssueCommandDialog.html',
+  styleUrls: ['./IssueCommandDialog.css'],
 })
 export class IssueCommandDialog {
 
   form = new FormGroup({});
   arguments: Argument[] = [];
+  initialValueCount = 0;
+  showAll$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private dialogRef: MatDialogRef<IssueCommandDialog>,
@@ -48,6 +52,8 @@ export class IssueCommandDialog {
       let value = arg.initialValue;
       if (value === undefined) {
         value = '';
+      } else {
+        this.initialValueCount++;
       }
       this.form.addControl(arg.name, new FormControl(value, Validators.required));
     }

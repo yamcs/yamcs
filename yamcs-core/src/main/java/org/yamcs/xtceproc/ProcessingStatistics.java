@@ -2,12 +2,17 @@ package org.yamcs.xtceproc;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ProcessingStatistics {
-    long lastUpdated;// local java time of the last update
-    public ConcurrentHashMap<String, TmStats> stats = new ConcurrentHashMap<String, TmStats>();
+import org.yamcs.xtce.SequenceContainer;
 
-    public void newPacket(String name, int subscribedParameterCount, long acquisitionTime, long generationTime) {
-        TmStats s = stats.computeIfAbsent(name, k -> new TmStats(k));
+public class ProcessingStatistics {
+
+    long lastUpdated; // local java time of the last update
+    public ConcurrentHashMap<String, TmStats> stats = new ConcurrentHashMap<>();
+
+    public void newPacket(SequenceContainer seq, int subscribedParameterCount, long acquisitionTime,
+            long generationTime) {
+        TmStats s = stats.computeIfAbsent(seq.getName(), k -> new TmStats(k));
+        s.qualifiedName = seq.getQualifiedName();
         s.receivedPackets++;
         s.subscribedParameterCount = subscribedParameterCount;
         s.lastReceived = acquisitionTime;
@@ -25,6 +30,7 @@ public class ProcessingStatistics {
 
     public static class TmStats {
         public final String packetName;
+        public String qualifiedName;
         public int receivedPackets;
         public int subscribedParameterCount;
         public long lastReceived;

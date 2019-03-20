@@ -130,6 +130,12 @@
                         (click)="renameFile(item)">
                   Rename
                 </button>
+                <a mat-menu-item
+                   [href]="item.objectUrl"
+                   target="_blank">
+                  Download
+                </a>
+                <mat-divider></mat-divider>
                 <button mat-menu-item
                         (click)="deleteFile(item)">
                   Delete

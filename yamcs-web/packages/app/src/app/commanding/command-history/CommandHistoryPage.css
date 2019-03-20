@@ -14,16 +14,8 @@
   height: 100%;
 }
 
-mat-row {
+.mat-row {
   cursor: pointer;
-}
-
-mat-row.selected {
-  background: #ffffd6;
-}
-
-mat-row:hover {
-  background: #fafafa;
 }
 
 h6 {
@@ -37,4 +29,12 @@ h6 {
 .block {
   font-weight: normal;
   font-size: 12px;
+}
+
+.step {
+  margin-right: 8px;
+}
+
+.step.mat-icon {
+  font-size: 14px !important;
 }

@@ -20,6 +20,7 @@ import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
 import org.yamcs.protobuf.Mdb.ArrayInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
+import org.yamcs.protobuf.Mdb.CheckWindowInfo;
 import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
@@ -46,6 +47,8 @@ import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
+import org.yamcs.protobuf.Mdb.VerifierInfo;
+import org.yamcs.protobuf.Mdb.VerifierInfo.TerminationActionType;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
@@ -65,7 +68,10 @@ import org.yamcs.xtce.BinaryDataType;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
@@ -349,6 +355,10 @@ public class XtceToGpbAssembler {
                     cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), DetailLevel.FULL));
                 }
             }
+
+            for (CommandVerifier verifier : cmd.getCommandVerifiers()) {
+                cb.addVerifier(toVerifierInfo(verifier));
+            }
         }
 
         return cb.build();
@@ -397,6 +407,49 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected match criteria " + xtceConstraint.getMatchCriteria());
         }
         b.setTimeout(xtceConstraint.getTimeout());
+        return b.build();
+    }
+
+    public static VerifierInfo toVerifierInfo(CommandVerifier xtceVerifier) {
+        VerifierInfo.Builder b = VerifierInfo.newBuilder();
+        b.setStage(xtceVerifier.getStage());
+        b.setCheckWindow(toCheckWindow(xtceVerifier.getCheckWindow()));
+        if (xtceVerifier.getOnSuccess() != null) {
+            b.setOnSuccess(toTerminationType(xtceVerifier.getOnSuccess()));
+        }
+        if (xtceVerifier.getOnFail() != null) {
+            b.setOnFail(toTerminationType(xtceVerifier.getOnFail()));
+        }
+        if (xtceVerifier.getOnTimeout() != null) {
+            b.setOnTimeout(toTerminationType(xtceVerifier.getOnTimeout()));
+        }
+        if (xtceVerifier.getAlgorithm() != null) {
+            b.setAlgorithm(toAlgorithmInfo(xtceVerifier.getAlgorithm(), DetailLevel.SUMMARY));
+        }
+        if (xtceVerifier.getContainerRef() != null) {
+            b.setContainer(toContainerInfo(xtceVerifier.getContainerRef(), DetailLevel.SUMMARY));
+        }
+        return b.build();
+    }
+
+    private static TerminationActionType toTerminationType(TerminationAction xtceTerminationAction) {
+        switch (xtceTerminationAction) {
+        case FAIL:
+            return TerminationActionType.FAIL;
+        case SUCCESS:
+            return TerminationActionType.SUCCESS;
+        default:
+            throw new IllegalStateException("Unexpected termination action " + xtceTerminationAction);
+        }
+    }
+
+    private static CheckWindowInfo toCheckWindow(CheckWindow checkWindow) {
+        CheckWindowInfo.Builder b = CheckWindowInfo.newBuilder();
+        b.setTimeToStopChecking(checkWindow.getTimeToStopChecking());
+        b.setRelativeTo(checkWindow.getTimeWindowIsRelativeTo().toString());
+        if (checkWindow.hasStart()) {
+            b.setTimeToStartChecking(checkWindow.getTimeToStartChecking());
+        }
         return b.build();
     }
 
@@ -910,6 +963,9 @@ public class XtceToGpbAssembler {
                 break;
             case COMMAND_VERIFICATION:
                 b.setScope(Scope.COMMAND_VERIFICATION);
+                break;
+            case CONTAINER_PROCESSING:
+                b.setScope(Scope.CONTAINER_PROCESSING);
                 break;
             default:
                 throw new IllegalStateException("Unexpected scope " + a.getScope());

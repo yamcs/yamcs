@@ -5,10 +5,13 @@
         <img src="/static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">
       </a>
     </div>
-    <button mat-button *ngIf="connectionInfo$ | async as connectionInfo" (click)="openInstanceDialog()">
-      <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
-      <mat-icon>arrow_drop_down</mat-icon>
-    </button>
+    <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
+      <div class="top-divider">&nbsp;</div>
+      <button mat-button (click)="openInstanceDialog()">
+        <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+    </ng-container>
     <span style="flex: 1 1 auto"></span>
     <mat-menu #appMenu="matMenu" overlapTrigger="false">
       <button mat-menu-item (click)="toggleDarkTheme()">
