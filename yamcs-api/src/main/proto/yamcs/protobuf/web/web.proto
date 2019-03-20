@@ -130,8 +130,18 @@ message ParameterSubscriptionRequest {
   // -1 means to create a new subscription
   // >1 means to add parameters to the existing subcription with that id
   optional int32 subscriptionId = 5;
+
+  //if set to true (higly recommended), a uint32 numeric id will be assigned to each parameter and will be sent back together with the value (instead of the NamedObjectId)
+  // this is done in order to reduce the bandwith used for transfering the parameter identifiers (since the NamedObjectId are quite long)
+  // Note that the numeric id is only unique on the websocket connection
+  // the ParameterSubscriptionResponse will contain the mapping id to NamedObjectId
+  optional bool useNumericIds = 6;
 }
 
+message SubscribedParameter {
+    optional NamedObjectId  id = 1;
+    optional uint32 numericId = 2;
+}
 /*
  * Response to parameter subscription
  *
@@ -139,6 +149,10 @@ message ParameterSubscriptionRequest {
 message ParameterSubscriptionResponse {
   repeated NamedObjectId invalid = 2;
   optional int32 subscriptionId = 3;
+
+  //currently the list of subscribed parameters is sent back only if the option useNmericIds has been specified in the request
+  //it will contain the mapping between the subscribed id and the numeric id
+  repeated SubscribedParameter subscribed = 4;
 }
 
 message TimeSubscriptionResponse {

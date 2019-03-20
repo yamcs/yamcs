@@ -11,7 +11,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -60,6 +64,7 @@ import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
+import org.yamcs.protobuf.Web.SubscribedParameter;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -102,7 +107,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testWsParameter() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest invalidSubscrList = getSubscription(true, false,
+        ParameterSubscriptionRequest invalidSubscrList = getSubscription(true, false, false,
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6",
                 "/REFMDB/SUBSYS1/InvalidParaName");
 
@@ -135,11 +140,26 @@ public class IntegrationTest extends AbstractIntegrationTest {
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         checkPvals(pdata.getParameterList(), packetGenerator);
     }
+    
+    @Test
+    public void testWsParameterWithNumericId() throws Exception {
+        ParameterSubscriptionRequest subscrList = getSubscription(true, false, true, "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
+        WebSocketReplyData wsrd = wsClient.sendRequest(wsr).get();
+        ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
+        assertEquals(2, psr.getSubscribedCount());
+        
+        packetGenerator.generate_PKT1_1();
+       
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        checkPvals(psr.getSubscribedList(), 2, pdata.getParameterList(), packetGenerator);
+    }
 
     @Test
     public void testOnlineParameterCalibrationChange() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+        ParameterSubscriptionRequest subcr = getSubscription(false, false, false,
                 "/REFMDB/SUBSYS1/FloatPara1_1_2");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
@@ -182,7 +202,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testOnlineParameterContextCalibrationChange() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+        ParameterSubscriptionRequest subcr = getSubscription(false, false, false,
                 "/REFMDB/SUBSYS1/FloatPara1_10_3");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
@@ -247,7 +267,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testOnlineParameterAlarmChange() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+        ParameterSubscriptionRequest subcr = getSubscription(false, false, false,
                 "/REFMDB/SUBSYS1/EnumerationPara1_10_2");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
@@ -286,7 +306,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testOnlineParameterContextAlarmChange() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+        ParameterSubscriptionRequest subcr = getSubscription(false, false, false,
                 "/REFMDB/SUBSYS1/IntegerPara1_10_1");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
@@ -344,7 +364,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testOnlineAlgorithmChange() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+        ParameterSubscriptionRequest subcr = getSubscription(false, false, false,
                 "/REFMDB/SUBSYS1/AlgoFloatAddition");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
@@ -380,7 +400,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testWsParameterExpiration() throws Exception {
         // subscribe to parameters
-        ParameterSubscriptionRequest req = getSubscription(false, true, "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+        ParameterSubscriptionRequest req = getSubscription(false, true, false, "/REFMDB/SUBSYS1/IntegerPara1_1_7",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", req);
         wsClient.sendRequest(wsr).get();
@@ -429,7 +449,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(pdata);
         checkPvals(3, pdata.getParameterList(), packetGenerator);
 
-        ParameterSubscriptionRequest subscrList = getSubscription(false, false, "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        ParameterSubscriptionRequest subscrList = getSubscription(false, false, false, "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
         wsClient.sendRequest(wsr).get();
         packetGenerator.generate_PKT1_1();
@@ -796,18 +816,39 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
     private void checkPvals(int expectedNumParams, List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
+        checkPvals(Collections.emptyList(), expectedNumParams, pvals, packetProvider);
+    }
+    
+    private void checkPvals(List<SubscribedParameter> list, int expectedNumParams, List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
 
         assertNotNull(pvals);
 
         assertEquals(expectedNumParams, pvals.size());
+        Map<Integer, NamedObjectId> numericId = new HashMap<>();
+        
+        for(SubscribedParameter sp: list) {
+            numericId.put(sp.getNumericId(), sp.getId());
+        }
 
         for (ParameterValue p : pvals) {
             assertEquals(AcquisitionStatus.ACQUIRED, p.getAcquisitionStatus());
             Value praw = p.getRawValue();
             assertNotNull(praw);
             Value peng = p.getEngValue();
-
-            if ("/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(p.getId().getName())
+            NamedObjectId id;
+            
+            if(p.hasNumericId()) {
+                id = numericId.get(p.getNumericId());
+                if(id==null) {
+                    fail("Unknown numeric id "+p.getNumericId());
+                }
+            } else if(p.hasId()){
+                id = p.getId();
+            } else {
+                fail("Parameter has neither id nor numericId");
+                return;
+            }
+            if ("/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(id.getName())
                     || "para6alias".equals(p.getId().getName())) {
                 assertEquals(Type.UINT32, praw.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_6, praw.getUint32Value());
@@ -815,14 +856,14 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 assertEquals(Type.UINT32, peng.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_6, peng.getUint32Value());
 
-            } else if ("/REFMDB/SUBSYS1/IntegerPara1_1_7".equals(p.getId().getName())) {
+            } else if ("/REFMDB/SUBSYS1/IntegerPara1_1_7".equals(id.getName())) {
                 assertEquals(Type.UINT32, praw.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_7, praw.getUint32Value());
 
                 assertEquals(Type.UINT32, peng.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_7, peng.getUint32Value());
             } else {
-                fail("Unkonwn parameter " + p.getId());
+                fail("Unkonwn parameter '" + id+"'");
             }
         }
     }

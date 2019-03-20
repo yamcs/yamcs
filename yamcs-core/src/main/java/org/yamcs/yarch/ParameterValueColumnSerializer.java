@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.yarch.ColumnSerializerFactory.AbstractColumnSerializer;
@@ -34,7 +35,7 @@ public class ParameterValueColumnSerializer extends AbstractColumnSerializer<Par
 
     @Override
     public void serialize(DataOutputStream stream, ParameterValue pv) throws IOException {
-        org.yamcs.protobuf.Pvalue.ParameterValue gpv = pv.toProtobufParameterValue(Optional.empty(), false);
+        org.yamcs.protobuf.Pvalue.ParameterValue gpv = pv.toProtobufParameterValue(Optional.empty(), OptionalInt.empty(), false);
         int size = gpv.getSerializedSize();
         stream.writeInt(size);
         gpv.writeTo(stream);

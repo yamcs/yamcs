@@ -127,10 +127,10 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected ParameterSubscriptionRequest getSubscription(String... pfqname) {
-        return getSubscription(true, false, pfqname);
+        return getSubscription(true, false, false, pfqname);
     }
 
-    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,
+    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration, boolean usedNumericId,
             String... pfqname) {
         ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
         for (String p : pfqname) {
@@ -139,6 +139,7 @@ public abstract class AbstractIntegrationTest {
         b.setSendFromCache(sendFromCache);
         b.setUpdateOnExpiration(updateOnExpiration);
         b.setAbortOnInvalid(false);
+        b.setUseNumericIds(usedNumericId);
         return b.build();
     }
 

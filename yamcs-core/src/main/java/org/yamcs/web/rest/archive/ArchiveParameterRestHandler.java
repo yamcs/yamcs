@@ -15,7 +15,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.parameter.ParameterCache;

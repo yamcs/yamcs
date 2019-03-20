@@ -52,6 +52,11 @@ message ParameterValue {
   //how long (in milliseconds) this parameter value is valid
   //Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
   optional int64 expireMillis = 26;
+
+  //when transferring parameters over websocket, this value might be used instead of the id above in order to reduce the bandwith
+  //note that the id <-> numericId assignment is only valid in the context of one websocket connection
+  // see the ParameterSubscriptionRequest and ParameterSubscriptionResponse
+  optional uint32 numericId = 27;
 }
 
 

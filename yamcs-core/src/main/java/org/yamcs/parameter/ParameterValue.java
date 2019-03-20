@@ -2,6 +2,7 @@ package org.yamcs.parameter;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -343,7 +344,7 @@ public class ParameterValue {
      * @return the created ProtobufPV
      */
     public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id,
-            boolean withUtc) {
+            OptionalInt numericId, boolean withUtc) {
 
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())
@@ -352,7 +353,10 @@ public class ParameterValue {
         if (id.isPresent()) {
             gpvb.setId(id.get());
         }
-
+        if(numericId.isPresent()) {
+            gpvb.setNumericId(numericId.getAsInt());
+        }
+        
         if (acquisitionTime != TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(acquisitionTime);
             if (withUtc) {
@@ -401,9 +405,13 @@ public class ParameterValue {
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         Optional<NamedObjectId> optionalId = Optional.ofNullable(id);
-        return toProtobufParameterValue(optionalId, true);
+        return toProtobufParameterValue(optionalId, OptionalInt.empty(), true);
     }
 
+    public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(int numericId) {
+        return toProtobufParameterValue(Optional.empty(), OptionalInt.of(numericId), true);
+    }
+    
     public static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, DoubleRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
