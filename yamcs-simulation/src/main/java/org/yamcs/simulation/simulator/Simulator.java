@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -14,10 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
+import com.google.common.util.concurrent.AbstractService;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
-
-public class Simulator extends AbstractExecutionThreadService {
+public class Simulator extends AbstractService {
 
     private static final Logger log = LoggerFactory.getLogger(Simulator.class);
 
@@ -42,18 +43,11 @@ public class Simulator extends AbstractExecutionThreadService {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
 
-    private boolean engageHoldOneCycle = false;
-    private boolean unengageHoldOneCycle = false;
-    private int waitToEngage;
-    private int waitToUnengage;
-    private boolean engaged = false;
-    private boolean unengaged = true;
-    private boolean exeTransmitted = true;
-
-    private BatteryCommand batteryCommand;
     int tmCycle = 0;
     AtomicInteger tm2SeqCount = new AtomicInteger(0);
     ErrorDetectionWordCalculator edwc2 = new CrcCciitCalculator();
+
+    ScheduledThreadPoolExecutor executor;
 
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
         losRecorder = new LosRecorder(dataDir);
@@ -62,33 +56,6 @@ public class Simulator extends AbstractExecutionThreadService {
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
-    }
-
-    @Override
-    public void run() {
-        int tm2trigger = 0;
-        while (isRunning()) {
-            try {
-                while (!pendingCommands.isEmpty()) {
-                    executePendingCommands();
-                }
-            } catch (InterruptedException e) {
-                log.warn("Execute pending commands interrupted.", e);
-                Thread.currentThread().interrupt();
-            }
-
-            try {
-                sendTm();
-                if (tm2trigger == 0) {
-                    sendTm2();
-                }
-                tm2trigger = (tm2trigger + 1) % 5;
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                log.warn("Send TM interrupted.", e);
-                Thread.currentThread().interrupt();
-            }
-        }
     }
 
     /**
@@ -227,74 +194,28 @@ public class Simulator extends AbstractExecutionThreadService {
         return ackPacket;
     }
 
-    private void sendTm() {
+    private void sendFlightPacket() {
         CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
         flightDataHandler.fillPacket(flightpacket);
         transmitRealtimeTM(flightpacket);
+    }
 
-        if (tmCycle < 30) {
-            ++tmCycle;
-        } else {
-            if (waitToEngage == 2 || engaged) {
-                engaged = true;
-                // unengaged = false;
-                CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
+    private void sendHkTm() {
+        CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
+        powerDataHandler.fillPacket(powerpacket);
+        transmitRealtimeTM(powerpacket);
 
-                powerDataHandler.fillPacket(powerpacket);
-                if (batteryCommand.batteryOn) {
-                    if (!exeTransmitted) {
-                        CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                        transmitRealtimeTM(exeCompPacket);
-                        exeTransmitted = true;
-                    }
-                } else {
-                    powerDataHandler.setBattOneOff(powerpacket);
-                    if (!exeTransmitted) {
-                        CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                        transmitRealtimeTM(exeCompPacket);
-                        exeTransmitted = true;
-                    }
-                }
+        CCSDSPacket packet = new CCSDSPacket(9, 2);
+        dhsHandler.fillPacket(packet);
+        transmitRealtimeTM(packet);
 
-                transmitRealtimeTM(powerpacket);
+        packet = new CCSDSPacket(36, 3);
+        rcsHandler.fillPacket(packet);
+        transmitRealtimeTM(packet);
 
-                engageHoldOneCycle = false;
-                waitToEngage = 0;
-
-            } else if (waitToUnengage == 2 || unengaged) {
-                CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
-                powerDataHandler.fillPacket(powerpacket);
-                transmitRealtimeTM(powerpacket);
-                unengaged = true;
-                // engaged = false;
-
-                unengageHoldOneCycle = false;
-                waitToUnengage = 0;
-            }
-
-            CCSDSPacket packet = new CCSDSPacket(9, 2);
-            dhsHandler.fillPacket(packet);
-            transmitRealtimeTM(packet);
-
-            packet = new CCSDSPacket(36, 3);
-            rcsHandler.fillPacket(packet);
-            transmitRealtimeTM(packet);
-
-            packet = new CCSDSPacket(6, 4);
-            epslvpduHandler.fillPacket(packet);
-            transmitRealtimeTM(packet);
-
-            if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
-                waitToEngage = waitToEngage + 1;
-                log.debug("Value : {}", waitToEngage);
-            }
-
-            if (unengageHoldOneCycle) {
-                waitToUnengage = waitToUnengage + 1;
-            }
-
-            tmCycle = 0;
-        }
+        packet = new CCSDSPacket(6, 4);
+        epslvpduHandler.fillPacket(packet);
+        transmitRealtimeTM(packet);
     }
 
     /**
@@ -324,58 +245,41 @@ public class Simulator extends AbstractExecutionThreadService {
     /**
      * runs in the main TM thread, executes commands from the queue (if any)
      */
-    private void executePendingCommands() throws InterruptedException {
-        CCSDSPacket commandPacket = pendingCommands.take();
-        if (commandPacket.getPacketType() == 10) {
-            log.info("BATT COMMAND: " + commandPacket.getPacketId());
+    private void executePendingCommands() {
+        CCSDSPacket commandPacket;
+        while ((commandPacket = pendingCommands.poll()) != null)
+            if (commandPacket.getPacketType() == 10) {
+                log.info("BATT COMMAND: " + commandPacket.getPacketId());
 
-            switch (commandPacket.getPacketId()) {
-            case 1:
-                switchBatteryOn(commandPacket);
-                break;
-            case 2:
-                switchBatteryOff(commandPacket);
-                break;
-            case 5:
-                listRecordings(commandPacket);
-                break;
-            case 6:
-                dumpRecording(commandPacket);
-                break;
-            case 7:
-                deleteRecording(commandPacket);
-                break;
-            default:
-                log.error("Invalid command packet id: {}", commandPacket.getPacketId());
+                switch (commandPacket.getPacketId()) {
+                case 1:
+                    switchBatteryOn(commandPacket);
+                    break;
+                case 2:
+                    switchBatteryOff(commandPacket);
+                    break;
+                case 5:
+                    listRecordings(commandPacket);
+                    break;
+                case 6:
+                    dumpRecording(commandPacket);
+                    break;
+                case 7:
+                    deleteRecording(commandPacket);
+                    break;
+                default:
+                    log.error("Invalid command packet id: {}", commandPacket.getPacketId());
+                }
+            } else {
+                log.warn("Unknown command type " + commandPacket.getPacketType());
             }
-        } else {
-            log.warn("Unknown command type " + commandPacket.getPacketType());
-        }
     }
 
     private void switchBatteryOn(CCSDSPacket commandPacket) {
         tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(1);
         int batNum = commandPacket.getUserDataBuffer().get(0);
-        switch (batNum) {
-        case 1:
-            unengageHoldOneCycle = true;
-            // engaged = false;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY1_ON;
-            break;
-        case 2:
-            unengageHoldOneCycle = true;
-            // engaged = false;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY2_ON;
-            break;
-        case 3:
-            unengageHoldOneCycle = true;
-            // engaged = false;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY3_ON;
-        }
+        executor.schedule(() -> powerDataHandler.setBatteryOn(batNum), 500, TimeUnit.MILLISECONDS);
         tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
 
@@ -383,36 +287,7 @@ public class Simulator extends AbstractExecutionThreadService {
         tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(2);
         int batNum = commandPacket.getUserDataBuffer().get(0);
-        ByteBuffer buffer;
-        CCSDSPacket ackPacket;
-        switch (batNum) {
-        case 1:
-            engageHoldOneCycle = true;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY1_OFF;
-            ackPacket = new CCSDSPacket(1, 2, 7);
-            buffer = ackPacket.getUserDataBuffer();
-            buffer.position(0);
-            buffer.put((byte) 1);
-            break;
-        case 2:
-            engageHoldOneCycle = true;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY2_OFF;
-            ackPacket = new CCSDSPacket(1, 2, 7);
-            buffer = ackPacket.getUserDataBuffer();
-            buffer.position(0);
-            buffer.put((byte) 1);
-            break;
-        case 3:
-            engageHoldOneCycle = true;
-            exeTransmitted = false;
-            batteryCommand = BatteryCommand.BATTERY3_OFF;
-            ackPacket = new CCSDSPacket(1, 2, 7);
-            buffer = ackPacket.getUserDataBuffer();
-            buffer.position(0);
-            buffer.put((byte) 1);
-        }
+        executor.schedule(() -> powerDataHandler.setBatteryOff(batNum), 500, TimeUnit.MILLISECONDS);
         tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
 
@@ -499,5 +374,22 @@ public class Simulator extends AbstractExecutionThreadService {
 
     public void setFrameLink(UdpFrameLink aosLink) {
         this.frameLink = aosLink;
+    }
+
+    @Override
+    protected void doStart() {
+        executor = new ScheduledThreadPoolExecutor(1);
+        executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(() -> sendTm2(), 0, 1000, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
+
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        executor.shutdownNow();
+        notifyStopped();
     }
 }
