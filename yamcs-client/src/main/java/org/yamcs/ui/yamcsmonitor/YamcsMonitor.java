@@ -906,8 +906,8 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                         Object[] r = new Object[5];
                         r[0] = ts.getPacketName();
                         r[1] = ts.getReceivedPackets();
-                        r[2] = TimeEncoding.toCombinedFormat(ts.getLastReceived());
-                        r[3] = TimeEncoding.toCombinedFormat(ts.getLastPacketTime());
+                        r[2] = TimeEncoding.toCombinedFormat(TimeEncoding.fromProtobufTimestamp(ts.getLastReceived()));
+                        r[3] = TimeEncoding.toCombinedFormat(TimeEncoding.fromProtobufTimestamp(ts.getLastPacketTime()));
                         r[4] = ts.getSubscribedParameterCount();
                         statsTableModel.addRow(r);
                     }

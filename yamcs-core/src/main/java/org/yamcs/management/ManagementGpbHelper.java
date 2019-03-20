@@ -11,6 +11,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimestampUtil;
 import org.yamcs.xtceproc.ProcessingStatistics;
 
 import com.google.protobuf.ByteString;
@@ -23,10 +24,11 @@ public final class ManagementGpbHelper {
     public static Statistics buildStats(Processor processor) {
         ProcessingStatistics ps = processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb = Statistics.newBuilder()
-                .setLastUpdated(ps.getLastUpdated())
+                .setYamcsLastUpdated(ps.getLastUpdated())
                 .setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()))
                 .setInstance(processor.getInstance())
-                .setYProcessorName(processor.getName());
+                .setYProcessorName(processor.getName())
+                .setLastUpdated(TimestampUtil.java2Timestamp(ps.getLastUpdated()));
 
         Collection<ProcessingStatistics.TmStats> tmstats = ps.stats.values();
         if (tmstats == null) {
@@ -37,12 +39,15 @@ public final class ManagementGpbHelper {
             TmStatistics ts = TmStatistics.newBuilder()
                     .setPacketName(t.packetName)
                     .setQualifiedName(t.qualifiedName)
-                    .setLastPacketTime(t.lastPacketTime)
-                    .setLastReceived(t.lastReceived)
+                    .setYamcsLastPacketTime(t.lastPacketTime)
+                    .setYamcsLastReceived(t.lastReceived)
                     .setReceivedPackets(t.receivedPackets)
                     .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
                     .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
-                    .setSubscribedParameterCount(t.subscribedParameterCount).build();
+                    .setSubscribedParameterCount(t.subscribedParameterCount)
+                    .setLastPacketTime(TimeEncoding.toProtobufTimestamp(t.lastPacketTime))
+                    .setLastReceived(TimeEncoding.toProtobufTimestamp(t.lastReceived))
+                    .build();
             statsb.addTmstats(ts);
         }
         return statsb.build();

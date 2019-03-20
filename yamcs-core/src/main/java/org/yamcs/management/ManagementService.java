@@ -35,6 +35,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.tctm.Link;
+import org.yamcs.utils.TimestampUtil;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -411,7 +412,8 @@ public class ManagementService implements ProcessorListener {
                 Processor yproc = entry.getKey();
                 Statistics stats = entry.getValue();
                 ProcessingStatistics ps = yproc.getTmProcessor().getStatistics();
-                if ((stats == STATS_NULL) || (ps.getLastUpdated() > stats.getLastUpdated())) {
+                if ((stats == STATS_NULL)
+                        || (ps.getLastUpdated() > TimestampUtil.timestamp2Java(stats.getLastUpdated()))) {
                     stats = ManagementGpbHelper.buildStats(yproc);
                     processors.put(yproc, stats);
                 }

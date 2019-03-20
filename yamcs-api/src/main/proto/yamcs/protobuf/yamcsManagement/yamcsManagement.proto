@@ -5,6 +5,7 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
+import "google/protobuf/timestamp.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
@@ -83,8 +84,9 @@ message ClientInfo {
   optional string processorName = 5;
   
   optional ClientState state = 6;
-  optional int64 loginTime = 8;
-  optional string loginTimeUTC = 9;
+  optional int64 yamcsLoginTime = 8 [deprecated = true];
+  optional string loginTimeUTC = 9 [deprecated = true];
+  optional google.protobuf.Timestamp loginTime = 11;
 }
 
 message ObjectPrivilegeInfo {
@@ -104,19 +106,23 @@ message TmStatistics {
   optional string packetName = 1;
   optional string qualifiedName = 9;
   optional int64 receivedPackets = 2;
-  optional int64 lastReceived = 3;
-  optional string lastReceivedUTC = 8;
-  optional int64 lastPacketTime = 4;
-  optional string lastPacketTimeUTC = 7;
+  optional int64 yamcsLastReceived = 3 [deprecated = true];
+  optional string lastReceivedUTC = 8 [deprecated = true];
+  optional int64 yamcsLastPacketTime = 4 [deprecated = true];
+  optional string lastPacketTimeUTC = 7 [deprecated = true];
   optional int32 subscribedParameterCount = 6;
+  optional google.protobuf.Timestamp lastReceived = 10;
+  optional google.protobuf.Timestamp lastPacketTime = 11;
+
 }
 
 message Statistics {
   optional string instance = 1;
   optional string yProcessorName = 2;
   repeated TmStatistics tmstats = 3;
-  optional int64 lastUpdated = 4; //java local time of the last update
-  optional string lastUpdatedUTC = 5; // String representation in ISO8601 format
+  optional int64 yamcsLastUpdated = 4 [deprecated = true]; //java local time of the last update
+  optional string lastUpdatedUTC = 5 [deprecated = true]; // String representation in ISO8601 format
+  optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update
 }
 
 message ProcessorManagementRequest {

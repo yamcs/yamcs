@@ -315,7 +315,7 @@ public class ReplayPanel extends JPanel {
             // find the timestamp of the most recent packet received
             long pos = 0;
             for (TmStatistics ts : stats.getTmstatsList()) {
-                pos = Math.max(pos, ts.getLastPacketTime());
+                pos = Math.max(pos, TimeEncoding.fromProtobufTimestamp(ts.getLastPacketTime()));
             }
             currentInstant = pos;
 
