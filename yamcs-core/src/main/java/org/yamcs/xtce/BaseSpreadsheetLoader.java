@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.xtce.ConditionParser.ParameterReferenceFactory;
@@ -26,7 +28,7 @@ import jxl.read.biff.BiffException;
 
 /**
  * Base for spreadsheet loader - this contains common properties for both V6 and V7 loaders.
- *  
+ * 
  * @author nm
  *
  */
@@ -45,16 +47,15 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     protected static final String SHEET_COMMANDS = "Commands";
     protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
     protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
-    
+
     protected static final String CN_CONTEXT = "context";
-    
+
     // columns names in calibrations sheet
     protected static final String CN_CALIB_NAME = "calibrator name";
     protected static final String CN_CALIB_TYPE = "type";
     protected static final String CN_CALIB_CALIB1 = "calib1";
     protected static final String CN_CALIB_CALIB2 = "calib2";
 
-    
     protected static final String CALIB_TYPE_ENUMERATION = "enumeration";
     protected static final String CALIB_TYPE_POLYNOMIAL = "polynomial";
     protected static final String CALIB_TYPE_SPLINE = "spline";
@@ -85,14 +86,21 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     final protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
     protected Workbook workbook;
     protected boolean enableXtceNameRestrictions = true;
-    
+
     // sheet name -> column name -> column number
     protected Map<String, Map<String, Integer>> headers;
 
     // current sheet header
     protected Map<String, Integer> h;
-    
-    
+
+    final static Pattern XTCE_ALLOWED_IN_NAME = Pattern.compile("[\\d\\w_-]+");
+    final static int[] NOT_ALLOWED_IN_NAME;
+
+    static {
+        NOT_ALLOWED_IN_NAME = new int[] { '.', '/', '[', ']' };
+        Arrays.sort(NOT_ALLOWED_IN_NAME);
+    }
+
     public BaseSpreadsheetLoader(String path) throws ConfigurationException {
         super(path);
     }
@@ -116,7 +124,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
             throw new DatabaseLoadException("Cannot open xls file: " + e.getMessage(), e);
         }
     }
-    
+
     protected Sheet switchToSheet(String sheetName, boolean required) {
         Sheet sheet = workbook.getSheet(sheetName);
         ctx.sheet = sheetName;
@@ -124,15 +132,16 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         if (required && sheet == null) {
             throw new SpreadsheetLoadException(ctx, "Required sheet '" + sheetName + "' was found missing");
         }
-        if(headers!=null) {
+        if (headers != null) {
             h = headers.get(sheetName);
         }
         return sheet;
     }
 
     protected boolean isEmptyOrCommentedOut(Cell[] cells) {
-        return ((cells == null) || cells.length<1 || cells[0].getContents().startsWith("#"));
+        return ((cells == null) || cells.length < 1 || cells[0].getContents().startsWith("#"));
     }
+
     protected boolean hasColumn(Cell[] cells, int idx) {
         return (cells != null) && (cells.length > idx) && (cells[idx].getContents() != null)
                 && (!cells[idx].getContents().isEmpty());
@@ -147,7 +156,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         return (cells != null) && (cells.length > idx) && (cells[idx].getContents() != null)
                 && (!cells[idx].getContents().isEmpty());
     }
-    
+
     protected int parseInt(String s) {
         return parseInt(ctx, s);
     }
@@ -155,7 +164,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     protected double parseDouble(Cell cell) {
         return parseDouble(ctx, cell);
     }
-    
+
     protected static int parseInt(SpreadsheetLoadContext ctx, String s) {
         try {
             return Integer.parseInt(s);
@@ -177,7 +186,6 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         }
     }
 
-
     protected static byte parseByte(SpreadsheetLoadContext ctx, String s) {
         try {
             return Byte.decode(s);
@@ -188,22 +196,23 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
 
     protected String getContent(Cell[] cells, String colName) {
         Integer x = h.get(colName);
-        if(x==null) {
-            throw new SpreadsheetLoadException(ctx, "Unexisting column '"+colName+"'");
+        if (x == null) {
+            throw new SpreadsheetLoadException(ctx, "Unexisting column '" + colName + "'");
         }
-        if(!hasColumn(cells, x)) {
-            throw new SpreadsheetLoadException(ctx, "No value provided in column '"+colName+"'");
+        if (!hasColumn(cells, x)) {
+            throw new SpreadsheetLoadException(ctx, "No value provided in column '" + colName + "'");
         }
         return cells[x].getContents();
     }
-    
+
     protected String getContent(Cell[] cells, String colName, String defaultValue) {
-        if(hasColumn(cells, colName)) {
+        if (hasColumn(cells, colName)) {
             return getContent(cells, colName);
         } else {
             return defaultValue;
         }
     }
+
     protected Cell getCell(Cell[] cells, String colName) {
         if (!h.containsKey(colName)) {
             throw new SpreadsheetLoadException(ctx, "Unexisting column '" + colName + "'");
@@ -289,11 +298,11 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         if (rangeStart == -1) {
             return null;
         }
-        if(i==numRows) {
-            if(rangeStop==-1) {
+        if (i == numRows) {
+            if (rangeStop == -1) {
                 rangeStop = numRows;
             }
-            if(subRangeStart!=-1) {
+            if (subRangeStart != -1) {
                 subRange.add(new Range(subRangeStart, numRows));
             }
         }
@@ -312,26 +321,26 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         }
 
         public List<Range> subRanges;
+
         @Override
         public String toString() {
             return "Range [firstRow=" + firstRow + ", lastRow=" + lastRow + ", subRanges=" + subRanges + "]";
         }
     }
-    
+
     protected static boolean isCellEmpty(Cell[] cells, int col) {
         return cells.length <= col || cells[col].getContents().isEmpty();
     }
 
     protected static boolean isRowEmpty(Cell[] cells) {
-        for(Cell cell: cells) {
-            if(!cell.getContents().isEmpty()) {
+        for (Cell cell : cells) {
+            if (!cell.getContents().isEmpty()) {
                 return false;
             }
         }
         return true;
     }
-    
-    
+
     public static NameReference getParameterReference(SpaceSystem spaceSystem, String paramName, boolean typeRequired) {
         Parameter para = spaceSystem.getParameter(paramName);
         NameReference paraRef;
@@ -344,26 +353,26 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
 
         return paraRef;
     }
-    
-    
-
-    static Pattern allowedInNameType = Pattern.compile("[\\d\\w_-]+");
 
     protected void validateNameType(String name) {
-        if (!enableXtceNameRestrictions) {
-            return;
-        }
-
-        if (!allowedInNameType.matcher(name).matches()) {
-            throw new SpreadsheetLoadException(ctx,
-                    "Invalid name '" + name + "'; should only contain letters, digits, _, and -");
+        if (enableXtceNameRestrictions) {
+            if (!XTCE_ALLOWED_IN_NAME.matcher(name).matches()) {
+                throw new SpreadsheetLoadException(ctx,
+                        "Invalid name '" + name + "'; should only contain letters, digits, _, and -");
+            }
+        } else {
+            if (name.chars().anyMatch(x -> Arrays.binarySearch(NOT_ALLOWED_IN_NAME, x) >= 0)) {
+                String na = Arrays.stream(NOT_ALLOWED_IN_NAME).mapToObj(x -> Character.toString((char) x))
+                        .collect(Collectors.joining(", ", "\"", "\""));
+                throw new SpreadsheetLoadException(ctx,
+                        "Invalid name '" + name + "'; should not contain any of the following characters: " + na);
+            }
         }
     }
-    
-    
+
     public static class BasicPrefFactory implements ParameterReferenceFactory {
         SpaceSystem spaceSystem;
-        
+
         @Override
         public NameReference getReference(String pname) {
             return getParameterReference(spaceSystem, pname, true);
@@ -372,6 +381,6 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         public void setCurrentSpaceSystem(SpaceSystem spaceSystem) {
             this.spaceSystem = spaceSystem;
         }
-        
+
     }
 }
