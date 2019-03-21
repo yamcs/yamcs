@@ -593,7 +593,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     //######################### PKT7
     public final int pkt7Length = headerLength + 7;
     public byte paggr1_member1 = 2;
-    public short paggr1_member2 = 30;;
+    public short paggr1_member2 = 30;
     public float paggr1_member3 =2.72f;
     public byte[] generate_PKT7() {
         ByteBuffer bb = ByteBuffer.allocate(pkt7Length);

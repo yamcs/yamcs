@@ -152,9 +152,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-
-        checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+        System.out.println("route param name: "+req.getRouteParam("name"));
+        
+        NamedObjectId id  = verifyParameterId(req, mdb, req.getRouteParam("name"));
+        System.out.println("id: "+id);
+        
+        
         long timeout = 10000;
         boolean fromCache = true;
         if (req.hasQueryParameter("timeout")) {
@@ -164,7 +167,6 @@ public class ProcessorParameterRestHandler extends RestHandler {
             fromCache = req.getQueryParameterAsBoolean("fromCache");
         }
 
-        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         List<NamedObjectId> ids = Arrays.asList(id);
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getUser(), ids, fromCache, timeout);
 

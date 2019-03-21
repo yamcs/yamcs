@@ -20,6 +20,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -272,27 +273,42 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb,
             String pathName) throws HttpException {
+        int aggSep = AggregateUtil.findSeparator(pathName);
+
+        String aggPath = null;
+        if (aggSep >= 0) {
+            aggPath = pathName.substring(aggSep);
+            pathName = pathName.substring(0, aggSep);
+        }
+
+        //
+        // }
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
         }
 
-        String namespace = pathName.substring(0, lastSlash);
+        String _namespace = pathName.substring(0, lastSlash);
         String name = pathName.substring(lastSlash + 1);
 
         // First try with a prefixed slash (should be the common case)
-        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
-        Parameter p = mdb.getParameter(id);
+        String namespace = "/" + _namespace;
+        Parameter p = mdb.getParameter(namespace, name);
         if (p == null) {
+            namespace = _namespace;
             // Maybe some non-xtce namespace like MDB:OPS Name
-            id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
-            p = mdb.getParameter(id);
+            p = mdb.getParameter(namespace, name);
         }
 
         if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
             throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
+        
+        if (aggPath != null) { //the returned id will have the aggregate path (e.g. something like .x[3].d.x) in the name
+            name += aggPath;
+        }
 
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
         if (p == null) {
             throw new NotFoundException(req, "No parameter named " + StringConverter.idToString(id));
         } else {

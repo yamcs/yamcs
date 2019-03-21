@@ -60,6 +60,19 @@ public class ArrayValue extends Value {
     }
 
     /**
+     * Return true of the idx is the same dimensions with this array and if the element exists (i.e. idx is not out of bounds)
+     * 
+     * @param idx
+     * @return
+     */
+    public boolean hasElement(int[] idx) {
+        if (dim.length != idx.length) {
+            return false;
+        }
+        return flatIndex(idx) < elements.length;
+    }
+
+    /**
      * Sets the element at the given index.
      * 
      * @param idx
@@ -79,7 +92,7 @@ public class ArrayValue extends Value {
             throw new IllegalArgumentException("number of dimensions should be " + dim.length);
         }
         if (v.getType() != elementType) {
-            throw new IllegalArgumentException("Element type should be "+elementType);
+            throw new IllegalArgumentException("Element type should be " + elementType);
         }
         elements[flatIndex(idx)] = v;
     }
@@ -147,7 +160,7 @@ public class ArrayValue extends Value {
     public int flatLength() {
         return elements.length;
     }
-    
+
     /**
      * 
      * @return the type of the array elements
@@ -164,4 +177,5 @@ public class ArrayValue extends Value {
     public int[] getDimensions() {
         return dim;
     }
+
 }

@@ -11,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -156,6 +155,46 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkPvals(psr.getSubscribedList(), 2, pdata.getParameterList(), packetGenerator);
     }
 
+    
+    @Test
+    public void testWsParameterAggrArrayMember() throws Exception {
+      //note that the array has only 150 elements (0-149), the [150] is subscribed but never received
+        ParameterSubscriptionRequest subscrList = getSubscription(false, false, false, "/REFMDB/SUBSYS1/aggregate_para1.member2",
+                "/REFMDB/SUBSYS1/array_para1[3].member3", "/REFMDB/SUBSYS1/array_para1[150].member3"); 
+         
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
+        wsClient.sendRequest(wsr).get();
+        
+        packetGenerator.generate_PKT7();
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+
+        assertEquals(1, pdata.getParameterCount());
+        
+        ParameterValue pv = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member2", pv.getId().getName());
+        assertEquals(30, pv.getEngValue().getUint32Value());
+        
+        
+        packetGenerator.generate_PKT8();
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertEquals(1, pdata.getParameterCount());
+        
+        pv = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/array_para1[3].member3", pv.getId().getName());
+        assertEquals(1.5, pv.getEngValue().getFloatValue(), 1e-5);
+    }
+    
+    
+    @Test
+    public void testWsParameterAggrArrayInvalidMember() throws Exception {
+        ParameterSubscriptionRequest subscrList = getSubscription(false, false, false, "/REFMDB/SUBSYS1/aggregate_para1.invalid_member");
+        
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
+        WebSocketReplyData wsrd = wsClient.sendRequest(wsr).get();
+        ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
+        assertEquals(1, psr.getInvalidCount());
+    }
+    
     @Test
     public void testOnlineParameterCalibrationChange() throws Exception {
         // subscribe to parameters
@@ -283,7 +322,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_ALARMS)
                 .setDefaultAlarm(AlarmInfo.newBuilder().addEnumerationAlarm(ea).build()).build();
         restClient
-                .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/EnumerationPara1_10_2",
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/EnumerationPara1_10_2",
                         HttpMethod.PATCH, toJson(cpr))
                 .get();
 
@@ -520,7 +559,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         packetGenerator.pIntegerPara1_1_7 = 5;
         responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET,
                 toJson(req));
-        Thread.sleep(1000); // wait to make sure that the data has reached the server
+        Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
         packetGenerator.generate_PKT1_1();
 
@@ -528,9 +567,68 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         checkPvals(bulkPvals.getValueList(), packetGenerator);
     }
+    
+    @Test
+    public void testRestParameterGetAggregateMember() throws Exception {
+        packetGenerator.generate_PKT7();
+        packetGenerator.generate_PKT8();
+        /////// gets parameters from cache via REST
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/aggregate_para1.member1",
+                "/REFMDB/SUBSYS1/aggregate_para1.member3",  "/REFMDB/SUBSYS1/array_para1[105].member2");
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(subscrList.getIdList())
+                .build();
+
+        String response = restClient
+                .doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req)).get();
+      
+        BulkGetParameterValueResponse bulkPvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+                .build();
+        
+       
+        assertEquals(3, bulkPvals.getValueCount());
+        ParameterValue pv = bulkPvals.getValue(0);
+        assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member1", pv.getId().getName());
+        assertEquals(2,  pv.getEngValue().getUint32Value());
+        
+        pv = bulkPvals.getValue(2);
+        assertEquals("/REFMDB/SUBSYS1/array_para1[105].member2", pv.getId().getName());
+        assertEquals(210,  pv.getRawValue().getUint32Value());
+        
+        
+        
+        
+        /////// gets parameters from via REST - waiting for update
+        req = BulkGetParameterValueRequest.newBuilder()
+                .setFromCache(false)
+                .setTimeout(2000).addAllId(subscrList.getIdList()).build();
+
+        Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
+                HttpMethod.GET, toJson(req));
+
+        Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
+        
+        packetGenerator.generate_PKT7();
+        packetGenerator.generate_PKT8();
+
+        bulkPvals = fromJson(new String(responseFuture.get()), BulkGetParameterValueResponse.newBuilder()).build();
+        assertEquals(3, bulkPvals.getValueCount());
+        pv = bulkPvals.getValue(1);
+        assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member3", pv.getId().getName());
+        assertEquals(2.72,  pv.getEngValue().getFloatValue(), 1e-5);
+        
+        
+        /////get the value with the single get, we have to URL encode [ and ]
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/array_para1%5B149%5D.member2",
+                HttpMethod.GET, "").get();
+        pv = fromJson(resp, ParameterValue.newBuilder()).build();
+        assertEquals("/REFMDB/SUBSYS1", pv.getId().getNamespace());
+        assertEquals("array_para1[149].member2", pv.getId().getName());
+        assertEquals(298,  pv.getEngValue().getUint32Value());
+    }
+
 
     @Test
-    public void testRestArrayAggregateParameterGet() throws Exception {
+    public void testRestParameterGetArrayAggregate() throws Exception {
         packetGenerator.generate_PKT8();
 
         ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/array_para1");

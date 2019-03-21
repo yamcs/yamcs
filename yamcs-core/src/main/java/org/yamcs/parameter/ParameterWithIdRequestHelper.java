@@ -2,6 +2,7 @@ package org.yamcs.parameter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +23,10 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -63,13 +67,13 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, User user)
             throws InvalidIdentification, NoPermissionException {
-        List<Parameter> plist = checkNames(idList);
+        List<ParameterWithId> plist = checkNames(idList);
         Subscription subscr = new Subscription(checkExpiration);
         for (int i = 0; i < idList.size(); i++) {
-            checkParameterPrivilege(user, plist.get(i).getQualifiedName());
-            subscr.put(plist.get(i), idList.get(i));
+            checkParameterPrivilege(user, plist.get(i).p.getQualifiedName());
+            subscr.add(plist.get(i));
         }
-        int subscriptionId = prm.addRequest(plist, this);
+        int subscriptionId = prm.addRequest(plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
         subscriptions.put(subscriptionId, subscr);
 
         return subscriptionId;
@@ -82,19 +86,19 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             log.warn("add item requested for an invalid subscription id {}", subscriptionId);
             throw new InvalidRequestIdentification("Invalid subcription id", subscriptionId);
         }
-        List<Parameter> plist = checkNames(idList);
+        List<ParameterWithId> plist = checkNames(idList);
         synchronized (subscr) {
             for (int i = 0; i < idList.size(); i++) {
-                Parameter p = plist.get(i);
+                Parameter p = plist.get(i).p;
                 checkParameterPrivilege(user, p.getQualifiedName());
                 NamedObjectId id = idList.get(i);
-                if (!subscr.put(p, id)) {
+                if (!subscr.add(plist.get(i))) {
                     log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(),
                             StringConverter.idToString(id));
                 }
             }
         }
-        prm.addItemsToRequest(subscriptionId, plist);
+        prm.addItemsToRequest(subscriptionId, plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()));
     }
 
     private static void schedulePeriodicExpirationChecking(ParameterWithIdRequestHelper x) {
@@ -114,16 +118,40 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     // turn NamedObjectId to Parameter references
-    private List<Parameter> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
-        List<Parameter> result = new ArrayList<>();
+    private List<ParameterWithId> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
+        List<ParameterWithId> result = new ArrayList<>();
         List<NamedObjectId> invalid = new ArrayList<>(0);
         for (NamedObjectId id : plist) {
+            String name = id.getName();
+            int x = AggregateUtil.findSeparator(name);
+            NamedObjectId id1;
+            PathElement[] path;
+            if (x > 0) { // this is an array or aggregate element
+                id1 = NamedObjectId.newBuilder(id).setName(name.substring(0, x)).build();
+                try {
+                    path = AggregateUtil.parseReference(name.substring(x));
+                } catch (IllegalArgumentException e) {
+                    invalid.add(id);
+                    continue;
+                }
+            } else {
+                id1 = id;
+                path = null;
+            }
             try {
-                Parameter p = prm.getParameter(id);
-                result.add(p);
+                Parameter p = prm.getParameter(id1);
+                if (path != null) {
+                    if(!AggregateUtil.verifyPath(p.getParameterType(), path)) {
+                        throw new InvalidIdentification(id);
+                    }
+                }
+                result.add(new ParameterWithId(p, id, path));
+            
             } catch (InvalidIdentification e) {
                 invalid.add(id);
+                continue;
             }
+                
         }
         if (!invalid.isEmpty()) {
             log.info("Throwing invalid identification for the following items :{}", invalid);
@@ -131,6 +159,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
         return result;
     }
+
+   
+
 
     public void removeRequest(int subscriptionId) {
         if (subscriptions.remove(subscriptionId) == null) {
@@ -173,35 +204,55 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
-        List<Parameter> params = checkNames(idList);
+        List<ParameterWithId> plist = checkNames(idList);
 
-        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+        ListMultimap<Parameter, ParameterWithId> lm = ArrayListMultimap.create();
         for (int i = 0; i < idList.size(); i++) {
-            Parameter p = params.get(i);
-            checkParameterPrivilege(user, p.getQualifiedName());
-            NamedObjectId id = idList.get(i);
-            lm.put(p, id);
+            ParameterWithId pwid = plist.get(i);
+            checkParameterPrivilege(user, pwid.p.getQualifiedName());
+            lm.put(pwid.p, pwid);
         }
 
-        List<ParameterValue> values = prm.getValuesFromCache(params);
-        List<ParameterValueWithId> plist = new ArrayList<>(values.size());
+        List<ParameterValue> values = prm
+                .getValuesFromCache(plist.stream().map(pwid -> pwid.p).distinct().collect(Collectors.toList()));
+        List<ParameterValueWithId> pvlist = new ArrayList<>(values.size());
 
         for (ParameterValue pv : values) {
-            List<NamedObjectId> l = lm.get(pv.getParameter());
+            List<ParameterWithId> l = lm.get(pv.getParameter());
             if (l == null) {
                 log.warn("Received values for a parameter not requested: {}", pv.getParameter());
                 continue;
             }
-
-            for (NamedObjectId id : l) {
-                ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
-                plist.add(pvwi);
-            }
+            addValueForAllIds(pvlist, l, pv);
         }
 
-        return plist;
+        return pvlist;
     }
 
+    // adds the pv into plist with all ids from idList
+    private void addValueForAllIds(List<ParameterValueWithId> plist, List<ParameterWithId> idList, ParameterValue pv) {
+        for (ParameterWithId pwid : idList) {
+            ParameterValue pv1 = null;
+            if (pwid.path != null) {
+                try {
+                    pv1 = AggregateUtil.extractMember(pv, pwid.path);
+                    if (pv1 == null) { // could be that we reference an element of an array that doesn't exist
+                        continue;
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to extract {} from parameter value {}", Arrays.toString(pwid.path), pv, e);
+                    continue;
+                }
+            } else {
+                pv1 = pv;
+            }
+
+            ParameterValueWithId pvwi = new ParameterValueWithId(pv1, pwid.id);
+            plist.add(pvwi);
+        }
+    }
+
+    
     /**
      * Called from {@link ParameterListener when new parameters are available to be sent to clients}
      */
@@ -226,7 +277,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
 
             for (ParameterValue pv : items) {
-                addValueForAllIds(plist, subscription, pv);
+                addValueForAllSubscribedIds(plist, subscription, pv);
             }
         }
         listener.update(subscriptionId, plist);
@@ -249,7 +300,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             Subscription subscr = subscriptions.get(subscriptionId);
             synchronized (subscr) {
                 List<NamedObjectId> idList = subscr.getallIds();
-                List<Parameter> plist;
+                List<ParameterWithId> plist;
                 try {
                     plist = checkNames(idList);
                 } catch (InvalidIdentification e) {
@@ -267,12 +318,11 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 Subscription subscr1 = new Subscription(subscr.checkExpiration);
 
                 for (int i = 0; i < plist.size(); i++) {
-                    Parameter p = plist.get(i);
-                    checkParameterPrivilege(user, p.getQualifiedName());
-                    NamedObjectId id = idList.get(i);
-                    subscr1.put(p, id);
+                    ParameterWithId pwid = plist.get(i);
+                    checkParameterPrivilege(user, pwid.p.getQualifiedName());
+                    subscr1.add(pwid);
                 }
-                prm.addRequest(subscriptionId, plist, this);
+                prm.addRequest(subscriptionId, plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
                 subscriptions.put(subscriptionId, subscr1);
             }
         }
@@ -303,19 +353,16 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     // adds the pv into plist with all ids subscribed
-    private void addValueForAllIds(List<ParameterValueWithId> plist, Subscription subscription, ParameterValue pv) {
+    private void addValueForAllSubscribedIds(List<ParameterValueWithId> plist, Subscription subscription, ParameterValue pv) {
         Parameter p = pv.getParameter();
-        List<NamedObjectId> idList = subscription.get(p);
+        List<ParameterWithId> idList = subscription.get(p);
         if (idList == null || idList.isEmpty()) {
             log.warn("Received values for a parameter not subscribed: {}", pv.getParameter());
             return;
         }
-
-        for (NamedObjectId id : idList) {
-            ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
-            plist.add(pvwi);
-        }
+        addValueForAllIds(plist, idList, pv);
     }
+
 
     private void checkPeriodicExpiration() {
         for (Map.Entry<Integer, Subscription> me : subscriptions.entrySet()) {
@@ -347,7 +394,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 ParameterValue tmp = new ParameterValue(oldPv); // make a copy because this is shared by other
                                                                 // subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
-                addValueForAllIds(expired, subscription, tmp);
+                addValueForAllSubscribedIds(expired, subscription, tmp);
             }
         }
         return expired;
@@ -362,7 +409,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 ParameterValue tmp = new ParameterValue(pv); // make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 subscription.pvexp.put(pv.getParameter(), tmp);
-                addValueForAllIds(expired, subscription, tmp);
+                addValueForAllSubscribedIds(expired, subscription, tmp);
             }
         }
         subscription.lastExpirationCheck = now;
@@ -389,8 +436,21 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
     }
 
+    static class ParameterWithId {
+        final NamedObjectId id; // the id used by the client to subscribe
+        final PathElement[] path; // the path to reach the end element in case the subscribed parameter is an aggregate
+                                  // or array
+        final Parameter p; // the parameter the id refers to
+
+        public ParameterWithId(Parameter p, NamedObjectId id, PathElement[] path) {
+            this.p = p;
+            this.id = id;
+            this.path = path;
+        }
+    }
+
     static class Subscription {
-        Map<Parameter, List<NamedObjectId>> params = new HashMap<>();
+        Map<Parameter, List<ParameterWithId>> params = new HashMap<>();
         boolean checkExpiration = false;
         long lastExpirationCheck = -1;
         // contains the parameters that have an expiration time set
@@ -405,8 +465,10 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
         public List<NamedObjectId> getallIds() {
             List<NamedObjectId> r = new ArrayList<>();
-            for (List<NamedObjectId> l : params.values()) {
-                r.addAll(l);
+            for (List<ParameterWithId> l : params.values()) {
+                for (ParameterWithId pwid : l) {
+                    r.add(pwid.id);
+                }
             }
             return r;
         }
@@ -420,9 +482,17 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
          */
         public Parameter remove(NamedObjectId id) {
             Parameter p = null;
-            for (Map.Entry<Parameter, List<NamedObjectId>> me : params.entrySet()) {
-                List<NamedObjectId> l = me.getValue();
-                if (l.remove(id)) {
+            boolean found = false;
+            for (Map.Entry<Parameter, List<ParameterWithId>> me : params.entrySet()) {
+                List<ParameterWithId> l = me.getValue();
+                for (ParameterWithId pwid : l) {
+                    if (pwid.id.equals(id)) {
+                        l.remove(pwid);
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
                     if (l.isEmpty()) {
                         p = me.getKey();
                     }
@@ -438,19 +508,19 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             return p;
         }
 
-        public List<NamedObjectId> get(Parameter parameter) {
+        public List<ParameterWithId> get(Parameter parameter) {
             return params.get(parameter);
         }
 
-        public boolean put(Parameter p, NamedObjectId id) {
-            List<NamedObjectId> l = params.get(p);
+        public boolean add(ParameterWithId pwid) {
+            List<ParameterWithId> l = params.get(pwid.p);
             if (l == null) {
                 l = new ArrayList<>();
-                params.put(p, l);
-            } else if (l.contains(id)) {
+                params.put(pwid.p, l);
+            } else if (l.stream().anyMatch(pwid1 -> pwid1.id.equals(pwid.id))) {
                 return false;
             }
-            l.add(id);
+            l.add(pwid);
 
             return true;
         }

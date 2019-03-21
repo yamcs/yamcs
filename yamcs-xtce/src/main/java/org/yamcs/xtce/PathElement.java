@@ -12,11 +12,11 @@ import java.util.List;
  * name = "d"<br>
  * index = [0, 5]
  *
+ * both name and index can be null
  */
 public class PathElement implements Serializable {
     private static final long serialVersionUID = 1L;
-    
-    
+
     final String name;
     final int[] index;
 
@@ -55,33 +55,33 @@ public class PathElement implements Serializable {
     public static PathElement fromString(String s) {
         List<Integer> idx = new ArrayList<Integer>();
         int k = s.indexOf('[', 0);
-        if (k > 0) {
-            String name = s.substring(0, k);
-            int k1 = 0;
-            while (true) {
-                k1 = s.indexOf('[', k1);
-                if (k1 == -1) {
-                    break;
-                }
-                int k2 = s.indexOf(']', k1);
-                if (k1 == -1) {
-                    throw new IllegalArgumentException("Invalid aggregate member path '" + s + "'");
-                }
-                idx.add(Integer.parseInt(s.substring(k1 + 1, k2)));
-                k1 = k2;
+        if (k == -1) {
+            return new PathElement(s, null);
+        }
+        
+        String name = k>0?s.substring(0, k):null;
+            
+        while (true) {
+            k = s.indexOf('[', k);
+            if (k == -1) {
+                break;
             }
-            int[] idx1 = null;
-            if (!idx.isEmpty()) {
-                idx1 = new int[idx.size()];
-                for (int u = 0; u < idx.size(); u++) {
+            int k2 = s.indexOf(']', k);
+            if (k2 == -1) {
+                throw new IllegalArgumentException("Invalid aggregate member path '" + s + "'");
+            }
+            idx.add(Integer.parseInt(s.substring(k + 1, k2)));
+            k = k2;
+        }
+        int[] idx1 = null;
+        if (!idx.isEmpty()) {
+            idx1 = new int[idx.size()];
+            for (int u = 0; u < idx.size(); u++) {
                     idx1[u] = idx.get(u);
                 }
             }
-
-            return new PathElement(name, idx1);
-        } else {
-            return new PathElement(s, null);
-        }
+    
+        return new PathElement(name, idx1);
     }
 
     public String getName() {
@@ -91,16 +91,16 @@ public class PathElement implements Serializable {
     public int[] getIndex() {
         return index;
     }
-    
+
     /**
      * Transforms the path into a string like<br>
-     *   a/c[2]/d[0][5]/x <br>
+     * a/c[2]/d[0][5]/x <br>
      * 
      * @param path
      * @return
      */
     public static String pathToString(PathElement[] path) {
-        if(path == null) {
+        if (path == null) {
             return "null";
         }
         StringBuilder sb = new StringBuilder();
