@@ -76,15 +76,19 @@ public class EventProducerFactory {
         String configFile = "/event-producer.yaml";
         InputStream is = EventProducerFactory.class.getResourceAsStream(configFile);
         if (is == null) {
-            EventProducer producer = getStreamEventProducer(instance);
-            if (producer != null) {
-                return producer;
-            }
+            if (instance == null) {
+                return new ConsoleEventProducer();
+           } else {
+                EventProducer producer = getStreamEventProducer(instance);
+                if (producer != null) {
+                    return producer;
+                }
 
-            log.debug(
-                    "Could not find {} in the classpath, and not running inside Yamcs, returning a ConsoleEventProducer",
-                    configFile);
-            return new ConsoleEventProducer();
+                log.debug(
+                        "Could not find {} in the classpath, and not running inside Yamcs, returning a ConsoleEventProducer",
+                        configFile);
+                return new ConsoleEventProducer();
+           }
         }
         Yaml yaml = new Yaml();
         Object o = yaml.load(is);
