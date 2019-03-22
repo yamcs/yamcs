@@ -5,7 +5,7 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     3 5
 # Default-Stop:      0 1 2 6
-# Description:       Start the yamcs server
+# Description:       Start Yamcs Server
 ### END INIT INFO
 #
 YAMCS_USER=yamcs
@@ -28,7 +28,7 @@ WAIT_FOR_START=120
 
 case "$1" in
     start)
-        echo -n "Starting the yamcs server...   "
+        echo -n "Starting yamcs-server...   "
         #set a high open file limit to avoid problems with rocksdb opening too many files
         ulimit -n 10000
         alreadyrunning=0
@@ -80,7 +80,7 @@ case "$1" in
 
         ;;
     stop)
-        echo -n "Shutting down the yamcs server...  "
+        echo -n "Stopping yamcs-server...  "
         if [ -s $PID_FILE ] ; then
             pid=`cat $PID_FILE`
             i=0
@@ -88,7 +88,7 @@ case "$1" in
                 #first get a stack trace
                 kill -3 $pid
                 #kill entire process group
-                kill -TERM -$pid
+                kill -TERM -$(ps -o pgid= $pid | grep -o [0-9]*)
                 while [ $i -lt 5 ] ; do
                     if is_running $pid ; then
                         kill -TERM -$(ps -o pgid= $pid | grep -o [0-9]*)
@@ -104,7 +104,7 @@ case "$1" in
                     echo timeout
                 fi
             else
-                echo -n "not running"
+                echo "not running"
             fi
         else
             echo "not running ($PID_FILE doesn't exist)"
@@ -119,7 +119,7 @@ case "$1" in
         # Remember status and be quiet
         ;;
     status)
-        echo -n "Checking for the yamcs server: "
+        echo -n "Checking for yamcs-server: "
         if [ -s $PID_FILE ] ; then
             pid=`cat $PID_FILE`
             if is_running $pid ; then 
