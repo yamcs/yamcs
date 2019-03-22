@@ -77,7 +77,6 @@ public class SequenceContainerProcessor {
                 } catch (BufferUnderflowException | BufferOverflowException | IndexOutOfBoundsException e) {
                     log.warn("Got " + e.getClass().getName() + " when extracting from the buffer of length "
                             + buf.sizeInBits() + " bits, bitPosition " + buf.getPosition() + " entry: " + se);
-                    e.printStackTrace();
                     break;
                 }
                 if (buf.getPosition() > maxposition) {
