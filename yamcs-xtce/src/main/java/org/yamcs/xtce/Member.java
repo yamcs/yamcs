@@ -12,7 +12,7 @@ package org.yamcs.xtce;
 public class Member extends NameDescription {
     private static final long serialVersionUID = 1L;
 
-    String initialValue;
+    Object initialValue;
     DataType type;
 
     public Member(String name) {
@@ -21,12 +21,13 @@ public class Member extends NameDescription {
 
     /**
      * Used to set the initial calibrated values of Parameters.
+     * Will overwrite an initial value defined for the DataType
      * 
      * @param initialValue
      *            - initial calibrated value
      */
     public void setInitialValue(String initialValue) {
-        this.initialValue = initialValue;
+        this.initialValue = type.parseString(initialValue);
     }
 
     public void setDataType(DataType dtype) {
@@ -35,5 +36,13 @@ public class Member extends NameDescription {
 
     public DataType getType() {
         return type;
+    }
+    
+    /**
+     * Get the initial value of the member.
+     * @return
+     */
+    public Object getInitialValue() {
+        return initialValue;
     }
 }

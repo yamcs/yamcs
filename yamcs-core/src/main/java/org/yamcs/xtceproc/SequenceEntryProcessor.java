@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
@@ -72,13 +72,13 @@ public class SequenceEntryProcessor {
             buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
     }
 
-    private ParameterValue extractParameter(Parameter param) {
+    private ContainerParameterValue extractParameter(Parameter param) {
         ParameterType ptype = param.getParameterType();
         if (ptype == null) {
             throw new XtceProcessingException(
                     "Encountered entry for parameter '" + param.getName() + " without a type");
         }
-        ParameterValue pv = new ParameterValue(param);
+        ContainerParameterValue pv = new ContainerParameterValue(param);
         int offset = pcontext.buffer.getPosition();
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
 
@@ -99,7 +99,7 @@ public class SequenceEntryProcessor {
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ParameterValue pv = extractParameter(pe.getParameter());
+        ContainerParameterValue pv = extractParameter(pe.getParameter());
         pv.setSequenceEntry(pe);
         pcontext.result.params.add(pv);
     }
@@ -138,7 +138,7 @@ public class SequenceEntryProcessor {
             rv.setElementValue(i, rv1);
         }
 
-        ParameterValue pv = new ParameterValue(pe.getParameter());
+        ContainerParameterValue pv = new ContainerParameterValue(pe.getParameter());
         pv.setRawValue(rv);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset + offset);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
@@ -174,7 +174,7 @@ public class SequenceEntryProcessor {
                         "Cannot find a parameter with name '" + name + "' in nameSpace '" + nameSpace + "'");
             }
         }
-        ParameterValue pv = extractParameter(p);
+        ContainerParameterValue pv = extractParameter(p);
         pv.setSequenceEntry(se);
         pcontext.result.params.add(pv);
     }

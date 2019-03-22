@@ -124,6 +124,10 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
 import com.google.common.primitives.UnsignedLongs;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import jxl.Cell;
 import jxl.CellType;
@@ -473,13 +477,12 @@ public class V7Loader extends V7LoaderBase {
             dtr.rawType = getContent(cells, CN_DTYPE_RAWTYPE, null);
             dtr.encoding = getContent(cells, CN_DTYPE_ENCODING, null);
             dtr.engUnit = getContent(cells, CN_DTYPE_ENGUNIT, null);
-            String calib = getContent(cells, CN_DTYPE_CALIBRATION, null);
-            if ("n".equals(calib) || "".equals(calib)) {
-                calib = null;
-            } else if ("y".equalsIgnoreCase(calib)) {
-                calib = dtr.name;
-            }
-            dtr.calibration = calib;
+            dtr.calibration = getContent(cells, CN_DTYPE_CALIBRATION, null);
+            
+            dtr.initialValue = getContent(cells, CN_DTYPE_INITVALUE, null);
+            dtr.description = getContent(cells, CN_DTYPE_INITVALUE, null);
+            
+            
             dataTypes.put(dtr.name, dtr);
         }
     }
@@ -578,17 +581,45 @@ public class V7Loader extends V7LoaderBase {
         } else {
             ((BaseDataType) dtype).setEncoding(encoding);
         }
-        /*
-         * if (hasColumn(cells, CN_DTYPE_DESCRIPTION)) {
-         * if (hasColumn(cells, CN_DTYPE_DESCRIPTION)) {
-         * String shortDescription = getContent(cells, CN_DTYPE_DESCRIPTION);
-         * // ptype.setShortDescription(shortDescription);
-         * }
-         * }
-         */
+        if(dtr.initialValue!=null) {
+            setInitialValue(dtype, dtr.initialValue);
+        }
+        dtype.setShortDescription(dtr.description);
+        
         return dtype;
     }
+    
+    private void setInitialValue(DataType dtype, String initialValue) {
+        if(dtype instanceof AggregateDataType) {
+            setInitialValueAggregate((AggregateDataType) dtype, initialValue);
+        } else {
+           dtype.setInitialValue(initialValue);
+       }
+    }
 
+    private void setInitialValueAggregate(AggregateDataType dtype, String initialValue) {
+        try {
+            JsonElement el = new JsonParser().parse(initialValue);
+            if(!(el instanceof JsonObject)) {
+                throw new SpreadsheetLoadException(ctx, "Expected an object as initial value but got a : " + el.getClass());
+            }
+            JsonObject jobj = (JsonObject)el;
+            for (Member memb : dtype.getMemberList()) {
+                if (jobj.has(memb.getName())) {
+                    String v = jobj.remove(memb.getName()).toString();
+                    memb.setInitialValue(v);
+                } 
+            }
+            if (jobj.size() > 0) {
+                throw new IllegalArgumentException(
+                        "Unknown members " + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+            }
+        } catch (JsonParseException e) {
+            throw new SpreadsheetLoadException(ctx, "Cannot parse initial value as json: " + e.getMessage());
+        }
+    }
+
+    
     // creates either a ParameterDataType or ArgumentDataType
     private DataType createParamOrArgType(SpaceSystem spaceSystem, String name, String engtype, boolean param) {
         if ("uint".equalsIgnoreCase(engtype)) {
@@ -663,7 +694,7 @@ public class V7Loader extends V7LoaderBase {
     Pattern sqBracket = Pattern.compile("\\[\\d*\\]");
 
     private DataType createArrayType(SpaceSystem spaceSystem, String name, String engtype, boolean param) {
-        ArrayDataType atype = param ? new ArrayParameterType(name) : new ArrayArgumentType(name);
+        
         Matcher m = arrayPattern.matcher(engtype);
         if (!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot match array '" + engtype + "'");
@@ -678,7 +709,7 @@ public class V7Loader extends V7LoaderBase {
         while (m.find()) {
             c++;
         }
-        atype.setNumberOfDimensions(c);
+        ArrayDataType atype = param ? new ArrayParameterType(name, c) : new ArrayArgumentType(name,c);
         atype.setElementType(createDataType(spaceSystem, dtr, param));
         return atype;
     }
@@ -709,6 +740,10 @@ public class V7Loader extends V7LoaderBase {
             parameters.put(name, param);
             param.setParameterType(ptype);
             param.setDataSource(dataSource);
+            if(hasColumn(cells, CN_PARAM_INITVALUE)) {
+                String initValue = getContent(cells, CN_PARAM_INITVALUE);
+                param.setInitialValue(ptype.parseString(initValue));
+            }
 
             XtceAliasSet xas = getAliases(firstRow, cells);
             if (xas != null) {
@@ -1507,23 +1542,7 @@ public class V7Loader extends V7LoaderBase {
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
-            if (atype instanceof IntegerArgumentType) {
-                try {
-                    Long.decode(v);
-                } catch (Exception e) {
-                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
-                }
-                arg.setInitialValue(v);
-            } else if (atype instanceof FloatArgumentType) {
-                try {
-                    Double.parseDouble(v);
-                } catch (Exception e) {
-                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
-                }
-                arg.setInitialValue(v);
-            } else {
-                arg.setInitialValue(v);
-            }
+            arg.setInitialValue(atype.parseString(v));
         }
         if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {
             if (atype instanceof IntegerArgumentType) {

@@ -21,8 +21,6 @@ import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.ValueEnumeration;
 
-import com.google.common.primitives.UnsignedLongs;
-
 public class ArgumentTypeProcessor {
     ProcessorData pdata;
     
@@ -164,75 +162,72 @@ public class ArgumentTypeProcessor {
         return raw;
     }
 
-    public static Value parseAndCheckRange(ArgumentType type, String argumentValue) throws ErrorInCommand {
-        Value v;
+    public static void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
         if(type instanceof IntegerArgumentType) {
             IntegerArgumentType intType = (IntegerArgumentType) type;
-            if(intType.isSigned()) {
-                long l = Long.decode(argumentValue);
-                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
-                if(vr!=null) {
-                    if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
+           
+            long l = (Long)o;;
+            IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
+            if(vr!=null) {
+                if(intType.isSigned() && !ValidRangeChecker.checkIntegerRange(vr, l)) {
+                    throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
+                } else if(!intType.isSigned() && !ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
                         throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
-                    }
                 }
-                v = ValueUtility.getSint64Value(l);
-            } else {
-                long l = UnsignedLongs.decode(argumentValue);
-                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
-                if(vr!=null) {
-                    if(!ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
-                        throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
-                    }
-                }
-                v = ValueUtility.getUint64Value(l);
             }
-            
        } else if(type instanceof FloatArgumentType) {
-            double d = Double.parseDouble(argumentValue);
+            double d = (Double)o;
             FloatValidRange vr = ((FloatArgumentType)type).getValidRange();
             if(vr!=null) {
                 if(!ValidRangeChecker.checkFloatRange(vr, d)) {
                     throw new ErrorInCommand("Value "+d+" is not in the range required for the type "+type);
                 }
             }
-            v = ValueUtility.getDoubleValue(d);
         } else if(type instanceof StringArgumentType) {
-            v = ValueUtility.getStringValue(argumentValue);
+            String v = (String)o;
             IntegerRange r = ((StringArgumentType)type).getSizeRangeInCharacters();
 
             if(r!=null) {
-                int length = argumentValue.length();
+                int length = v.length();
                 if (length<r.getMinInclusive()) {
-                    throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
+                    throw new ErrorInCommand("Value "+v+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
                 }
                 if(length>r.getMaxInclusive()) {
-                    throw new ErrorInCommand("Value "+argumentValue+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
+                    throw new ErrorInCommand("Value "+v+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
                 }
             }
 
         } else if (type instanceof BinaryArgumentType) {
-            byte[] b = StringConverter.hexStringToArray(argumentValue);
-            v = ValueUtility.getBinaryValue(b);
+            byte[] b = (byte[]) o;
+            IntegerRange r = ((BinaryArgumentType)type).getSizeRangeInBytes();
+
+            if(r!=null) {
+                int length = b.length;
+                if (length<r.getMinInclusive()) {
+                    throw new ErrorInCommand("Value "+StringConverter.arrayToHexString(b)+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
+                }
+                if(length>r.getMaxInclusive()) {
+                    throw new ErrorInCommand("Value "+StringConverter.arrayToHexString(b)+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
+                }
+            }
         } else if (type instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
             List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
             boolean found =false;
+            String v = (String)o;
+            
             for(ValueEnumeration ve:vlist) {
-                if(ve.getLabel().equals(argumentValue)) {
+                if(ve.getLabel().equals(v)) {
                     found = true;
                 }
             }
             if(!found) {
-                throw new ErrorInCommand("Value '"+argumentValue+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
+                throw new ErrorInCommand("Value '"+v+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
             }
-            v = ValueUtility.getStringValue(argumentValue);
         } else if (type instanceof BooleanArgumentType) {
-            boolean b = Boolean.parseBoolean(argumentValue);
-            v = ValueUtility.getBooleanValue(b);
+            //nothing to check
         } else {
-            throw new IllegalArgumentException("Cannot parse values of type "+type);
+            throw new IllegalArgumentException("Cannot process values of type "+type);
         }
-        return v;
     }
 }

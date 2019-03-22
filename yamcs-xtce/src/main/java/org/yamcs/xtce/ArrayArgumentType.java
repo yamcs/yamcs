@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
     
-    public ArrayArgumentType(String name) {
-        super(name);
+    public ArrayArgumentType(String name, int numberOfDimensions) {
+        super(name, numberOfDimensions);
     }
 
     private static final long serialVersionUID = 1L;

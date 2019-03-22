@@ -190,4 +190,22 @@ public class XmlLoaderTest {
         assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
         
     }
+    
+    
+    @Test
+    public void testBogusSat2() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        
+        ParameterType ptype = db.getParameterType("/BogusSAT/CCSDSAPIDType");
+        assertEquals(2047, ((Long)ptype.getInitialValue()).intValue());
+        
+        
+        ptype = db.getParameterType("/BogusSAT/TM_CHECKSUMType");
+        assertEquals("CRC", (String)ptype.getInitialValue());
+        
+        Parameter p = db.getParameter("/BogusSAT/LOG_MSGS/RECORDFLAG");
+        System.out.println("p: "+p);
+        assertEquals(3735928559L, ((Long)p.getInitialValue()).longValue());
+     
+    }
 }

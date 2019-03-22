@@ -8,17 +8,17 @@ package org.yamcs.xtce;
  *
  */
 public class ArrayParameterType extends ArrayDataType implements ParameterType {
+    private static final long serialVersionUID = 1L;
 
-    public ArrayParameterType(String name) {
-        super(name);
+    public ArrayParameterType(String name, int numberOfDimensions) {
+        super(name, numberOfDimensions);
     }
 
     public ArrayParameterType(ArrayParameterType t) {
         super(t);
     }
 
-    private static final long serialVersionUID = 1L;
-
+   
     @Override
     public String getTypeAsString() {
         return getElementType().getTypeAsString() + "[]";
@@ -29,11 +29,6 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
         return false;
     }
 
-    @Override
-    public Object parseString(String stringValue) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public Object parseStringForRawValue(String stringValue) {
@@ -49,10 +44,6 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     @Override
     public ArrayParameterType copy() {
         return new ArrayParameterType(this);
-    }
-
-    @Override
-    public void setInitialValue(String initialValue) {
     }
 
     @Override

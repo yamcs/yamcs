@@ -60,6 +60,12 @@ public class TimeEncodingTest {
         long instant = TimeEncoding.fromGpsCcsdsTime(0, (byte) 128);
         assertEquals("1980-01-06T00:00:00.500Z", TimeEncoding.toString(instant));
     }
+    
+    @Test
+    public void testFromGpsCcsds1() {
+        long instant = TimeEncoding.fromGpsCcsdsTime(0x49BFB8C7, (byte) 0xA2);
+        System.out.println(TimeEncoding.toString(instant));
+    }
 
     @Test
     public void testFromGpsYearSecMillis() {

@@ -15,8 +15,6 @@ public class EnumeratedDataType extends BaseDataType {
     protected List<ValueEnumeration> enumerationList = new ArrayList<>();
     protected List<ValueEnumerationRange> ranges = new ArrayList<>();
 
-    protected String initialValue = null;
-
     
     EnumeratedDataType(String name) {
         super(name);
@@ -31,16 +29,9 @@ public class EnumeratedDataType extends BaseDataType {
         this.enumerationList = t.enumerationList;
         this.ranges = t.ranges;
     }
-    /**
-     * Set initial value
-     * @param initialValue
-     */
-    public void setInitialValue(String initialValue) {
-        this.initialValue = initialValue;
-    }
 
     public String getInitialValue() {
-        return initialValue;
+        return (String) initialValue;
     }
 
     public ValueEnumeration enumValue(Long key) {

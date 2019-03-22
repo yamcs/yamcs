@@ -75,6 +75,7 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -291,10 +292,12 @@ public class PacketViewer extends JFrame implements ActionListener,
             fileMenu.addSeparator();
         }
 
-        /*menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
-        menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, menuKey));
-        menu.add(menuitem);
-        menu.addSeparator();*/
+        /*
+         * menuitem = new JMenuItem("Preferences", KeyEvent.VK_COMMA);
+         * menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, menuKey));
+         * menu.add(menuitem);
+         * menu.addSeparator();
+         */
 
         menuitem = new JMenuItem("Quit", KeyEvent.VK_Q);
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, menuKey));
@@ -849,8 +852,11 @@ public class PacketViewer extends JFrame implements ActionListener,
 
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
-
-                    getTreeNode(value.getSequenceEntry().getSequenceContainer()).add(new TreeEntry(value));
+                    if (value instanceof ContainerParameterValue) {
+                        ContainerParameterValue cpv = (ContainerParameterValue)value;
+                        getTreeNode(cpv.getSequenceEntry().getSequenceContainer())
+                                .add(new TreeEntry(cpv));
+                    }
 
                     // add new row for parameter table
 
@@ -864,8 +870,11 @@ public class PacketViewer extends JFrame implements ActionListener,
 
                     vec[5] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMin());
                     vec[6] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMax());
-                    vec[7] = String.valueOf(value.getAbsoluteBitOffset());
-                    vec[8] = String.valueOf(value.getBitSize());
+                    if (value instanceof ContainerParameterValue) {
+                        ContainerParameterValue cpv = (ContainerParameterValue) value;
+                        vec[7] = String.valueOf(cpv.getAbsoluteBitOffset());
+                        vec[8] = String.valueOf(cpv.getBitSize());
+                    }
 
                     paramtype = value.getParameter().getParameterType();
                     if (paramtype instanceof EnumeratedParameterType) {
@@ -925,7 +934,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     class TreeEntry extends DefaultMutableTreeNode {
         int bitOffset, bitSize;
 
-        TreeEntry(ParameterValue value) {
+        TreeEntry(ContainerParameterValue value) {
             super(String.format("%d/%d %s", value.getAbsoluteBitOffset(), value.getBitSize(),
                     value.getParameter().getOpsName()), false);
             bitOffset = value.getAbsoluteBitOffset();

@@ -133,7 +133,7 @@ public class DataEncodingDecoder {
 
     private Value extractRawString(StringDataEncoding sde) {
         if (buffer.getPosition() % 8 != 0) {
-            log.warn("Binary data that does not start at byte boundary not supported. bitPosition: {}", buffer);
+            log.warn("String data that does not start at byte boundary not supported. bitPosition: {}", buffer);
             return null;
         }
 

@@ -1,6 +1,9 @@
 package org.yamcs.xtceproc;
 
+import java.util.Map;
+
 import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeDataType;
@@ -18,87 +21,86 @@ import org.yamcs.xtce.StringDataType;
 public class DataTypeProcessor {
 
     /**
-     * returns the initial(default) value for the type or null if no value has been set 
+     * converts the value from the XTCE type to Yamcs Value
+     * 
      * @param type
      * @return
      */
-    public static Value getInitialValue(DataType type) {
+    public static Value getValueForType(DataType type, Object o) {
         Value v;
-        if(type instanceof IntegerDataType) {
+        if (type instanceof IntegerDataType) {
             IntegerDataType intType = (IntegerDataType) type;
-            Long l = intType.getInitialValue();
-            if(l==null) {
-               return null;
-            }
-            if(intType.isSigned()) {
-                v = ValueUtility.getSint64Value(l);
+            Long l = (Long) o;
+            if (intType.getSizeInBits() <= 32) {
+                if (intType.isSigned()) {
+                    v = ValueUtility.getSint32Value(l.intValue());
+                } else {
+                    v = ValueUtility.getUint32Value(l.intValue());
+                }
             } else {
-                v = ValueUtility.getUint64Value(l);
+                if (intType.isSigned()) {
+                    v = ValueUtility.getSint64Value(l);
+                } else {
+                    v = ValueUtility.getUint64Value(l);
+                }
             }
-       } else if(type instanceof FloatDataType) {
-            Double d = ((FloatDataType)type).getInitialValue();
-            if(d==null) {
-                return null;
+        } else if (type instanceof FloatDataType) {
+            FloatDataType fdt = (FloatDataType) type;
+
+            Double d = (Double) o;
+
+            if (fdt.getSizeInBits() <= 32) {
+                v = ValueUtility.getFloatValue(d.floatValue());
+            } else {
+                v = ValueUtility.getDoubleValue(d);
             }
-            v = ValueUtility.getDoubleValue(d);
-        } else if(type instanceof StringDataType) {
-            String sv = ((StringDataType)type).getInitialValue();
-            if(sv==null) {
-               return null;
-            }
-            v = ValueUtility.getStringValue(sv);
+        } else if (type instanceof StringDataType) {
+            v = ValueUtility.getStringValue((String) o);
         } else if (type instanceof BinaryDataType) {
-            byte[] b = ((BinaryDataType)type).getInitialValue();
-            if(b==null) {
-                return null;
-            }
-            v = ValueUtility.getBinaryValue(b);
+            v = ValueUtility.getBinaryValue((byte[]) o);
         } else if (type instanceof EnumeratedDataType) {
-            EnumeratedDataType enumType = (EnumeratedDataType)type;
-            String sv = enumType.getInitialValue();
-            if(sv==null) {
-                return null;
-            }
-            v = ValueUtility.getStringValue(sv);
+            v = ValueUtility.getStringValue((String) o);
         } else if (type instanceof BooleanDataType) {
-            Boolean b = ((BooleanDataType)type).getInitialValue();
-            if(b==null) {
-               return null;
-            }
-            v = ValueUtility.getBooleanValue(b);
+            v = ValueUtility.getBooleanValue((Boolean) o);
         } else if (type instanceof AbsoluteTimeDataType) {
-            Long t = ((AbsoluteTimeDataType)type).getInitialValue();
-            if(t==null) {
-               return null;
-            }
-            v = ValueUtility.getTimestampValue(t);
-        }  else if (type instanceof AggregateDataType) {
-            v =  getAggregateInitialValue((AggregateDataType) type);
-        }  else if (type instanceof ArrayDataType) {
-            return null; //TODO
-        }  else {
-            throw new IllegalArgumentException("Cannot parse values of type "+type);
+            v = ValueUtility.getTimestampValue((Long) o);
+        } else if (type instanceof AggregateDataType) {
+            v = getAggregateValue((AggregateDataType) type, (Map<String, Object>) o);
+        } else if (type instanceof ArrayDataType) {
+            v = getArrayValue((ArrayDataType) type, (Object[]) o);
+        } else {
+            throw new IllegalArgumentException("Cannot parse values of type " + type);
         }
         return v;
     }
 
-    private static Value getAggregateInitialValue(AggregateDataType aggregateDataType) {
+    private static AggregateValue getAggregateValue(AggregateDataType aggregateDataType, Map<String, Object> o) {
         AggregateValue v = new AggregateValue(aggregateDataType.getMemberNames());
-        for(Member m: aggregateDataType.getMemberList()) {
-            Value mv = getInitialValue(m.getType());
-            if(mv != null) {
-                v.setValue(m.getName(), mv);
+        for (Member m : aggregateDataType.getMemberList()) {
+            Object o1 = o.get(m.getName());
+            if (o1 == null) {
+                throw new IllegalArgumentException("No value provided for member '" + m.getName());
             }
+            v.setValue(m.getName(), getValueForType(m.getType(), o1));
         }
-        if(v.numMembers() > 0) {
+
+        if (v.numMembers() > 0) {
             return v;
         } else {
             return null;
         }
     }
-    
 
-  
+    private static Value getArrayValue(ArrayDataType type, Object[] o) {
+        if (type.getNumberOfDimensions() != 1) {
+            throw new UnsupportedOperationException("TODO");
+        }
 
-    
+        ArrayValue v = new ArrayValue(new int[] { o.length }, type.getElementType().getValueType());
+        for (int i = 0; i < o.length; i++) {
+            v.setElementValue(i, getValueForType(type.getElementType(), o[i]));
+        }
+        return v;
+    }
+
 }

@@ -9,8 +9,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
-import org.yamcs.xtce.ArgumentType;
-import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
@@ -91,35 +89,33 @@ public class MetaCommandProcessor {
                 if (args.containsKey(a)) {
                     continue;
                 }
-                String stringValue = null;
-                String argInitialValue = null;
-                Value argTypeInitialValue = null;
+                Value argValue = null;
+                Object argObj = null;
                 if (!argAssignment.containsKey(a.getName())) {
-                    argInitialValue = a.getInitialValue();
-                    argTypeInitialValue = DataTypeProcessor.getInitialValue((BaseDataType) a.getArgumentType());
-                    if (argInitialValue == null && argTypeInitialValue == null) {
+                    argObj = a.getInitialValue();
+                    if(argObj == null) {
+                        argObj = a.getArgumentType().getInitialValue();
+                    }
+                    if(argObj==null) {
                         throw new ErrorInCommand("No value provided for argument " + a.getName()
-                                + " (and the argument has no default value either)");
+                        + " (and the argument has no default value either)");
                     }
                 } else {
-                    stringValue = argAssignment.remove(a.getName());
+                    String stringValue = argAssignment.remove(a.getName());
+                    try {
+                        argObj = a.getArgumentType().parseString(stringValue);
+                        
+                     } catch (Exception e) {
+                        throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
+                    }
                 }
-                ArgumentType type = a.getArgumentType();
                 try {
-                    Value v;
-                    // default value argInitialValue overwrites argTypeInitialValue
-                    if (stringValue == null) {
-                        stringValue = argInitialValue;
-                    }
-                    if (stringValue != null) {
-                        v = ArgumentTypeProcessor.parseAndCheckRange(type, stringValue);
-                    } else {
-                        v = argTypeInitialValue;
-                    }
-                    args.put(a, v);
+                    ArgumentTypeProcessor.checkRange(a.getArgumentType(), argObj);
+                    argValue = DataTypeProcessor.getValueForType(a.getArgumentType(), argObj);
                 } catch (Exception e) {
                     throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                 }
+                args.put(a, argValue);
             }
         }
 

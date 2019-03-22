@@ -93,4 +93,10 @@ public class AggregateMemberNames {
             return false;
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return Arrays.deepToString(names);
+    }
+    
 }

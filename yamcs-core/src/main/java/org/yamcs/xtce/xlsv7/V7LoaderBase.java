@@ -129,11 +129,13 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_DTYPE_ENGTYPE = "eng type";
     static final String CN_DTYPE_ENGUNIT = "eng unit";
     static final String CN_DTYPE_CALIBRATION = "calibration";
+    static final String CN_DTYPE_INITVALUE = "initial value";
     static final String CN_DTYPE_DESCRIPTION = "description";
 
     // columns names in the parameter type sheet
     static final String CN_PARAM_NAME = "parameter name";
     static final String CN_PARAM_DTYPE = "data type";
+    static final String CN_PARAM_INITVALUE = "initial value";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
 
@@ -433,7 +435,8 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
         String engType;
         String engUnit;
         String calibration;
-
+        String initialValue;
+        String description;
     }
 
 }

@@ -7,18 +7,13 @@ public class BooleanDataType extends BaseDataType {
    
     String oneStringValue = "True";
     String zeroStringValue = "False";
-    /**
-     * Used mainly for command arguments to specify the default value
-     */
-    Boolean initialValue;
-
+   
     protected BooleanDataType(BooleanDataType t) {
         super(t);
-        this.initialValue = t.initialValue;
     }
 
     public Boolean getInitialValue() {
-        return initialValue;
+        return (Boolean)initialValue;
     }
 
     public void setInitialValue(Boolean initialValue) {
@@ -48,11 +43,7 @@ public class BooleanDataType extends BaseDataType {
         }
     }
 
-    @Override
-    public void setInitialValue(String stringValue) {
-        initialValue = parseString(stringValue);
-    }
-
+   
     public String getOneStringValue() {
         return oneStringValue;
     }

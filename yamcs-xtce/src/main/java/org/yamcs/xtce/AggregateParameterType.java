@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+
 /**
  * AggegateParameters are analogous to a C struct, they are an aggregation of related data items. Each of these data
  * items is defined here as a 'Member'
@@ -25,12 +26,6 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
     }
 
     @Override
-    public Object parseString(String stringValue) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public Object parseStringForRawValue(String stringValue) {
         // TODO Auto-generated method stub
         return null;
@@ -47,11 +42,9 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
     }
 
     @Override
-    public void setInitialValue(String initialValue) {
-    }
-
-    @Override
     public DataEncoding getEncoding() {
         throw new UnsupportedOperationException("aggregate parameters do not support encodings");
     }
+
+    
 }

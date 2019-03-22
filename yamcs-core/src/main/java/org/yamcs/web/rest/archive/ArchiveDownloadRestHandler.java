@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.EventRecorder;

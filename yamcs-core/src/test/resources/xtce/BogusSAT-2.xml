@@ -2377,7 +2377,7 @@ limitations under the License.
 					<xtce:UnitSet/>
 					<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" bitOrder="mostSignificantBitFirst"/>
 				</xtce:IntegerParameterType>
-				<xtce:IntegerParameterType name="UINT32_Type">
+				<xtce:IntegerParameterType name="UINT32_Type" signed="false">
 					<xtce:UnitSet/>
 					<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="32" bitOrder="mostSignificantBitFirst"/>
 				</xtce:IntegerParameterType>

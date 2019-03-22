@@ -11,8 +11,6 @@ public class BinaryDataType extends BaseDataType {
      */
     IntegerRange sizeRangeInBytes; 
 
-    byte[] initialValue;
-
 
     protected BinaryDataType(String name) {
         super(name);
@@ -20,12 +18,11 @@ public class BinaryDataType extends BaseDataType {
     
     protected BinaryDataType(BinaryDataType t) {
         super(t);
-        this.initialValue = t.initialValue;
         this.sizeRangeInBytes = t.sizeRangeInBytes;
     }
 
     public byte[] getInitialValue() {
-        return initialValue;
+        return (byte[]) initialValue;
     }
 
     public void setInitialValue(byte[] initialValue) {
@@ -51,7 +48,7 @@ public class BinaryDataType extends BaseDataType {
      * parse the hexadecimal stringValue into byte[]
      */
     @Override
-    public Object parseString(String stringValue) {
+    public byte[] parseString(String stringValue) {
         return hexStringToArray(stringValue);
     }
 

@@ -41,6 +41,12 @@ public class LastValueCache {
         return m.put(p, pv);
     }
 
+    /**
+     * Update the cache with all parameters.
+     * <p>
+     * Note: This is not an atomic operation!
+     * @param params
+     */
     public void update(Collection<ParameterValue> params) {
         for(ParameterValue pv: params) {
             Parameter p = pv.getParameter();

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +18,11 @@ import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
-import org.yamcs.parameter.SoftwareParameterManagerIf;
+import org.yamcs.parameter.PartialParameterValue;
+import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
@@ -101,8 +104,8 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
-        SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, p.getDataSource());
-      
+        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, p.getDataSource());
+
         Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
         try {
             mgr.updateParameter(p, v);
@@ -115,29 +118,41 @@ public class ProcessorParameterRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority = true)
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        ParameterRequestManager prm = processor.getParameterRequestManager();
 
         BulkSetParameterValueRequest request = req.bodyAsMessage(BulkSetParameterValueRequest.newBuilder()).build();
-
-        // check permission
-        ParameterRequestManager prm = processor.getParameterRequestManager();
-        Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
-        for (SetParameterValueRequest r : request.getRequestList()) {
-            try {
-                Parameter p = prm.getParameter(r.getId());
-                checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter, p.getQualifiedName());
-                org.yamcs.parameter.ParameterValue pv = new org.yamcs.parameter.ParameterValue(p);
-                pv.setEngineeringValue(ValueUtility.fromGpb(r.getValue()));
-                List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(), k -> new ArrayList<>());
-                l.add(pv);
-            } catch (InvalidIdentification e) {
-                throw new BadRequestException("InvalidIdentification: " + e.getMessage());
-            }
+        List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
+        List<ParameterWithId> pidList;
+        try {
+            pidList = ParameterWithIdRequestHelper.checkNames(prm, idList);
+        } catch (InvalidIdentification e) {
+            throw new BadRequestException("InvalidIdentification: " + e.getMessage());
         }
-        for(Map.Entry<DataSource, List<org.yamcs.parameter.ParameterValue>> me: pvmap.entrySet()) {
+        checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter,
+                pidList.stream().map(p -> p.getParameter().getQualifiedName()).collect(Collectors.toList()));
+
+        Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
+        for(int i=0; i<pidList.size(); i++) {
+            SetParameterValueRequest r = request.getRequest(i);
+            ParameterWithId pid = pidList.get(i);
+            Parameter p = pid.getParameter();
+            org.yamcs.parameter.ParameterValue pv;
+            if(pid.getPath()==null) {
+                pv = new org.yamcs.parameter.ParameterValue(p);
+            } else {
+                pv = new PartialParameterValue(p, pid.getPath());
+            }
+            pv.setEngineeringValue(ValueUtility.fromGpb(r.getValue()));
+            List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
+                    k -> new ArrayList<>());
+            l.add(pv);
+        }
+
+        for (Map.Entry<DataSource, List<org.yamcs.parameter.ParameterValue>> me : pvmap.entrySet()) {
             List<org.yamcs.parameter.ParameterValue> l = me.getValue();
             DataSource ds = me.getKey();
-            SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, ds);
-
+            SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, ds);
+            System.out.println("updating parameters " + l);
             try {
                 mgr.updateParameters(l);
             } catch (IllegalArgumentException e) {
@@ -152,12 +167,9 @@ public class ProcessorParameterRestHandler extends RestHandler {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        System.out.println("route param name: "+req.getRouteParam("name"));
-        
-        NamedObjectId id  = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        System.out.println("id: "+id);
-        
-        
+
+        NamedObjectId id = verifyParameterId(req, mdb, req.getRouteParam("name"));
+
         long timeout = 10000;
         boolean fromCache = true;
         if (req.hasQueryParameter("timeout")) {
@@ -279,8 +291,9 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
     }
 
-    private SoftwareParameterManagerIf verifySoftwareParameterManager(Processor processor, DataSource ds) throws BadRequestException {
-        SoftwareParameterManagerIf mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
+    private SoftwareParameterManager verifySoftwareParameterManager(Processor processor, DataSource ds)
+            throws BadRequestException {
+        SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
         if (mgr == null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this processor");
         } else {

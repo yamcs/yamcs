@@ -12,11 +12,6 @@ public abstract class FloatDataType extends NumericDataType {
      */
     FloatValidRange validRange;
 
-    /**
-     * XTCE: Initial value is always given in calibrated form
-     */
-    Double initialValue;
-
 
     int sizeInBits = 32;
     
@@ -26,15 +21,15 @@ public abstract class FloatDataType extends NumericDataType {
     
     protected FloatDataType(FloatDataType t) {
         super(t);
-        this.initialValue = t.initialValue;
         this.validRange = t.validRange;
         this.sizeInBits = t.sizeInBits;
     }
     
 
     public Double getInitialValue() {
-        return initialValue;
+        return (Double)initialValue;
     }
+    
     public void setInitialValue(double initialValue) {
         this.initialValue = initialValue;
     }
@@ -54,17 +49,12 @@ public abstract class FloatDataType extends NumericDataType {
     }
     
     @Override
-    public Object parseString(String stringValue) {
+    public Double parseString(String stringValue) {
         if(sizeInBits==32) {
-            return Float.parseFloat(stringValue);
+            return (double)Float.parseFloat(stringValue);
         } else {
             return Double.parseDouble(stringValue);
         }
-    }
-
-    @Override
-    public void setInitialValue(String initialValue) {
-        this.initialValue = Double.parseDouble(initialValue);
     }
 
     @Override

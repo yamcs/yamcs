@@ -8,6 +8,8 @@ public class Parameter extends NameDescription {
     ParameterType parameterType;
     DataSource dataSource;
     
+    private Object initialValue;
+    
     /**
      * This is used for recording; if the recordingGroup is not set, the subsystem name is used.
      * Currently it is only set for DaSS processed parameters for compatibility with the old recorder
@@ -49,5 +51,21 @@ public class Parameter extends NameDescription {
     @Override
     public String toString() {
         return "ParaName: " + this.getName() + " paraType:" + parameterType + ((xtceAliasSet==null)?"":" aliases: "+xtceAliasSet.toString());
+    }
+
+    /**
+     * 
+     * @return the initial value of the parameter (if any)
+     */
+    public Object getInitialValue() {
+        return initialValue;
+    }
+    /**
+     * Sets the initial value for the parameter (if any). The value has to be compatible with its type. 
+     * 
+     * @param initialValue
+     */
+    public void setInitialValue(Object initialValue) {
+        this.initialValue = initialValue;
     }
 }

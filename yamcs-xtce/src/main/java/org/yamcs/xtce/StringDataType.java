@@ -13,10 +13,6 @@ public class StringDataType extends BaseDataType {
      */
     IntegerRange sizeRangeInCharacters; 
 
-    /**
-     * Initial value - used as default value for arguments
-     */
-    String initialValue;
     protected StringDataType(String name) {
         super(name);
     }
@@ -24,12 +20,11 @@ public class StringDataType extends BaseDataType {
     protected StringDataType(StringDataType t) {
         super(t);
         this.sizeRangeInCharacters = t.sizeRangeInCharacters;
-        this.initialValue = t.initialValue;
     }
 
 
     public String getInitialValue() {
-        return initialValue;
+        return (String)initialValue;
     }
 
     public void setInitialValue(String initialValue) {
@@ -63,6 +58,5 @@ public class StringDataType extends BaseDataType {
     public String getTypeAsString() {
         return "string";
     }
-    
 
 }

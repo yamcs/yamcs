@@ -147,10 +147,7 @@ public class ArrayValue extends Value {
         return elements[flatIdx];
     }
 
-    public String toString() {
-        return Arrays.toString(elements);
-    }
-
+   
     /**
      * Return the length of the flat array
      * This is the product of the size of the individual dimensions.
@@ -176,6 +173,10 @@ public class ArrayValue extends Value {
      */
     public int[] getDimensions() {
         return dim;
+    }
+    
+    public String toString() {
+        return Arrays.toString(elements);
     }
 
 }

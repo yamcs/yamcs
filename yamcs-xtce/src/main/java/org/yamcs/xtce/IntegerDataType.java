@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.math.BigInteger;
+
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
@@ -23,11 +25,6 @@ public abstract class IntegerDataType extends NumericDataType {
      */
     IntegerValidRange validRange;
 
-    /**
-     * Used mainly for command arguments to specify the default value
-     */
-    Long initialValue;
-
     protected IntegerDataType(String name) {
         super(name);
     }
@@ -36,7 +33,6 @@ public abstract class IntegerDataType extends NumericDataType {
         super(t);
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
-        this.initialValue = t.initialValue;
     }
 
     public void setSigned(boolean signed) {
@@ -52,6 +48,9 @@ public abstract class IntegerDataType extends NumericDataType {
     }
 
     public void setSizeInBits(int sizeInBits) {
+        if (sizeInBits > 64) {
+            throw new IllegalArgumentException("Maximum supported size in bits is 64");
+        }
         this.sizeInBits = sizeInBits;
     }
 
@@ -69,29 +68,77 @@ public abstract class IntegerDataType extends NumericDataType {
         this.validRange = range;
     }
 
-    public void setInitialValue(String initialValue) {
-        if (signed) {
-            this.initialValue = Long.parseLong(initialValue);
-        } else {
-            this.initialValue = Long.parseUnsignedLong(initialValue);
-        }
-    }
-
     public void setInitialValue(Long initialValue) {
         this.initialValue = initialValue;
     }
 
     public Long getInitialValue() {
-        return initialValue;
+        return (Long) initialValue;
     }
 
+    /**
+     * Parses the string into a Long
+     * Base 10 (decimal) form is assumed unless:
+     * <ul>
+     * <li>if preceded by a 0b or 0B, value is in base two (binary form)</li>
+     * <li>if preceded by a 0o or 0O, values is in base 8 (octal) form</li>
+     * <li>if preceded by a 0x or 0X, value is in base 16 (hex) form.</li>
+     * </ul>
+     * 
+     * Underscores (_) are allowed in the string and ignored.
+     * 
+     * Throws a {@link NumberFormatException} if the value cannot be parsed or does not fit within the specified number
+     * of bits
+     */
     @Override
-    public Object parseString(String stringValue) {
-        if (sizeInBits > 32) {
-            return Long.decode(stringValue);
-        } else {
-            return Long.decode(stringValue).intValue();
+    public Long parseString(String stringValue) {
+        String sv = stringValue.replace("_", "");
+        if (sv.length() == 0)
+            throw new NumberFormatException("Zero length string");
+
+        int off = 0;
+
+        char sv0 = sv.charAt(0);
+        boolean negative = false;
+        int radix = 10;
+
+        if (sv0 == '-') {
+            if (!signed) {
+                throw new NumberFormatException("negative number specified for unsigned integer");
+            }
+            negative = true;
+            off++;
+        } else if (sv0 == '+') {
+            off++;
         }
+
+        if (sv.startsWith("0b", off) || sv.startsWith("0B", off)) {
+            off += 2;
+            radix = 2;
+        } else if (sv.startsWith("0o", off) || sv.startsWith("0O", off)) {
+            off += 2;
+            radix = 8;
+        } else if (sv.startsWith("0x", off) || sv.startsWith("0X", off)) {
+            off += 2;
+            radix = 16;
+        }
+
+        if (sv.startsWith("-", off) || sv.startsWith("+", off))
+            throw new NumberFormatException("Sign character in the middle of the number");
+        BigInteger bn = new BigInteger(sv.substring(off), radix);
+
+        int bs = sizeInBits;
+        if (signed) {
+            bs--;
+        }
+        if (bn.bitLength() > bs) {
+            throw new NumberFormatException("Number "+stringValue+" does not fit the bit size ("+sizeInBits+(signed?"/signed":"unsigned")+")");
+        }
+        long x = bn.longValue();
+        if (negative) {
+            x = -x;
+        }
+        return x;
     }
 
     @Override
@@ -99,6 +146,7 @@ public abstract class IntegerDataType extends NumericDataType {
         return sizeInBits > 32 ? (signed ? Type.SINT64 : Type.UINT64)
                 : (signed ? Type.SINT32 : Type.UINT32);
     }
+
     @Override
     public String getTypeAsString() {
         return "integer";

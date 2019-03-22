@@ -14,7 +14,6 @@ import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SequenceEntry;
 
 /**
  * Holds the value of a parameter
@@ -27,9 +26,7 @@ public class ParameterValue {
     private Parameter def;
     private final String paramFqn;
 
-    SequenceEntry entry;
-    int absoluteBitOffset, bitSize;
-
+  
     private Value rawValue;
     private Value engValue;
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
@@ -39,7 +36,7 @@ public class ParameterValue {
     ParameterStatus status = ParameterStatus.NOMINAL;
 
     /**
-     * Creates a parameter value for a parameter which has critical or warning range associated
+     * Creates a parameter value for a parameter
      * 
      * @param def
      *            the parameter definition
@@ -58,39 +55,13 @@ public class ParameterValue {
     public ParameterValue(ParameterValue pv) {
         this.def = pv.def;
         this.paramFqn = pv.paramFqn;
-        this.entry = pv.entry;
-        this.absoluteBitOffset = pv.absoluteBitOffset;
-        this.bitSize = pv.bitSize;
         this.rawValue = pv.rawValue;
         this.engValue = pv.engValue;
         this.acquisitionTime = pv.acquisitionTime;
         this.generationTime = pv.generationTime;
     }
 
-    public int getAbsoluteBitOffset() {
-        return absoluteBitOffset;
-    }
-
-    public void setAbsoluteBitOffset(int absoluteBitOffset) {
-        this.absoluteBitOffset = absoluteBitOffset;
-    }
-
-    public int getBitSize() {
-        return bitSize;
-    }
-
-    public void setBitSize(int bitSize) {
-        this.bitSize = bitSize;
-    }
-
-    public void setSequenceEntry(SequenceEntry entry) {
-        this.entry = entry;
-    }
-
-    public SequenceEntry getSequenceEntry() {
-        return entry;
-    }
-
+  
     public void setAcquisitionTime(long instant) {
         acquisitionTime = instant;
     }

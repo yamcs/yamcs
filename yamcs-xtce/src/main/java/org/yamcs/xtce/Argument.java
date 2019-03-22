@@ -6,7 +6,7 @@ package org.yamcs.xtce;
  *
  */
 public class Argument extends NameDescription {
-    private static final long serialVersionUID = 6L;
+    private static final long serialVersionUID = 7L;
 
     public Argument(String name) {
         super(name);
@@ -15,18 +15,9 @@ public class Argument extends NameDescription {
     ArgumentType argumentType;
 
     /*
-     * Used to set the initial calibrated values of Arguments.
-     * Will overwrite an initial value defined for the ArgumentType.  
-     *  
-     *  For integer types base 10 (decimal) form is assumed unless: 
-     *    if proceeded by a 0b or 0B, value is in base two (binary form, if proceeded by a 0o or 0O, values is in base 8 (octal) form, or if proceeded by a 0x or 0X, value is in base 16 (hex) form.  
-     *    
-     *    Floating point types may be specified in normal (100.0) or scientific (1.0e2) form.  Time types are specified using the ISO 8601 formats described for XTCE time data types. 
-     *    Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.  Initial values for Array or Aggregate types may not be set.
-     *    
      *    THIS is used as a default value when sending a command that does not have specified the value for this argument
      */
-    String initialValue;
+    Object initialValue;
 
     public ArgumentType getArgumentType () {
         return argumentType;
@@ -42,11 +33,11 @@ public class Argument extends NameDescription {
      * returns null if no initial value has been set
      * @return initial value or null if no initial value has been set
      */
-    public String getInitialValue() {
+    public Object getInitialValue() {
         return initialValue;
     }
 
-    public void setInitialValue(String v) {
+    public void setInitialValue(Object v) {
         this.initialValue = v;
     }
 

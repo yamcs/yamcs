@@ -2,11 +2,15 @@ package org.yamcs.xtceproc;
 
 import java.util.List;
 
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.EnumeratedArgumentType;
@@ -17,6 +21,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
@@ -43,6 +48,8 @@ public class ParameterTypeUtils {
                     org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64,
                     org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
             .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
+            .putAll(ArrayParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.ARRAY)
+            .putAll(AggregateParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.AGGREGATE)
             .build();
 
     /**
@@ -53,11 +60,47 @@ public class ParameterTypeUtils {
      * @param engValue
      */
     public static void checkEngValueAssignment(Parameter p, Value engValue) {
-        ParameterType ptype = p.getParameterType();
+        checkEngValueAssignment(p.getParameterType(), engValue);
+    }
+    
+    public static void checkEngValueAssignment(ParameterType ptype, Value engValue) {
         if (!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
             throw new IllegalArgumentException(
                     "Cannot assign " + ptype.getTypeAsString() + " from " + engValue.getType());
         }
+        
+        if(engValue instanceof AggregateValue) {
+            checkAggregateAssignment((AggregateParameterType) ptype, (AggregateValue) engValue);
+        } else if (engValue instanceof ArrayValue) {
+            checkArrayAssignment((ArrayParameterType) ptype, (ArrayValue) engValue);
+        }
+    }
+
+    
+    
+    private static void checkAggregateAssignment(AggregateParameterType ptype, AggregateValue engValue) {
+        if(!ptype.getMemberNames().equals(engValue.getMemberNames())) {
+            throw new IllegalArgumentException(
+                    "Cannot assign " + ptype.getTypeAsString() + " members don't match; expected "+ptype.getMemberNames()+ " but got "+engValue.getMemberNames());
+        }
+        for(int i=0; i< ptype.numMembers(); i++) {
+           Member m = ptype.getMember(i);
+           Value v = engValue.getMemberValue(i);
+           checkEngValueAssignment((ParameterType) m.getType(), v);
+        }
+    }
+    
+    private static void checkArrayAssignment(ArrayParameterType ptype, ArrayValue engValue) {
+       
+       if(engValue.getDimensions().length!=ptype.getNumberOfDimensions()) {
+           throw new IllegalArgumentException(
+                   "Cannot assign " + ptype.getTypeAsString() + ": wrong number of dimensions "+engValue.getDimensions().length+"( expected "+ptype.getNumberOfDimensions()+")");
+       }
+       ParameterType elementType = (ParameterType) ptype.getElementType();
+       int n = engValue.flatLength();
+       for(int i=0; i<n; i++) {
+           checkEngValueAssignment(elementType, engValue.getElementValue(i));
+       }
     }
 
     public static Value parseString(ParameterType type, String paramValue) {

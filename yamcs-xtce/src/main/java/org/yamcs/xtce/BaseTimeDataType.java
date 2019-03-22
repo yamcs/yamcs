@@ -25,8 +25,7 @@ public abstract class BaseTimeDataType extends BaseDataType {
     }
     
 
-    public abstract Object parseString(String stringValue);
-    
+        
     public Object parseStringForRawValue(String stringValue) {
         return encoding.parseString(stringValue);
     }

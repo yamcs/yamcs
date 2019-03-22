@@ -59,7 +59,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private boolean shouldSubcribeAllParameters = false;
 
     AlarmServer alarmServer;
-    Map<DataSource, SoftwareParameterManagerIf> spm = new HashMap<>();
+    Map<DataSource, SoftwareParameterManager> spm = new HashMap<>();
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
     LastValueCache lastValueCache;
@@ -519,7 +519,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * @return the SoftwareParameterManager associated to the DataSource or null if not configured
      */
-    public SoftwareParameterManagerIf getSoftwareParameterManager(DataSource ds) {
+    public SoftwareParameterManager getSoftwareParameterManager(DataSource ds) {
         return spm.get(ds);
     }
 
@@ -625,13 +625,13 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Register a {@link SoftwareParameterManagerIf} for the given {@link DataSource}.
+     * Register a {@link SoftwareParameterManager} for the given {@link DataSource}.
      * Throws an {@link IllegalStateException} if there is already registered a parameter manager for this data source.
      * 
      * @param ds
      * @param swParameterManager
      */
-    public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManagerIf swParameterManager) {
+    public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManager swParameterManager) {
         if(spm.containsKey(ds)) {
             throw new IllegalStateException("There is already a soft parameter manager for "+ds);
         }

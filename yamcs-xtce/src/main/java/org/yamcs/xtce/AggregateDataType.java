@@ -1,11 +1,19 @@
 package org.yamcs.xtce;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.util.AggregateMemberNames;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 public class AggregateDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 1L;
@@ -96,12 +104,6 @@ public class AggregateDataType extends NameDescription implements DataType {
         return m;
     }
 
-    @Override
-    public void setInitialValue(String initialValue) {
-        // TODO Auto-generated method stub
-
-    }
-
     /**
      * 
      * @return the (unique) object encoding the member names
@@ -114,4 +116,89 @@ public class AggregateDataType extends NameDescription implements DataType {
         }
         return memberNames;
     }
+
+    public int numMembers() {
+        return memberList.size();
+    }
+
+    public Member getMember(int idx) {
+        return memberList.get(idx);
+    }
+
+    @Override
+    public void setInitialValue(String initialValue) {
+        throw new UnsupportedOperationException(
+                "Cannot set initial value; please send individual initial values for the members");
+    }
+
+    /**
+     * Parse the initial value as a JSON string.
+     * <p>
+     * This allows to specify only partially the values, the rest are copied from the member initial value or
+     * the type definition (an exception is thrown if there is any member for which the value cannot be determined).
+     * 
+     * 
+     * @param initialValue
+     * @return a map containing the values for all members.
+     * @throws IllegalArgumentException
+     *             if the string cannot be parsed or if values cannot be determined for all members
+     * 
+     */
+    public Map<String, Object> parseString(String initialValue) {
+        // first try to parse it as json
+        try {
+            JsonElement je = new JsonParser().parse(initialValue);
+            if (je instanceof JsonObject) {
+                return fromJson((JsonObject) je);
+            } else {
+                throw new IllegalArgumentException("Expected JSON object but found " + je.getClass());
+            }
+        } catch (JsonParseException jpe) {
+            throw new IllegalArgumentException(jpe.toString());
+        }
+
+    }
+
+    private Map<String, Object> fromJson(JsonObject jobj) {
+        Map<String, Object> r = new HashMap<>();
+        for (Member memb : memberList) {
+            if (jobj.has(memb.getName())) {
+                String v = jobj.remove(memb.getName()).toString();
+                r.put(memb.getName(), memb.getType().parseString(v));
+            } else {
+                Object v = memb.getInitialValue();
+                if (v == null) {
+                    v = memb.getType().getInitialValue();
+                }
+                if (v == null) {
+                    throw new IllegalArgumentException("No value could be determined for member '"
+                            + memb.getName() + "' (its corresponding type does not have an initial value)");
+                }
+                r.put(memb.getName(), v);
+            }
+        }
+        if (jobj.size() > 0) {
+            throw new IllegalArgumentException(
+                    "Unknown members " + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+        }
+        return r;
+
+    }
+
+    @Override
+    public Map<String, Object> getInitialValue() {
+        Map<String, Object> r = new HashMap<String, Object>();
+        for (Member memb : memberList) {
+            Object v = memb.getInitialValue();
+            if(v==null) {
+                v = memb.getType().getInitialValue();
+            }
+            if(v==null) {
+                return null;
+            }
+            r.put(memb.getName(), v);
+        }
+        return r;
+    }
+
 }

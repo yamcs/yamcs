@@ -54,6 +54,19 @@ public class AggregateValue extends Value {
         return values.length;
     }
 
+    
+    public String getMemberName(int idx) {
+        return names.get(idx);
+    }
+
+    public Value getMemberValue(int i) {
+        return values[i];
+    }
+
+    public AggregateMemberNames getMemberNames() {
+        return names;
+    }
+    
     public String toString() {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
@@ -66,14 +79,6 @@ public class AggregateValue extends Value {
             sb.append(names.get(i)).append(" : ").append(values[i]);
         }
        return sb.toString();
-    }
-
-    public String getMemberName(int idx) {
-        return names.get(idx);
-    }
-
-    public Value getMemberValue(int i) {
-        return values[i];
     }
 
 }

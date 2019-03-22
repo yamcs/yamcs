@@ -1674,25 +1674,13 @@ public class V6Loader extends V6LoaderBase {
 
         if (hasColumn(cells, IDX_CMD_DEFVALUE)) {
             String v = cells[IDX_CMD_DEFVALUE].getContents();
-            if (atype instanceof IntegerArgumentType) {
-                try {
-                    Long.decode(v);
-                } catch (Exception e) {
-                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
-                }
-                arg.setInitialValue(v);
-            } else if (atype instanceof FloatArgumentType) {
-                try {
-                    Double.parseDouble(v);
-                } catch (Exception e) {
-                    throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
-                }
-                arg.setInitialValue(v);
-
-            } else {
-                arg.setInitialValue(v);
+            try {
+                arg.setInitialValue(atype.parseString(v));
+            } catch (Exception e) {
+                throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }
         }
+        
         if (hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
             if (atype instanceof IntegerArgumentType) {
                 if (((IntegerArgumentType) atype).isSigned()) {

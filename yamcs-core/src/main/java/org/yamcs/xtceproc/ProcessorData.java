@@ -14,8 +14,6 @@ import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.AlarmType;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CriteriaEvaluator;
@@ -99,8 +97,14 @@ public class ProcessorData {
         for (Parameter p : xtcedb.getParameters()) {
             ParameterType ptype = p.getParameterType();
             if (ptype != null) {
-                Value v = DataTypeProcessor.getInitialValue(ptype);
-                if (v != null) {
+
+                Object o = p.getInitialValue();
+
+                if (o == null) {
+                    o = ptype.getInitialValue();
+                }
+                if (o != null) {
+                    Value v = DataTypeProcessor.getValueForType(ptype, o);
                     ParameterValue pv = new ParameterValue(p);
                     pv.setEngineeringValue(v);
                     pv.setGenerationTime(genTime);
@@ -111,6 +115,7 @@ public class ProcessorData {
         }
 
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
+
     }
 
     private ParameterValue getProcessorPV(XtceDb xtceDb, long time, String name, String value) {
@@ -277,12 +282,12 @@ public class ProcessorData {
         if (ptype == null) {
             ptype = p.getParameterType();
             if (!(ptype instanceof NumericParameterType)) {
-                throw new IllegalArgumentException("'"+ptype.getName()+"' is a non numeric type");
+                throw new IllegalArgumentException("'" + ptype.getName() + "' is a non numeric type");
             }
             ptype = ptype.copy();
             typeOverrides.put(p, ptype);
         }
-        
+
         return (NumericParameterType) ptype;
     }
 
@@ -291,12 +296,12 @@ public class ProcessorData {
         if (ptype == null) {
             ptype = p.getParameterType();
             if (!(ptype instanceof EnumeratedParameterType)) {
-                throw new IllegalArgumentException("'"+ptype.getName()+"' is a non enumerated type");
+                throw new IllegalArgumentException("'" + ptype.getName() + "' is a non enumerated type");
             }
             ptype = ptype.copy();
             typeOverrides.put(p, ptype);
         }
-        
+
         return (EnumeratedParameterType) ptype;
     }
 
@@ -305,26 +310,26 @@ public class ProcessorData {
         if (ptype == null) {
             return;
         }
-        if(ptype instanceof NumericParameterType) {
-            NumericParameterType optype = (NumericParameterType)p.getParameterType();
+        if (ptype instanceof NumericParameterType) {
+            NumericParameterType optype = (NumericParameterType) p.getParameterType();
             ((NumericParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
         } else if (ptype instanceof EnumeratedParameterType) {
-            EnumeratedParameterType optype = (EnumeratedParameterType)p.getParameterType();
+            EnumeratedParameterType optype = (EnumeratedParameterType) p.getParameterType();
             ((EnumeratedParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
         } else {
             throw new IllegalArgumentException("Can only have alarms on numeric and enumerated parameters");
         }
     }
-    
+
     public void removeDefaultCalibrator(Parameter p) {
         setDefaultCalibrator(p, null);
     }
-    
+
     public void removeDefaultAlarm(Parameter p) {
         NumericParameterType ptype = getNumericTypeOverride(p);
         ptype.setDefaultAlarm(null);
     }
-    
+
     public void setDefaultNumericAlarm(Parameter p, NumericAlarm alarm) {
         NumericParameterType ptype = getNumericTypeOverride(p);
         ptype.setDefaultAlarm(alarm);

@@ -2,8 +2,10 @@ package org.yamcs.utils;
 
 import org.yamcs.protobuf.Yamcs.Value.Builder;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.util.AggregateMemberNames;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.DoubleConsumer;
 import java.util.function.LongConsumer;
 
@@ -328,9 +330,46 @@ public class ValueUtility {
             return new UInt32Value(v.getUint32Value());
         case UINT64:
             return new UInt64Value(v.getUint64Value());
+        case ARRAY:
+            return fromGbpArray(v);
+        case AGGREGATE:
+            return fromGbpAggregate(v);
         default:
             throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
+    }
+
+    private static Value fromGbpAggregate(org.yamcs.protobuf.Yamcs.Value v) {
+        org.yamcs.protobuf.Yamcs.AggregateValue pbav = v.getAggregateValue();
+        if(pbav.getNameCount()!=pbav.getValueCount()) {
+            throw new IllegalArgumentException("Invalid aggregate value, name count different than value count");
+        }
+        AggregateMemberNames amn = AggregateMemberNames.get(pbav.getNameList().toArray(new String[0]));
+        AggregateValue av = new AggregateValue(amn);
+        for(int i=0; i<pbav.getNameCount(); i++) {
+            av.setValue(pbav.getName(i), fromGpb(pbav.getValue(i)));
+        }
+        
+        return av;
+    }
+
+    private static Value fromGbpArray(org.yamcs.protobuf.Yamcs.Value v) {
+        if(v.getArrayValueCount()==0) {
+            return new ArrayValue(new int[] {0}, Type.UINT32);
+        }
+        List<org.yamcs.protobuf.Yamcs.Value> vlist = v.getArrayValueList();
+        org.yamcs.protobuf.Yamcs.Value v0 = vlist.get(0);
+        int n = vlist.size();
+        ArrayValue av = new ArrayValue(new int[] {n}, v0.getType());
+        
+        for(int i=0;i<n;i++) {
+            org.yamcs.protobuf.Yamcs.Value vi = vlist.get(i);
+            if(vi.getType()!=v0.getType()) {
+                throw new IllegalArgumentException("Array elements have all to be of the same type");
+            }
+            av.setElementValue(i, fromGpb(vi));
+        }
+        return av;
     }
 
     /**

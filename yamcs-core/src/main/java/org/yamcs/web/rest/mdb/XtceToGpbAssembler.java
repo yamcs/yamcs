@@ -371,7 +371,7 @@ public class XtceToGpbAssembler {
             b.setDescription(xtceArgument.getShortDescription());
         }
         if (xtceArgument.getInitialValue() != null) {
-            b.setInitialValue(xtceArgument.getInitialValue());
+            b.setInitialValue(xtceArgument.getInitialValue().toString());
         }
         if (xtceArgument.getArgumentType() != null) {
             ArgumentType xtceType = xtceArgument.getArgumentType();

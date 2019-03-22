@@ -21,10 +21,6 @@ import org.yamcs.utils.TimeEncoding;
 public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     private static final long serialVersionUID = 1;
 
-    /**
-     * Used mainly for command arguments to specify the default value
-     */
-    long initialValue;
 
     ReferenceTime referenceTime;
 
@@ -54,7 +50,7 @@ public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     }
 
     public Long getInitialValue() {
-        return initialValue;
+        return (Long)initialValue;
     }
 
     @Override

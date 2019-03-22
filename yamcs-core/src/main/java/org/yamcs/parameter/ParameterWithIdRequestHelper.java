@@ -47,7 +47,7 @@ import com.google.common.collect.ListMultimap;
 public class ParameterWithIdRequestHelper implements ParameterConsumer {
     ParameterRequestManager prm;
     final ParameterWithIdConsumer listener;
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    static Logger log = LoggerFactory.getLogger(ParameterWithIdRequestHelper.class.getName());
     Map<Integer, Subscription> subscriptions = new ConcurrentHashMap<>();
 
     // how often to check expiration
@@ -117,11 +117,16 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         futureRef.set(future);
     }
 
+    
+    List<ParameterWithId> checkNames(List<NamedObjectId> idList) throws InvalidIdentification {
+        return checkNames(prm, idList);
+    }
+    
     // turn NamedObjectId to Parameter references
-    private List<ParameterWithId> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
+    public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList) throws InvalidIdentification {
         List<ParameterWithId> result = new ArrayList<>();
         List<NamedObjectId> invalid = new ArrayList<>(0);
-        for (NamedObjectId id : plist) {
+        for (NamedObjectId id : idList) {
             String name = id.getName();
             int x = AggregateUtil.findSeparator(name);
             NamedObjectId id1;
@@ -433,19 +438,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     public void quit() {
         for (int subscriptionId : subscriptions.keySet()) {
             prm.removeRequest(subscriptionId);
-        }
-    }
-
-    static class ParameterWithId {
-        final NamedObjectId id; // the id used by the client to subscribe
-        final PathElement[] path; // the path to reach the end element in case the subscribed parameter is an aggregate
-                                  // or array
-        final Parameter p; // the parameter the id refers to
-
-        public ParameterWithId(Parameter p, NamedObjectId id, PathElement[] path) {
-            this.p = p;
-            this.id = id;
-            this.path = path;
         }
     }
 

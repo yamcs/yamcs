@@ -10,6 +10,7 @@ import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
@@ -114,7 +115,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
             if(path == null) {
                 return null;
             }
-            v = Value.getMemberValue(v, path);
+            v = AggregateUtil.getMemberValue(v, path);
         }
 
         if (v == null) {
