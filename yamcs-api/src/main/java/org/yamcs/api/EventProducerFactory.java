@@ -32,7 +32,7 @@ public class EventProducerFactory {
     public static void setMockup(boolean queue) {
         mockup = true;
         if (queue) {
-            mockupQueue = new LinkedList<Event>();
+            mockupQueue = new LinkedList<>();
         }
     }
 
@@ -41,10 +41,9 @@ public class EventProducerFactory {
     }
 
     /**
-     * Creates an event producer based on the event-producer.yaml properties loaded from the classpath.
-     * The yamcsURL in the file has to contain the yamcs instance.
-     * If the event-producer.yaml is not found, then a console event producer is created that just
-     * prints the messages on console.
+     * Creates an event producer based on the event-producer.yaml properties loaded from the classpath. The yamcsURL in
+     * the file has to contain the yamcs instance. If the event-producer.yaml is not found, then an event producer is
+     * created that just passes the message to java logging.
      * 
      * @return the created event producer
      * @throws RuntimeException
@@ -58,8 +57,8 @@ public class EventProducerFactory {
      *
      * The instance passed as parameter will overwrite the instance in the config file if any.
      * 
-     * If the event-producer.yml config file is not found on the classpath, returns a ConsoleEventProducer when called
-     * outside yamcs or an StreamEventProducer when called inside.
+     * If the event-producer.yml config file is not found on the classpath, returns a Slf4jEventProducer when called
+     * outside yamcs or a StreamEventProducer when called inside.
      * 
      * @param instance
      *            - instance for which the producer is to be returned
@@ -82,9 +81,9 @@ public class EventProducerFactory {
             }
 
             log.debug(
-                    "Could not find {} in the classpath, and not running inside Yamcs, returning a ConsoleEventProducer",
+                    "Could not find {} in the classpath, and not running inside Yamcs, events will be logged instead",
                     configFile);
-            return new ConsoleEventProducer();
+            return new Slf4jEventProducer();
         }
         Yaml yaml = new Yaml();
         Object o = yaml.load(is);

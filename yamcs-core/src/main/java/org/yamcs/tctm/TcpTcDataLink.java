@@ -114,7 +114,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected void doStart() {
         setupSysVariables();
         this.timer = new ScheduledThreadPoolExecutor(2);
-        openSocket();
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
         timer.scheduleAtFixedRate(this, 10L, 10L, TimeUnit.SECONDS);
