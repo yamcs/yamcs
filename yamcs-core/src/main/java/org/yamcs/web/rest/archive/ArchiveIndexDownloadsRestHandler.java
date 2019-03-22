@@ -353,6 +353,9 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
             if (first) { // empty result
                 RestHandler.completeOK(req);
             } else {
+                if (!unpack && (indexResult != null)) {
+                    bufferIndexResult(indexResult.build());
+                }
                 try {
                     bufOut.close();
                     if (buf.readableBytes() > 0) {
