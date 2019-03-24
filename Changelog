@@ -1,3 +1,8 @@
+Version 4.9.1 released 19-February-2019
+- allow to get and subscribe individual members of aggregates and elements of
+arrays
+- various bugfixes
+
 Version 4.9.0 released 19-February-2019
 - added support for CCSDS TM frame protocols (TM, AOS and USLP frames)
 - various improvements in yamcs-web
