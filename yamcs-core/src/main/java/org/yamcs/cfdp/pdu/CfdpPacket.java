@@ -59,6 +59,10 @@ public abstract class CfdpPacket {
     protected abstract int calculateDataFieldLength();
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
+        // TODO this probably does not belong here
+        // read (or ignore) CCSDS header
+        buffer.position(buffer.position() + 8);
+
         CfdpHeader header = new CfdpHeader(buffer);
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
@@ -101,12 +105,21 @@ public abstract class CfdpPacket {
     public byte[] toByteArray() {
         // TODO, 65536 is just a random number, find out what it should be
         ByteBuffer buffer = ByteBuffer.allocate(65536);
+
+        buffer.position(8); // make room for the CCSDS header
+
         getHeader().writeToBuffer(buffer);
         writeCFDPPacket(buffer);
         if (getHeader().withCrc()) {
             calculateAndAddCrc(buffer);
         }
-        byte[] toReturn = new byte[buffer.position()];
+
+        // now we can calculate and insert the CCSDS header
+        short endPosition = (short) buffer.position();
+        buffer.rewind();
+        prependCCSDSHeader(buffer, endPosition);
+
+        byte[] toReturn = new byte[endPosition];
         buffer.rewind();
         buffer.get(toReturn);
         return toReturn;
@@ -119,6 +132,14 @@ public abstract class CfdpPacket {
         al.add(transferId.getSequenceNumber());
         al.add(this.toByteArray());
         return new Tuple(td, al);
+    }
+
+    private void prependCCSDSHeader(ByteBuffer buffer, short endPosition) {
+        short length = (short) (endPosition - (short) 7); // end position - CCSDS header + 1 (cfr CCSDS standard)
+        byte[] ccsdsHeader = new byte[] { 0x1f, (byte) 0xfd, (byte) 0xc0, 0x00, (byte) ((length >> 8) & 0xff),
+                (byte) (length & 0xff),
+                0x00, 0x00 };
+        buffer.put(ccsdsHeader, 0, ccsdsHeader.length);
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {

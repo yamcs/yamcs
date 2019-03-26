@@ -85,21 +85,26 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         for (FaultHandlerOverride fho : this.faultHandlerOverrides) {
             toReturn += 3;
         }
-        toReturn += 2 + flowLabel.getValue().length;
+        toReturn += 2;
+        if (flowLabel != null) {
+            toReturn += flowLabel.getValue().length;
+        }
         return toReturn;
     }
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put(getFileDirectiveCode().getCode());
-        buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
+        buffer.put((byte) ((segmentationControl ? 0 : 1) << 7));
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
         destinationFileName.writeToBuffer(buffer);
         filestoreRequests.forEach(x -> x.toTLV().writeToBuffer(buffer));
         messagesToUser.forEach(x -> x.toTLV().writeToBuffer(buffer));
         faultHandlerOverrides.forEach(x -> x.toTLV().writeToBuffer(buffer));
-        flowLabel.writeToBuffer(buffer);
+        if (flowLabel != null) {
+            flowLabel.writeToBuffer(buffer);
+        }
     }
 
     @Override

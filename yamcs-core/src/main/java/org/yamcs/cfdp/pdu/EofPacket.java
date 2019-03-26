@@ -29,7 +29,7 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
         this.fileChecksum = CfdpUtils.getUnsignedInt(buffer);
-        this.fileSize = CfdpUtils.getUnsignedShort(buffer);
+        this.fileSize = CfdpUtils.getUnsignedInt(buffer);
 
         if (conditionCode != ConditionCode.NoError
                 && conditionCode != ConditionCode.Reserved) {

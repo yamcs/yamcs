@@ -97,7 +97,6 @@ public class CfdpHeader {
      * Afterwards puts the buffer position right after the header 
      */
     private void readPduHeader(ByteBuffer buffer) {
-        buffer.position(0);
         byte tempByte = buffer.get();
         fileDirective = !CfdpUtils.getBitOfByte(tempByte, 3);
         towardsSender = CfdpUtils.getBitOfByte(tempByte, 4);

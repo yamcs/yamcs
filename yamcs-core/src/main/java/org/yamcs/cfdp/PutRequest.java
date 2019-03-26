@@ -19,6 +19,7 @@ public class PutRequest extends CfdpRequest {
     private Bucket bucket;
     private boolean overwrite;
     private boolean createpath;
+    private int checksum;
 
     public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, boolean overwrite,
             boolean createpath, Bucket b, byte[] data) {
@@ -31,6 +32,7 @@ public class PutRequest extends CfdpRequest {
         this.createpath = createpath;
         this.bucket = b;
         this.packetData = data;
+        this.checksum = calculateChecksum(data);
     }
 
     public int getSourceId() {
@@ -53,6 +55,10 @@ public class PutRequest extends CfdpRequest {
         return packetData.length;
     }
 
+    public int getChecksun() {
+        return this.checksum;
+    }
+
     public byte[] getPacketData() {
         return packetData;
     }
@@ -67,6 +73,11 @@ public class PutRequest extends CfdpRequest {
 
     public boolean getCreatePath() {
         return createpath;
+    }
+
+    private int calculateChecksum(byte[] data) {
+        int toReturn = 0;
+        return toReturn;
     }
 
 }

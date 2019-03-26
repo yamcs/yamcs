@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
-import org.yamcs.cfdp.pdu.ActionCode;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
@@ -24,12 +22,10 @@ import org.yamcs.cfdp.pdu.FaultHandlerOverride;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FileStoreRequest;
-import org.yamcs.cfdp.pdu.LV;
 import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
-import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.protobuf.Cfdp;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
@@ -56,7 +52,7 @@ public class CfdpTransfer extends CfdpTransaction {
     private final boolean withCrc = false;
     private final boolean acknowledged = false;
     private final boolean withSegmentation = false;
-    private final int entitySize = 4;
+    private final int entitySize = 2;
     private final int seqNrSize = 4;
     private final int maxDataSize = 20;
 
@@ -223,19 +219,15 @@ public class CfdpTransfer extends CfdpTransaction {
                 request.getDestinationId(), // the id of the target
                 this.myId.getSequenceNumber());
 
-        // TODO, only supports the creation of new files at the moment
-        List<FileStoreRequest> fsrs = new ArrayList<FileStoreRequest>();
-        fsrs.add(new FileStoreRequest(ActionCode.CreateFile, new LV(request.getTargetPath())));
-
         return new MetadataPacket(
                 withSegmentation, // TODO no segmentation
                 request.getPacketLength(),
                 "", // no source file name, the data will come from a bucket
                 request.getTargetPath(),
-                fsrs,
+                new ArrayList<FileStoreRequest>(),
                 new ArrayList<MessageToUser>(), // no user messages
                 new ArrayList<FaultHandlerOverride>(), // no fault handler overides
-                new TLV((byte) 0x05, new byte[0]), // empty flow label
+                null, // no flow label
                 header);
     }
 

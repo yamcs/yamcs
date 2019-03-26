@@ -76,7 +76,8 @@ public class CfdpRestHandler extends RestHandler {
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
 
         CfdpTransfer transfer = (CfdpTransfer) ci.processRequest(
-                new PutRequest(CfdpDatabase.mySourceId, 2, objName, target, overwrite, createpath, b, objData));
+                // TODO, hardcoded destination
+                new PutRequest(CfdpDatabase.mySourceId, 24, objName, target, overwrite, createpath, b, objData));
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
