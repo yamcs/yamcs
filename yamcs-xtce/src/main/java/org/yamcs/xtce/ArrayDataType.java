@@ -20,6 +20,9 @@ public class ArrayDataType extends NameDescription implements DataType {
     private DataType type;
     final private int numberOfDimensions;
     private Object[] initialValue;
+    
+    // TODO check if XTCE has something similar
+    private int[] dimensions;
 
     public ArrayDataType(String name, int numberOfDimensions) {
         super(name);
@@ -56,6 +59,15 @@ public class ArrayDataType extends NameDescription implements DataType {
         return numberOfDimensions;
     }
 
+    public void setDimensions(int[] dimensions) {
+        this.dimensions = dimensions;
+    }
+
+    public int[] getDimensions() {
+        return dimensions;
+    }
+
+    @Override
     public Type getValueType() {
         return Type.ARRAY;
     }
