@@ -156,43 +156,14 @@ public abstract class CfdpPacket implements Packet {
     }
 
     private boolean crcValid() {
-        // TODO implement
-        return true;
+        throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
     }
 
     // the buffer is assumed to be at the correct position
     protected abstract void writeCFDPPacket(ByteBuffer buffer);
 
     private void calculateAndAddCrc(ByteBuffer buffer) {
-        // TODO implement correctly; note that also the header.datalength field should depend on the presence/absence of
-        // the CRC
-        buffer.put((byte) 0x00).put((byte) 0x00);
+        throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
     }
-
-    /*   @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("PDU type: " + (fileDirective ? "File Directive" : "File Data") + "\n");
-        sb.append("Direction: " + (towardsSender ? "Towards Sender" : "Towards Receiver") + "\n");
-        sb.append("Transmission mode: " + (acknowledged ? "Acknowledged" : "Unacknowledged") + "\n");
-        sb.append("With CRC: " + (withCrc ? "Yes" : "No") + "\n");
-        sb.append("Data length: " + dataLength + "\n");
-        sb.append("SourceId: " + sourceId + " (" + entityIdLength + ")\n");
-        sb.append("DestinationId: " + destinationId + " (" + entityIdLength + ")\n");
-        sb.append("Sequence nbr: " + sequenceNr + " (" + sequenceNumberLength + ")\n");
-        return sb.toString();
-    }
-    
-    public void writeTo(OutputStream os) throws IOException {
-        try {
-            if (buffer.hasArray()) {
-                os.write(buffer.array());
-            }
-        } catch (BufferOverflowException e) {
-            log.error("Overflow while sending " + this, e);
-            ;
-        }
-    }
-    */
 
 }
