@@ -1,5 +1,7 @@
 package org.yamcs.cfdp;
 
+import java.util.Arrays;
+
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -19,7 +21,7 @@ public class PutRequest extends CfdpRequest {
     private Bucket bucket;
     private boolean overwrite;
     private boolean createpath;
-    private int checksum;
+    private long checksum;
 
     public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, boolean overwrite,
             boolean createpath, Bucket b, byte[] data) {
@@ -55,7 +57,7 @@ public class PutRequest extends CfdpRequest {
         return packetData.length;
     }
 
-    public int getChecksun() {
+    public long getChecksum() {
         return this.checksum;
     }
 
@@ -75,9 +77,20 @@ public class PutRequest extends CfdpRequest {
         return createpath;
     }
 
-    private int calculateChecksum(byte[] data) {
-        int toReturn = 0;
+    private long calculateChecksum(byte[] data) {
+        long toReturn = 0;
+        for (int i = 0; i < data.length; i += 4) {
+            toReturn = addPartToChecksum(toReturn, Arrays.copyOfRange(data, i, i + 4));
+        }
         return toReturn;
+    }
+
+    private long addPartToChecksum(long checksum, byte[] partOfData) {
+        checksum += ((partOfData[0] & 0xFF) << 24) & 0xFF000000L
+                | ((partOfData[1] & 0xFF) << 16) & 0xFF0000L
+                | ((partOfData[2] & 0xFF) << 8) & 0xFF00L
+                | (partOfData[3] & 0xFF);
+        return checksum & 0x00000000FFFFFFFFL;
     }
 
 }

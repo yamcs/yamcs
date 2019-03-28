@@ -50,7 +50,7 @@ public class EofPacket extends CfdpPacket implements FileDirective {
 
     @Override
     protected int calculateDataFieldLength() {
-        return 9 // condition code (1) + checksum (4) + file size (4)
+        return 10 // condition code (1) + checksum (4) + file size (4)
                 + ((faultLocation != null) ? 2 + faultLocation.getValue().length : 0);
     }
 

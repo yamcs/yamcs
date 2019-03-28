@@ -85,7 +85,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         for (FaultHandlerOverride fho : this.faultHandlerOverrides) {
             toReturn += 3;
         }
-        toReturn += 2;
+        toReturn += 3;
         if (flowLabel != null) {
             toReturn += flowLabel.getValue().length;
         }

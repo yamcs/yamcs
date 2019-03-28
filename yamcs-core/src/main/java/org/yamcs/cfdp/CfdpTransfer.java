@@ -54,7 +54,9 @@ public class CfdpTransfer extends CfdpTransaction {
     private final boolean withSegmentation = false;
     private final int entitySize = 2;
     private final int seqNrSize = 4;
-    private final int maxDataSize = 20;
+    private final int fixedPduHeaderLength = 4 + 2 * entitySize + seqNrSize;
+    private final int fileDataOffsetLength = 4;
+    private final int maxDataSize = 512 - fixedPduHeaderLength - fileDataOffsetLength;
 
     // maps offsets to FileDataPackets
     private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<Long, FileDataPacket>();
@@ -265,7 +267,7 @@ public class CfdpTransfer extends CfdpTransaction {
 
         return new EofPacket(
                 code, // TODO, we assume no errors
-                0, // TODO checksum
+                request.getChecksum(),
                 request.getPacketLength(), // TODO, currently assumes that all data is sent exactly once
                 null, // TODO, only if ConditionCode.NoError is sent
                 header);
