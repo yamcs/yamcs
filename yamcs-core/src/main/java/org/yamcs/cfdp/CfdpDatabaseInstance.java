@@ -106,10 +106,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         CfdpPacket packet = CfdpPacket.fromTuple(tuple);
-        // log.error(packet.toString());
-
         CfdpTransactionId id = packet.getTransactionId();
-
         CfdpTransaction transaction = null;
         if (transfers.containsKey(id)) {
             transaction = transfers.get(id);
@@ -125,19 +122,14 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
-            // TODO, probably an exception is better
             log.error("Only CFDP transactions that are initiated by YAMCS are supported.");
-            return null;
+            throw new IllegalArgumentException("Only YAMCS-initiated CFDP transactions are supported");
         } else {
-            // TODO, probably an exception is better
             log.error("Rogue CFDP packet received.");
-            return null;
+            throw new IllegalArgumentException("Rogue CFDP packet received");
         }
     }
 
     @Override
-    public void streamClosed(Stream stream) {
-        // TODO Auto-generated method stub
-
-    }
+    public void streamClosed(Stream stream) {}
 }
