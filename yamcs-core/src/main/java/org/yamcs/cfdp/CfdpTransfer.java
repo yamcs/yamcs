@@ -85,7 +85,7 @@ public class CfdpTransfer extends CfdpTransaction {
     public CfdpTransfer(PutRequest request, Stream cfdpOut) {
         super(request.getSourceId(), cfdpOut);
         YConfiguration conf = YConfiguration.getConfiguration("cfdp");
-        this.entitySize = conf.getInt("entityIdLenght");
+        this.entitySize = conf.getInt("entityIdLength");
         this.seqNrSize = conf.getInt("sequenceNrLength");
         this.maxDataSize = conf.getInt("maxPduSize") - 4 - 2 * this.entitySize - this.seqNrSize - 4;
         this.acknowledged = conf.getBoolean("acknowledged");

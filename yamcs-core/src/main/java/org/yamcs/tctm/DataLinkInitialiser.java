@@ -138,7 +138,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                     if (pwrt.isCorrupted() && dropCorrupted) {
                         return;
                     }
-                    // TODO the ugliness is strong with this one
                     if (link instanceof CfdpUdpTmDataLink) {
                         Tuple t = new Tuple(StandardTupleDefinitions.CFDP,
                                 new Object[] { (long) 1, (long) pwrt.getSeqCount(), pwrt.getPacket() });

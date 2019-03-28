@@ -7,10 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.tctm.Packet;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
-public abstract class CfdpPacket {
+public abstract class CfdpPacket implements Packet {
 
     protected ByteBuffer buffer;
     protected CfdpHeader header;
@@ -102,6 +103,7 @@ public abstract class CfdpPacket {
         return toReturn;
     }
 
+    @Override
     public byte[] toByteArray() {
         // TODO, 65536 is just a random number, find out what it should be
         ByteBuffer buffer = ByteBuffer.allocate(65536);
