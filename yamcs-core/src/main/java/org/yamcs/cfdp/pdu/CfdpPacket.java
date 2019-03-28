@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.tctm.Packet;
 import org.yamcs.yarch.Tuple;
@@ -15,6 +16,8 @@ public abstract class CfdpPacket implements Packet {
 
     protected ByteBuffer buffer;
     protected CfdpHeader header;
+
+    private final static int CCSDSHeaderSize = 8;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
 
@@ -105,10 +108,10 @@ public abstract class CfdpPacket implements Packet {
 
     @Override
     public byte[] toByteArray() {
-        // TODO, 65536 is just a random number, find out what it should be
-        ByteBuffer buffer = ByteBuffer.allocate(65536);
+        ByteBuffer buffer = ByteBuffer
+                .allocate(YConfiguration.getConfiguration("cfdp").getInt("maxPduSize") + CCSDSHeaderSize);
 
-        buffer.position(8); // make room for the CCSDS header
+        buffer.position(CCSDSHeaderSize); // make room for the CCSDS header
 
         getHeader().writeToBuffer(buffer);
         writeCFDPPacket(buffer);

@@ -146,7 +146,6 @@ public class CfdpTransfer extends CfdpTransaction {
                     }
                     Thread.sleep(pauseBetweenFileDataPackets);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 end = Math.min(offset + maxDataSize, request.getPacketLength());
