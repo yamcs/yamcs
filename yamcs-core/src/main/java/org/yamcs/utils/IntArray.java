@@ -175,7 +175,7 @@ public class IntArray {
      * See {@link Arrays#binarySearch(int[], int)} for details.
      * 
      * If the array is not sorted, the behaviour is undefined.
-     * @param pid
+     * @param x - the value to be searched for
      * @return
      */
     public int binarySearch(int x) {
