@@ -41,10 +41,8 @@ public enum ActionCode {
     private static ActionCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
-        } else {
-            // TODO
         }
-        return null;
+        throw new IllegalArgumentException("In CFDP Action Code: " + code);
     }
 
     public static ActionCode readActionCode(ByteBuffer buffer) {

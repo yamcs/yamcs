@@ -63,9 +63,8 @@ public abstract class CfdpPacket implements Packet {
     protected abstract int calculateDataFieldLength();
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
-        // TODO this probably does not belong here
-        // read (or ignore) CCSDS header
-        buffer.position(buffer.position() + 8);
+        // read (and ignore) CCSDS header
+        buffer.position(buffer.position() + CCSDSHeaderSize);
 
         CfdpHeader header = new CfdpHeader(buffer);
         CfdpPacket toReturn = null;

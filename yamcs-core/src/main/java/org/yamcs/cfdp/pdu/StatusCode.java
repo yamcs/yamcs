@@ -40,10 +40,8 @@ public enum StatusCode {
     private static StatusCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
-        } else {
-            // TODO
         }
-        return null;
+        throw new IllegalArgumentException("Invalid CFDP Status code: " + code);
     }
 
     public static StatusCode readStatusCode(ByteBuffer buffer) {
