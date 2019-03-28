@@ -1,3 +1,4 @@
+entityId: 5
 entityIdLength: 2
 sequenceNrLength: 4
 maxPduSize: 512

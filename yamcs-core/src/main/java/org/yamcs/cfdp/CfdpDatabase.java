@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.yarch.YarchException;
 
 /**
@@ -13,8 +14,7 @@ import org.yamcs.yarch.YarchException;
 public class CfdpDatabase {
     static Map<String, CfdpDatabaseInstance> databases = new HashMap<>();
 
-    // TODO, how to uniquely identify entities
-    public final static int mySourceId = 1;
+    public final static int mySourceId = YConfiguration.getConfiguration("cfdp").getInt("entityId");
 
     /**
      * 
