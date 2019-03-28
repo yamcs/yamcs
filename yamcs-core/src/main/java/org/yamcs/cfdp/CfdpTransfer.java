@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -50,13 +51,11 @@ public class CfdpTransfer extends CfdpTransaction {
     }
 
     private final boolean withCrc = false;
-    private final boolean acknowledged = false;
+    private boolean acknowledged = false;
     private final boolean withSegmentation = false;
-    private final int entitySize = 2;
-    private final int seqNrSize = 4;
-    private final int fixedPduHeaderLength = 4 + 2 * entitySize + seqNrSize;
-    private final int fileDataOffsetLength = 4;
-    private final int maxDataSize = 512 - fixedPduHeaderLength - fileDataOffsetLength;
+    private int entitySize;
+    private int seqNrSize;
+    private int maxDataSize;
 
     // maps offsets to FileDataPackets
     private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<Long, FileDataPacket>();
@@ -85,6 +84,12 @@ public class CfdpTransfer extends CfdpTransaction {
 
     public CfdpTransfer(PutRequest request, Stream cfdpOut) {
         super(request.getSourceId(), cfdpOut);
+        YConfiguration conf = YConfiguration.getConfiguration("cfdp");
+        this.entitySize = conf.getInt("entityIdLenght");
+        this.seqNrSize = conf.getInt("sequenceNrLength");
+        this.maxDataSize = conf.getInt("maxPduSize") - 4 - 2 * this.entitySize - this.seqNrSize - 4;
+        this.acknowledged = conf.getBoolean("acknowledged");
+
         this.request = request;
         this.currentState = CfdpTransferState.START;
         this.state = Cfdp.TransferState.RUNNING;

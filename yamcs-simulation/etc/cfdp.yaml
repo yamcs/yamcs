@@ -1,0 +1,4 @@
+entityIdLength: 2
+sequenceNrlength: 4
+maxPduSize: 512
+acknowledged: false
