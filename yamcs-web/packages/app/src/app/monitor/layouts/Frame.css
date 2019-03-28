@@ -56,3 +56,7 @@
   height: 10px;
   cursor: nwse-resize;
 }
+
+.frame-content-wrapper ::ng-deep #middle {
+  text-align: left;
+}
