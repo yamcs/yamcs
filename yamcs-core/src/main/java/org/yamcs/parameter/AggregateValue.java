@@ -7,13 +7,13 @@ import org.yamcs.xtce.util.AggregateMemberNames;
 public class AggregateValue extends Value {
     AggregateMemberNames names;
     Value[] values;
-    
+
     /**
-     * Create a new aggregate value with the member names. 
-     * Make sure that the memberNames are interned string (see {@link String#intern()}, 
-     * for example as returned by {@link AggregateDataType#getMemberNames()}   
+     * Create a new aggregate value with the member names.
+     * Make sure that the memberNames are interned string (see {@link String#intern()},
+     * for example as returned by {@link AggregateDataType#getMemberNames()}
      * 
-     *  
+     * 
      * @param memberNames
      */
     public AggregateValue(AggregateMemberNames memberNames) {
@@ -22,15 +22,15 @@ public class AggregateValue extends Value {
     }
 
     private int idx(String name) {
-       int idx = names.indexOf(name);
-       if(idx==-1) {
-           throw new IllegalArgumentException("No member named '"+name+"'");
-       }
-       return idx;
+        int idx = names.indexOf(name);
+        if (idx == -1) {
+            throw new IllegalArgumentException("No member named '" + name + "'");
+        }
+        return idx;
     }
-    
-    public void setValue(String name, Value value) {
-        values[idx(name)] = value;
+
+    public void setMemberValue(String name, Value value) {
+        setMemberValue(idx(name), value);
     }
 
     /**
@@ -45,6 +45,13 @@ public class AggregateValue extends Value {
         return values[idx(name)];
     }
 
+    public void setMemberValue(int idx, Value value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        values[idx] = value;
+    }
+
     @Override
     public Type getType() {
         return Type.AGGREGATE;
@@ -54,7 +61,6 @@ public class AggregateValue extends Value {
         return values.length;
     }
 
-    
     public String getMemberName(int idx) {
         return names.get(idx);
     }
@@ -66,19 +72,19 @@ public class AggregateValue extends Value {
     public AggregateMemberNames getMemberNames() {
         return names;
     }
-    
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for(int i =0; i<values.length; i++) {
-            if(first) {
+        for (int i = 0; i < values.length; i++) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(", ");
             }
             sb.append(names.get(i)).append(" : ").append(values[i]);
         }
-       return sb.toString();
+        return sb.toString();
     }
 
 }

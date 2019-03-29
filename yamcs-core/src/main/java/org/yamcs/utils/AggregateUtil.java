@@ -24,18 +24,22 @@ import com.google.common.base.Splitter;
  */
 public class AggregateUtil {
     /**
-     * finds the first occurrence of . or [
+     * finds the first occurrence of . or [ after the last /
      * 
      * @param s
-     * @return
+     * @return the position of the first occurrence of . or [ after the last slash; returns -1 if not found
      */
     public static int findSeparator(String s) {
+        int found = -1;
         for (int i = 0; i < s.length(); i++) {
-            if ((s.charAt(i) == '.') || (s.charAt(i) == '[')) {
-                return i;
+            char c = s.charAt(i);
+            if (found==-1 && ((c == '.') || (c == '['))) {
+                found = i;
+            } else if (c == '/') {
+                found = -1;
             }
         }
-        return -1;
+        return found;
     }
 
     /**
@@ -177,9 +181,9 @@ public class AggregateUtil {
         }
         PathElement pe = path[path.length - 1];
         if (pe.getIndex() == null) {
-            ((AggregateValue) engValue).setValue(pe.getName(), patch.getEngValue());
+            ((AggregateValue) engValue).setMemberValue(pe.getName(), patch.getEngValue());
             if (rawValue != null && patch.getRawValue() != null) {
-                ((AggregateValue) rawValue).setValue(pe.getName(), patch.getRawValue());
+                ((AggregateValue) rawValue).setMemberValue(pe.getName(), patch.getRawValue());
             }
         } else {
             if (pe.getName() != null) {

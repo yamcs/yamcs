@@ -17,8 +17,6 @@ import org.yamcs.xtce.PathElement;
 import org.yamcs.xtceproc.DataTypeProcessor;
 
 public class AggregateUtilTest {
-    
-    
     @Test
     public void testPatchAggregate() {
         Parameter p = getAggregateParameter();
@@ -87,6 +85,15 @@ public class AggregateUtilTest {
         assertEquals(1000, AggregateUtil.getMemberValue(pv.getEngValue(), pea1).getSint32Value());
     }
 
+    @Test
+    public void testFindSeparator() {
+        assertEquals(-1, AggregateUtil.findSeparator("asdfasd"));
+        assertEquals(-1, AggregateUtil.findSeparator("as.d/fasd"));
+        assertEquals(7, AggregateUtil.findSeparator("as.d/fa.sd"));
+        assertEquals(7, AggregateUtil.findSeparator("as.d/fa.s.d"));
+        assertEquals(7, AggregateUtil.findSeparator("as.d/fa[s.d"));
+        assertEquals(0, AggregateUtil.findSeparator(".dd"));
+    }
     
     private Parameter getArrayInsideAggregateParameter() {
         Parameter p = new Parameter("p");
@@ -136,6 +143,8 @@ public class AggregateUtilTest {
         m.setDataType(adt);
         return m;
     }
+    
+    
     
     
 }

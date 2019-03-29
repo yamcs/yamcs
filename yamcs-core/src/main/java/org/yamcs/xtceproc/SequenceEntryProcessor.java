@@ -203,7 +203,7 @@ public class SequenceEntryProcessor {
             }
 
             Value v = extract(mptype);
-            result.setValue(m.getName(), v);
+            result.setMemberValue(m.getName(), v);
         }
         return result;
     }

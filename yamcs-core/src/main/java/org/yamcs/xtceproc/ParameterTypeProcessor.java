@@ -405,7 +405,7 @@ public class ParameterTypeProcessor {
             if(rv!=null) {
                 Value ev = doCalibrate(pvalues, contextEvaluator, (ParameterType) m.getType(), rv);
                 if(ev!=null) {
-                    engValue.setValue(m.getName(), ev);
+                    engValue.setMemberValue(m.getName(), ev);
                 } else {
                     return null;
                 }

@@ -20,7 +20,7 @@ public class ArrayDataType extends NameDescription implements DataType {
     private DataType type;
     final private int numberOfDimensions;
     private Object[] initialValue;
-    
+
     // TODO check if XTCE has something similar
     private int[] dimensions;
 
@@ -54,12 +54,15 @@ public class ArrayDataType extends NameDescription implements DataType {
         return type;
     }
 
-
     public int getNumberOfDimensions() {
         return numberOfDimensions;
     }
 
     public void setDimensions(int[] dimensions) {
+        if (dimensions.length != numberOfDimensions) {
+            throw new IllegalArgumentException("Number of dimensions does not match: got " + dimensions.length
+                    + " but expected " + numberOfDimensions);
+        }
         this.dimensions = dimensions;
     }
 
@@ -92,7 +95,7 @@ public class ArrayDataType extends NameDescription implements DataType {
      */
     @Override
     public Object[] parseString(String v) {
-        
+
         Object[] r;
         try {
             JsonElement el = new JsonParser().parse(v);

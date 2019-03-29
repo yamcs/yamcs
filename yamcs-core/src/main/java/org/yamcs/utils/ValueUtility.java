@@ -29,89 +29,86 @@ import com.google.protobuf.ByteString;
 
 public class ValueUtility {
     public static Value getUint32Value(int x) {
-        return new UInt32Value(x); 
+        return new UInt32Value(x);
     }
 
     public static Value getSint32Value(int x) {
-        return new SInt32Value(x); 
+        return new SInt32Value(x);
     }
 
     public static Value getUint64Value(long x) {
-        return new UInt64Value(x); 
+        return new UInt64Value(x);
     }
 
     public static Value getSint64Value(long x) {
-        return new SInt64Value(x); 
+        return new SInt64Value(x);
     }
 
     public static Value getStringValue(String x) {
-        return new StringValue(x); 
+        return new StringValue(x);
     }
 
     public static Value getBinaryValue(byte[] x) {
-        return new BinaryValue(x); 
+        return new BinaryValue(x);
     }
 
     public static Value getTimestampValue(long x) {
-        return new TimestampValue(x); 
+        return new TimestampValue(x);
     }
-
 
     public static Value getBooleanValue(boolean b) {
-        return new BooleanValue(b); 
+        return new BooleanValue(b);
     }
 
-
     public static Value getFloatValue(float f) {
-        return new FloatValue(f); 
+        return new FloatValue(f);
     }
 
     public static Value getDoubleValue(double d) {
         return new DoubleValue(d);
     }
-    
+
     public static org.yamcs.protobuf.Yamcs.Value getDoubleGbpValue(double d) {
         return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(d).build();
     }
-    
+
     public static org.yamcs.protobuf.Yamcs.Value getStringGbpValue(String s) {
         return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.STRING).setStringValue(s).build();
     }
-    
+
     public static org.yamcs.protobuf.Yamcs.Value getUint32GbpValue(int x) {
         return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.UINT32).setUint32Value(x).build();
     }
-    
+
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
         switch (cd.getType().val) {
         case INT:
-            return getSint32Value((Integer)v);
+            return getSint32Value((Integer) v);
         case SHORT:
-            return getUint32Value((Short)v);
+            return getUint32Value((Short) v);
         case BYTE:
-            return getUint32Value((Byte)v);
+            return getUint32Value((Byte) v);
         case STRING:
         case ENUM:
-            return getStringValue((String)v);
+            return getStringValue((String) v);
         case TIMESTAMP:
-            return getTimestampValue((Long)v);
+            return getTimestampValue((Long) v);
         case BINARY:
-            return getBinaryValue((byte[])v);
+            return getBinaryValue((byte[]) v);
         case BOOLEAN:
-            return getBooleanValue((Boolean)v);
+            return getBooleanValue((Boolean) v);
         case DOUBLE:
-            return getDoubleValue((Double)v);
+            return getDoubleValue((Double) v);
         case LIST:
         case PROTOBUF:
         case TUPLE:
         default:
-            throw new IllegalArgumentException("cannot convert type to value "+cd.getType());
+            throw new IllegalArgumentException("cannot convert type to value " + cd.getType());
         }
     }
 
-
     public static Object getYarchValue(Value v) {
-        switch(v.getType()) {
+        switch (v.getType()) {
         case BINARY:
             return v.getBinaryValue();
         case SINT32:
@@ -121,7 +118,7 @@ public class ValueUtility {
         case DOUBLE:
             return v.getDoubleValue();
         case FLOAT:
-            return (double)v.getFloatValue();
+            return (double) v.getFloatValue();
         case STRING:
             return v.getStringValue();
         case TIMESTAMP:
@@ -132,14 +129,14 @@ public class ValueUtility {
             return v.getSint64Value();
         case UINT64:
             return v.getUint64Value();
-        default: 
-            throw new IllegalArgumentException("cannot values of type "+v.getType());
+        default:
+            throw new IllegalArgumentException("cannot values of type " + v.getType());
         }
-        
+
     }
 
     public static Object getYarchValue(org.yamcs.protobuf.Yamcs.Value v) {
-        switch(v.getType()) {
+        switch (v.getType()) {
         case BINARY:
             return v.getBinaryValue().toByteArray();
         case SINT32:
@@ -149,7 +146,7 @@ public class ValueUtility {
         case DOUBLE:
             return v.getDoubleValue();
         case FLOAT:
-            return (double)v.getFloatValue();
+            return (double) v.getFloatValue();
         case STRING:
             return v.getStringValue();
         case TIMESTAMP:
@@ -160,18 +157,17 @@ public class ValueUtility {
             return v.getSint64Value();
         case UINT64:
             return v.getUint64Value();
-        default: 
-            throw new IllegalArgumentException("cannot values of type "+v.getType());
+        default:
+            throw new IllegalArgumentException("cannot values of type " + v.getType());
         }
-        
+
     }
 
     public static DataType getYarchType(Type type) {
-        switch(type) {
+        switch (type) {
         case BINARY:
             return DataType.BINARY;
         case SINT32:
-            return DataType.INT;
         case UINT32:
             return DataType.INT;
         case DOUBLE:
@@ -182,10 +178,16 @@ public class ValueUtility {
             return DataType.STRING;
         case TIMESTAMP:
             return DataType.TIMESTAMP;
+        case UINT64:
+        case SINT64:
+            return DataType.LONG;
+        case BOOLEAN:
+            return DataType.BOOLEAN;
+        default:
+            throw new IllegalArgumentException("cannot values of type " + type);
         }
-        throw new IllegalArgumentException("cannot values of type "+type);
     }
-    
+
     public static boolean equals(Value a, Value b) {
         if (a == null ^ b == null)
             return false;
@@ -258,6 +260,7 @@ public class ValueUtility {
     public static org.yamcs.protobuf.Yamcs.Value toGbp(Value v) {
         org.yamcs.protobuf.Yamcs.Value.Builder b = org.yamcs.protobuf.Yamcs.Value.newBuilder();
         b.setType(v.getType());
+
         switch (v.getType()) {
         case BINARY:
             return b.setBinaryValue(ByteString.copyFrom(v.getBinaryValue())).build();
@@ -290,9 +293,10 @@ public class ValueUtility {
             throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
     }
+
     private static void fillInArray(Builder b, ArrayValue av) {
         int n = av.flatLength();
-        for(int i = 0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             b.addArrayValue(toGbp(av.getElementValue(i)));
         }
     }
@@ -300,11 +304,14 @@ public class ValueUtility {
     public static org.yamcs.protobuf.Yamcs.AggregateValue toGbp(AggregateValue v) {
         int n = v.numMembers();
         org.yamcs.protobuf.Yamcs.AggregateValue.Builder b = org.yamcs.protobuf.Yamcs.AggregateValue.newBuilder();
-        for(int i = 0; i<n; i++) {
-            b.addName(v.getMemberName(i));
-            b.addValue(toGbp(v.getMemberValue(i)));
+        for (int i = 0; i < n; i++) {
+            Value mv = v.getMemberValue(i);
+            if (mv != null) {
+                b.addName(v.getMemberName(i));
+                b.addValue(toGbp(mv));
+            }
         }
-        
+
         return b.build();
     }
 
@@ -341,30 +348,30 @@ public class ValueUtility {
 
     private static Value fromGbpAggregate(org.yamcs.protobuf.Yamcs.Value v) {
         org.yamcs.protobuf.Yamcs.AggregateValue pbav = v.getAggregateValue();
-        if(pbav.getNameCount()!=pbav.getValueCount()) {
+        if (pbav.getNameCount() != pbav.getValueCount()) {
             throw new IllegalArgumentException("Invalid aggregate value, name count different than value count");
         }
         AggregateMemberNames amn = AggregateMemberNames.get(pbav.getNameList().toArray(new String[0]));
         AggregateValue av = new AggregateValue(amn);
-        for(int i=0; i<pbav.getNameCount(); i++) {
-            av.setValue(pbav.getName(i), fromGpb(pbav.getValue(i)));
+        for (int i = 0; i < pbav.getNameCount(); i++) {
+            av.setMemberValue(pbav.getName(i), fromGpb(pbav.getValue(i)));
         }
-        
+
         return av;
     }
 
     private static Value fromGbpArray(org.yamcs.protobuf.Yamcs.Value v) {
-        if(v.getArrayValueCount()==0) {
-            return new ArrayValue(new int[] {0}, Type.UINT32);
+        if (v.getArrayValueCount() == 0) {
+            return new ArrayValue(new int[] { 0 }, Type.UINT32);
         }
         List<org.yamcs.protobuf.Yamcs.Value> vlist = v.getArrayValueList();
         org.yamcs.protobuf.Yamcs.Value v0 = vlist.get(0);
         int n = vlist.size();
-        ArrayValue av = new ArrayValue(new int[] {n}, v0.getType());
-        
-        for(int i=0;i<n;i++) {
+        ArrayValue av = new ArrayValue(new int[] { n }, v0.getType());
+
+        for (int i = 0; i < n; i++) {
             org.yamcs.protobuf.Yamcs.Value vi = vlist.get(i);
-            if(vi.getType()!=v0.getType()) {
+            if (vi.getType() != v0.getType()) {
                 throw new IllegalArgumentException("Array elements have all to be of the same type");
             }
             av.setElementValue(i, fromGpb(vi));
@@ -389,12 +396,12 @@ public class ValueUtility {
             c.accept(v.getSint64Value());
             return true;
         case UINT32:
-            c.accept(v.getUint32Value()&0xFFFFFFFFL);
+            c.accept(v.getUint32Value() & 0xFFFFFFFFL);
             return true;
         case UINT64:
             c.accept(v.getUint64Value());
             return true;
-        default: 
+        default:
             return false;
         }
     }
@@ -422,16 +429,16 @@ public class ValueUtility {
             c.accept(v.getSint64Value());
             return true;
         case UINT32:
-            c.accept(v.getUint32Value()&0xFFFFFFFFL);
+            c.accept(v.getUint32Value() & 0xFFFFFFFFL);
             return true;
         case UINT64:
             c.accept(UnsignedLong.toDouble(v.getUint64Value()));
             return true;
-        default: 
+        default:
             return false;
         }
     }
-    
+
     /**
      * if the passed on value is FLOAT or DOUBLE, invoke the function on the double value and return true
      * if v is of other types return false
@@ -448,7 +455,7 @@ public class ValueUtility {
         case FLOAT:
             c.accept(v.getFloatValue());
             return true;
-        default: 
+        default:
             return false;
         }
     }

@@ -81,7 +81,7 @@ public class DataTypeProcessor {
             if (o1 == null) {
                 throw new IllegalArgumentException("No value provided for member '" + m.getName());
             }
-            v.setValue(m.getName(), getValueForType(m.getType(), o1));
+            v.setMemberValue(m.getName(), getValueForType(m.getType(), o1));
         }
 
         if (v.numMembers() > 0) {

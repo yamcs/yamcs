@@ -152,7 +152,6 @@ public class ProcessorParameterRestHandler extends RestHandler {
             List<org.yamcs.parameter.ParameterValue> l = me.getValue();
             DataSource ds = me.getKey();
             SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, ds);
-            System.out.println("updating parameters " + l);
             try {
                 mgr.updateParameters(l);
             } catch (IllegalArgumentException e) {
