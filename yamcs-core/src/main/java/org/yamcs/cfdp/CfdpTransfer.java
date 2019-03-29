@@ -172,21 +172,25 @@ public class CfdpTransfer extends CfdpTransaction {
             EOFSendAttempts = 1;
             break;
         case EOF_SENT:
-            // wait for the EOF_ACK
-            if (System.currentTimeMillis() > EOFAckTimer + EOFAckTimeoutMs) {
-                if (EOFSendAttempts < maxEOFResendAttempts) {
-                    log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEOFResendAttempts);
-                    sendPacket(eofPacket);
-                    EOFSendAttempts++;
-                    EOFAckTimer = System.currentTimeMillis();
-                } else {
-                    log.info("Resend attempts ({}) of EOF reached", maxEOFResendAttempts);
-                    // resend attempts exceeded the limit
-                    // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
-                    // appropriate sender FaultHandler. See 4.1.7.1.d
-                    this.state = Cfdp.TransferState.FAILED;
-                }
-            } // else, we wait some more
+            if (this.acknowledged) {
+                // wait for the EOF_ACK
+                if (System.currentTimeMillis() > EOFAckTimer + EOFAckTimeoutMs) {
+                    if (EOFSendAttempts < maxEOFResendAttempts) {
+                        log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEOFResendAttempts);
+                        sendPacket(eofPacket);
+                        EOFSendAttempts++;
+                        EOFAckTimer = System.currentTimeMillis();
+                    } else {
+                        log.info("Resend attempts ({}) of EOF reached", maxEOFResendAttempts);
+                        // resend attempts exceeded the limit
+                        // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
+                        // appropriate sender FaultHandler. See 4.1.7.1.d
+                        this.state = Cfdp.TransferState.FAILED;
+                    }
+                } // else, we wait some more
+            } else {
+                state = TransferState.COMPLETED;
+            }
             break;
         case EOF_ACK_RECEIVED:
             EOFSendAttempts = 0;
