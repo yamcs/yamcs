@@ -27,6 +27,7 @@ import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.protobuf.Cfdp;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
@@ -50,9 +51,10 @@ public class CfdpTransfer extends CfdpTransaction {
         CANCELED
     }
 
-    private final boolean withCrc = false;
+    private final boolean unbounded = false; // only known file length transfers
+    private final boolean withCrc = false; // no CRCs are used
     private boolean acknowledged = false;
-    private final boolean withSegmentation = false;
+    private final boolean withSegmentation = false; // segmentation not supported
     private int entitySize;
     private int seqNrSize;
     private int maxDataSize;
@@ -212,27 +214,29 @@ public class CfdpTransfer extends CfdpTransaction {
         }
     }
 
+    // TODO acknowledged versus not acknowledged
+
     private MetadataPacket getMetadataPacket() {
         // create packet header
         CfdpHeader header = new CfdpHeader(
                 true, // it's a file directive
                 false, // it's sent towards the receiver
-                acknowledged, // not acknowledged // TODO, is this okay?
+                acknowledged,
                 withCrc, // no CRC
-                entitySize, // TODO, hardcoded entity length
-                seqNrSize, // TODO, hardcoded sequence number length
+                entitySize,
+                seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
                 this.myId.getSequenceNumber());
 
         return new MetadataPacket(
-                withSegmentation, // TODO no segmentation
+                withSegmentation,
                 request.getPacketLength(),
                 "", // no source file name, the data will come from a bucket
                 request.getTargetPath(),
                 new ArrayList<FileStoreRequest>(),
                 new ArrayList<MessageToUser>(), // no user messages
-                new ArrayList<FaultHandlerOverride>(), // no fault handler overides
+                new ArrayList<FaultHandlerOverride>(), // no fault handler overrides
                 null, // no flow label
                 header);
     }
@@ -241,16 +245,15 @@ public class CfdpTransfer extends CfdpTransaction {
         CfdpHeader header = new CfdpHeader(
                 false, // it's file data
                 false, // it's sent towards the receiver
-                acknowledged, // not acknowledged // TODO, is this okay?
+                acknowledged,
                 withCrc, // no CRC
-                entitySize, // TODO, hardcoded entity length
-                seqNrSize, // TODO, hardcoded sequence number length
+                entitySize,
+                seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
                 this.myId.getSequenceNumber());
 
         FileDataPacket filedata = new FileDataPacket(
-                // TODO, these casts should not be needed
                 Arrays.copyOfRange(request.getPacketData(), (int) offset, (int) end),
                 offset,
                 header);
@@ -270,10 +273,11 @@ public class CfdpTransfer extends CfdpTransaction {
                 this.myId.getSequenceNumber());
 
         return new EofPacket(
-                code, // TODO, we assume no errors
+                code,
                 request.getChecksum(),
-                request.getPacketLength(), // TODO, currently assumes that all data is sent exactly once
-                null, // TODO, only if ConditionCode.NoError is sent
+                request.getPacketLength(), // known length, in case unbounded transfers become supported, this needs to
+                                           // be updated
+                getFaultLocation(code), // TODO, only if ConditionCode.NoError is sent
                 header);
     }
 
@@ -312,6 +316,13 @@ public class CfdpTransfer extends CfdpTransaction {
     public CfdpTransfer cancel() {
         // IF cancelled, return myself, otherwise return null id, otherwise return null
         return this;
+    }
+
+    private TLV getFaultLocation(ConditionCode code) {
+        if (code == ConditionCode.NoError) {
+            return null;
+        }
+        throw new java.lang.UnsupportedOperationException("CFDP ConditionCode " + code + " not yet supported");
     }
 
     public CfdpTransfer pause() {

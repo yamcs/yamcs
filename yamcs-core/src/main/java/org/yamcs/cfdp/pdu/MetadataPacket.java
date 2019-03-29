@@ -23,6 +23,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
             TLV flowLabel, CfdpHeader header) {
         super(header);
         this.segmentationControl = segmentationControl;
+        if (fileSize == 0) {
+            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
+        }
         this.fileSize = fileSize;
         this.sourceFileName = new LV(source);
         this.destinationFileName = new LV(destination);
@@ -39,6 +42,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         byte temp = buffer.get();
         this.segmentationControl = (temp & 0x01) == 1;
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
+        if (this.fileSize == 0) {
+            throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
+        }
         this.sourceFileName = LV.readLV(buffer);
         this.destinationFileName = LV.readLV(buffer);
 
