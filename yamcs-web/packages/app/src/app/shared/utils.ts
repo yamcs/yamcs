@@ -126,11 +126,11 @@ export function printValue(value: Value) {
         preview += printValueWithoutPreview(value.arrayValue[i]);
       }
       if (n < value.arrayValue.length) {
-        preview += ', …]';
+        preview += ', …';
       }
-      preview += ` (${value.arrayValue.length})`;
+      preview += `] (${value.arrayValue.length})`;
     } else {
-      preview += ' (0)';
+      preview += '] (0)';
     }
     return preview;
   } else {

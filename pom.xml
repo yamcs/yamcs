@@ -4,12 +4,12 @@
   <groupId>org.yamcs</groupId>
   <artifactId>yamcs</artifactId>
   <packaging>pom</packaging>
+
   <name>Yamcs</name>
+  <url>https://www.yamcs.org</url>
   <description>Yet Another Mission Control System</description>
 
   <version>4.9.2-SNAPSHOT</version>
-
-  <url>https://github.com/yamcs/yamcs.git</url>
   
   <licenses>
     <license>
@@ -20,7 +20,7 @@
   
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
-    <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
+    <developerConnection>scm:git:ssh@github.com:yamcs/yamcs.git</developerConnection>
     <url>https://github.com/yamcs/yamcs</url>
     <tag>HEAD</tag>
   </scm>
