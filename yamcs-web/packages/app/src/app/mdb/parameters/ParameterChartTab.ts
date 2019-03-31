@@ -36,6 +36,8 @@ export class ParameterChartTab implements OnDestroy {
     this.dataSource = new DyDataSource(yamcs, synchronizer);
     this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
     this.parameter$.then(parameter => {
+      // Override qualified name for possible array or aggregate offsets
+      parameter.qualifiedName = qualifiedName;
       this.dataSource.addParameter(parameter);
     });
   }

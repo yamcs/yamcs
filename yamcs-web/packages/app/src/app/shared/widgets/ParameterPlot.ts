@@ -10,6 +10,7 @@ import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import { analyzeStaticValueRanges, DyLegendData, TimestampTrackerData } from './dygraphs';
 import GridPlugin from './GridPlugin';
+import { NamedParameterType } from './NamedParameterType';
 import { ParameterSeries } from './ParameterSeries';
 
 @Component({
@@ -88,7 +89,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   dygraph: any;
 
-  private parameters: Parameter[] = [];
+  private parameters: NamedParameterType[] = [];
   private parameterConfig = new Map<string, ParameterSeries>();
 
   // Flag to prevent from reloading while the user is busy with a pan or zoom operation

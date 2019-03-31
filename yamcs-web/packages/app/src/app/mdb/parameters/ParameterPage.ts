@@ -19,6 +19,7 @@ export class ParameterPage implements OnDestroy {
 
   instance: Instance;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
+  offset$ = new BehaviorSubject<string | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
   parameterValueSubscription: Subscription;
@@ -45,6 +46,13 @@ export class ParameterPage implements OnDestroy {
   changeParameter(qualifiedName: string) {
     this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
+
+      if (qualifiedName !== parameter.qualifiedName) {
+        this.offset$.next(qualifiedName.substring(parameter.qualifiedName.length));
+      } else {
+        this.offset$.next(null);
+      }
+
       this.updateTitle();
     });
 
@@ -68,8 +76,12 @@ export class ParameterPage implements OnDestroy {
 
   updateTitle() {
     const parameter = this.parameter$.getValue();
+    const offset = this.offset$.getValue();
     if (parameter) {
       let title = parameter.name;
+      if (offset) {
+        title += offset;
+      }
       const pval = this.parameterValue$.getValue();
       if (pval) {
         title += ': ' + this.valuePipe.transform(pval.engValue);
