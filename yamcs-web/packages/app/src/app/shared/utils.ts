@@ -108,7 +108,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += printValueWithoutPreview(value.aggregateValue.value[i]);
+        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i]);
       }
       if (n < value.aggregateValue.value.length) {
         preview += `, …`;
