@@ -1,4 +1,4 @@
-import { Parameter } from '@yamcs/client';
+import { NamedParameterType } from './NamedParameterType';
 
 export type CustomBarsValue = [number, number, number] | null;
 
@@ -60,7 +60,7 @@ export interface AlarmZone {
   color: string;
 }
 
-export function analyzeStaticValueRanges(parameter: Parameter) {
+export function analyzeStaticValueRanges(parameter: NamedParameterType) {
   let minLow;
   let maxHigh;
   const staticAlarmZones = []; // Disjoint set of OOL alarm zones

@@ -138,7 +138,7 @@ export class Frame implements NavigationHandler {
     if (this.zoomToFit$.value) {
       const frameContent = this.frameContentRef.nativeElement as HTMLDivElement;
       frameContent.style.setProperty('transform', `scale(${zoom})`);
-      frameContent.style.setProperty('transform-origin', '50% 50%');
+      frameContent.style.setProperty('transform-origin', '0% 0%');
     }
   }
 

@@ -3,8 +3,11 @@ package org.yamcs.utils;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 
@@ -38,8 +41,9 @@ public class StringConverter {
     }
 
     public static String toString(Value rv, boolean withType) {
-        if (withType)
+        if (withType) {
             return toString(rv);
+        }
         switch (rv.getType()) {
         case BINARY:
             return byteBufferToHexString(rv.getBinaryValue().asReadOnlyByteBuffer());
@@ -54,17 +58,26 @@ public class StringConverter {
         case SINT64:
             return Long.toString(rv.getSint64Value());
         case UINT64:
-            if (rv.getUint64Value() >= 0)
+            if (rv.getUint64Value() >= 0) {
                 return Long.toString(rv.getUint64Value());
-            else
+            } else {
                 return BigInteger.valueOf(rv.getUint64Value()).add(B64).toString();
+            }
         case STRING:
             return rv.getStringValue();
         case BOOLEAN:
             return Boolean.toString(rv.getBooleanValue());
         case TIMESTAMP:
             return TimeEncoding.toOrdinalDateTime(rv.getTimestampValue());
-
+        case ARRAY:
+            return "[" + rv.getArrayValueList().stream()
+                    .map(value -> toString(value, false))
+                    .collect(Collectors.joining(", ")) + "]";
+        case AGGREGATE:
+            AggregateValue agg = rv.getAggregateValue();
+            return "{" + IntStream.range(0, agg.getNameCount())
+                    .mapToObj(i -> agg.getName(i) + ": " + toString(agg.getValue(i), false))
+                    .collect(Collectors.joining(", ")) + "}";
         }
         return null;
     }
@@ -73,8 +86,9 @@ public class StringConverter {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < b.length; i++) {
             String s = Integer.toString(b[i] & 0xFF, 16);
-            if (s.length() == 1)
+            if (s.length() == 1) {
                 s = "0" + s;
+            }
             sb.append(s.toUpperCase());
         }
         return sb.toString();
@@ -85,12 +99,14 @@ public class StringConverter {
         StringBuilder sb = new StringBuilder();
         int offset = 0;
         while (bb.hasRemaining()) {
-            if (offset % 33 == 0)
+            if (offset % 33 == 0) {
                 sb.append("\n");
+            }
             String s = Integer.toString(bb.get() & 0xFF, 16);
             offset++;
-            if (s.length() == 1)
+            if (s.length() == 1) {
                 sb.append("0");
+            }
             sb.append(s.toUpperCase());
         }
         bb.reset();
@@ -98,17 +114,19 @@ public class StringConverter {
     }
 
     /**
-     * Convert a hex string into a byte array. If the string has an odd number of
-     * hex digits, it is padded with 0 at the <b>beginning</b>.
+     * Convert a hex string into a byte array. If the string has an odd number of hex digits, it is padded with 0 at the
+     * <b>beginning</b>.
      * 
-     * @param s - string to be converted
+     * @param s
+     *            - string to be converted
      * @return binary array representation of the hex string
      */
     public static byte[] hexStringToArray(String s) {
-        if((s.length() & 1) == 1) {
-            s = "0"+s;
-        };
-        byte[] b = new byte[s.length()>>1];
+        if ((s.length() & 1) == 1) {
+            s = "0" + s;
+        }
+        ;
+        byte[] b = new byte[s.length() >> 1];
         for (int i = 0; i < b.length; i++) {
             b[i] = (byte) (Integer.parseInt(s.substring(2 * i, 2 * i + 2), 16) & 0xFF);
         }
@@ -116,8 +134,8 @@ public class StringConverter {
     }
 
     /**
-     * Convert a NamedObjectId to a pretty string for use in log messages etc. This gives a
-     * better formatting than the default protobuf-generated toString.
+     * Convert a NamedObjectId to a pretty string for use in log messages etc. This gives a better formatting than the
+     * default protobuf-generated toString.
      */
     public static String idToString(NamedObjectId id) {
         if (id == null) {
@@ -131,8 +149,8 @@ public class StringConverter {
     }
 
     /**
-     * Convert a list of NamedObjectId to a pretty string for use in log messages etc. This gives a
-     * better formatting than the default protobuf-generated toString.
+     * Convert a list of NamedObjectId to a pretty string for use in log messages etc. This gives a better formatting
+     * than the default protobuf-generated toString.
      */
     public static String idListToString(List<NamedObjectId> idList) {
         if (idList == null) {

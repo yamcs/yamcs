@@ -108,7 +108,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += printValueWithoutPreview(value.aggregateValue.value[i]);
+        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i]);
       }
       if (n < value.aggregateValue.value.length) {
         preview += `, …`;
@@ -126,11 +126,11 @@ export function printValue(value: Value) {
         preview += printValueWithoutPreview(value.arrayValue[i]);
       }
       if (n < value.arrayValue.length) {
-        preview += ', …]';
+        preview += ', …';
       }
-      preview += ` (${value.arrayValue.length})`;
+      preview += `] (${value.arrayValue.length})`;
     } else {
-      preview += ' (0)';
+      preview += '] (0)';
     }
     return preview;
   } else {

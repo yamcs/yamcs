@@ -61,6 +61,7 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryDataEncoding;
@@ -216,6 +217,14 @@ public class XtceToGpbAssembler {
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.FULL));
             }
+        } else if (e instanceof ArrayParameterEntry) {
+            ArrayParameterEntry ae = (ArrayParameterEntry) e;
+            if (detail == DetailLevel.SUMMARY) {
+                b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.LINK));
+            } else if (detail == DetailLevel.FULL) {
+                b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.FULL));
+            }
+            // TODO map dimensions info
         } else if (e instanceof ArgumentEntry) {
             ArgumentEntry ae = (ArgumentEntry) e;
             b.setArgument(toArgumentInfo(ae.getArgument()));

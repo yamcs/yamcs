@@ -6,7 +6,7 @@
             [queryParams]="{instance: instance.name, filter: alias.namespace}"
             class="ya-link ya-header-link">
           {{ alias.namespace }}
-        </a>/{{ alias.name }}
+        </a>/{{ alias.name }}{{ offset$ | async}}
       </ng-container>
     </ng-container>
     &nbsp;&nbsp;&nbsp;&nbsp;
