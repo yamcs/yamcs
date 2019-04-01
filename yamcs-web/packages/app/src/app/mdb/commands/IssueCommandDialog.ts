@@ -61,14 +61,26 @@ export class IssueCommandDialog {
 
   issue() {
     const assignments: ArgumentAssignment[] = [];
-    for (const prop in this.form.value) {
-      if (this.form.value.hasOwnProperty(prop)) {
-        assignments.push({ name: prop, value: this.form.value[prop] });
+    for (const argumentName in this.form.controls) {
+      if (this.form.controls.hasOwnProperty(argumentName)) {
+        const control = this.form.controls[argumentName];
+        if (!this.isArgumentWithInitialValue(argumentName) || control.touched) {
+          assignments.push({ name: argumentName, value: this.form.value[argumentName] });
+        }
       }
     }
     const processor = this.yamcs.getProcessor();
     this.yamcs.getInstanceClient()!.issueCommand(processor.name, this.data.command.qualifiedName, {
       assignment: assignments
     }).then(response => this.dialogRef.close(response));
+  }
+
+  private isArgumentWithInitialValue(argumentName: string) {
+    for (const arg of this.arguments) {
+      if (arg.name === argumentName) {
+        return arg.initialValue !== undefined;
+      }
+    }
+    return false;
   }
 }
