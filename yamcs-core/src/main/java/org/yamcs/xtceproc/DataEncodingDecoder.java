@@ -303,9 +303,9 @@ public class DataEncodingDecoder {
             }
         } else {
             if (ide.getEncoding() == Encoding.UNSIGNED) {
-                return ValueUtility.getUint64Value((int) longValue);
+                return ValueUtility.getUint64Value(longValue);
             } else {
-                return ValueUtility.getSint64Value((int) longValue);
+                return ValueUtility.getSint64Value(longValue);
             }
         }
     }
