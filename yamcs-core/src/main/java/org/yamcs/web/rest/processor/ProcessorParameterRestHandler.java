@@ -101,14 +101,31 @@ public class ProcessorParameterRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        ParameterRequestManager prm = processor.getParameterRequestManager();
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        
+        NamedObjectId id = verifyParameterId(req, mdb, req.getRouteParam("name"));
+        ParameterWithId pid;
+        try {
+             pid = ParameterWithIdRequestHelper.checkName(prm, id);
+        } catch (InvalidIdentification e) {
+            throw new BadRequestException("InvalidIdentification: " + e.getMessage());
+        }
+        
 
-        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, p.getDataSource());
+        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 
         Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
+        Parameter p = pid.getParameter();
+        org.yamcs.parameter.ParameterValue pv;
+        if(pid.getPath()==null) {
+            pv = new org.yamcs.parameter.ParameterValue(p);
+        } else {
+            pv = new PartialParameterValue(p, pid.getPath());
+        }
+        pv.setEngineeringValue(v);
         try {
-            mgr.updateParameter(p, v);
+            mgr.updateParameters(Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }

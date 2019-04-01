@@ -123,35 +123,38 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
     
     // turn NamedObjectId to Parameter references
+    public static ParameterWithId checkName(ParameterRequestManager prm, NamedObjectId id) throws InvalidIdentification {
+        String name = id.getName();
+        int x = AggregateUtil.findSeparator(name);
+        NamedObjectId id1;
+        PathElement[] path;
+        if (x > 0) { // this is an array or aggregate element
+            id1 = NamedObjectId.newBuilder(id).setName(name.substring(0, x)).build();
+            try {
+                path = AggregateUtil.parseReference(name.substring(x));
+            } catch (IllegalArgumentException e) {
+                throw new InvalidIdentification(id);
+            }
+        } else {
+            id1 = id;
+            path = null;
+        }
+            Parameter p = prm.getParameter(id1);
+            if (path != null) {
+                if(!AggregateUtil.verifyPath(p.getParameterType(), path)) {
+                    throw new InvalidIdentification(id);
+                }
+            }
+           return new ParameterWithId(p, id, path);
+        
+    }
+    // turn NamedObjectId to Parameter references
     public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList) throws InvalidIdentification {
         List<ParameterWithId> result = new ArrayList<>();
         List<NamedObjectId> invalid = new ArrayList<>(0);
         for (NamedObjectId id : idList) {
-            String name = id.getName();
-            int x = AggregateUtil.findSeparator(name);
-            NamedObjectId id1;
-            PathElement[] path;
-            if (x > 0) { // this is an array or aggregate element
-                id1 = NamedObjectId.newBuilder(id).setName(name.substring(0, x)).build();
-                try {
-                    path = AggregateUtil.parseReference(name.substring(x));
-                } catch (IllegalArgumentException e) {
-                    invalid.add(id);
-                    continue;
-                }
-            } else {
-                id1 = id;
-                path = null;
-            }
             try {
-                Parameter p = prm.getParameter(id1);
-                if (path != null) {
-                    if(!AggregateUtil.verifyPath(p.getParameterType(), path)) {
-                        throw new InvalidIdentification(id);
-                    }
-                }
-                result.add(new ParameterWithId(p, id, path));
-            
+                result.add(checkName(prm, id));
             } catch (InvalidIdentification e) {
                 invalid.add(id);
                 continue;

@@ -844,6 +844,23 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(requestb.getValue(), pv.getEngValue());
     }
     
+    
+    @Test
+    public void testRestParameterSetArrayElement2() throws Exception {
+        // test simple set just for the value
+        Value v = ValueHelper.newValue((float)89.3);
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
+                HttpMethod.POST, toJson(v)).get();
+        assertNotNull(resp);
+
+        Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
+        // immediately avaialble
+        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
+                HttpMethod.GET, "").get();
+        ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
+        
+        assertEquals(v, pv.getEngValue());
+    }
 
     @Test
     public void testSendCommandNoTransmissionConstraint() throws Exception {
