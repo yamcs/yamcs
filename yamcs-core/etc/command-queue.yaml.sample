@@ -10,16 +10,14 @@
 # If a command comes from a user which is not defined by any other queue, 
 #   it is put into the default queue 
 
-queueNames: [ops, uhb]
-
 ops:
-    state: enabled
-    significances: [none]
+  state: enabled
+  significances: [none]
 
 ops-critic:
-    state: enabled
-    significances: [watch, warning, distress, critical, severe]
-    stateExpirationTimeS: 300
+  state: enabled
+  significances: [watch, warning, distress, critical, severe]
+  stateExpirationTimeS: 300
 
 uhb:
-    state: disabled
+  state: disabled

@@ -75,6 +75,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     private final ScheduledThreadPoolExecutor timer;
     private final LastValueCache lastValueCache;
+
     /**
      * Constructs a Command Queue Manager.
      * 
@@ -103,20 +104,24 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         if (YConfiguration.isDefined("command-queue")) {
             YConfiguration config = YConfiguration.getConfiguration("command-queue");
-            List<String> queueList = config.getList("queueNames");
-            for (String qn : queueList) {
-                if (!queues.containsKey(qn)) {
-                    queues.put(qn, new CommandQueue(yproc, qn, initialState));
+            for (String queueName : config.getKeys()) {
+                if (queueName.equals("queueNames")) {
+                    log.warn("DEPRECATION: Remove key 'queueNames' from command-queue.yaml. "
+                            + "This property is no longer read.");
+                    continue;
                 }
-                CommandQueue q = queues.get(qn);
-                String state = config.getSubString(qn, "state");
+                if (!queues.containsKey(queueName)) {
+                    queues.put(queueName, new CommandQueue(yproc, queueName, initialState));
+                }
+                CommandQueue q = queues.get(queueName);
+                String state = config.getSubString(queueName, "state");
                 q.state = CommandQueueManager.stringToQueueState(state);
                 q.defaultState = q.state;
-                if (config.containsKey(qn, "stateExpirationTimeS")) {
-                    q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
+                if (config.containsKey(queueName, "stateExpirationTimeS")) {
+                    q.stateExpirationTimeS = config.getInt(queueName, "stateExpirationTimeS");
                 }
-                if (config.containsKey(qn, "significances")) {
-                    q.significances = config.getList(qn, "significances");
+                if (config.containsKey(queueName, "significances")) {
+                    q.significances = config.getList(queueName, "significances");
                 }
             }
         }
