@@ -87,6 +87,6 @@ public class AlgorithmWithContextTest {
 
         assertEquals(2, params.size());
         assertNull(params.get(0));
-        assertEquals(10, ((Integer) params.get(1)).intValue());
+        assertEquals(10, ((Long) params.get(1)).longValue());
     }
 }
