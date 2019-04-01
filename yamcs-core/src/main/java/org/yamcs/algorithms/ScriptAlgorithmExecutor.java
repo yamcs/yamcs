@@ -270,11 +270,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             }
         } else if (v.getType() == Type.UINT32) {
             if (raw) {
-                source.append("  public int rawValue;\n");
-                return "    rawValue=v.getRawValue().getUint32Value();\n";
+                source.append("  public double rawValue;\n");
+                return "    rawValue=(long)Integer.toUnsignedLong(v.getRawValue().getUint32Value());\n";
             } else {
-                source.append("  public int value;\n");
-                return "    value=v.getEngValue().getUint32Value();\n";
+                source.append("  public double value;\n");
+                return "    value=(long)Integer.toUnsignedLong(v.getEngValue().getUint32Value());\n";
             }
         } else if (v.getType() == Type.SINT32) {
             if (raw) {
