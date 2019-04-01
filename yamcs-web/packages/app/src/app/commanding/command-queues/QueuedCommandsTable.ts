@@ -44,7 +44,6 @@ export class QueuedCommandsTable implements AfterViewInit {
         }
       }
       this.dataSource.data = entries;
-      console.log('entries', entries);
     });
   }
 

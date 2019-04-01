@@ -1,5 +1,8 @@
 package org.yamcs.web.rest.processor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.Processor;
@@ -33,7 +36,9 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
-        mgr.getQueues().forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
+        List<CommandQueue> queues = new ArrayList<>(mgr.getQueues());
+        Collections.sort(queues, (q1, q2) -> q1.getName().compareTo(q2.getName()));
+        queues.forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
         completeOK(req, response.build());
     }
 
