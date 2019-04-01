@@ -1,9 +1,10 @@
-import { Alarm, NamedObjectId, Parameter, ParameterValue, Sample } from '@yamcs/client';
+import { Alarm, NamedObjectId, ParameterValue, Sample } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
 import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
+import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
 /**
@@ -27,7 +28,7 @@ export class DyDataSource {
   visibleStart: Date;
   visibleStop: Date;
 
-  parameters$ = new BehaviorSubject<Parameter[]>([]);
+  parameters$ = new BehaviorSubject<NamedParameterType[]>([]);
   private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
@@ -58,7 +59,7 @@ export class DyDataSource {
     });
   }
 
-  public addParameter(...parameter: Parameter[]) {
+  public addParameter(...parameter: NamedParameterType[]) {
     this.parameters$.next([
       ...this.parameters$.value,
       ...parameter,

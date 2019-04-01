@@ -42,7 +42,10 @@
         <th>Value</th>
       </tr>
       <tr *ngFor="let name of currentValue.engValue.aggregateValue!.name; index as i">
-        <td>{{ name }}</td>
+        <td>
+          <a [routerLink]="['/mdb/parameters', parameter.qualifiedName + '.' + name]"
+             [queryParams]="{instance: instance.name}">{{ name }}</a>
+        </td>
         <td>{{ currentValue.engValue.aggregateValue!.value[i] | value }}</td>
       </tr>
     </table>

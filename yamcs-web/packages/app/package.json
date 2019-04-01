@@ -35,14 +35,14 @@
     "screenfull": "^4.0.0",
     "systemjs": "^0.21.4",
     "whatwg-fetch": "^3.0.0",
-    "zone.js": "^0.8.20"
+    "zone.js": "^0.8.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.13.0",
     "@angular/cli": "^7.0.0",
     "@angular/compiler-cli": "^7.0.0",
     "@angular/language-service": "^7.0.0",
-    "codelyzer": "^4.2.1",
+    "codelyzer": "^5.0.0",
     "ng-packagr": "^4.0.0",
     "tslint": "^5.9.1",
     "typescript": "~3.2.0"
