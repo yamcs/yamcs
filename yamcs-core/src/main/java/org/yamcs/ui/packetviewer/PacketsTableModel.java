@@ -90,7 +90,7 @@ public class PacketsTableModel extends DefaultTableModel {
         if(v==null) {
             return getValue(pv.getRawValue());
         } else {
-            return getValue(v);
+            return v.toString();
         }
     }
     
