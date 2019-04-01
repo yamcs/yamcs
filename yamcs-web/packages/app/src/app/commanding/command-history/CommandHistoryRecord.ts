@@ -1,11 +1,14 @@
 import { CommandHistoryEntry } from '@yamcs/client';
-import { CommandHistoryEvent } from './CommandHistoryEvent';
+import * as utils from '../../shared/utils';
+import { CommandHistoryStage } from './CommandHistoryStage';
 
 export class CommandHistoryRecord {
 
   generationTime: string;
   origin: string;
   sequenceNumber: number;
+
+  commandName: string;
 
   username: string;
 
@@ -14,8 +17,9 @@ export class CommandHistoryRecord {
 
   comment?: string;
 
-  sentEvent?: CommandHistoryEvent;
-  verifierEvents: CommandHistoryEvent[] = [];
+  stages: CommandHistoryStage[] = [];
+
+  extra: { [key: string]: string }[] = [];
 
   completed = false;
   success?: boolean;
@@ -25,6 +29,7 @@ export class CommandHistoryRecord {
     this.generationTime = entry.generationTimeUTC;
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
+    this.commandName = entry.commandId.commandName;
 
     for (const attr of entry.attr) {
       if (attr.name === 'username') {
@@ -40,28 +45,27 @@ export class CommandHistoryRecord {
         this.success = attr.value.stringValue === 'OK';
       } else if (attr.name === 'Comment') {
         this.comment = attr.value.stringValue;
-      } else if (attr.name === 'Acknowledge_Sent_Status') {
-        if (!this.sentEvent) {
-          this.sentEvent = { name: 'Acknowledge_Sent' };
-        }
-        this.sentEvent.status = attr.value.stringValue;
-      } else if (attr.name === 'Acknowledge_Sent_Time') {
-        if (!this.sentEvent) {
-          this.sentEvent = { name: 'Acknowledge_Sent' };
-        }
-        this.sentEvent.time = attr.value.stringValue;
       } else if (attr.name.indexOf('Verifier_') === 0) {
         const match = attr.name.match(/Verifier_(.*)_(Time|Status)/);
         if (match) {
-          this.updateVerifierEvent(match[1], match[2], attr.value.stringValue!);
+          this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
         }
+      } else if (attr.name.indexOf('Acknowledge_') === 0) {
+        const match = attr.name.match(/Acknowledge_(.*)_(Time|Status)/);
+        if (match) {
+          this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
+        }
+      } else if (attr.name === 'TransmissionConstraints') {
+        // TODO
+      } else {
+        this.extra.push({ name: attr.name, value: utils.printValue(attr.value) });
       }
     }
   }
 
-  private updateVerifierEvent(stage: string, attributeName: string, value: string) {
+  private updateStageEvent(stage: string, attributeName: string, value: string) {
     let event;
-    for (const existingEvent of this.verifierEvents) {
+    for (const existingEvent of this.stages) {
       if (existingEvent.name === stage) {
         event = existingEvent;
         break;
@@ -69,7 +73,7 @@ export class CommandHistoryRecord {
     }
     if (!event) {
       event = { name: stage };
-      this.verifierEvents.push(event);
+      this.stages.push(event);
     }
     if (attributeName === 'Time') {
       event.time = value;

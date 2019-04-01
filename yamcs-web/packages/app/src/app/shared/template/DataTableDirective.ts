@@ -38,10 +38,6 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
       padding: 7px 0 8px 8px;
       border-bottom: 1.1px solid rgba(0, 0, 0, .08);
     }
-
-    .ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
-      padding-left: 24px;
-    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

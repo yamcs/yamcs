@@ -37,4 +37,5 @@ h6 {
 
 .step.mat-icon {
   font-size: 14px !important;
+  vertical-align: middle;
 }
