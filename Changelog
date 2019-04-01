@@ -1,4 +1,9 @@
-Version 4.9.1 released 19-February-2019
+Version 4.9.2 released 1-April-2019
+- allow to set individual members of aggregates and elements of arrays
+- better support for XTCE initial values
+- various bugfixes
+
+Version 4.9.1 released 24-March-2019
 - allow to get and subscribe individual members of aggregates and elements of
 arrays
 - various bugfixes
