@@ -402,7 +402,7 @@ export class WebSocketClient {
     });
   }
 
-  async getCommandQueueEventUpdates(instance?: string) {
+  async getCommandQueueEventUpdates(instance?: string, processor?: string) {
     this.subscriptionModel.commandQueues = true;
     const requestId = this.emit({ cqueues: 'subscribe' });
 
@@ -420,6 +420,9 @@ export class WebSocketClient {
             map(msg => msg[3].data as CommandQueueEvent),
             filter((commandQueueEvent: CommandQueueEvent) => {
               return !instance || (instance === commandQueueEvent.data.instance);
+            }),
+            filter((commandQueueEvent: CommandQueueEvent) => {
+              return !processor || (processor === commandQueueEvent.data.processorName);
             }),
           );
           resolve(response);

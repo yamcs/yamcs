@@ -213,9 +213,9 @@ export class InstanceClient {
     return await response.json() as CommandQueue;
   }
 
-  async getCommandQueueEventUpdates(): Promise<CommandQueueEventSubscriptionResponse> {
+  async getCommandQueueEventUpdates(processorName?: string): Promise<CommandQueueEventSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient!.getCommandQueueEventUpdates(this.instance);
+    return this.webSocketClient!.getCommandQueueEventUpdates(this.instance, processorName);
   }
 
   async editCommandQueueEntry(processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {

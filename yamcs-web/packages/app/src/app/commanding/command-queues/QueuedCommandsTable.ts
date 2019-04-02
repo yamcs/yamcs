@@ -21,10 +21,10 @@ export class QueuedCommandsTable implements AfterViewInit {
 
   displayedColumns = [
     'generationTime',
+    'comment',
     'source',
-    'cmdId.origin',
     'queueName',
-    'username',
+    'issuer',
     'actions',
   ];
 
