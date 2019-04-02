@@ -41,9 +41,9 @@ public class SyslogHandler extends Handler {
 
         String host = getProperty("host", null);
         if (host == null) {
-            setHost(InetAddress.getByName(host));
-        } else {
             setHost(InetAddress.getLoopbackAddress());
+        } else {
+            setHost(InetAddress.getByName(host));
         }
 
         setPort(getIntProperty("port", 514));
