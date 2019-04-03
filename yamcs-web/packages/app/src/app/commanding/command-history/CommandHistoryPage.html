@@ -7,54 +7,101 @@
         Command Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
+        <h6>Command</h6>
+        <div class="block">
+          <a [routerLink]="['/mdb/commands', selectedRecord.commandName]"
+             [queryParams]="{instance: instance.name}"
+             class="ya-link">
+            {{ selectedRecord.commandName }}
+          </a>
+        </div>
+
         <h6>Time</h6>
         <div class="block">
           {{ selectedRecord.generationTime | datetime }}
         </div>
 
-        <h6>Source</h6>
-        <div class="block">
-          {{ selectedRecord.source || '-' }}
-        </div>
-
-        <ng-container *ngIf="selectedRecord.verifierEvents.length">
-          <h6>Verifiers</h6>
-          <div class="block">
-            <table yaDataTable style="width: 100%">
-              <tr>
-                <th>Stage</th>
-                <th>Status</th>
-                <th>Time</th>
-              </tr>
-              <tr *ngFor="let event of selectedRecord.verifierEvents">
-                <td>{{ event.name }}</td>
-                <td>{{ event.status }}</td>
-                <td>
-                  <span [matTooltip]="event.time">{{ event.time | deltaWith:selectedRecord.generationTime }}</span>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </ng-container>
-
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
-        <h6 style="padding-top: 0">Issuer</h6>
+        <h6>Issuer</h6>
         <div class="block">
           {{ selectedRecord.username }}<ng-container *ngIf="selectedRecord.origin">@{{ selectedRecord.origin }}</ng-container>
         </div>
 
-        <h6>Sequence Number</h6>
+        <h6>
+          Sequence Number
+          <app-help>
+            <p>The <strong>Sequence Number</strong> is a number assigned by the client that issued the command. It is used by Yamcs to establish unicity to other commands with the same time and issuer.</p>
+            <p>Note in particular that this value does not have any correlation with sequence numbers that may be encoded in the telecommand packet (e.g. CCSDS Sequence Number).</p>
+
+          </app-help>
+        </h6>
         <div class="block">
           {{ selectedRecord.sequenceNumber }}
         </div>
 
         <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 
-        <h6 style="padding-top: 0">Binary</h6>
+        <h6 style="padding-top: 0">Source</h6>
+        <div class="block">
+          {{ selectedRecord.source || '-' }}
+        </div>
+
+        <h6>Binary</h6>
         <div class="block">
           <app-hex [base64String]="selectedRecord.binary"></app-hex>
         </div>
+
+        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+
+        <h6 style="padding-top: 0">Extra Attributes</h6>
+        <div class="block">
+          <ul>
+            <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
+          </ul>
+        </div>
+
+        <ng-container *ngIf="selectedRecord.stages.length">
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+
+          <h6 style="padding-top: 0">Stages</h6>
+          <div class="block">
+            <table yaDataTable style="width: 100%">
+              <tr>
+                <th style="width: 16px"></th>
+                <th></th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+              <tr *ngFor="let stage of selectedRecord.stages">
+                <td>
+                  <ng-container [ngSwitch]="stage.status">
+                    <ng-container *ngSwitchCase="'OK'">
+                      <mat-icon class="step success" style="margin-right: 8px">
+                        check_circle
+                      </mat-icon>
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'TIMEOUT'">
+                      <mat-icon class="step alert" style="margin-right: 8px">
+                        timer_off
+                      </mat-icon>
+                    </ng-container>
+                    <ng-container *ngSwitchDefault>
+                      <mat-icon class="step alert" style="margin-right: 8px">
+                        highlight_off
+                      </mat-icon>
+                    </ng-container>
+                  </ng-container>
+                </td>
+                <td>{{ stage.name }}</td>
+                <td>{{ stage.status }}</td>
+                <td>
+                  <span [matTooltip]="stage.time">{{ stage.time | deltaWith:selectedRecord.generationTime }}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </ng-container>
+
+        <p>&nbsp;</p>
       </div>
     </ng-container>
     <ng-template #noSelection>
@@ -130,27 +177,30 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="verifiers">
-          <th mat-header-cell *matHeaderCellDef>Verifiers</th>
+        <ng-container matColumnDef="stages">
+          <th mat-header-cell *matHeaderCellDef>Stages</th>
           <td mat-cell *matCellDef="let item">
-            <ng-container *ngFor="let step of item.verifierEvents">
-              <ng-container *ngIf="step.status === 'OK'">
-                <mat-icon class="step success" [matTooltip]="step.name + ': SUCCESS'" style="margin-right: 8px">
-                  check_circle
-                </mat-icon>
-              </ng-container>
-              <ng-container *ngIf="step.status === 'NOK'">
-                <mat-icon class="step alert" [matTooltip]="step.name + ': FAIL'" style="margin-right: 8px">
-                  highlight_off
-                </mat-icon>
-              </ng-container>
-              <ng-container *ngIf="step.status === 'TIMEOUT'">
-                <mat-icon class="step alert" [matTooltip]="step.name + ': TIMEOUT'" style="margin-right: 8px">
-                  timer_off
-                </mat-icon>
+            <ng-container *ngFor="let step of item.stages">
+              {{ step.name }}:
+              <ng-container [ngSwitch]="step.status">
+                <ng-container *ngSwitchCase="'OK'">
+                  <mat-icon class="step success" [matTooltip]="step.name + ': OK'" style="margin-right: 8px">
+                    check_circle
+                  </mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchCase="'TIMEOUT'">
+                  <mat-icon class="step alert" [matTooltip]="step.name + ': TIMEOUT'" style="margin-right: 8px">
+                    timer_off
+                  </mat-icon>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                  <mat-icon class="step alert" [matTooltip]="step.name + ': ' + step.status" style="margin-right: 8px">
+                    highlight_off
+                  </mat-icon>
+                </ng-container>
               </ng-container>
             </ng-container>
-            <ng-container *ngIf="!item.verifierEvents.length">-</ng-container>
+            <ng-container *ngIf="!item.stages.length">-</ng-container>
           </td>
         </ng-container>
 

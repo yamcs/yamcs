@@ -43,13 +43,17 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
         WebSocketReply reply = WebSocketReply.ack(ctx.getRequestId());
         client.sendReply(reply);
 
-        subscribed = true;
-        if (commandQueueManager != null) {
-            commandQueueManager.registerListener(this);
-            for (CommandQueue q : commandQueueManager.getQueues()) {
-                sendInitialUpdateQueue(q);
+        if (!subscribed) {
+            subscribed = true;
+            if (commandQueueManager != null) {
+                commandQueueManager.registerListener(this);
             }
         }
+
+        for (CommandQueue q : commandQueueManager.getQueues()) {
+            sendInitialUpdateQueue(q);
+        }
+
         return null;
     }
 

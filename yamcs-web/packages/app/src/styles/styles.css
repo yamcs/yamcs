@@ -122,6 +122,10 @@ body {
   text-decoration: underline;
 }
 
+.ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
+  padding-left: 24px;
+}
+
 .ya-link a .material-icons, a.ya-link .material-icons {
   text-decoration: none !important;
 }

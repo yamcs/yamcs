@@ -25,7 +25,7 @@ export class CommandHistoryPage implements OnInit {
     'command',
     // 'source',
     // 'sourceID',
-    'verifiers',
+    'stages',
   ];
 
   dataSource: CommandHistoryDataSource;

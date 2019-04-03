@@ -570,6 +570,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     void loadFile() {
         new SwingWorker<Void, TmPacketData>() {
             ProgressMonitor progress;
+            int packetCount = 0;
 
             @Override
             protected Void doInBackground() throws Exception {
@@ -588,7 +589,6 @@ public class PacketViewer extends JFrame implements ActionListener,
                     progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()), null, 0,
                             progressMax);
 
-                    int packetCount = 0;
                     while (!progress.isCanceled()) {
                         res = reader.read(fourb, 0, 4);
                         if (res != 4) {
@@ -711,8 +711,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                         log(String.format("Cancelled loading %s", lastFile.getName()));
                     } else {
                         log(String.format("Loaded %d packet%s from \"%s\"",
-                                packetsTable.getRowCount(),
-                                packetsTable.getRowCount() != 1 ? "s" : "", lastFile.getPath()));
+                                packetCount,
+                                packetCount != 1 ? "s" : "", lastFile.getPath()));
                     }
                     progress.close();
                 }
@@ -853,7 +853,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
                     if (value instanceof ContainerParameterValue) {
-                        ContainerParameterValue cpv = (ContainerParameterValue)value;
+                        ContainerParameterValue cpv = (ContainerParameterValue) value;
                         getTreeNode(cpv.getSequenceEntry().getSequenceContainer())
                                 .add(new TreeEntry(cpv));
                     }

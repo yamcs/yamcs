@@ -11,6 +11,7 @@ export class CommandQueuesPage implements OnDestroy {
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
   cqueueSubscription: Subscription;
+  cqueueEventSubscription: Subscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue } = {};
@@ -19,8 +20,6 @@ export class CommandQueuesPage implements OnDestroy {
     const processor = yamcs.getProcessor();
     const instanceClient = yamcs.getInstanceClient()!;
 
-    // Single shot (websocket also provides an initial update,
-    // but only first time we navigate to this page)
     instanceClient.getCommandQueues(processor.name).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
@@ -30,8 +29,41 @@ export class CommandQueuesPage implements OnDestroy {
 
     instanceClient.getCommandQueueUpdates(processor.name).then(response => {
       this.cqueueSubscription = response.commandQueue$.subscribe(cqueue => {
-        this.cqueueByName[cqueue.name] = cqueue;
-        this.emitChange();
+        const existingQueue = this.cqueueByName[cqueue.name];
+        if (existingQueue) {
+          // Update queue (but keep already known entries)
+          existingQueue.state = cqueue.state;
+          // Change object id for change detection
+          this.cqueueByName[cqueue.name] = { ...existingQueue };
+          this.emitChange();
+        }
+      });
+    });
+
+    instanceClient.getCommandQueueEventUpdates(processor.name).then(response => {
+      this.cqueueEventSubscription = response.commandQueueEvent$.subscribe(cqueueEvent => {
+        const queue = this.cqueueByName[cqueueEvent.data.queueName];
+        if (queue) {
+          if (cqueueEvent.type === 'COMMAND_ADDED') {
+            queue.entry = queue.entry || [];
+            queue.entry.push(cqueueEvent.data);
+          } else if (cqueueEvent.type === 'COMMAND_REJECTED') {
+            queue.entry = queue.entry || [];
+            queue.entry = queue.entry.filter(entry => {
+              return entry.uuid !== cqueueEvent.data.uuid;
+            });
+          } else if (cqueueEvent.type === 'COMMAND_SENT') {
+            queue.entry = queue.entry || [];
+            queue.entry = queue.entry.filter(entry => {
+              return entry.uuid !== cqueueEvent.data.uuid;
+            });
+          } else {
+            throw new Error(`Unexpected queue event ${cqueueEvent.type}`);
+          }
+          this.emitChange();
+        } else {
+          console.warn('Received an event for an unknown queue', cqueueEvent);
+        }
       });
     });
   }
@@ -55,6 +87,9 @@ export class CommandQueuesPage implements OnDestroy {
   ngOnDestroy() {
     if (this.cqueueSubscription) {
       this.cqueueSubscription.unsubscribe();
+    }
+    if (this.cqueueEventSubscription) {
+      this.cqueueEventSubscription.unsubscribe();
     }
   }
 }

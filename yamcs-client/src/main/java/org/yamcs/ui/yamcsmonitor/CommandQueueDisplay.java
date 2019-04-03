@@ -1,7 +1,6 @@
 package org.yamcs.ui.yamcsmonitor;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -33,13 +32,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
@@ -121,7 +118,6 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                 "Unique id of the command"
         };
 
-        final CommandRenderer cRenderer = new CommandRenderer();
         final String[] commandColumns = { "Queue", "User", "Command String", "Time" };
         commandTableModel = new DefaultTableModel(commandColumns, 0);
         commandTable = new JTable(commandTableModel) {
@@ -143,11 +139,6 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
-            }
-
-            @Override
-            public TableCellRenderer getCellRenderer(int row, int column) {
-                return column == convertColumnIndexToModel(2) ? cRenderer : super.getCellRenderer(row, column);
             }
         };
         commandTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -256,7 +247,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                                 commandQueueControl.releaseCommand(cqe, false);
                                 break;
                             case 2: // rejecting command
-                                System.out.println("rejecting command: " + cqe.getSource());
+                                YamcsMonitor.theApp.log("rejecting command: " + cqe.getSource());
                                 commandQueueControl.rejectCommand(cqe);
                             }
                         } else {
@@ -525,48 +516,6 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                 e.printStackTrace();
                 YamcsMonitor.theApp.showMessage(e.toString());
             }
-        }
-    }
-
-    class CommandRenderer extends JTextArea implements TableCellRenderer {
-        @Override
-        public void validate() {
-        }
-
-        @Override
-        public void invalidate() {
-        }
-
-        @Override
-        public void revalidate() {
-        }
-
-        @Override
-        public void repaint() {
-        }
-
-        public void firePropertyChange() {
-        }
-
-        @Override
-        public boolean isOpaque() {
-            return true;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                int row, int column) {
-            setText(value.toString());
-            int height_wanted = (int) getPreferredSize().getHeight();
-            table.setRowHeight(row, height_wanted);
-            if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                setForeground(table.getForeground());
-                setBackground(table.getBackground());
-            }
-            return this;
         }
     }
 

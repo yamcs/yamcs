@@ -2,16 +2,25 @@
        *ngIf="dataSource"
        [dataSource]="dataSource"
        class="ya-data-table"
-       style="width: 100%"
        matSort
        matSortActive="generationTime"
        matSortDirection="asc"
        matSortDisableClear>
 
   <ng-container matColumnDef="generationTime">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Generation time</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Time</th>
     <td mat-cell *matCellDef="let entry">
       {{ entry.generationTimeUTC | datetime }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="comment">
+    <th mat-header-cell *matHeaderCellDef style="width: 30px; text-align: center">
+      <mat-icon matTooltip="Comment">comment</mat-icon>
+    </th>
+    <td mat-cell *matCellDef="let item" style="text-align: center">
+      <mat-icon *ngIf="item.comment" [matTooltip]="item.comment">comment</mat-icon>
+      <ng-container *ngIf="!item.comment">-</ng-container>
     </td>
   </ng-container>
 
@@ -29,10 +38,10 @@
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="username">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
+  <ng-container matColumnDef="issuer">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Issuer</th>
     <td mat-cell *matCellDef="let entry">
-      {{ entry.username || '-' }}
+      {{ entry.username }}<span *ngIf="entry.cmdId.origin">@{{ entry.cmdId.origin }}</span>
     </td>
   </ng-container>
 
@@ -44,28 +53,17 @@
   </ng-container>
 
   <ng-container matColumnDef="source">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Command string</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Command</th>
     <td mat-cell *matCellDef="let entry">
       {{ entry.source || '-' }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef></th>
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
     <td mat-cell *matCellDef="let entry">
-      <mat-menu #queueMenu="matMenu" overlapTrigger="false" class="ya-menu">
-        <button mat-menu-item
-                (click)="releaseEntry(entry)">
-          Release
-        </button>
-        <button mat-menu-item
-                (click)="rejectEntry(entry)">
-          Reject
-        </button>
-      </mat-menu>
-      <button mat-button [matMenuTriggerFor]="queueMenu">
-        <mat-icon>more_horiz</mat-icon>
-      </button>
+      <app-text-action icon="check" (click)="releaseEntry(entry)">ACCEPT</app-text-action>
+      <app-text-action icon="close" (click)="rejectEntry(entry)">REJECT</app-text-action>
     </td>
   </ng-container>
 
