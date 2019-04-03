@@ -9,7 +9,7 @@
   <url>https://www.yamcs.org</url>
   <description>Yet Another Mission Control System</description>
 
-  <version>4.9.3-SNAPSHOT</version>
+  <version>4.9.3</version>
   
   <licenses>
     <license>
@@ -22,7 +22,7 @@
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
     <developerConnection>scm:git:ssh@github.com:yamcs/yamcs.git</developerConnection>
     <url>https://github.com/yamcs/yamcs</url>
-    <tag>HEAD</tag>
+    <tag>yamcs-4.9.3</tag>
   </scm>
 
   <organization>
