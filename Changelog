@@ -1,3 +1,6 @@
+Version 4.9.3 released 3-April-2019
+- fixes command queues displays
+
 Version 4.9.2 released 1-April-2019
 - allow to set individual members of aggregates and elements of arrays
 - better support for XTCE initial values
