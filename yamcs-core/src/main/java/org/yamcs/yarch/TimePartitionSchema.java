@@ -56,7 +56,7 @@ public abstract class TimePartitionSchema {
 
 
     static class YYYYDOY extends TimePartitionSchema {
-        Pattern p = Pattern.compile("(\\d{4})/(\\d{3})");
+        Pattern p = Pattern.compile("(\\d{4,})/(\\d{3})");
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc =TimeEncoding.toUtc(instant);
@@ -91,7 +91,7 @@ public abstract class TimePartitionSchema {
     }
 
     static class YYYYMM extends TimePartitionSchema {
-        Pattern p = Pattern.compile("(\\d{4})/(\\d{2})");
+        Pattern p = Pattern.compile("(\\d{4,})/(\\d{2})");
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc =TimeEncoding.toUtc(instant);
@@ -127,7 +127,7 @@ public abstract class TimePartitionSchema {
     }
 
     static class YYYY extends TimePartitionSchema {
-        Pattern p = Pattern.compile("(\\d{4})");
+        Pattern p = Pattern.compile("(\\d{4,})");
         @Override
         public TimePartitionInfo getPartitionInfo(long instant) {
             DateTimeComponents dtc =TimeEncoding.toUtc(instant);

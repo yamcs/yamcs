@@ -46,6 +46,12 @@ public class TaiUtcConverter {
     static final long OE9 = 1_000_000_000;
     static final long OE6 = 1_000_000;
 
+    // Timestamp for "0001-01-01T00:00:00Z"
+    static final long PROTOBUF_SECONDS_MIN = -62135596800L;
+
+    // Timestamp for "9999-12-31T23:59:59Z"
+    static final long PROTOBUB_SECONDS_MAX = 253402300799L;
+
     public TaiUtcConverter() throws IOException, ParseException {
         InputStream is = TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN);
         if (is == null)
@@ -199,8 +205,13 @@ public class TaiUtcConverter {
     }
 
     /**
-     * Converts instant to protobuf timestamp by smearing performing
-     * 24 hours around leap seconds
+     * Converts instant to protobuf timestamp by smearing 24 hours around leap seconds.
+     * 
+     * This class limits the range of the passed timestamp to the max valid ranges of the protobuf timestamps:
+     * 0001-01-01T00:00:00Z - 9999-12-31T23:59:59Z
+     * <p>
+     * A value larger that the max value is changed to the max value and a value smaller than that the minimum is set to
+     * the minimum.
      * 
      * @param t
      * @return
@@ -222,19 +233,21 @@ public class TaiUtcConverter {
             ls--;
             long d = 43200 + u - timesecs[i]; // number of seconds since the smearing starts
             nanosec -= (d * OE9 + nanosec) / 86401;
-            if (nanosec < 0) {
-                nanosec += OE9;
-                ls++;
-            }
         } else if ((i + 1 < timesecs.length) && (timesecs[i + 1] - u < 43200)) {
             long d = 43200 + u - timesecs[i + 1]; // number of seconds since the smearing starts
             nanosec -= (d * OE9 + nanosec) / 86401;
-            if (nanosec < 0) {
-                nanosec += OE9;
-                ls++;
-            }
         }
-        timestamp.setSeconds(u - ls);
+        if (nanosec < 0) {
+            nanosec += OE9;
+            ls++;
+        }
+        long sec = u - ls;
+        if (sec > PROTOBUB_SECONDS_MAX) {
+            sec = PROTOBUB_SECONDS_MAX;
+        } else if (sec < PROTOBUF_SECONDS_MIN) {
+            sec = PROTOBUF_SECONDS_MIN;
+        }
+        timestamp.setSeconds(sec);
         timestamp.setNanos(nanosec);
 
         return timestamp.build();
@@ -242,7 +255,7 @@ public class TaiUtcConverter {
 
     long protobufToInstant(Timestamp ts) {
         int nanosec = ts.getNanos();
-        long u = ts.getSeconds()+diffTaiUtc;
+        long u = ts.getSeconds() + diffTaiUtc;
         int i;
         for (i = timesecs.length - 1; i >= 0; i--) {
             if (u > timesecs[i])
@@ -252,15 +265,14 @@ public class TaiUtcConverter {
         if ((i >= 0) && (u - timesecs[i] <= 43200)) {
             u--;
             long d = 43200 + u - timesecs[i];
-            nanosec += (d * OE9 + nanosec) / 86400;            
+            nanosec += (d * OE9 + nanosec) / 86400;
         } else if ((i + 1 < timesecs.length) && (timesecs[i + 1] - u <= 43200)) {
             long d = 43200 + u - timesecs[i + 1];
             nanosec += (d * OE9 + nanosec) / 86400;
         }
-        return u*1000 + nanosec/OE6;
+        return u * 1000 + nanosec / OE6;
     }
-    
-    
+
     DateTimeComponents instantToUtc(long t) {
         DateTimeComponents dtc = new DateTimeComponents();
         long u;
@@ -268,7 +280,14 @@ public class TaiUtcConverter {
         long s;
 
         u = t / 1000;
-        dtc.millisec = (int) (t % 1000);
+        int millisec = (int) (t % 1000);
+
+        if (millisec < 0) {
+            millisec += 1000;
+            u -= 1;
+        }
+
+        dtc.millisec = millisec;
 
         // leap = leapsecs_sub(&t2);
         leap = 0;
@@ -285,17 +304,21 @@ public class TaiUtcConverter {
         }
         u -= ls;
 
-        u += 86400L; // to avoid u being negative
-
         s = u % 86400L;
+        
+        if (s < 0) {
+            s += 86400L;
+            u -= 86400L;
+        }
         dtc.second = (int) ((s % 60) + leap);
+
         s /= 60;
         dtc.minute = (int) (s % 60);
         s /= 60;
         dtc.hour = (int) s;
 
         u /= 86400L;
-        long mjd = 40586 + u;
+        long mjd = 40587 + u;
 
         caldateFromMjd(dtc, mjd);
 
