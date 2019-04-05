@@ -14,6 +14,24 @@ import org.yamcs.utils.TimeEncoding;
  * <br>
  * Optionally allows to specify also a checksum algorithm to be used. The checksum is at the end of the packet.
  * <br>
+ * <table>
+ * <tr>
+ * <td>timestampOffset</td>
+ * <td>Offset in the packet where to read the 8 bytes timestamp from. If negative, do not read the timestmap from within
+ * the
+ * packet but use the local wallclock time instead</td>
+ * </tr>
+ * <tr>
+ * <td>seqCountOffset</td>
+ * <td>Offset in the packet where to read the sequence count from. If negative, do not read the sequence count from
+ * within the packet and set it to 0 instead.</td>
+ * </tr>
+ * <tr>
+ * <td>errorDetection</td>
+ * <td>If present, specify which error detection to use. Example: errorDetection: <br>&nbsp;&nbsp;-type: "CRC-16-CCIIT"</td>
+ * </tr> 
+ * 
+ * </table>
  * 
  * @author nm
  *
@@ -54,21 +72,27 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
         long gentime;
-        if (packet.length < timestampOffset + 8) {
-            eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract timestamp");
-            gentime = -1;
-            corrupted = true;
+        if (timestampOffset < 0) {
+            gentime = TimeEncoding.getWallclockTime();
         } else {
-            gentime = TimeEncoding.fromUnixMillisec(ByteArrayUtils.decodeLong(packet, timestampOffset));
+            if (packet.length < timestampOffset + 8) {
+                eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract timestamp");
+                gentime = -1;
+                corrupted = true;
+            } else {
+                gentime = TimeEncoding.fromUnixMillisec(ByteArrayUtils.decodeLong(packet, timestampOffset));
+            }
         }
 
-        int seqCount;
-        if (packet.length < seqCountOffset + 4) {
-            eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract sequence count");
-            seqCount = -1;
-            corrupted = true;
-        } else {
-            seqCount = ByteArrayUtils.decodeInt(packet, seqCountOffset);
+        int seqCount = 0;
+        if (seqCountOffset >= 0) {
+            if (packet.length < seqCountOffset + 4) {
+                eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract sequence count");
+                seqCount = -1;
+                corrupted = true;
+            } else {
+                seqCount = ByteArrayUtils.decodeInt(packet, seqCountOffset);
+            }
         }
 
         PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), gentime, seqCount, packet);
