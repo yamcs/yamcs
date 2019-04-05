@@ -41,9 +41,9 @@ public class StreamConfig {
             log.warn("No streamConfig defined for instance {}", yamcsInstance);
             return;
         }
-        Map<String, Object> c = yconf.getMap("streamConfig");
+        YConfiguration c = yconf.getConfig("streamConfig");
 
-        for (Map.Entry<String, Object> m : c.entrySet()) {
+        for (Map.Entry<String, Object> m : c.getRoot().entrySet()) {
             String streamType = m.getKey();
             StandardStreamType type = null;
             try {
@@ -54,13 +54,14 @@ public class StreamConfig {
             Object o = m.getValue();
             if (o instanceof String) {
                 String streamName = (String) o;
-                entries.add(new StreamConfigEntry(type, streamName, null, false));
+                entries.add(new StreamConfigEntry(type, streamName, null, null, false));
             } else if (o instanceof List) {
                 List<Object> streamList = (List<Object>) m.getValue();
                 for (Object o1 : streamList) {
                     String streamName = null;
                     boolean async = false;
                     SequenceContainer rootContainer = null;
+                    String processor = null;
                     if (o1 instanceof String) {
                         streamName = (String) o1;
                     } else if (o1 instanceof Map) {
@@ -79,8 +80,11 @@ public class StreamConfig {
                                 throw new ConfigurationException("Unknown sequence container: " + containerName);
                             }
                         }
+                        if (streamConf.containsKey("rootContainer")) {
+                            processor = (String) streamConf.get("processor");
+                        }
                     }
-                    entries.add(new StreamConfigEntry(type, streamName, rootContainer, async));
+                    entries.add(new StreamConfigEntry(type, streamName, processor, rootContainer, async));
                 }
             }
 
@@ -141,13 +145,20 @@ public class StreamConfig {
 
         boolean async;
 
-        public StreamConfigEntry(StandardStreamType type, String name, SequenceContainer rootContainer, boolean async) {
+        /**
+         * processor name see. If configured, it will be checked by {@link StreamTmPacketProvider} to select the stream
+         * to connect to the given processor
+         */
+        String processor;
+
+        public StreamConfigEntry(StandardStreamType type, String name, String processor,
+                SequenceContainer rootContainer, boolean async) {
             super();
             this.type = type;
             this.name = name;
+            this.processor = processor;
             this.rootContainer = rootContainer;
             this.async = async;
-
         }
 
         public StandardStreamType getType() {
@@ -168,6 +179,15 @@ public class StreamConfig {
 
         public boolean isAsync() {
             return async;
+        }
+
+        /**
+         * Return the name of the processor where this stream should be connected to or null if no such processor exists
+         * 
+         * @return
+         */
+        public Object getProcessor() {
+            return processor;
         }
     }
 }

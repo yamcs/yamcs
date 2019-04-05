@@ -73,25 +73,25 @@ public class HttpServer extends AbstractService implements YamcsService {
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
     public HttpServer() {
-        this(Collections.emptyMap());
+        this(YConfiguration.wrap(Collections.emptyMap()));
     }
 
-    public HttpServer(Map<String, Object> args) {
+    public HttpServer(YConfiguration args) {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey("webConfig")) {
             log.warn("Deprecation: Define webConfig properties as args on the HttpServer");
-            args = yconf.getMap("webConfig");
+            args = yconf.getConfig("webConfig");
         }
 
-        port = YConfiguration.getInt(args, "port", 8090);
-        zeroCopyEnabled = YConfiguration.getBoolean(args, "zeroCopyEnabled", true);
+        port = args.getInt("port", 8090);
+        zeroCopyEnabled = args.getBoolean("zeroCopyEnabled", true);
 
         if (args.containsKey("webRoot")) {
-            if (YConfiguration.isList(args, "webRoot")) {
-                List<String> rootConf = YConfiguration.getList(args, "webRoot");
+            if (args.isList("webRoot")) {
+                List<String> rootConf = args.getList("webRoot");
                 webRoots.addAll(rootConf);
             } else {
-                webRoots.add(YConfiguration.getString(args, "webRoot"));
+                webRoots.add(args.getString("webRoot"));
             }
         }
 
@@ -102,7 +102,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         apiRouter = new Router(executor);
 
         if (args.containsKey("gpbExtensions")) {
-            List<Map<String, Object>> extensionsConf = YConfiguration.getList(args, "gpbExtensions");
+            List<Map<String, Object>> extensionsConf = args.getList("gpbExtensions");
             for (Map<String, Object> conf : extensionsConf) {
                 String className = YConfiguration.getString(conf, "class");
                 String fieldName = YConfiguration.getString(conf, "field");
@@ -127,15 +127,15 @@ public class HttpServer extends AbstractService implements YamcsService {
         }
 
         if (args.containsKey("cors")) {
-            Map<String, Object> ycors = YConfiguration.getMap(args, "cors");
+            YConfiguration ycors = args.getConfig("cors");
             CorsConfigBuilder corsb = null;
-            if (YConfiguration.isList(ycors, "allowOrigin")) {
-                List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
+            if (ycors.isList("allowOrigin")) {
+                List<String> originConf = ycors.getList("allowOrigin");
                 corsb = CorsConfigBuilder.forOrigins(originConf.toArray(new String[originConf.size()]));
             } else {
-                corsb = CorsConfigBuilder.forOrigin(YConfiguration.getString(ycors, "allowOrigin"));
+                corsb = CorsConfigBuilder.forOrigin(ycors.getString("allowOrigin"));
             }
-            if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
+            if (ycors.getBoolean("allowCredentials")) {
                 corsb.allowCredentials();
             }
 
@@ -150,9 +150,9 @@ public class HttpServer extends AbstractService implements YamcsService {
                 .setDisplayScope(BucketScope.GLOBAL)
                 .setStackScope(BucketScope.GLOBAL);
         if (args.containsKey("website")) {
-            Map<String, Object> ywebsite = YConfiguration.getMap(args, "website");
+            YConfiguration ywebsite = args.getConfig("website");
             if (ywebsite.containsKey("displayScope")) {
-                switch (YConfiguration.getString(ywebsite, "displayScope")) {
+                switch (ywebsite.getString("displayScope")) {
                 case "INSTANCE":
                     configb.setDisplayScope(BucketScope.INSTANCE);
                     break;
@@ -162,7 +162,7 @@ public class HttpServer extends AbstractService implements YamcsService {
                 }
             }
             if (ywebsite.containsKey("stackScope")) {
-                switch (YConfiguration.getString(ywebsite, "stackScope")) {
+                switch (ywebsite.getString("stackScope")) {
                 case "INSTANCE":
                     configb.setStackScope(BucketScope.INSTANCE);
                     break;
@@ -176,15 +176,15 @@ public class HttpServer extends AbstractService implements YamcsService {
 
         wsConfig = new WebSocketConfig();
         if (args.containsKey("webSocket")) {
-            Map<String, Object> wsArgs = YConfiguration.getMap(args, "webSocket");
+            YConfiguration wsArgs = args.getConfig("webSocket");
             if (wsArgs.containsKey("writeBufferWaterMark")) {
-                Map<String, Object> watermarkArgs = YConfiguration.getMap(wsArgs, "writeBufferWaterMark");
-                int low = YConfiguration.getInt(watermarkArgs, "low");
-                int high = YConfiguration.getInt(watermarkArgs, "high");
+                YConfiguration watermarkArgs = wsArgs.getConfig("writeBufferWaterMark");
+                int low = watermarkArgs.getInt("low");
+                int high = watermarkArgs.getInt("high");
                 wsConfig.setWriteBufferWaterMark(new WriteBufferWaterMark(low, high));
             }
             if (wsArgs.containsKey("connectionCloseNumDroppedMsg")) {
-                int connectionCloseNumDroppedMsg = YConfiguration.getInt(wsArgs, "connectionCloseNumDroppedMsg");
+                int connectionCloseNumDroppedMsg = wsArgs.getInt("connectionCloseNumDroppedMsg");
                 if (connectionCloseNumDroppedMsg < 1) {
                     throw new ConfigurationException(
                             "connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "
@@ -193,7 +193,7 @@ public class HttpServer extends AbstractService implements YamcsService {
                 wsConfig.setConnectionCloseNumDroppedMsg(connectionCloseNumDroppedMsg);
             }
             if (wsArgs.containsKey("maxFrameLength")) {
-                int maxFrameLength = YConfiguration.getInt(wsArgs, "maxFrameLength");
+                int maxFrameLength = wsArgs.getInt("maxFrameLength");
                 wsConfig.setMaxFrameLength(maxFrameLength);
             }
         }

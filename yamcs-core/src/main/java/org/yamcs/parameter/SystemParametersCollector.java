@@ -78,7 +78,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
         this(instance, null);
     }
 
-    public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
+    public SystemParametersCollector(String instance, YConfiguration args) throws ConfigurationException {
         this.instance = instance;
         log = LoggingUtils.getLogger(this.getClass(), instance);
         processArgs(args);
@@ -129,12 +129,12 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
         }
     }
 
-    private void processArgs(Map<String, Object> args) {
+    private void processArgs(YConfiguration args) {
         if (args == null) {
             return;
         }
-        provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables", false);
-        provideFsVariables = YConfiguration.getBoolean(args, "provideFsVariables", false);
+        provideJvmVariables = args.getBoolean("provideJvmVariables", false);
+        provideFsVariables = args.getBoolean("provideFsVariables", false);
     }
 
     @Override

@@ -1,8 +1,10 @@
 package org.yamcs;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
@@ -33,18 +35,45 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     volatile long lastPacketTime;
 
     List<StreamReader> readers = new ArrayList<>();
+    String yamcsInstance;
+    YConfiguration config;
 
-    public StreamTmPacketProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+    public StreamTmPacketProvider(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+        this.yamcsInstance = yamcsInstance;
 
         if (!config.containsKey("streams")) {
             throw new ConfigurationException("Cannot find key 'streams' in StreamTmPacketProvider");
         }
+        this.config = config;
+    }
+
+    @Override
+    public void init(Processor proc) {
+        this.tmProcessor = proc.getTmProcessor();
+        readStreamConfig(proc.getName());
+        proc.setPacketProvider(this);
+
+    }
+
+    /**
+     * add to readers all the streams specifically specified in the streams config (in processor.yaml) or those that
+     * have configured the processor to this processor in yamcs.instance.yaml
+     */
+    private void readStreamConfig(String procName) {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
-        List<String> streams = YConfiguration.getList(config, "streams");
+        Set<String> streams = new HashSet<>();
+        streams.addAll(config.getList("streams"));
+
+        for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.tm)) {
+            if(procName.equals(sce.getProcessor())) {
+                streams.add(sce.getName());
+            }
+        }
+
         for (String streamName : streams) {
             StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
             SequenceContainer rootContainer;
@@ -63,12 +92,6 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
             StreamReader reader = new StreamReader(s, rootContainer);
             readers.add(reader);
         }
-    }
-
-    @Override
-    public void init(Processor proc) {
-        this.tmProcessor = proc.getTmProcessor();
-        proc.setPacketProvider(this);
     }
 
     @Override

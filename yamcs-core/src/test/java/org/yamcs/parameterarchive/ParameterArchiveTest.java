@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -93,7 +94,7 @@ public class ParameterArchiveTest {
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
-        parchive = new ParameterArchive(instance, conf);
+        parchive = new ParameterArchive(instance, YConfiguration.wrap(conf));
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);

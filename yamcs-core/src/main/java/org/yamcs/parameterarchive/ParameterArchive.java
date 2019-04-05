@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.rocksdb.RocksDBException;
@@ -82,12 +81,12 @@ public class ParameterArchive extends AbstractService implements YamcsService {
     final TimeService timeService;
     private BackFiller backFiller;
     private RealtimeArchiveFiller realtimeFiller;
-    Map<String, Object> realtimeFillerConfig;
-    Map<String, Object> backFillerConfig;
+    YConfiguration realtimeFillerConfig;
+    YConfiguration backFillerConfig;
     boolean realtimeFillerEnabled;
     boolean backFillerEnabled;
 
-    public ParameterArchive(String instance, Map<String, Object> args) throws IOException, RocksDBException {
+    public ParameterArchive(String instance, YConfiguration args) throws IOException, RocksDBException {
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -145,23 +144,23 @@ public class ParameterArchive extends AbstractService implements YamcsService {
         return partitioningSchema;
     }
 
-    private void processConfig(Map<String, Object> args) {
-        for (String s : args.keySet()) {
+    private void processConfig(YConfiguration args) {
+        for (String s : args.getRoot().keySet()) {
             if ("backFiller".equals(s)) {
-                backFillerConfig = YConfiguration.getMap(args, s);
+                backFillerConfig = args.getConfig(s);
                 log.debug("backFillerConfig: {}", backFillerConfig);
-                backFillerEnabled = YConfiguration.getBoolean(backFillerConfig, "enabled", true);
+                backFillerEnabled = backFillerConfig.getBoolean("enabled", true);
             } else if ("realtimeFiller".equals(s)) {
-                realtimeFillerConfig = YConfiguration.getMap(args, s);
-                realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
+                realtimeFillerConfig = args.getConfig(s);
+                realtimeFillerEnabled = realtimeFillerConfig.getBoolean("enabled", false);
                 log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
 
             } else if ("partitioningSchema".equals(s)) {
-                String schema = YConfiguration.getString(args, s);
+                String schema = args.getString(s);
                 if ("none".equalsIgnoreCase(schema)) {
                     partitioningSchema = null;
                 } else {
-                    partitioningSchema = TimePartitionSchema.getInstance(YConfiguration.getString(args, s));
+                    partitioningSchema = TimePartitionSchema.getInstance(args.getString(s));
                 }
             } else {
                 throw new ConfigurationException(

@@ -3,6 +3,7 @@ package org.yamcs.algorithms;
 import java.util.Map;
 
 import org.yamcs.Processor;
+import org.yamcs.YConfiguration;
 import org.yamcs.xtce.Algorithm;
 
 /**
@@ -23,5 +24,5 @@ public interface AlgorithmEngine {
      * @param config - the configuration that was used for the AlgorithmManager in the processor.yaml
      * @return
      */
-    AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language, Map<String, Object> config);
+    AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language, YConfiguration config);
 }

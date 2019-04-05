@@ -1,13 +1,13 @@
 package org.yamcs.algorithms;
 
-import java.util.Map;
+import org.yamcs.YConfiguration;
 
 public class JavaAlgorithmEngine implements AlgorithmEngine {
     JavaAlgorithmExecutorFactory factory = new JavaAlgorithmExecutorFactory();
     
     @Override
     public AlgorithmExecutorFactory makeExecutorFactory(AlgorithmManager algorithmManager, String language,
-            Map<String, Object> config) {
+            YConfiguration config) {
         return factory;
     }
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,7 @@ import com.google.common.util.concurrent.ServiceManager;
 public class SimulatorCommander extends ProcessRunner {
 
     public SimulatorCommander() {
-        this(Collections.emptyMap());
+        this(YConfiguration.emptyConfig());
     }
     
     /**
@@ -32,31 +31,31 @@ public class SimulatorCommander extends ProcessRunner {
      * @param yamcsInstance
      * @param args
      */
-    public SimulatorCommander(String yamcsInstance, Map<String, Object> args) {
+    public SimulatorCommander(String yamcsInstance, YConfiguration args) {
         super(superArgs(args));
     }
 
-    public SimulatorCommander(Map<String, Object> args) {
+    public SimulatorCommander(YConfiguration args) {
         super(superArgs(args));
     }
 
-    private static Map<String, Object> superArgs(Map<String, Object> userArgs) {
+    private static Map<String, Object> superArgs(YConfiguration userArgs) {
         SimulatorArgs defaultOptions = new SimulatorArgs();
         List<String> cmdl = new ArrayList<>();
 
         cmdl.add("bin/simulator.sh");
         if (userArgs.containsKey("telnet")) {
-            Map<String, Object> telnetArgs = YConfiguration.getMap(userArgs, "telnet");
-            int telnetPort = YConfiguration.getInt(telnetArgs, "port", defaultOptions.telnetPort);
+            YConfiguration telnetArgs = userArgs.getConfig("telnet");
+            int telnetPort = telnetArgs.getInt("port", defaultOptions.telnetPort);
             cmdl.add("--telnet-port");
             cmdl.add(Integer.toString(telnetPort));
         }
         if (userArgs.containsKey("tctm")) {
-            Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "tctm");
-            int tcPort = YConfiguration.getInt(yamcsArgs, "tcPort", defaultOptions.tcPort);
-            int tmPort = YConfiguration.getInt(yamcsArgs, "tmPort", defaultOptions.tmPort);
-            int losPort = YConfiguration.getInt(yamcsArgs, "losPort", defaultOptions.losPort);
-            int tm2Port = YConfiguration.getInt(yamcsArgs, "tm2Port", defaultOptions.tm2Port);
+            YConfiguration yamcsArgs = userArgs.getConfig("tctm");
+            int tcPort = yamcsArgs.getInt("tcPort", defaultOptions.tcPort);
+            int tmPort = yamcsArgs.getInt("tmPort", defaultOptions.tmPort);
+            int losPort = yamcsArgs.getInt("losPort", defaultOptions.losPort);
+            int tm2Port = yamcsArgs.getInt("tm2Port", defaultOptions.tm2Port);
             
             cmdl.addAll(Arrays.asList("--tc-port", "" + tcPort,
                     "--tm-port", "" + tmPort,
@@ -64,12 +63,12 @@ public class SimulatorCommander extends ProcessRunner {
                     "--tm2-port", "" + tm2Port));
         }
         if (userArgs.containsKey("frame")) {
-            Map<String, Object> frameArgs = YConfiguration.getMap(userArgs, "frame");
-            String tmFrameType = YConfiguration.getString(frameArgs, "type", defaultOptions.tmFrameType);
-            int tmFramePort = YConfiguration.getInt(frameArgs, "tmPort", defaultOptions.tmFramePort);
-            String tmFrameHost = YConfiguration.getString(frameArgs, "tmHost", defaultOptions.tmFrameHost);
-            int tmFrameSize = YConfiguration.getInt(frameArgs, "tmFrameLength", defaultOptions.tmFrameLength);
-            double tmFrameFreq = YConfiguration.getDouble(frameArgs, "tmFrameFreq", defaultOptions.tmFrameFreq);
+            YConfiguration frameArgs = userArgs.getConfig("frame");
+            String tmFrameType = frameArgs.getString("type", defaultOptions.tmFrameType);
+            int tmFramePort = frameArgs.getInt("tmPort", defaultOptions.tmFramePort);
+            String tmFrameHost = frameArgs.getString("tmHost", defaultOptions.tmFrameHost);
+            int tmFrameSize = frameArgs.getInt("tmFrameLength", defaultOptions.tmFrameLength);
+            double tmFrameFreq = frameArgs.getDouble("tmFrameFreq", defaultOptions.tmFrameFreq);
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
                     "--tm-frame-host", "" + tmFrameHost,
                     "--tm-frame-port", "" + tmFramePort,
@@ -78,11 +77,11 @@ public class SimulatorCommander extends ProcessRunner {
             
         }
         if (userArgs.containsKey("perfTest")) {
-            Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "perfTest");
-            int numPackets = YConfiguration.getInt(yamcsArgs, "numPackets", defaultOptions.perfNp);
+            YConfiguration yamcsArgs = userArgs.getConfig("perfTest");
+            int numPackets = yamcsArgs.getInt("numPackets", defaultOptions.perfNp);
             if (numPackets > 0) {
-                int packetSize = YConfiguration.getInt(yamcsArgs, "packetSize", defaultOptions.perfPs);
-                long interval = YConfiguration.getLong(yamcsArgs, "interval", defaultOptions.perfMs);
+                int packetSize = yamcsArgs.getInt("packetSize", defaultOptions.perfPs);
+                long interval = yamcsArgs.getLong("interval", defaultOptions.perfMs);
                 cmdl.addAll(Arrays.asList("--perf-np", "" + numPackets,
                         "--perf-ps", "" + packetSize,
                         "--perf-ms", "" + interval));

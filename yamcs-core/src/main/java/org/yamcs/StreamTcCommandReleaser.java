@@ -1,7 +1,5 @@
 package org.yamcs;
 
-import java.util.Map;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
@@ -23,12 +21,12 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
 
     volatile long sentTcCount;
 
-    public StreamTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
+    public StreamTcCommandReleaser(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         if(!config.containsKey("stream")) {
             throw new ConfigurationException("Please specify the stream in the config (args)");
         }
-        this.streamName = config.get("stream");
+        this.streamName = config.getString("stream");
     }
     
     @Override

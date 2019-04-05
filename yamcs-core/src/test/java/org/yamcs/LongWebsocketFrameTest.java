@@ -39,7 +39,7 @@ public class LongWebsocketFrameTest {
         Map<String, Object> wsOptions = new HashMap<>();
         wsOptions.put("maxFrameLength", 1048576);
         options.put("webSocket", wsOptions);
-        new HttpServer(options).startServer();
+        new HttpServer(YConfiguration.wrap(options)).startServer();
         YamcsServer.setupYamcsServer();
         Logger.getLogger("org.yamcs.api.ws.WebSocketClientHandler").setLevel(Level.OFF);
     }

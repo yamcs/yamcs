@@ -142,19 +142,19 @@ public class Processor extends AbstractService {
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    void init(List<ServiceWithConfig> serviceList, Map<String, Object> config, Object spec)
+    void init(List<ServiceWithConfig> serviceList, YConfiguration config, Object spec)
             throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         boolean generateEvents = false;
         if (config != null) {
-            generateEvents = YConfiguration.getBoolean(config, CONFIG_KEY_GENERATE_EVENTS, true);
+            generateEvents = config.getBoolean(CONFIG_KEY_GENERATE_EVENTS, true);
         }
 
         processorData = new ProcessorData(this, generateEvents);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        Map<String, Object> tmProcessorConfig = null;
+        YConfiguration tmProcessorConfig = null;
 
         synchronized (instances) {
             if (instances.containsKey(key(yamcsInstance, name))) {
@@ -162,30 +162,17 @@ public class Processor extends AbstractService {
                         "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
             if (config != null) {
-                for (Map.Entry<String, Object> me : config.entrySet()) {
-                    String c = me.getKey();
-                    Object o = me.getValue();
-                    if (CONFIG_KEY_ALARM.equals(c)) {
-                        if (!(o instanceof Map)) {
-                            throw new ConfigurationException(CONFIG_KEY_ALARM + " configuration should be a map");
-                        }
-                        configureAlarms((Map<String, Object>) o);
-                    } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(c)) {
-                        subscribeAll = YConfiguration.getBoolean(config, CONFIG_KEY_SUBSCRIBE_ALL);
-                    } else if (CONFIG_KEY_PARAMETER_CACHE.equals(c)) {
-                        if (!(o instanceof Map)) {
-                            throw new ConfigurationException(
-                                    CONFIG_KEY_PARAMETER_CACHE + " configuration should be a map");
-                        }
-                        configureParameterCache((Map<String, Object>) o);
-                    } else if (CONFIG_KEY_TM_PROCESSOR.equals(c)) {
-                        if (!(o instanceof Map)) {
-                            throw new ConfigurationException(
-                                    CONFIG_KEY_TM_PROCESSOR + " configuration should be a map");
-                        }
-                        tmProcessorConfig = (Map<String, Object>) o;
+                for(String key: config.getRoot().keySet()) {
+                    if (CONFIG_KEY_ALARM.equals(key)) {
+                        configureAlarms(config.getConfig(key));
+                    } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(key)) {
+                        subscribeAll = config.getBoolean(CONFIG_KEY_SUBSCRIBE_ALL);
+                    } else if (CONFIG_KEY_PARAMETER_CACHE.equals(key)) {
+                        configureParameterCache(config.getConfig(key));
+                    } else if (CONFIG_KEY_TM_PROCESSOR.equals(key)) {
+                        tmProcessorConfig = config.getConfig(key);
                     } else {
-                        log.warn("Ignoring unknown config key '{}'", c);
+                        log.warn("Ignoring unknown config key '{}'", key);
                     }
                 }
             }
@@ -245,44 +232,19 @@ public class Processor extends AbstractService {
         return executor;
     }
 
-    private void configureAlarms(Map<String, Object> alarmConfig) {
-        Object v = alarmConfig.get("check");
-        if (v != null) {
-            if (!(v instanceof Boolean)) {
-                throw new ConfigurationException(
-                        "Unknown value '" + v + "' for alarmConfig -> check. Boolean expected.");
-            }
-            checkAlarms = (Boolean) v;
-        }
-
-        v = alarmConfig.get("server");
-        if (v != null) {
-            if (!(v instanceof String)) {
-                throw new ConfigurationException(
-                        "Unknown value '" + v + "' for alarmConfig -> server. String expected.");
-
-            }
-            alarmServerEnabled = "enabled".equalsIgnoreCase((String) v);
-            if (alarmServerEnabled) {
-                checkAlarms = true;
-            }
+    private void configureAlarms(YConfiguration alarmConfig) {
+        checkAlarms = alarmConfig.getBoolean("check", checkAlarms);
+        alarmServerEnabled =  "enabled".equalsIgnoreCase(alarmConfig.getString("enabled", null));
+        if (alarmServerEnabled) {
+            checkAlarms = true;
         }
     }
 
-    private void configureParameterCache(Map<String, Object> cacheConfig) {
-        boolean enabled = false;
-        boolean cacheAll = false;
-
-        Object v = cacheConfig.get("enabled");
-        if (v != null) {
-            if (!(v instanceof Boolean)) {
-                throw new ConfigurationException(
-                        "Unknown value '" + v + "' for parameterCache -> enabled. Boolean expected.");
-            }
-            enabled = (Boolean) v;
-        }
+    private void configureParameterCache(YConfiguration cacheConfig) {
+        boolean enabled = cacheConfig.getBoolean("enabled", false);
+        
         if (!enabled) { // this is the default but print a warning if there are some things configured
-            Set<String> keySet = cacheConfig.keySet();
+            Set<String> keySet = cacheConfig.getRoot().keySet();
             keySet.remove("enabled");
             if (!keySet.isEmpty()) {
                 log.warn(
@@ -291,20 +253,12 @@ public class Processor extends AbstractService {
             }
             return;
         }
-
-        v = cacheConfig.get("cacheAll");
-        if (v != null) {
-            if (!(v instanceof Boolean)) {
-                throw new ConfigurationException(
-                        "Unknown value '" + v + "' for parameterCache -> cacheAll. Boolean expected.");
-            }
-            cacheAll = (Boolean) v;
-            if (cacheAll) {
-                enabled = true;
-            }
+        boolean cacheAll = cacheConfig.getBoolean("cacheAll", false);
+        if (cacheAll) {
+            enabled = true;
         }
-        long duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 300);
-        int maxNumEntries = YConfiguration.getInt(cacheConfig, "maxNumEntries", 512);
+        long duration = 1000L * cacheConfig.getInt("duration", 300);
+        int maxNumEntries = cacheConfig.getInt("maxNumEntries", 512);
 
         parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration, maxNumEntries);
     }

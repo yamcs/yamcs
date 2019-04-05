@@ -108,42 +108,29 @@ public class YamcsServer {
      * Creates services at global (if instance is null) or instance level. The services are not yet started. This must
      * be done in a second step, so that components can ask YamcsServer for other service instantiations.
      *
-     * @param services
-     *            list of service configuration; each of them is a string (=classname) or a map
      * @param instance
      *            if null, then start a global service, otherwise an instance service
+     * @param services
+     *            list of service configuration; each of them is a string (=classname) or a map
      * @throws IOException
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig)
+    static List<ServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig)
             throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
         Set<String> names = new HashSet<>();
         List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
-        for (Object servobj : servicesConfig) {
+        for (YConfiguration servconf : servicesConfig) {
             String servclass;
             Object args = null;
             String name = null;
-            if (servobj instanceof String) {
-                servclass = (String) servobj;
-            } else if (servobj instanceof Map<?, ?>) {
-                Map<String, Object> m = (Map<String, Object>) servobj;
-                servclass = YConfiguration.getString(m, "class");
-                args = m.get("args");
-                if (m.containsKey("name")) {
-                    name = m.get("name").toString();
-                }
-            } else {
-                throw new ConfigurationException(
-                        "Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "
-                                + servobj);
+            servclass = servconf.getString("class");
+            args = servconf.get("args");
+            if(args instanceof Map) {
+                args = servconf.getConfig("args");
             }
-
-            if (name == null) {
-                name = servclass.substring(servclass.lastIndexOf('.') + 1);
-            }
-
+            name = servconf.getString("name", servclass.substring(servclass.lastIndexOf('.') + 1));
             String candidateName = name;
             int count = 1;
             while (names.contains(candidateName)) {
@@ -171,7 +158,8 @@ public class YamcsServer {
             names.add(name);
         }
 
-        return serviceList;
+    return serviceList;
+
     }
 
     /**
@@ -278,7 +266,7 @@ public class YamcsServer {
         instanceDefDir = dataDir + "/instance-def/";
 
         if (c.containsKey("services")) {
-            List<Object> services = c.getList("services");
+            List<YConfiguration> services = c.getServiceConfigList("services");
             globalServiceList = createServices(null, services);
         }
         int numOnlineInst = 0;

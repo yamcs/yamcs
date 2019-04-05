@@ -58,7 +58,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
     long numParams = 0;
     ArchiveIntervalFiller first, second;
 
-    public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
+    public RealtimeArchiveFiller(ParameterArchive parameterArchive, YConfiguration config) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
@@ -70,11 +70,11 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
         }
     }
 
-    private void parseConfig(Map<String, Object> config) {
-        flushInterval = YConfiguration.getInt(config, "flushInterval", 300);
-        processorName = YConfiguration.getString(config, "processorName", processorName);
-        maxSegmentSize = YConfiguration.getInt(config, "maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
-        threshold = YConfiguration.getInt(config, "orderingThreshold", 20000);
+    private void parseConfig(YConfiguration config) {
+        flushInterval = config.getInt("flushInterval", 300);
+        processorName = config.getString("processorName", processorName);
+        maxSegmentSize = config.getInt("maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
+        threshold = config.getInt("orderingThreshold", 20000);
     }
 
     @Override

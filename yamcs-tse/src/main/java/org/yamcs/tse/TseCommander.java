@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,19 +23,19 @@ import com.google.common.util.concurrent.ServiceManager;
 public class TseCommander extends ProcessRunner {
 
     public TseCommander() {
-        this(Collections.emptyMap());
+        this(YConfiguration.emptyConfig());
     }
 
-    public TseCommander(Map<String, Object> args) {
+    public TseCommander(YConfiguration args) {
         super(superArgs(args));
     }
 
-    private static Map<String, Object> superArgs(Map<String, Object> userArgs) {
-        Map<String, Object> telnetArgs = YConfiguration.getMap(userArgs, "telnet");
-        int telnetPort = YConfiguration.getInt(telnetArgs, "port");
+    private static Map<String, Object> superArgs(YConfiguration userArgs) {
+        YConfiguration telnetArgs = userArgs.getConfig("telnet");
+        int telnetPort = telnetArgs.getInt("port");
 
-        Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "tctm");
-        int tctmPort = YConfiguration.getInt(yamcsArgs, "port");
+        YConfiguration yamcsArgs = userArgs.getConfig("tctm");
+        int tctmPort = yamcsArgs.getInt("port");
 
         Map<String, Object> args = new HashMap<>();
         args.put("command", Arrays.asList("bin/tse-commander.sh",

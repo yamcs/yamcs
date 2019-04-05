@@ -22,6 +22,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
+import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
@@ -92,14 +93,14 @@ public class AlgorithmManager extends AbstractService
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
     
-    final Map<String, Object> config;
+    final YConfiguration config;
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
     }
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, (Map<String, Object>) null);
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     /**
@@ -117,7 +118,7 @@ public class AlgorithmManager extends AbstractService
     }
 
     @SuppressWarnings("unchecked")
-    public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
+    public AlgorithmManager(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
     }

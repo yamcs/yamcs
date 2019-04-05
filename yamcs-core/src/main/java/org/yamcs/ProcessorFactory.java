@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ProcessorFactory {
-    private static Logger log = LoggerFactory.getLogger(Processor.class.getName());
+    private static Logger log = LoggerFactory.getLogger(ProcessorFactory.class.getName());
 
     /**
      * Returns the processor types as defined in <tt>processor.yaml</tt>
@@ -47,19 +47,20 @@ public class ProcessorFactory {
      */
     public static Processor create(String yamcsInstance, String name, String type, String creator, Object spec)
             throws ProcessorException, ConfigurationException {
-        Map<String, Object> processorConfig = null;
+        YConfiguration processorConfig = null;
         YConfiguration conf = YConfiguration.getConfiguration("processor");
 
         List<ServiceWithConfig> serviceList = new ArrayList<>();
         try {
             if (!conf.containsKey(type)) {
-                throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getFilename());
+                throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getPath());
             }
-
-            if (conf.containsKey(type, "services")) {
-                serviceList = YamcsServer.createServices(yamcsInstance, conf.getList(type, "services"));
+            conf = conf.getConfig(type);
+            
+            if (conf.containsKey("services")) {
+                serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"));
             } else {
-                log.warn("Deprecated configuration in {}. Please use services", conf.getFilename());
+                log.warn("Deprecated configuration in {}. Please use services", conf.getPath());
                 if (conf.containsKey(type, "telemetryProvider")) {
                     Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "telemetryProvider");
                     String tmClass = YConfiguration.getString(m, "class");
@@ -67,9 +68,9 @@ public class ProcessorFactory {
                     serviceList.add(YamcsServer.createService(yamcsInstance, tmClass, tmClass, tmArgs));
                 }
 
-                if (conf.containsKey(type, "parameterProviders")) {
+                if (conf.containsKey("parameterProviders")) {
                     serviceList.addAll(
-                            YamcsServer.createServices(yamcsInstance, conf.getList(type, "parameterProviders")));
+                            YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("parameterProviders")));
                 }
                 if (conf.containsKey(type, "commandReleaser")) {
                     Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "commandReleaser");
@@ -78,8 +79,8 @@ public class ProcessorFactory {
                     serviceList.add(YamcsServer.createService(yamcsInstance, commandClass, commandClass, commandArgs));
                 }
             }
-            if (conf.containsKey(type, "config")) {
-                processorConfig = (Map<String, Object>) conf.getSubMap(type, "config");
+            if (conf.containsKey("config")) {
+                processorConfig = conf.getConfig("config");
             }
         } catch (IOException e) {
             throw new ConfigurationException("Cannot load service", e);
@@ -102,7 +103,7 @@ public class ProcessorFactory {
      * @throws ConfigurationException
      **/
     public static Processor create(String instance, String name, String type, List<ServiceWithConfig> serviceList,
-            String creator, Map<String, Object> config, Object spec) throws ProcessorException, ConfigurationException {
+            String creator, YConfiguration config, Object spec) throws ProcessorException, ConfigurationException {
         Processor proc = new Processor(instance, name, type, creator);
 
         proc.init(serviceList, config, spec);

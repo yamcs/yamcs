@@ -48,7 +48,7 @@ public class AlgorithmManagerTest {
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
         
-        proc=ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, new AlgorithmManager("refmdb", config));
+        proc=ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, new AlgorithmManager("refmdb", YConfiguration.wrap(config)));
         prm=proc.getParameterRequestManager();
     
     }

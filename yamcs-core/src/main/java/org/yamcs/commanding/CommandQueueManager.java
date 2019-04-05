@@ -121,7 +121,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     q.stateExpirationTimeS = config.getInt(queueName, "stateExpirationTimeS");
                 }
                 if (config.containsKey(queueName, "significances")) {
-                    q.significances = config.getList(queueName, "significances");
+                    q.significances = config.getSubList(queueName, "significances");
                 }
             }
         }

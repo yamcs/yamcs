@@ -3,14 +3,13 @@ package org.yamcs.parameterarchive;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
@@ -41,10 +40,9 @@ public class ArrayAndAggregatesTest {
             rse.dropTablespace(instance);
         }
         rse.createTablespace(instance);
-        Map<String, Object> conf = new HashMap<>();
 
       
-        parchive = new ParameterArchive(instance, conf);
+        parchive = new ParameterArchive(instance, YConfiguration.emptyConfig());
         pidDb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidDb);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -66,7 +65,7 @@ public class BackFiller implements StreamSubscriber {
     private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
   
     
-    BackFiller(ParameterArchive parchive, Map<String, Object> config) {
+    BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
         if (config != null) {
             parseConfig(config);
@@ -105,30 +104,26 @@ public class BackFiller implements StreamSubscriber {
     }
 
     @SuppressWarnings("unchecked")
-    private void parseConfig(Map<String, Object> config) {
-        warmupTime = 1000L * YConfiguration.getInt(config, "warmupTime", 60);
-        maxSegmentSize = YConfiguration.getInt(config, "maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
+    private void parseConfig(YConfiguration config) {
+        warmupTime = 1000L * config.getInt("warmupTime", 60);
+        maxSegmentSize = config.getInt("maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
 
         if (config.containsKey("schedule")) {
-            List<Object> l = YConfiguration.getList(config, "schedule");
+            List<YConfiguration> l = config.getConfigList("schedule");
             schedules = new ArrayList<>(l.size());
-            for (Object o : l) {
-                if (!(o instanceof Map)) {
-                    throw new ConfigurationException("Invalid schedule specification in " + config);
-                }
-                Map<String, Object> m = (Map<String, Object>) o;
-                int segstart = YConfiguration.getInt(m, "startSegment");
-                int numseg = YConfiguration.getInt(m, "numSegments");
-                long interval = YConfiguration.getInt(m, "interval", -1);
+            for (YConfiguration sch : l) {
+                int segstart = sch.getInt("startSegment");
+                int numseg = sch.getInt("numSegments");
+                long interval = sch.getInt("interval", -1);
                 Schedule s = new Schedule(segstart, numseg, interval);
                 schedules.add(s);
             }
         }
 
-        streamUpdateFillFrequency = YConfiguration.getLong(config, "streamUpdateFillFrequency", 600);
+        streamUpdateFillFrequency = config.getLong("streamUpdateFillFrequency", 600);
         List<String> monitoredStreams;
         if (config.containsKey("monitorStreams")) {
-            monitoredStreams = YConfiguration.getList(config, "monitorStreams");
+            monitoredStreams = config.getList("monitorStreams");
         } else {
             StreamConfig sc = StreamConfig.getInstance(parchive.getYamcsInstance());
             monitoredStreams = new ArrayList<>();

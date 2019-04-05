@@ -49,8 +49,11 @@ public class YConfiguration {
     static String prefix = null;
 
     // keeps track of the configuration path so meaningful error messages can be printed
-    // the path is something like filename->key1->subkey2[3]->...
-    static private IdentityHashMap<Object, String> confPath = new IdentityHashMap<>();
+    // the path is something like filename.key1.subkey2[3]...
+    // this is used for the old style when the methods of YConfiguration were called in a static way
+    // Nowadays, please use Yconfiguration.getConfig() to make a child config, and then use the .path() to get the
+    // similar path.
+    static private IdentityHashMap<Object, String> staticConfPaths = new IdentityHashMap<>();
 
     static final private YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
     /**
@@ -61,6 +64,10 @@ public class YConfiguration {
     String parentKey;
     // the root map
     Map<String, Object> root;
+
+    // this is set only for the root Yconfiguration (i.e. without a parent) and indicates where (which file) it has been
+    // loaded from
+    String rootLocation;
 
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         this(subsystem, resolver.getConfigurationStream("/" + subsystem + ".yaml"), subsystem + ".yaml");
@@ -77,6 +84,7 @@ public class YConfiguration {
      */
     @SuppressWarnings("unchecked")
     public YConfiguration(String subsystem, InputStream is, String confpath) {
+        this.rootLocation = confpath;
         Yaml yaml = new Yaml();
         try {
             Object o = yaml.load(is);
@@ -86,7 +94,7 @@ public class YConfiguration {
                 throw new ConfigurationException(confpath, "top level structure must be a map and not a " + o);
             }
             root = (Map<String, Object>) o;
-            confPath.put(root, confpath);
+            staticConfPaths.put(root, confpath);
         } catch (YAMLException e) {
             throw new ConfigurationException(confpath, e.toString(), e);
         }
@@ -223,23 +231,9 @@ public class YConfiguration {
         }
     }
 
-    public boolean isMap(String key) {
-        return isMap(root, key);
-    }
-
-    public static boolean isMap(Map m, String key) {
-        checkKey(m, key);
-        Object o = m.get(key);
-        return (o instanceof Map);
-    }
-
-    public boolean isNull(String key) {
-        return isNull(root, key);
-    }
-
     public static boolean isNull(Map m, String key) {
         if (!m.containsKey(key)) {
-            throw new ConfigurationException(confPath.get(m), "cannot find a mapping for key '" + key + "'");
+            throw new ConfigurationException(staticConfPaths.get(m), "cannot find a mapping for key '" + key + "'");
         }
         Object o = m.get(key);
         return o == null;
@@ -249,28 +243,38 @@ public class YConfiguration {
         return System.getProperty(key);
     }
 
-    private static void checkKey(Map m, String key) throws ConfigurationException {
-        if (!m.containsKey(key)) {
-            throw new ConfigurationException(confPath.get(m), "cannot find a mapping for key '" + key + "'");
-        } else if (m.get(key) == null) {
-            throw new ConfigurationException(confPath.get(m), key + " exists but is null");
+    private void checkKey(String key, Class<?> cls) throws ConfigurationException {
+        if (!root.containsKey(key)) {
+            throw new ConfigurationException(getPath(), "cannot find a mapping for key '" + key + "'");
+        }
+        Object o = root.get(key);
+        if (o == null) {
+            throw new ConfigurationException(getPath(), key + " exists but is null");
+        }
+        if (!cls.isInstance(o)) {
+            throw new ConfigurationException(getPath(), key + " is not of the expected type " + cls.getName());
         }
     }
 
-    public String getFilename() {
-        return confPath.get(root);
+    private static void checkKey(Map m, String key) throws ConfigurationException {
+        if (!m.containsKey(key)) {
+            throw new ConfigurationException(staticConfPaths.get(m), "cannot find a mapping for key '" + key + "'");
+        } else if (m.get(key) == null) {
+            throw new ConfigurationException(staticConfPaths.get(m), key + " exists but is null");
+        }
     }
 
     public boolean containsKey(String key) {
         return root.containsKey(key);
     }
 
+    @SuppressWarnings("unchecked")
     public boolean containsKey(String key, String key1) throws ConfigurationException {
         if (!root.containsKey(key)) {
             return false;
         }
-
-        Map<String, Object> m = getMap(key);
+        checkKey(key, Map.class);
+        Map<String, Object> m = (Map<String, Object>) root.get(key);
         return m.containsKey(key1);
     }
 
@@ -337,18 +341,26 @@ public class YConfiguration {
         Object o = m.get(key);
         if (o instanceof Map) {
             Map<String, Object> m1 = (Map) o;
-            if (confPath.containsKey(m1)) {
-                confPath.put(m1, confPath.get(m) + "->" + key);
+            if (staticConfPaths.containsKey(m1)) {
+                staticConfPaths.put(m1, staticConfPaths.get(m) + "->" + key);
             }
             return m1;
         } else {
-            throw new ConfigurationException(confPath.get(m),
+            throw new ConfigurationException(staticConfPaths.get(m),
                     "mapping for key '" + key + "' is of type " + o.getClass().getCanonicalName() + " and not Map");
         }
     }
 
+   
+    /**
+     * 
+     * Please use {@link #getConfig} to get a child config instead of accessing the map directly
+     */
+    @SuppressWarnings("unchecked")
+    @Deprecated
     public Map<String, Object> getMap(String key) throws ConfigurationException {
-        return getMap(root, key);
+        checkKey(key, Map.class);
+        return (Map<String, Object>) root.get(key);
     }
 
     public Map<String, Object> getSubMap(String key, String key1) throws ConfigurationException {
@@ -373,7 +385,7 @@ public class YConfiguration {
         if (o instanceof String) {
             return (String) o;
         } else {
-            throw new ConfigurationException(confPath.get(m),
+            throw new ConfigurationException(staticConfPaths.get(m),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not String");
         }
     }
@@ -387,12 +399,14 @@ public class YConfiguration {
     }
 
     public String getString(String key) throws ConfigurationException {
-        return getString(root, key);
+        checkKey(key, String.class);
+        return (String) root.get(key);
     }
 
     public String getString(String key, String defaultValue) throws ConfigurationException {
         return getString(root, key, defaultValue);
     }
+
     /*
      * The key has to point to a map that contains the subkey that points to a string
      */
@@ -407,7 +421,8 @@ public class YConfiguration {
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) throws ConfigurationException {
-        return (List<T>) getList(root, key);
+        checkKey(key, List.class);
+        return (List<T>) root.get(key);
     }
 
     @SuppressWarnings("unchecked")
@@ -426,39 +441,63 @@ public class YConfiguration {
                 }
             }
         } else {
-            throw new ConfigurationException(confPath.get(root),
+            throw new ConfigurationException(staticConfPaths.get(root),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
         }
         return r;
     }
 
+    public double getDouble(String key) throws ConfigurationException {
+        checkKey(key, Number.class);
+        return ((Number) root.get(key)).doubleValue();
+    }
+
+    public double getDouble(String key, double defaultValue) throws ConfigurationException {
+        if (!root.containsKey(key)) {
+            return defaultValue;
+        }
+        return getDouble(key);
+    }
+    /**
+     * This is the same like the method above but will create a {class: "string"} for strings rather than throwing an
+     * exception.
+     * It is to be used when loading service list which can be specified just by the class name.
+     * 
+     * @param key
+     * @return
+     * @throws ConfigurationException
+     */
     @SuppressWarnings("unchecked")
-    static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
-        checkKey(m, key);
-        Object o = m.get(key);
+    public List<YConfiguration> getServiceConfigList(String key) throws ConfigurationException {
+        checkKey(root, key);
+        List<YConfiguration> r = new ArrayList<>();
+        Object o = root.get(key);
         if (o instanceof List) {
             List l = (List) o;
-            String parentPath = confPath.get(m);
             for (int i = 0; i < l.size(); i++) {
                 Object o1 = l.get(i);
-                if (!confPath.containsKey(o1)) {
-                    confPath.put(o1, parentPath + "->" + key + "[" + i + "]");
+                if (o1 instanceof Map) {
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) o1));
+                } else if (o1 instanceof String) {
+                    Map<String, Object> m1 = new HashMap<String, Object>();
+                    m1.put("class", o1);
+                    r.add(new YConfiguration(this, key + "[" + i + "]", (Map) m1));
+                } else {
+                    throw new ConfigurationException(this, "One element of the list is not a map: " + o1);
                 }
             }
-            return l;
         } else {
-            throw new ConfigurationException(confPath.get(m),
+            throw new ConfigurationException(staticConfPaths.get(root),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
         }
+        return r;
     }
 
-    public <T> List<T> getList(String key, String key1, String key2) throws ConfigurationException {
-        Map<String, Object> m = getSubMap(key, key1);
-        return getList(m, key2);
-    }
-
-    public <T> List<T> getList(String key, String key1) throws ConfigurationException {
-        Map<String, Object> m = getMap(key);
+  
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getSubList(String key, String key1) throws ConfigurationException {
+        checkKey(key, Map.class);
+        Map<String, Object> m = (Map<String, Object>) root.get(key);
         return getList(m, key1);
     }
 
@@ -481,7 +520,7 @@ public class YConfiguration {
             if (o instanceof Boolean) {
                 return (Boolean) o;
             } else {
-                throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+                throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                         + getUnqualfiedClassName(o) + " and not Boolean (use true or false without quotes)");
             }
         } else {
@@ -495,13 +534,14 @@ public class YConfiguration {
         if (o instanceof Boolean) {
             return (Boolean) o;
         } else {
-            throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                     + getUnqualfiedClassName(o) + " and not Boolean (use true or false without quotes)");
         }
     }
 
     public boolean getBoolean(String key) throws ConfigurationException {
-        return getBoolean(root, key);
+        checkKey(key, Boolean.class);
+        return (Boolean) root.get(key);
     }
 
     public boolean getBoolean(String key, String key1) throws ConfigurationException {
@@ -515,11 +555,16 @@ public class YConfiguration {
 
     /********************** int configs */
     public int getInt(String key) throws ConfigurationException {
-        return getInt(root, key);
+        checkKey(key, Integer.class);
+        return (Integer) root.get(key);
     }
 
     public int getInt(String key, int defaultValue) throws ConfigurationException {
-        return getInt(root, key, defaultValue);
+        if (root.containsKey(key)) {
+            return getInt(key);
+        } else {
+            return defaultValue;
+        }
     }
 
     public int getInt(String key, String key1) throws ConfigurationException {
@@ -543,7 +588,7 @@ public class YConfiguration {
         if (o instanceof Integer) {
             return (Integer) o;
         } else {
-            throw new ConfigurationException(confPath.get(m),
+            throw new ConfigurationException(staticConfPaths.get(m),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not Integer");
         }
     }
@@ -568,7 +613,7 @@ public class YConfiguration {
         if (o instanceof Integer) {
             return (Integer) o;
         } else {
-            throw new ConfigurationException(confPath.get(m),
+            throw new ConfigurationException(staticConfPaths.get(m),
                     "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not Integer");
         }
     }
@@ -590,7 +635,7 @@ public class YConfiguration {
         } else if (o instanceof Long) {
             return (Long) o;
         } else {
-            throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                     + getUnqualfiedClassName(o) + " and not Integer or Long");
         }
     }
@@ -615,12 +660,11 @@ public class YConfiguration {
         } else if (o instanceof Long) {
             return (Long) o;
         } else {
-            throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                     + getUnqualfiedClassName(o) + " and not Integer or Long");
         }
     }
 
-    
     static public double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return v;
@@ -629,12 +673,11 @@ public class YConfiguration {
         if (o instanceof Number) {
             return ((Number) o).doubleValue();
         } else {
-            throw new ConfigurationException(confPath.get(m), "mapping for key '" + key + "' is of type "
+            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                     + getUnqualfiedClassName(o) + " and not Integer or Long");
         }
     }
-    
-    
+
     public boolean isList(String key) {
         return isList(root, key);
     }
@@ -701,9 +744,10 @@ public class YConfiguration {
         }
     }
 
-    public <T extends Enum<T>> T  getEnum(String key, Class<T> enumClass) {
+    public <T extends Enum<T>> T getEnum(String key, Class<T> enumClass) {
         return getEnum(root, key, enumClass);
     }
+
     /**
      * Returns a value of an enumeration that matches ignoring case the string obtained from the config with the given
      * key.
@@ -758,5 +802,44 @@ public class YConfiguration {
     public String toJson() {
         return new Gson().toJson(root);
     }
+
+    public String getPath() {
+        if (parent == null) {
+            return rootLocation;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        buildPath(this, sb);
+        return sb.toString();
+    }
+
+    private static void buildPath(YConfiguration c, StringBuilder sb) {
+        if (c.parent != null) {
+            buildPath(c.parent, sb);
+            sb.append(c.parentKey);
+        } else {
+            sb.append(c.rootLocation).append(":");
+        }
+    }
     
+    @SuppressWarnings("unchecked")
+    static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
+        checkKey(m, key);
+        Object o = m.get(key);
+        if (o instanceof List) {
+            List l = (List) o;
+            String parentPath = staticConfPaths.get(m);
+            for (int i = 0; i < l.size(); i++) {
+                Object o1 = l.get(i);
+                if (!staticConfPaths.containsKey(o1)) {
+                    staticConfPaths.put(o1, parentPath + "->" + key + "[" + i + "]");
+                }
+            }
+            return l;
+        } else {
+            throw new ConfigurationException(staticConfPaths.get(m),
+                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+        }
+    }
+
 }

@@ -1,7 +1,6 @@
 package org.yamcs.xtceproc;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.TmProcessor;
+import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.parameter.ParameterListener;
@@ -48,7 +48,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
 
-    public XtceTmProcessor(Processor proc, Map<String, Object> tmProcessorConfig) {
+    public XtceTmProcessor(Processor proc, YConfiguration tmProcessorConfig) {
         log = LoggingUtils.getLogger(this.getClass(), proc);
         this.processor = proc;
         this.xtcedb = proc.getXtceDb();
@@ -56,21 +56,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
         if (tmProcessorConfig != null) {
             ContainerProcessingOptions opts = new ContainerProcessingOptions();
-            if (tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
-                Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
-                if (!(o instanceof Boolean)) {
-                    throw new ConfigurationException(CONFIG_KEY_ignoreOutOfContainerEntries + " has to be a boolean");
-                }
-                opts.setIgnoreOutOfContainerEntries((Boolean) o);
-            }
-
-            if (tmProcessorConfig.containsKey(CONFIG_KEY_expirationTolerance)) {
-                Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
-                if (!(o instanceof Number)) {
-                    throw new ConfigurationException(CONFIG_KEY_expirationTolerance + " has to be a number");
-                }
-                opts.setExpirationTolerance(((Number) o).doubleValue());
-            }
+            opts.setIgnoreOutOfContainerEntries(tmProcessorConfig.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false));
+            opts.setExpirationTolerance(tmProcessorConfig.getDouble(CONFIG_KEY_expirationTolerance, opts.expirationTolerance));
             tmExtractor.setOptions(opts);
         }
     }

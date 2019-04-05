@@ -48,12 +48,12 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
     private Map<Parameter, ParameterValue> lastValuePerParameter = new HashMap<>();
 
     public AlarmReporter(String yamcsInstance) {
-        this(yamcsInstance, Collections.emptyMap());
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
-    public AlarmReporter(String yamcsInstance, Map<String, Object> config) {
+    public AlarmReporter(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
-        source = YConfiguration.getString(config, "source", "AlarmChecker");
+        source = config.getString("source", "AlarmChecker");
     }
 
     @Override

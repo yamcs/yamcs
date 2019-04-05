@@ -97,7 +97,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)
             xtceDb = XtceDbFactory.getInstance(instanceName);
             StreamInitializer.createStreams(instanceName);
-            List<Object> services = conf.getList("services");
+            List<YConfiguration> services = conf.getServiceConfigList("services");
             serviceList = YamcsServer.createServices(instanceName, services);
             notifyInitialized();
         } catch (Exception e) {
@@ -137,8 +137,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public void loadTimeService() throws ConfigurationException {
         if (conf.containsKey("timeService")) {
-            Map<String, Object> m = conf.getMap("timeService");
-            String servclass = YConfiguration.getString(m, "class");
+            YConfiguration m = conf.getConfig("timeService");
+            String servclass = m.getString("class");
             Object args = m.get("args");
             try {
                 if (args == null) {
@@ -201,7 +201,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Map<String, Object> serviceConf = new HashMap<>(2);
         serviceConf.put("class", serviceClass);
         serviceConf.put("args", args);
-        List<ServiceWithConfig> newServices = YamcsServer.createServices(instanceName, Arrays.asList(serviceConf));
+        List<ServiceWithConfig> newServices = YamcsServer.createServices(instanceName, Arrays.asList(YConfiguration.wrap(serviceConf)));
         serviceList.addAll(newServices);
         YamcsServer.startServices(newServices);
     }
