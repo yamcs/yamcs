@@ -149,6 +149,58 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("realtime", connectionInfo.getProcessor().getName());
     }
 
+
+    @Test
+    public void testReplayWithTm2() throws Exception {
+        generatePkt1AndTm2Pkt1("2019-01-01T10:00:00", 300);
+
+        restClient.setAcceptMediaType(MediaType.JSON);
+        restClient.setSendMediaType(MediaType.JSON);
+        ParameterSubscriptionRequest subscrList = getSubscription(false, false, false, 
+                "/REFMDB/tm2_para1",
+                "/REFMDB/col-packet_id",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7");
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
+        wsClient.sendRequest(wsr);
+
+        ConnectionInfo connectionInfo = wsClient.getConnectionInfo();
+        assertNotNull(connectionInfo);
+        // create a parameter replay via REST
+        CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .addClientId(connectionInfo.getClientId())
+                .setName("testReplay")
+                .setType("Archive")
+                .setConfig("{\"utcStart\": \"2019-01-01T10:01:00\", \"utcStop\": \"2019-01-01T10:05:00\"}")
+                .build();
+        
+        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest)).get();
+
+        connectionInfo = wsClient.getConnectionInfo();
+        assertEquals("testReplay", connectionInfo.getProcessor().getName());
+
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(1, pdata.getParameterCount());
+        ParameterValue pv1 = pdata.getParameter(0);
+        assertEquals("/REFMDB/tm2_para1", pv1.getId().getName());
+        assertEquals("2019-01-01T10:01:00.000Z", pv1.getGenerationTimeUTC());
+        assertEquals(20, pv1.getEngValue().getUint32Value());
+
+        pdata = wsListener.parameterDataList.poll(1, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        assertEquals(2, pdata.getParameterCount());
+        
+        ParameterValue pv2 = pdata.getParameter(0);
+        assertEquals("/REFMDB/col-packet_id", pv2.getId().getName());
+        assertEquals("2019-01-01T10:01:00.000Z", pv2.getGenerationTimeUTC());
+        
+        ParameterValue pv3 = pdata.getParameter(1);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", pv3.getId().getName());
+        assertEquals("2019-01-01T10:01:00.000Z", pv3.getGenerationTimeUTC());
+        assertEquals(packetGenerator.pIntegerPara1_1_7, pv3.getEngValue().getUint32Value());
+
+    }
     @Test
     public void testReplayWithPpExclusion() throws Exception {
         generatePkt13AndPps("2015-02-01T10:00:00", 300);

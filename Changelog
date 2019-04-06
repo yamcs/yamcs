@@ -1,3 +1,6 @@
+Version 4.9.4 released 
+- fixes replay with multiple XTCE root containers
+
 Version 4.9.3 released 3-April-2019
 - fixes command queues displays
 

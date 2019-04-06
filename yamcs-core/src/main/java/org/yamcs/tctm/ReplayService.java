@@ -1,10 +1,10 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -21,6 +21,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayServer;
+import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
 import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -45,8 +46,9 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -103,11 +105,11 @@ public class ReplayService extends AbstractService
      *            - the argument passed in the processor.yaml
      * @throws ConfigurationException
      */
-    public ReplayService(String instance, Map<String, Object> args) throws ConfigurationException {
+    public ReplayService(String instance, YConfiguration args) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
         if (args.containsKey("excludeParameterGroups")) {
-            excludeParameterGroups = YConfiguration.getList(args, "excludeParameterGroups");
+            excludeParameterGroups = args.getList("excludeParameterGroups");
         }
     }
 
@@ -116,6 +118,9 @@ public class ReplayService extends AbstractService
         throw new IllegalArgumentException("Please provide the spec");
     }
 
+    /**
+     * Spec
+     */
     @Override
     public void init(Processor proc, Object spec) {
         this.processor = proc;
@@ -148,13 +153,25 @@ public class ReplayService extends AbstractService
 
     @Override
     public void newData(ProtoDataType type, Object data) {
+
         switch (type) {
         case TM_PACKET:
             dataCount++;
-            TmPacketData tpd = (TmPacketData) data;
-            replayTime = tpd.getGenerationTime();
-            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(),
-                    tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
+            ReplayPacket rp = (ReplayPacket) data;
+            replayTime = rp.getGenerationTime();
+            String qn = rp.getQualifiedName();
+            SequenceContainer container = xtceDb.getSequenceContainer(qn);
+            if (container == null) {
+                log.warn("Unknown sequence container '" + qn + "' found when replaying", qn);
+            } else {
+                SequenceContainer parent;
+                while ((parent = container.getBaseContainer()) != null) {
+                    container = parent;
+                }
+
+                tmProcessor.processPacket(new PacketWithTime(rp.getReceptionTime(), rp.getGenerationTime(),
+                        rp.getSequenceNumber(), rp.getPacket()), container);
+            }
             break;
         case PP:
             List<ParameterValue> pvals = (List<ParameterValue>) data;

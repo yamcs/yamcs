@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,6 @@ import com.google.protobuf.util.JsonFormat;
 
 public abstract class AbstractIntegrationTest {
     final String yamcsInstance = "IntegrationTest";
-    PacketProvider packetProvider;
     ParameterProvider parameterProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
@@ -67,7 +67,9 @@ public abstract class AbstractIntegrationTest {
 
     protected String adminUsername = "admin";
     protected char[] adminPassword = "rootpassword".toCharArray();
-    RefMdbPacketGenerator packetGenerator;
+    RefMdbPacketGenerator packetGenerator; //sends data to tm_realtime
+    RefMdbPacketGenerator packetGenerator2; //sends data to tm2_realtime
+    
     static {
         // LoggingUtils.enableLogging();
     }
@@ -82,9 +84,7 @@ public abstract class AbstractIntegrationTest {
         if (SecurityStore.getInstance().isEnabled()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
-        packetProvider = PacketProvider.instance;
         parameterProvider = ParameterProvider.instance;
-        assertNotNull(packetProvider);
         assertNotNull(parameterProvider);
 
         wsListener = new MyWsListener();
@@ -96,8 +96,10 @@ public abstract class AbstractIntegrationTest {
         restClient.setAcceptMediaType(MediaType.JSON);
         restClient.setSendMediaType(MediaType.JSON);
         restClient.setAutoclose(false);
-        packetGenerator = packetProvider.mdbPacketGenerator;
+        packetGenerator = PacketProvider.instance[0].mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
+        packetGenerator2 = PacketProvider.instance[1].mdbPacketGenerator;
+        packetGenerator2.setGenerationTime(TimeEncoding.INVALID_INSTANT);
     }
 
     private static void setupYamcs() throws Exception {
@@ -176,6 +178,16 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
+    void generatePkt1AndTm2Pkt1(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT1_1();
+
+            packetGenerator2.setGenerationTime(t0 + 1000 * i);
+            packetGenerator2.generate_TM2_PKT1();
+        }
+    }
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
@@ -253,14 +265,14 @@ public abstract class AbstractIntegrationTest {
     }
 
     public static class PacketProvider implements TmPacketDataLink, TmProcessor {
-        static volatile PacketProvider instance;
+        static volatile PacketProvider[] instance = new PacketProvider[2];
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
         YConfiguration config;
         String name;
         
         public PacketProvider(String yinstance, String name, YConfiguration args) {
-            instance = this;
+            instance[args.getInt("num", 0)] = this;
             this.config = args;
             mdbPacketGenerator.setTmProcessor(this);
             this.name = name;

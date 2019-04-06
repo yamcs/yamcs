@@ -326,7 +326,7 @@ public class YarchReplay implements StreamSubscriber {
                 return;
             }
 
-            ProtoDataType type = ProtoDataType.valueOf((Integer) t.getColumn(0));
+            ProtoDataType type = ProtoDataType.forNumber((Integer) t.getColumn(0));
             Object data = handlers.get(type).transform(t);
             if (data != null) {
                 listener.newData(type, data);

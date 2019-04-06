@@ -173,6 +173,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
+    public byte[] generate_TM2_PKT1() {
+        ByteBuffer bb = ByteBuffer.allocate(12);
+        bb.putInt(1);//pkt id
+        bb.putInt(20); //para1
+        bb.putFloat((float)3.15); //para2
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
     /**
      * Generate a packet with configurable content
      */

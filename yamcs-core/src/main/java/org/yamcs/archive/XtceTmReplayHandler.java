@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -13,8 +14,6 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
-
-import com.google.protobuf.MessageLite;
 
 /**
  * Provides replay of the telemetry recorded by XtceTmRecorder
@@ -99,8 +98,13 @@ public class XtceTmReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public MessageLite transform(Tuple tuple) {
-        return GPBHelper.tupleToTmPacketData(tuple);
+    public ReplayPacket transform(Tuple tuple) {
+        long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+        byte[] pbody = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
+        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+        String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
+        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
     }
 
     static void appendTimeClause(StringBuilder sb, ReplayRequest request, boolean firstRestriction) {
@@ -121,5 +125,44 @@ public class XtceTmReplayHandler implements ReplayHandler {
 
     @Override
     public void reset() {
+    }
+
+    public static class ReplayPacket {
+        final String pname;
+        final long recTime;
+        final long genTime;
+        final int seqNum;
+        final byte[] packet;
+
+        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet) {
+            this.pname = pname;
+            this.recTime = recTime;
+            this.genTime = genTime;
+            this.seqNum = seqNum;
+            this.packet = packet;
+        }
+
+        public long getGenerationTime() {
+            return genTime;
+        }
+
+        public long getReceptionTime() {
+            return recTime;
+        }
+
+        public int getSequenceNumber() {
+            return seqNum;
+        }
+
+        public byte[] getPacket() {
+            return packet;
+        }
+        /**
+         * 
+         * @return the name used when recording the packet
+         */
+        public String getQualifiedName() {
+            return pname;
+        }
     }
 }

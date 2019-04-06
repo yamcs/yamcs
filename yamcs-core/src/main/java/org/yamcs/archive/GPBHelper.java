@@ -1,6 +1,7 @@
 package org.yamcs.archive;
 
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -36,6 +37,7 @@ public final class GPBHelper {
         return tm;
     }
 
+    
     public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple) {
         CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder();
         che.setCommandId(PreparedCommand.getCommandId(tuple));
