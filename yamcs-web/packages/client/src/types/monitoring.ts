@@ -67,6 +67,7 @@ export interface ParameterData {
 }
 
 export interface ParameterValue {
+  numericId: number;
   id: NamedObjectId;
   rawValue: Value;
   engValue: Value;
@@ -88,12 +89,20 @@ export interface ParameterSubscriptionRequest {
   updateOnExpiration?: boolean;
   sendFromCache?: boolean;
   subscriptionId?: number;
+  useNumericIds?: boolean;
 }
 
 export interface ParameterSubscriptionResponse {
   subscriptionId: number;
+  subscribed: SubscribedParameter[];
   invalid: NamedObjectId[];
+  mapping: { [key: number]: NamedObjectId };
   parameterValues$: Observable<ParameterValue[]>;
+}
+
+export interface SubscribedParameter {
+  id: NamedObjectId;
+  numericId: number;
 }
 
 export interface EventSubscriptionResponse {

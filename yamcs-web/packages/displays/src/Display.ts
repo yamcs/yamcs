@@ -1,4 +1,4 @@
-import { ParameterValue, NamedObjectId } from '@yamcs/client';
+import { NamedObjectId, ParameterValue } from '@yamcs/client';
 
 export interface Display {
 

@@ -450,6 +450,15 @@ export class WebSocketClient {
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
           const response = msg[3].data as ParameterSubscriptionResponse;
+
+          // Turn SubscribedParameters into a more convenient mapping
+          response.mapping = {};
+          if (response.subscribed) {
+            for (const subscribedParameter of response.subscribed) {
+              response.mapping[subscribedParameter.numericId] = subscribedParameter.id;
+            }
+          }
+
           response.parameterValues$ = this.webSocketConnection$.pipe(
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),

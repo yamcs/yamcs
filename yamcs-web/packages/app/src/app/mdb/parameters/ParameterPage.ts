@@ -66,6 +66,7 @@ export class ParameterPage implements OnDestroy {
       sendFromCache: true,
       subscriptionId: -1,
       updateOnExpiration: true,
+      useNumericIds: true,
     }).then(res => {
       this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
         this.parameterValue$.next(pvals[0]);
