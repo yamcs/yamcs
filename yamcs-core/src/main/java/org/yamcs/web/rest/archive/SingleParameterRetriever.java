@@ -1,12 +1,14 @@
 package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -14,8 +16,9 @@ import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterArchiveRetrieval;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.MutableLong;
-import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 
 import com.google.common.collect.Lists;
 
@@ -30,19 +33,22 @@ public class SingleParameterRetriever {
     final ParameterRequest spvr;
     final ParameterArchive parchive;
     final ParameterCache cache;
-    final Parameter p;
+    final ParameterWithId pid;
     
-    public SingleParameterRetriever(ParameterArchive parchive, ParameterCache cache, Parameter p, ParameterRequest spvr) {
+    public SingleParameterRetriever(ParameterArchive parchive, ParameterCache cache, ParameterWithId pid, ParameterRequest spvr) {
         this.spvr = spvr;
         this.cache = cache;
         this.parchive = parchive;
-        this.p = p;
+        this.pid = pid;
     }
     
     public void retrieve(Consumer<ParameterValueArray> consumer) throws IOException {
         ParameterRequest spvr1 = spvr;
         if(cache!=null && !spvr.isAscending()) {//descending -> first retrieve from cache
-            List<ParameterValue> pvlist = cache.getAllValues(p, spvr.getStart(), spvr.getStop());
+            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), spvr.getStart(), spvr.getStop());
+            if(pid.getPath()!=null) {
+                pvlist = extractMembers(pvlist, pid.getPath());
+            }
             MutableLong lastTime = new MutableLong(Long.MAX_VALUE);
             if (pvlist != null) {
                 splitAndSend(pvlist, pva -> {
@@ -57,7 +63,7 @@ public class SingleParameterRetriever {
             }
         }
         
-        SingleParameterArchiveRetrieval spar = new SingleParameterArchiveRetrieval(parchive, p.getQualifiedName(), spvr1);
+        SingleParameterArchiveRetrieval spar = new SingleParameterArchiveRetrieval(parchive, pid.getQualifiedName(), spvr1);
         MutableLong lastTime = new MutableLong(Long.MAX_VALUE);
         try {
             spar.retrieve(pva -> {
@@ -76,12 +82,26 @@ public class SingleParameterRetriever {
                 start = lastTime.getLong();
             }
             
-            List<ParameterValue> pvlist = cache.getAllValues(p, start, spvr1.getStop());
+            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), start, spvr1.getStop());
             if (pvlist != null) {
+                if(pid.getPath()!=null) {
+                    pvlist = extractMembers(pvlist, pid.getPath());
+                }
                 pvlist = Lists.reverse(pvlist);
                 splitAndSend(pvlist, consumer);
             }
         }
+    }
+
+    private List<ParameterValue> extractMembers(List<ParameterValue> pvlist, PathElement[] path) {
+        List<ParameterValue> l = new ArrayList<ParameterValue>(pvlist.size());
+        for(ParameterValue pv: pvlist) {
+           ParameterValue pv1 = AggregateUtil.extractMember(pv, path);
+           if(pv1!=null) {
+               l.add(pv1);
+           }
+        }
+        return l;
     }
 
     //splits the list in arrays of parameters having the same type

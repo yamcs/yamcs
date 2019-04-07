@@ -58,9 +58,9 @@ public class PathElement implements Serializable {
         if (k == -1) {
             return new PathElement(s, null);
         }
-        
-        String name = k>0?s.substring(0, k):null;
-            
+
+        String name = k > 0 ? s.substring(0, k) : null;
+
         while (true) {
             k = s.indexOf('[', k);
             if (k == -1) {
@@ -70,17 +70,21 @@ public class PathElement implements Serializable {
             if (k2 == -1) {
                 throw new IllegalArgumentException("Invalid aggregate member path '" + s + "'");
             }
-            idx.add(Integer.parseInt(s.substring(k + 1, k2)));
+            int n = Integer.parseInt(s.substring(k + 1, k2));
+            if (n < 0) {
+                throw new IllegalArgumentException("Negative array index: " + n);
+            }
+            idx.add(n);
             k = k2;
         }
         int[] idx1 = null;
         if (!idx.isEmpty()) {
             idx1 = new int[idx.size()];
             for (int u = 0; u < idx.size(); u++) {
-                    idx1[u] = idx.get(u);
-                }
+                idx1[u] = idx.get(u);
             }
-    
+        }
+
         return new PathElement(name, idx1);
     }
 

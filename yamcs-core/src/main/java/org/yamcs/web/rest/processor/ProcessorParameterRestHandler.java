@@ -101,17 +101,9 @@ public class ProcessorParameterRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        ParameterRequestManager prm = processor.getParameterRequestManager();
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         
-        NamedObjectId id = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        ParameterWithId pid;
-        try {
-             pid = ParameterWithIdRequestHelper.checkName(prm, id);
-        } catch (InvalidIdentification e) {
-            throw new BadRequestException("InvalidIdentification: " + e.getMessage());
-        }
-        
+        ParameterWithId pid = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 

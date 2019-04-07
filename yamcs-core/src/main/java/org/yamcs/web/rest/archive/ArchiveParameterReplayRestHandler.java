@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
@@ -110,18 +111,18 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         String pathName = req.getRouteParam("name");
 
-        NameDescriptionWithId<Parameter> p = verifyParameterWithId(req, mdb, pathName);
+        ParameterWithId p = verifyParameterWithId(req, mdb, pathName);
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
 
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getRequestedId(), true);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getId(), true);
 
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
-                List<NamedObjectId> idList = Arrays.asList(p.getRequestedId());
+                List<NamedObjectId> idList = Arrays.asList(p.getId());
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, req) {

@@ -20,6 +20,7 @@ import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterValueRequest;
@@ -35,6 +36,7 @@ import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.MutableLong;
@@ -50,7 +52,6 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.archive.ParameterRanger.Range;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.TableDefinition;
@@ -103,7 +104,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        ParameterWithId pid = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
 
         /*
          * TODO check commented out, in order to support sampling system parameters which don't have a type
@@ -126,7 +127,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         ParameterCache pcache = getParameterCache(instance, req);
 
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, false);
-        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, p, pr);
+        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
             spdr.retrieve(sampler);
         } catch (IOException e) {
@@ -148,7 +149,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        ParameterWithId pid = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
 
         long start = req.getQueryParameterAsDate("start", 0);
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
@@ -162,7 +163,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap);
 
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
-        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, p, pr);
+        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
             spdr.retrieve(ranger);
         } catch (IOException e) {
@@ -196,11 +197,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        NameDescriptionWithId<Parameter> requestedParamWithId = verifyParameterWithId(req, mdb,
+        ParameterWithId requestedParamWithId = verifyParameterWithId(req, mdb,
                 req.getRouteParam("name"));
 
-        Parameter p = requestedParamWithId.getItem();
-        NamedObjectId requestedId = requestedParamWithId.getRequestedId();
+        NamedObjectId requestedId = requestedParamWithId.getId();
 
         if (req.hasQueryParameter("pos")) {
             throw new BadRequestException("pos not supported");
@@ -216,8 +216,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
         IntArray pgidArray = new IntArray();
-
-        ParameterId[] pids = piddb.get(p.getQualifiedName());
+        String qn = requestedParamWithId.getQualifiedName();
+        ParameterId[] pids = piddb.get(qn);
 
         BitSet retrieveRawValues = new BitSet();
         if (pids != null) {
@@ -234,14 +234,14 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
 
             if (pidArray.isEmpty()) {
-                log.error("No parameter group id found in the parameter archive for {}", p.getQualifiedName());
+                log.error("No parameter group id found in the parameter archive for {}", qn);
                 throw new NotFoundException(req);
             }
         } else {
-            log.warn("No parameter id found in the parameter archive for {}", p.getQualifiedName());
+            log.warn("No parameter id found in the parameter archive for {}", qn);
         }
         String[] pnames = new String[pidArray.size()];
-        Arrays.fill(pnames, p.getQualifiedName());
+        Arrays.fill(pnames, requestedParamWithId.getQualifiedName());
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(),
                 pgidArray.toArray(), retrieveRawValues, ascending);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
@@ -275,7 +275,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
                 replayListener.setNoRepeat(noRepeat);
                 // FIXME - make async
-                retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
+                retrieveParameterData(parchive, pcache, requestedParamWithId, mpvr, replayListener);
 
             } catch (IOException | DecodingException | RocksDBException e) {
                 throw new InternalServerErrorException(e);
@@ -305,7 +305,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
                 replayListener.setNoRepeat(noRepeat);
                 // FIXME - make async
-                retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
+                retrieveParameterData(parchive, pcache, requestedParamWithId, mpvr, replayListener);
             } catch (DecodingException | RocksDBException | IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -313,8 +313,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
     }
 
-    private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, Parameter p,
-            NamedObjectId id,
+    private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
             MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener)
             throws RocksDBException, DecodingException, IOException {
 
@@ -327,10 +326,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 lastParameterTime.setLong(pidvList.getValues().get(0).getGenerationTime());
                 if (first && !mpvr.isAscending() && (pcache != null)) { // retrieve data from cache first
                     first = false;
-                    sendFromCache(p, id, pcache, false, lastParameterTime.getLong(), mpvr.getStop(), replayListener);
+                    sendFromCache(pid, pcache, false, lastParameterTime.getLong(), mpvr.getStop(), replayListener);
                 }
                 ParameterValue pv = pidvList.getValues().get(0);
-                replayListener.update(new ParameterValueWithId(pv, id));
+                replayListener.update(new ParameterValueWithId(pv, pid.getId()));
                 if (replayListener.isReplayAbortRequested()) {
                     throw new ConsumerAbortException();
                 }
@@ -344,31 +343,31 @@ public class ArchiveParameterRestHandler extends RestHandler {
             if (mpvr.isAscending()) {
                 long start = (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
                         : lastParameterTime.getLong();
-                sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);
+                sendFromCache(pid, pcache, true, start, mpvr.getStop(), replayListener);
             } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) {
                 // no data retrieved from archive, but maybe there is still something in the cache to send
-                sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
+                sendFromCache(pid, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
             }
         }
     }
 
     // send data from cache with timestamps in (start, stop) if ascending or (start, stop] if descending interval
-    private void sendFromCache(Parameter p, NamedObjectId id, ParameterCache pcache, boolean ascending, long start,
+    private void sendFromCache(ParameterWithId pid, ParameterCache pcache, boolean ascending, long start,
             long stop, RestParameterReplayListener replayListener) {
-        List<ParameterValue> pvlist = pcache.getAllValues(p);
+        List<ParameterValue> pvlist = pcache.getAllValues(pid.getParameter());
+        
         if (pvlist == null) {
             return;
         }
-
         if (ascending) {
             int n = pvlist.size();
             for (int i = n - 1; i >= 0; i--) {
-                org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
+                ParameterValue pv = pvlist.get(i);
                 if (pv.getGenerationTime() >= stop) {
                     break;
                 }
                 if (pv.getGenerationTime() > start) {
-                    replayListener.update(new ParameterValueWithId(pv, id));
+                    sendToListener(pv, pid, replayListener);
                     if (replayListener.isReplayAbortRequested()) {
                         break;
                     }
@@ -382,7 +381,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 if (pv.getGenerationTime() <= start) {
                     break;
                 }
-                replayListener.update(new ParameterValueWithId(pv, id));
+                sendToListener(pv, pid, replayListener);
                 if (replayListener.isReplayAbortRequested()) {
                     break;
                 }
@@ -390,6 +389,26 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
     }
 
+    
+    private void sendToListener(ParameterValue pv, ParameterWithId pid, RestParameterReplayListener replayListener) {
+        ParameterValue pv1;
+        if(pid.getPath()!=null) {
+            try {
+                pv1 = AggregateUtil.extractMember(pv, pid.getPath());
+                if (pv1 == null) { // could be that we reference an element of an array that doesn't exist
+                    return;
+                }
+            } catch (Exception e) {
+                log.error("Failed to extract {} from parameter value {}", Arrays.toString(pid.getPath()), pv, e);
+                return;
+            }
+        } else {
+            pv1 = pv;
+        }
+        replayListener.update(new ParameterValueWithId(pv1, pid.getId()));
+    }
+    
+    
     private static ParameterCache getParameterCache(String instance, RestRequest req) throws NotFoundException {
         ParameterCache pcache = null;
         Processor realtimeProcessor = getRealtimeProc(instance, req);

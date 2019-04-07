@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
 
@@ -35,6 +36,18 @@ public class ParameterWithId {
 
     public Parameter getParameter() {
         return p;
+    }
+
+    /**
+     * 
+     * @return the qualified name of the parameter plus the aggregate part if any
+     */
+    public String getQualifiedName() {
+        if(path==null) {
+            return p.getQualifiedName();
+        } else {
+            return p.getQualifiedName()+AggregateUtil.toString(path);
+        }
     }
 
 }

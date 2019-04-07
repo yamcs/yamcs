@@ -1,6 +1,6 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -209,6 +209,97 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, vals.getRangeCount());
         r0 = vals.getRange(0);
         assertEquals(7200 + 3600, r0.getCount());
+    }
+    
+    @Test
+    public void testRestRetrievalWithAgregateMembers() throws Exception {
+        generatePkt7("2019-04-06T00:00:00", 2 * 3600);
+
+        String resp;
+        Value engValue;
+        ListParameterValuesResponse pdata;
+        org.yamcs.protobuf.Pvalue.ParameterValue pv;
+
+        // first two requests before the consolidation, should return data from cache
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member2?start=2019-04-06T01:59:00&stop=2019-04-06T03:00:00",
+                HttpMethod.GET, "").get();
+        pdata = fromJson(resp, ListParameterValuesResponse.newBuilder()).build();
+        
+        assertEquals(59, pdata.getParameterCount());
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
+        assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
+        assertFalse(pv.hasExpireMillis());
+        
+        //build the parameter archive
+        buildParameterArchive("2019-04-06T00:00:00", "2019-04-06T03:00:00");
+        
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member2?start=2019-04-06T00:00:00&stop=2019-04-06T03:00:00",
+                HttpMethod.GET, "").get();
+        pdata = fromJson(resp, ListParameterValuesResponse.newBuilder()).build();
+        
+        assertEquals(100, pdata.getParameterCount());
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
+        assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
+        
+        
+        
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/aggregate_para1.member3/samples?start=2019-04-06T00:00:00&stop=2019-04-06T02:00:00",
+                HttpMethod.GET, "").get();
+        TimeSeries vals = fromJson(resp, TimeSeries.newBuilder()).build();
+        assertEquals(500, vals.getSampleCount());
+        Sample s0 = vals.getSample(0);
+        assertEquals(2.72, s0.getAvg(), 1e-5);
+    }
+
+    
+    @Test
+    public void testRestRetrievalWithArrayElements() throws Exception {
+        generatePkt8("2019-04-06T20:00:00", 2 * 3600);
+
+        String resp;
+        Value engValue;
+        ListParameterValuesResponse pdata;
+        org.yamcs.protobuf.Pvalue.ParameterValue pv;
+
+        // first two requests before the consolidation, should return data from cache
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B5%5D.member2?start=2019-04-06T21:59:00&stop=2019-04-06T23:00:00",
+                HttpMethod.GET, "").get();
+        pdata = fromJson(resp, ListParameterValuesResponse.newBuilder()).build();
+        
+        assertEquals(59, pdata.getParameterCount());
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
+        assertEquals(10, engValue.getUint32Value());
+        assertFalse(pv.hasExpireMillis());
+        
+        //build the parameter archive
+        buildParameterArchive("2019-04-06T20:00:00", "2019-04-06T23:00:00");
+        
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B1%5D.member3?start=2019-04-06T20:00:00&stop=2019-04-06T23:00:00",
+                HttpMethod.GET, "").get();
+        pdata = fromJson(resp, ListParameterValuesResponse.newBuilder()).build();
+        
+        assertEquals(100, pdata.getParameterCount());
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
+        assertEquals(0.5, engValue.getFloatValue(), 1e-5);
+        
+        
+        
+        resp = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/array_para1%5B23%5D.member1/samples?start=2019-04-06T20:00:00&stop=2019-04-06T22:00:00",
+                HttpMethod.GET, "").get();
+        TimeSeries vals = fromJson(resp, TimeSeries.newBuilder()).build();
+        assertEquals(500, vals.getSampleCount());
+        Sample s0 = vals.getSample(0);
+        assertEquals(23, s0.getAvg(), 1e-5);
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {

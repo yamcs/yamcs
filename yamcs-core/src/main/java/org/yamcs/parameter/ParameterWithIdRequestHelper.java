@@ -117,13 +117,13 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         futureRef.set(future);
     }
 
-    
     List<ParameterWithId> checkNames(List<NamedObjectId> idList) throws InvalidIdentification {
         return checkNames(prm, idList);
     }
-    
+
     // turn NamedObjectId to Parameter references
-    public static ParameterWithId checkName(ParameterRequestManager prm, NamedObjectId id) throws InvalidIdentification {
+    public static ParameterWithId checkName(ParameterRequestManager prm, NamedObjectId id)
+            throws InvalidIdentification {
         String name = id.getName();
         int x = AggregateUtil.findSeparator(name);
         NamedObjectId id1;
@@ -139,17 +139,19 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             id1 = id;
             path = null;
         }
-            Parameter p = prm.getParameter(id1);
-            if (path != null) {
-                if(!AggregateUtil.verifyPath(p.getParameterType(), path)) {
-                    throw new InvalidIdentification(id);
-                }
+        Parameter p = prm.getParameter(id1);
+        if (path != null) {
+            if (!AggregateUtil.verifyPath(p.getParameterType(), path)) {
+                throw new InvalidIdentification(id);
             }
-           return new ParameterWithId(p, id, path);
-        
+        }
+        return new ParameterWithId(p, id, path);
+
     }
+
     // turn NamedObjectId to Parameter references
-    public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList) throws InvalidIdentification {
+    public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList)
+            throws InvalidIdentification {
         List<ParameterWithId> result = new ArrayList<>();
         List<NamedObjectId> invalid = new ArrayList<>(0);
         for (NamedObjectId id : idList) {
@@ -159,7 +161,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 invalid.add(id);
                 continue;
             }
-                
+
         }
         if (!invalid.isEmpty()) {
             log.info("Throwing invalid identification for the following items :{}", invalid);
@@ -167,9 +169,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
         return result;
     }
-
-   
-
 
     public void removeRequest(int subscriptionId) {
         if (subscriptions.remove(subscriptionId) == null) {
@@ -260,7 +259,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
     }
 
-    
     /**
      * Called from {@link ParameterListener when new parameters are available to be sent to clients}
      */
@@ -361,7 +359,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     // adds the pv into plist with all ids subscribed
-    private void addValueForAllSubscribedIds(List<ParameterValueWithId> plist, Subscription subscription, ParameterValue pv) {
+    private void addValueForAllSubscribedIds(List<ParameterValueWithId> plist, Subscription subscription,
+            ParameterValue pv) {
         Parameter p = pv.getParameter();
         List<ParameterWithId> idList = subscription.get(p);
         if (idList == null || idList.isEmpty()) {
@@ -370,7 +369,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
         addValueForAllIds(plist, idList, pv);
     }
-
 
     private void checkPeriodicExpiration() {
         for (Map.Entry<Integer, Subscription> me : subscriptions.entrySet()) {

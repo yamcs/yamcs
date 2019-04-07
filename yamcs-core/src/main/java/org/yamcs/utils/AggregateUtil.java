@@ -33,7 +33,7 @@ public class AggregateUtil {
         int found = -1;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (found==-1 && ((c == '.') || (c == '['))) {
+            if (found == -1 && ((c == '.') || (c == '['))) {
                 found = i;
             } else if (c == '/') {
                 found = -1;
@@ -137,7 +137,8 @@ public class AggregateUtil {
         pv1.setRawValue(rawValue);
         pv1.setGenerationTime(pv.getGenerationTime());
         pv1.setAcquisitionTime(pv.getAcquisitionTime());
-
+        pv1.setExpireMillis(pv.getExpireMills());
+        
         return pv1;
     }
 
@@ -245,5 +246,20 @@ public class AggregateUtil {
 
         }
         return v;
+    }
+
+    public static String toString(PathElement[] path) {
+        StringBuilder sb = new StringBuilder();
+        for (PathElement pe : path) {
+            if (pe.getName() != null) {
+                sb.append(".").append(pe.getName());
+            }
+            if (pe.getIndex() != null) {
+                for(int x: pe.getIndex()) {
+                    sb.append("[").append(x).append("]");
+                }
+            }
+        }
+        return sb.toString();
     }
 }

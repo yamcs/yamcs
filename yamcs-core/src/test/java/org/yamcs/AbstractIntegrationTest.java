@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -188,6 +187,23 @@ public abstract class AbstractIntegrationTest {
             packetGenerator2.generate_TM2_PKT1();
         }
     }
+    
+    void generatePkt7(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT7();
+        }
+    }
+    
+    void generatePkt8(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT8();
+        }
+    }
+    
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
