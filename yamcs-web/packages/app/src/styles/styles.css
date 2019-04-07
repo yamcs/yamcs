@@ -122,6 +122,29 @@ body {
   text-decoration: underline;
 }
 
+.ya-data-table td.checkbox, .ya-data-table th.checkbox {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status, .ya-data-table th.status {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status .material-icons, .ya-data-table th.status .material-icons {
+  vertical-align: middle;
+}
+
+.ya-data-table td:first-child, .ya-data-table th:first-child {
+  padding-left: 8px !important;
+}
+
+.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th,
+.ya-data-table td.status+td, .ya-data-table th.status+th {
+  padding-left: 4px;
+}
+
 .ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
   padding-left: 24px;
 }

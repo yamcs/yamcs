@@ -25,11 +25,11 @@
            style="width: 100%">
 
       <ng-container cdkColumnDef="select">
-        <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
           <input type="checkbox" (change)="$event ? masterToggle() : null"
                         [checked]="selection.hasValue() && isAllSelected()">
         </th>
-        <td mat-cell *cdkCellDef="let row">
+        <td mat-cell *cdkCellDef="let row" class="checkbox">
           <input type="checkbox" (click)="$event.stopPropagation()"
                         (change)="$event ? selection.toggle(row) : null"
                         [checked]="selection.isSelected(row)">
