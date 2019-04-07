@@ -49,7 +49,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <artemisVersion>1.5.4</artemisVersion>
     <nettyVersion>4.1.22.Final</nettyVersion>
-    <protobufVersion>3.5.1</protobufVersion>
+    <protobufVersion>3.7.1</protobufVersion>
     <sonar.exclusions>
       **/me/lemire/integercompression/**,**/org/yamcs/protobuf/**,**/org/yamcs/ui/**,**/org/yamcs/yarch/streamsql/**
     </sonar.exclusions>
