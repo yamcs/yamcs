@@ -24,17 +24,17 @@
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="lastReceivedUTC">
+  <ng-container matColumnDef="lastReceived">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Received</th>
     <td mat-cell *matCellDef="let tmstats">
-      {{ tmstats.lastReceivedUTC | deltaWith:tmstats.lastPacketTimeUTC }}
+      {{ tmstats.lastReceived | deltaWith:tmstats.lastPacketTime }}
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="lastPacketTimeUTC">
+  <ng-container matColumnDef="lastPacketTime">
     <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Packet Time</th>
     <td mat-cell *matCellDef="let tmstats">
-      {{ tmstats.lastPacketTimeUTC | datetime }}
+      {{ tmstats.lastPacketTime | datetime }}
     </td>
   </ng-container>
 

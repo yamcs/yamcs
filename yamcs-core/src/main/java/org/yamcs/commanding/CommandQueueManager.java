@@ -413,7 +413,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if (pc != null) {
             queue.remove(pc, false);
-            failedCommand(queue, pc, "Commmand rejected by " + username, true);
+            failedCommand(queue, pc, "Command rejected by " + username, true);
             notifyUpdateQueue(queue);
         } else {
             log.warn("command not found in any queue");

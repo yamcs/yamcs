@@ -97,7 +97,7 @@ export interface ClientInfo {
   address: string;
   processorName: string;
   state: 'CONNECTED' | 'DISCONNECTED';
-  loginTimeUTC: string;
+  loginTime: string;
 }
 
 export interface EditClientRequest {
@@ -247,7 +247,7 @@ export interface Statistics {
   instance: string;
   yProcessorName: string;
   tmstats: TmStatistics[];
-  lastUpdatedUTC: string;
+  lastUpdated: string;
 }
 
 export interface StatisticsSubscriptionResponse {
@@ -258,8 +258,8 @@ export interface TmStatistics {
   packetName: string;
   qualifiedName: string;
   receivedPackets: number;
-  lastReceivedUTC: string;
-  lastPacketTimeUTC: string;
+  lastReceived: string;
+  lastPacketTime: string;
   subscribedParameterCount: number;
 }
 

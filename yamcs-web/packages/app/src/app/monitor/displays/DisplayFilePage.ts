@@ -108,13 +108,12 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.title.setTitle(this.filename + ' - Yamcs');
 
     if (reloadViewer) {
-      console.log('force reload');
+      //console.log('force reload');
       ///this.ngAfterViewInit();
     }
   }
 
   ngAfterViewInit() {
-    console.log('initing....');
     if (this.filename.toLowerCase().endsWith('.uss')) {
       const ussDisplayViewer = this.createViewer(UssDisplayViewer);
       const controls = this.createViewerControls(UssDisplayViewerControls);
