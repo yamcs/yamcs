@@ -33,6 +33,7 @@ import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
 import { YaDataTableComponent } from './template/DataTableDirective';
+import { DetailPane } from './template/DetailPane';
 import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
 import { EmptyMessage } from './template/EmptyMessage';
@@ -100,6 +101,7 @@ const sharedComponents = [
   Ago,
   AlarmLevel,
   ColumnChooser,
+  DetailPane,
   DetailToolbar,
   Dots,
   EmptyMessage,

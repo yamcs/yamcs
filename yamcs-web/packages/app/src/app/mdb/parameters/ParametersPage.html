@@ -26,7 +26,7 @@
             <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
             <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
-              <button mat-stroked-button class="more"
+              <button mat-stroked-button class="expandable"
                       (click)="parameter.expanded = !parameter.expanded">
                 <mat-icon *ngIf="parameter.expanded">expand_less</mat-icon>
                 <mat-icon *ngIf="!parameter.expanded">expand_more</mat-icon>

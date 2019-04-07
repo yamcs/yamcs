@@ -108,6 +108,11 @@ body {
   min-width: 0;
 }
 
+.ya-data-table .mat-button.icon {
+  padding: 0;
+  width: 30px;
+}
+
 .ya-data-table a, .ya-link a, a.ya-link {
   color: #1b61b9;
   text-decoration: none;
@@ -138,6 +143,10 @@ body {
 
 .ya-data-table td:first-child, .ya-data-table th:first-child {
   padding-left: 8px !important;
+}
+
+.ya-data-table td:last-child, .ya-data-table th:last-child {
+  padding-right: 8px !important;
 }
 
 .ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th,
@@ -305,7 +314,7 @@ a.ya-link.ya-header-link {
   opacity: 0.01;
 }
 
-button.more {
+button.expandable {
   margin-left: 0.5em;
   padding: 0 8px;
 }

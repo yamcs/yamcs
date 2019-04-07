@@ -1,7 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>Links</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">Links</app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="selectedItem$ | async as selectedItem; else noSelection">
       <app-detail-toolbar>
         Link Detail
@@ -15,7 +15,7 @@
         Select a link
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
@@ -42,7 +42,7 @@
                                [parentLink]="row.parentLink"></app-link-status>
             </div>
             {{ row.link.name }}
-            <button mat-stroked-button class="more"
+            <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"
                     (click)="expandItem(row)">
               <mat-icon *ngIf="row.expanded">expand_less</mat-icon>
@@ -92,7 +92,7 @@
                 Disable link
               </button>
             </mat-menu>
-            <button mat-button [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
+            <button mat-button class="icon" [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
               <mat-icon>more_vert</mat-icon>
             </button>
           </td>

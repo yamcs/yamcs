@@ -1,7 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>Command History</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">Command History</app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
       <app-detail-toolbar>
         Command Detail
@@ -117,7 +117,7 @@
         Select a command
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">

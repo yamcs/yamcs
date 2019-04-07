@@ -143,6 +143,7 @@
           </mat-menu>
           <button mat-button [matMenuTriggerFor]="instanceMenu"
                   (click)="$event.stopPropagation()"
+                  class="icon"
                   *ngIf="mayControlServices()">
             <mat-icon>more_vert</mat-icon>
           </button>

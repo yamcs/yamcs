@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
     Alarms
     &nbsp;&nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -11,7 +11,7 @@
     </button>
   </app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="detailAlarm$ | async as detailAlarm; else noDetail">
       <app-detail-toolbar>
         Alarm Detail
@@ -28,7 +28,7 @@
         {{ selection.selected.length }} alarms selected
       </div>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">

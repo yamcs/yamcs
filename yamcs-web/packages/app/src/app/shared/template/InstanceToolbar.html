@@ -4,6 +4,15 @@
 
     <span style="flex: 1 1 auto"></span>
 
+    <ng-container *ngIf="hasDetailPane">
+      <button mat-button *ngIf="!(showDetailPane$ | async)" (click)="showDetailPane(true)">
+        SHOW INFO PANEL
+      </button>
+      <button mat-button *ngIf="showDetailPane$ | async" (click)="showDetailPane(false)">
+        HIDE INFO PANEL
+      </button>
+    </ng-container>
+
     <ng-container *ngIf="connected$ | async; else noConnection">
       <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
         <button mat-button class="toolbar-text" *ngIf="timeInfo$ | async as timeInfo" [matMenuTriggerFor]="processorMenu">

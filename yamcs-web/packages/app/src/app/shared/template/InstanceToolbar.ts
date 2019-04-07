@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { ConnectionInfo, Processor, TimeInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { StartReplayDialog } from './StartReplayDialog';
 
@@ -13,6 +14,9 @@ import { StartReplayDialog } from './StartReplayDialog';
 })
 export class InstanceToolbar implements OnDestroy {
 
+  @Input()
+  hasDetailPane = false;
+
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: Subscription;
 
@@ -21,8 +25,14 @@ export class InstanceToolbar implements OnDestroy {
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
+  showDetailPane$: Observable<boolean>;
 
-  constructor(private dialog: MatDialog, private yamcs: YamcsService, private snackBar: MatSnackBar) {
+  constructor(
+    private dialog: MatDialog,
+    private yamcs: YamcsService,
+    private snackBar: MatSnackBar,
+    private preferenceStore: PreferenceStore,
+  ) {
     this.yamcs.getInstanceClient()!.getProcessorUpdates().then(response => {
       this.processor$.next(response.processor);
       this.processorSubscription = response.processor$.subscribe(processor => {
@@ -39,6 +49,7 @@ export class InstanceToolbar implements OnDestroy {
 
     this.connected$ = this.yamcs.getInstanceClient()!.connected$;
     this.connectionInfo$ = this.yamcs.connectionInfo$;
+    this.showDetailPane$ = preferenceStore.detailPane$;
   }
 
   startReplay() {
@@ -88,6 +99,10 @@ export class InstanceToolbar implements OnDestroy {
   changeSpeed(speed: string) {
     const processor = this.processor$.value!;
     this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { speed });
+  }
+
+  showDetailPane(enabled: boolean) {
+    this.preferenceStore.setShowDetailPane(enabled);
   }
 
   ngOnDestroy() {

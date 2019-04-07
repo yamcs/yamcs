@@ -1,13 +1,5 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-  ElementRef,
-  Input,
-  OnChanges,
-} from '@angular/core';
-import { ParameterValue, AlarmRange } from '@yamcs/client';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
+import { AlarmRange, ParameterValue } from '@yamcs/client';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 

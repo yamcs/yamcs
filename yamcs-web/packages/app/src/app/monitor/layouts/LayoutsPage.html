@@ -68,7 +68,9 @@
               Rename
             </button>
           </mat-menu>
-          <button mat-button [matMenuTriggerFor]="fileMenu" (click)="$event.stopPropagation()">
+          <button mat-button [matMenuTriggerFor]="fileMenu"
+                  (click)="$event.stopPropagation()"
+                  class="icon">
             <mat-icon>more_vert</mat-icon>
           </button>
         </td>
