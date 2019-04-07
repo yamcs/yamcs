@@ -50,6 +50,7 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
+import { Label } from './widgets/Label';
 import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
@@ -109,6 +110,7 @@ const sharedComponents = [
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,
+  Label,
   Labels,
   ParameterLegend,
   ParameterPlot,

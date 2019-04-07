@@ -43,7 +43,7 @@ export class CommandHistoryRecord {
       } else if (attr.name === 'CommandComplete') {
         this.completed = true;
         this.success = attr.value.stringValue === 'OK';
-      } else if (attr.name === 'Comment') {
+      } else if (attr.name === 'Comment' || attr.name === 'comment') { // Old versions of Yamcs use "Comment" with capital
         this.comment = attr.value.stringValue;
       } else if (attr.name.indexOf('Verifier_') === 0) {
         const match = attr.name.match(/Verifier_(.*)_(Time|Status)/);

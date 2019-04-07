@@ -25,14 +25,20 @@
 
       </ng-container>
     </ng-container>
-  </form>
-  <p>&nbsp;</p>
   <app-text-action (click)="showAll$.next(true)"
                    *ngIf="initialValueCount && !(showAll$ | async)"
                    icon="add_circle_outline">
     Show {{ initialValueCount }} argument<ng-container *ngIf="initialValueCount !== 1">s</ng-container> with defaults
   </app-text-action>
-  <p>&nbsp;</p>
+  <ng-container *ngIf="arguments.length">
+    <br>
+    <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  </ng-container>
+  <label>
+    Comment
+    <textarea formControlName="_comment" rows="3" style="width: 100%; resize: none"></textarea>
+  </label>
+</form><br>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

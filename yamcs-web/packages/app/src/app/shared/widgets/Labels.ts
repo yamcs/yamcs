@@ -9,7 +9,6 @@ interface Entry {
 @Component({
   selector: 'app-labels',
   templateUrl: './Labels.html',
-  styleUrls: ['./Labels.css'],
 })
 export class Labels implements OnInit {
 

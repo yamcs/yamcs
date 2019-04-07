@@ -73,7 +73,7 @@ public final class ManagementGpbHelper {
 
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
         Processor c = q.getChannel();
-        return CommandQueueEntry.newBuilder()
+        CommandQueueEntry.Builder entryb = CommandQueueEntry.newBuilder()
                 .setInstance(q.getChannel().getInstance())
                 .setProcessorName(c.getName())
                 .setQueueName(q.getName())
@@ -83,8 +83,13 @@ public final class ManagementGpbHelper {
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(pc.getGenerationTime())
                 .setGenerationTimeUTC(TimeEncoding.toString(pc.getGenerationTime()))
-                .setUsername(pc.getUsername())
-                .build();
+                .setUsername(pc.getUsername());
+
+        if (pc.getComment() != null) {
+            entryb.setComment(pc.getComment());
+        }
+
+        return entryb.build();
     }
 
     public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, boolean detail) {

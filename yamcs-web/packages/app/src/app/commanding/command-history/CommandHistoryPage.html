@@ -50,18 +50,26 @@
           <app-hex [base64String]="selectedRecord.binary"></app-hex>
         </div>
 
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+        <ng-container *ngIf="selectedRecord.comment">
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+          <h6 style="padding-top: 0">Comment</h6>
+          <div class="block">
+            {{ selectedRecord.comment }}
+          </div>
+        </ng-container>
 
-        <h6 style="padding-top: 0">Extra Attributes</h6>
-        <div class="block">
-          <ul>
-            <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
-          </ul>
-        </div>
+        <ng-container *ngIf="selectedRecord.extra.length">
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+          <h6 style="padding-top: 0">Extra Attributes</h6>
+          <div class="block">
+            <ul>
+              <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
+            </ul>
+          </div>
+        </ng-container>
 
         <ng-container *ngIf="selectedRecord.stages.length">
           <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
           <h6 style="padding-top: 0">Stages</h6>
           <div class="block">
             <table yaDataTable style="width: 100%">

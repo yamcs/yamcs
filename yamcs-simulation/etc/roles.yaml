@@ -15,7 +15,6 @@ Operator:
   ManageBucket:
     - displays
   Command: [".*"]
-  InsertCommandQueue: ["ops"]
   System:
     - ControlProcessor
     - ModifyCommandHistory
