@@ -1,8 +1,6 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,23 +9,17 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -51,7 +43,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
     private String yamcsInstance;
     private YarchDatabaseInstance ydb;
-    private final TimeService timeService;
 
     public DataLinkInitialiser(String yamcsInstance) throws IOException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
@@ -59,8 +50,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         this.yamcsInstance = yamcsInstance;
         YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
         ydb = YarchDatabase.getInstance(yamcsInstance);
-        timeService = YamcsServer.getTimeService(yamcsInstance);
-
+      
         if (c.containsKey("dataLinks")) {
             List<YConfiguration> links = c.getConfigList("dataLinks");
             for (YConfiguration linkConfig : links) {
@@ -175,7 +165,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
         if (link instanceof ParameterDataLink) {
             if (s != null) {
-                ((ParameterDataLink) link).setParameterSink(new MyPpListener(s));
+                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, s));
             }
         }
 
@@ -364,7 +354,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 link.disable();
             }
 
-            link.setParameterSink(new MyPpListener(stream));
+            link.setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
 
             String json = (args != null) ? new Gson().toJson(args) : "";
             ManagementService.getInstance().registerLink(yamcsInstance, linkName, json, link);
@@ -393,53 +383,5 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             }
         });
         notifyStopped();
-    }
-
-    class MyPpListener implements ParameterSink {
-        final Stream stream;
-        final DataType paraDataType = DataType.PARAMETER_VALUE;
-
-        public MyPpListener(Stream stream) {
-            this.stream = stream;
-        }
-
-        @Override
-        public void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
-            TupleDefinition tdef = StandardTupleDefinitions.PARAMETER.copy();
-            List<Object> cols = new ArrayList<>(4 + params.size());
-            cols.add(gentime);
-            cols.add(group);
-            cols.add(seqNum);
-            cols.add(timeService.getMissionTime());
-            for (ParameterValue pv : params) {
-                String qualifiedName = pv.getParameterQualifiedNamed();
-                int idx = tdef.getColumnIndex(qualifiedName);
-                if (idx != -1) {
-                    log.warn("duplicate value for {} \nfirst: {}" + "\n second: {} ", pv.getParameter(), cols.get(idx),
-                            pv);
-                    continue;
-                }
-                tdef.addColumn(qualifiedName, DataType.PARAMETER_VALUE);
-                cols.add(pv);
-            }
-            Tuple t = new Tuple(tdef, cols);
-            stream.emitTuple(t);
-        }
-
-        @Override
-        public void updateParams(long gentime, String group, int seqNum,
-                Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params) {
-            List<ParameterValue> plist = new ArrayList<>(params.size());
-            for (org.yamcs.protobuf.Pvalue.ParameterValue pbv : params) {
-                NamedObjectId id = pbv.getId();
-                String qualifiedName = id.getName();
-                if (id.hasNamespace()) {
-                    log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
-                }
-                ParameterValue pv = ParameterValue.fromGpb(qualifiedName, pbv);
-                plist.add(pv);
-            }
-            updateParameters(gentime, group, seqNum, plist);
-        }
     }
 }

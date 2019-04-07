@@ -31,6 +31,8 @@ realtime:
             cacheAll: true
             duration: 7200
             maxNumEntries: 4096
+        recordInitialValues: true
+        recordLocalValues: true
 
 
 #used for archive replays (to displays, etc)

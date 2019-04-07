@@ -108,7 +108,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             for (ParameterProvider prov : parameterProviders.values()) {
                 prov.startProvidingAll();
             }
-        } else if (alarmChecker != null) { // at least get all that have alarms
+        } else if (alarmServer != null) { // at least get all that have alarms
             for (Parameter p : processor.getXtceDb().getParameters()) {
                 if (p.getParameterType() != null && p.getParameterType().hasAlarm()) {
                     try {

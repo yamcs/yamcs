@@ -23,7 +23,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-public class SoftwareParameterManagerTest {
+public class LocalParameterManagerTest {
     @BeforeClass
     static public void setupTime() {
 	TimeEncoding.setUp();

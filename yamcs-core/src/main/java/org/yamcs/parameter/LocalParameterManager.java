@@ -17,6 +17,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.DataSource;
@@ -46,18 +47,10 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
     final String yamcsInstance;
     Processor proc;
     LastValueCache lvc;
+    StreamParameterSender streamParameterSender;
 
     public LocalParameterManager(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
-    }
-
-    public void init(XtceDb xtcedb) {
-        for (Parameter p : xtcedb.getParameters()) {
-            if (p.getDataSource() == DataSource.LOCAL) {
-                params.add(p);
-            }
-        }
-        log.debug("Found {} local parameters", params.size());
     }
 
     @Override
@@ -69,6 +62,19 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
         ParameterRequestManager prm = proc.getParameterRequestManager();
         prm.addParameterProvider(this);
         prm.addSoftwareParameterManager(DataSource.LOCAL, this);
+        
+        if(proc.recordLocalValues()) {
+            streamParameterSender = proc.getStreamParameterSender();
+        }
+    }
+
+    void init(XtceDb xtcedb) {
+        for (Parameter p : xtcedb.getParameters()) {
+            if (p.getDataSource() == DataSource.LOCAL) {
+                params.add(p);
+            }
+        }
+        log.debug("Found {} local parameters", params.size());
     }
 
     @Override
@@ -105,6 +111,9 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
         }
         if (pvlist.size() > 0) {
             parameterListeners.forEach(l -> l.update(pvlist));
+            if (streamParameterSender != null) {
+                streamParameterSender.sendParameters(pvlist);
+            }
         }
     }
 

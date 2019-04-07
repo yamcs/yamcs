@@ -33,12 +33,16 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
+import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -57,6 +61,11 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_ALARM = "alarm";
     private static final String CONFIG_KEY_GENERATE_EVENTS = "generateEvents";
     private static final String CONFIG_KEY_SUBSCRIBE_ALL = "subscribeAll";
+    private static final String CONFIG_KEY_RECORD_INITIAL_VALUES = "recordInitialValues";
+    private static final String CONFIG_KEY_RECORD_LOCAL_VALUES = "recordLocalValues";
+
+    
+    public static final String PROC_PARAMETERS_STREAM = "proc_param";
 
     // handles subscriptions to parameters
     private ParameterRequestManager parameterRequestManager;
@@ -100,8 +109,8 @@ public class Processor extends AbstractService {
     private boolean quitting;
     // a synchronous processor waits for all the clients to deliver tm packets and parameters
     private boolean synchronous = false;
-    
-    //if the PRM should subscribe to all parameters at startup
+
+    // if the PRM should subscribe to all parameters at startup
     boolean subscribeAll = false;
     XtceTmProcessor tmProcessor;
 
@@ -116,8 +125,9 @@ public class Processor extends AbstractService {
     @GuardedBy("this")
     HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ServiceWithConfig> serviceList;
-    
-  
+    boolean recordInitialValues;
+    boolean recordLocalValues;
+    StreamParameterSender streamParameterSender;
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
@@ -129,6 +139,19 @@ public class Processor extends AbstractService {
         this.type = type;
         log = LoggingUtils.getLogger(Processor.class, this);
         log.info("Creating new processor '{}' of type '{}'", name, type);
+
+    }
+
+    /**
+     * If recording to the archive initial values and local parameters is enabled, this class can be used to do it.
+     * 
+     * Otherwise it will return null.
+     * 
+     * @return the stream parameter sender that can be used to send data on the {@link #PROC_PARAMETERS_STREAM} stream
+     *         to be recorded in the archive
+     */
+    public StreamParameterSender getStreamParameterSender() {
+        return streamParameterSender;
     }
 
     /**
@@ -162,7 +185,7 @@ public class Processor extends AbstractService {
                         "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
             if (config != null) {
-                for(String key: config.getRoot().keySet()) {
+                for (String key : config.getRoot().keySet()) {
                     if (CONFIG_KEY_ALARM.equals(key)) {
                         configureAlarms(config.getConfig(key));
                     } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(key)) {
@@ -171,12 +194,28 @@ public class Processor extends AbstractService {
                         configureParameterCache(config.getConfig(key));
                     } else if (CONFIG_KEY_TM_PROCESSOR.equals(key)) {
                         tmProcessorConfig = config.getConfig(key);
+                    } else if (CONFIG_KEY_RECORD_INITIAL_VALUES.equals(key)) {
+                        recordInitialValues = config.getBoolean(key);
+                    } else if (CONFIG_KEY_RECORD_LOCAL_VALUES.equals(key)) {
+                        recordLocalValues = config.getBoolean(key);
                     } else {
                         log.warn("Ignoring unknown config key '{}'", key);
                     }
                 }
             }
 
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            Stream pps = ydb.getStream(PROC_PARAMETERS_STREAM);
+            if (pps != null) {
+                streamParameterSender = new StreamParameterSender(yamcsInstance, pps);
+            }
+            if (recordInitialValues || recordLocalValues) {
+                if (pps == null) {
+                    throw new ConfigurationException("recordInitialValue is set to true but the stream '"
+                            + PROC_PARAMETERS_STREAM + "' does not exist");
+                }
+                streamParameterSender.sendParameters(processorData.getLastValueCache().getValues());
+            }
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this, tmProcessorConfig);
             containerRequestManager = new ContainerRequestManager(this, tmProcessor);
@@ -192,7 +231,7 @@ public class Processor extends AbstractService {
             }
 
             parameterRequestManager.init();
-
+            
             instances.put(key(yamcsInstance, name), this);
             listeners.forEach(l -> l.processorAdded(this));
         }
@@ -234,7 +273,7 @@ public class Processor extends AbstractService {
 
     private void configureAlarms(YConfiguration alarmConfig) {
         checkAlarms = alarmConfig.getBoolean("check", checkAlarms);
-        alarmServerEnabled =  "enabled".equalsIgnoreCase(alarmConfig.getString("enabled", null));
+        alarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("enabled", null));
         if (alarmServerEnabled) {
             checkAlarms = true;
         }
@@ -242,7 +281,7 @@ public class Processor extends AbstractService {
 
     private void configureParameterCache(YConfiguration cacheConfig) {
         boolean enabled = cacheConfig.getBoolean("enabled", false);
-        
+
         if (!enabled) { // this is the default but print a warning if there are some things configured
             Set<String> keySet = cacheConfig.getRoot().keySet();
             keySet.remove("enabled");
@@ -699,11 +738,11 @@ public class Processor extends AbstractService {
     public LastValueCache getLastValueCache() {
         return processorData.getLastValueCache();
     }
-    
+
     public boolean isSubscribeAll() {
         return subscribeAll;
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T extends ProcessorService> List<T> getServices(Class<T> serviceClass) {
         List<T> services = new ArrayList<>();
@@ -715,5 +754,9 @@ public class Processor extends AbstractService {
             }
         }
         return services;
+    }
+
+    public boolean recordLocalValues() {
+        return recordLocalValues;
     }
 }

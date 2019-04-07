@@ -106,7 +106,7 @@ public class ParameterReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public Object transform(Tuple t) {
+    public List<ParameterValue> transform(Tuple t) {
         // loop through all the columns containing values
         // the first column is the ProtoDataType.PP (from the select above),
         // then are the fixed ones from PP_TUPLE_DEFINITION

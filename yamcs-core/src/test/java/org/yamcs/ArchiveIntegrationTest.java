@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -37,6 +39,7 @@ import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
@@ -258,6 +261,33 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("2015-02-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
     }
 
+    @Test
+    public void testReplayLocalParams() throws Exception {
+        Instant fmg = Instant.ofEpochMilli(System.currentTimeMillis()-5*60*1000);
+        String respDl = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue1?start="+fmg.toString()+"&source=replay&limit=3",
+                HttpMethod.GET, "").get();
+        ListParameterValuesResponse pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        assertEquals(1, pdata.getParameterCount());
+        ParameterValue pv = pdata.getParameter(0);
+        assertEquals(3.14, pv.getEngValue().getFloatValue(), 1e-5);
+        
+        Value v = ValueHelper.newValue((float)6.62);
+        restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue1",
+                HttpMethod.POST, toJson(v)).get();
+        Thread.sleep(1000);
+        
+        respDl = restClient.doRequest(
+                "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue1?start="+fmg.toString()+"&source=replay&limit=3&order=asc",
+                HttpMethod.GET, "").get();
+        pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        assertEquals(2, pdata.getParameterCount());
+        pv = pdata.getParameter(0);
+        assertEquals(3.14, pv.getEngValue().getFloatValue(), 1e-5);
+        pv = pdata.getParameter(1);
+        assertEquals(6.62, pv.getEngValue().getFloatValue(), 1e-5);
+        
+    }
     @Test
     public void testEmptyIndex() throws Exception {
         String response = restClient
