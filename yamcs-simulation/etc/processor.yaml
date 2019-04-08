@@ -19,6 +19,7 @@ realtime:
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)
     - class: org.yamcs.parameter.LocalParameterManager
   config:
+    subscribeAll: true
     #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
     alarm:
       check: true
@@ -66,3 +67,4 @@ ArchiveRetrieval:
   config:
     parameterCache:
       enabled: false
+
