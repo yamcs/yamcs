@@ -43,7 +43,7 @@ public class CommandVerifier implements Serializable {
     /**
      * XTCE: A time based check window
      */
-    final private CheckWindow checkWindow;
+    private CheckWindow checkWindow;
 
 
     /**
@@ -60,9 +60,13 @@ public class CommandVerifier implements Serializable {
      */
 
 
-    public CommandVerifier(Type type, String stage, CheckWindow checkWindow) {
+    public CommandVerifier(Type type, String stage) {
         this.type = type;
         this.stage = stage;
+    }
+    
+    public CommandVerifier(Type type, String stage, CheckWindow checkWindow) {
+        this(type, stage);
         this.checkWindow = checkWindow;
     }
 
@@ -104,6 +108,10 @@ public class CommandVerifier implements Serializable {
 
     public TerminationAction getOnFail() {
         return onFail;
+    }
+    
+    public void setCheckWindow(CheckWindow checkWindow) {
+        this.checkWindow = checkWindow;
     }
 
     public void setOnFail(TerminationAction onFail) {

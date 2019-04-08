@@ -16,7 +16,7 @@ public class CheckWindow implements Serializable{
     
    
     final private long timeToStartChecking; //time to start checking in milliseconds (if -1 - it means not defined)
-    final private long timeToStopChecking; //time to start checking in milliseconds
+    final private long timeToStopChecking; //time to stop checking in milliseconds
     
     final private TimeWindowIsRelativeToType timeWindowIsRelativeTo;
     

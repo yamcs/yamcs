@@ -13,10 +13,12 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
-import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.CheckWindow;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.Significance.Levels;
 
 public class CcsdsGreenBookCommandEncodingTest {
     static XtceDb xtcedb;
@@ -33,14 +35,28 @@ public class CcsdsGreenBookCommandEncodingTest {
     @Test
     public void test1() throws ErrorInCommand {
         // encode command
-        Parameter p = xtcedb.getParameter("/SpaceVehicle/Length");
-        IntegerParameterType ipt = (IntegerParameterType) p.getParameterType();
         MetaCommand mc = xtcedb.getMetaCommand("/SpaceVehicle/PWHTMR");
+        assertEquals(32, mc.getCommandContainer().getSizeInBits());
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("TimerStartStop", "TIMER_START");
         arguments.add(argumentAssignment1);
         byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
-
+        assertEquals(Levels.critical, mc.getDefaultSignificance().getConsequenceLevel());
+        
         assertEquals("FF0000001E000001", StringConverter.arrayToHexString(b));
+        
+        
+        List<CommandVerifier> vl = mc.getCommandVerifiers();
+        
+        //TODO should be two here but we do not support yet the parameter comparison verifier
+        assertEquals(1, vl.size()); 
+        CommandVerifier cv = vl.get(0);
+        assertEquals(CommandVerifier.Type.CONTAINER, cv.getType());
+        CheckWindow cw = cv.getCheckWindow();
+        assertEquals(-1, cw.getTimeToStartChecking());
+        assertEquals(600000, cw.getTimeToStopChecking());
+        assertEquals(TimeWindowIsRelativeToType.LastVerifier, cw.getTimeWindowIsRelativeTo());
     }
+    
+   
 }

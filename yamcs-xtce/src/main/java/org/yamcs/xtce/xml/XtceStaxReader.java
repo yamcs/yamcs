@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
@@ -39,6 +41,8 @@ import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.CheckWindow;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Container;
@@ -70,6 +74,7 @@ import org.yamcs.xtce.MathOperator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedParameterReference;
 import org.yamcs.xtce.Repeat;
@@ -90,6 +95,8 @@ import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
@@ -107,6 +114,9 @@ import org.yamcs.xtce.Header;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -260,7 +270,11 @@ public class XtceStaxReader {
     private static final String XTCE_ANCILLARY_DATA_SET = "AncillaryDataSet";
     private static final String XTCE_VALID_RANGE = "ValidRange";
     private static final String XTCE_BINARY_ENCODING = "BinaryEncoding";
-
+    private static final String XTCE_DEFAULT_SIGNIFICANCE = "DefaultSignificance";
+    private static final String XTCE_VERIFIER_SET = "VerifierSet";
+    private static final String XTCE_CONTAINER_REF = "ContainerRef";
+    private static final String XTCE_CHECK_WINDOW = "CheckWindow";
+    
     /**
      * Logging subsystem
      */
@@ -694,7 +708,6 @@ public class XtceStaxReader {
         StartElement element = xmlEvent.asStartElement();
 
         String name = readMandatoryAttribute("name", element);
-        
 
         String value = readMandatoryAttribute("numberOfDimensions", element);
         int dim = Integer.valueOf(value);
@@ -1026,9 +1039,10 @@ public class XtceStaxReader {
         }
     }
 
-    private DataEncoding readBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
+    private BinaryDataEncoding readBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_BINARY_DATA_ENCODING);
         checkStartElementPreconditions();
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
 
         BinaryDataEncoding binaryDataEncoding = null;
 
@@ -1046,7 +1060,7 @@ public class XtceStaxReader {
                 skipXtceSection("FromBinaryTransformAlgorithm");
             } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
                 skipXtceSection("ToBinaryTransformAlgorithm");
-            } else if (isEndElementWithName(XTCE_BINARY_DATA_ENCODING)) {
+            } else if (isEndElementWithName(tag)) {
                 return binaryDataEncoding;
             }
         }
@@ -2094,13 +2108,15 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 seqContainer.setRateInStream(readRateInStream(spaceSystem));
             } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
-                skipXtceSection(XTCE_BINARY_ENCODING);
+                BinaryDataEncoding bde = readBinaryDataEncoding(spaceSystem);
+                seqContainer.setSizeInBits(bde.getSizeInBits());
             } else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 return seqContainer;
             } else {
                 logUnknown();
             }
         }
+
     }
 
     private void readBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)
@@ -2891,6 +2907,10 @@ public class XtceStaxReader {
                 spaceSystem.addCommandContainer(cc);
             } else if (isStartElementWithName(XTCE_ARGUMENT_LIST)) {
                 readArgumentList(spaceSystem, mc);
+            } else if (isStartElementWithName(XTCE_VERIFIER_SET)) {
+                readVerifierSet(spaceSystem, mc);
+            } else if (isStartElementWithName(XTCE_DEFAULT_SIGNIFICANCE)) {
+                mc.setDefaultSignificance(readSignificance(spaceSystem));
             } else if (isEndElementWithName(XTCE_META_COMMAND)) {
                 return mc;
             } else {
@@ -3035,6 +3055,106 @@ public class XtceStaxReader {
         }
     }
 
+    private void readVerifierSet(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
+        log.trace(XTCE_VERIFIER_SET);
+        checkStartElementPreconditions();
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (xmlEvent.isStartElement() && xmlEvent.asStartElement().getName().getLocalPart().endsWith("Verifier")) {
+                CommandVerifier cmdVerifier = readVerifier(spaceSystem);
+                if(cmdVerifier!=null) {
+                    mc.addVerifier(cmdVerifier);
+                }
+            } else if (isEndElementWithName(XTCE_VERIFIER_SET)) {
+                return;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
+    private CommandVerifier readVerifier(SpaceSystem spaceSystem) throws XMLStreamException {
+        checkStartElementPreconditions();
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
+        String stage = tag.substring(0, tag.length() - 8);// strip the "Verifier" suffix
+        CommandVerifier cmdVerifier = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_CONTAINER_REF)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.CONTAINER, stage);
+                readContainerRef(spaceSystem, cmdVerifier);
+            } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
+                cmdVerifier = new CommandVerifier(CommandVerifier.Type.ALGORITHM, stage);
+                
+            } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
+                CheckWindow cw = readCheckWindow(spaceSystem);
+                if(cmdVerifier !=null) {
+                    cmdVerifier.setCheckWindow(cw);
+                }
+            } else if (isEndElementWithName(tag)) {
+                return cmdVerifier;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
+    
+    private void readContainerRef(SpaceSystem spaceSystem, CommandVerifier cmdVerifier)
+            throws XMLStreamException {
+        String refName = readMandatoryAttribute("containerRef", xmlEvent.asStartElement());
+        SequenceContainer container = spaceSystem.getSequenceContainer(refName);
+        if (container != null) {
+            cmdVerifier.setContainerRef(container);
+        } else { // must come from somewhere else
+            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER)
+                    .addResolvedAction(nd -> {
+                        cmdVerifier.setContainerRef((SequenceContainer) nd);
+                        return true;
+                    });
+            spaceSystem.addUnresolvedReference(nr);
+        }
+        xmlEvent = xmlEventReader.nextEvent();
+        if(!isEndElementWithName(XTCE_CONTAINER_REF)) {
+            throw new IllegalStateException(XTCE_CONTAINER_REF + " end element expected");
+        }
+    }
+    
+    private CheckWindow readCheckWindow(SpaceSystem spaceSystem)
+            throws XMLStreamException {
+        StartElement element = xmlEvent.asStartElement();
+        String v = readAttribute("timeToStartChecking", element, null);
+        long timeToStartChecking = v == null ? -1 : parseDuration(v);
+        
+        long timeToStopChecking = parseDuration(readMandatoryAttribute("timeToStopChecking", element));
+        
+        v = readAttribute("timeWindowIsRelativeTo", element, "timeLastVerifierPassed");
+        CheckWindow.TimeWindowIsRelativeToType timeWindowIsRelativeTo;
+        if( "timeLastVerifierPassed".equals(v)) {
+            timeWindowIsRelativeTo = TimeWindowIsRelativeToType.LastVerifier;
+        } else if ("commandRelease".equals(v)) {
+            timeWindowIsRelativeTo = TimeWindowIsRelativeToType.CommandRelease;
+        } else {
+            throw new XMLStreamException("Invalid value '"+v+"' for timeWindowIsRelativeTo");
+        }
+        
+        return new CheckWindow(timeToStartChecking, timeToStopChecking, timeWindowIsRelativeTo);
+        
+    }
+    
+    long parseDuration(String v) {
+        Duration d;
+        try {
+            d = DatatypeFactory.newInstance().newDuration(v);
+        } catch (DatatypeConfigurationException e) {
+           throw new ConfigurationException(e);
+        }
+        return d.getTimeInMillis(new Date());
+    }
+    
     private CommandContainer readCommandContainer(SpaceSystem spaceSystem, MetaCommand mc)
             throws XMLStreamException {
         log.trace(XTCE_COMMAND_CONTAINER);
@@ -3063,6 +3183,9 @@ public class XtceStaxReader {
                 cmdContainer.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 cmdContainer.setRateInStream(readRateInStream(spaceSystem));
+            } else if (isStartElementWithName(XTCE_BINARY_ENCODING)) {
+                BinaryDataEncoding bde = readBinaryDataEncoding(spaceSystem);
+                cmdContainer.setSizeInBits(bde.getSizeInBits());
             } else if (isEndElementWithName(XTCE_COMMAND_CONTAINER)) {
                 return cmdContainer;
             } else {
@@ -3276,6 +3399,32 @@ public class XtceStaxReader {
                 result.add(readOutputParameterRef(spaceSystem));
             } else if (isEndElementWithName(tag)) {
                 return result;
+            }
+        }
+    }
+
+    private Significance readSignificance(SpaceSystem spaceSystem) throws IllegalStateException,
+            XMLStreamException {
+        log.trace(XTCE_DEFAULT_SIGNIFICANCE);
+        checkStartElementPreconditions();
+
+        String reason = readAttribute("reasonForWarning", xmlEvent.asStartElement(), null);
+
+        String conseq = readMandatoryAttribute("consequenceLevel", xmlEvent.asStartElement());
+        Levels clevel;
+        try {
+            clevel = Levels.valueOf(conseq.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            throw new XMLStreamException(
+                    "Invalid consiequence level '" + conseq + "'; allowed values: " + Arrays.toString(Levels.values()));
+        }
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isEndElementWithName(XTCE_DEFAULT_SIGNIFICANCE)) {
+                return new Significance(clevel, reason);
+            } else {
+                logUnknown();
             }
         }
     }
