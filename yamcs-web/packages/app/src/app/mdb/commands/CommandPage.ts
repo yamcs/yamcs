@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Command, Instance } from '@yamcs/client';
@@ -16,7 +16,13 @@ export class CommandPage {
   instance: Instance;
   command$ = new BehaviorSubject<Command | null>(null);
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService, private title: Title, private dialog: MatDialog) {
+  constructor(
+    route: ActivatedRoute,
+    private yamcs: YamcsService,
+    private title: Title,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+  ) {
     this.instance = yamcs.getInstance();
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
@@ -35,9 +41,18 @@ export class CommandPage {
   }
 
   issueCommand() {
-    this.dialog.open(IssueCommandDialog, {
+    const dialogRef = this.dialog.open(IssueCommandDialog, {
       width: '400px',
       data: { command: this.command$.value! },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('got result', result);
+        this.snackBar.open(`Command issued`, undefined, {
+          horizontalPosition: 'end',
+          duration: 3000,
+        });
+      }
     });
   }
 }

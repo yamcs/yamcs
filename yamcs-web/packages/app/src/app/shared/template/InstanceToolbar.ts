@@ -4,6 +4,7 @@ import { ConnectionInfo, Processor, TimeInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
+import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
 
 @Component({
@@ -27,6 +28,8 @@ export class InstanceToolbar implements OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;
   showDetailPane$: Observable<boolean>;
 
+  connectedSubscription: Subscription;
+
   constructor(
     private dialog: MatDialog,
     private yamcs: YamcsService,
@@ -48,6 +51,13 @@ export class InstanceToolbar implements OnDestroy {
     });
 
     this.connected$ = this.yamcs.getInstanceClient()!.connected$;
+
+    this.connectedSubscription = this.connected$.subscribe(connected => {
+      if (!connected) {
+        dialog.open(SessionExpiredDialog);
+      }
+    });
+
     this.connectionInfo$ = this.yamcs.connectionInfo$;
     this.showDetailPane$ = preferenceStore.detailPane$;
   }
@@ -111,6 +121,9 @@ export class InstanceToolbar implements OnDestroy {
     }
     if (this.timeInfoSubscription) {
       this.timeInfoSubscription.unsubscribe();
+    }
+    if (this.connectedSubscription) {
+      this.connectedSubscription.unsubscribe();
     }
   }
 }

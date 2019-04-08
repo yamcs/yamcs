@@ -8,6 +8,7 @@ import { MatAutocompleteModule, MatBadgeModule, MatButtonModule, MatButtonToggle
 import { RouterModule } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
+import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
@@ -16,6 +17,7 @@ import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
+import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
@@ -123,6 +125,7 @@ const sharedComponents = [
   SelectInstanceDialog,
   SelectParameterDialog,
   Select,
+  SessionExpiredDialog,
   StartReplayDialog,
   TabDetailIcon,
   TextAction,
@@ -146,6 +149,7 @@ const pipes = [
 const guards = [
   AuthGuard,
   InstanceExistsGuard,
+  MayControlCommandQueueGuard,
   MayControlServicesGuard,
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
@@ -180,6 +184,7 @@ const guards = [
     HelpDialog,
     SelectInstanceDialog,
     SelectParameterDialog,
+    SessionExpiredDialog,
     StartReplayDialog,
   ],
   providers: [

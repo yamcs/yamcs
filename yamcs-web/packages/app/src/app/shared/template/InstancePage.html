@@ -83,44 +83,47 @@
                               [subitem]="true">
           Command History
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/command-queues"
+        <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
+                              routerLink="/commanding/command-queues"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Command Queues
         </app-sidebar-nav-item>
       </div>
 
-      <mat-list-item class="nav-item-group"
-                     [class.active]="mdbActive"
-                     (click)="toggleMdbGroup()">
-        <mat-icon class="item-icon">book</mat-icon>
-        MDB
-      </mat-list-item>
-      <div *ngIf="mdbExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/mdb/parameters"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Parameters
-        </app-sidebar-nav-item>
+      <ng-container *ngIf="showMDB()">
+        <mat-list-item class="nav-item-group"
+                      [class.active]="mdbActive"
+                      (click)="toggleMdbGroup()">
+          <mat-icon class="item-icon">book</mat-icon>
+          MDB
+        </mat-list-item>
+        <div *ngIf="mdbExpanded" class="nav-item-group-items">
+          <app-sidebar-nav-item routerLink="/mdb/parameters"
+                                [queryParams]="{instance: instance.name}"
+                                [subitem]="true">
+            Parameters
+          </app-sidebar-nav-item>
 
-        <app-sidebar-nav-item routerLink="/mdb/containers"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Containers
-        </app-sidebar-nav-item>
+          <app-sidebar-nav-item routerLink="/mdb/containers"
+                                [queryParams]="{instance: instance.name}"
+                                [subitem]="true">
+            Containers
+          </app-sidebar-nav-item>
 
-        <app-sidebar-nav-item routerLink="/mdb/commands"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Commands
-        </app-sidebar-nav-item>
+          <app-sidebar-nav-item routerLink="/mdb/commands"
+                                [queryParams]="{instance: instance.name}"
+                                [subitem]="true">
+            Commands
+          </app-sidebar-nav-item>
 
-        <app-sidebar-nav-item routerLink="/mdb/algorithms"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Algorithms
-        </app-sidebar-nav-item>
-      </div>
+          <app-sidebar-nav-item routerLink="/mdb/algorithms"
+                                [queryParams]="{instance: instance.name}"
+                                [subitem]="true">
+            Algorithms
+          </app-sidebar-nav-item>
+        </div>
+      </ng-container>
 
       <app-sidebar-nav-item routerLink="/archive"
                             [queryParams]="{instance: instance.name}">

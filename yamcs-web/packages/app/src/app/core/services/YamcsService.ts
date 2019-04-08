@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -13,7 +14,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 export class YamcsService {
 
   readonly yamcsClient = new YamcsClient();
-
   private selectedInstance: InstanceClient | null;
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
@@ -21,6 +21,9 @@ export class YamcsService {
 
   private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
   private timeInfoSubscription: Subscription;
+
+  constructor(private dialog: MatDialog) {
+  }
 
   /**
    * Prepares a (new) instance.
