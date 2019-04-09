@@ -9,7 +9,8 @@
         Instances
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="/services">
+      <app-sidebar-nav-item *ngIf="showServicesItem()"
+                            routerLink="/services">
         Global Services
       </app-sidebar-nav-item>
 
