@@ -2,11 +2,14 @@ package org.yamcs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -17,7 +20,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
@@ -467,4 +472,18 @@ public abstract class AbstractIntegrationTest {
             return name;
         }
     }
+    
+  class MyBulkReceiver implements BulkRestDataReceiver {
+      List<byte[]> dist = new ArrayList<>();
+      
+      @Override
+        public void receiveException(Throwable t) {
+            fail(t.getMessage());
+        }
+
+        @Override
+        public void receiveData(byte[] data) throws YamcsApiException {
+            dist.add(data);
+        }
+    };
 }

@@ -251,7 +251,7 @@ class IndexRequestProcessor implements Runnable {
                 String name = histoColumnSerializer.fromByteArray(hr.getColumnv(), histoColumnDefinition);
 
                 NamedObjectId id;
-                if (hreq.name2id != null) {
+                if (hreq.name2id!=null && !hreq.name2id.isEmpty()) {
                     id = hreq.name2id.get(name);
                     if (id == null) {
                         log.debug("Not sending {} because no id for it", name);
