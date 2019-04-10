@@ -342,7 +342,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
         public void send() {
             byte[] binary = cmdPostProcessor.process(pc);
-            commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
 
             int retries = 5;
             boolean sent = false;
