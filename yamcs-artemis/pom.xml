@@ -49,7 +49,6 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
               <includeScope>runtime</includeScope>
               <excludeGroupIds>org.yamcs,org.yaml,org.codehaus.janino,net.sourceforge.jdatepicker,net.sourceforge.jexcelapi,com.google.guava,org.rocksdb,com.beust,
