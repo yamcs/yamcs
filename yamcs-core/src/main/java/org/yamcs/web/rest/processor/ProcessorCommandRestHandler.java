@@ -11,7 +11,8 @@ import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementGpbHelper;
-import org.yamcs.protobuf.Commanding;
+import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
@@ -104,6 +105,9 @@ public class ProcessorCommandRestHandler extends RestHandler {
         try {
             preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber,
                     req.getUser());
+            if (comment != null && !comment.trim().isEmpty()) {
+                preparedCommand.setComment(comment);
+            }
 
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
@@ -131,6 +135,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
             }
             sb.append(")");
             preparedCommand.setSource(sb.toString());
+
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e);
         } catch (ErrorInCommand e) {
@@ -146,17 +151,9 @@ public class ProcessorCommandRestHandler extends RestHandler {
             queue = mgr.getQueue(req.getUser(), preparedCommand);
         } else {
             queue = processor.getCommandingManager().sendCommand(req.getUser(), preparedCommand);
-            if (comment != null) {
-                try {
-                    processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment",
-                            comment, req.getUser());
-                } catch (NoPermissionException e) {
-                    throw new ForbiddenException(e);
-                }
-            }
         }
 
-        Commanding.CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
+        CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
 
         IssueCommandResponse.Builder response = IssueCommandResponse.newBuilder();
         response.setCommandQueueEntry(cqe);
@@ -177,7 +174,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
             if (req.hasBody()) {
                 UpdateCommandHistoryRequest request = req.bodyAsMessage(UpdateCommandHistoryRequest.newBuilder())
                         .build();
-                Commanding.CommandId cmdId = request.getCmdId();
+                CommandId cmdId = request.getCmdId();
 
                 for (UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
                     processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(),

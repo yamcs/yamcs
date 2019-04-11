@@ -62,13 +62,13 @@
             style="width: 100%">
 
         <ng-container cdkColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
             <input type="checkbox"
                   *ngIf="mayManageDisplays()"
                   (change)="$event ? masterToggle() : null"
                   [checked]="selection.hasValue() && isAllSelected()">
           </th>
-          <td mat-cell *cdkCellDef="let row">
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
             <input type="checkbox"
                   *ngIf="mayManageDisplays()"
                   (click)="$event.stopPropagation()"
@@ -84,14 +84,14 @@
               <a [routerLink]="'/monitor/displays/browse/' + item.name"
                 [queryParams]="{instance: instance.name}"
                 (click)="$event.stopPropagation()">
-                <mat-icon class="icon12">folder</mat-icon>
+                <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
                 {{ item.name | filename }}</a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
               <a [routerLink]="'/monitor/displays/files/' + item.name"
                 [queryParams]="{instance: instance.name}"
                 (click)="$event.stopPropagation()">
-                  <mat-icon class="icon12">description</mat-icon>
+                  <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
                   {{ item.name | filename }}</a>
             </ng-container>
           </td>
@@ -144,7 +144,8 @@
               <button mat-button
                       *ngIf="mayManageDisplays()"
                       [matMenuTriggerFor]="fileMenu"
-                      (click)="$event.stopPropagation()">
+                      (click)="$event.stopPropagation()"
+                      class="icon">
                 <mat-icon>more_vert</mat-icon>
               </button>
             </ng-container>

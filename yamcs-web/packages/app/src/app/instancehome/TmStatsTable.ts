@@ -25,8 +25,8 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   displayedColumns = [
     'packetName',
     'receivedPackets',
-    'lastPacketTimeUTC',
-    'lastReceivedUTC',
+    'lastPacketTime',
+    'lastReceived',
     // 'subscribedParameterCount',
   ];
 

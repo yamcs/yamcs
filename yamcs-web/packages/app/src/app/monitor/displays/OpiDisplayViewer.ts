@@ -68,8 +68,12 @@ export class OpiDisplayViewer implements Viewer, OnDestroy {
           abortOnInvalid: false,
           sendFromCache: true,
           updateOnExpiration: true,
+          useNumericIds: true,
         }).then(res => {
           this.parameterSubscription = res.parameterValues$.subscribe(pvals => {
+            for (const pval of pvals) {
+              pval.id = res.mapping[pval.numericId];
+            }
             this.display.processParameterValues(pvals);
           });
         });

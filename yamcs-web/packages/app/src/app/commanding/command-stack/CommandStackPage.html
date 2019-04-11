@@ -1,7 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>Command Stack</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">Command Stack</app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container>
       <app-detail-toolbar>
         Command Detail
@@ -14,7 +14,7 @@
         Select a command
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">

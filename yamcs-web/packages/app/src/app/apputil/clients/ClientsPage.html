@@ -44,7 +44,7 @@
 
       <ng-container matColumnDef="loginTime">
         <th mat-header-cell *matHeaderCellDef mat-sort-header width="160">Login Time</th>
-        <td mat-cell *matCellDef="let client">{{ client.loginTimeUTC | datetime }}</td>
+        <td mat-cell *matCellDef="let client">{{ client.loginTime | datetime }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

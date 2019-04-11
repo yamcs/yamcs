@@ -1,7 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>Links</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">Links</app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="selectedItem$ | async as selectedItem; else noSelection">
       <app-detail-toolbar>
         Link Detail
@@ -15,7 +15,7 @@
         Select a link
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
@@ -23,6 +23,10 @@
         <input #filter
                placeholder="Filter links"
                style="width: 400px">
+        &nbsp;&nbsp;
+        <app-column-chooser [columns]="columns"
+                            [displayedColumns]="displayedColumns"
+                            (change)="updateColumns($event)"></app-column-chooser>
       </div>
       <table mat-table
             [dataSource]="dataSource"
@@ -31,14 +35,14 @@
 
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Name</th>
-          <td mat-cell *matCellDef="let row">
-            <div style="display: inline-block; margin-right: 10px;">
-              <app-link-status *ngIf="row.link.parentName"
-                               [link]="row.link"
+          <td mat-cell *matCellDef="let row" style="white-space: nowrap">
+            <div style="display: inline-block; margin-right: 10px;"
+                 *ngIf="row.link.parentName">
+              <app-link-status [link]="row.link"
                                [parentLink]="row.parentLink"></app-link-status>
             </div>
             {{ row.link.name }}
-            <button mat-stroked-button class="more"
+            <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"
                     (click)="expandItem(row)">
               <mat-icon *ngIf="row.expanded">expand_less</mat-icon>
@@ -53,8 +57,8 @@
         </ng-container>
 
         <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
-          <td mat-cell *matCellDef="let row">
+          <th mat-header-cell *matHeaderCellDef class="status"></th>
+          <td mat-cell *matCellDef="let row" class="status">
             <app-link-status *ngIf="!row.link.parentName" [link]="row.link"></app-link-status>
           </td>
         </ng-container>
@@ -88,7 +92,7 @@
                 Disable link
               </button>
             </mat-menu>
-            <button mat-button [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
+            <button mat-button class="icon" [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
               <mat-icon>more_vert</mat-icon>
             </button>
           </td>

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
+import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandQueuesPage } from './command-queues/CommandQueuesPage';
@@ -26,6 +27,7 @@ const routes: Routes = [
       {
         path: 'command-queues',
         component: CommandQueuesPage,
+        canActivate: [MayControlCommandQueueGuard],
       },
     ]
   }

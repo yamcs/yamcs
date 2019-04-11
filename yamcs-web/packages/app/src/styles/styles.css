@@ -108,6 +108,11 @@ body {
   min-width: 0;
 }
 
+.ya-data-table .mat-button.icon {
+  padding: 0;
+  width: 30px;
+}
+
 .ya-data-table a, .ya-link a, a.ya-link {
   color: #1b61b9;
   text-decoration: none;
@@ -120,6 +125,33 @@ body {
 .ya-data-table a:hover, .ya-link a:hover, a.ya-link:hover {
   /*color: #1b61b9;*/
   text-decoration: underline;
+}
+
+.ya-data-table td.checkbox, .ya-data-table th.checkbox {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status, .ya-data-table th.status {
+  width: 1px;
+  text-align: left;
+}
+
+.ya-data-table td.status .material-icons, .ya-data-table th.status .material-icons {
+  vertical-align: middle;
+}
+
+.ya-data-table td:first-child, .ya-data-table th:first-child {
+  padding-left: 8px !important;
+}
+
+.ya-data-table td:last-child, .ya-data-table th:last-child {
+  padding-right: 8px !important;
+}
+
+.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th,
+.ya-data-table td.status+td, .ya-data-table th.status+th {
+  padding-left: 4px;
 }
 
 .ya-data-table td:not(:first-child), .ya-data-table th:not(:first-child) {
@@ -181,11 +213,21 @@ a.ya-link.ya-header-link {
   font-weight: 400;
   height: 24px;
   padding: 0 7px 1px;
+  box-sizing: border-box;
 }
 
 .ya-form input[type="radio"] {
   margin-right: 10px;
   /*vertical-align: baseline;*/
+}
+
+.ya-form textarea {
+  border: 1px solid #d3d3d3;
+  border-radius: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 0 7px 1px;
+  box-sizing: border-box;
 }
 
 .ya-form .error-message {
@@ -272,7 +314,7 @@ a.ya-link.ya-header-link {
   opacity: 0.01;
 }
 
-button.more {
+button.expandable {
   margin-left: 0.5em;
   padding: 0 8px;
 }

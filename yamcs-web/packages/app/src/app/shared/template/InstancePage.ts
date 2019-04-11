@@ -139,6 +139,14 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.user.hasSystemPrivilege('ReadTables');
   }
 
+  showCommandQueuesItem() {
+    return this.user.hasSystemPrivilege('ControlCommandQueue');
+  }
+
+  showMDB() {
+    return this.user.hasSystemPrivilege('GetMissionDatabase');
+  }
+
   showStreamsItem() {
     const objectPrivileges = this.user.getObjectPrivileges();
     for (const priv of objectPrivileges) {

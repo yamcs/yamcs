@@ -93,7 +93,7 @@ public final class Archive {
             }
             case 18: {
               org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              if (((bitField0_ & 0x00000002) != 0)) {
                 subBuilder = value_.toBuilder();
               }
               value_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
@@ -143,7 +143,7 @@ public final class Archive {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -185,7 +185,7 @@ public final class Archive {
      * <code>optional .yamcs.protobuf.Value value = 2;</code>
      */
     public boolean hasValue() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.Value value = 2;</code>
@@ -220,10 +220,10 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeMessage(2, getValue());
       }
       unknownFields.writeTo(output);
@@ -235,10 +235,10 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getValue());
       }
@@ -257,19 +257,18 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.ColumnData other = (org.yamcs.protobuf.Archive.ColumnData) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasValue() == other.hasValue());
+      if (hasValue() != other.hasValue()) return false;
       if (hasValue()) {
-        result = result && getValue()
-            .equals(other.getValue());
+        if (!getValue()
+            .equals(other.getValue())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -457,17 +456,17 @@ public final class Archive {
         org.yamcs.protobuf.Archive.ColumnData result = new org.yamcs.protobuf.Archive.ColumnData(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          if (valueBuilder_ == null) {
+            result.value_ = value_;
+          } else {
+            result.value_ = valueBuilder_.build();
+          }
           to_bitField0_ |= 0x00000002;
-        }
-        if (valueBuilder_ == null) {
-          result.value_ = value_;
-        } else {
-          result.value_ = valueBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -476,35 +475,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -566,7 +565,7 @@ public final class Archive {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -637,14 +636,14 @@ public final class Archive {
         return this;
       }
 
-      private org.yamcs.protobuf.Yamcs.Value value_ = null;
+      private org.yamcs.protobuf.Yamcs.Value value_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.Value value = 2;</code>
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.Value value = 2;</code>
@@ -691,7 +690,7 @@ public final class Archive {
        */
       public Builder mergeValue(org.yamcs.protobuf.Yamcs.Value value) {
         if (valueBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+          if (((bitField0_ & 0x00000002) != 0) &&
               value_ != null &&
               value_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
             value_ =
@@ -897,7 +896,7 @@ public final class Archive {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -920,7 +919,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           column_ = java.util.Collections.unmodifiableList(column_);
         }
         this.unknownFields = unknownFields.build();
@@ -947,7 +946,7 @@ public final class Archive {
      * <code>optional string stream = 1;</code>
      */
     public boolean hasStream() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string stream = 1;</code>
@@ -1038,7 +1037,7 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, stream_);
       }
       for (int i = 0; i < column_.size(); i++) {
@@ -1053,7 +1052,7 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, stream_);
       }
       for (int i = 0; i < column_.size(); i++) {
@@ -1075,16 +1074,15 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.StreamData other = (org.yamcs.protobuf.Archive.StreamData) obj;
 
-      boolean result = true;
-      result = result && (hasStream() == other.hasStream());
+      if (hasStream() != other.hasStream()) return false;
       if (hasStream()) {
-        result = result && getStream()
-            .equals(other.getStream());
+        if (!getStream()
+            .equals(other.getStream())) return false;
       }
-      result = result && getColumnList()
-          .equals(other.getColumnList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getColumnList()
+          .equals(other.getColumnList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -1272,12 +1270,12 @@ public final class Archive {
         org.yamcs.protobuf.Archive.StreamData result = new org.yamcs.protobuf.Archive.StreamData(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.stream_ = stream_;
         if (columnBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             column_ = java.util.Collections.unmodifiableList(column_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -1292,35 +1290,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -1405,7 +1403,7 @@ public final class Archive {
        * <code>optional string stream = 1;</code>
        */
       public boolean hasStream() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string stream = 1;</code>
@@ -1479,7 +1477,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>(column_);
           bitField0_ |= 0x00000002;
          }
@@ -1708,7 +1706,7 @@ public final class Archive {
           columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder>(
                   column_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           column_ = null;
@@ -1837,7 +1835,7 @@ public final class Archive {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 record_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableData.TableRecord>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -1860,7 +1858,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           record_ = java.util.Collections.unmodifiableList(record_);
         }
         this.unknownFields = unknownFields.build();
@@ -1949,7 +1947,7 @@ public final class Archive {
                 done = true;
                 break;
               case 10: {
-                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                   column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>();
                   mutable_bitField0_ |= 0x00000001;
                 }
@@ -1972,7 +1970,7 @@ public final class Archive {
           throw new com.google.protobuf.InvalidProtocolBufferException(
               e).setUnfinishedMessage(this);
         } finally {
-          if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((mutable_bitField0_ & 0x00000001) != 0)) {
             column_ = java.util.Collections.unmodifiableList(column_);
           }
           this.unknownFields = unknownFields.build();
@@ -2078,11 +2076,10 @@ public final class Archive {
         }
         org.yamcs.protobuf.Archive.TableData.TableRecord other = (org.yamcs.protobuf.Archive.TableData.TableRecord) obj;
 
-        boolean result = true;
-        result = result && getColumnList()
-            .equals(other.getColumnList());
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!getColumnList()
+            .equals(other.getColumnList())) return false;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -2264,7 +2261,7 @@ public final class Archive {
           org.yamcs.protobuf.Archive.TableData.TableRecord result = new org.yamcs.protobuf.Archive.TableData.TableRecord(this);
           int from_bitField0_ = bitField0_;
           if (columnBuilder_ == null) {
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            if (((bitField0_ & 0x00000001) != 0)) {
               column_ = java.util.Collections.unmodifiableList(column_);
               bitField0_ = (bitField0_ & ~0x00000001);
             }
@@ -2278,35 +2275,35 @@ public final class Archive {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -2384,7 +2381,7 @@ public final class Archive {
         private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
           java.util.Collections.emptyList();
         private void ensureColumnIsMutable() {
-          if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (!((bitField0_ & 0x00000001) != 0)) {
             column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnData>(column_);
             bitField0_ |= 0x00000001;
            }
@@ -2613,7 +2610,7 @@ public final class Archive {
             columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 org.yamcs.protobuf.Archive.ColumnData, org.yamcs.protobuf.Archive.ColumnData.Builder, org.yamcs.protobuf.Archive.ColumnDataOrBuilder>(
                     column_,
-                    ((bitField0_ & 0x00000001) == 0x00000001),
+                    ((bitField0_ & 0x00000001) != 0),
                     getParentForChildren(),
                     isClean());
             column_ = null;
@@ -2759,11 +2756,10 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.TableData other = (org.yamcs.protobuf.Archive.TableData) obj;
 
-      boolean result = true;
-      result = result && getRecordList()
-          .equals(other.getRecordList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getRecordList()
+          .equals(other.getRecordList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -2945,7 +2941,7 @@ public final class Archive {
         org.yamcs.protobuf.Archive.TableData result = new org.yamcs.protobuf.Archive.TableData(this);
         int from_bitField0_ = bitField0_;
         if (recordBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             record_ = java.util.Collections.unmodifiableList(record_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -2959,35 +2955,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -3065,7 +3061,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> record_ =
         java.util.Collections.emptyList();
       private void ensureRecordIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           record_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableData.TableRecord>(record_);
           bitField0_ |= 0x00000001;
          }
@@ -3294,7 +3290,7 @@ public final class Archive {
           recordBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.TableData.TableRecord, org.yamcs.protobuf.Archive.TableData.TableRecord.Builder, org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder>(
                   record_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           record_ = null;
@@ -3465,7 +3461,7 @@ public final class Archive {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
                 enumValue_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.EnumValue>();
                 mutable_bitField0_ |= 0x00000004;
               }
@@ -3488,7 +3484,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
           enumValue_ = java.util.Collections.unmodifiableList(enumValue_);
         }
         this.unknownFields = unknownFields.build();
@@ -3515,7 +3511,7 @@ public final class Archive {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -3557,7 +3553,7 @@ public final class Archive {
      * <code>optional string type = 2;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string type = 2;</code>
@@ -3642,10 +3638,10 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, type_);
       }
       for (int i = 0; i < enumValue_.size(); i++) {
@@ -3660,10 +3656,10 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, type_);
       }
       for (int i = 0; i < enumValue_.size(); i++) {
@@ -3685,21 +3681,20 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.ColumnInfo other = (org.yamcs.protobuf.Archive.ColumnInfo) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && getType()
-            .equals(other.getType());
+        if (!getType()
+            .equals(other.getType())) return false;
       }
-      result = result && getEnumValueList()
-          .equals(other.getEnumValueList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getEnumValueList()
+          .equals(other.getEnumValueList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3893,16 +3888,16 @@ public final class Archive {
         org.yamcs.protobuf.Archive.ColumnInfo result = new org.yamcs.protobuf.Archive.ColumnInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.type_ = type_;
         if (enumValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             enumValue_ = java.util.Collections.unmodifiableList(enumValue_);
             bitField0_ = (bitField0_ & ~0x00000004);
           }
@@ -3917,35 +3912,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -4030,7 +4025,7 @@ public final class Archive {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -4106,7 +4101,7 @@ public final class Archive {
        * <code>optional string type = 2;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string type = 2;</code>
@@ -4180,7 +4175,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.EnumValue> enumValue_ =
         java.util.Collections.emptyList();
       private void ensureEnumValueIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           enumValue_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.EnumValue>(enumValue_);
           bitField0_ |= 0x00000004;
          }
@@ -4409,7 +4404,7 @@ public final class Archive {
           enumValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.EnumValue, org.yamcs.protobuf.Archive.EnumValue.Builder, org.yamcs.protobuf.Archive.EnumValueOrBuilder>(
                   enumValue_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
                   isClean());
           enumValue_ = null;
@@ -4509,7 +4504,6 @@ public final class Archive {
       super(builder);
     }
     private EnumValue() {
-      value_ = 0;
       label_ = "";
     }
 
@@ -4587,7 +4581,7 @@ public final class Archive {
      * <code>optional int32 value = 1;</code>
      */
     public boolean hasValue() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional int32 value = 1;</code>
@@ -4602,7 +4596,7 @@ public final class Archive {
      * <code>optional string label = 2;</code>
      */
     public boolean hasLabel() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string label = 2;</code>
@@ -4652,10 +4646,10 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeInt32(1, value_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, label_);
       }
       unknownFields.writeTo(output);
@@ -4667,11 +4661,11 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(1, value_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, label_);
       }
       size += unknownFields.getSerializedSize();
@@ -4689,19 +4683,18 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.EnumValue other = (org.yamcs.protobuf.Archive.EnumValue) obj;
 
-      boolean result = true;
-      result = result && (hasValue() == other.hasValue());
+      if (hasValue() != other.hasValue()) return false;
       if (hasValue()) {
-        result = result && (getValue()
-            == other.getValue());
+        if (getValue()
+            != other.getValue()) return false;
       }
-      result = result && (hasLabel() == other.hasLabel());
+      if (hasLabel() != other.hasLabel()) return false;
       if (hasLabel()) {
-        result = result && getLabel()
-            .equals(other.getLabel());
+        if (!getLabel()
+            .equals(other.getLabel())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -4884,11 +4877,11 @@ public final class Archive {
         org.yamcs.protobuf.Archive.EnumValue result = new org.yamcs.protobuf.Archive.EnumValue(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.value_ = value_;
           to_bitField0_ |= 0x00000001;
         }
-        result.value_ = value_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.label_ = label_;
@@ -4899,35 +4892,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -4984,7 +4977,7 @@ public final class Archive {
        * <code>optional int32 value = 1;</code>
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional int32 value = 1;</code>
@@ -5016,7 +5009,7 @@ public final class Archive {
        * <code>optional string label = 2;</code>
        */
       public boolean hasLabel() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string label = 2;</code>
@@ -5316,9 +5309,7 @@ public final class Archive {
       script_ = "";
       histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       storageEngine_ = "";
-      formatVersion_ = 0;
       tablespace_ = "";
-      compressed_ = false;
     }
 
     @java.lang.Override
@@ -5352,7 +5343,7 @@ public final class Archive {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 keyColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -5361,7 +5352,7 @@ public final class Archive {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
                 valueColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
                 mutable_bitField0_ |= 0x00000004;
               }
@@ -5377,7 +5368,7 @@ public final class Archive {
             }
             case 42: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+              if (!((mutable_bitField0_ & 0x00000010) != 0)) {
                 histogramColumn_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000010;
               }
@@ -5408,7 +5399,7 @@ public final class Archive {
             }
             case 82: {
               org.yamcs.protobuf.Archive.PartitioningInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+              if (((bitField0_ & 0x00000040) != 0)) {
                 subBuilder = partitioningInfo_.toBuilder();
               }
               partitioningInfo_ = input.readMessage(org.yamcs.protobuf.Archive.PartitioningInfo.PARSER, extensionRegistry);
@@ -5434,13 +5425,13 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           keyColumn_ = java.util.Collections.unmodifiableList(keyColumn_);
         }
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
           valueColumn_ = java.util.Collections.unmodifiableList(valueColumn_);
         }
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((mutable_bitField0_ & 0x00000010) != 0)) {
           histogramColumn_ = histogramColumn_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -5467,7 +5458,7 @@ public final class Archive {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -5579,7 +5570,7 @@ public final class Archive {
      * <code>optional string script = 4;</code>
      */
     public boolean hasScript() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string script = 4;</code>
@@ -5650,7 +5641,7 @@ public final class Archive {
      * <code>optional string storageEngine = 6;</code>
      */
     public boolean hasStorageEngine() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string storageEngine = 6;</code>
@@ -5692,7 +5683,7 @@ public final class Archive {
      * <code>optional int32 formatVersion = 7;</code>
      */
     public boolean hasFormatVersion() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional int32 formatVersion = 7;</code>
@@ -5707,7 +5698,7 @@ public final class Archive {
      * <code>optional string tablespace = 8;</code>
      */
     public boolean hasTablespace() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string tablespace = 8;</code>
@@ -5749,7 +5740,7 @@ public final class Archive {
      * <code>optional bool compressed = 9;</code>
      */
     public boolean hasCompressed() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <code>optional bool compressed = 9;</code>
@@ -5764,7 +5755,7 @@ public final class Archive {
      * <code>optional .yamcs.protobuf.archive.PartitioningInfo partitioningInfo = 10;</code>
      */
     public boolean hasPartitioningInfo() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.archive.PartitioningInfo partitioningInfo = 10;</code>
@@ -5793,7 +5784,7 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
       for (int i = 0; i < keyColumn_.size(); i++) {
@@ -5802,25 +5793,25 @@ public final class Archive {
       for (int i = 0; i < valueColumn_.size(); i++) {
         output.writeMessage(3, valueColumn_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, script_);
       }
       for (int i = 0; i < histogramColumn_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, histogramColumn_.getRaw(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 6, storageEngine_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt32(7, formatVersion_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 8, tablespace_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         output.writeBool(9, compressed_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         output.writeMessage(10, getPartitioningInfo());
       }
       unknownFields.writeTo(output);
@@ -5832,7 +5823,7 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
       for (int i = 0; i < keyColumn_.size(); i++) {
@@ -5843,7 +5834,7 @@ public final class Archive {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, valueColumn_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, script_);
       }
       {
@@ -5854,21 +5845,21 @@ public final class Archive {
         size += dataSize;
         size += 1 * getHistogramColumnList().size();
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, storageEngine_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(7, formatVersion_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, tablespace_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(9, compressed_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, getPartitioningInfo());
       }
@@ -5887,50 +5878,49 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.TableInfo other = (org.yamcs.protobuf.Archive.TableInfo) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && getKeyColumnList()
-          .equals(other.getKeyColumnList());
-      result = result && getValueColumnList()
-          .equals(other.getValueColumnList());
-      result = result && (hasScript() == other.hasScript());
+      if (!getKeyColumnList()
+          .equals(other.getKeyColumnList())) return false;
+      if (!getValueColumnList()
+          .equals(other.getValueColumnList())) return false;
+      if (hasScript() != other.hasScript()) return false;
       if (hasScript()) {
-        result = result && getScript()
-            .equals(other.getScript());
+        if (!getScript()
+            .equals(other.getScript())) return false;
       }
-      result = result && getHistogramColumnList()
-          .equals(other.getHistogramColumnList());
-      result = result && (hasStorageEngine() == other.hasStorageEngine());
+      if (!getHistogramColumnList()
+          .equals(other.getHistogramColumnList())) return false;
+      if (hasStorageEngine() != other.hasStorageEngine()) return false;
       if (hasStorageEngine()) {
-        result = result && getStorageEngine()
-            .equals(other.getStorageEngine());
+        if (!getStorageEngine()
+            .equals(other.getStorageEngine())) return false;
       }
-      result = result && (hasFormatVersion() == other.hasFormatVersion());
+      if (hasFormatVersion() != other.hasFormatVersion()) return false;
       if (hasFormatVersion()) {
-        result = result && (getFormatVersion()
-            == other.getFormatVersion());
+        if (getFormatVersion()
+            != other.getFormatVersion()) return false;
       }
-      result = result && (hasTablespace() == other.hasTablespace());
+      if (hasTablespace() != other.hasTablespace()) return false;
       if (hasTablespace()) {
-        result = result && getTablespace()
-            .equals(other.getTablespace());
+        if (!getTablespace()
+            .equals(other.getTablespace())) return false;
       }
-      result = result && (hasCompressed() == other.hasCompressed());
+      if (hasCompressed() != other.hasCompressed()) return false;
       if (hasCompressed()) {
-        result = result && (getCompressed()
-            == other.getCompressed());
+        if (getCompressed()
+            != other.getCompressed()) return false;
       }
-      result = result && (hasPartitioningInfo() == other.hasPartitioningInfo());
+      if (hasPartitioningInfo() != other.hasPartitioningInfo()) return false;
       if (hasPartitioningInfo()) {
-        result = result && getPartitioningInfo()
-            .equals(other.getPartitioningInfo());
+        if (!getPartitioningInfo()
+            .equals(other.getPartitioningInfo())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -6177,12 +6167,12 @@ public final class Archive {
         org.yamcs.protobuf.Archive.TableInfo result = new org.yamcs.protobuf.Archive.TableInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
         if (keyColumnBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             keyColumn_ = java.util.Collections.unmodifiableList(keyColumn_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -6191,7 +6181,7 @@ public final class Archive {
           result.keyColumn_ = keyColumnBuilder_.build();
         }
         if (valueColumnBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             valueColumn_ = java.util.Collections.unmodifiableList(valueColumn_);
             bitField0_ = (bitField0_ & ~0x00000004);
           }
@@ -6199,38 +6189,38 @@ public final class Archive {
         } else {
           result.valueColumn_ = valueColumnBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.script_ = script_;
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           histogramColumn_ = histogramColumn_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.histogramColumn_ = histogramColumn_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.storageEngine_ = storageEngine_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.formatVersion_ = formatVersion_;
           to_bitField0_ |= 0x00000008;
         }
-        result.formatVersion_ = formatVersion_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+        if (((from_bitField0_ & 0x00000080) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.tablespace_ = tablespace_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.compressed_ = compressed_;
           to_bitField0_ |= 0x00000020;
         }
-        result.compressed_ = compressed_;
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          if (partitioningInfoBuilder_ == null) {
+            result.partitioningInfo_ = partitioningInfo_;
+          } else {
+            result.partitioningInfo_ = partitioningInfoBuilder_.build();
+          }
           to_bitField0_ |= 0x00000040;
-        }
-        if (partitioningInfoBuilder_ == null) {
-          result.partitioningInfo_ = partitioningInfo_;
-        } else {
-          result.partitioningInfo_ = partitioningInfoBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -6239,35 +6229,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -6407,7 +6397,7 @@ public final class Archive {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -6481,7 +6471,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> keyColumn_ =
         java.util.Collections.emptyList();
       private void ensureKeyColumnIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           keyColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(keyColumn_);
           bitField0_ |= 0x00000002;
          }
@@ -6710,7 +6700,7 @@ public final class Archive {
           keyColumnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
                   keyColumn_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           keyColumn_ = null;
@@ -6721,7 +6711,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> valueColumn_ =
         java.util.Collections.emptyList();
       private void ensureValueColumnIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           valueColumn_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(valueColumn_);
           bitField0_ |= 0x00000004;
          }
@@ -6950,7 +6940,7 @@ public final class Archive {
           valueColumnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
                   valueColumn_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
                   isClean());
           valueColumn_ = null;
@@ -6963,7 +6953,7 @@ public final class Archive {
        * <code>optional string script = 4;</code>
        */
       public boolean hasScript() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string script = 4;</code>
@@ -7036,7 +7026,7 @@ public final class Archive {
 
       private com.google.protobuf.LazyStringList histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureHistogramColumnIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           histogramColumn_ = new com.google.protobuf.LazyStringArrayList(histogramColumn_);
           bitField0_ |= 0x00000010;
          }
@@ -7132,7 +7122,7 @@ public final class Archive {
        * <code>optional string storageEngine = 6;</code>
        */
       public boolean hasStorageEngine() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <code>optional string storageEngine = 6;</code>
@@ -7208,7 +7198,7 @@ public final class Archive {
        * <code>optional int32 formatVersion = 7;</code>
        */
       public boolean hasFormatVersion() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <code>optional int32 formatVersion = 7;</code>
@@ -7240,7 +7230,7 @@ public final class Archive {
        * <code>optional string tablespace = 8;</code>
        */
       public boolean hasTablespace() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000080) != 0);
       }
       /**
        * <code>optional string tablespace = 8;</code>
@@ -7316,7 +7306,7 @@ public final class Archive {
        * <code>optional bool compressed = 9;</code>
        */
       public boolean hasCompressed() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000100) != 0);
       }
       /**
        * <code>optional bool compressed = 9;</code>
@@ -7343,14 +7333,14 @@ public final class Archive {
         return this;
       }
 
-      private org.yamcs.protobuf.Archive.PartitioningInfo partitioningInfo_ = null;
+      private org.yamcs.protobuf.Archive.PartitioningInfo partitioningInfo_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Archive.PartitioningInfo, org.yamcs.protobuf.Archive.PartitioningInfo.Builder, org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder> partitioningInfoBuilder_;
       /**
        * <code>optional .yamcs.protobuf.archive.PartitioningInfo partitioningInfo = 10;</code>
        */
       public boolean hasPartitioningInfo() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000200) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.archive.PartitioningInfo partitioningInfo = 10;</code>
@@ -7397,7 +7387,7 @@ public final class Archive {
        */
       public Builder mergePartitioningInfo(org.yamcs.protobuf.Archive.PartitioningInfo value) {
         if (partitioningInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+          if (((bitField0_ & 0x00000200) != 0) &&
               partitioningInfo_ != null &&
               partitioningInfo_ != org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance()) {
             partitioningInfo_ =
@@ -7800,7 +7790,7 @@ public final class Archive {
      * <code>optional .yamcs.protobuf.archive.PartitioningInfo.PartitioningType type = 1;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.archive.PartitioningInfo.PartitioningType type = 1;</code>
@@ -7817,7 +7807,7 @@ public final class Archive {
      * <code>optional string timeColumn = 2;</code>
      */
     public boolean hasTimeColumn() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string timeColumn = 2;</code>
@@ -7859,7 +7849,7 @@ public final class Archive {
      * <code>optional string timePartitionSchema = 3;</code>
      */
     public boolean hasTimePartitionSchema() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string timePartitionSchema = 3;</code>
@@ -7901,7 +7891,7 @@ public final class Archive {
      * <code>optional string valueColumn = 4;</code>
      */
     public boolean hasValueColumn() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string valueColumn = 4;</code>
@@ -7943,7 +7933,7 @@ public final class Archive {
      * <code>optional string valueColumnType = 5;</code>
      */
     public boolean hasValueColumnType() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string valueColumnType = 5;</code>
@@ -7993,19 +7983,19 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeEnum(1, type_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, timeColumn_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, timePartitionSchema_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, valueColumn_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, valueColumnType_);
       }
       unknownFields.writeTo(output);
@@ -8017,20 +8007,20 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, type_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, timeColumn_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, timePartitionSchema_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, valueColumn_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, valueColumnType_);
       }
       size += unknownFields.getSerializedSize();
@@ -8048,33 +8038,32 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.PartitioningInfo other = (org.yamcs.protobuf.Archive.PartitioningInfo) obj;
 
-      boolean result = true;
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && type_ == other.type_;
+        if (type_ != other.type_) return false;
       }
-      result = result && (hasTimeColumn() == other.hasTimeColumn());
+      if (hasTimeColumn() != other.hasTimeColumn()) return false;
       if (hasTimeColumn()) {
-        result = result && getTimeColumn()
-            .equals(other.getTimeColumn());
+        if (!getTimeColumn()
+            .equals(other.getTimeColumn())) return false;
       }
-      result = result && (hasTimePartitionSchema() == other.hasTimePartitionSchema());
+      if (hasTimePartitionSchema() != other.hasTimePartitionSchema()) return false;
       if (hasTimePartitionSchema()) {
-        result = result && getTimePartitionSchema()
-            .equals(other.getTimePartitionSchema());
+        if (!getTimePartitionSchema()
+            .equals(other.getTimePartitionSchema())) return false;
       }
-      result = result && (hasValueColumn() == other.hasValueColumn());
+      if (hasValueColumn() != other.hasValueColumn()) return false;
       if (hasValueColumn()) {
-        result = result && getValueColumn()
-            .equals(other.getValueColumn());
+        if (!getValueColumn()
+            .equals(other.getValueColumn())) return false;
       }
-      result = result && (hasValueColumnType() == other.hasValueColumnType());
+      if (hasValueColumnType() != other.hasValueColumnType()) return false;
       if (hasValueColumnType()) {
-        result = result && getValueColumnType()
-            .equals(other.getValueColumnType());
+        if (!getValueColumnType()
+            .equals(other.getValueColumnType())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -8275,23 +8264,23 @@ public final class Archive {
         org.yamcs.protobuf.Archive.PartitioningInfo result = new org.yamcs.protobuf.Archive.PartitioningInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.timeColumn_ = timeColumn_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.timePartitionSchema_ = timePartitionSchema_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.valueColumn_ = valueColumn_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.valueColumnType_ = valueColumnType_;
@@ -8302,35 +8291,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -8402,7 +8391,7 @@ public final class Archive {
        * <code>optional .yamcs.protobuf.archive.PartitioningInfo.PartitioningType type = 1;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.archive.PartitioningInfo.PartitioningType type = 1;</code>
@@ -8439,7 +8428,7 @@ public final class Archive {
        * <code>optional string timeColumn = 2;</code>
        */
       public boolean hasTimeColumn() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string timeColumn = 2;</code>
@@ -8515,7 +8504,7 @@ public final class Archive {
        * <code>optional string timePartitionSchema = 3;</code>
        */
       public boolean hasTimePartitionSchema() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string timePartitionSchema = 3;</code>
@@ -8591,7 +8580,7 @@ public final class Archive {
        * <code>optional string valueColumn = 4;</code>
        */
       public boolean hasValueColumn() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string valueColumn = 4;</code>
@@ -8667,7 +8656,7 @@ public final class Archive {
        * <code>optional string valueColumnType = 5;</code>
        */
       public boolean hasValueColumnType() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string valueColumnType = 5;</code>
@@ -8871,7 +8860,6 @@ public final class Archive {
       name_ = "";
       column_ = java.util.Collections.emptyList();
       script_ = "";
-      dataCount_ = 0L;
     }
 
     @java.lang.Override
@@ -8905,7 +8893,7 @@ public final class Archive {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -8939,7 +8927,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           column_ = java.util.Collections.unmodifiableList(column_);
         }
         this.unknownFields = unknownFields.build();
@@ -8966,7 +8954,7 @@ public final class Archive {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -9043,7 +9031,7 @@ public final class Archive {
      * <code>optional string script = 3;</code>
      */
     public boolean hasScript() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string script = 3;</code>
@@ -9085,7 +9073,7 @@ public final class Archive {
      * <code>optional int64 dataCount = 4;</code>
      */
     public boolean hasDataCount() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int64 dataCount = 4;</code>
@@ -9108,16 +9096,16 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
       for (int i = 0; i < column_.size(); i++) {
         output.writeMessage(2, column_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, script_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt64(4, dataCount_);
       }
       unknownFields.writeTo(output);
@@ -9129,17 +9117,17 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
       for (int i = 0; i < column_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, column_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, script_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, dataCount_);
       }
@@ -9158,26 +9146,25 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.StreamInfo other = (org.yamcs.protobuf.Archive.StreamInfo) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && getColumnList()
-          .equals(other.getColumnList());
-      result = result && (hasScript() == other.hasScript());
+      if (!getColumnList()
+          .equals(other.getColumnList())) return false;
+      if (hasScript() != other.hasScript()) return false;
       if (hasScript()) {
-        result = result && getScript()
-            .equals(other.getScript());
+        if (!getScript()
+            .equals(other.getScript())) return false;
       }
-      result = result && (hasDataCount() == other.hasDataCount());
+      if (hasDataCount() != other.hasDataCount()) return false;
       if (hasDataCount()) {
-        result = result && (getDataCount()
-            == other.getDataCount());
+        if (getDataCount()
+            != other.getDataCount()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -9378,12 +9365,12 @@ public final class Archive {
         org.yamcs.protobuf.Archive.StreamInfo result = new org.yamcs.protobuf.Archive.StreamInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
         if (columnBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             column_ = java.util.Collections.unmodifiableList(column_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -9391,14 +9378,14 @@ public final class Archive {
         } else {
           result.column_ = columnBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.script_ = script_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.dataCount_ = dataCount_;
           to_bitField0_ |= 0x00000004;
         }
-        result.dataCount_ = dataCount_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9406,35 +9393,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -9522,7 +9509,7 @@ public final class Archive {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -9596,7 +9583,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           column_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.ColumnInfo>(column_);
           bitField0_ |= 0x00000002;
          }
@@ -9825,7 +9812,7 @@ public final class Archive {
           columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.ColumnInfo, org.yamcs.protobuf.Archive.ColumnInfo.Builder, org.yamcs.protobuf.Archive.ColumnInfoOrBuilder>(
                   column_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           column_ = null;
@@ -9838,7 +9825,7 @@ public final class Archive {
        * <code>optional string script = 3;</code>
        */
       public boolean hasScript() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string script = 3;</code>
@@ -9914,7 +9901,7 @@ public final class Archive {
        * <code>optional int64 dataCount = 4;</code>
        */
       public boolean hasDataCount() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int64 dataCount = 4;</code>
@@ -10058,7 +10045,7 @@ public final class Archive {
               break;
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 source_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -10080,7 +10067,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           source_ = source_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -10178,11 +10165,10 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.EventSourceInfo other = (org.yamcs.protobuf.Archive.EventSourceInfo) obj;
 
-      boolean result = true;
-      result = result && getSourceList()
-          .equals(other.getSourceList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getSourceList()
+          .equals(other.getSourceList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -10358,7 +10344,7 @@ public final class Archive {
       public org.yamcs.protobuf.Archive.EventSourceInfo buildPartial() {
         org.yamcs.protobuf.Archive.EventSourceInfo result = new org.yamcs.protobuf.Archive.EventSourceInfo(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           source_ = source_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
@@ -10369,35 +10355,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -10453,7 +10439,7 @@ public final class Archive {
 
       private com.google.protobuf.LazyStringList source_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureSourceIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           source_ = new com.google.protobuf.LazyStringArrayList(source_);
           bitField0_ |= 0x00000001;
          }
@@ -10661,7 +10647,7 @@ public final class Archive {
               break;
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 group_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -10683,7 +10669,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           group_ = group_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -10781,11 +10767,10 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.ParameterGroupInfo other = (org.yamcs.protobuf.Archive.ParameterGroupInfo) obj;
 
-      boolean result = true;
-      result = result && getGroupList()
-          .equals(other.getGroupList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getGroupList()
+          .equals(other.getGroupList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -10961,7 +10946,7 @@ public final class Archive {
       public org.yamcs.protobuf.Archive.ParameterGroupInfo buildPartial() {
         org.yamcs.protobuf.Archive.ParameterGroupInfo result = new org.yamcs.protobuf.Archive.ParameterGroupInfo(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           group_ = group_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
@@ -10972,35 +10957,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -11056,7 +11041,7 @@ public final class Archive {
 
       private com.google.protobuf.LazyStringList group_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureGroupIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           group_ = new com.google.protobuf.LazyStringArrayList(group_);
           bitField0_ |= 0x00000001;
          }
@@ -11283,7 +11268,7 @@ public final class Archive {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 group_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.IndexGroup>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -11312,7 +11297,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           group_ = java.util.Collections.unmodifiableList(group_);
         }
         this.unknownFields = unknownFields.build();
@@ -11374,7 +11359,7 @@ public final class Archive {
      * <code>optional string continuationToken = 2;</code>
      */
     public boolean hasContinuationToken() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string continuationToken = 2;</code>
@@ -11433,7 +11418,7 @@ public final class Archive {
       for (int i = 0; i < group_.size(); i++) {
         output.writeMessage(1, group_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
       }
       unknownFields.writeTo(output);
@@ -11449,7 +11434,7 @@ public final class Archive {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, group_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
@@ -11467,16 +11452,15 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.IndexResponse other = (org.yamcs.protobuf.Archive.IndexResponse) obj;
 
-      boolean result = true;
-      result = result && getGroupList()
-          .equals(other.getGroupList());
-      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (!getGroupList()
+          .equals(other.getGroupList())) return false;
+      if (hasContinuationToken() != other.hasContinuationToken()) return false;
       if (hasContinuationToken()) {
-        result = result && getContinuationToken()
-            .equals(other.getContinuationToken());
+        if (!getContinuationToken()
+            .equals(other.getContinuationToken())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -11665,7 +11649,7 @@ public final class Archive {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (groupBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             group_ = java.util.Collections.unmodifiableList(group_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -11673,7 +11657,7 @@ public final class Archive {
         } else {
           result.group_ = groupBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.continuationToken_ = continuationToken_;
@@ -11684,35 +11668,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -11795,7 +11779,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.IndexGroup> group_ =
         java.util.Collections.emptyList();
       private void ensureGroupIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           group_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.IndexGroup>(group_);
           bitField0_ |= 0x00000001;
          }
@@ -12024,7 +12008,7 @@ public final class Archive {
           groupBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.IndexGroup, org.yamcs.protobuf.Archive.IndexGroup.Builder, org.yamcs.protobuf.Archive.IndexGroupOrBuilder>(
                   group_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           group_ = null;
@@ -12037,7 +12021,7 @@ public final class Archive {
        * <code>optional string continuationToken = 2;</code>
        */
       public boolean hasContinuationToken() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string continuationToken = 2;</code>
@@ -12243,7 +12227,7 @@ public final class Archive {
               break;
             case 10: {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+              if (((bitField0_ & 0x00000001) != 0)) {
                 subBuilder = id_.toBuilder();
               }
               id_ = input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry);
@@ -12255,7 +12239,7 @@ public final class Archive {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 entry_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.IndexEntry>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -12278,7 +12262,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           entry_ = java.util.Collections.unmodifiableList(entry_);
         }
         this.unknownFields = unknownFields.build();
@@ -12305,7 +12289,7 @@ public final class Archive {
      * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     public boolean hasId() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -12375,7 +12359,7 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(1, getId());
       }
       for (int i = 0; i < entry_.size(); i++) {
@@ -12390,7 +12374,7 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getId());
       }
@@ -12413,16 +12397,15 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.IndexGroup other = (org.yamcs.protobuf.Archive.IndexGroup) obj;
 
-      boolean result = true;
-      result = result && (hasId() == other.hasId());
+      if (hasId() != other.hasId()) return false;
       if (hasId()) {
-        result = result && getId()
-            .equals(other.getId());
+        if (!getId()
+            .equals(other.getId())) return false;
       }
-      result = result && getEntryList()
-          .equals(other.getEntryList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getEntryList()
+          .equals(other.getEntryList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -12615,16 +12598,16 @@ public final class Archive {
         org.yamcs.protobuf.Archive.IndexGroup result = new org.yamcs.protobuf.Archive.IndexGroup(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          if (idBuilder_ == null) {
+            result.id_ = id_;
+          } else {
+            result.id_ = idBuilder_.build();
+          }
           to_bitField0_ |= 0x00000001;
         }
-        if (idBuilder_ == null) {
-          result.id_ = id_;
-        } else {
-          result.id_ = idBuilder_.build();
-        }
         if (entryBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             entry_ = java.util.Collections.unmodifiableList(entry_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -12639,35 +12622,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -12745,14 +12728,14 @@ public final class Archive {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Yamcs.NamedObjectId id_ = null;
+      private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
       /**
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -12799,7 +12782,7 @@ public final class Archive {
        */
       public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+          if (((bitField0_ & 0x00000001) != 0) &&
               id_ != null &&
               id_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
             id_ =
@@ -12866,7 +12849,7 @@ public final class Archive {
       private java.util.List<org.yamcs.protobuf.Archive.IndexEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           entry_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.IndexEntry>(entry_);
           bitField0_ |= 0x00000002;
          }
@@ -13095,7 +13078,7 @@ public final class Archive {
           entryBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.IndexEntry, org.yamcs.protobuf.Archive.IndexEntry.Builder, org.yamcs.protobuf.Archive.IndexEntryOrBuilder>(
                   entry_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           entry_ = null;
@@ -13229,9 +13212,6 @@ public final class Archive {
     private IndexEntry() {
       start_ = "";
       stop_ = "";
-      count_ = 0;
-      seqStart_ = 0L;
-      seqStop_ = 0L;
     }
 
     @java.lang.Override
@@ -13324,7 +13304,7 @@ public final class Archive {
      * <code>optional string start = 1;</code>
      */
     public boolean hasStart() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string start = 1;</code>
@@ -13366,7 +13346,7 @@ public final class Archive {
      * <code>optional string stop = 2;</code>
      */
     public boolean hasStop() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string stop = 2;</code>
@@ -13408,7 +13388,7 @@ public final class Archive {
      * <code>optional int32 count = 3;</code>
      */
     public boolean hasCount() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int32 count = 3;</code>
@@ -13423,7 +13403,7 @@ public final class Archive {
      * <code>optional int64 seqStart = 4;</code>
      */
     public boolean hasSeqStart() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional int64 seqStart = 4;</code>
@@ -13438,7 +13418,7 @@ public final class Archive {
      * <code>optional int64 seqStop = 5;</code>
      */
     public boolean hasSeqStop() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional int64 seqStop = 5;</code>
@@ -13461,19 +13441,19 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt32(3, count_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, seqStart_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         output.writeInt64(5, seqStop_);
       }
       unknownFields.writeTo(output);
@@ -13485,21 +13465,21 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, stop_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, count_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, seqStart_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(5, seqStop_);
       }
@@ -13518,34 +13498,33 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.IndexEntry other = (org.yamcs.protobuf.Archive.IndexEntry) obj;
 
-      boolean result = true;
-      result = result && (hasStart() == other.hasStart());
+      if (hasStart() != other.hasStart()) return false;
       if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
+        if (!getStart()
+            .equals(other.getStart())) return false;
       }
-      result = result && (hasStop() == other.hasStop());
+      if (hasStop() != other.hasStop()) return false;
       if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
+        if (!getStop()
+            .equals(other.getStop())) return false;
       }
-      result = result && (hasCount() == other.hasCount());
+      if (hasCount() != other.hasCount()) return false;
       if (hasCount()) {
-        result = result && (getCount()
-            == other.getCount());
+        if (getCount()
+            != other.getCount()) return false;
       }
-      result = result && (hasSeqStart() == other.hasSeqStart());
+      if (hasSeqStart() != other.hasSeqStart()) return false;
       if (hasSeqStart()) {
-        result = result && (getSeqStart()
-            == other.getSeqStart());
+        if (getSeqStart()
+            != other.getSeqStart()) return false;
       }
-      result = result && (hasSeqStop() == other.hasSeqStop());
+      if (hasSeqStop() != other.hasSeqStop()) return false;
       if (hasSeqStop()) {
-        result = result && (getSeqStop()
-            == other.getSeqStop());
+        if (getSeqStop()
+            != other.getSeqStop()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -13748,26 +13727,26 @@ public final class Archive {
         org.yamcs.protobuf.Archive.IndexEntry result = new org.yamcs.protobuf.Archive.IndexEntry(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.start_ = start_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.stop_ = stop_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.count_ = count_;
           to_bitField0_ |= 0x00000004;
         }
-        result.count_ = count_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.seqStart_ = seqStart_;
           to_bitField0_ |= 0x00000008;
         }
-        result.seqStart_ = seqStart_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.seqStop_ = seqStop_;
           to_bitField0_ |= 0x00000010;
         }
-        result.seqStop_ = seqStop_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -13775,35 +13754,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -13871,7 +13850,7 @@ public final class Archive {
        * <code>optional string start = 1;</code>
        */
       public boolean hasStart() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string start = 1;</code>
@@ -13947,7 +13926,7 @@ public final class Archive {
        * <code>optional string stop = 2;</code>
        */
       public boolean hasStop() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string stop = 2;</code>
@@ -14023,7 +14002,7 @@ public final class Archive {
        * <code>optional int32 count = 3;</code>
        */
       public boolean hasCount() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int32 count = 3;</code>
@@ -14055,7 +14034,7 @@ public final class Archive {
        * <code>optional int64 seqStart = 4;</code>
        */
       public boolean hasSeqStart() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int64 seqStart = 4;</code>
@@ -14087,7 +14066,7 @@ public final class Archive {
        * <code>optional int64 seqStop = 5;</code>
        */
       public boolean hasSeqStop() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional int64 seqStop = 5;</code>
@@ -14231,7 +14210,7 @@ public final class Archive {
               break;
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 name_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -14253,7 +14232,7 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           name_ = name_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -14351,11 +14330,10 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.GetPacketNamesResponse other = (org.yamcs.protobuf.Archive.GetPacketNamesResponse) obj;
 
-      boolean result = true;
-      result = result && getNameList()
-          .equals(other.getNameList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getNameList()
+          .equals(other.getNameList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -14531,7 +14509,7 @@ public final class Archive {
       public org.yamcs.protobuf.Archive.GetPacketNamesResponse buildPartial() {
         org.yamcs.protobuf.Archive.GetPacketNamesResponse result = new org.yamcs.protobuf.Archive.GetPacketNamesResponse(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           name_ = name_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
@@ -14542,35 +14520,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -14626,7 +14604,7 @@ public final class Archive {
 
       private com.google.protobuf.LazyStringList name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureNameIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           name_ = new com.google.protobuf.LazyStringArrayList(name_);
           bitField0_ |= 0x00000001;
          }
@@ -14872,7 +14850,7 @@ public final class Archive {
      * <code>optional string statement = 1;</code>
      */
     public boolean hasStatement() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string statement = 1;</code>
@@ -14922,7 +14900,7 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, statement_);
       }
       unknownFields.writeTo(output);
@@ -14934,7 +14912,7 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, statement_);
       }
       size += unknownFields.getSerializedSize();
@@ -14952,14 +14930,13 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.ExecuteSqlRequest other = (org.yamcs.protobuf.Archive.ExecuteSqlRequest) obj;
 
-      boolean result = true;
-      result = result && (hasStatement() == other.hasStatement());
+      if (hasStatement() != other.hasStatement()) return false;
       if (hasStatement()) {
-        result = result && getStatement()
-            .equals(other.getStatement());
+        if (!getStatement()
+            .equals(other.getStatement())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -15136,7 +15113,7 @@ public final class Archive {
         org.yamcs.protobuf.Archive.ExecuteSqlRequest result = new org.yamcs.protobuf.Archive.ExecuteSqlRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.statement_ = statement_;
@@ -15147,35 +15124,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -15229,7 +15206,7 @@ public final class Archive {
        * <code>optional string statement = 1;</code>
        */
       public boolean hasStatement() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string statement = 1;</code>
@@ -15455,7 +15432,7 @@ public final class Archive {
      * <code>optional string result = 1;</code>
      */
     public boolean hasResult() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string result = 1;</code>
@@ -15505,7 +15482,7 @@ public final class Archive {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, result_);
       }
       unknownFields.writeTo(output);
@@ -15517,7 +15494,7 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, result_);
       }
       size += unknownFields.getSerializedSize();
@@ -15535,14 +15512,13 @@ public final class Archive {
       }
       org.yamcs.protobuf.Archive.ExecuteSqlResponse other = (org.yamcs.protobuf.Archive.ExecuteSqlResponse) obj;
 
-      boolean result = true;
-      result = result && (hasResult() == other.hasResult());
+      if (hasResult() != other.hasResult()) return false;
       if (hasResult()) {
-        result = result && getResult()
-            .equals(other.getResult());
+        if (!getResult()
+            .equals(other.getResult())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -15719,7 +15695,7 @@ public final class Archive {
         org.yamcs.protobuf.Archive.ExecuteSqlResponse result = new org.yamcs.protobuf.Archive.ExecuteSqlResponse(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.result_ = result_;
@@ -15730,35 +15706,35 @@ public final class Archive {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -15812,7 +15788,7 @@ public final class Archive {
        * <code>optional string result = 1;</code>
        */
       public boolean hasResult() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string result = 1;</code>

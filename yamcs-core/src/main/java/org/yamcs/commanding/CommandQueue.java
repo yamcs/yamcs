@@ -80,7 +80,7 @@ public class CommandQueue {
      * 
      * @param pc
      * @param isSent:
-     *            true if the command has been sent, false if the commmand has been rejected
+     *            true if the command has been sent, false if the command has been rejected
      * @return
      */
     public boolean remove(PreparedCommand pc, boolean isSent) {

@@ -2,8 +2,10 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Alarm, GeneralInfo, Instance, MissionDatabase, TmStatistics } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { AlarmsDataSource } from '../monitor/alarms/AlarmsDataSource';
+import { User } from '../shared/User';
 
 @Component({
   templateUrl: './InstanceHomePage.html',
@@ -14,6 +16,8 @@ export class InstanceHomePage implements OnDestroy {
 
   instance: Instance;
 
+  private user: User;
+
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
 
@@ -23,9 +27,10 @@ export class InstanceHomePage implements OnDestroy {
   info$: Promise<GeneralInfo>;
   mdb$: Promise<MissionDatabase>;
 
-  constructor(yamcs: YamcsService) {
+  constructor(yamcs: YamcsService, authService: AuthService) {
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
+    this.user = authService.getUser()!;
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
         filter(stats => stats.yProcessorName === processor.name),
@@ -43,9 +48,15 @@ export class InstanceHomePage implements OnDestroy {
       }),
     );
 
-    this.mdb$ = yamcs.getInstanceClient()!.getMissionDatabase();
+    if (this.showMDB()) {
+      this.mdb$ = yamcs.getInstanceClient()!.getMissionDatabase();
+    }
 
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
+  }
+
+  showMDB() {
+    return this.user.hasSystemPrivilege('GetMissionDatabase');
   }
 
   ngOnDestroy() {

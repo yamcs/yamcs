@@ -186,7 +186,7 @@ public final class Rest {
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+              if (!((mutable_bitField0_ & 0x00000010) != 0)) {
                 route_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo>();
                 mutable_bitField0_ |= 0x00000010;
               }
@@ -195,7 +195,7 @@ public final class Rest {
               break;
             }
             case 42: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              if (!((mutable_bitField0_ & 0x00000020) != 0)) {
                 plugin_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo>();
                 mutable_bitField0_ |= 0x00000020;
               }
@@ -224,10 +224,10 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((mutable_bitField0_ & 0x00000010) != 0)) {
           route_ = java.util.Collections.unmodifiableList(route_);
         }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((mutable_bitField0_ & 0x00000020) != 0)) {
           plugin_ = java.util.Collections.unmodifiableList(plugin_);
         }
         this.unknownFields = unknownFields.build();
@@ -333,7 +333,7 @@ public final class Rest {
               }
               case 18: {
                 com.google.protobuf.ByteString bs = input.readBytes();
-                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                   method_ = new com.google.protobuf.LazyStringArrayList();
                   mutable_bitField0_ |= 0x00000002;
                 }
@@ -355,7 +355,7 @@ public final class Rest {
           throw new com.google.protobuf.InvalidProtocolBufferException(
               e).setUnfinishedMessage(this);
         } finally {
-          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((mutable_bitField0_ & 0x00000002) != 0)) {
             method_ = method_.getUnmodifiableView();
           }
           this.unknownFields = unknownFields.build();
@@ -382,7 +382,7 @@ public final class Rest {
        * <code>optional string url = 1;</code>
        */
       public boolean hasUrl() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string url = 1;</code>
@@ -461,7 +461,7 @@ public final class Rest {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, url_);
         }
         for (int i = 0; i < method_.size(); i++) {
@@ -476,7 +476,7 @@ public final class Rest {
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, url_);
         }
         {
@@ -502,16 +502,15 @@ public final class Rest {
         }
         org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo other = (org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo) obj;
 
-        boolean result = true;
-        result = result && (hasUrl() == other.hasUrl());
+        if (hasUrl() != other.hasUrl()) return false;
         if (hasUrl()) {
-          result = result && getUrl()
-              .equals(other.getUrl());
+          if (!getUrl()
+              .equals(other.getUrl())) return false;
         }
-        result = result && getMethodList()
-            .equals(other.getMethodList());
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!getMethodList()
+            .equals(other.getMethodList())) return false;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -694,11 +693,11 @@ public final class Rest {
           org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo result = new org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.url_ = url_;
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             method_ = method_.getUnmodifiableView();
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -710,35 +709,35 @@ public final class Rest {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -802,7 +801,7 @@ public final class Rest {
          * <code>optional string url = 1;</code>
          */
         public boolean hasUrl() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional string url = 1;</code>
@@ -875,7 +874,7 @@ public final class Rest {
 
         private com.google.protobuf.LazyStringList method_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         private void ensureMethodIsMutable() {
-          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (!((bitField0_ & 0x00000002) != 0)) {
             method_ = new com.google.protobuf.LazyStringArrayList(method_);
             bitField0_ |= 0x00000002;
            }
@@ -1184,7 +1183,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -1226,7 +1225,7 @@ public final class Rest {
        * <code>optional string description = 2;</code>
        */
       public boolean hasDescription() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string description = 2;</code>
@@ -1268,7 +1267,7 @@ public final class Rest {
        * <code>optional string version = 3;</code>
        */
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string version = 3;</code>
@@ -1310,7 +1309,7 @@ public final class Rest {
        * <code>optional string vendor = 4;</code>
        */
       public boolean hasVendor() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string vendor = 4;</code>
@@ -1360,16 +1359,16 @@ public final class Rest {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 2, description_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 3, version_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 4, vendor_);
         }
         unknownFields.writeTo(output);
@@ -1381,16 +1380,16 @@ public final class Rest {
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, description_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, version_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, vendor_);
         }
         size += unknownFields.getSerializedSize();
@@ -1408,29 +1407,28 @@ public final class Rest {
         }
         org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo other = (org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo) obj;
 
-        boolean result = true;
-        result = result && (hasName() == other.hasName());
+        if (hasName() != other.hasName()) return false;
         if (hasName()) {
-          result = result && getName()
-              .equals(other.getName());
+          if (!getName()
+              .equals(other.getName())) return false;
         }
-        result = result && (hasDescription() == other.hasDescription());
+        if (hasDescription() != other.hasDescription()) return false;
         if (hasDescription()) {
-          result = result && getDescription()
-              .equals(other.getDescription());
+          if (!getDescription()
+              .equals(other.getDescription())) return false;
         }
-        result = result && (hasVersion() == other.hasVersion());
+        if (hasVersion() != other.hasVersion()) return false;
         if (hasVersion()) {
-          result = result && getVersion()
-              .equals(other.getVersion());
+          if (!getVersion()
+              .equals(other.getVersion())) return false;
         }
-        result = result && (hasVendor() == other.hasVendor());
+        if (hasVendor() != other.hasVendor()) return false;
         if (hasVendor()) {
-          result = result && getVendor()
-              .equals(other.getVendor());
+          if (!getVendor()
+              .equals(other.getVendor())) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -1625,19 +1623,19 @@ public final class Rest {
           org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo result = new org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.name_ = name_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
             to_bitField0_ |= 0x00000002;
           }
           result.description_ = description_;
-          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((from_bitField0_ & 0x00000004) != 0)) {
             to_bitField0_ |= 0x00000004;
           }
           result.version_ = version_;
-          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          if (((from_bitField0_ & 0x00000008) != 0)) {
             to_bitField0_ |= 0x00000008;
           }
           result.vendor_ = vendor_;
@@ -1648,35 +1646,35 @@ public final class Rest {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -1745,7 +1743,7 @@ public final class Rest {
          * <code>optional string name = 1;</code>
          */
         public boolean hasName() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional string name = 1;</code>
@@ -1821,7 +1819,7 @@ public final class Rest {
          * <code>optional string description = 2;</code>
          */
         public boolean hasDescription() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>optional string description = 2;</code>
@@ -1897,7 +1895,7 @@ public final class Rest {
          * <code>optional string version = 3;</code>
          */
         public boolean hasVersion() {
-          return ((bitField0_ & 0x00000004) == 0x00000004);
+          return ((bitField0_ & 0x00000004) != 0);
         }
         /**
          * <code>optional string version = 3;</code>
@@ -1973,7 +1971,7 @@ public final class Rest {
          * <code>optional string vendor = 4;</code>
          */
         public boolean hasVendor() {
-          return ((bitField0_ & 0x00000008) == 0x00000008);
+          return ((bitField0_ & 0x00000008) != 0);
         }
         /**
          * <code>optional string vendor = 4;</code>
@@ -2103,7 +2101,7 @@ public final class Rest {
      * <code>optional string yamcsVersion = 1;</code>
      */
     public boolean hasYamcsVersion() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string yamcsVersion = 1;</code>
@@ -2145,7 +2143,7 @@ public final class Rest {
      * <code>optional string revision = 6;</code>
      */
     public boolean hasRevision() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string revision = 6;</code>
@@ -2187,7 +2185,7 @@ public final class Rest {
      * <code>optional string serverId = 2;</code>
      */
     public boolean hasServerId() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string serverId = 2;</code>
@@ -2229,7 +2227,7 @@ public final class Rest {
      * <code>optional string defaultYamcsInstance = 3;</code>
      */
     public boolean hasDefaultYamcsInstance() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string defaultYamcsInstance = 3;</code>
@@ -2349,13 +2347,13 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, yamcsVersion_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, serverId_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, defaultYamcsInstance_);
       }
       for (int i = 0; i < route_.size(); i++) {
@@ -2364,7 +2362,7 @@ public final class Rest {
       for (int i = 0; i < plugin_.size(); i++) {
         output.writeMessage(5, plugin_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 6, revision_);
       }
       unknownFields.writeTo(output);
@@ -2376,13 +2374,13 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, yamcsVersion_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, serverId_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, defaultYamcsInstance_);
       }
       for (int i = 0; i < route_.size(); i++) {
@@ -2393,7 +2391,7 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, plugin_.get(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, revision_);
       }
       size += unknownFields.getSerializedSize();
@@ -2411,33 +2409,32 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.GetApiOverviewResponse other = (org.yamcs.protobuf.Rest.GetApiOverviewResponse) obj;
 
-      boolean result = true;
-      result = result && (hasYamcsVersion() == other.hasYamcsVersion());
+      if (hasYamcsVersion() != other.hasYamcsVersion()) return false;
       if (hasYamcsVersion()) {
-        result = result && getYamcsVersion()
-            .equals(other.getYamcsVersion());
+        if (!getYamcsVersion()
+            .equals(other.getYamcsVersion())) return false;
       }
-      result = result && (hasRevision() == other.hasRevision());
+      if (hasRevision() != other.hasRevision()) return false;
       if (hasRevision()) {
-        result = result && getRevision()
-            .equals(other.getRevision());
+        if (!getRevision()
+            .equals(other.getRevision())) return false;
       }
-      result = result && (hasServerId() == other.hasServerId());
+      if (hasServerId() != other.hasServerId()) return false;
       if (hasServerId()) {
-        result = result && getServerId()
-            .equals(other.getServerId());
+        if (!getServerId()
+            .equals(other.getServerId())) return false;
       }
-      result = result && (hasDefaultYamcsInstance() == other.hasDefaultYamcsInstance());
+      if (hasDefaultYamcsInstance() != other.hasDefaultYamcsInstance()) return false;
       if (hasDefaultYamcsInstance()) {
-        result = result && getDefaultYamcsInstance()
-            .equals(other.getDefaultYamcsInstance());
+        if (!getDefaultYamcsInstance()
+            .equals(other.getDefaultYamcsInstance())) return false;
       }
-      result = result && getRouteList()
-          .equals(other.getRouteList());
-      result = result && getPluginList()
-          .equals(other.getPluginList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getRouteList()
+          .equals(other.getRouteList())) return false;
+      if (!getPluginList()
+          .equals(other.getPluginList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -2654,24 +2651,24 @@ public final class Rest {
         org.yamcs.protobuf.Rest.GetApiOverviewResponse result = new org.yamcs.protobuf.Rest.GetApiOverviewResponse(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.yamcsVersion_ = yamcsVersion_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.revision_ = revision_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.serverId_ = serverId_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.defaultYamcsInstance_ = defaultYamcsInstance_;
         if (routeBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          if (((bitField0_ & 0x00000010) != 0)) {
             route_ = java.util.Collections.unmodifiableList(route_);
             bitField0_ = (bitField0_ & ~0x00000010);
           }
@@ -2680,7 +2677,7 @@ public final class Rest {
           result.route_ = routeBuilder_.build();
         }
         if (pluginBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          if (((bitField0_ & 0x00000020) != 0)) {
             plugin_ = java.util.Collections.unmodifiableList(plugin_);
             bitField0_ = (bitField0_ & ~0x00000020);
           }
@@ -2695,35 +2692,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -2844,7 +2841,7 @@ public final class Rest {
        * <code>optional string yamcsVersion = 1;</code>
        */
       public boolean hasYamcsVersion() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string yamcsVersion = 1;</code>
@@ -2920,7 +2917,7 @@ public final class Rest {
        * <code>optional string revision = 6;</code>
        */
       public boolean hasRevision() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string revision = 6;</code>
@@ -2996,7 +2993,7 @@ public final class Rest {
        * <code>optional string serverId = 2;</code>
        */
       public boolean hasServerId() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string serverId = 2;</code>
@@ -3072,7 +3069,7 @@ public final class Rest {
        * <code>optional string defaultYamcsInstance = 3;</code>
        */
       public boolean hasDefaultYamcsInstance() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string defaultYamcsInstance = 3;</code>
@@ -3146,7 +3143,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo> route_ =
         java.util.Collections.emptyList();
       private void ensureRouteIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           route_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo>(route_);
           bitField0_ |= 0x00000010;
          }
@@ -3375,7 +3372,7 @@ public final class Rest {
           routeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo, org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo.Builder, org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfoOrBuilder>(
                   route_,
-                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
           route_ = null;
@@ -3386,7 +3383,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo> plugin_ =
         java.util.Collections.emptyList();
       private void ensurePluginIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (!((bitField0_ & 0x00000020) != 0)) {
           plugin_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo>(plugin_);
           bitField0_ |= 0x00000020;
          }
@@ -3615,7 +3612,7 @@ public final class Rest {
           pluginBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo, org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo.Builder, org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfoOrBuilder>(
                   plugin_,
-                  ((bitField0_ & 0x00000020) == 0x00000020),
+                  ((bitField0_ & 0x00000020) != 0),
                   getParentForChildren(),
                   isClean());
           plugin_ = null;
@@ -3743,8 +3740,6 @@ public final class Rest {
     }
     private BulkGetParameterValueRequest() {
       id_ = java.util.Collections.emptyList();
-      fromCache_ = false;
-      timeout_ = 0L;
     }
 
     @java.lang.Override
@@ -3772,7 +3767,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -3805,7 +3800,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           id_ = java.util.Collections.unmodifiableList(id_);
         }
         this.unknownFields = unknownFields.build();
@@ -3867,7 +3862,7 @@ public final class Rest {
      * <code>optional bool fromCache = 2;</code>
      */
     public boolean hasFromCache() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional bool fromCache = 2;</code>
@@ -3886,7 +3881,7 @@ public final class Rest {
      * <code>optional uint64 timeout = 3;</code>
      */
     public boolean hasTimeout() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <pre>
@@ -3922,10 +3917,10 @@ public final class Rest {
       for (int i = 0; i < id_.size(); i++) {
         output.writeMessage(1, id_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeBool(2, fromCache_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeUInt64(3, timeout_);
       }
       unknownFields.writeTo(output);
@@ -3941,11 +3936,11 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, id_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(2, fromCache_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(3, timeout_);
       }
@@ -3964,21 +3959,20 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BulkGetParameterValueRequest other = (org.yamcs.protobuf.Rest.BulkGetParameterValueRequest) obj;
 
-      boolean result = true;
-      result = result && getIdList()
-          .equals(other.getIdList());
-      result = result && (hasFromCache() == other.hasFromCache());
+      if (!getIdList()
+          .equals(other.getIdList())) return false;
+      if (hasFromCache() != other.hasFromCache()) return false;
       if (hasFromCache()) {
-        result = result && (getFromCache()
-            == other.getFromCache());
+        if (getFromCache()
+            != other.getFromCache()) return false;
       }
-      result = result && (hasTimeout() == other.hasTimeout());
+      if (hasTimeout() != other.hasTimeout()) return false;
       if (hasTimeout()) {
-        result = result && (getTimeout()
-            == other.getTimeout());
+        if (getTimeout()
+            != other.getTimeout()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -4175,7 +4169,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             id_ = java.util.Collections.unmodifiableList(id_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -4183,14 +4177,14 @@ public final class Rest {
         } else {
           result.id_ = idBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.fromCache_ = fromCache_;
           to_bitField0_ |= 0x00000001;
         }
-        result.fromCache_ = fromCache_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.timeout_ = timeout_;
           to_bitField0_ |= 0x00000002;
         }
-        result.timeout_ = timeout_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4198,35 +4192,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -4310,7 +4304,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
       private void ensureIdIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
           bitField0_ |= 0x00000001;
          }
@@ -4539,7 +4533,7 @@ public final class Rest {
           idBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   id_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           id_ = null;
@@ -4552,7 +4546,7 @@ public final class Rest {
        * <code>optional bool fromCache = 2;</code>
        */
       public boolean hasFromCache() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional bool fromCache = 2;</code>
@@ -4588,7 +4582,7 @@ public final class Rest {
        * <code>optional uint64 timeout = 3;</code>
        */
       public boolean hasTimeout() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -4748,7 +4742,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 value_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -4771,7 +4765,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           value_ = java.util.Collections.unmodifiableList(value_);
         }
         this.unknownFields = unknownFields.build();
@@ -4877,11 +4871,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BulkGetParameterValueResponse other = (org.yamcs.protobuf.Rest.BulkGetParameterValueResponse) obj;
 
-      boolean result = true;
-      result = result && getValueList()
-          .equals(other.getValueList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getValueList()
+          .equals(other.getValueList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -5063,7 +5056,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.BulkGetParameterValueResponse result = new org.yamcs.protobuf.Rest.BulkGetParameterValueResponse(this);
         int from_bitField0_ = bitField0_;
         if (valueBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             value_ = java.util.Collections.unmodifiableList(value_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -5077,35 +5070,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -5183,7 +5176,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Pvalue.ParameterValue> value_ =
         java.util.Collections.emptyList();
       private void ensureValueIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           value_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>(value_);
           bitField0_ |= 0x00000001;
          }
@@ -5412,7 +5405,7 @@ public final class Rest {
           valueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
                   value_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -5541,7 +5534,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 request_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -5564,7 +5557,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           request_ = java.util.Collections.unmodifiableList(request_);
         }
         this.unknownFields = unknownFields.build();
@@ -5655,7 +5648,7 @@ public final class Rest {
                 break;
               case 10: {
                 org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                if (((bitField0_ & 0x00000001) != 0)) {
                   subBuilder = id_.toBuilder();
                 }
                 id_ = input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry);
@@ -5668,7 +5661,7 @@ public final class Rest {
               }
               case 18: {
                 org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                if (((bitField0_ & 0x00000002) != 0)) {
                   subBuilder = value_.toBuilder();
                 }
                 value_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
@@ -5718,7 +5711,7 @@ public final class Rest {
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -5739,7 +5732,7 @@ public final class Rest {
        * <code>optional .yamcs.protobuf.Value value = 2;</code>
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.Value value = 2;</code>
@@ -5780,10 +5773,10 @@ public final class Rest {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           output.writeMessage(1, getId());
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           output.writeMessage(2, getValue());
         }
         unknownFields.writeTo(output);
@@ -5795,11 +5788,11 @@ public final class Rest {
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(1, getId());
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(2, getValue());
         }
@@ -5818,19 +5811,18 @@ public final class Rest {
         }
         org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest other = (org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest) obj;
 
-        boolean result = true;
-        result = result && (hasId() == other.hasId());
+        if (hasId() != other.hasId()) return false;
         if (hasId()) {
-          result = result && getId()
-              .equals(other.getId());
+          if (!getId()
+              .equals(other.getId())) return false;
         }
-        result = result && (hasValue() == other.hasValue());
+        if (hasValue() != other.hasValue()) return false;
         if (hasValue()) {
-          result = result && getValue()
-              .equals(other.getValue());
+          if (!getValue()
+              .equals(other.getValue())) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -6023,21 +6015,21 @@ public final class Rest {
           org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest result = new org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            if (idBuilder_ == null) {
+              result.id_ = id_;
+            } else {
+              result.id_ = idBuilder_.build();
+            }
             to_bitField0_ |= 0x00000001;
           }
-          if (idBuilder_ == null) {
-            result.id_ = id_;
-          } else {
-            result.id_ = idBuilder_.build();
-          }
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            if (valueBuilder_ == null) {
+              result.value_ = value_;
+            } else {
+              result.value_ = valueBuilder_.build();
+            }
             to_bitField0_ |= 0x00000002;
-          }
-          if (valueBuilder_ == null) {
-            result.value_ = value_;
-          } else {
-            result.value_ = valueBuilder_.build();
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -6046,35 +6038,35 @@ public final class Rest {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -6134,14 +6126,14 @@ public final class Rest {
         }
         private int bitField0_;
 
-        private org.yamcs.protobuf.Yamcs.NamedObjectId id_ = null;
+        private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
         private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
         /**
          * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
          */
         public boolean hasId() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -6188,7 +6180,7 @@ public final class Rest {
          */
         public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
           if (idBuilder_ == null) {
-            if (((bitField0_ & 0x00000001) == 0x00000001) &&
+            if (((bitField0_ & 0x00000001) != 0) &&
                 id_ != null &&
                 id_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
               id_ =
@@ -6252,14 +6244,14 @@ public final class Rest {
           return idBuilder_;
         }
 
-        private org.yamcs.protobuf.Yamcs.Value value_ = null;
+        private org.yamcs.protobuf.Yamcs.Value value_;
         private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
         /**
          * <code>optional .yamcs.protobuf.Value value = 2;</code>
          */
         public boolean hasValue() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>optional .yamcs.protobuf.Value value = 2;</code>
@@ -6306,7 +6298,7 @@ public final class Rest {
          */
         public Builder mergeValue(org.yamcs.protobuf.Yamcs.Value value) {
           if (valueBuilder_ == null) {
-            if (((bitField0_ & 0x00000002) == 0x00000002) &&
+            if (((bitField0_ & 0x00000002) != 0) &&
                 value_ != null &&
                 value_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
               value_ =
@@ -6508,11 +6500,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BulkSetParameterValueRequest other = (org.yamcs.protobuf.Rest.BulkSetParameterValueRequest) obj;
 
-      boolean result = true;
-      result = result && getRequestList()
-          .equals(other.getRequestList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getRequestList()
+          .equals(other.getRequestList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -6694,7 +6685,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.BulkSetParameterValueRequest result = new org.yamcs.protobuf.Rest.BulkSetParameterValueRequest(this);
         int from_bitField0_ = bitField0_;
         if (requestBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             request_ = java.util.Collections.unmodifiableList(request_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -6708,35 +6699,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -6814,7 +6805,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest> request_ =
         java.util.Collections.emptyList();
       private void ensureRequestIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           request_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest>(request_);
           bitField0_ |= 0x00000001;
          }
@@ -7043,7 +7034,7 @@ public final class Rest {
           requestBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest.Builder, org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequestOrBuilder>(
                   request_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           request_ = null;
@@ -7241,7 +7232,7 @@ public final class Rest {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
                 id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000004;
               }
@@ -7270,7 +7261,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
           id_ = java.util.Collections.unmodifiableList(id_);
         }
         this.unknownFields = unknownFields.build();
@@ -7297,7 +7288,7 @@ public final class Rest {
      * <code>optional string start = 1;</code>
      */
     public boolean hasStart() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string start = 1;</code>
@@ -7339,7 +7330,7 @@ public final class Rest {
      * <code>optional string stop = 2;</code>
      */
     public boolean hasStop() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string stop = 2;</code>
@@ -7420,7 +7411,7 @@ public final class Rest {
      * <code>optional string namespace = 4;</code>
      */
     public boolean hasNamespace() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -7484,16 +7475,16 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, stop_);
       }
       for (int i = 0; i < id_.size(); i++) {
         output.writeMessage(3, id_.get(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, namespace_);
       }
       unknownFields.writeTo(output);
@@ -7505,17 +7496,17 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, stop_);
       }
       for (int i = 0; i < id_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, id_.get(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, namespace_);
       }
       size += unknownFields.getSerializedSize();
@@ -7533,26 +7524,25 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest other = (org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest) obj;
 
-      boolean result = true;
-      result = result && (hasStart() == other.hasStart());
+      if (hasStart() != other.hasStart()) return false;
       if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
+        if (!getStart()
+            .equals(other.getStart())) return false;
       }
-      result = result && (hasStop() == other.hasStop());
+      if (hasStop() != other.hasStop()) return false;
       if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
+        if (!getStop()
+            .equals(other.getStop())) return false;
       }
-      result = result && getIdList()
-          .equals(other.getIdList());
-      result = result && (hasNamespace() == other.hasNamespace());
+      if (!getIdList()
+          .equals(other.getIdList())) return false;
+      if (hasNamespace() != other.hasNamespace()) return false;
       if (hasNamespace()) {
-        result = result && getNamespace()
-            .equals(other.getNamespace());
+        if (!getNamespace()
+            .equals(other.getNamespace())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -7752,16 +7742,16 @@ public final class Rest {
         org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest result = new org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.start_ = start_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.stop_ = stop_;
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             id_ = java.util.Collections.unmodifiableList(id_);
             bitField0_ = (bitField0_ & ~0x00000004);
           }
@@ -7769,7 +7759,7 @@ public final class Rest {
         } else {
           result.id_ = idBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.namespace_ = namespace_;
@@ -7780,35 +7770,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -7903,7 +7893,7 @@ public final class Rest {
        * <code>optional string start = 1;</code>
        */
       public boolean hasStart() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string start = 1;</code>
@@ -7979,7 +7969,7 @@ public final class Rest {
        * <code>optional string stop = 2;</code>
        */
       public boolean hasStop() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string stop = 2;</code>
@@ -8053,7 +8043,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
       private void ensureIdIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
           bitField0_ |= 0x00000004;
          }
@@ -8282,7 +8272,7 @@ public final class Rest {
           idBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   id_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
                   isClean());
           id_ = null;
@@ -8299,7 +8289,7 @@ public final class Rest {
        * <code>optional string namespace = 4;</code>
        */
       public boolean hasNamespace() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -8511,7 +8501,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 link_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.LinkInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -8534,7 +8524,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           link_ = java.util.Collections.unmodifiableList(link_);
         }
         this.unknownFields = unknownFields.build();
@@ -8634,11 +8624,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListLinkInfoResponse other = (org.yamcs.protobuf.Rest.ListLinkInfoResponse) obj;
 
-      boolean result = true;
-      result = result && getLinkList()
-          .equals(other.getLinkList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getLinkList()
+          .equals(other.getLinkList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -8820,7 +8809,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListLinkInfoResponse result = new org.yamcs.protobuf.Rest.ListLinkInfoResponse(this);
         int from_bitField0_ = bitField0_;
         if (linkBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             link_ = java.util.Collections.unmodifiableList(link_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -8834,35 +8823,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -8935,7 +8924,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.LinkInfo> link_ =
         java.util.Collections.emptyList();
       private void ensureLinkIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           link_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.LinkInfo>(link_);
           bitField0_ |= 0x00000001;
          }
@@ -9164,7 +9153,7 @@ public final class Rest {
           linkBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.LinkInfo, org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder, org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder>(
                   link_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           link_ = null;
@@ -9308,7 +9297,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 entry_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandHistoryEntry>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -9337,7 +9326,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           entry_ = java.util.Collections.unmodifiableList(entry_);
         }
         this.unknownFields = unknownFields.build();
@@ -9399,7 +9388,7 @@ public final class Rest {
      * <code>optional string continuationToken = 2;</code>
      */
     public boolean hasContinuationToken() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string continuationToken = 2;</code>
@@ -9458,7 +9447,7 @@ public final class Rest {
       for (int i = 0; i < entry_.size(); i++) {
         output.writeMessage(1, entry_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
       }
       unknownFields.writeTo(output);
@@ -9474,7 +9463,7 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, entry_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
@@ -9492,16 +9481,15 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListCommandsResponse other = (org.yamcs.protobuf.Rest.ListCommandsResponse) obj;
 
-      boolean result = true;
-      result = result && getEntryList()
-          .equals(other.getEntryList());
-      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (!getEntryList()
+          .equals(other.getEntryList())) return false;
+      if (hasContinuationToken() != other.hasContinuationToken()) return false;
       if (hasContinuationToken()) {
-        result = result && getContinuationToken()
-            .equals(other.getContinuationToken());
+        if (!getContinuationToken()
+            .equals(other.getContinuationToken())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -9690,7 +9678,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (entryBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             entry_ = java.util.Collections.unmodifiableList(entry_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -9698,7 +9686,7 @@ public final class Rest {
         } else {
           result.entry_ = entryBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.continuationToken_ = continuationToken_;
@@ -9709,35 +9697,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -9820,7 +9808,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           entry_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandHistoryEntry>(entry_);
           bitField0_ |= 0x00000001;
          }
@@ -10049,7 +10037,7 @@ public final class Rest {
           entryBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder>(
                   entry_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           entry_ = null;
@@ -10062,7 +10050,7 @@ public final class Rest {
        * <code>optional string continuationToken = 2;</code>
        */
       public boolean hasContinuationToken() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string continuationToken = 2;</code>
@@ -10288,7 +10276,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -10338,7 +10326,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
       unknownFields.writeTo(output);
@@ -10350,7 +10338,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
       size += unknownFields.getSerializedSize();
@@ -10368,14 +10356,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditLinkRequest other = (org.yamcs.protobuf.Rest.EditLinkRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -10552,7 +10539,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditLinkRequest result = new org.yamcs.protobuf.Rest.EditLinkRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
@@ -10563,35 +10550,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -10645,7 +10632,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -10871,7 +10858,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -10921,7 +10908,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
       unknownFields.writeTo(output);
@@ -10933,7 +10920,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
       size += unknownFields.getSerializedSize();
@@ -10951,14 +10938,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditCommandQueueRequest other = (org.yamcs.protobuf.Rest.EditCommandQueueRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -11135,7 +11121,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditCommandQueueRequest result = new org.yamcs.protobuf.Rest.EditCommandQueueRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
@@ -11146,35 +11132,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -11228,7 +11214,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -11420,7 +11406,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 client_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -11443,7 +11429,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           client_ = java.util.Collections.unmodifiableList(client_);
         }
         this.unknownFields = unknownFields.build();
@@ -11543,11 +11529,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListClientsResponse other = (org.yamcs.protobuf.Rest.ListClientsResponse) obj;
 
-      boolean result = true;
-      result = result && getClientList()
-          .equals(other.getClientList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getClientList()
+          .equals(other.getClientList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -11729,7 +11714,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListClientsResponse result = new org.yamcs.protobuf.Rest.ListClientsResponse(this);
         int from_bitField0_ = bitField0_;
         if (clientBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             client_ = java.util.Collections.unmodifiableList(client_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -11743,35 +11728,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -11844,7 +11829,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> client_ =
         java.util.Collections.emptyList();
       private void ensureClientIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           client_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>(client_);
           bitField0_ |= 0x00000001;
          }
@@ -12073,7 +12058,7 @@ public final class Rest {
           clientBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
                   client_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           client_ = null;
@@ -12257,7 +12242,7 @@ public final class Rest {
      * <code>optional string instance = 1;</code>
      */
     public boolean hasInstance() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string instance = 1;</code>
@@ -12299,7 +12284,7 @@ public final class Rest {
      * <code>optional string processor = 2;</code>
      */
     public boolean hasProcessor() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string processor = 2;</code>
@@ -12349,10 +12334,10 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, instance_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, processor_);
       }
       unknownFields.writeTo(output);
@@ -12364,10 +12349,10 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, instance_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, processor_);
       }
       size += unknownFields.getSerializedSize();
@@ -12385,19 +12370,18 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditClientRequest other = (org.yamcs.protobuf.Rest.EditClientRequest) obj;
 
-      boolean result = true;
-      result = result && (hasInstance() == other.hasInstance());
+      if (hasInstance() != other.hasInstance()) return false;
       if (hasInstance()) {
-        result = result && getInstance()
-            .equals(other.getInstance());
+        if (!getInstance()
+            .equals(other.getInstance())) return false;
       }
-      result = result && (hasProcessor() == other.hasProcessor());
+      if (hasProcessor() != other.hasProcessor()) return false;
       if (hasProcessor()) {
-        result = result && getProcessor()
-            .equals(other.getProcessor());
+        if (!getProcessor()
+            .equals(other.getProcessor())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -12580,11 +12564,11 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditClientRequest result = new org.yamcs.protobuf.Rest.EditClientRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.instance_ = instance_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.processor_ = processor_;
@@ -12595,35 +12579,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -12682,7 +12666,7 @@ public final class Rest {
        * <code>optional string instance = 1;</code>
        */
       public boolean hasInstance() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string instance = 1;</code>
@@ -12758,7 +12742,7 @@ public final class Rest {
        * <code>optional string processor = 2;</code>
        */
       public boolean hasProcessor() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string processor = 2;</code>
@@ -12950,7 +12934,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 processor_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ProcessorInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -12973,7 +12957,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           processor_ = java.util.Collections.unmodifiableList(processor_);
         }
         this.unknownFields = unknownFields.build();
@@ -13079,11 +13063,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListProcessorsResponse other = (org.yamcs.protobuf.Rest.ListProcessorsResponse) obj;
 
-      boolean result = true;
-      result = result && getProcessorList()
-          .equals(other.getProcessorList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getProcessorList()
+          .equals(other.getProcessorList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -13265,7 +13248,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListProcessorsResponse result = new org.yamcs.protobuf.Rest.ListProcessorsResponse(this);
         int from_bitField0_ = bitField0_;
         if (processorBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             processor_ = java.util.Collections.unmodifiableList(processor_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -13279,35 +13262,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -13385,7 +13368,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.ProcessorInfo> processor_ =
         java.util.Collections.emptyList();
       private void ensureProcessorIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           processor_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ProcessorInfo>(processor_);
           bitField0_ |= 0x00000001;
          }
@@ -13614,7 +13597,7 @@ public final class Rest {
           processorBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
                   processor_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           processor_ = null;
@@ -13743,7 +13726,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 queue_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandQueueInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -13766,7 +13749,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           queue_ = java.util.Collections.unmodifiableList(queue_);
         }
         this.unknownFields = unknownFields.build();
@@ -13872,11 +13855,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListCommandQueuesResponse other = (org.yamcs.protobuf.Rest.ListCommandQueuesResponse) obj;
 
-      boolean result = true;
-      result = result && getQueueList()
-          .equals(other.getQueueList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getQueueList()
+          .equals(other.getQueueList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -14058,7 +14040,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListCommandQueuesResponse result = new org.yamcs.protobuf.Rest.ListCommandQueuesResponse(this);
         int from_bitField0_ = bitField0_;
         if (queueBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             queue_ = java.util.Collections.unmodifiableList(queue_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -14072,35 +14054,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -14178,7 +14160,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Commanding.CommandQueueInfo> queue_ =
         java.util.Collections.emptyList();
       private void ensureQueueIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           queue_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandQueueInfo>(queue_);
           bitField0_ |= 0x00000001;
          }
@@ -14407,7 +14389,7 @@ public final class Rest {
           queueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder>(
                   queue_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           queue_ = null;
@@ -14536,7 +14518,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 entry_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandQueueEntry>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -14559,7 +14541,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           entry_ = java.util.Collections.unmodifiableList(entry_);
         }
         this.unknownFields = unknownFields.build();
@@ -14665,11 +14647,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListCommandQueueEntries other = (org.yamcs.protobuf.Rest.ListCommandQueueEntries) obj;
 
-      boolean result = true;
-      result = result && getEntryList()
-          .equals(other.getEntryList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getEntryList()
+          .equals(other.getEntryList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -14851,7 +14832,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListCommandQueueEntries result = new org.yamcs.protobuf.Rest.ListCommandQueueEntries(this);
         int from_bitField0_ = bitField0_;
         if (entryBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             entry_ = java.util.Collections.unmodifiableList(entry_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -14865,35 +14846,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -14971,7 +14952,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Commanding.CommandQueueEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           entry_ = new java.util.ArrayList<org.yamcs.protobuf.Commanding.CommandQueueEntry>(entry_);
           bitField0_ |= 0x00000001;
          }
@@ -15200,7 +15181,7 @@ public final class Rest {
           entryBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder>(
                   entry_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           entry_ = null;
@@ -15363,7 +15344,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -15413,7 +15394,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
       unknownFields.writeTo(output);
@@ -15425,7 +15406,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
       size += unknownFields.getSerializedSize();
@@ -15443,14 +15424,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest other = (org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -15627,7 +15607,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest result = new org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
@@ -15638,35 +15618,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -15720,7 +15700,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -15932,8 +15912,6 @@ public final class Rest {
     private IssueCommandRequest() {
       assignment_ = java.util.Collections.emptyList();
       origin_ = "";
-      sequenceNumber_ = 0;
-      dryRun_ = false;
       comment_ = "";
     }
 
@@ -15962,7 +15940,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 assignment_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -16007,7 +15985,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           assignment_ = java.util.Collections.unmodifiableList(assignment_);
         }
         this.unknownFields = unknownFields.build();
@@ -16151,7 +16129,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -16193,7 +16171,7 @@ public final class Rest {
        * <code>optional string value = 2;</code>
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string value = 2;</code>
@@ -16243,10 +16221,10 @@ public final class Rest {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
         }
         unknownFields.writeTo(output);
@@ -16258,10 +16236,10 @@ public final class Rest {
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
         }
         size += unknownFields.getSerializedSize();
@@ -16279,19 +16257,18 @@ public final class Rest {
         }
         org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment other = (org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment) obj;
 
-        boolean result = true;
-        result = result && (hasName() == other.hasName());
+        if (hasName() != other.hasName()) return false;
         if (hasName()) {
-          result = result && getName()
-              .equals(other.getName());
+          if (!getName()
+              .equals(other.getName())) return false;
         }
-        result = result && (hasValue() == other.hasValue());
+        if (hasValue() != other.hasValue()) return false;
         if (hasValue()) {
-          result = result && getValue()
-              .equals(other.getValue());
+          if (!getValue()
+              .equals(other.getValue())) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -16474,11 +16451,11 @@ public final class Rest {
           org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment result = new org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.name_ = name_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
             to_bitField0_ |= 0x00000002;
           }
           result.value_ = value_;
@@ -16489,35 +16466,35 @@ public final class Rest {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -16576,7 +16553,7 @@ public final class Rest {
          * <code>optional string name = 1;</code>
          */
         public boolean hasName() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional string name = 1;</code>
@@ -16652,7 +16629,7 @@ public final class Rest {
          * <code>optional string value = 2;</code>
          */
         public boolean hasValue() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>optional string value = 2;</code>
@@ -16817,7 +16794,7 @@ public final class Rest {
      * <code>optional string origin = 2;</code>
      */
     public boolean hasOrigin() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string origin = 2;</code>
@@ -16859,7 +16836,7 @@ public final class Rest {
      * <code>optional int32 sequenceNumber = 3;</code>
      */
     public boolean hasSequenceNumber() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional int32 sequenceNumber = 3;</code>
@@ -16874,7 +16851,7 @@ public final class Rest {
      * <code>optional bool dryRun = 4;</code>
      */
     public boolean hasDryRun() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional bool dryRun = 4;</code>
@@ -16889,7 +16866,7 @@ public final class Rest {
      * <code>optional string comment = 5;</code>
      */
     public boolean hasComment() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string comment = 5;</code>
@@ -16942,16 +16919,16 @@ public final class Rest {
       for (int i = 0; i < assignment_.size(); i++) {
         output.writeMessage(1, assignment_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, origin_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeInt32(3, sequenceNumber_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeBool(4, dryRun_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, comment_);
       }
       unknownFields.writeTo(output);
@@ -16967,18 +16944,18 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, assignment_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, origin_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, sequenceNumber_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(4, dryRun_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, comment_);
       }
       size += unknownFields.getSerializedSize();
@@ -16996,31 +16973,30 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.IssueCommandRequest other = (org.yamcs.protobuf.Rest.IssueCommandRequest) obj;
 
-      boolean result = true;
-      result = result && getAssignmentList()
-          .equals(other.getAssignmentList());
-      result = result && (hasOrigin() == other.hasOrigin());
+      if (!getAssignmentList()
+          .equals(other.getAssignmentList())) return false;
+      if (hasOrigin() != other.hasOrigin()) return false;
       if (hasOrigin()) {
-        result = result && getOrigin()
-            .equals(other.getOrigin());
+        if (!getOrigin()
+            .equals(other.getOrigin())) return false;
       }
-      result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+      if (hasSequenceNumber() != other.hasSequenceNumber()) return false;
       if (hasSequenceNumber()) {
-        result = result && (getSequenceNumber()
-            == other.getSequenceNumber());
+        if (getSequenceNumber()
+            != other.getSequenceNumber()) return false;
       }
-      result = result && (hasDryRun() == other.hasDryRun());
+      if (hasDryRun() != other.hasDryRun()) return false;
       if (hasDryRun()) {
-        result = result && (getDryRun()
-            == other.getDryRun());
+        if (getDryRun()
+            != other.getDryRun()) return false;
       }
-      result = result && (hasComment() == other.hasComment());
+      if (hasComment() != other.hasComment()) return false;
       if (hasComment()) {
-        result = result && getComment()
-            .equals(other.getComment());
+        if (!getComment()
+            .equals(other.getComment())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -17228,7 +17204,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (assignmentBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             assignment_ = java.util.Collections.unmodifiableList(assignment_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -17236,19 +17212,19 @@ public final class Rest {
         } else {
           result.assignment_ = assignmentBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.origin_ = origin_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.sequenceNumber_ = sequenceNumber_;
           to_bitField0_ |= 0x00000002;
         }
-        result.sequenceNumber_ = sequenceNumber_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.dryRun_ = dryRun_;
           to_bitField0_ |= 0x00000004;
         }
-        result.dryRun_ = dryRun_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.comment_ = comment_;
@@ -17259,35 +17235,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -17376,7 +17352,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment> assignment_ =
         java.util.Collections.emptyList();
       private void ensureAssignmentIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           assignment_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment>(assignment_);
           bitField0_ |= 0x00000001;
          }
@@ -17605,7 +17581,7 @@ public final class Rest {
           assignmentBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment, org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment.Builder, org.yamcs.protobuf.Rest.IssueCommandRequest.AssignmentOrBuilder>(
                   assignment_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           assignment_ = null;
@@ -17618,7 +17594,7 @@ public final class Rest {
        * <code>optional string origin = 2;</code>
        */
       public boolean hasOrigin() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string origin = 2;</code>
@@ -17694,7 +17670,7 @@ public final class Rest {
        * <code>optional int32 sequenceNumber = 3;</code>
        */
       public boolean hasSequenceNumber() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int32 sequenceNumber = 3;</code>
@@ -17726,7 +17702,7 @@ public final class Rest {
        * <code>optional bool dryRun = 4;</code>
        */
       public boolean hasDryRun() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional bool dryRun = 4;</code>
@@ -17758,7 +17734,7 @@ public final class Rest {
        * <code>optional string comment = 5;</code>
        */
       public boolean hasComment() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string comment = 5;</code>
@@ -17979,7 +17955,7 @@ public final class Rest {
               break;
             case 10: {
               org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+              if (((bitField0_ & 0x00000001) != 0)) {
                 subBuilder = commandQueueEntry_.toBuilder();
               }
               commandQueueEntry_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandQueueEntry.PARSER, extensionRegistry);
@@ -18046,7 +18022,7 @@ public final class Rest {
      * <code>optional .yamcs.protobuf.commanding.CommandQueueEntry commandQueueEntry = 1;</code>
      */
     public boolean hasCommandQueueEntry() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.commanding.CommandQueueEntry commandQueueEntry = 1;</code>
@@ -18067,7 +18043,7 @@ public final class Rest {
      * <code>optional string source = 2;</code>
      */
     public boolean hasSource() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string source = 2;</code>
@@ -18109,7 +18085,7 @@ public final class Rest {
      * <code>optional string hex = 3;</code>
      */
     public boolean hasHex() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string hex = 3;</code>
@@ -18151,7 +18127,7 @@ public final class Rest {
      * <code>optional bytes binary = 4;</code>
      */
     public boolean hasBinary() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional bytes binary = 4;</code>
@@ -18180,16 +18156,16 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(1, getCommandQueueEntry());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, source_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, hex_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeBytes(4, binary_);
       }
       unknownFields.writeTo(output);
@@ -18201,17 +18177,17 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getCommandQueueEntry());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, source_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, hex_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, binary_);
       }
@@ -18230,29 +18206,28 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.IssueCommandResponse other = (org.yamcs.protobuf.Rest.IssueCommandResponse) obj;
 
-      boolean result = true;
-      result = result && (hasCommandQueueEntry() == other.hasCommandQueueEntry());
+      if (hasCommandQueueEntry() != other.hasCommandQueueEntry()) return false;
       if (hasCommandQueueEntry()) {
-        result = result && getCommandQueueEntry()
-            .equals(other.getCommandQueueEntry());
+        if (!getCommandQueueEntry()
+            .equals(other.getCommandQueueEntry())) return false;
       }
-      result = result && (hasSource() == other.hasSource());
+      if (hasSource() != other.hasSource()) return false;
       if (hasSource()) {
-        result = result && getSource()
-            .equals(other.getSource());
+        if (!getSource()
+            .equals(other.getSource())) return false;
       }
-      result = result && (hasHex() == other.hasHex());
+      if (hasHex() != other.hasHex()) return false;
       if (hasHex()) {
-        result = result && getHex()
-            .equals(other.getHex());
+        if (!getHex()
+            .equals(other.getHex())) return false;
       }
-      result = result && (hasBinary() == other.hasBinary());
+      if (hasBinary() != other.hasBinary()) return false;
       if (hasBinary()) {
-        result = result && getBinary()
-            .equals(other.getBinary());
+        if (!getBinary()
+            .equals(other.getBinary())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -18452,23 +18427,23 @@ public final class Rest {
         org.yamcs.protobuf.Rest.IssueCommandResponse result = new org.yamcs.protobuf.Rest.IssueCommandResponse(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          if (commandQueueEntryBuilder_ == null) {
+            result.commandQueueEntry_ = commandQueueEntry_;
+          } else {
+            result.commandQueueEntry_ = commandQueueEntryBuilder_.build();
+          }
           to_bitField0_ |= 0x00000001;
         }
-        if (commandQueueEntryBuilder_ == null) {
-          result.commandQueueEntry_ = commandQueueEntry_;
-        } else {
-          result.commandQueueEntry_ = commandQueueEntryBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.source_ = source_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.hex_ = hex_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.binary_ = binary_;
@@ -18479,35 +18454,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -18572,14 +18547,14 @@ public final class Rest {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Commanding.CommandQueueEntry commandQueueEntry_ = null;
+      private org.yamcs.protobuf.Commanding.CommandQueueEntry commandQueueEntry_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder> commandQueueEntryBuilder_;
       /**
        * <code>optional .yamcs.protobuf.commanding.CommandQueueEntry commandQueueEntry = 1;</code>
        */
       public boolean hasCommandQueueEntry() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.commanding.CommandQueueEntry commandQueueEntry = 1;</code>
@@ -18626,7 +18601,7 @@ public final class Rest {
        */
       public Builder mergeCommandQueueEntry(org.yamcs.protobuf.Commanding.CommandQueueEntry value) {
         if (commandQueueEntryBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+          if (((bitField0_ & 0x00000001) != 0) &&
               commandQueueEntry_ != null &&
               commandQueueEntry_ != org.yamcs.protobuf.Commanding.CommandQueueEntry.getDefaultInstance()) {
             commandQueueEntry_ =
@@ -18695,7 +18670,7 @@ public final class Rest {
        * <code>optional string source = 2;</code>
        */
       public boolean hasSource() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string source = 2;</code>
@@ -18771,7 +18746,7 @@ public final class Rest {
        * <code>optional string hex = 3;</code>
        */
       public boolean hasHex() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string hex = 3;</code>
@@ -18847,7 +18822,7 @@ public final class Rest {
        * <code>optional bytes binary = 4;</code>
        */
       public boolean hasBinary() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional bytes binary = 4;</code>
@@ -19012,7 +18987,7 @@ public final class Rest {
               break;
             case 10: {
               org.yamcs.protobuf.Commanding.CommandId.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+              if (((bitField0_ & 0x00000001) != 0)) {
                 subBuilder = cmdId_.toBuilder();
               }
               cmdId_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandId.PARSER, extensionRegistry);
@@ -19024,7 +18999,7 @@ public final class Rest {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 historyEntry_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -19047,7 +19022,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           historyEntry_ = java.util.Collections.unmodifiableList(historyEntry_);
         }
         this.unknownFields = unknownFields.build();
@@ -19191,7 +19166,7 @@ public final class Rest {
        * <code>required string key = 1;</code>
        */
       public boolean hasKey() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>required string key = 1;</code>
@@ -19233,7 +19208,7 @@ public final class Rest {
        * <code>required string value = 2;</code>
        */
       public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>required string value = 2;</code>
@@ -19291,10 +19266,10 @@ public final class Rest {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, key_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
         }
         unknownFields.writeTo(output);
@@ -19306,10 +19281,10 @@ public final class Rest {
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, key_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
         }
         size += unknownFields.getSerializedSize();
@@ -19327,19 +19302,18 @@ public final class Rest {
         }
         org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue other = (org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue) obj;
 
-        boolean result = true;
-        result = result && (hasKey() == other.hasKey());
+        if (hasKey() != other.hasKey()) return false;
         if (hasKey()) {
-          result = result && getKey()
-              .equals(other.getKey());
+          if (!getKey()
+              .equals(other.getKey())) return false;
         }
-        result = result && (hasValue() == other.hasValue());
+        if (hasValue() != other.hasValue()) return false;
         if (hasValue()) {
-          result = result && getValue()
-              .equals(other.getValue());
+          if (!getValue()
+              .equals(other.getValue())) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -19522,11 +19496,11 @@ public final class Rest {
           org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue result = new org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.key_ = key_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
             to_bitField0_ |= 0x00000002;
           }
           result.value_ = value_;
@@ -19537,35 +19511,35 @@ public final class Rest {
 
         @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
         @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.setField(field, value);
+          return super.setField(field, value);
         }
         @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
         @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
         @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             int index, java.lang.Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+          return super.setRepeatedField(field, index, value);
         }
         @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
             java.lang.Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+          return super.addRepeatedField(field, value);
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -19630,7 +19604,7 @@ public final class Rest {
          * <code>required string key = 1;</code>
          */
         public boolean hasKey() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>required string key = 1;</code>
@@ -19706,7 +19680,7 @@ public final class Rest {
          * <code>required string value = 2;</code>
          */
         public boolean hasValue() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>required string value = 2;</code>
@@ -19836,7 +19810,7 @@ public final class Rest {
      * <code>required .yamcs.protobuf.commanding.CommandId cmdId = 1;</code>
      */
     public boolean hasCmdId() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>required .yamcs.protobuf.commanding.CommandId cmdId = 1;</code>
@@ -19914,7 +19888,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(1, getCmdId());
       }
       for (int i = 0; i < historyEntry_.size(); i++) {
@@ -19929,7 +19903,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getCmdId());
       }
@@ -19952,16 +19926,15 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest other = (org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest) obj;
 
-      boolean result = true;
-      result = result && (hasCmdId() == other.hasCmdId());
+      if (hasCmdId() != other.hasCmdId()) return false;
       if (hasCmdId()) {
-        result = result && getCmdId()
-            .equals(other.getCmdId());
+        if (!getCmdId()
+            .equals(other.getCmdId())) return false;
       }
-      result = result && getHistoryEntryList()
-          .equals(other.getHistoryEntryList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getHistoryEntryList()
+          .equals(other.getHistoryEntryList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -20154,16 +20127,16 @@ public final class Rest {
         org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest result = new org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          if (cmdIdBuilder_ == null) {
+            result.cmdId_ = cmdId_;
+          } else {
+            result.cmdId_ = cmdIdBuilder_.build();
+          }
           to_bitField0_ |= 0x00000001;
         }
-        if (cmdIdBuilder_ == null) {
-          result.cmdId_ = cmdId_;
-        } else {
-          result.cmdId_ = cmdIdBuilder_.build();
-        }
         if (historyEntryBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             historyEntry_ = java.util.Collections.unmodifiableList(historyEntry_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -20178,35 +20151,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -20290,14 +20263,14 @@ public final class Rest {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Commanding.CommandId cmdId_ = null;
+      private org.yamcs.protobuf.Commanding.CommandId cmdId_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> cmdIdBuilder_;
       /**
        * <code>required .yamcs.protobuf.commanding.CommandId cmdId = 1;</code>
        */
       public boolean hasCmdId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>required .yamcs.protobuf.commanding.CommandId cmdId = 1;</code>
@@ -20344,7 +20317,7 @@ public final class Rest {
        */
       public Builder mergeCmdId(org.yamcs.protobuf.Commanding.CommandId value) {
         if (cmdIdBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+          if (((bitField0_ & 0x00000001) != 0) &&
               cmdId_ != null &&
               cmdId_ != org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance()) {
             cmdId_ =
@@ -20411,7 +20384,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue> historyEntry_ =
         java.util.Collections.emptyList();
       private void ensureHistoryEntryIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           historyEntry_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue>(historyEntry_);
           bitField0_ |= 0x00000002;
          }
@@ -20640,7 +20613,7 @@ public final class Rest {
           historyEntryBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue, org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValue.Builder, org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest.KeyValueOrBuilder>(
                   historyEntry_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           historyEntry_ = null;
@@ -20801,7 +20774,6 @@ public final class Rest {
       severity_ = "";
       time_ = "";
       source_ = "";
-      sequenceNumber_ = 0;
     }
 
     @java.lang.Override
@@ -20902,7 +20874,7 @@ public final class Rest {
      * <code>optional string type = 1;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string type = 1;</code>
@@ -20944,7 +20916,7 @@ public final class Rest {
      * <code>optional string message = 2;</code>
      */
     public boolean hasMessage() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string message = 2;</code>
@@ -20986,7 +20958,7 @@ public final class Rest {
      * <code>optional string severity = 3;</code>
      */
     public boolean hasSeverity() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string severity = 3;</code>
@@ -21028,7 +21000,7 @@ public final class Rest {
      * <code>optional string time = 4;</code>
      */
     public boolean hasTime() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string time = 4;</code>
@@ -21070,7 +21042,7 @@ public final class Rest {
      * <code>optional string source = 5;</code>
      */
     public boolean hasSource() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string source = 5;</code>
@@ -21112,7 +21084,7 @@ public final class Rest {
      * <code>optional int32 sequenceNumber = 6;</code>
      */
     public boolean hasSequenceNumber() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <code>optional int32 sequenceNumber = 6;</code>
@@ -21135,22 +21107,22 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, type_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, message_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, severity_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, time_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, source_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         output.writeInt32(6, sequenceNumber_);
       }
       unknownFields.writeTo(output);
@@ -21162,22 +21134,22 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, type_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, message_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, severity_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, time_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, source_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(6, sequenceNumber_);
       }
@@ -21196,39 +21168,38 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.CreateEventRequest other = (org.yamcs.protobuf.Rest.CreateEventRequest) obj;
 
-      boolean result = true;
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && getType()
-            .equals(other.getType());
+        if (!getType()
+            .equals(other.getType())) return false;
       }
-      result = result && (hasMessage() == other.hasMessage());
+      if (hasMessage() != other.hasMessage()) return false;
       if (hasMessage()) {
-        result = result && getMessage()
-            .equals(other.getMessage());
+        if (!getMessage()
+            .equals(other.getMessage())) return false;
       }
-      result = result && (hasSeverity() == other.hasSeverity());
+      if (hasSeverity() != other.hasSeverity()) return false;
       if (hasSeverity()) {
-        result = result && getSeverity()
-            .equals(other.getSeverity());
+        if (!getSeverity()
+            .equals(other.getSeverity())) return false;
       }
-      result = result && (hasTime() == other.hasTime());
+      if (hasTime() != other.hasTime()) return false;
       if (hasTime()) {
-        result = result && getTime()
-            .equals(other.getTime());
+        if (!getTime()
+            .equals(other.getTime())) return false;
       }
-      result = result && (hasSource() == other.hasSource());
+      if (hasSource() != other.hasSource()) return false;
       if (hasSource()) {
-        result = result && getSource()
-            .equals(other.getSource());
+        if (!getSource()
+            .equals(other.getSource())) return false;
       }
-      result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+      if (hasSequenceNumber() != other.hasSequenceNumber()) return false;
       if (hasSequenceNumber()) {
-        result = result && (getSequenceNumber()
-            == other.getSequenceNumber());
+        if (getSequenceNumber()
+            != other.getSequenceNumber()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -21435,30 +21406,30 @@ public final class Rest {
         org.yamcs.protobuf.Rest.CreateEventRequest result = new org.yamcs.protobuf.Rest.CreateEventRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.message_ = message_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.severity_ = severity_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.time_ = time_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.source_ = source_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.sequenceNumber_ = sequenceNumber_;
           to_bitField0_ |= 0x00000020;
         }
-        result.sequenceNumber_ = sequenceNumber_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -21466,35 +21437,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -21571,7 +21542,7 @@ public final class Rest {
        * <code>optional string type = 1;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string type = 1;</code>
@@ -21647,7 +21618,7 @@ public final class Rest {
        * <code>optional string message = 2;</code>
        */
       public boolean hasMessage() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string message = 2;</code>
@@ -21723,7 +21694,7 @@ public final class Rest {
        * <code>optional string severity = 3;</code>
        */
       public boolean hasSeverity() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string severity = 3;</code>
@@ -21799,7 +21770,7 @@ public final class Rest {
        * <code>optional string time = 4;</code>
        */
       public boolean hasTime() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string time = 4;</code>
@@ -21875,7 +21846,7 @@ public final class Rest {
        * <code>optional string source = 5;</code>
        */
       public boolean hasSource() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string source = 5;</code>
@@ -21951,7 +21922,7 @@ public final class Rest {
        * <code>optional int32 sequenceNumber = 6;</code>
        */
       public boolean hasSequenceNumber() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <code>optional int32 sequenceNumber = 6;</code>
@@ -22112,8 +22083,7 @@ public final class Rest {
     }
     private CreateProcessorRequest() {
       name_ = "";
-      clientId_ = java.util.Collections.emptyList();
-      persistent_ = false;
+      clientId_ = emptyIntList();
       type_ = "";
       config_ = "";
     }
@@ -22149,22 +22119,22 @@ public final class Rest {
               break;
             }
             case 48: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                clientId_ = newIntList();
                 mutable_bitField0_ |= 0x00000002;
               }
-              clientId_.add(input.readInt32());
+              clientId_.addInt(input.readInt32());
               break;
             }
             case 50: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                clientId_ = new java.util.ArrayList<java.lang.Integer>();
+              if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
+                clientId_ = newIntList();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                clientId_.add(input.readInt32());
+                clientId_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
@@ -22201,8 +22171,8 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
+          clientId_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -22228,7 +22198,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -22265,7 +22235,7 @@ public final class Rest {
     }
 
     public static final int CLIENTID_FIELD_NUMBER = 6;
-    private java.util.List<java.lang.Integer> clientId_;
+    private com.google.protobuf.Internal.IntList clientId_;
     /**
      * <code>repeated int32 clientId = 6;</code>
      */
@@ -22283,7 +22253,7 @@ public final class Rest {
      * <code>repeated int32 clientId = 6;</code>
      */
     public int getClientId(int index) {
-      return clientId_.get(index);
+      return clientId_.getInt(index);
     }
 
     public static final int PERSISTENT_FIELD_NUMBER = 11;
@@ -22292,7 +22262,7 @@ public final class Rest {
      * <code>optional bool persistent = 11;</code>
      */
     public boolean hasPersistent() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional bool persistent = 11;</code>
@@ -22307,7 +22277,7 @@ public final class Rest {
      * <code>optional string type = 12;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string type = 12;</code>
@@ -22349,7 +22319,7 @@ public final class Rest {
      * <code>optional string config = 13;</code>
      */
     public boolean hasConfig() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string config = 13;</code>
@@ -22399,19 +22369,19 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
       for (int i = 0; i < clientId_.size(); i++) {
-        output.writeInt32(6, clientId_.get(i));
+        output.writeInt32(6, clientId_.getInt(i));
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeBool(11, persistent_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 12, type_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 13, config_);
       }
       unknownFields.writeTo(output);
@@ -22423,26 +22393,26 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
       {
         int dataSize = 0;
         for (int i = 0; i < clientId_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(clientId_.get(i));
+            .computeInt32SizeNoTag(clientId_.getInt(i));
         }
         size += dataSize;
         size += 1 * getClientIdList().size();
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(11, persistent_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, type_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, config_);
       }
       size += unknownFields.getSerializedSize();
@@ -22460,31 +22430,30 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.CreateProcessorRequest other = (org.yamcs.protobuf.Rest.CreateProcessorRequest) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && getClientIdList()
-          .equals(other.getClientIdList());
-      result = result && (hasPersistent() == other.hasPersistent());
+      if (!getClientIdList()
+          .equals(other.getClientIdList())) return false;
+      if (hasPersistent() != other.hasPersistent()) return false;
       if (hasPersistent()) {
-        result = result && (getPersistent()
-            == other.getPersistent());
+        if (getPersistent()
+            != other.getPersistent()) return false;
       }
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && getType()
-            .equals(other.getType());
+        if (!getType()
+            .equals(other.getType())) return false;
       }
-      result = result && (hasConfig() == other.hasConfig());
+      if (hasConfig() != other.hasConfig()) return false;
       if (hasConfig()) {
-        result = result && getConfig()
-            .equals(other.getConfig());
+        if (!getConfig()
+            .equals(other.getConfig())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -22650,7 +22619,7 @@ public final class Rest {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        clientId_ = java.util.Collections.emptyList();
+        clientId_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000002);
         persistent_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -22686,24 +22655,24 @@ public final class Rest {
         org.yamcs.protobuf.Rest.CreateProcessorRequest result = new org.yamcs.protobuf.Rest.CreateProcessorRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          clientId_ = java.util.Collections.unmodifiableList(clientId_);
+        if (((bitField0_ & 0x00000002) != 0)) {
+          clientId_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.clientId_ = clientId_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.persistent_ = persistent_;
           to_bitField0_ |= 0x00000002;
         }
-        result.persistent_ = persistent_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.config_ = config_;
@@ -22714,35 +22683,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -22819,7 +22788,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -22890,10 +22859,10 @@ public final class Rest {
         return this;
       }
 
-      private java.util.List<java.lang.Integer> clientId_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.IntList clientId_ = emptyIntList();
       private void ensureClientIdIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          clientId_ = new java.util.ArrayList<java.lang.Integer>(clientId_);
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          clientId_ = mutableCopy(clientId_);
           bitField0_ |= 0x00000002;
          }
       }
@@ -22902,7 +22871,8 @@ public final class Rest {
        */
       public java.util.List<java.lang.Integer>
           getClientIdList() {
-        return java.util.Collections.unmodifiableList(clientId_);
+        return ((bitField0_ & 0x00000002) != 0) ?
+                 java.util.Collections.unmodifiableList(clientId_) : clientId_;
       }
       /**
        * <code>repeated int32 clientId = 6;</code>
@@ -22914,7 +22884,7 @@ public final class Rest {
        * <code>repeated int32 clientId = 6;</code>
        */
       public int getClientId(int index) {
-        return clientId_.get(index);
+        return clientId_.getInt(index);
       }
       /**
        * <code>repeated int32 clientId = 6;</code>
@@ -22922,7 +22892,7 @@ public final class Rest {
       public Builder setClientId(
           int index, int value) {
         ensureClientIdIsMutable();
-        clientId_.set(index, value);
+        clientId_.setInt(index, value);
         onChanged();
         return this;
       }
@@ -22931,7 +22901,7 @@ public final class Rest {
        */
       public Builder addClientId(int value) {
         ensureClientIdIsMutable();
-        clientId_.add(value);
+        clientId_.addInt(value);
         onChanged();
         return this;
       }
@@ -22950,7 +22920,7 @@ public final class Rest {
        * <code>repeated int32 clientId = 6;</code>
        */
       public Builder clearClientId() {
-        clientId_ = java.util.Collections.emptyList();
+        clientId_ = emptyIntList();
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
@@ -22961,7 +22931,7 @@ public final class Rest {
        * <code>optional bool persistent = 11;</code>
        */
       public boolean hasPersistent() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional bool persistent = 11;</code>
@@ -22993,7 +22963,7 @@ public final class Rest {
        * <code>optional string type = 12;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string type = 12;</code>
@@ -23069,7 +23039,7 @@ public final class Rest {
        * <code>optional string config = 13;</code>
        */
       public boolean hasConfig() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string config = 13;</code>
@@ -23337,7 +23307,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -23379,7 +23349,7 @@ public final class Rest {
      * <code>optional string seek = 2;</code>
      */
     public boolean hasSeek() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string seek = 2;</code>
@@ -23421,7 +23391,7 @@ public final class Rest {
      * <code>optional string speed = 3;</code>
      */
     public boolean hasSpeed() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string speed = 3;</code>
@@ -23471,13 +23441,13 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, seek_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, speed_);
       }
       unknownFields.writeTo(output);
@@ -23489,13 +23459,13 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, seek_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, speed_);
       }
       size += unknownFields.getSerializedSize();
@@ -23513,24 +23483,23 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditProcessorRequest other = (org.yamcs.protobuf.Rest.EditProcessorRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && (hasSeek() == other.hasSeek());
+      if (hasSeek() != other.hasSeek()) return false;
       if (hasSeek()) {
-        result = result && getSeek()
-            .equals(other.getSeek());
+        if (!getSeek()
+            .equals(other.getSeek())) return false;
       }
-      result = result && (hasSpeed() == other.hasSpeed());
+      if (hasSpeed() != other.hasSpeed()) return false;
       if (hasSpeed()) {
-        result = result && getSpeed()
-            .equals(other.getSpeed());
+        if (!getSpeed()
+            .equals(other.getSpeed())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -23719,15 +23688,15 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditProcessorRequest result = new org.yamcs.protobuf.Rest.EditProcessorRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.seek_ = seek_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.speed_ = speed_;
@@ -23738,35 +23707,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -23830,7 +23799,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -23906,7 +23875,7 @@ public final class Rest {
        * <code>optional string seek = 2;</code>
        */
       public boolean hasSeek() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string seek = 2;</code>
@@ -23982,7 +23951,7 @@ public final class Rest {
        * <code>optional string speed = 3;</code>
        */
       public boolean hasSpeed() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string speed = 3;</code>
@@ -24224,7 +24193,7 @@ public final class Rest {
      * <code>optional string stream = 1;</code>
      */
     public boolean hasStream() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
@@ -24282,7 +24251,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, stream_);
       }
       unknownFields.writeTo(output);
@@ -24294,7 +24263,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, stream_);
       }
       size += unknownFields.getSerializedSize();
@@ -24312,14 +24281,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.StreamSubscribeRequest other = (org.yamcs.protobuf.Rest.StreamSubscribeRequest) obj;
 
-      boolean result = true;
-      result = result && (hasStream() == other.hasStream());
+      if (hasStream() != other.hasStream()) return false;
       if (hasStream()) {
-        result = result && getStream()
-            .equals(other.getStream());
+        if (!getStream()
+            .equals(other.getStream())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -24496,7 +24464,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.StreamSubscribeRequest result = new org.yamcs.protobuf.Rest.StreamSubscribeRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.stream_ = stream_;
@@ -24507,35 +24475,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -24593,7 +24561,7 @@ public final class Rest {
        * <code>optional string stream = 1;</code>
        */
       public boolean hasStream() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
@@ -24802,10 +24770,7 @@ public final class Rest {
       super(builder);
     }
     private SetSimulationTimeRequest() {
-      time0_ = 0L;
       time0UTC_ = "";
-      simElapsedTime_ = 0L;
-      simSpeed_ = 0D;
     }
 
     @java.lang.Override
@@ -24896,7 +24861,7 @@ public final class Rest {
      * <code>optional int64 time0 = 1;</code>
      */
     public boolean hasTime0() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
@@ -24915,7 +24880,7 @@ public final class Rest {
      * <code>optional string time0UTC = 2;</code>
      */
     public boolean hasTime0UTC() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string time0UTC = 2;</code>
@@ -24957,7 +24922,7 @@ public final class Rest {
      * <code>optional int64 simElapsedTime = 3;</code>
      */
     public boolean hasSimElapsedTime() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int64 simElapsedTime = 3;</code>
@@ -24972,7 +24937,7 @@ public final class Rest {
      * <code>optional double simSpeed = 4;</code>
      */
     public boolean hasSimSpeed() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional double simSpeed = 4;</code>
@@ -24995,16 +24960,16 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeInt64(1, time0_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, time0UTC_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt64(3, simElapsedTime_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeDouble(4, simSpeed_);
       }
       unknownFields.writeTo(output);
@@ -25016,18 +24981,18 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(1, time0_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, time0UTC_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, simElapsedTime_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(4, simSpeed_);
       }
@@ -25046,31 +25011,29 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.SetSimulationTimeRequest other = (org.yamcs.protobuf.Rest.SetSimulationTimeRequest) obj;
 
-      boolean result = true;
-      result = result && (hasTime0() == other.hasTime0());
+      if (hasTime0() != other.hasTime0()) return false;
       if (hasTime0()) {
-        result = result && (getTime0()
-            == other.getTime0());
+        if (getTime0()
+            != other.getTime0()) return false;
       }
-      result = result && (hasTime0UTC() == other.hasTime0UTC());
+      if (hasTime0UTC() != other.hasTime0UTC()) return false;
       if (hasTime0UTC()) {
-        result = result && getTime0UTC()
-            .equals(other.getTime0UTC());
+        if (!getTime0UTC()
+            .equals(other.getTime0UTC())) return false;
       }
-      result = result && (hasSimElapsedTime() == other.hasSimElapsedTime());
+      if (hasSimElapsedTime() != other.hasSimElapsedTime()) return false;
       if (hasSimElapsedTime()) {
-        result = result && (getSimElapsedTime()
-            == other.getSimElapsedTime());
+        if (getSimElapsedTime()
+            != other.getSimElapsedTime()) return false;
       }
-      result = result && (hasSimSpeed() == other.hasSimSpeed());
+      if (hasSimSpeed() != other.hasSimSpeed()) return false;
       if (hasSimSpeed()) {
-        result = result && (
-            java.lang.Double.doubleToLongBits(getSimSpeed())
-            == java.lang.Double.doubleToLongBits(
-                other.getSimSpeed()));
+        if (java.lang.Double.doubleToLongBits(getSimSpeed())
+            != java.lang.Double.doubleToLongBits(
+                other.getSimSpeed())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -25268,22 +25231,22 @@ public final class Rest {
         org.yamcs.protobuf.Rest.SetSimulationTimeRequest result = new org.yamcs.protobuf.Rest.SetSimulationTimeRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.time0_ = time0_;
           to_bitField0_ |= 0x00000001;
         }
-        result.time0_ = time0_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.time0UTC_ = time0UTC_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.simElapsedTime_ = simElapsedTime_;
           to_bitField0_ |= 0x00000004;
         }
-        result.simElapsedTime_ = simElapsedTime_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.simSpeed_ = simSpeed_;
           to_bitField0_ |= 0x00000008;
         }
-        result.simSpeed_ = simSpeed_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -25291,35 +25254,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -25386,7 +25349,7 @@ public final class Rest {
        * <code>optional int64 time0 = 1;</code>
        */
       public boolean hasTime0() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
@@ -25430,7 +25393,7 @@ public final class Rest {
        * <code>optional string time0UTC = 2;</code>
        */
       public boolean hasTime0UTC() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string time0UTC = 2;</code>
@@ -25506,7 +25469,7 @@ public final class Rest {
        * <code>optional int64 simElapsedTime = 3;</code>
        */
       public boolean hasSimElapsedTime() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int64 simElapsedTime = 3;</code>
@@ -25538,7 +25501,7 @@ public final class Rest {
        * <code>optional double simSpeed = 4;</code>
        */
       public boolean hasSimSpeed() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional double simSpeed = 4;</code>
@@ -25686,7 +25649,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 instance_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.YamcsInstance>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -25709,7 +25672,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           instance_ = java.util.Collections.unmodifiableList(instance_);
         }
         this.unknownFields = unknownFields.build();
@@ -25815,11 +25778,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListInstancesResponse other = (org.yamcs.protobuf.Rest.ListInstancesResponse) obj;
 
-      boolean result = true;
-      result = result && getInstanceList()
-          .equals(other.getInstanceList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getInstanceList()
+          .equals(other.getInstanceList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -26001,7 +25963,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListInstancesResponse result = new org.yamcs.protobuf.Rest.ListInstancesResponse(this);
         int from_bitField0_ = bitField0_;
         if (instanceBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             instance_ = java.util.Collections.unmodifiableList(instance_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -26015,35 +25977,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -26121,7 +26083,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.YamcsInstance> instance_ =
         java.util.Collections.emptyList();
       private void ensureInstanceIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           instance_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.YamcsInstance>(instance_);
           bitField0_ |= 0x00000001;
          }
@@ -26350,7 +26312,7 @@ public final class Rest {
           instanceBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder>(
                   instance_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           instance_ = null;
@@ -26564,7 +26526,7 @@ public final class Rest {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
                 templateArgs_ = com.google.protobuf.MapField.newMapField(
                     TemplateArgsDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000004;
@@ -26577,7 +26539,7 @@ public final class Rest {
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
                 labels_ = com.google.protobuf.MapField.newMapField(
                     LabelsDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000008;
@@ -26642,7 +26604,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -26684,7 +26646,7 @@ public final class Rest {
      * <code>optional string template = 2;</code>
      */
     public boolean hasTemplate() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string template = 2;</code>
@@ -26886,10 +26848,10 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, template_);
       }
       com.google.protobuf.GeneratedMessageV3
@@ -26913,10 +26875,10 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, template_);
       }
       for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
@@ -26954,23 +26916,22 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.CreateInstanceRequest other = (org.yamcs.protobuf.Rest.CreateInstanceRequest) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasTemplate() == other.hasTemplate());
+      if (hasTemplate() != other.hasTemplate()) return false;
       if (hasTemplate()) {
-        result = result && getTemplate()
-            .equals(other.getTemplate());
+        if (!getTemplate()
+            .equals(other.getTemplate())) return false;
       }
-      result = result && internalGetTemplateArgs().equals(
-          other.internalGetTemplateArgs());
-      result = result && internalGetLabels().equals(
-          other.internalGetLabels());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!internalGetTemplateArgs().equals(
+          other.internalGetTemplateArgs())) return false;
+      if (!internalGetLabels().equals(
+          other.internalGetLabels())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -27189,11 +27150,11 @@ public final class Rest {
         org.yamcs.protobuf.Rest.CreateInstanceRequest result = new org.yamcs.protobuf.Rest.CreateInstanceRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.template_ = template_;
@@ -27208,35 +27169,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -27299,7 +27260,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -27375,7 +27336,7 @@ public final class Rest {
        * <code>optional string template = 2;</code>
        */
       public boolean hasTemplate() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string template = 2;</code>
@@ -27813,7 +27774,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 template_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.InstanceTemplate>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -27836,7 +27797,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           template_ = java.util.Collections.unmodifiableList(template_);
         }
         this.unknownFields = unknownFields.build();
@@ -27936,11 +27897,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListInstanceTemplatesResponse other = (org.yamcs.protobuf.Rest.ListInstanceTemplatesResponse) obj;
 
-      boolean result = true;
-      result = result && getTemplateList()
-          .equals(other.getTemplateList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTemplateList()
+          .equals(other.getTemplateList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -28122,7 +28082,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListInstanceTemplatesResponse result = new org.yamcs.protobuf.Rest.ListInstanceTemplatesResponse(this);
         int from_bitField0_ = bitField0_;
         if (templateBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             template_ = java.util.Collections.unmodifiableList(template_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -28136,35 +28096,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -28237,7 +28197,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.InstanceTemplate> template_ =
         java.util.Collections.emptyList();
       private void ensureTemplateIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           template_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.InstanceTemplate>(template_);
           bitField0_ |= 0x00000001;
          }
@@ -28466,7 +28426,7 @@ public final class Rest {
           templateBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.InstanceTemplate, org.yamcs.protobuf.YamcsManagement.InstanceTemplate.Builder, org.yamcs.protobuf.YamcsManagement.InstanceTemplateOrBuilder>(
                   template_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           template_ = null;
@@ -28595,7 +28555,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 tag_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -28618,7 +28578,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           tag_ = java.util.Collections.unmodifiableList(tag_);
         }
         this.unknownFields = unknownFields.build();
@@ -28724,11 +28684,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListTagsResponse other = (org.yamcs.protobuf.Rest.ListTagsResponse) obj;
 
-      boolean result = true;
-      result = result && getTagList()
-          .equals(other.getTagList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTagList()
+          .equals(other.getTagList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -28910,7 +28869,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListTagsResponse result = new org.yamcs.protobuf.Rest.ListTagsResponse(this);
         int from_bitField0_ = bitField0_;
         if (tagBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             tag_ = java.util.Collections.unmodifiableList(tag_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -28924,35 +28883,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -29030,7 +28989,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tag_ =
         java.util.Collections.emptyList();
       private void ensureTagIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           tag_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>(tag_);
           bitField0_ |= 0x00000001;
          }
@@ -29259,7 +29218,7 @@ public final class Rest {
           tagBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder>(
                   tag_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           tag_ = null;
@@ -29506,7 +29465,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -29548,7 +29507,7 @@ public final class Rest {
      * <code>optional string start = 2;</code>
      */
     public boolean hasStart() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string start = 2;</code>
@@ -29590,7 +29549,7 @@ public final class Rest {
      * <code>optional string stop = 3;</code>
      */
     public boolean hasStop() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string stop = 3;</code>
@@ -29632,7 +29591,7 @@ public final class Rest {
      * <code>optional string description = 4;</code>
      */
     public boolean hasDescription() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string description = 4;</code>
@@ -29674,7 +29633,7 @@ public final class Rest {
      * <code>optional string color = 5;</code>
      */
     public boolean hasColor() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string color = 5;</code>
@@ -29724,19 +29683,19 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, start_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, stop_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, description_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, color_);
       }
       unknownFields.writeTo(output);
@@ -29748,19 +29707,19 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, start_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, stop_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, description_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, color_);
       }
       size += unknownFields.getSerializedSize();
@@ -29778,34 +29737,33 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.CreateTagRequest other = (org.yamcs.protobuf.Rest.CreateTagRequest) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasStart() == other.hasStart());
+      if (hasStart() != other.hasStart()) return false;
       if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
+        if (!getStart()
+            .equals(other.getStart())) return false;
       }
-      result = result && (hasStop() == other.hasStop());
+      if (hasStop() != other.hasStop()) return false;
       if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
+        if (!getStop()
+            .equals(other.getStop())) return false;
       }
-      result = result && (hasDescription() == other.hasDescription());
+      if (hasDescription() != other.hasDescription()) return false;
       if (hasDescription()) {
-        result = result && getDescription()
-            .equals(other.getDescription());
+        if (!getDescription()
+            .equals(other.getDescription())) return false;
       }
-      result = result && (hasColor() == other.hasColor());
+      if (hasColor() != other.hasColor()) return false;
       if (hasColor()) {
-        result = result && getColor()
-            .equals(other.getColor());
+        if (!getColor()
+            .equals(other.getColor())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -30006,23 +29964,23 @@ public final class Rest {
         org.yamcs.protobuf.Rest.CreateTagRequest result = new org.yamcs.protobuf.Rest.CreateTagRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.start_ = start_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.stop_ = stop_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.description_ = description_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.color_ = color_;
@@ -30033,35 +29991,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -30135,7 +30093,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -30211,7 +30169,7 @@ public final class Rest {
        * <code>optional string start = 2;</code>
        */
       public boolean hasStart() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string start = 2;</code>
@@ -30287,7 +30245,7 @@ public final class Rest {
        * <code>optional string stop = 3;</code>
        */
       public boolean hasStop() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string stop = 3;</code>
@@ -30363,7 +30321,7 @@ public final class Rest {
        * <code>optional string description = 4;</code>
        */
       public boolean hasDescription() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string description = 4;</code>
@@ -30439,7 +30397,7 @@ public final class Rest {
        * <code>optional string color = 5;</code>
        */
       public boolean hasColor() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string color = 5;</code>
@@ -30749,7 +30707,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -30791,7 +30749,7 @@ public final class Rest {
      * <code>optional string start = 2;</code>
      */
     public boolean hasStart() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string start = 2;</code>
@@ -30833,7 +30791,7 @@ public final class Rest {
      * <code>optional string stop = 3;</code>
      */
     public boolean hasStop() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string stop = 3;</code>
@@ -30875,7 +30833,7 @@ public final class Rest {
      * <code>optional string description = 4;</code>
      */
     public boolean hasDescription() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional string description = 4;</code>
@@ -30917,7 +30875,7 @@ public final class Rest {
      * <code>optional string color = 5;</code>
      */
     public boolean hasColor() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string color = 5;</code>
@@ -30967,19 +30925,19 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, start_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, stop_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, description_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, color_);
       }
       unknownFields.writeTo(output);
@@ -30991,19 +30949,19 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, start_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, stop_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, description_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, color_);
       }
       size += unknownFields.getSerializedSize();
@@ -31021,34 +30979,33 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditTagRequest other = (org.yamcs.protobuf.Rest.EditTagRequest) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasStart() == other.hasStart());
+      if (hasStart() != other.hasStart()) return false;
       if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
+        if (!getStart()
+            .equals(other.getStart())) return false;
       }
-      result = result && (hasStop() == other.hasStop());
+      if (hasStop() != other.hasStop()) return false;
       if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
+        if (!getStop()
+            .equals(other.getStop())) return false;
       }
-      result = result && (hasDescription() == other.hasDescription());
+      if (hasDescription() != other.hasDescription()) return false;
       if (hasDescription()) {
-        result = result && getDescription()
-            .equals(other.getDescription());
+        if (!getDescription()
+            .equals(other.getDescription())) return false;
       }
-      result = result && (hasColor() == other.hasColor());
+      if (hasColor() != other.hasColor()) return false;
       if (hasColor()) {
-        result = result && getColor()
-            .equals(other.getColor());
+        if (!getColor()
+            .equals(other.getColor())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -31249,23 +31206,23 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditTagRequest result = new org.yamcs.protobuf.Rest.EditTagRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.start_ = start_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.stop_ = stop_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.description_ = description_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.color_ = color_;
@@ -31276,35 +31233,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -31378,7 +31335,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -31454,7 +31411,7 @@ public final class Rest {
        * <code>optional string start = 2;</code>
        */
       public boolean hasStart() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string start = 2;</code>
@@ -31530,7 +31487,7 @@ public final class Rest {
        * <code>optional string stop = 3;</code>
        */
       public boolean hasStop() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string stop = 3;</code>
@@ -31606,7 +31563,7 @@ public final class Rest {
        * <code>optional string description = 4;</code>
        */
       public boolean hasDescription() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional string description = 4;</code>
@@ -31682,7 +31639,7 @@ public final class Rest {
        * <code>optional string color = 5;</code>
        */
       public boolean hasColor() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional string color = 5;</code>
@@ -31874,7 +31831,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmData>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -31897,7 +31854,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           alarm_ = java.util.Collections.unmodifiableList(alarm_);
         }
         this.unknownFields = unknownFields.build();
@@ -32003,11 +31960,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListAlarmsResponse other = (org.yamcs.protobuf.Rest.ListAlarmsResponse) obj;
 
-      boolean result = true;
-      result = result && getAlarmList()
-          .equals(other.getAlarmList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getAlarmList()
+          .equals(other.getAlarmList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -32189,7 +32145,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListAlarmsResponse result = new org.yamcs.protobuf.Rest.ListAlarmsResponse(this);
         int from_bitField0_ = bitField0_;
         if (alarmBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             alarm_ = java.util.Collections.unmodifiableList(alarm_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -32203,35 +32159,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -32309,7 +32265,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Alarms.AlarmData> alarm_ =
         java.util.Collections.emptyList();
       private void ensureAlarmIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmData>(alarm_);
           bitField0_ |= 0x00000001;
          }
@@ -32538,7 +32494,7 @@ public final class Rest {
           alarmBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder>(
                   alarm_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           alarm_ = null;
@@ -32722,7 +32678,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -32764,7 +32720,7 @@ public final class Rest {
      * <code>optional string comment = 2;</code>
      */
     public boolean hasComment() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string comment = 2;</code>
@@ -32814,10 +32770,10 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, comment_);
       }
       unknownFields.writeTo(output);
@@ -32829,10 +32785,10 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, comment_);
       }
       size += unknownFields.getSerializedSize();
@@ -32850,19 +32806,18 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditAlarmRequest other = (org.yamcs.protobuf.Rest.EditAlarmRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && (hasComment() == other.hasComment());
+      if (hasComment() != other.hasComment()) return false;
       if (hasComment()) {
-        result = result && getComment()
-            .equals(other.getComment());
+        if (!getComment()
+            .equals(other.getComment())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -33045,11 +33000,11 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditAlarmRequest result = new org.yamcs.protobuf.Rest.EditAlarmRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.comment_ = comment_;
@@ -33060,35 +33015,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -33147,7 +33102,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -33223,7 +33178,7 @@ public final class Rest {
        * <code>optional string comment = 2;</code>
        */
       public boolean hasComment() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string comment = 2;</code>
@@ -33415,7 +33370,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 table_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -33438,7 +33393,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           table_ = java.util.Collections.unmodifiableList(table_);
         }
         this.unknownFields = unknownFields.build();
@@ -33538,11 +33493,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListTablesResponse other = (org.yamcs.protobuf.Rest.ListTablesResponse) obj;
 
-      boolean result = true;
-      result = result && getTableList()
-          .equals(other.getTableList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getTableList()
+          .equals(other.getTableList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -33724,7 +33678,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListTablesResponse result = new org.yamcs.protobuf.Rest.ListTablesResponse(this);
         int from_bitField0_ = bitField0_;
         if (tableBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             table_ = java.util.Collections.unmodifiableList(table_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -33738,35 +33692,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -33839,7 +33793,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Archive.TableInfo> table_ =
         java.util.Collections.emptyList();
       private void ensureTableIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           table_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.TableInfo>(table_);
           bitField0_ |= 0x00000001;
          }
@@ -34068,7 +34022,7 @@ public final class Rest {
           tableBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.TableInfo, org.yamcs.protobuf.Archive.TableInfo.Builder, org.yamcs.protobuf.Archive.TableInfoOrBuilder>(
                   table_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           table_ = null;
@@ -34197,7 +34151,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 stream_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.StreamInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -34220,7 +34174,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           stream_ = java.util.Collections.unmodifiableList(stream_);
         }
         this.unknownFields = unknownFields.build();
@@ -34320,11 +34274,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListStreamsResponse other = (org.yamcs.protobuf.Rest.ListStreamsResponse) obj;
 
-      boolean result = true;
-      result = result && getStreamList()
-          .equals(other.getStreamList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getStreamList()
+          .equals(other.getStreamList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -34506,7 +34459,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListStreamsResponse result = new org.yamcs.protobuf.Rest.ListStreamsResponse(this);
         int from_bitField0_ = bitField0_;
         if (streamBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             stream_ = java.util.Collections.unmodifiableList(stream_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -34520,35 +34473,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -34621,7 +34574,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Archive.StreamInfo> stream_ =
         java.util.Collections.emptyList();
       private void ensureStreamIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           stream_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.StreamInfo>(stream_);
           bitField0_ |= 0x00000001;
          }
@@ -34850,7 +34803,7 @@ public final class Rest {
           streamBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Archive.StreamInfo, org.yamcs.protobuf.Archive.StreamInfo.Builder, org.yamcs.protobuf.Archive.StreamInfoOrBuilder>(
                   stream_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           stream_ = null;
@@ -34994,7 +34947,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 event_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Event>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -35023,7 +34976,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           event_ = java.util.Collections.unmodifiableList(event_);
         }
         this.unknownFields = unknownFields.build();
@@ -35085,7 +35038,7 @@ public final class Rest {
      * <code>optional string continuationToken = 2;</code>
      */
     public boolean hasContinuationToken() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string continuationToken = 2;</code>
@@ -35144,7 +35097,7 @@ public final class Rest {
       for (int i = 0; i < event_.size(); i++) {
         output.writeMessage(1, event_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
       }
       unknownFields.writeTo(output);
@@ -35160,7 +35113,7 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, event_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
@@ -35178,16 +35131,15 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListEventsResponse other = (org.yamcs.protobuf.Rest.ListEventsResponse) obj;
 
-      boolean result = true;
-      result = result && getEventList()
-          .equals(other.getEventList());
-      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (!getEventList()
+          .equals(other.getEventList())) return false;
+      if (hasContinuationToken() != other.hasContinuationToken()) return false;
       if (hasContinuationToken()) {
-        result = result && getContinuationToken()
-            .equals(other.getContinuationToken());
+        if (!getContinuationToken()
+            .equals(other.getContinuationToken())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -35376,7 +35328,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (eventBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             event_ = java.util.Collections.unmodifiableList(event_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -35384,7 +35336,7 @@ public final class Rest {
         } else {
           result.event_ = eventBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.continuationToken_ = continuationToken_;
@@ -35395,35 +35347,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -35506,7 +35458,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Yamcs.Event> event_ =
         java.util.Collections.emptyList();
       private void ensureEventIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           event_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Event>(event_);
           bitField0_ |= 0x00000001;
          }
@@ -35735,7 +35687,7 @@ public final class Rest {
           eventBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder>(
                   event_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           event_ = null;
@@ -35748,7 +35700,7 @@ public final class Rest {
        * <code>optional string continuationToken = 2;</code>
        */
       public boolean hasContinuationToken() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string continuationToken = 2;</code>
@@ -35955,7 +35907,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 packet_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.TmPacketData>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -35984,7 +35936,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           packet_ = java.util.Collections.unmodifiableList(packet_);
         }
         this.unknownFields = unknownFields.build();
@@ -36046,7 +35998,7 @@ public final class Rest {
      * <code>optional string continuationToken = 2;</code>
      */
     public boolean hasContinuationToken() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string continuationToken = 2;</code>
@@ -36105,7 +36057,7 @@ public final class Rest {
       for (int i = 0; i < packet_.size(); i++) {
         output.writeMessage(1, packet_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
       }
       unknownFields.writeTo(output);
@@ -36121,7 +36073,7 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, packet_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
@@ -36139,16 +36091,15 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListPacketsResponse other = (org.yamcs.protobuf.Rest.ListPacketsResponse) obj;
 
-      boolean result = true;
-      result = result && getPacketList()
-          .equals(other.getPacketList());
-      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (!getPacketList()
+          .equals(other.getPacketList())) return false;
+      if (hasContinuationToken() != other.hasContinuationToken()) return false;
       if (hasContinuationToken()) {
-        result = result && getContinuationToken()
-            .equals(other.getContinuationToken());
+        if (!getContinuationToken()
+            .equals(other.getContinuationToken())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -36337,7 +36288,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (packetBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             packet_ = java.util.Collections.unmodifiableList(packet_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -36345,7 +36296,7 @@ public final class Rest {
         } else {
           result.packet_ = packetBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.continuationToken_ = continuationToken_;
@@ -36356,35 +36307,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -36467,7 +36418,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Yamcs.TmPacketData> packet_ =
         java.util.Collections.emptyList();
       private void ensurePacketIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           packet_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.TmPacketData>(packet_);
           bitField0_ |= 0x00000001;
          }
@@ -36696,7 +36647,7 @@ public final class Rest {
           packetBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder>(
                   packet_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           packet_ = null;
@@ -36709,7 +36660,7 @@ public final class Rest {
        * <code>optional string continuationToken = 2;</code>
        */
       public boolean hasContinuationToken() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string continuationToken = 2;</code>
@@ -36901,7 +36852,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 service_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ServiceInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -36924,7 +36875,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           service_ = java.util.Collections.unmodifiableList(service_);
         }
         this.unknownFields = unknownFields.build();
@@ -37024,11 +36975,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListServiceInfoResponse other = (org.yamcs.protobuf.Rest.ListServiceInfoResponse) obj;
 
-      boolean result = true;
-      result = result && getServiceList()
-          .equals(other.getServiceList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getServiceList()
+          .equals(other.getServiceList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -37210,7 +37160,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListServiceInfoResponse result = new org.yamcs.protobuf.Rest.ListServiceInfoResponse(this);
         int from_bitField0_ = bitField0_;
         if (serviceBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             service_ = java.util.Collections.unmodifiableList(service_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -37224,35 +37174,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -37325,7 +37275,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.ServiceInfo> service_ =
         java.util.Collections.emptyList();
       private void ensureServiceIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           service_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ServiceInfo>(service_);
           bitField0_ |= 0x00000001;
          }
@@ -37554,7 +37504,7 @@ public final class Rest {
           serviceBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ServiceInfo, org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder, org.yamcs.protobuf.YamcsManagement.ServiceInfoOrBuilder>(
                   service_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           service_ = null;
@@ -37698,7 +37648,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -37727,7 +37677,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           parameter_ = java.util.Collections.unmodifiableList(parameter_);
         }
         this.unknownFields = unknownFields.build();
@@ -37789,7 +37739,7 @@ public final class Rest {
      * <code>optional string continuationToken = 2;</code>
      */
     public boolean hasContinuationToken() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string continuationToken = 2;</code>
@@ -37848,7 +37798,7 @@ public final class Rest {
       for (int i = 0; i < parameter_.size(); i++) {
         output.writeMessage(1, parameter_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
       }
       unknownFields.writeTo(output);
@@ -37864,7 +37814,7 @@ public final class Rest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, parameter_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
@@ -37882,16 +37832,15 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListParameterValuesResponse other = (org.yamcs.protobuf.Rest.ListParameterValuesResponse) obj;
 
-      boolean result = true;
-      result = result && getParameterList()
-          .equals(other.getParameterList());
-      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (!getParameterList()
+          .equals(other.getParameterList())) return false;
+      if (hasContinuationToken() != other.hasContinuationToken()) return false;
       if (hasContinuationToken()) {
-        result = result && getContinuationToken()
-            .equals(other.getContinuationToken());
+        if (!getContinuationToken()
+            .equals(other.getContinuationToken())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -38080,7 +38029,7 @@ public final class Rest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (parameterBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             parameter_ = java.util.Collections.unmodifiableList(parameter_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -38088,7 +38037,7 @@ public final class Rest {
         } else {
           result.parameter_ = parameterBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.continuationToken_ = continuationToken_;
@@ -38099,35 +38048,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -38210,7 +38159,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Pvalue.ParameterValue> parameter_ =
         java.util.Collections.emptyList();
       private void ensureParameterIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>(parameter_);
           bitField0_ |= 0x00000001;
          }
@@ -38439,7 +38388,7 @@ public final class Rest {
           parameterBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
                   parameter_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -38452,7 +38401,7 @@ public final class Rest {
        * <code>optional string continuationToken = 2;</code>
        */
       public boolean hasContinuationToken() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string continuationToken = 2;</code>
@@ -38678,7 +38627,7 @@ public final class Rest {
      * <code>optional string state = 1;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string state = 1;</code>
@@ -38728,7 +38677,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, state_);
       }
       unknownFields.writeTo(output);
@@ -38740,7 +38689,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, state_);
       }
       size += unknownFields.getSerializedSize();
@@ -38758,14 +38707,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.EditServiceRequest other = (org.yamcs.protobuf.Rest.EditServiceRequest) obj;
 
-      boolean result = true;
-      result = result && (hasState() == other.hasState());
+      if (hasState() != other.hasState()) return false;
       if (hasState()) {
-        result = result && getState()
-            .equals(other.getState());
+        if (!getState()
+            .equals(other.getState())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -38942,7 +38890,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.EditServiceRequest result = new org.yamcs.protobuf.Rest.EditServiceRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.state_ = state_;
@@ -38953,35 +38901,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -39035,7 +38983,7 @@ public final class Rest {
        * <code>optional string state = 1;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string state = 1;</code>
@@ -39285,7 +39233,7 @@ public final class Rest {
             }
             case 26: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
                 filter_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000004;
               }
@@ -39294,7 +39242,7 @@ public final class Rest {
             }
             case 34: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
                 packetname_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000008;
               }
@@ -39316,10 +39264,10 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
           filter_ = filter_.getUnmodifiableView();
         }
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((mutable_bitField0_ & 0x00000008) != 0)) {
           packetname_ = packetname_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
@@ -39346,7 +39294,7 @@ public final class Rest {
      * <code>optional string start = 1;</code>
      */
     public boolean hasStart() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string start = 1;</code>
@@ -39388,7 +39336,7 @@ public final class Rest {
      * <code>optional string stop = 2;</code>
      */
     public boolean hasStop() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string stop = 2;</code>
@@ -39496,10 +39444,10 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, stop_);
       }
       for (int i = 0; i < filter_.size(); i++) {
@@ -39517,10 +39465,10 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, start_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, stop_);
       }
       {
@@ -39554,23 +39502,22 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BulkGetIndexRequest other = (org.yamcs.protobuf.Rest.BulkGetIndexRequest) obj;
 
-      boolean result = true;
-      result = result && (hasStart() == other.hasStart());
+      if (hasStart() != other.hasStart()) return false;
       if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
+        if (!getStart()
+            .equals(other.getStart())) return false;
       }
-      result = result && (hasStop() == other.hasStop());
+      if (hasStop() != other.hasStop()) return false;
       if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
+        if (!getStop()
+            .equals(other.getStop())) return false;
       }
-      result = result && getFilterList()
-          .equals(other.getFilterList());
-      result = result && getPacketnameList()
-          .equals(other.getPacketnameList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getFilterList()
+          .equals(other.getFilterList())) return false;
+      if (!getPacketnameList()
+          .equals(other.getPacketnameList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -39765,20 +39712,20 @@ public final class Rest {
         org.yamcs.protobuf.Rest.BulkGetIndexRequest result = new org.yamcs.protobuf.Rest.BulkGetIndexRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.start_ = start_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.stop_ = stop_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           filter_ = filter_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.filter_ = filter_;
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           packetname_ = packetname_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000008);
         }
@@ -39790,35 +39737,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -39897,7 +39844,7 @@ public final class Rest {
        * <code>optional string start = 1;</code>
        */
       public boolean hasStart() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string start = 1;</code>
@@ -39973,7 +39920,7 @@ public final class Rest {
        * <code>optional string stop = 2;</code>
        */
       public boolean hasStop() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string stop = 2;</code>
@@ -40046,7 +39993,7 @@ public final class Rest {
 
       private com.google.protobuf.LazyStringList filter_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureFilterIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           filter_ = new com.google.protobuf.LazyStringArrayList(filter_);
           bitField0_ |= 0x00000004;
          }
@@ -40139,7 +40086,7 @@ public final class Rest {
 
       private com.google.protobuf.LazyStringList packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensurePacketnameIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (!((bitField0_ & 0x00000008) != 0)) {
           packetname_ = new com.google.protobuf.LazyStringArrayList(packetname_);
           bitField0_ |= 0x00000008;
          }
@@ -40385,7 +40332,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -40435,7 +40382,7 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
       unknownFields.writeTo(output);
@@ -40447,7 +40394,7 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
       size += unknownFields.getSerializedSize();
@@ -40465,14 +40412,13 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.CreateBucketRequest other = (org.yamcs.protobuf.Rest.CreateBucketRequest) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -40649,7 +40595,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.CreateBucketRequest result = new org.yamcs.protobuf.Rest.CreateBucketRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
@@ -40660,35 +40606,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -40742,7 +40688,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -40931,8 +40877,6 @@ public final class Rest {
     }
     private BucketInfo() {
       name_ = "";
-      size_ = 0L;
-      numObjects_ = 0;
     }
 
     @java.lang.Override
@@ -41014,7 +40958,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -41060,7 +41004,7 @@ public final class Rest {
      * <code>optional uint64 size = 2;</code>
      */
     public boolean hasSize() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <pre>
@@ -41083,7 +41027,7 @@ public final class Rest {
      * <code>optional uint32 numObjects = 3;</code>
      */
     public boolean hasNumObjects() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -41110,13 +41054,13 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeUInt64(2, size_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeUInt32(3, numObjects_);
       }
       unknownFields.writeTo(output);
@@ -41128,14 +41072,14 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(2, size_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(3, numObjects_);
       }
@@ -41154,24 +41098,23 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.BucketInfo other = (org.yamcs.protobuf.Rest.BucketInfo) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasSize() == other.hasSize());
+      if (hasSize() != other.hasSize()) return false;
       if (hasSize()) {
-        result = result && (getSize()
-            == other.getSize());
+        if (getSize()
+            != other.getSize()) return false;
       }
-      result = result && (hasNumObjects() == other.hasNumObjects());
+      if (hasNumObjects() != other.hasNumObjects()) return false;
       if (hasNumObjects()) {
-        result = result && (getNumObjects()
-            == other.getNumObjects());
+        if (getNumObjects()
+            != other.getNumObjects()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -41361,18 +41304,18 @@ public final class Rest {
         org.yamcs.protobuf.Rest.BucketInfo result = new org.yamcs.protobuf.Rest.BucketInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.size_ = size_;
           to_bitField0_ |= 0x00000002;
         }
-        result.size_ = size_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.numObjects_ = numObjects_;
           to_bitField0_ |= 0x00000004;
         }
-        result.numObjects_ = numObjects_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -41380,35 +41323,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -41468,7 +41411,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -41548,7 +41491,7 @@ public final class Rest {
        * <code>optional uint64 size = 2;</code>
        */
       public boolean hasSize() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <pre>
@@ -41596,7 +41539,7 @@ public final class Rest {
        * <code>optional uint32 numObjects = 3;</code>
        */
       public boolean hasNumObjects() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -41797,7 +41740,6 @@ public final class Rest {
     private ObjectInfo() {
       name_ = "";
       created_ = "";
-      size_ = 0L;
     }
 
     @java.lang.Override
@@ -41842,7 +41784,7 @@ public final class Rest {
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
                 metadata_ = com.google.protobuf.MapField.newMapField(
                     MetadataDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000008;
@@ -41905,7 +41847,7 @@ public final class Rest {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -41951,7 +41893,7 @@ public final class Rest {
      * <code>optional string created = 2;</code>
      */
     public boolean hasCreated() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <pre>
@@ -42005,7 +41947,7 @@ public final class Rest {
      * <code>optional uint64 size = 3;</code>
      */
     public boolean hasSize() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -42108,13 +42050,13 @@ public final class Rest {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, created_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeUInt64(3, size_);
       }
       com.google.protobuf.GeneratedMessageV3
@@ -42132,13 +42074,13 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, created_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(3, size_);
       }
@@ -42167,26 +42109,25 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ObjectInfo other = (org.yamcs.protobuf.Rest.ObjectInfo) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasCreated() == other.hasCreated());
+      if (hasCreated() != other.hasCreated()) return false;
       if (hasCreated()) {
-        result = result && getCreated()
-            .equals(other.getCreated());
+        if (!getCreated()
+            .equals(other.getCreated())) return false;
       }
-      result = result && (hasSize() == other.hasSize());
+      if (hasSize() != other.hasSize()) return false;
       if (hasSize()) {
-        result = result && (getSize()
-            == other.getSize());
+        if (getSize()
+            != other.getSize()) return false;
       }
-      result = result && internalGetMetadata().equals(
-          other.internalGetMetadata());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!internalGetMetadata().equals(
+          other.internalGetMetadata())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -42403,18 +42344,18 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ObjectInfo result = new org.yamcs.protobuf.Rest.ObjectInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.created_ = created_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.size_ = size_;
           to_bitField0_ |= 0x00000004;
         }
-        result.size_ = size_;
         result.metadata_ = internalGetMetadata();
         result.metadata_.makeImmutable();
         result.bitField0_ = to_bitField0_;
@@ -42424,35 +42365,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -42516,7 +42457,7 @@ public final class Rest {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -42596,7 +42537,7 @@ public final class Rest {
        * <code>optional string created = 2;</code>
        */
       public boolean hasCreated() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <pre>
@@ -42696,7 +42637,7 @@ public final class Rest {
        * <code>optional uint64 size = 3;</code>
        */
       public boolean hasSize() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -42979,7 +42920,7 @@ public final class Rest {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 bucket_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -43002,7 +42943,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           bucket_ = java.util.Collections.unmodifiableList(bucket_);
         }
         this.unknownFields = unknownFields.build();
@@ -43102,11 +43043,10 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListBucketsResponse other = (org.yamcs.protobuf.Rest.ListBucketsResponse) obj;
 
-      boolean result = true;
-      result = result && getBucketList()
-          .equals(other.getBucketList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getBucketList()
+          .equals(other.getBucketList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -43288,7 +43228,7 @@ public final class Rest {
         org.yamcs.protobuf.Rest.ListBucketsResponse result = new org.yamcs.protobuf.Rest.ListBucketsResponse(this);
         int from_bitField0_ = bitField0_;
         if (bucketBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             bucket_ = java.util.Collections.unmodifiableList(bucket_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -43302,35 +43242,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -43403,7 +43343,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.BucketInfo> bucket_ =
         java.util.Collections.emptyList();
       private void ensureBucketIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           bucket_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>(bucket_);
           bitField0_ |= 0x00000001;
          }
@@ -43632,7 +43572,7 @@ public final class Rest {
           bucketBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.BucketInfo, org.yamcs.protobuf.Rest.BucketInfo.Builder, org.yamcs.protobuf.Rest.BucketInfoOrBuilder>(
                   bucket_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           bucket_ = null;
@@ -43782,7 +43722,7 @@ public final class Rest {
               break;
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 prefix_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -43790,7 +43730,7 @@ public final class Rest {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 object_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -43813,10 +43753,10 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           prefix_ = prefix_.getUnmodifiableView();
         }
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           object_ = java.util.Collections.unmodifiableList(object_);
         }
         this.unknownFields = unknownFields.build();
@@ -43956,13 +43896,12 @@ public final class Rest {
       }
       org.yamcs.protobuf.Rest.ListObjectsResponse other = (org.yamcs.protobuf.Rest.ListObjectsResponse) obj;
 
-      boolean result = true;
-      result = result && getPrefixList()
-          .equals(other.getPrefixList());
-      result = result && getObjectList()
-          .equals(other.getObjectList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getPrefixList()
+          .equals(other.getPrefixList())) return false;
+      if (!getObjectList()
+          .equals(other.getObjectList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -44149,13 +44088,13 @@ public final class Rest {
       public org.yamcs.protobuf.Rest.ListObjectsResponse buildPartial() {
         org.yamcs.protobuf.Rest.ListObjectsResponse result = new org.yamcs.protobuf.Rest.ListObjectsResponse(this);
         int from_bitField0_ = bitField0_;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           prefix_ = prefix_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.prefix_ = prefix_;
         if (objectBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             object_ = java.util.Collections.unmodifiableList(object_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -44169,35 +44108,35 @@ public final class Rest {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -44279,7 +44218,7 @@ public final class Rest {
 
       private com.google.protobuf.LazyStringList prefix_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensurePrefixIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           prefix_ = new com.google.protobuf.LazyStringArrayList(prefix_);
           bitField0_ |= 0x00000001;
          }
@@ -44373,7 +44312,7 @@ public final class Rest {
       private java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> object_ =
         java.util.Collections.emptyList();
       private void ensureObjectIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           object_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>(object_);
           bitField0_ |= 0x00000002;
          }
@@ -44602,7 +44541,7 @@ public final class Rest {
           objectBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.ObjectInfo, org.yamcs.protobuf.Rest.ObjectInfo.Builder, org.yamcs.protobuf.Rest.ObjectInfoOrBuilder>(
                   object_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           object_ = null;

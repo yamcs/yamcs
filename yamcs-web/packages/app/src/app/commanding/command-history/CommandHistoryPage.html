@@ -1,7 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>Command History</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">Command History</app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
       <app-detail-toolbar>
         Command Detail
@@ -50,18 +50,26 @@
           <app-hex [base64String]="selectedRecord.binary"></app-hex>
         </div>
 
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+        <ng-container *ngIf="selectedRecord.comment">
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+          <h6 style="padding-top: 0">Comment</h6>
+          <div class="block">
+            {{ selectedRecord.comment }}
+          </div>
+        </ng-container>
 
-        <h6 style="padding-top: 0">Extra Attributes</h6>
-        <div class="block">
-          <ul>
-            <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
-          </ul>
-        </div>
+        <ng-container *ngIf="selectedRecord.extra.length">
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+          <h6 style="padding-top: 0">Extra Attributes</h6>
+          <div class="block">
+            <ul>
+              <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
+            </ul>
+          </div>
+        </ng-container>
 
         <ng-container *ngIf="selectedRecord.stages.length">
           <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
           <h6 style="padding-top: 0">Stages</h6>
           <div class="block">
             <table yaDataTable style="width: 100%">
@@ -109,7 +117,7 @@
         Select a command
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
@@ -119,8 +127,8 @@
              class="ya-data-table">
 
         <ng-container matColumnDef="completion">
-          <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
-          <td mat-cell *matCellDef="let item">
+          <th mat-header-cell *matHeaderCellDef class="status"></th>
+          <td mat-cell *matCellDef="let item" class="status">
             <ng-container *ngIf="item.completed && item.success">
               <mat-icon class="success" matTooltip="Completed">
                 check_circle

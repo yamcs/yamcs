@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { delay, filter, first, map, retryWhen, take } from 'rxjs/operators';
+import { filter, first, map, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
@@ -65,10 +65,10 @@ export class WebSocketClient {
       }
     });
     this.webSocketConnection$ = this.webSocket.pipe(
-      retryWhen(errors => {
-        console.log('Cannot connect to Yamcs');
-        return errors.pipe(delay(1000));
-      }),
+      // retryWhen(errors => {
+      //  console.log('Cannot connect to Yamcs');
+      //  return errors.pipe(delay(1000));
+      //}),
     );
     this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe(
       (msg: WebSocketServerMessage) => {
@@ -450,6 +450,15 @@ export class WebSocketClient {
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
           const response = msg[3].data as ParameterSubscriptionResponse;
+
+          // Turn SubscribedParameters into a more convenient mapping
+          response.mapping = {};
+          if (response.subscribed) {
+            for (const subscribedParameter of response.subscribed) {
+              response.mapping[subscribedParameter.numericId] = subscribedParameter.id;
+            }
+          }
+
           response.parameterValues$ = this.webSocketConnection$.pipe(
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),

@@ -75,10 +75,14 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
         abortOnInvalid: false,
         sendFromCache: true,
         updateOnExpiration: true,
+        useNumericIds: true,
       }).then(res => {
         this.dataSubscriptionId = res.subscriptionId;
+        if (this.dataSubscription) {
+          this.dataSubscription.unsubscribe();
+        }
         this.dataSubscription = res.parameterValues$.subscribe(pvals => {
-          this.buffer.push(pvals);
+          this.buffer.push(pvals, res.mapping);
         });
       });
     }

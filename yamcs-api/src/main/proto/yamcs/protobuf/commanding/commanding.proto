@@ -44,6 +44,7 @@ message CommandQueueEntry {
   optional int64 generationTime = 8;
   optional string generationTimeUTC = 10;
   optional string uuid = 9;
+  optional string comment = 11;
 }
 
 message CommandQueueEvent {

@@ -95,7 +95,6 @@ public final class Table {
       super(builder);
     }
     private ColumnInfo() {
-      id_ = 0;
       name_ = "";
       type_ = "";
       protoClass_ = "";
@@ -187,7 +186,7 @@ public final class Table {
      * <code>optional uint32 id = 1;</code>
      */
     public boolean hasId() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional uint32 id = 1;</code>
@@ -202,7 +201,7 @@ public final class Table {
      * <code>optional string name = 2;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional string name = 2;</code>
@@ -244,7 +243,7 @@ public final class Table {
      * <code>optional string type = 3;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string type = 3;</code>
@@ -290,7 +289,7 @@ public final class Table {
      * <code>optional string protoClass = 4;</code>
      */
     public boolean hasProtoClass() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -348,16 +347,16 @@ public final class Table {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(1, id_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, name_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, type_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, protoClass_);
       }
       unknownFields.writeTo(output);
@@ -369,17 +368,17 @@ public final class Table {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, id_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, name_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, type_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, protoClass_);
       }
       size += unknownFields.getSerializedSize();
@@ -397,29 +396,28 @@ public final class Table {
       }
       org.yamcs.protobuf.Table.ColumnInfo other = (org.yamcs.protobuf.Table.ColumnInfo) obj;
 
-      boolean result = true;
-      result = result && (hasId() == other.hasId());
+      if (hasId() != other.hasId()) return false;
       if (hasId()) {
-        result = result && (getId()
-            == other.getId());
+        if (getId()
+            != other.getId()) return false;
       }
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && getType()
-            .equals(other.getType());
+        if (!getType()
+            .equals(other.getType())) return false;
       }
-      result = result && (hasProtoClass() == other.hasProtoClass());
+      if (hasProtoClass() != other.hasProtoClass()) return false;
       if (hasProtoClass()) {
-        result = result && getProtoClass()
-            .equals(other.getProtoClass());
+        if (!getProtoClass()
+            .equals(other.getProtoClass())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -614,19 +612,19 @@ public final class Table {
         org.yamcs.protobuf.Table.ColumnInfo result = new org.yamcs.protobuf.Table.ColumnInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.id_ = id_;
           to_bitField0_ |= 0x00000001;
         }
-        result.id_ = id_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.protoClass_ = protoClass_;
@@ -637,35 +635,35 @@ public final class Table {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -732,7 +730,7 @@ public final class Table {
        * <code>optional uint32 id = 1;</code>
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional uint32 id = 1;</code>
@@ -764,7 +762,7 @@ public final class Table {
        * <code>optional string name = 2;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string name = 2;</code>
@@ -840,7 +838,7 @@ public final class Table {
        * <code>optional string type = 3;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string type = 3;</code>
@@ -920,7 +918,7 @@ public final class Table {
        * <code>optional string protoClass = 4;</code>
        */
       public boolean hasProtoClass() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -1098,7 +1096,6 @@ public final class Table {
       super(builder);
     }
     private Cell() {
-      columnId_ = 0;
       data_ = com.google.protobuf.ByteString.EMPTY;
     }
 
@@ -1175,7 +1172,7 @@ public final class Table {
      * <code>optional uint32 columnId = 1;</code>
      */
     public boolean hasColumnId() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional uint32 columnId = 1;</code>
@@ -1190,7 +1187,7 @@ public final class Table {
      * <code>optional bytes data = 2;</code>
      */
     public boolean hasData() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional bytes data = 2;</code>
@@ -1213,10 +1210,10 @@ public final class Table {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(1, columnId_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeBytes(2, data_);
       }
       unknownFields.writeTo(output);
@@ -1228,11 +1225,11 @@ public final class Table {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, columnId_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, data_);
       }
@@ -1251,19 +1248,18 @@ public final class Table {
       }
       org.yamcs.protobuf.Table.Cell other = (org.yamcs.protobuf.Table.Cell) obj;
 
-      boolean result = true;
-      result = result && (hasColumnId() == other.hasColumnId());
+      if (hasColumnId() != other.hasColumnId()) return false;
       if (hasColumnId()) {
-        result = result && (getColumnId()
-            == other.getColumnId());
+        if (getColumnId()
+            != other.getColumnId()) return false;
       }
-      result = result && (hasData() == other.hasData());
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -1446,11 +1442,11 @@ public final class Table {
         org.yamcs.protobuf.Table.Cell result = new org.yamcs.protobuf.Table.Cell(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.columnId_ = columnId_;
           to_bitField0_ |= 0x00000001;
         }
-        result.columnId_ = columnId_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.data_ = data_;
@@ -1461,35 +1457,35 @@ public final class Table {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -1544,7 +1540,7 @@ public final class Table {
        * <code>optional uint32 columnId = 1;</code>
        */
       public boolean hasColumnId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional uint32 columnId = 1;</code>
@@ -1576,7 +1572,7 @@ public final class Table {
        * <code>optional bytes data = 2;</code>
        */
       public boolean hasData() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional bytes data = 2;</code>
@@ -1772,7 +1768,7 @@ public final class Table {
               done = true;
               break;
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 column_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -1781,7 +1777,7 @@ public final class Table {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
                 cell_ = new java.util.ArrayList<org.yamcs.protobuf.Table.Cell>();
                 mutable_bitField0_ |= 0x00000002;
               }
@@ -1804,10 +1800,10 @@ public final class Table {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           column_ = java.util.Collections.unmodifiableList(column_);
         }
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           cell_ = java.util.Collections.unmodifiableList(cell_);
         }
         this.unknownFields = unknownFields.build();
@@ -1969,13 +1965,12 @@ public final class Table {
       }
       org.yamcs.protobuf.Table.Row other = (org.yamcs.protobuf.Table.Row) obj;
 
-      boolean result = true;
-      result = result && getColumnList()
-          .equals(other.getColumnList());
-      result = result && getCellList()
-          .equals(other.getCellList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getColumnList()
+          .equals(other.getColumnList())) return false;
+      if (!getCellList()
+          .equals(other.getCellList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -2168,7 +2163,7 @@ public final class Table {
         org.yamcs.protobuf.Table.Row result = new org.yamcs.protobuf.Table.Row(this);
         int from_bitField0_ = bitField0_;
         if (columnBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             column_ = java.util.Collections.unmodifiableList(column_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -2177,7 +2172,7 @@ public final class Table {
           result.column_ = columnBuilder_.build();
         }
         if (cellBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000002) != 0)) {
             cell_ = java.util.Collections.unmodifiableList(cell_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
@@ -2191,35 +2186,35 @@ public final class Table {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -2318,7 +2313,7 @@ public final class Table {
       private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           column_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>(column_);
           bitField0_ |= 0x00000001;
          }
@@ -2619,7 +2614,7 @@ public final class Table {
           columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Table.ColumnInfo, org.yamcs.protobuf.Table.ColumnInfo.Builder, org.yamcs.protobuf.Table.ColumnInfoOrBuilder>(
                   column_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           column_ = null;
@@ -2630,7 +2625,7 @@ public final class Table {
       private java.util.List<org.yamcs.protobuf.Table.Cell> cell_ =
         java.util.Collections.emptyList();
       private void ensureCellIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           cell_ = new java.util.ArrayList<org.yamcs.protobuf.Table.Cell>(cell_);
           bitField0_ |= 0x00000002;
          }
@@ -2859,7 +2854,7 @@ public final class Table {
           cellBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Table.Cell, org.yamcs.protobuf.Table.Cell.Builder, org.yamcs.protobuf.Table.CellOrBuilder>(
                   cell_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
                   isClean());
           cell_ = null;
@@ -2945,7 +2940,6 @@ public final class Table {
       super(builder);
     }
     private TableLoadResponse() {
-      rowsLoaded_ = 0;
     }
 
     @java.lang.Override
@@ -3016,7 +3010,7 @@ public final class Table {
      * <code>optional uint32 rowsLoaded = 1;</code>
      */
     public boolean hasRowsLoaded() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional uint32 rowsLoaded = 1;</code>
@@ -3039,7 +3033,7 @@ public final class Table {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(1, rowsLoaded_);
       }
       unknownFields.writeTo(output);
@@ -3051,7 +3045,7 @@ public final class Table {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, rowsLoaded_);
       }
@@ -3070,14 +3064,13 @@ public final class Table {
       }
       org.yamcs.protobuf.Table.TableLoadResponse other = (org.yamcs.protobuf.Table.TableLoadResponse) obj;
 
-      boolean result = true;
-      result = result && (hasRowsLoaded() == other.hasRowsLoaded());
+      if (hasRowsLoaded() != other.hasRowsLoaded()) return false;
       if (hasRowsLoaded()) {
-        result = result && (getRowsLoaded()
-            == other.getRowsLoaded());
+        if (getRowsLoaded()
+            != other.getRowsLoaded()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3254,10 +3247,10 @@ public final class Table {
         org.yamcs.protobuf.Table.TableLoadResponse result = new org.yamcs.protobuf.Table.TableLoadResponse(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.rowsLoaded_ = rowsLoaded_;
           to_bitField0_ |= 0x00000001;
         }
-        result.rowsLoaded_ = rowsLoaded_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3265,35 +3258,35 @@ public final class Table {
 
       @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
       @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
       @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
       @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
       @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
       @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
@@ -3345,7 +3338,7 @@ public final class Table {
        * <code>optional uint32 rowsLoaded = 1;</code>
        */
       public boolean hasRowsLoaded() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional uint32 rowsLoaded = 1;</code>

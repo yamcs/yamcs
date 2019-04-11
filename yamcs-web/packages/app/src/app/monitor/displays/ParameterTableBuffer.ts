@@ -1,4 +1,4 @@
-import { ParameterValue } from '@yamcs/client';
+import { NamedObjectId, ParameterValue } from '@yamcs/client';
 
 /**
  * Sample buffer that limits samples to a fixed total.
@@ -15,16 +15,18 @@ export class ParameterTableBuffer {
     this.buf = Array(bufferSize).fill(undefined);
   }
 
-  push(delivery: ParameterValue[]) {
+  push(delivery: ParameterValue[], idMapping: {[key: number]: NamedObjectId}) {
     const byName: {[key: string]: ParameterValue} = {};
     for (const pval of delivery) {
-      byName[pval.id.name] = pval;
+      const id = idMapping[pval.numericId];
+      byName[id.name] = pval;
     }
     this.buf[this.pointer] = byName;
     this.pointer = (this.pointer + 1) % this.buf.length;
 
     for (const pval of delivery) {
-      this.latestValues.set(pval.id.name, pval);
+      const id = idMapping[pval.numericId];
+      this.latestValues.set(id.name, pval);
     }
   }
 

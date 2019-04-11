@@ -1,5 +1,5 @@
 <ng-container *ngIf="table$ | async as table">
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
       <app-detail-toolbar>
         Record
@@ -15,7 +15,7 @@
         Select a record
       </app-detail-toolbar>
     </ng-template>
-  </div>
+  </app-detail-pane>
   <div class="data-table-wrapper">
     <div class="panel-content">
       <table yaDataTable *ngIf="records$ | async as records">

@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Parameter, Instance, ParameterValue, EnumValue, AlarmRange } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { AlarmRange, EnumValue, Instance, Parameter, ParameterValue } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './ParameterSummaryTab.html',
@@ -41,6 +41,7 @@ export class ParameterSummaryTab {
         sendFromCache: true,
         subscriptionId: -1,
         updateOnExpiration: true,
+        useNumericIds: true,
       }).then(res => {
         this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
           this.parameterValue$.next(pvals[0]);

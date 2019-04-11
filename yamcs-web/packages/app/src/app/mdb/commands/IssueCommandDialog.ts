@@ -12,10 +12,13 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class IssueCommandDialog {
 
-  form = new FormGroup({});
+  form = new FormGroup({
+    _comment: new FormControl(),
+  });
   arguments: Argument[] = [];
   initialValueCount = 0;
   showAll$ = new BehaviorSubject<boolean>(false);
+  showComment$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private dialogRef: MatDialogRef<IssueCommandDialog>,
@@ -61,17 +64,23 @@ export class IssueCommandDialog {
 
   issue() {
     const assignments: ArgumentAssignment[] = [];
-    for (const argumentName in this.form.controls) {
-      if (this.form.controls.hasOwnProperty(argumentName)) {
-        const control = this.form.controls[argumentName];
-        if (!this.isArgumentWithInitialValue(argumentName) || control.touched) {
-          assignments.push({ name: argumentName, value: this.form.value[argumentName] });
+    let comment = null;
+    for (const controlName in this.form.controls) {
+      if (this.form.controls.hasOwnProperty(controlName)) {
+        if (controlName === '_comment') {
+          comment = this.form.value['_comment'];
+        } else {
+          const control = this.form.controls[controlName];
+          if (!this.isArgumentWithInitialValue(controlName) || control.touched) {
+            assignments.push({ name: controlName, value: this.form.value[controlName] });
+          }
         }
       }
     }
     const processor = this.yamcs.getProcessor();
     this.yamcs.getInstanceClient()!.issueCommand(processor.name, this.data.command.qualifiedName, {
-      assignment: assignments
+      assignment: assignments,
+      comment: comment || undefined,
     }).then(response => this.dialogRef.close(response));
   }
 

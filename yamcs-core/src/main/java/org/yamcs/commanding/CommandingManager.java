@@ -87,8 +87,7 @@ public class CommandingManager extends AbstractService {
     public void addToCommandHistory(CommandId commandId, String key, String value, User user)
             throws NoPermissionException {
         if (!user.hasSystemPrivilege(SystemPrivilege.ModifyCommandHistory)) {
-            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", user);
-            throw new NoPermissionException("User has no privilege to update command history ");
+            throw new NoPermissionException("User has no privilege to update command history");
         }
 
         commandQueueManager.addToCommandHistory(commandId, key, value);

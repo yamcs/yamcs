@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
     Alarms
     &nbsp;&nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -11,7 +11,7 @@
     </button>
   </app-instance-toolbar>
 
-  <div class="detail">
+  <app-detail-pane>
     <ng-container *ngIf="detailAlarm$ | async as detailAlarm; else noDetail">
       <app-detail-toolbar>
         Alarm Detail
@@ -28,7 +28,7 @@
         {{ selection.selected.length }} alarms selected
       </div>
     </ng-template>
-  </div>
+  </app-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
@@ -43,11 +43,11 @@
              matSortDisableClear>
 
         <ng-container matColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
             <input type="checkbox" (change)="$event ? masterToggle() : null"
                           [checked]="selection.hasValue() && isAllSelected()">
           </th>
-          <td mat-cell *cdkCellDef="let row">
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
             <input type="checkbox" (click)="$event.stopPropagation()"
                           (change)="$event ? selection.toggle(row) : null"
                           [checked]="selection.isSelected(row)">

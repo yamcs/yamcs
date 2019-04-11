@@ -5,3 +5,9 @@ span.label {
   border-radius: 4px;
   white-space: nowrap;
 }
+
+span.label .mat-icon {
+  vertical-align: middle;
+  font-size: 12px !important;
+  line-height: 16px;
+}

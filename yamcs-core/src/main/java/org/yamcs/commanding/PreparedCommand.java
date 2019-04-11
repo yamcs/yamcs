@@ -58,6 +58,7 @@ public class PreparedCommand {
     public final static String CNAME_CMDNAME = "cmdName";
     public final static String CNAME_SOURCE = "source";
     public final static String CNAME_ASSIGNMENTS = "assignments";
+    public final static String CNAME_COMMENT = "comment";
 
     public PreparedCommand(CommandId id) {
         this.id = id;
@@ -86,15 +87,25 @@ public class PreparedCommand {
         return getStringAttribute(CNAME_SOURCE);
     }
 
+    public void setComment(String comment) {
+        setStringAttribute(CNAME_COMMENT, comment);
+    }
+
+    public String getComment() {
+        return getStringAttribute(CNAME_COMMENT);
+    }
+
     public String getCmdName() {
         return id.getCommandName();
     }
 
     public String getStringAttribute(String attrname) {
         CommandHistoryAttribute a = getAttribute(attrname);
-        Value v = ValueUtility.fromGpb(a.getValue());
-        if ((a != null) && (v.getType() == Type.STRING)) {
-            return v.getStringValue();
+        if (a != null) {
+            Value v = ValueUtility.fromGpb(a.getValue());
+            if (v.getType() == Type.STRING) {
+                return v.getStringValue();
+            }
         }
         return null;
     }
@@ -181,7 +192,7 @@ public class PreparedCommand {
             ColumnDefinition cd = t.getColumnDefinition(i);
             String name = cd.getName();
             if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
-                    || CNAME_ASSIGNMENTS.equals(name)) {
+                    || CNAME_ASSIGNMENTS.equals(name) || CNAME_COMMENT.equals(name)) {
                 continue;
             }
             Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
@@ -190,6 +201,10 @@ public class PreparedCommand {
             pc.attributes.add(a);
         }
         pc.setBinary((byte[]) t.getColumn(CNAME_BINARY));
+        if (t.hasColumn(CNAME_COMMENT)) {
+            String comment = (String) t.getColumn(CNAME_COMMENT);
+            pc.setComment(comment);
+        }
 
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
         pc.argAssignment = new HashMap<>();

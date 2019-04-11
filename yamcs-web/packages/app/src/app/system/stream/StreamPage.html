@@ -1,5 +1,5 @@
 <app-instance-page *ngIf="stream$ | async as stream">
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="rlb.isActive">
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Streams / {{ stream.name }}

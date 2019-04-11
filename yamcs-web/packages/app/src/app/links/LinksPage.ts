@@ -6,7 +6,9 @@ import { Link, LinkEvent } from '@yamcs/client';
 import { BehaviorSubject, fromEvent, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AuthService } from '../core/services/AuthService';
+import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
+import { ColumnInfo } from '../shared/template/ColumnChooser';
 import { LinkItem } from './LinkItem';
 
 @Component({
@@ -21,7 +23,22 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   selectedItem$ = new BehaviorSubject<LinkItem | null>(null);
 
-  displayedColumns = ['status', 'name', 'className', 'in', 'out', 'actions'];
+  columns: ColumnInfo[] = [
+    { id: 'status', label: '', alwaysVisible: true },
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'className', label: 'Class Name' },
+    { id: 'in', label: 'In Count' },
+    { id: 'out', label: 'Out Count' },
+    { id: 'actions', label: '', alwaysVisible: true },
+  ];
+
+  displayedColumns = [
+    'status',
+    'name',
+    'in',
+    'out',
+    'actions'
+  ];
 
   dataSource = new MatTableDataSource<LinkItem>();
 
@@ -36,8 +53,13 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private changeDetection: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
+    private preferenceStore: PreferenceStore,
   ) {
     title.setTitle('Links - Yamcs');
+    const cols = preferenceStore.getVisibleColumns('links');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
 
     this.dataSource.filterPredicate = (item, filter) => {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
@@ -168,6 +190,11 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   selectLink(item: LinkItem) {
     this.selectedItem$.next(item);
+  }
+
+  updateColumns(displayedColumns: string[]) {
+    this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('links', displayedColumns);
   }
 
   ngOnDestroy() {

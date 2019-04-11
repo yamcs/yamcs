@@ -1,5 +1,5 @@
 <app-instance-page *ngIf="table$ | async as table">
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="rlb.isActive">
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Tables / {{ table.name }}

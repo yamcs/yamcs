@@ -22,6 +22,7 @@ export class CommandQueuesTable implements AfterViewInit {
   displayedColumns = [
     'state',
     'name',
+    'labels',
     'actions',
   ];
 

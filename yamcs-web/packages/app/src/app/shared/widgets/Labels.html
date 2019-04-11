@@ -1,5 +1,5 @@
 <ng-container *ngIf="sortedLabels$ | async as labels">
-  <span class="label" *ngFor="let label of labels">
+  <app-label class="label" *ngFor="let label of labels">
     {{ label.key }}<ng-container *ngIf="label.value">:&nbsp;{{ label.value }}</ng-container>
-  </span>
+  </app-label>
 </ng-container>

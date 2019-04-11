@@ -11,9 +11,6 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,11 +66,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     boolean passiveUpdate = false;
 
     private TimeInterval receivedDataInterval = new TimeInterval();
-
-    volatile boolean lowOnMemoryReported = false;
-
-    // used to check for out of memory errors that may happen when receiving too many archive records
-    MemoryPoolMXBean heapMemoryPoolBean = null;
 
     public ArchivePanel(ArchiveBrowser archiveBrowser, boolean replayEnabled) {
         super(new BorderLayout());
@@ -240,14 +232,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
         openItem("Archive");
 
-        for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()) {
-                heapMemoryPoolBean = pool;
-                heapMemoryPoolBean
-                        .setCollectionUsageThreshold((int) Math.floor(heapMemoryPoolBean.getUsage().getMax() * 0.95));
-            }
-        }
-
         // Catch mouse events globally, to deal more easily with events on child components
         Toolkit.getDefaultToolkit().addAWTEventListener(event -> { // EDT
             if (activeItem instanceof DataViewer) {
@@ -369,10 +353,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             item.startReloading();
         }
 
-        if (lowOnMemoryReported) {
-            System.gc();
-            lowOnMemoryReported = false;
-        }
         receivedDataInterval = new TimeInterval();
     }
 
@@ -486,15 +466,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     }
 
     public synchronized void receiveArchiveRecords(IndexResult ir) {
-        if ((heapMemoryPoolBean != null) && (heapMemoryPoolBean.isCollectionUsageThresholdExceeded())) {
-            if (!lowOnMemoryReported) {
-                lowOnMemoryReported = true;
-                receiveArchiveRecordsError(
-                        "The memory is almost exhausted, ignoring received Archive Records. Consider increasing the maximum heap size -Xmx parameter");
-            }
-            return;
-        }
-
         for (NavigatorItem navigatorItem : itemsByName.values()) {
             navigatorItem.receiveArchiveRecords(ir);
         }

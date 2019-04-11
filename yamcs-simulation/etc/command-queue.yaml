@@ -10,8 +10,8 @@
 # If a command comes from a user which is not defined by any other queue, 
 #   it is put into the default queue 
 
-Operator:
+default:
   state: enabled
 
-Supervisor:
-  state: enabled
+supervised:
+  state: blocked

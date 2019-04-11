@@ -41,6 +41,8 @@ export class DyDataSource {
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
 
+  private idMapping: { [key: number]: NamedObjectId };
+
   constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
     this.syncSubscription = synchronizer.sync(() => {
       if (this.plotBuffer.dirty && !this.loading$.getValue()) {
@@ -147,8 +149,10 @@ export class DyDataSource {
       subscriptionId: -1,
       updateOnExpiration: true,
       abortOnInvalid: true,
+      useNumericIds: true,
     }).then(response => {
       this.subscriptionId = response.subscriptionId;
+      this.idMapping = response.mapping;
       this.realtimeSubscription = response.parameterValues$.subscribe(pvals => {
         this.processRealtimeDelivery(pvals);
       });
@@ -162,6 +166,12 @@ export class DyDataSource {
       subscriptionId: this.subscriptionId,
       updateOnExpiration: true,
       abortOnInvalid: true,
+      useNumericIds: true,
+    }).then(response => {
+      this.idMapping = {
+        ...this.idMapping,
+        ...response.mapping,
+      };
     });
   }
 
@@ -182,7 +192,8 @@ export class DyDataSource {
           dyValue = [value, value, value];
         }
       }
-      this.latestRealtimeValues.set(pval.id.name, dyValue);
+      const id = this.idMapping[pval.numericId];
+      this.latestRealtimeValues.set(id.name, dyValue);
     }
 
     const t = new Date();
