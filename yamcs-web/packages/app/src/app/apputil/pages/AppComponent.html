@@ -13,33 +13,30 @@
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
-    <mat-menu #appMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item (click)="toggleDarkTheme()">
-        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-        Dark Mode:
-        <span *ngIf="darkMode$ | async">On</span>
-        <span *ngIf="!(darkMode$ | async)">Off</span>
-      </button>
-    </mat-menu>
-    <button mat-icon-button [matMenuTriggerFor]="appMenu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
 
     <ng-container *ngIf="user$ | async as user">
       <mat-menu #userMenu="matMenu" overlapTrigger="false">
         <a mat-menu-item routerLink="profile">
+          <mat-icon>account_box</mat-icon>
           Profile
         </a>
+        <button mat-menu-item (click)="toggleDarkTheme()">
+          <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
+          Dark mode:
+          <span *ngIf="darkMode$ | async">On</span>
+          <span *ngIf="!(darkMode$ | async)">Off</span>
+        </button>
         <mat-divider></mat-divider>
         <a mat-menu-item (click)="logout()">
-          Logout
+          <mat-icon>exit_to_app</mat-icon>
+          Sign out
         </a>
       </mat-menu>
-      <button mat-icon-button
+      <button mat-button
               [matMenuTriggerFor]="userMenu"
-              [matTooltip]="'Account: ' + user.getUsername()"
               matTooltipPosition="left">
-        <mat-icon>account_circle</mat-icon>
+        <mat-icon>person</mat-icon>
+        {{ user.getUsername() }}
       </button>
     </ng-container>
   </mat-toolbar-row>
