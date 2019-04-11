@@ -40,6 +40,36 @@
         <p>&nbsp;</p>
       </ng-container>
 
+      <ng-container *ngIf="parameter.type?.dataEncoding">
+        <div class="section-divider">
+          <mat-divider></mat-divider>
+        </div>
+
+        <h4>Data Encoding</h4>
+        <table yaDataTable>
+          <tr>
+            <th>Size in Bits</th>
+            <td>{{ parameter.type?.dataEncoding?.sizeInBits }}</td>
+          </tr>
+          <tr *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
+            <th>Byte Order</th>
+            <td>
+              <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
+                {{ parameter.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
+              </ng-container>
+              <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian === undefined">
+                -
+              </ng-container>
+            </td>
+          </tr>
+          <tr>
+            <th>Encoding</th>
+            <td>{{ parameter.type?.dataEncoding?.encoding || '-' }}</td>
+          </tr>
+        </table>
+        <p>&nbsp;</p>
+      </ng-container>
+
       <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
         <div class="section-divider">
           <mat-divider></mat-divider>
