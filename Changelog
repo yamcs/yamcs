@@ -1,3 +1,6 @@
+Version 3.4.8 released 11-Apr-2019
+- Fix algorithms having as input binary raw or engineering values
+
 Version 3.4.7 released 25-Oct-2018
 - Fix for issue #277: Event Viewer: sorting makes it open the wrong "event details"
 

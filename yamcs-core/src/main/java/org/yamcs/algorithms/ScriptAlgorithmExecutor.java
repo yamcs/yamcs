@@ -15,8 +15,6 @@ import javax.script.ScriptException;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.parameter.DoubleValue;
-import org.yamcs.parameter.FloatValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SInt32Value;
 import org.yamcs.parameter.SInt64Value;
@@ -25,12 +23,10 @@ import org.yamcs.parameter.UInt64Value;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.InputParameter;
@@ -44,7 +40,6 @@ import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 
-import com.google.protobuf.ByteString;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmEngine is reused
@@ -344,7 +339,6 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             String className="ValueBinding"+key;
             StringBuilder source=new StringBuilder();
             source.append("package org.yamcs.algorithms;\n");
-            source.append("import "+ByteString.class.getName()+";\n");
             source.append("import "+ParameterValue.class.getName()+";\n")
             .append("public class " + className + " extends ValueBinding {\n");
             StringBuilder updateValueSource=new StringBuilder("  public void updateValue(ParameterValue v) {\n")
@@ -382,10 +376,10 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private static String addValueType(StringBuilder source, Value v, boolean raw) {
         if(v.getType() == Type.BINARY) {
             if(raw) {
-                source.append("  public ByteString rawValue;\n");
+                source.append("  public byte[] rawValue;\n");
                 return "    rawValue=v.getRawValue().getBinaryValue();\n";
             } else {
-                source.append("  public ByteString value;\n");
+                source.append("  public byte[] value;\n");
                 return "    value=v.getEngValue().getBinaryValue();\n";
             }
         } else if(v.getType() == Type.DOUBLE) {
