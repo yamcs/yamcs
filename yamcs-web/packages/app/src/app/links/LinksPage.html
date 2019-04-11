@@ -1,8 +1,27 @@
 <app-instance-page>
-  <app-instance-toolbar [hasDetailPane]="true">Links</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
+    Links
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            (click)="enableSelectedLinks()"
+            [disabled]="!allowGroupEnable()">
+      <mat-icon>check</mat-icon>
+      ENABLE
+    </button>
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            (click)="disableSelectedLinks()"
+            [disabled]="!allowGroupDisable()">
+      <mat-icon>close</mat-icon>
+      DISABLE
+    </button>
+  </app-instance-toolbar>
 
   <app-detail-pane>
-    <ng-container *ngIf="selectedItem$ | async as selectedItem; else noSelection">
+    <ng-container *ngIf="detailLink$ | async as selectedItem; else noSelection">
       <app-detail-toolbar>
         Link Detail
       </app-detail-toolbar>
@@ -14,6 +33,9 @@
       <app-detail-toolbar>
         Select a link
       </app-detail-toolbar>
+      <div style="padding: 0 16px;" *ngIf="selection.hasValue()">
+        {{ selection.selected.length }} links selected
+      </div>
     </ng-template>
   </app-detail-pane>
 
@@ -33,6 +55,18 @@
             [trackBy]="tableTrackerFn"
             class="ya-data-table">
 
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input type="checkbox" (change)="$event ? masterToggle() : null"
+                   [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input type="checkbox" (click)="$event.stopPropagation()"
+                   (change)="$event ? selection.toggle(row) : null"
+                   [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Name</th>
           <td mat-cell *matCellDef="let row" style="white-space: nowrap">
@@ -44,7 +78,7 @@
             {{ row.link.name }}
             <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"
-                    (click)="expandItem(row)">
+                    (click)="expandItem($event, row)">
               <mat-icon *ngIf="row.expanded">expand_less</mat-icon>
               <mat-icon *ngIf="!row.expanded">expand_more</mat-icon>
             </button>
@@ -100,8 +134,8 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            (click)="selectLink(row)"
-            [class.selected]="row.link.name === (selectedItem$ | async)?.link.name"></tr>
+            (click)="toggleOne(row)"
+            [class.selected]="selection.isSelected(row)"></tr>
       </table>
     </div>
   </div>
