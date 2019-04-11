@@ -91,6 +91,10 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 }
             }
         }
+        if(!skipRun && !triggered && log.isTraceEnabled()) {
+            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}", algorithmDef.getName(),
+                    algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
+        }
         boolean shouldRun = (!skipRun && triggered);
         return shouldRun;
     }

@@ -29,7 +29,6 @@ import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.ParameterTypeUtils;
 
-import com.google.protobuf.ByteString;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
@@ -198,7 +197,6 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             String className = "ValueBinding" + key;
             StringBuilder source = new StringBuilder();
             source.append("package org.yamcs.algorithms;\n");
-            source.append("import " + ByteString.class.getName() + ";\n");
             source.append("import " + ParameterValue.class.getName() + ";\n")
                     .append("public class " + className + " extends ValueBinding {\n");
             StringBuilder updateValueSource = new StringBuilder("  public void updateValue(ParameterValue v) {\n")
@@ -246,10 +244,10 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private static String addValueType(StringBuilder source, Value v, boolean raw) {
         if (v.getType() == Type.BINARY) {
             if (raw) {
-                source.append("  public ByteString rawValue;\n");
+                source.append("  public byte[] rawValue;\n");
                 return "    rawValue=v.getRawValue().getBinaryValue();\n";
             } else {
-                source.append("  public ByteString value;\n");
+                source.append("  public byte[] value;\n");
                 return "    value=v.getEngValue().getBinaryValue();\n";
             }
         } else if (v.getType() == Type.DOUBLE) {
