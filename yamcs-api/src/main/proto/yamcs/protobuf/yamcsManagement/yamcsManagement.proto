@@ -166,7 +166,7 @@ message LinkInfo {
   optional int64 dataOutCount = 11;
   optional string detailedStatus = 9;
 
-  //if this is a sublink of an aggregated data link, this is the mae of the parent
+  //if this is a sublink of an aggregated data link, this is the name of the parent
   optional string parentName = 12;
 }
 

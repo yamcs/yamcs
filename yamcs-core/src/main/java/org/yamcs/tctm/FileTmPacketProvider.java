@@ -34,7 +34,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     static Logger log = LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
     TimeService timeService;
     String name;
-    
+
     public FileTmPacketProvider(String instance, String name, String fileName) throws IOException {
         this(fileName, "STOP", 1000);
         this.name = name;
@@ -166,6 +166,11 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        tmCount = 0;
     }
 
     @Override

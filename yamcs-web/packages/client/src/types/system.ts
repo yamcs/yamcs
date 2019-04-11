@@ -282,6 +282,11 @@ export interface ListInstancesOptions {
   filter?: string;
 }
 
+export interface EditLinkOptions {
+  state?: 'enabled' | 'disabled';
+  resetCounters?: boolean;
+}
+
 export interface EditInstanceOptions {
   state: 'stopped' | 'restarted' | 'running';
 }

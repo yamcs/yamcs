@@ -128,6 +128,16 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   expandItem($event: Event, item: LinkItem) {
     item.expanded = !item.expanded;
+
+    // Unselect child links when parent is collapsed
+    if (!item.expanded) {
+      for (const selectedItem of this.selection.selected) {
+        if (selectedItem.parentLink && selectedItem.parentLink.name === item.link.name) {
+          this.selection.deselect(selectedItem);
+        }
+      }
+    }
+
     this.updateDataSource();
 
     // Prevent row selection
@@ -140,6 +150,12 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   disableLink(name: string) {
     this.yamcs.getInstanceClient()!.disableLink(name);
+  }
+
+  resetCounters(name: string) {
+    this.yamcs.getInstanceClient()!.editLink(name, {
+      resetCounters: true,
+    });
   }
 
   mayControlLinks() {

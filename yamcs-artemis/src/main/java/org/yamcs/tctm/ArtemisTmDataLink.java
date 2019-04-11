@@ -39,13 +39,13 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     boolean preserveIncomingReceptionTime = false;
     YConfiguration config;
     final String linkName;
-    
+
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         this.artemisAddress = artemisAddress;
         this.linkName = name;
         timeService = YamcsServer.getTimeService(instance);
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
-      
+
     }
 
     public ArtemisTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
@@ -99,6 +99,11 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        packetcount = 0;
     }
 
     @Override

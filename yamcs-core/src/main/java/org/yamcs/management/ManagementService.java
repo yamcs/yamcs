@@ -323,6 +323,16 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
+    public void resetCounters(String instance, String linkName) {
+        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        if (o.isPresent()) {
+            LinkWithInfo lci = o.get();
+            lci.link.resetCounters();
+        } else {
+            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
+        }
+    }
+
     /**
      * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
      * has no extra effects. Either you listen, or you don't.

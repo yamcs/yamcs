@@ -396,6 +396,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         return tcCount;
     }
 
+    @Override
+    public void resetCounters() {
+        tcCount = 0;
+    }
+
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {

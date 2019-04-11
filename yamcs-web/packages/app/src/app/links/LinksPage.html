@@ -125,8 +125,17 @@
                       [disabled]="row.link.status === 'DISABLED'">
                 Disable link
               </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item
+                      (click)="resetCounters(row.link.name)">
+                Reset counters
+              </button>
             </mat-menu>
-            <button mat-button class="icon" [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
+            <button mat-button
+                    class="icon"
+                    (click)="$event.stopPropagation()"
+                    [matMenuTriggerFor]="linkMenu"
+                    *ngIf="mayControlLinks()">
               <mat-icon>more_vert</mat-icon>
             </button>
           </td>
