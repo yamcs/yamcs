@@ -1,5 +1,14 @@
 <app-instance-page>
-  <app-instance-toolbar [hasDetailPane]="true">Command History</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
+    Command History
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-instance-toolbar>
 
   <app-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
@@ -225,9 +234,18 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                  (click)="selectRecord(row)"
+                 [@rowAnimation]="row.animate"
                  [class.selected]="(selectedRecord$ | async) === row">
         </tr>
       </table>
+
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button [disabled]="!dataSource.hasMore()"
+                class="ya-button"
+                (click)="loadMoreData()">Load More</button>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
 
       <ng-template #empty>
         <app-empty-message *ngIf="!(dataSource.loading$ | async)">

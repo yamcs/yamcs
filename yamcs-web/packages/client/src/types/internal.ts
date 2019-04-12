@@ -1,5 +1,5 @@
 import { SpaceSystem } from './mdb';
-import { Alarm, CommandHistoryEntry, Event, IndexGroup, Range, Sample } from './monitoring';
+import { Alarm, Event, IndexGroup, Range, Sample } from './monitoring';
 import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, Service, Stream, Table } from './system';
 
 
@@ -26,10 +26,6 @@ export type WebSocketServerMessage = [
 
 export interface EventsWrapper {
   event: Event[];
-}
-
-export interface CommandHistoryEntryWrapper {
-  entry: CommandHistoryEntry[];
 }
 
 export interface InstancesWrapper {

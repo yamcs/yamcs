@@ -185,6 +185,11 @@ export interface CommandHistoryEntry {
   assignment: CommandAssignment[];
 }
 
+export interface CommandHistoryPage {
+  entry?: CommandHistoryEntry[]
+  continuationToken?: string;
+}
+
 export interface Alarm {
   seqNum: number;
   type: 'ACTIVE' | 'TRIGGERED' | 'SEVERITY_INCREASED' | 'PVAL_UPDATED' | 'ACKNOWLEDGED' | 'CLEARED';
@@ -221,6 +226,7 @@ export interface GetCommandHistoryOptions {
   stop?: string;
   pos?: number;
   limit?: number;
+  next?: string;
   order?: 'asc' | 'desc';
 }
 

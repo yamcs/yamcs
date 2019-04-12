@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { rowAnimation } from '../../animations';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
@@ -10,9 +12,10 @@ import { CommandHistoryRecord } from './CommandHistoryRecord';
 @Component({
   templateUrl: './CommandHistoryPage.html',
   styleUrls: ['./CommandHistoryPage.css'],
+  animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandHistoryPage implements OnInit {
+export class CommandHistoryPage {
 
   instance: Instance;
 
@@ -30,17 +33,23 @@ export class CommandHistoryPage implements OnInit {
 
   dataSource: CommandHistoryDataSource;
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(private yamcs: YamcsService, title: Title, synchronizer: Synchronizer) {
     title.setTitle('Command History - Yamcs');
     this.instance = yamcs.getInstance();
+
+    this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
+    this.dataSource.loadEntries('realtime');
+  }
+
+  jumpToNow() {
+    this.dataSource.loadEntries('realtime');
   }
 
   // Used in table trackBy to prevent continuous row recreation
   // tableTrackerFn = (index: number, entry: CommandHistoryEntry) => ;
 
-  ngOnInit() {
-    this.dataSource = new CommandHistoryDataSource(this.yamcs);
-    this.dataSource.loadEntries('realtime');
+  loadMoreData() {
+    this.dataSource.loadMoreData({});
   }
 
   selectRecord(rec: CommandHistoryRecord) {
