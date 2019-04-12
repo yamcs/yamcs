@@ -105,9 +105,10 @@ public abstract class Expression {
     protected void fillCode_AllInputDefVars(StringBuilder code) {
         for (ColumnDefinition cd : inputDef.getColumnDefinitions()) {
             // if (cd.getType().val != DataType._type.PROTOBUF) {
-            code.append("\t\t" + cd.getType().javaType() + " col" + cd.getName() + " = null;\n")
+            String javaColIdentifier = "col" + cd.getName().replace("-", "_");
+            code.append("\t\t" + cd.getType().javaType() + " " + javaColIdentifier + " = null;\n")
                     .append("\t\tif (tuple.hasColumn(\"" + cd.getName() + "\")) {\n")
-                    .append("\t\t\tcol" + cd.getName() + " = (" + cd.getType().javaType() + ")tuple.getColumn(\""
+                    .append("\t\t\t" + javaColIdentifier + " = (" + cd.getType().javaType() + ")tuple.getColumn(\""
                             + cd.getName() + "\");\n")
                     .append("\t\t}\n");
             /*
@@ -119,7 +120,7 @@ public abstract class Expression {
     }
 
     protected void fillCode_getValueBody(StringBuilder code) throws StreamSqlException {
-    };
+    }
 
     protected abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
 
