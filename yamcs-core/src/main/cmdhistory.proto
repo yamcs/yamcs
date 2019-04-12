@@ -2,7 +2,7 @@ syntax = "proto2";
 
 option java_package = "org.yamcs.cmdhistory.protobuf";
 
-import "yamcs.proto";
+import "yamcs/protobuf/yamcs.proto";
 
 message AssignmentInfo {
   repeated Assignment assignment = 1;
@@ -10,5 +10,6 @@ message AssignmentInfo {
 
 message Assignment {
   optional string name = 1;
-  optional yamcs.Value value = 2;
+  optional yamcs.protobuf.Value value = 2;
+  optional bool userInput = 3;
 }

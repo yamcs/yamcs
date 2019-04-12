@@ -167,7 +167,17 @@
         <ng-container matColumnDef="command">
           <th mat-header-cell *matHeaderCellDef style="width: 350px">Command</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.source || '-' }}
+            {{ item.commandName }}
+            <button mat-stroked-button class="expandable"
+                    (click)="item.expanded = !item.expanded; $event.stopPropagation()"
+                    *ngIf="item.userAssignments.length">
+              <mat-icon>more_horiz</mat-icon>
+            </button><br>
+            <ng-container *ngIf="item.expanded">
+              <ng-container *ngFor="let assignment of item.userAssignments">
+                &nbsp;&bull; {{ assignment.name }}: {{ assignment.value | value }}<br>
+              </ng-container>
+            </ng-container>
           </td>
         </ng-container>
 

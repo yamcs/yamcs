@@ -57,14 +57,13 @@ public final class Tablespace {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:TimeBasedPartition)
       TimeBasedPartitionOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TimeBasedPartition.newBuilder() to construct.
     private TimeBasedPartition(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private TimeBasedPartition() {
       partitionDir_ = "";
-      partitionStart_ = 0L;
-      partitionEnd_ = 0L;
     }
 
     @java.lang.Override
@@ -77,6 +76,9 @@ public final class Tablespace {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -88,13 +90,6 @@ public final class Tablespace {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
@@ -109,6 +104,13 @@ public final class Tablespace {
             case 24: {
               bitField0_ |= 0x00000004;
               partitionEnd_ = input.readInt64();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -128,6 +130,7 @@ public final class Tablespace {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_fieldAccessorTable
@@ -142,7 +145,7 @@ public final class Tablespace {
      * <code>optional string partitionDir = 1;</code>
      */
     public boolean hasPartitionDir() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string partitionDir = 1;</code>
@@ -184,7 +187,7 @@ public final class Tablespace {
      * <code>optional int64 partitionStart = 2;</code>
      */
     public boolean hasPartitionStart() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional int64 partitionStart = 2;</code>
@@ -199,7 +202,7 @@ public final class Tablespace {
      * <code>optional int64 partitionEnd = 3;</code>
      */
     public boolean hasPartitionEnd() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int64 partitionEnd = 3;</code>
@@ -209,6 +212,7 @@ public final class Tablespace {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -218,33 +222,35 @@ public final class Tablespace {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, partitionDir_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeInt64(2, partitionStart_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt64(3, partitionEnd_);
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, partitionDir_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(2, partitionStart_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, partitionEnd_);
       }
@@ -253,7 +259,6 @@ public final class Tablespace {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -264,24 +269,23 @@ public final class Tablespace {
       }
       org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition) obj;
 
-      boolean result = true;
-      result = result && (hasPartitionDir() == other.hasPartitionDir());
+      if (hasPartitionDir() != other.hasPartitionDir()) return false;
       if (hasPartitionDir()) {
-        result = result && getPartitionDir()
-            .equals(other.getPartitionDir());
+        if (!getPartitionDir()
+            .equals(other.getPartitionDir())) return false;
       }
-      result = result && (hasPartitionStart() == other.hasPartitionStart());
+      if (hasPartitionStart() != other.hasPartitionStart()) return false;
       if (hasPartitionStart()) {
-        result = result && (getPartitionStart()
-            == other.getPartitionStart());
+        if (getPartitionStart()
+            != other.getPartitionStart()) return false;
       }
-      result = result && (hasPartitionEnd() == other.hasPartitionEnd());
+      if (hasPartitionEnd() != other.hasPartitionEnd()) return false;
       if (hasPartitionEnd()) {
-        result = result && (getPartitionEnd()
-            == other.getPartitionEnd());
+        if (getPartitionEnd()
+            != other.getPartitionEnd()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -290,7 +294,7 @@ public final class Tablespace {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasPartitionDir()) {
         hash = (37 * hash) + PARTITIONDIR_FIELD_NUMBER;
         hash = (53 * hash) + getPartitionDir().hashCode();
@@ -310,6 +314,17 @@ public final class Tablespace {
       return hash;
     }
 
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -369,6 +384,7 @@ public final class Tablespace {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -376,6 +392,7 @@ public final class Tablespace {
     public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -399,6 +416,7 @@ public final class Tablespace {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_fieldAccessorTable
@@ -421,6 +439,7 @@ public final class Tablespace {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         partitionDir_ = "";
@@ -432,15 +451,18 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getDefaultInstanceForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition build() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition result = buildPartial();
         if (!result.isInitialized()) {
@@ -449,53 +471,61 @@ public final class Tablespace {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition buildPartial() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.partitionDir_ = partitionDir_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.partitionStart_ = partitionStart_;
           to_bitField0_ |= 0x00000002;
         }
-        result.partitionStart_ = partitionStart_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.partitionEnd_ = partitionEnd_;
           to_bitField0_ |= 0x00000004;
         }
-        result.partitionEnd_ = partitionEnd_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition)other);
@@ -523,10 +553,12 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -551,7 +583,7 @@ public final class Tablespace {
        * <code>optional string partitionDir = 1;</code>
        */
       public boolean hasPartitionDir() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string partitionDir = 1;</code>
@@ -627,7 +659,7 @@ public final class Tablespace {
        * <code>optional int64 partitionStart = 2;</code>
        */
       public boolean hasPartitionStart() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional int64 partitionStart = 2;</code>
@@ -659,7 +691,7 @@ public final class Tablespace {
        * <code>optional int64 partitionEnd = 3;</code>
        */
       public boolean hasPartitionEnd() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int64 partitionEnd = 3;</code>
@@ -685,11 +717,13 @@ public final class Tablespace {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -711,11 +745,12 @@ public final class Tablespace {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<TimeBasedPartition>
         PARSER = new com.google.protobuf.AbstractParser<TimeBasedPartition>() {
+      @java.lang.Override
       public TimeBasedPartition parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TimeBasedPartition(input, extensionRegistry);
+        return new TimeBasedPartition(input, extensionRegistry);
       }
     };
 
@@ -728,6 +763,7 @@ public final class Tablespace {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -992,19 +1028,18 @@ public final class Tablespace {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:TablespaceRecord)
       TablespaceRecordOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TablespaceRecord.newBuilder() to construct.
     private TablespaceRecord(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private TablespaceRecord() {
-      tbsIndex_ = 0;
       type_ = 1;
       instanceName_ = "";
       tableName_ = "";
       histogramColumnName_ = "";
       partitionValue_ = com.google.protobuf.ByteString.EMPTY;
       parameterFqn_ = "";
-      parameterType_ = 0;
       partitioningSchema_ = "";
     }
 
@@ -1018,6 +1053,9 @@ public final class Tablespace {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1029,13 +1067,6 @@ public final class Tablespace {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               tbsIndex_ = input.readUInt32();
@@ -1043,6 +1074,7 @@ public final class Tablespace {
             }
             case 16: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type value = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(2, rawValue);
@@ -1077,7 +1109,7 @@ public final class Tablespace {
             }
             case 58: {
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+              if (((bitField0_ & 0x00000040) != 0)) {
                 subBuilder = partition_.toBuilder();
               }
               partition_ = input.readMessage(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.PARSER, extensionRegistry);
@@ -1107,7 +1139,7 @@ public final class Tablespace {
             }
             case 90: {
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000400) == 0x00000400)) {
+              if (((bitField0_ & 0x00000400) != 0)) {
                 subBuilder = bucketProperties_.toBuilder();
               }
               bucketProperties_ = input.readMessage(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.PARSER, extensionRegistry);
@@ -1116,6 +1148,13 @@ public final class Tablespace {
                 bucketProperties_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000400;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -1135,6 +1174,7 @@ public final class Tablespace {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_fieldAccessorTable
@@ -1379,7 +1419,7 @@ public final class Tablespace {
      * <code>optional uint32 tbsIndex = 1;</code>
      */
     public boolean hasTbsIndex() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional uint32 tbsIndex = 1;</code>
@@ -1394,12 +1434,13 @@ public final class Tablespace {
      * <code>optional .TablespaceRecord.Type type = 2;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional .TablespaceRecord.Type type = 2;</code>
      */
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type getType() {
+      @SuppressWarnings("deprecation")
       org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type result = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.valueOf(type_);
       return result == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION : result;
     }
@@ -1415,7 +1456,7 @@ public final class Tablespace {
      * <code>optional string instanceName = 3;</code>
      */
     public boolean hasInstanceName() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -1471,7 +1512,7 @@ public final class Tablespace {
      * <code>optional string tableName = 4;</code>
      */
     public boolean hasTableName() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -1525,7 +1566,7 @@ public final class Tablespace {
      * <code>optional string histogramColumnName = 5;</code>
      */
     public boolean hasHistogramColumnName() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
@@ -1579,7 +1620,7 @@ public final class Tablespace {
      * <code>optional bytes partitionValue = 6;</code>
      */
     public boolean hasPartitionValue() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <pre>
@@ -1604,7 +1645,7 @@ public final class Tablespace {
      * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     public boolean hasPartition() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <pre>
@@ -1644,7 +1685,7 @@ public final class Tablespace {
      * <code>optional string parameterFqn = 8;</code>
      */
     public boolean hasParameterFqn() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <pre>
@@ -1700,7 +1741,7 @@ public final class Tablespace {
      * <code>optional uint32 parameterType = 9;</code>
      */
     public boolean hasParameterType() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000100) != 0);
     }
     /**
      * <code>optional uint32 parameterType = 9;</code>
@@ -1719,7 +1760,7 @@ public final class Tablespace {
      * <code>optional string partitioningSchema = 10;</code>
      */
     public boolean hasPartitioningSchema() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      * <pre>
@@ -1773,7 +1814,7 @@ public final class Tablespace {
      * <code>optional .BucketProperties bucketProperties = 11;</code>
      */
     public boolean hasBucketProperties() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000400) != 0);
     }
     /**
      * <pre>
@@ -1797,6 +1838,7 @@ public final class Tablespace {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1806,85 +1848,87 @@ public final class Tablespace {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeUInt32(1, tbsIndex_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeEnum(2, type_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, instanceName_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, tableName_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, histogramColumnName_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         output.writeBytes(6, partitionValue_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         output.writeMessage(7, getPartition());
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000080) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 8, parameterFqn_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         output.writeUInt32(9, parameterType_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000200) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, partitioningSchema_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000400) != 0)) {
         output.writeMessage(11, getBucketProperties());
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, tbsIndex_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, instanceName_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, tableName_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, histogramColumnName_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(6, partitionValue_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(7, getPartition());
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000080) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, parameterFqn_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(9, parameterType_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000200) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, partitioningSchema_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000400) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, getBucketProperties());
       }
@@ -1893,7 +1937,6 @@ public final class Tablespace {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -1904,63 +1947,62 @@ public final class Tablespace {
       }
       org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord) obj;
 
-      boolean result = true;
-      result = result && (hasTbsIndex() == other.hasTbsIndex());
+      if (hasTbsIndex() != other.hasTbsIndex()) return false;
       if (hasTbsIndex()) {
-        result = result && (getTbsIndex()
-            == other.getTbsIndex());
+        if (getTbsIndex()
+            != other.getTbsIndex()) return false;
       }
-      result = result && (hasType() == other.hasType());
+      if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        result = result && type_ == other.type_;
+        if (type_ != other.type_) return false;
       }
-      result = result && (hasInstanceName() == other.hasInstanceName());
+      if (hasInstanceName() != other.hasInstanceName()) return false;
       if (hasInstanceName()) {
-        result = result && getInstanceName()
-            .equals(other.getInstanceName());
+        if (!getInstanceName()
+            .equals(other.getInstanceName())) return false;
       }
-      result = result && (hasTableName() == other.hasTableName());
+      if (hasTableName() != other.hasTableName()) return false;
       if (hasTableName()) {
-        result = result && getTableName()
-            .equals(other.getTableName());
+        if (!getTableName()
+            .equals(other.getTableName())) return false;
       }
-      result = result && (hasHistogramColumnName() == other.hasHistogramColumnName());
+      if (hasHistogramColumnName() != other.hasHistogramColumnName()) return false;
       if (hasHistogramColumnName()) {
-        result = result && getHistogramColumnName()
-            .equals(other.getHistogramColumnName());
+        if (!getHistogramColumnName()
+            .equals(other.getHistogramColumnName())) return false;
       }
-      result = result && (hasPartitionValue() == other.hasPartitionValue());
+      if (hasPartitionValue() != other.hasPartitionValue()) return false;
       if (hasPartitionValue()) {
-        result = result && getPartitionValue()
-            .equals(other.getPartitionValue());
+        if (!getPartitionValue()
+            .equals(other.getPartitionValue())) return false;
       }
-      result = result && (hasPartition() == other.hasPartition());
+      if (hasPartition() != other.hasPartition()) return false;
       if (hasPartition()) {
-        result = result && getPartition()
-            .equals(other.getPartition());
+        if (!getPartition()
+            .equals(other.getPartition())) return false;
       }
-      result = result && (hasParameterFqn() == other.hasParameterFqn());
+      if (hasParameterFqn() != other.hasParameterFqn()) return false;
       if (hasParameterFqn()) {
-        result = result && getParameterFqn()
-            .equals(other.getParameterFqn());
+        if (!getParameterFqn()
+            .equals(other.getParameterFqn())) return false;
       }
-      result = result && (hasParameterType() == other.hasParameterType());
+      if (hasParameterType() != other.hasParameterType()) return false;
       if (hasParameterType()) {
-        result = result && (getParameterType()
-            == other.getParameterType());
+        if (getParameterType()
+            != other.getParameterType()) return false;
       }
-      result = result && (hasPartitioningSchema() == other.hasPartitioningSchema());
+      if (hasPartitioningSchema() != other.hasPartitioningSchema()) return false;
       if (hasPartitioningSchema()) {
-        result = result && getPartitioningSchema()
-            .equals(other.getPartitioningSchema());
+        if (!getPartitioningSchema()
+            .equals(other.getPartitioningSchema())) return false;
       }
-      result = result && (hasBucketProperties() == other.hasBucketProperties());
+      if (hasBucketProperties() != other.hasBucketProperties()) return false;
       if (hasBucketProperties()) {
-        result = result && getBucketProperties()
-            .equals(other.getBucketProperties());
+        if (!getBucketProperties()
+            .equals(other.getBucketProperties())) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -1969,7 +2011,7 @@ public final class Tablespace {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasTbsIndex()) {
         hash = (37 * hash) + TBSINDEX_FIELD_NUMBER;
         hash = (53 * hash) + getTbsIndex();
@@ -2019,6 +2061,17 @@ public final class Tablespace {
       return hash;
     }
 
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2078,6 +2131,7 @@ public final class Tablespace {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -2085,6 +2139,7 @@ public final class Tablespace {
     public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2113,6 +2168,7 @@ public final class Tablespace {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_fieldAccessorTable
@@ -2137,6 +2193,7 @@ public final class Tablespace {
           getBucketPropertiesFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         tbsIndex_ = 0;
@@ -2172,15 +2229,18 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord getDefaultInstanceForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord build() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord result = buildPartial();
         if (!result.isInitialized()) {
@@ -2189,93 +2249,101 @@ public final class Tablespace {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord buildPartial() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.tbsIndex_ = tbsIndex_;
           to_bitField0_ |= 0x00000001;
         }
-        result.tbsIndex_ = tbsIndex_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.instanceName_ = instanceName_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
         }
         result.tableName_ = tableName_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
           to_bitField0_ |= 0x00000010;
         }
         result.histogramColumnName_ = histogramColumnName_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
           to_bitField0_ |= 0x00000020;
         }
         result.partitionValue_ = partitionValue_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          if (partitionBuilder_ == null) {
+            result.partition_ = partition_;
+          } else {
+            result.partition_ = partitionBuilder_.build();
+          }
           to_bitField0_ |= 0x00000040;
         }
-        if (partitionBuilder_ == null) {
-          result.partition_ = partition_;
-        } else {
-          result.partition_ = partitionBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+        if (((from_bitField0_ & 0x00000080) != 0)) {
           to_bitField0_ |= 0x00000080;
         }
         result.parameterFqn_ = parameterFqn_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.parameterType_ = parameterType_;
           to_bitField0_ |= 0x00000100;
         }
-        result.parameterType_ = parameterType_;
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+        if (((from_bitField0_ & 0x00000200) != 0)) {
           to_bitField0_ |= 0x00000200;
         }
         result.partitioningSchema_ = partitioningSchema_;
-        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+        if (((from_bitField0_ & 0x00000400) != 0)) {
+          if (bucketPropertiesBuilder_ == null) {
+            result.bucketProperties_ = bucketProperties_;
+          } else {
+            result.bucketProperties_ = bucketPropertiesBuilder_.build();
+          }
           to_bitField0_ |= 0x00000400;
-        }
-        if (bucketPropertiesBuilder_ == null) {
-          result.bucketProperties_ = bucketProperties_;
-        } else {
-          result.bucketProperties_ = bucketPropertiesBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord)other);
@@ -2335,10 +2403,12 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2363,7 +2433,7 @@ public final class Tablespace {
        * <code>optional uint32 tbsIndex = 1;</code>
        */
       public boolean hasTbsIndex() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional uint32 tbsIndex = 1;</code>
@@ -2395,12 +2465,13 @@ public final class Tablespace {
        * <code>optional .TablespaceRecord.Type type = 2;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional .TablespaceRecord.Type type = 2;</code>
        */
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type getType() {
+        @SuppressWarnings("deprecation")
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type result = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.valueOf(type_);
         return result == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION : result;
       }
@@ -2436,7 +2507,7 @@ public final class Tablespace {
        * <code>optional string instanceName = 3;</code>
        */
       public boolean hasInstanceName() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -2541,7 +2612,7 @@ public final class Tablespace {
        * <code>optional string tableName = 4;</code>
        */
       public boolean hasTableName() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -2641,7 +2712,7 @@ public final class Tablespace {
        * <code>optional string histogramColumnName = 5;</code>
        */
       public boolean hasHistogramColumnName() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <pre>
@@ -2741,7 +2812,7 @@ public final class Tablespace {
        * <code>optional bytes partitionValue = 6;</code>
        */
       public boolean hasPartitionValue() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <pre>
@@ -2783,7 +2854,7 @@ public final class Tablespace {
         return this;
       }
 
-      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition partition_ = null;
+      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition partition_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder> partitionBuilder_;
       /**
@@ -2796,7 +2867,7 @@ public final class Tablespace {
        * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public boolean hasPartition() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <pre>
@@ -2867,7 +2938,7 @@ public final class Tablespace {
        */
       public Builder mergePartition(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition value) {
         if (partitionBuilder_ == null) {
-          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+          if (((bitField0_ & 0x00000040) != 0) &&
               partition_ != null &&
               partition_ != org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance()) {
             partition_ =
@@ -2967,7 +3038,7 @@ public final class Tablespace {
        * <code>optional string parameterFqn = 8;</code>
        */
       public boolean hasParameterFqn() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000080) != 0);
       }
       /**
        * <pre>
@@ -3078,7 +3149,7 @@ public final class Tablespace {
        * <code>optional uint32 parameterType = 9;</code>
        */
       public boolean hasParameterType() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000100) != 0);
       }
       /**
        * <code>optional uint32 parameterType = 9;</code>
@@ -3114,7 +3185,7 @@ public final class Tablespace {
        * <code>optional string partitioningSchema = 10;</code>
        */
       public boolean hasPartitioningSchema() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000200) != 0);
       }
       /**
        * <pre>
@@ -3205,7 +3276,7 @@ public final class Tablespace {
         return this;
       }
 
-      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProperties_ = null;
+      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProperties_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder> bucketPropertiesBuilder_;
       /**
@@ -3216,7 +3287,7 @@ public final class Tablespace {
        * <code>optional .BucketProperties bucketProperties = 11;</code>
        */
       public boolean hasBucketProperties() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000400) != 0);
       }
       /**
        * <pre>
@@ -3279,7 +3350,7 @@ public final class Tablespace {
        */
       public Builder mergeBucketProperties(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties value) {
         if (bucketPropertiesBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) == 0x00000400) &&
+          if (((bitField0_ & 0x00000400) != 0) &&
               bucketProperties_ != null &&
               bucketProperties_ != org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance()) {
             bucketProperties_ =
@@ -3358,11 +3429,13 @@ public final class Tablespace {
         }
         return bucketPropertiesBuilder_;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3384,11 +3457,12 @@ public final class Tablespace {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<TablespaceRecord>
         PARSER = new com.google.protobuf.AbstractParser<TablespaceRecord>() {
+      @java.lang.Override
       public TablespaceRecord parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TablespaceRecord(input, extensionRegistry);
+        return new TablespaceRecord(input, extensionRegistry);
       }
     };
 
@@ -3401,6 +3475,7 @@ public final class Tablespace {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3513,17 +3588,13 @@ public final class Tablespace {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:BucketProperties)
       BucketPropertiesOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use BucketProperties.newBuilder() to construct.
     private BucketProperties(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private BucketProperties() {
       name_ = "";
-      created_ = 0L;
-      maxNumObjects_ = 0;
-      maxSize_ = 0L;
-      numObjects_ = 0;
-      size_ = 0L;
     }
 
     @java.lang.Override
@@ -3536,6 +3607,9 @@ public final class Tablespace {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -3547,13 +3621,6 @@ public final class Tablespace {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
@@ -3585,6 +3652,13 @@ public final class Tablespace {
               size_ = input.readUInt64();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3602,6 +3676,7 @@ public final class Tablespace {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_fieldAccessorTable
@@ -3616,7 +3691,7 @@ public final class Tablespace {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -3658,7 +3733,7 @@ public final class Tablespace {
      * <code>optional int64 created = 2;</code>
      */
     public boolean hasCreated() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional int64 created = 2;</code>
@@ -3677,7 +3752,7 @@ public final class Tablespace {
      * <code>optional int32 maxNumObjects = 3;</code>
      */
     public boolean hasMaxNumObjects() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -3700,7 +3775,7 @@ public final class Tablespace {
      * <code>optional uint64 maxSize = 4;</code>
      */
     public boolean hasMaxSize() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -3723,7 +3798,7 @@ public final class Tablespace {
      * <code>optional int32 numObjects = 5;</code>
      */
     public boolean hasNumObjects() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
@@ -3746,7 +3821,7 @@ public final class Tablespace {
      * <code>optional uint64 size = 6;</code>
      */
     public boolean hasSize() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <pre>
@@ -3760,6 +3835,7 @@ public final class Tablespace {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3769,54 +3845,56 @@ public final class Tablespace {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeInt64(2, created_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt32(3, maxNumObjects_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeUInt64(4, maxSize_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         output.writeInt32(5, numObjects_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         output.writeUInt64(6, size_);
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(2, created_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, maxNumObjects_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(4, maxSize_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(5, numObjects_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(6, size_);
       }
@@ -3825,7 +3903,6 @@ public final class Tablespace {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -3836,39 +3913,38 @@ public final class Tablespace {
       }
       org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasCreated() == other.hasCreated());
+      if (hasCreated() != other.hasCreated()) return false;
       if (hasCreated()) {
-        result = result && (getCreated()
-            == other.getCreated());
+        if (getCreated()
+            != other.getCreated()) return false;
       }
-      result = result && (hasMaxNumObjects() == other.hasMaxNumObjects());
+      if (hasMaxNumObjects() != other.hasMaxNumObjects()) return false;
       if (hasMaxNumObjects()) {
-        result = result && (getMaxNumObjects()
-            == other.getMaxNumObjects());
+        if (getMaxNumObjects()
+            != other.getMaxNumObjects()) return false;
       }
-      result = result && (hasMaxSize() == other.hasMaxSize());
+      if (hasMaxSize() != other.hasMaxSize()) return false;
       if (hasMaxSize()) {
-        result = result && (getMaxSize()
-            == other.getMaxSize());
+        if (getMaxSize()
+            != other.getMaxSize()) return false;
       }
-      result = result && (hasNumObjects() == other.hasNumObjects());
+      if (hasNumObjects() != other.hasNumObjects()) return false;
       if (hasNumObjects()) {
-        result = result && (getNumObjects()
-            == other.getNumObjects());
+        if (getNumObjects()
+            != other.getNumObjects()) return false;
       }
-      result = result && (hasSize() == other.hasSize());
+      if (hasSize() != other.hasSize()) return false;
       if (hasSize()) {
-        result = result && (getSize()
-            == other.getSize());
+        if (getSize()
+            != other.getSize()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3877,7 +3953,7 @@ public final class Tablespace {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasName()) {
         hash = (37 * hash) + NAME_FIELD_NUMBER;
         hash = (53 * hash) + getName().hashCode();
@@ -3910,6 +3986,17 @@ public final class Tablespace {
       return hash;
     }
 
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3969,6 +4056,7 @@ public final class Tablespace {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3976,6 +4064,7 @@ public final class Tablespace {
     public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -4003,6 +4092,7 @@ public final class Tablespace {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_fieldAccessorTable
@@ -4025,6 +4115,7 @@ public final class Tablespace {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -4042,15 +4133,18 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getDefaultInstanceForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties build() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties result = buildPartial();
         if (!result.isInitialized()) {
@@ -4059,65 +4153,73 @@ public final class Tablespace {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties buildPartial() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.created_ = created_;
           to_bitField0_ |= 0x00000002;
         }
-        result.created_ = created_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.maxNumObjects_ = maxNumObjects_;
           to_bitField0_ |= 0x00000004;
         }
-        result.maxNumObjects_ = maxNumObjects_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.maxSize_ = maxSize_;
           to_bitField0_ |= 0x00000008;
         }
-        result.maxSize_ = maxSize_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.numObjects_ = numObjects_;
           to_bitField0_ |= 0x00000010;
         }
-        result.numObjects_ = numObjects_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.size_ = size_;
           to_bitField0_ |= 0x00000020;
         }
-        result.size_ = size_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties)other);
@@ -4154,10 +4256,12 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4182,7 +4286,7 @@ public final class Tablespace {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -4258,7 +4362,7 @@ public final class Tablespace {
        * <code>optional int64 created = 2;</code>
        */
       public boolean hasCreated() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional int64 created = 2;</code>
@@ -4294,7 +4398,7 @@ public final class Tablespace {
        * <code>optional int32 maxNumObjects = 3;</code>
        */
       public boolean hasMaxNumObjects() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -4342,7 +4446,7 @@ public final class Tablespace {
        * <code>optional uint64 maxSize = 4;</code>
        */
       public boolean hasMaxSize() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -4390,7 +4494,7 @@ public final class Tablespace {
        * <code>optional int32 numObjects = 5;</code>
        */
       public boolean hasNumObjects() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <pre>
@@ -4438,7 +4542,7 @@ public final class Tablespace {
        * <code>optional uint64 size = 6;</code>
        */
       public boolean hasSize() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <pre>
@@ -4476,11 +4580,13 @@ public final class Tablespace {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -4502,11 +4608,12 @@ public final class Tablespace {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<BucketProperties>
         PARSER = new com.google.protobuf.AbstractParser<BucketProperties>() {
+      @java.lang.Override
       public BucketProperties parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BucketProperties(input, extensionRegistry);
+        return new BucketProperties(input, extensionRegistry);
       }
     };
 
@@ -4519,6 +4626,7 @@ public final class Tablespace {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -4629,16 +4737,14 @@ public final class Tablespace {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:ObjectProperties)
       ObjectPropertiesOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use ObjectProperties.newBuilder() to construct.
     private ObjectProperties(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private ObjectProperties() {
       name_ = "";
-      objectId_ = 0;
       contentType_ = "";
-      created_ = 0L;
-      size_ = 0L;
     }
 
     @java.lang.Override
@@ -4651,6 +4757,9 @@ public final class Tablespace {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -4662,13 +4771,6 @@ public final class Tablespace {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
@@ -4697,7 +4799,7 @@ public final class Tablespace {
               break;
             }
             case 50: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              if (!((mutable_bitField0_ & 0x00000020) != 0)) {
                 metadata_ = com.google.protobuf.MapField.newMapField(
                     MetadataDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000020;
@@ -4707,6 +4809,13 @@ public final class Tablespace {
                   MetadataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               metadata_.getMutableMap().put(
                   metadata__.getKey(), metadata__.getValue());
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -4727,6 +4836,7 @@ public final class Tablespace {
     }
 
     @SuppressWarnings({"rawtypes"})
+    @java.lang.Override
     protected com.google.protobuf.MapField internalGetMapField(
         int number) {
       switch (number) {
@@ -4737,6 +4847,7 @@ public final class Tablespace {
               "Invalid map field number: " + number);
       }
     }
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_fieldAccessorTable
@@ -4751,7 +4862,7 @@ public final class Tablespace {
      * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional string name = 1;</code>
@@ -4793,7 +4904,7 @@ public final class Tablespace {
      * <code>optional uint32 objectId = 2;</code>
      */
     public boolean hasObjectId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional uint32 objectId = 2;</code>
@@ -4808,7 +4919,7 @@ public final class Tablespace {
      * <code>optional string contentType = 3;</code>
      */
     public boolean hasContentType() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional string contentType = 3;</code>
@@ -4850,7 +4961,7 @@ public final class Tablespace {
      * <code>optional int64 created = 4;</code>
      */
     public boolean hasCreated() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional int64 created = 4;</code>
@@ -4865,7 +4976,7 @@ public final class Tablespace {
      * <code>optional uint64 size = 5;</code>
      */
     public boolean hasSize() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional uint64 size = 5;</code>
@@ -4951,6 +5062,7 @@ public final class Tablespace {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4960,21 +5072,22 @@ public final class Tablespace {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeUInt32(2, objectId_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, contentType_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, created_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         output.writeUInt64(5, size_);
       }
       com.google.protobuf.GeneratedMessageV3
@@ -4986,26 +5099,27 @@ public final class Tablespace {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(2, objectId_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, contentType_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, created_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(5, size_);
       }
@@ -5024,7 +5138,6 @@ public final class Tablespace {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -5035,36 +5148,35 @@ public final class Tablespace {
       }
       org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties) obj;
 
-      boolean result = true;
-      result = result && (hasName() == other.hasName());
+      if (hasName() != other.hasName()) return false;
       if (hasName()) {
-        result = result && getName()
-            .equals(other.getName());
+        if (!getName()
+            .equals(other.getName())) return false;
       }
-      result = result && (hasObjectId() == other.hasObjectId());
+      if (hasObjectId() != other.hasObjectId()) return false;
       if (hasObjectId()) {
-        result = result && (getObjectId()
-            == other.getObjectId());
+        if (getObjectId()
+            != other.getObjectId()) return false;
       }
-      result = result && (hasContentType() == other.hasContentType());
+      if (hasContentType() != other.hasContentType()) return false;
       if (hasContentType()) {
-        result = result && getContentType()
-            .equals(other.getContentType());
+        if (!getContentType()
+            .equals(other.getContentType())) return false;
       }
-      result = result && (hasCreated() == other.hasCreated());
+      if (hasCreated() != other.hasCreated()) return false;
       if (hasCreated()) {
-        result = result && (getCreated()
-            == other.getCreated());
+        if (getCreated()
+            != other.getCreated()) return false;
       }
-      result = result && (hasSize() == other.hasSize());
+      if (hasSize() != other.hasSize()) return false;
       if (hasSize()) {
-        result = result && (getSize()
-            == other.getSize());
+        if (getSize()
+            != other.getSize()) return false;
       }
-      result = result && internalGetMetadata().equals(
-          other.internalGetMetadata());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!internalGetMetadata().equals(
+          other.internalGetMetadata())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -5073,7 +5185,7 @@ public final class Tablespace {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasName()) {
         hash = (37 * hash) + NAME_FIELD_NUMBER;
         hash = (53 * hash) + getName().hashCode();
@@ -5105,6 +5217,17 @@ public final class Tablespace {
       return hash;
     }
 
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5164,6 +5287,7 @@ public final class Tablespace {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -5171,6 +5295,7 @@ public final class Tablespace {
     public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -5220,6 +5345,7 @@ public final class Tablespace {
                 "Invalid map field number: " + number);
         }
       }
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_fieldAccessorTable
@@ -5242,6 +5368,7 @@ public final class Tablespace {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -5258,15 +5385,18 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties getDefaultInstanceForType() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties build() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties result = buildPartial();
         if (!result.isInitialized()) {
@@ -5275,30 +5405,31 @@ public final class Tablespace {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties buildPartial() {
         org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.objectId_ = objectId_;
           to_bitField0_ |= 0x00000002;
         }
-        result.objectId_ = objectId_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.contentType_ = contentType_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.created_ = created_;
           to_bitField0_ |= 0x00000008;
         }
-        result.created_ = created_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.size_ = size_;
           to_bitField0_ |= 0x00000010;
         }
-        result.size_ = size_;
         result.metadata_ = internalGetMetadata();
         result.metadata_.makeImmutable();
         result.bitField0_ = to_bitField0_;
@@ -5306,32 +5437,39 @@ public final class Tablespace {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties)other);
@@ -5369,10 +5507,12 @@ public final class Tablespace {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5397,7 +5537,7 @@ public final class Tablespace {
        * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string name = 1;</code>
@@ -5473,7 +5613,7 @@ public final class Tablespace {
        * <code>optional uint32 objectId = 2;</code>
        */
       public boolean hasObjectId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional uint32 objectId = 2;</code>
@@ -5505,7 +5645,7 @@ public final class Tablespace {
        * <code>optional string contentType = 3;</code>
        */
       public boolean hasContentType() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional string contentType = 3;</code>
@@ -5581,7 +5721,7 @@ public final class Tablespace {
        * <code>optional int64 created = 4;</code>
        */
       public boolean hasCreated() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int64 created = 4;</code>
@@ -5613,7 +5753,7 @@ public final class Tablespace {
        * <code>optional uint64 size = 5;</code>
        */
       public boolean hasSize() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional uint64 size = 5;</code>
@@ -5717,7 +5857,8 @@ public final class Tablespace {
       }
 
       public Builder clearMetadata() {
-        getMutableMetadata().clear();
+        internalGetMutableMetadata().getMutableMap()
+            .clear();
         return this;
       }
       /**
@@ -5727,7 +5868,8 @@ public final class Tablespace {
       public Builder removeMetadata(
           java.lang.String key) {
         if (key == null) { throw new java.lang.NullPointerException(); }
-        getMutableMetadata().remove(key);
+        internalGetMutableMetadata().getMutableMap()
+            .remove(key);
         return this;
       }
       /**
@@ -5746,7 +5888,8 @@ public final class Tablespace {
           java.lang.String value) {
         if (key == null) { throw new java.lang.NullPointerException(); }
         if (value == null) { throw new java.lang.NullPointerException(); }
-        getMutableMetadata().put(key, value);
+        internalGetMutableMetadata().getMutableMap()
+            .put(key, value);
         return this;
       }
       /**
@@ -5755,14 +5898,17 @@ public final class Tablespace {
 
       public Builder putAllMetadata(
           java.util.Map<java.lang.String, java.lang.String> values) {
-        getMutableMetadata().putAll(values);
+        internalGetMutableMetadata().getMutableMap()
+            .putAll(values);
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -5784,11 +5930,12 @@ public final class Tablespace {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ObjectProperties>
         PARSER = new com.google.protobuf.AbstractParser<ObjectProperties>() {
+      @java.lang.Override
       public ObjectProperties parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ObjectProperties(input, extensionRegistry);
+        return new ObjectProperties(input, extensionRegistry);
       }
     };
 
@@ -5801,6 +5948,7 @@ public final class Tablespace {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5850,7 +5998,7 @@ public final class Tablespace {
       "olumnName\030\005 \001(\t\022\026\n\016partitionValue\030\006 \001(\014\022" +
       "&\n\tpartition\030\007 \001(\0132\023.TimeBasedPartition\022" +
       "\024\n\014parameterFqn\030\010 \001(\t\022\025\n\rparameterType\030\t" +
-      " \001(\r\022\032\n\022partitioningSchema\030\n \001(\t\022+\n\020buck",
+      " \001(\r\022\032\n\022partitioningSchema\030\n \001(\t\022+\n\020buck" +
       "etProperties\030\013 \001(\0132\021.BucketProperties\"\222\001" +
       "\n\004Type\022\023\n\017TABLE_PARTITION\020\001\022\r\n\tHISTOGRAM" +
       "\020\002\022\024\n\020PARCHIVE_PGID2PG\020\004\022\021\n\rPARCHIVE_DAT" +
@@ -5860,7 +6008,7 @@ public final class Tablespace {
       "\rmaxNumObjects\030\003 \001(\005\022\017\n\007maxSize\030\004 \001(\004\022\022\n" +
       "\nnumObjects\030\005 \001(\005\022\014\n\004size\030\006 \001(\004\"\312\001\n\020Obje" +
       "ctProperties\022\014\n\004name\030\001 \001(\t\022\020\n\010objectId\030\002" +
-      " \001(\r\022\023\n\013contentType\030\003 \001(\t\022\017\n\007created\030\004 \001",
+      " \001(\r\022\023\n\013contentType\030\003 \001(\t\022\017\n\007created\030\004 \001" +
       "(\003\022\014\n\004size\030\005 \001(\004\0221\n\010metadata\030\006 \003(\0132\037.Obj" +
       "ectProperties.MetadataEntry\032/\n\rMetadataE" +
       "ntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\"\n " +

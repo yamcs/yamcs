@@ -172,10 +172,17 @@ export interface CommandHistoryAttribute {
   value: Value;
 }
 
+export interface CommandAssignment {
+  name: string;
+  value: Value;
+  userInput: boolean;
+}
+
 export interface CommandHistoryEntry {
   commandId: CommandId;
   generationTimeUTC: string;
   attr: CommandHistoryAttribute[];
+  assignment: CommandAssignment[];
 }
 
 export interface Alarm {

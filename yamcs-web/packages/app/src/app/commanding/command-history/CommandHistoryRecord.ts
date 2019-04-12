@@ -1,4 +1,4 @@
-import { CommandHistoryEntry } from '@yamcs/client';
+import { CommandAssignment, CommandHistoryEntry } from '@yamcs/client';
 import * as utils from '../../shared/utils';
 import { CommandHistoryStage } from './CommandHistoryStage';
 
@@ -9,6 +9,9 @@ export class CommandHistoryRecord {
   sequenceNumber: number;
 
   commandName: string;
+
+  assignments: CommandAssignment[] = [];
+  userAssignments: CommandAssignment[] = [];
 
   username: string;
 
@@ -30,6 +33,13 @@ export class CommandHistoryRecord {
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
     this.commandName = entry.commandId.commandName;
+
+    for (const assignment of entry.assignment) {
+      this.assignments.push(assignment);
+      if (assignment.userInput) {
+        this.userAssignments.push(assignment);
+      }
+    }
 
     for (const attr of entry.attr) {
       if (attr.name === 'username') {
