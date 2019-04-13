@@ -37,8 +37,8 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
      */
     public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
         super(sizeInBits, byteOrder);
-        if (sizeInBits < 0 || sizeInBits > 64) {
-            throw new IllegalArgumentException("Invalid size in bits " + sizeInBits + "; should be between 0 and 64");
+        if (sizeInBits < -1 || sizeInBits > 64) {
+            throw new IllegalArgumentException("Invalid size in bits " + sizeInBits + "; should be between -1 and 64 (-1 can be used for custom encoders)");
         }
     }
 
