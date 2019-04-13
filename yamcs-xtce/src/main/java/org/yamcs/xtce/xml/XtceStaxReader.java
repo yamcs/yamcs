@@ -1243,6 +1243,10 @@ public class XtceStaxReader {
 
         // sizeInBits attribute
         int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 8);
+        if(sizeInBits<0 || sizeInBits>64) {
+            throw new XMLStreamException("Invalid sizeInBits "+sizeInBits+" specified for integer data encoding. Supported are between 0 and 64.",
+                    xmlEvent.getLocation());
+        }
         integerDataEncoding = new IntegerDataEncoding(sizeInBits);
 
         // encoding attribute

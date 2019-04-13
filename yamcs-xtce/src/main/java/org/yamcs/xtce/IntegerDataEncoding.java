@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * For all major encodings of integer data
  * 
@@ -17,10 +18,9 @@ import org.slf4j.LoggerFactory;
 public class IntegerDataEncoding extends DataEncoding implements NumericDataEncoding {
     private static final long serialVersionUID = 3L;
     static Logger log = LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
-    
+
     Calibrator defaultCalibrator = null;
     private List<ContextCalibrator> contextCalibratorList = null;
-    
 
     public enum Encoding {
         UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING
@@ -37,10 +37,13 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
      */
     public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
         super(sizeInBits, byteOrder);
+        if (sizeInBits < 0 || sizeInBits > 64) {
+            throw new IllegalArgumentException("Invalid size in bits " + sizeInBits + "; should be between 0 and 64");
+        }
     }
 
     public IntegerDataEncoding(int sizeInBits) {
-        super(sizeInBits, ByteOrder.BIG_ENDIAN);
+        this(sizeInBits, ByteOrder.BIG_ENDIAN);
     }
 
     /**
@@ -51,7 +54,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
      *            describes how the string is encoded.
      */
     public IntegerDataEncoding(String name, StringDataEncoding sde) {
-        super(sde.getSizeInBits());
+        this(sde.getSizeInBits());
         encoding = Encoding.STRING;
         stringEncoding = sde;
     }
@@ -80,7 +83,6 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         this.defaultCalibrator = calibrator;
     }
 
-  
     @Override
     public Object parseString(String stringValue) {
         if (encoding == Encoding.STRING) {
@@ -101,12 +103,12 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
     public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
         this.contextCalibratorList = contextCalibratorList;
     }
-    
+
     @Override
     public Set<Parameter> getDependentParameters() {
-        if(contextCalibratorList!=null) {
+        if (contextCalibratorList != null) {
             Set<Parameter> r = new HashSet<>();
-            for(ContextCalibrator cc: contextCalibratorList) {
+            for (ContextCalibrator cc : contextCalibratorList) {
                 r.addAll(cc.getContextMatch().getDependentParameters());
             }
             return r;
@@ -114,21 +116,21 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             return Collections.emptySet();
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("IntegerDataEncoding[sizeInBits: ").append(sizeInBits)
-        .append(", byteOrder: ").append(byteOrder);
+                .append(", byteOrder: ").append(byteOrder);
         if (stringEncoding == null) {
             sb.append(", encoding:").append(encoding);
         } else {
             sb.append(", stringEncoding: ").append(stringEncoding);
         }
-        if(defaultCalibrator!=null) {
+        if (defaultCalibrator != null) {
             sb.append(", defaultCalibrator: ").append(defaultCalibrator);
         }
-        if(contextCalibratorList!=null) {
+        if (contextCalibratorList != null) {
             sb.append(", contextCalibrators: ").append(contextCalibratorList);
         }
         sb.append("]");
