@@ -24,6 +24,7 @@ import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
@@ -43,6 +44,7 @@ import { Expirable } from './template/Expirable';
 import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
+import { Interval } from './template/Interval';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
@@ -114,6 +116,7 @@ const sharedComponents = [
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,
+  Interval,
   Label,
   Labels,
   ParameterLegend,
@@ -140,6 +143,7 @@ const pipes = [
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,
+  NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
   UnitsPipe,
