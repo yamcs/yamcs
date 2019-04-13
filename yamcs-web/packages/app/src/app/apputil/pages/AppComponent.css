@@ -19,3 +19,7 @@ mat-toolbar-row {
   background: #d3d3d3;
   margin: 10px 5px;
 }
+
+.logo-wrapper {
+  padding-left: 16px;
+}

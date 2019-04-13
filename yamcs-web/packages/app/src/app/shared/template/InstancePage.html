@@ -1,5 +1,5 @@
 <mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
-  <mat-sidenav mode="side" opened="true" [disableClose]="true">
+  <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
     <mat-toolbar class="module-title">
       <mat-toolbar-row>
         <mat-icon>search</mat-icon>

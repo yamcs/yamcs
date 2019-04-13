@@ -227,6 +227,7 @@ export interface GetCommandHistoryOptions {
   pos?: number;
   limit?: number;
   next?: string;
+  q?: string;
   order?: 'asc' | 'desc';
 }
 

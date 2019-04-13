@@ -40,9 +40,10 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
     return this.records$;
   }
 
-  loadEntries(processorName: string) {
+  loadEntries(processorName: string, options: GetCommandHistoryOptions) {
     this.loading$.next(true);
     return this.loadPage({
+      ...options,
       limit: this.pageSize,
     }).then(entries => {
       this.loading$.next(false);

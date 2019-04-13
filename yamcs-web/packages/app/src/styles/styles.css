@@ -132,7 +132,8 @@ body {
   text-align: left;
 }
 
-.ya-data-table td.status, .ya-data-table th.status {
+.ya-data-table td.status, .ya-data-table th.status,
+.ya-data-table td.iconcol, .ya-data-table th.iconcol {
   width: 1px;
   text-align: left;
 }

@@ -1,5 +1,9 @@
 <mat-toolbar color="primary">
   <mat-toolbar-row class="app-bar">
+    <button mat-icon-button
+            (click)="toggleSidebar()">
+      <mat-icon>menu</mat-icon>
+    </button>
     <div class="vmiddle" class="logo-wrapper">
       <a routerLink="/">
         <img src="/static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">

@@ -26,6 +26,7 @@ export class AppComponent implements OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;
   user$: Observable<User | null>;
 
+  sidebar$: Observable<boolean>;
   darkMode$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
 
@@ -49,6 +50,8 @@ export class AppComponent implements OnDestroy {
       }
     });
 
+    this.sidebar$ = preferenceStore.sidebar$;
+
     this.darkMode$ = preferenceStore.darkMode$;
     if (preferenceStore.isDarkMode()) {
       this.enableDarkMode();
@@ -67,6 +70,14 @@ export class AppComponent implements OnDestroy {
       this.disableDarkMode();
     } else {
       this.enableDarkMode();
+    }
+  }
+
+  toggleSidebar() {
+    if (this.preferenceStore.showSidebar()) {
+      this.preferenceStore.setShowSidebar(false);
+    } else {
+      this.preferenceStore.setShowSidebar(true);
     }
   }
 

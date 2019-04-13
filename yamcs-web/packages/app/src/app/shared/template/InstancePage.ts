@@ -7,6 +7,7 @@ import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { AppConfig, APP_CONFIG, SidebarItem } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { User } from '../../shared/User';
 
@@ -23,6 +24,7 @@ export class InstancePage implements OnInit, OnDestroy {
   filteredOptions: Observable<Parameter[]>;
 
   user: User;
+  sidebar$: Observable<boolean>;
 
   extraItems: SidebarItem[];
 
@@ -41,6 +43,7 @@ export class InstancePage implements OnInit, OnDestroy {
     private yamcs: YamcsService,
     @Inject(APP_CONFIG) appConfig: AppConfig,
     authService: AuthService,
+    preferenceStore: PreferenceStore,
     route: ActivatedRoute,
     private router: Router,
   ) {
@@ -48,6 +51,7 @@ export class InstancePage implements OnInit, OnDestroy {
     this.extraItems = monitorConfig.extraItems || [];
 
     this.user = authService.getUser()!;
+    this.sidebar$ = preferenceStore.sidebar$;
 
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
