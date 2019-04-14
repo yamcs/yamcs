@@ -13892,6 +13892,34 @@ public final class Yamcs {
      */
     com.google.protobuf.ByteString
         getColorBytes();
+
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    boolean hasStartUTC();
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    java.lang.String getStartUTC();
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    com.google.protobuf.ByteString
+        getStartUTCBytes();
+
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    boolean hasStopUTC();
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    java.lang.String getStopUTC();
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getStopUTCBytes();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.ArchiveTag}
@@ -13909,6 +13937,8 @@ public final class Yamcs {
       name_ = "";
       description_ = "";
       color_ = "";
+      startUTC_ = "";
+      stopUTC_ = "";
     }
 
     @java.lang.Override
@@ -13966,6 +13996,18 @@ public final class Yamcs {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000020;
               color_ = bs;
+              break;
+            }
+            case 58: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000040;
+              startUTC_ = bs;
+              break;
+            }
+            case 66: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000080;
+              stopUTC_ = bs;
               break;
             }
             default: {
@@ -14172,6 +14214,90 @@ public final class Yamcs {
       }
     }
 
+    public static final int STARTUTC_FIELD_NUMBER = 7;
+    private volatile java.lang.Object startUTC_;
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    public boolean hasStartUTC() {
+      return ((bitField0_ & 0x00000040) != 0);
+    }
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    public java.lang.String getStartUTC() {
+      java.lang.Object ref = startUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          startUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string startUTC = 7;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStartUTCBytes() {
+      java.lang.Object ref = startUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        startUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int STOPUTC_FIELD_NUMBER = 8;
+    private volatile java.lang.Object stopUTC_;
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    public boolean hasStopUTC() {
+      return ((bitField0_ & 0x00000080) != 0);
+    }
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    public java.lang.String getStopUTC() {
+      java.lang.Object ref = stopUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          stopUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string stopUTC = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStopUTCBytes() {
+      java.lang.Object ref = stopUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stopUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -14208,6 +14334,12 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000020) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 6, color_);
       }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, startUTC_);
+      }
+      if (((bitField0_ & 0x00000080) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, stopUTC_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -14237,6 +14369,12 @@ public final class Yamcs {
       }
       if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, color_);
+      }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, startUTC_);
+      }
+      if (((bitField0_ & 0x00000080) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, stopUTC_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -14283,6 +14421,16 @@ public final class Yamcs {
         if (!getColor()
             .equals(other.getColor())) return false;
       }
+      if (hasStartUTC() != other.hasStartUTC()) return false;
+      if (hasStartUTC()) {
+        if (!getStartUTC()
+            .equals(other.getStartUTC())) return false;
+      }
+      if (hasStopUTC() != other.hasStopUTC()) return false;
+      if (hasStopUTC()) {
+        if (!getStopUTC()
+            .equals(other.getStopUTC())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -14319,6 +14467,14 @@ public final class Yamcs {
       if (hasColor()) {
         hash = (37 * hash) + COLOR_FIELD_NUMBER;
         hash = (53 * hash) + getColor().hashCode();
+      }
+      if (hasStartUTC()) {
+        hash = (37 * hash) + STARTUTC_FIELD_NUMBER;
+        hash = (53 * hash) + getStartUTC().hashCode();
+      }
+      if (hasStopUTC()) {
+        hash = (37 * hash) + STOPUTC_FIELD_NUMBER;
+        hash = (53 * hash) + getStopUTC().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -14465,6 +14621,10 @@ public final class Yamcs {
         bitField0_ = (bitField0_ & ~0x00000010);
         color_ = "";
         bitField0_ = (bitField0_ & ~0x00000020);
+        startUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000040);
+        stopUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -14517,6 +14677,14 @@ public final class Yamcs {
           to_bitField0_ |= 0x00000020;
         }
         result.color_ = color_;
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.startUTC_ = startUTC_;
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.stopUTC_ = stopUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -14588,6 +14756,16 @@ public final class Yamcs {
         if (other.hasColor()) {
           bitField0_ |= 0x00000020;
           color_ = other.color_;
+          onChanged();
+        }
+        if (other.hasStartUTC()) {
+          bitField0_ |= 0x00000040;
+          startUTC_ = other.startUTC_;
+          onChanged();
+        }
+        if (other.hasStopUTC()) {
+          bitField0_ |= 0x00000080;
+          stopUTC_ = other.stopUTC_;
           onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
@@ -14943,6 +15121,158 @@ public final class Yamcs {
   }
   bitField0_ |= 0x00000020;
         color_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object startUTC_ = "";
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public boolean hasStartUTC() {
+        return ((bitField0_ & 0x00000040) != 0);
+      }
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public java.lang.String getStartUTC() {
+        java.lang.Object ref = startUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            startUTC_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStartUTCBytes() {
+        java.lang.Object ref = startUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          startUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public Builder setStartUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000040;
+        startUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public Builder clearStartUTC() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        startUTC_ = getDefaultInstance().getStartUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string startUTC = 7;</code>
+       */
+      public Builder setStartUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000040;
+        startUTC_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object stopUTC_ = "";
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public boolean hasStopUTC() {
+        return ((bitField0_ & 0x00000080) != 0);
+      }
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public java.lang.String getStopUTC() {
+        java.lang.Object ref = stopUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            stopUTC_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStopUTCBytes() {
+        java.lang.Object ref = stopUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stopUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public Builder setStopUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        stopUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public Builder clearStopUTC() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        stopUTC_ = getDefaultInstance().getStopUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stopUTC = 8;</code>
+       */
+      public Builder setStopUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        stopUTC_ = value;
         onChanged();
         return this;
       }
@@ -31066,75 +31396,76 @@ public final class Yamcs {
       ".yamcs.protobuf.ArchiveRecord\022\014\n\004type\030\003 " +
       "\001(\t\022\021\n\ttableName\030\004 \001(\t\";\n\nTagRequest\022\020\n\010" +
       "instance\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 " +
-      "\001(\003\"g\n\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 " +
-      "\002(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013desc" +
-      "ription\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\"F\n\tTagResul" +
-      "t\022\020\n\010instance\030\001 \002(\t\022\'\n\003tag\030\002 \003(\0132\032.yamcs" +
-      ".protobuf.ArchiveTag\"j\n\020UpsertTagRequest" +
-      "\022*\n\006oldTag\030\001 \001(\0132\032.yamcs.protobuf.Archiv" +
-      "eTag\022*\n\006newTag\030\002 \002(\0132\032.yamcs.protobuf.Ar" +
-      "chiveTag\";\n\020DeleteTagRequest\022\'\n\003tag\030\003 \002(" +
-      "\0132\032.yamcs.protobuf.ArchiveTag\"\245\001\n\013Replay" +
-      "Speed\0229\n\004type\030\001 \002(\0162+.yamcs.protobuf.Rep" +
-      "laySpeed.ReplaySpeedType\022\r\n\005param\030\002 \001(\002\"" +
-      "L\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DE" +
-      "LAY\020\002\022\014\n\010REALTIME\020\003\022\020\n\014STEP_BY_STEP\020\004\"\370\003" +
-      "\n\rReplayRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002" +
-      " \001(\003\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022" +
-      "2\n\tendAction\030\003 \001(\0162\031.yamcs.protobuf.EndA" +
-      "ction:\004QUIT\022*\n\005speed\030\004 \001(\0132\033.yamcs.proto" +
-      "buf.ReplaySpeed\022\017\n\007reverse\030\017 \001(\010\022@\n\020para" +
-      "meterRequest\030\010 \001(\0132&.yamcs.protobuf.Para" +
-      "meterReplayRequest\022:\n\rpacketRequest\030\t \001(" +
-      "\0132#.yamcs.protobuf.PacketReplayRequest\0228" +
-      "\n\014eventRequest\030\n \001(\0132\".yamcs.protobuf.Ev" +
-      "entReplayRequest\022J\n\025commandHistoryReques" +
-      "t\030\013 \001(\0132+.yamcs.protobuf.CommandHistoryR" +
-      "eplayRequest\0222\n\tppRequest\030\014 \001(\0132\037.yamcs." +
-      "protobuf.PpReplayRequest\"\205\001\n\026ParameterRe" +
-      "playRequest\0221\n\nnameFilter\030\001 \003(\0132\035.yamcs." +
-      "protobuf.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:" +
-      "\005false\022 \n\021performMonitoring\030\003 \001(\010:\005false" +
-      "\"H\n\023PacketReplayRequest\0221\n\nnameFilter\030\001 " +
-      "\003(\0132\035.yamcs.protobuf.NamedObjectId\"\024\n\022Ev" +
-      "entReplayRequest\"P\n\033CommandHistoryReplay" +
+      "\001(\003\"\212\001\n\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002" +
+      " \002(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013des" +
+      "cription\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\022\020\n\010startUT" +
+      "C\030\007 \001(\t\022\017\n\007stopUTC\030\010 \001(\t\"F\n\tTagResult\022\020\n" +
+      "\010instance\030\001 \002(\t\022\'\n\003tag\030\002 \003(\0132\032.yamcs.pro" +
+      "tobuf.ArchiveTag\"j\n\020UpsertTagRequest\022*\n\006" +
+      "oldTag\030\001 \001(\0132\032.yamcs.protobuf.ArchiveTag" +
+      "\022*\n\006newTag\030\002 \002(\0132\032.yamcs.protobuf.Archiv" +
+      "eTag\";\n\020DeleteTagRequest\022\'\n\003tag\030\003 \002(\0132\032." +
+      "yamcs.protobuf.ArchiveTag\"\245\001\n\013ReplaySpee" +
+      "d\0229\n\004type\030\001 \002(\0162+.yamcs.protobuf.ReplayS" +
+      "peed.ReplaySpeedType\022\r\n\005param\030\002 \001(\002\"L\n\017R" +
+      "eplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020" +
+      "\002\022\014\n\010REALTIME\020\003\022\020\n\014STEP_BY_STEP\020\004\"\370\003\n\rRe" +
+      "playRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003" +
+      "\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\0222\n\te" +
+      "ndAction\030\003 \001(\0162\031.yamcs.protobuf.EndActio" +
+      "n:\004QUIT\022*\n\005speed\030\004 \001(\0132\033.yamcs.protobuf." +
+      "ReplaySpeed\022\017\n\007reverse\030\017 \001(\010\022@\n\020paramete" +
+      "rRequest\030\010 \001(\0132&.yamcs.protobuf.Paramete" +
+      "rReplayRequest\022:\n\rpacketRequest\030\t \001(\0132#." +
+      "yamcs.protobuf.PacketReplayRequest\0228\n\014ev" +
+      "entRequest\030\n \001(\0132\".yamcs.protobuf.EventR" +
+      "eplayRequest\022J\n\025commandHistoryRequest\030\013 " +
+      "\001(\0132+.yamcs.protobuf.CommandHistoryRepla" +
+      "yRequest\0222\n\tppRequest\030\014 \001(\0132\037.yamcs.prot" +
+      "obuf.PpReplayRequest\"\205\001\n\026ParameterReplay" +
       "Request\0221\n\nnameFilter\030\001 \003(\0132\035.yamcs.prot" +
-      "obuf.NamedObjectId\"D\n\017PpReplayRequest\022\027\n" +
-      "\017groupNameFilter\030\001 \003(\t\022\030\n\020groupNameExclu" +
-      "de\030\002 \003(\t\"\355\001\n\014ReplayStatus\0227\n\005state\030\001 \002(\016" +
-      "2(.yamcs.protobuf.ReplayStatus.ReplaySta" +
-      "te\022.\n\007request\030\002 \001(\0132\035.yamcs.protobuf.Rep" +
-      "layRequest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013Repl" +
-      "ayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001" +
-      "\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006" +
-      "CLOSED\020\005\"\305\001\n\014TmPacketData\022\025\n\rreceptionTi" +
-      "me\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTi" +
-      "me\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022)\n\002id\030\005" +
-      " \001(\0132\035.yamcs.protobuf.NamedObjectId\022\031\n\021g" +
-      "enerationTimeUTC\030\006 \001(\t\022\030\n\020receptionTimeU" +
-      "TC\030\007 \001(\t\"7\n\010TimeInfo\022\023\n\013currentTime\030\001 \001(" +
-      "\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\352\002\n\005Event\022\016\n\006s" +
-      "ource\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rr" +
-      "eceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n" +
-      "\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\022;\n\010severity" +
-      "\030\007 \001(\0162#.yamcs.protobuf.Event.EventSever" +
-      "ity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001(\t\022\030\n\020" +
-      "receptionTimeUTC\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(" +
-      "\t\"d\n\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020" +
-      "\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n" +
-      "\010CRITICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N\"!\n\021Proces" +
-      "sorTypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tEndAction\022\010" +
-      "\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\375\002\n\rProtoDa" +
-      "taType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r" +
-      "\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCH" +
-      "IVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETE" +
-      "R\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n" +
-      "\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTI" +
-      "CS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n" +
-      "\tTIME_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_" +
-      "QUEUE_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n" +
-      "\017CONNECTION_INFO\020\023\022\014\n\010INSTANCE\020\024\022\022\n\016EXTE" +
-      "NSION_DATA\020dB\024\n\022org.yamcs.protobuf"
+      "obuf.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005fal" +
+      "se\022 \n\021performMonitoring\030\003 \001(\010:\005false\"H\n\023" +
+      "PacketReplayRequest\0221\n\nnameFilter\030\001 \003(\0132" +
+      "\035.yamcs.protobuf.NamedObjectId\"\024\n\022EventR" +
+      "eplayRequest\"P\n\033CommandHistoryReplayRequ" +
+      "est\0221\n\nnameFilter\030\001 \003(\0132\035.yamcs.protobuf" +
+      ".NamedObjectId\"D\n\017PpReplayRequest\022\027\n\017gro" +
+      "upNameFilter\030\001 \003(\t\022\030\n\020groupNameExclude\030\002" +
+      " \003(\t\"\355\001\n\014ReplayStatus\0227\n\005state\030\001 \002(\0162(.y" +
+      "amcs.protobuf.ReplayStatus.ReplayState\022." +
+      "\n\007request\030\002 \001(\0132\035.yamcs.protobuf.ReplayR" +
+      "equest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013ReplaySt" +
+      "ate\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007" +
+      "STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOS" +
+      "ED\020\005\"\305\001\n\014TmPacketData\022\025\n\rreceptionTime\030\001" +
+      " \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTime\030\003" +
+      " \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022)\n\002id\030\005 \001(\013" +
+      "2\035.yamcs.protobuf.NamedObjectId\022\031\n\021gener" +
+      "ationTimeUTC\030\006 \001(\t\022\030\n\020receptionTimeUTC\030\007" +
+      " \001(\t\"7\n\010TimeInfo\022\023\n\013currentTime\030\001 \001(\003\022\026\n" +
+      "\016currentTimeUTC\030\002 \001(\t\"\352\002\n\005Event\022\016\n\006sourc" +
+      "e\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rrecep" +
+      "tionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004typ" +
+      "e\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\022;\n\010severity\030\007 \001" +
+      "(\0162#.yamcs.protobuf.Event.EventSeverity:" +
+      "\004INFO\022\031\n\021generationTimeUTC\030\010 \001(\t\022\030\n\020rece" +
+      "ptionTimeUTC\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(\t\"d\n" +
+      "\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n" +
+      "\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRI" +
+      "TICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N\"!\n\021ProcessorT" +
+      "ypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tEndAction\022\010\n\004LO" +
+      "OP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\375\002\n\rProtoDataTy" +
+      "pe\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM" +
+      "_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_" +
+      "INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022" +
+      "\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013" +
+      "CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014" +
+      "\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIM" +
+      "E_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEU" +
+      "E_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n\017CON" +
+      "NECTION_INFO\020\023\022\014\n\010INSTANCE\020\024\022\022\n\016EXTENSIO" +
+      "N_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -31219,7 +31550,7 @@ public final class Yamcs {
     internal_static_yamcs_protobuf_ArchiveTag_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_ArchiveTag_descriptor,
-        new java.lang.String[] { "Id", "Name", "Start", "Stop", "Description", "Color", });
+        new java.lang.String[] { "Id", "Name", "Start", "Stop", "Description", "Color", "StartUTC", "StopUTC", });
     internal_static_yamcs_protobuf_TagResult_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_yamcs_protobuf_TagResult_fieldAccessorTable = new

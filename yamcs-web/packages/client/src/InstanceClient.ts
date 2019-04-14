@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
@@ -484,6 +484,12 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/containers${qualifiedName}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Container;
+  }
+
+  async getTags(options: GetTagsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tags`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    return await response.json() as TagsPage;
   }
 
   async getAlgorithms(options: GetAlgorithmsOptions = {}) {

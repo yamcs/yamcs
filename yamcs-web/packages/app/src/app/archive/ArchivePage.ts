@@ -144,10 +144,14 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       const userObject = evt.userObject as Event;
       let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
       ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop!)}<br>`;
-      const sec = (Date.parse(userObject.stop as string) - Date.parse(userObject.start as string)) / 1000;
-      ttText += `Count: ${userObject.data.count}`;
-      if (userObject.data.count > 1) {
-        ttText += ` (${(userObject.data.count / sec).toFixed(3)} Hz)`;
+      if (userObject.data.count >= 0) {
+        const sec = (Date.parse(userObject.stop as string) - Date.parse(userObject.start as string)) / 1000;
+        ttText += `Count: ${userObject.data.count}`;
+        if (userObject.data.count > 1) {
+          ttText += ` (${(userObject.data.count / sec).toFixed(3)} Hz)`;
+        }
+      } else if (userObject.data.description) {
+        ttText += userObject.data.description;
       }
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
@@ -178,6 +182,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     this.timeline.on('loadRange', evt => {
 
       Promise.all([
+        this.yamcs.getInstanceClient()!.getTags({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+        }),
         this.yamcs.getInstanceClient()!.getCompletenessIndex({
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
@@ -189,10 +197,44 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
           limit: 1000,
         })
       ]).then(responses => {
-        const completenessGroups = responses[0];
-        const tmHistogramGroups = responses[1];
+        const tags = responses[0].tag || [];
+        const completenessGroups = responses[1];
+        const tmHistogramGroups = responses[2];
 
         const bands = [];
+
+        if (tags) {
+          const events: Event[] = [];
+          for (const tag of tags) {
+            const event: Event = {
+              start: tag.startUTC,
+              stop: tag.stopUTC,
+              milestone: false,
+              title: tag.name,
+              backgroundColor: tag.color,
+              foregroundColor: 'black',
+              data: {
+                id: tag.id,
+                description: tag.description,
+              }
+            };
+            events.push(event);
+          }
+          bands.push({
+            id: 'Tags',
+            type: 'EventBand',
+            label: 'Tags',
+            // draggable: true,
+            interactive: true,
+            interactiveSidebar: false,
+            style: {
+              marginTop: 8,
+              marginBottom: 8,
+            },
+            events,
+          });
+        }
+
         for (const group of completenessGroups) {
           const events: Event[] = [];
           for (const entry of group.entry) {
@@ -294,6 +336,11 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
         this.timeline.reveal(result.date);
       }
     });
+  }
+
+  refresh() {
+    const currentDate = this.timeline.visibleCenter;
+    this.timeline.reveal(currentDate);
   }
 
   zoomIn() {

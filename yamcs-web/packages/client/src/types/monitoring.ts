@@ -380,3 +380,21 @@ export interface CommandQueueEntry {
   generationTimeUTC: string;
   uuid: string;
 }
+
+export interface GetTagsOptions {
+  start?: string;
+  stop?: string;
+}
+
+export interface TagsPage {
+  tag: ArchiveTag[];
+}
+
+export interface ArchiveTag {
+  id: number;
+  name: string;
+  startUTC: string;
+  stopUTC: string;
+  description: string;
+  color: string;
+}

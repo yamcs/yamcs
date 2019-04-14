@@ -134,6 +134,9 @@ message ArchiveTag {
   optional int64 stop = 4;
   optional string description = 5;
   optional string color = 6;
+
+  optional string startUTC = 7;
+  optional string stopUTC = 8;
 }
 
 message TagResult {
