@@ -338,6 +338,12 @@ export interface GetPacketIndexOptions {
   limit?: number;
 }
 
+export interface GetCompletenessIndexOptions {
+  start?: string;
+  stop?: string;
+  limit?: number;
+}
+
 export interface DownloadPacketsOptions {
   /**
    * Inclusive lower bound

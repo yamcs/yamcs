@@ -5,6 +5,7 @@ export interface WebsiteConfig {
   auth: AuthInfo;
   displayScope: BucketScope;
   stackScope: BucketScope;
+  tag: string;
 }
 
 export type BucketScope = 'GLOBAL' | 'INSTANCE';

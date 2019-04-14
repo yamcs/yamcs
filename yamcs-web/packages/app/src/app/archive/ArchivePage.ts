@@ -176,15 +176,59 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     });
 
     this.timeline.on('loadRange', evt => {
-      this.yamcs.getInstanceClient()!.getPacketIndex({
-        start: evt.loadStart.toISOString(),
-        stop: evt.loadStop.toISOString(),
-        limit: 1000,
-      }).then(groups => {
+
+      Promise.all([
+        this.yamcs.getInstanceClient()!.getCompletenessIndex({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        }),
+        this.yamcs.getInstanceClient()!.getPacketIndex({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        })
+      ]).then(responses => {
+        const completenessGroups = responses[0];
+        const tmHistogramGroups = responses[1];
+
         const bands = [];
+        for (const group of completenessGroups) {
+          const events: Event[] = [];
+          for (const entry of group.entry) {
+            const event: Event = {
+              start: entry.start,
+              stop: entry.stop,
+              milestone: false,
+              data: {
+                count: entry.count,
+              }
+            };
+            if (entry.count > 1) {
+              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
+              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
+            }
+            events.push(event);
+          }
+          bands.push({
+            id: group.id.name,
+            type: 'EventBand',
+            label: group.id.name,
+            // draggable: true,
+            interactive: true,
+            interactiveSidebar: false,
+            wrap: false,
+            style: {
+              marginTop: 8,
+              marginBottom: 8,
+            },
+            events,
+          });
+        }
+
         for (const packetName of this.packetNames) {
           const events: Event[] = [];
-          for (const group of groups) {
+          for (const group of tmHistogramGroups) {
             if (group.id.name !== packetName) {
               continue;
             }
@@ -219,6 +263,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
             events,
           });
         }
+
         this.timeline.setData({
           header: [
             { type: 'Timescale', label: '', tz: 'UTC', grabAction: 'select' },

@@ -20932,6 +20932,20 @@ public final class Web {
      * <code>optional .yamcs.protobuf.web.WebsiteConfig.BucketScope stackScope = 3;</code>
      */
     org.yamcs.protobuf.Web.WebsiteConfig.BucketScope getStackScope();
+
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    boolean hasTag();
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    java.lang.String getTag();
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getTagBytes();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.web.WebsiteConfig}
@@ -20948,6 +20962,7 @@ public final class Web {
     private WebsiteConfig() {
       displayScope_ = 1;
       stackScope_ = 1;
+      tag_ = "";
     }
 
     @java.lang.Override
@@ -21009,6 +21024,12 @@ public final class Web {
                 bitField0_ |= 0x00000004;
                 stackScope_ = rawValue;
               }
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000008;
+              tag_ = bs;
               break;
             }
             default: {
@@ -21189,6 +21210,48 @@ public final class Web {
       return result == null ? org.yamcs.protobuf.Web.WebsiteConfig.BucketScope.GLOBAL : result;
     }
 
+    public static final int TAG_FIELD_NUMBER = 4;
+    private volatile java.lang.Object tag_;
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    public boolean hasTag() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    public java.lang.String getTag() {
+      java.lang.Object ref = tag_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          tag_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string tag = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTagBytes() {
+      java.lang.Object ref = tag_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        tag_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -21212,6 +21275,9 @@ public final class Web {
       if (((bitField0_ & 0x00000004) != 0)) {
         output.writeEnum(3, stackScope_);
       }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, tag_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -21232,6 +21298,9 @@ public final class Web {
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, stackScope_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, tag_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -21261,6 +21330,11 @@ public final class Web {
       if (hasStackScope()) {
         if (stackScope_ != other.stackScope_) return false;
       }
+      if (hasTag() != other.hasTag()) return false;
+      if (hasTag()) {
+        if (!getTag()
+            .equals(other.getTag())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -21283,6 +21357,10 @@ public final class Web {
       if (hasStackScope()) {
         hash = (37 * hash) + STACKSCOPE_FIELD_NUMBER;
         hash = (53 * hash) + stackScope_;
+      }
+      if (hasTag()) {
+        hash = (37 * hash) + TAG_FIELD_NUMBER;
+        hash = (53 * hash) + getTag().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -21428,6 +21506,8 @@ public final class Web {
         bitField0_ = (bitField0_ & ~0x00000002);
         stackScope_ = 1;
         bitField0_ = (bitField0_ & ~0x00000004);
+        tag_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -21472,6 +21552,10 @@ public final class Web {
           to_bitField0_ |= 0x00000004;
         }
         result.stackScope_ = stackScope_;
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.tag_ = tag_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -21529,6 +21613,11 @@ public final class Web {
         }
         if (other.hasStackScope()) {
           setStackScope(other.getStackScope());
+        }
+        if (other.hasTag()) {
+          bitField0_ |= 0x00000008;
+          tag_ = other.tag_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -21748,6 +21837,82 @@ public final class Web {
       public Builder clearStackScope() {
         bitField0_ = (bitField0_ & ~0x00000004);
         stackScope_ = 1;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object tag_ = "";
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public boolean hasTag() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public java.lang.String getTag() {
+        java.lang.Object ref = tag_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            tag_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTagBytes() {
+        java.lang.Object ref = tag_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          tag_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public Builder setTag(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        tag_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public Builder clearTag() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        tag_ = getDefaultInstance().getTag();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tag = 4;</code>
+       */
+      public Builder setTagBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        tag_ = value;
         onChanged();
         return this;
       }
@@ -22008,14 +22173,14 @@ public final class Web {
       "\022\024\n\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001" +
       "(\t\022\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_token\030" +
       "\004 \001(\t\0226\n\004user\030\005 \001(\0132(.yamcs.protobuf.yam" +
-      "csManagement.UserInfo\"\354\001\n\rWebsiteConfig\022" +
+      "csManagement.UserInfo\"\371\001\n\rWebsiteConfig\022" +
       "*\n\004auth\030\001 \001(\0132\034.yamcs.protobuf.web.AuthI" +
       "nfo\022C\n\014displayScope\030\002 \001(\0162-.yamcs.protob" +
       "uf.web.WebsiteConfig.BucketScope\022A\n\nstac" +
       "kScope\030\003 \001(\0162-.yamcs.protobuf.web.Websit" +
-      "eConfig.BucketScope\"\'\n\013BucketScope\022\n\n\006GL" +
-      "OBAL\020\001\022\014\n\010INSTANCE\020\002B\024\n\022org.yamcs.protob" +
-      "uf"
+      "eConfig.BucketScope\022\013\n\003tag\030\004 \001(\t\"\'\n\013Buck" +
+      "etScope\022\n\n\006GLOBAL\020\001\022\014\n\010INSTANCE\020\002B\024\n\022org" +
+      ".yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -22160,7 +22325,7 @@ public final class Web {
     internal_static_yamcs_protobuf_web_WebsiteConfig_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_web_WebsiteConfig_descriptor,
-        new java.lang.String[] { "Auth", "DisplayScope", "StackScope", });
+        new java.lang.String[] { "Auth", "DisplayScope", "StackScope", "Tag", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Archive.getDescriptor();
     org.yamcs.protobuf.Commanding.getDescriptor();

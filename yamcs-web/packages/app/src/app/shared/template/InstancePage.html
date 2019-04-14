@@ -1,9 +1,10 @@
 <mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
-    <mat-toolbar class="module-title">
-      <mat-toolbar-row>
-        <mat-icon>search</mat-icon>
-        <input type="text"
+    <mat-toolbar class="module-title" (click)="searchInput.focus()" style="cursor: text">
+      <mat-toolbar-row style="cursor: text">
+        <mat-icon style="cursor: text">search</mat-icon>
+        <input #searchInput
+               type="text"
                class="search-input"
                placeholder="Search parameter"
                autocomplete="off"

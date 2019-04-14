@@ -203,5 +203,5 @@ message WebsiteConfig {
   optional AuthInfo auth = 1;
   optional BucketScope displayScope = 2;
   optional BucketScope stackScope = 3;
+  optional string tag = 4;
 }
-

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
@@ -22,6 +23,7 @@ export class AppComponent implements OnDestroy {
   componentCssClass: string;
 
   title = 'Yamcs';
+  tag: string;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
   user$: Observable<User | null>;
@@ -38,7 +40,9 @@ export class AppComponent implements OnDestroy {
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
+    configService: ConfigService,
   ) {
+    this.tag = configService.getTag();
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
 

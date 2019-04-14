@@ -53,6 +53,7 @@ import { TabDetailIcon } from './template/TabDetailIcon';
 import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
+import { AlarmLabel } from './widgets/AlarmLabel';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
 import { Label } from './widgets/Label';
@@ -60,6 +61,7 @@ import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { SlantedLabel } from './widgets/SlantedLabel';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
 const materialModules = [
@@ -103,6 +105,7 @@ const sharedDirectives = [
 const sharedComponents = [
   ActionLink,
   Ago,
+  AlarmLabel,
   AlarmLevel,
   ColumnChooser,
   DetailPane,
@@ -129,6 +132,7 @@ const sharedComponents = [
   SelectParameterDialog,
   Select,
   SessionExpiredDialog,
+  SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,
   TextAction,

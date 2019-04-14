@@ -4,6 +4,8 @@ services:
     args:
       webRoot: lib/yamcs-web
       port: 8090
+      website:
+        tag: DEMO
   
   - class: org.yamcs.tse.TseCommander
     args:

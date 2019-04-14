@@ -66,12 +66,14 @@ public class LinkRestHandler extends RestHandler {
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
+                break;
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
+                break;
             default:
                 throw new BadRequestException("Unsupported link state '" + state + "'");
             }

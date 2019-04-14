@@ -6,17 +6,23 @@
     </button>
     <div class="vmiddle" class="logo-wrapper">
       <a routerLink="/">
-        <img src="/static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">
+        <img src="/static/assets/yamcs-bw-30.png" style="margin-top: 12px">
       </a>
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-      <div class="top-divider">&nbsp;</div>
       <button mat-button (click)="openInstanceDialog()">
         <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
         <mat-icon>arrow_drop_down</mat-icon>
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
+
+    <app-slanted-label *ngIf="tag"
+                       color="lime"
+                       style="margin-top: 8px">
+      {{ tag }}
+    </app-slanted-label>
+    <app-alarm-label style="margin-top: 8px"></app-alarm-label>
 
     <ng-container *ngIf="user$ | async as user">
       <mat-menu #userMenu="matMenu" overlapTrigger="false">

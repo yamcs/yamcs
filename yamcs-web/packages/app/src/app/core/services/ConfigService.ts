@@ -38,4 +38,8 @@ export class ConfigService {
       return instance.name;
     }
   }
+
+  getTag() {
+    return this.websiteConfig.tag;
+  }
 }
