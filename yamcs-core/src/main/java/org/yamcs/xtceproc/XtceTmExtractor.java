@@ -125,9 +125,9 @@ public class XtceTmExtractor {
                         options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
-        } catch (XtceProcessingException e) {
-            pdata.eventProducer.sendWarning(e.getMessage());
         } catch (Exception e) {
+            // send warning as events and in the log file.
+            pdata.eventProducer.sendWarning(e.getMessage());
             log.error("got exception in tmextractor ", e);
         }
     }
