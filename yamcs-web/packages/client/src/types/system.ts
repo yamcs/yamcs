@@ -190,6 +190,16 @@ export interface LinkSubscriptionResponse {
   linkEvent$: Observable<LinkEvent>;
 }
 
+export interface StreamEvent {
+  type: string;
+  name: string;
+  dataCount: number;
+}
+
+export interface StreamEventSubscriptionResponse {
+  streamEvent$: Observable<StreamEvent>;
+}
+
 export interface StreamSubscriptionResponse {
   streamData$: Observable<StreamData>;
 }
@@ -197,6 +207,8 @@ export interface StreamSubscriptionResponse {
 export interface Stream {
   name: string;
   column: Column[];
+  script: string;
+  dataCount: number;
 }
 
 export interface StreamData {

@@ -59,6 +59,7 @@ message WebSocketServerMessage {
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
     optional TmPacketData tmPacket = 15;
     optional ConnectionInfo connectionInfo = 16;
+    optional yamcsManagement.StreamEvent streamEvent = 17;
     
     optional WebSocketExtensionData extensionData = 100;
   }
@@ -83,6 +84,10 @@ message RestExceptionMessage {
 }
 
 message LinkSubscriptionRequest {
+  optional string instance = 1;
+}
+
+message StreamsSubscriptionRequest {
   optional string instance = 1;
 }
 
