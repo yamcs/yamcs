@@ -56,6 +56,14 @@ dataLinks:
       stream: tm_realtime
       host: localhost
       port: 10015
+  - name: cfdp_in
+    class: org.yamcs.tctm.CfdpUdpTmDataLink
+    args:
+      stream: cfdp_in
+      host: localhost
+      port: 1235
+      packetInputStreamClassName: org.yamcs.tctm.CfdpPacketInputStream
+      packetPreprocessorClassName: org.yamcs.tctm.CfdpPacketPreprocessor
   - name: tm2_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
@@ -150,6 +158,12 @@ dataLinks:
             stream: "tm_dump"
           #vcId 63 is reserved for idle data and it does not have to be defined
 
+  - name: cfdp_out
+    class: org.yamcs.tctm.UdpTcDataLink
+    args: 
+      stream: cfdp_out
+      targethost: 10.1.10.114
+      targetport: 5010
 
 mdb:
   # Configuration of the active loaders
@@ -182,5 +196,7 @@ streamConfig:
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   alarm: ["alarms_realtime"]
-  tc: ["tc_realtime"]
+  tc: ["tc_realtime", "cfdp_out"]
   sqlFile: "etc/tc_streams.sql"
+  cfdp: 
+    - name: "cfdp_in" 

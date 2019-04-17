@@ -25,7 +25,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     private volatile boolean disabled = false;
 
     private DatagramSocket tmSocket;
-    private int port = 1235;
+    private int port;
 
     private TmSink tmSink;
 
