@@ -4,8 +4,6 @@ import { Title } from '@angular/platform-browser';
 import { Service } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
-
 @Component({
   templateUrl: './GlobalServicesPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

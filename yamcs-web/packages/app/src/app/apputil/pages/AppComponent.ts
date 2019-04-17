@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -31,12 +32,14 @@ export class AppComponent implements OnDestroy {
   sidebar$: Observable<boolean>;
   darkMode$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
+  showMenuToggle$: Observable<boolean>;
 
   userSubscription: Subscription;
 
   constructor(
     yamcs: YamcsService,
     private router: Router,
+    route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
@@ -60,6 +63,22 @@ export class AppComponent implements OnDestroy {
     if (preferenceStore.isDarkMode()) {
       this.enableDarkMode();
     }
+
+    this.showMenuToggle$ = router.events.pipe(
+      filter(evt => evt instanceof NavigationEnd),
+      map(evt => {
+        let child = route;
+        while (child.firstChild) {
+          child = child.firstChild;
+        }
+
+        if (child.snapshot.data && child.snapshot.data['hasSidebar'] === false) {
+          return false;
+        } else {
+          return true;
+        }
+      }),
+    );
   }
 
   openInstanceDialog() {

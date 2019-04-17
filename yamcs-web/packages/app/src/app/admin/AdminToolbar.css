@@ -4,3 +4,15 @@ mat-toolbar {
   box-sizing: content-box;
   color: rgba(0, 0, 0, .654);
 }
+
+mat-toolbar-row {
+  padding-left: 24px;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+.toolbar-text {
+  font-size: 12px;
+}

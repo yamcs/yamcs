@@ -206,7 +206,7 @@ a.ya-link.ya-header-link {
   width: 100%;
 }
 
-.ya-form input[type="text"] {
+.ya-form input[type="text"], .ya-input {
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;

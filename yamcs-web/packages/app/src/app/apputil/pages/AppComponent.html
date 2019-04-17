@@ -1,6 +1,7 @@
 <mat-toolbar color="primary">
   <mat-toolbar-row class="app-bar">
     <button mat-icon-button
+            *ngIf="showMenuToggle$ | async"
             (click)="toggleSidebar()">
       <mat-icon>menu</mat-icon>
     </button>
@@ -36,6 +37,13 @@
           <span *ngIf="darkMode$ | async">On</span>
           <span *ngIf="!(darkMode$ | async)">Off</span>
         </button>
+        <ng-container *ngIf="user | superuser">
+          <mat-divider></mat-divider>
+          <a mat-menu-item routerLink="admin">
+            <mat-icon>security</mat-icon>
+            Admin CP
+          </a>
+        </ng-container>
         <mat-divider></mat-divider>
         <a mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>

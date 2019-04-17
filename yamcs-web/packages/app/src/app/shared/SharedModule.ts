@@ -13,6 +13,7 @@ import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard'
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
@@ -27,6 +28,7 @@ import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
+import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { ServicesTable } from './services/ServicesTable';
@@ -152,6 +154,7 @@ const pipes = [
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
+  SuperuserPipe,
   UnitsPipe,
   ValuePipe,
 ];
@@ -164,6 +167,7 @@ const guards = [
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   MayReadTablesGuard,
+  SuperuserGuard,
   UnselectInstanceGuard,
 ];
 

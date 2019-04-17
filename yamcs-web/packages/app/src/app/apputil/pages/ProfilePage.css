@@ -3,4 +3,5 @@ mat-toolbar {
   background-color: #fff;
   box-sizing: content-box;
   color: rgba(0, 0, 0, .654);
+  padding-left: 24px;
 }
