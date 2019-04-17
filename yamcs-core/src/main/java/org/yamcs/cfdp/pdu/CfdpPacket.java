@@ -9,6 +9,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.tctm.Packet;
+import org.yamcs.utils.CfdpUtils;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -17,7 +18,8 @@ public abstract class CfdpPacket implements Packet {
     protected ByteBuffer buffer;
     protected CfdpHeader header;
 
-    private final static int CCSDSHeaderSize = 8;
+    private final static int CCSDSHeaderSizeTC = 8;
+    private final static int CCSDSHeaderSizeTM = 12;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
 
@@ -64,7 +66,12 @@ public abstract class CfdpPacket implements Packet {
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
         // read (and ignore) CCSDS header
-        buffer.position(buffer.position() + CCSDSHeaderSize);
+        // depending on the type of the packet (TM or TC),
+        // the secondary CCSDS header has a different size
+        buffer.position(buffer.position() +
+                (CfdpUtils.isBitOfByteSet(buffer.get(0), 3)
+                        ? CCSDSHeaderSizeTC
+                        : CCSDSHeaderSizeTM));
 
         CfdpHeader header = new CfdpHeader(buffer);
         CfdpPacket toReturn = null;
@@ -108,9 +115,9 @@ public abstract class CfdpPacket implements Packet {
     @Override
     public byte[] toByteArray() {
         ByteBuffer buffer = ByteBuffer
-                .allocate(YConfiguration.getConfiguration("cfdp").getInt("maxPduSize") + CCSDSHeaderSize);
+                .allocate(YConfiguration.getConfiguration("cfdp").getInt("maxPduSize") + CCSDSHeaderSizeTC);
 
-        buffer.position(CCSDSHeaderSize); // make room for the CCSDS header
+        buffer.position(CCSDSHeaderSizeTC); // make room for the CCSDS header
 
         getHeader().writeToBuffer(buffer);
         writeCFDPPacket(buffer);

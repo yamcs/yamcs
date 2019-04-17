@@ -22,9 +22,10 @@ public class PutRequest extends CfdpRequest {
     private boolean overwrite;
     private boolean createpath;
     private long checksum;
+    private boolean acknowledged;
 
     public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, boolean overwrite,
-            boolean createpath, Bucket b, byte[] data) {
+            boolean acknowledged, boolean createpath, Bucket b, byte[] data) {
         super(CfdpRequestType.PUT);
         this.sourceId = sourceId;
         this.destinationId = destinationId;
@@ -34,6 +35,7 @@ public class PutRequest extends CfdpRequest {
         this.createpath = createpath;
         this.bucket = b;
         this.packetData = data;
+        this.acknowledged = acknowledged;
         this.checksum = calculateChecksum(data);
     }
 
@@ -71,6 +73,10 @@ public class PutRequest extends CfdpRequest {
 
     public boolean getOverwrite() {
         return overwrite;
+    }
+
+    public boolean isAcknowledged() {
+        return this.acknowledged;
     }
 
     public boolean getCreatePath() {

@@ -135,7 +135,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
                 boolean dropCorrupted = linkArgs.getBoolean("dropCorruptedPackets", true);
                 tmLink.setTmSink(pwrt -> {
-                    if (pwrt.isCorrupted() && dropCorrupted) {
+                    if (pwrt == null || (pwrt.isCorrupted() && dropCorrupted)) {
                         return;
                     }
                     if (link instanceof CfdpUdpTmDataLink) {

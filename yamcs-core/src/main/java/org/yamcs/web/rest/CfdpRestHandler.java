@@ -74,10 +74,12 @@ public class CfdpRestHandler extends RestHandler {
         String target = req.getQueryParameter("target");
         boolean overwrite = req.getQueryParameterAsBoolean("overwrite", true);
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
+        boolean acknowledged = req.getQueryParameterAsBoolean("reliable", false);
 
         CfdpTransfer transfer = (CfdpTransfer) ci.processRequest(
                 // TODO, hardcoded destination
-                new PutRequest(CfdpDatabase.mySourceId, 24, objName, target, overwrite, createpath, b, objData));
+                new PutRequest(CfdpDatabase.mySourceId, 24, objName, target, overwrite, acknowledged, createpath, b,
+                        objData));
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 

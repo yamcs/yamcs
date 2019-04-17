@@ -98,10 +98,10 @@ public class CfdpHeader {
      */
     private void readPduHeader(ByteBuffer buffer) {
         byte tempByte = buffer.get();
-        fileDirective = !CfdpUtils.getBitOfByte(tempByte, 3);
-        towardsSender = CfdpUtils.getBitOfByte(tempByte, 4);
-        acknowledged = !CfdpUtils.getBitOfByte(tempByte, 5);
-        withCrc = CfdpUtils.getBitOfByte(tempByte, 6);
+        fileDirective = !CfdpUtils.isBitOfByteSet(tempByte, 3);
+        towardsSender = CfdpUtils.isBitOfByteSet(tempByte, 4);
+        acknowledged = !CfdpUtils.isBitOfByteSet(tempByte, 5);
+        withCrc = CfdpUtils.isBitOfByteSet(tempByte, 6);
         dataLength = CfdpUtils.getUnsignedShort(buffer);
         tempByte = buffer.get();
         entityIdLength = ((tempByte >> 4) & 0x07) + 1;

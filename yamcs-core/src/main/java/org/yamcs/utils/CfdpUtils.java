@@ -4,9 +4,14 @@ import java.nio.ByteBuffer;
 
 public class CfdpUtils {
 
+    // counting from zero (and big-endian) , is the bitnr't bit of the input byte set?
+    public static boolean isBitOfByteSet(Byte input, int bitnr) {
+        return getBitOfByte(input, bitnr) == 1;
+    }
+
     // counting from zero (and big-endian) , get the bitnr't bit of the input byte
-    public static boolean getBitOfByte(Byte input, int bitnr) {
-        return ((input >> (7 - bitnr)) & 1) == 1;
+    public static int getBitOfByte(Byte input, int bitnr) {
+        return (input >> (7 - bitnr)) & 1;
     }
 
     /*
