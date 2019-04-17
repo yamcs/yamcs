@@ -47,6 +47,7 @@ import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
+import { SignificanceLevel } from './template/SignificanceLevel';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
 import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
@@ -132,6 +133,7 @@ const sharedComponents = [
   SelectParameterDialog,
   Select,
   SessionExpiredDialog,
+  SignificanceLevel,
   SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,

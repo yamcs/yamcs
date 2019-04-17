@@ -20,9 +20,9 @@ export class CommandQueuesTable implements AfterViewInit {
   dataSource = new MatTableDataSource<CommandQueue>();
 
   displayedColumns = [
-    'state',
     'name',
-    'labels',
+    'mode',
+    'queued',
     'actions',
   ];
 

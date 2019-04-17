@@ -218,6 +218,26 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="transmissionConstraints">
+          <th mat-header-cell *matHeaderCellDef class="status" style="text-align: center">PTV</th>
+          <td mat-cell *matCellDef="let item" class="status" style="text-align: center">
+            <ng-container [ngSwitch]="item.transmissionConstraints">
+              <mat-icon *ngSwitchCase="'OK'"
+                        matTooltip="OK"
+                        class="icon14"
+                        style="color: green">check_circle</mat-icon>
+              <mat-icon *ngSwitchCase="'NOK'"
+                        matTooltip="NOK"
+                        class="icon14"
+                        style="color: red">highlight_off</mat-icon>
+              <mat-icon *ngSwitchCase="'PENDING'"
+                        class="icon14"
+                        matTooltip="PENDING">timer</mat-icon>
+              <ng-container *ngSwitchDefault>-</ng-container>
+            </ng-container>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="command">
           <th mat-header-cell *matHeaderCellDef style="width: 350px">Command</th>
           <td mat-cell *matCellDef="let item">

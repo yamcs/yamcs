@@ -60,6 +60,7 @@ export class CommandHistoryPage {
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
     { id: 'sequenceNumber', label: 'Sequence Number' },
+    { id: 'transmissionConstraints', label: 'PTV' },
     { id: 'stages', label: 'Stages' },
     { id: 'completion', label: 'Completion' },
   ];
@@ -69,6 +70,7 @@ export class CommandHistoryPage {
     'generationTimeUTC',
     'comment',
     'command',
+    'transmissionConstraints',
     'stages',
     'completion',
   ];

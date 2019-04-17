@@ -7,13 +7,14 @@ const slopeWidth = 10;
   selector: 'app-slanted-label',
   host: {
     '[class.shake]': 'shake',
+    '[class.highlight]': 'highlight',
     '[class.selectable]': 'selectable',
   },
   template: `
     <div id="wrapper">
       <svg #container
            style="overflow: visible; width: 100px; height: 32px;">
-        <text #text x="${slopeWidth}" y="${16 + 1}" dominant-baseline="middle"
+        <text #text y="${16 + 1}" dominant-baseline="middle" text-anchor="middle"
               fill="white"
               style="font-size: 14px; font-weight: ${fontWeight}">
           <ng-content></ng-content>
@@ -43,7 +44,13 @@ export class SlantedLabel implements AfterViewInit {
   shake = false;
 
   @Input()
+  highlight = false;
+
+  @Input()
   selectable = false;
+
+  @Input()
+  margin = 10;
 
   @ViewChild('container')
   private container: ElementRef;
@@ -79,7 +86,7 @@ export class SlantedLabel implements AfterViewInit {
 
     const textBbox = textEl.getBBox();
     const iconWidth = this.icon ? 16 + slopeWidth : 0;
-    const fullWidth = textBbox.width + slopeWidth + slopeWidth + iconWidth;
+    const fullWidth = textBbox.width + slopeWidth + slopeWidth + iconWidth + (2 * this.margin);
 
     targetEl.style.width = `${fullWidth}px`;
     let points = `${slopeWidth},0.5`;
@@ -90,10 +97,10 @@ export class SlantedLabel implements AfterViewInit {
     outlineEl.setAttribute('points', points);
     outlineEl.setAttribute('style', `fill: none; stroke: ${this.color}; stroke-width: 1`);
 
+    textEl.setAttribute('x', `${iconWidth + (fullWidth - iconWidth) / 2}`);
     textEl.setAttribute('fill', this.color);
-    if (this.icon) {
-      textEl.setAttribute('x', `${iconWidth + slopeWidth}`);
 
+    if (this.icon) {
       points = `${slopeWidth},0`;
       points += ` ${iconWidth + slopeWidth},0`;
       points += ` ${iconWidth},${32}`;

@@ -203,7 +203,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
 
         const bands = [];
 
-        if (tags) {
+        if (tags.length) {
           const events: Event[] = [];
           for (const tag of tags) {
             const event: Event = {

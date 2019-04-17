@@ -28,6 +28,8 @@ export class CommandHistoryRecord {
   success?: boolean;
   failureMessage?: string;
 
+  transmissionConstraints?: string;
+
   constructor(entry: CommandHistoryEntry) {
     this.generationTime = entry.generationTimeUTC;
     this.origin = entry.commandId.origin;
@@ -66,7 +68,7 @@ export class CommandHistoryRecord {
           this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
         }
       } else if (attr.name === 'TransmissionConstraints') {
-        // TODO
+        this.transmissionConstraints = attr.value.stringValue;
       } else {
         this.extra.push({ name: attr.name, value: utils.printValue(attr.value) });
       }

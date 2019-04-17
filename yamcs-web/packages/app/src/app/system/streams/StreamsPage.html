@@ -22,8 +22,8 @@
 
       <ng-container matColumnDef="dataCount">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Data count</th>
-        <td mat-cell *matCellDef="let stream">
-          {{ stream.dataCount }}
+        <td mat-cell *matCellDef="let stream" style="text-align: right">
+          {{ stream.dataCount | number }}
         </td>
       </ng-container>
 

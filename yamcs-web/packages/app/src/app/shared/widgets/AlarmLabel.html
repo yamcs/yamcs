@@ -1,10 +1,11 @@
 <ng-container *ngIf="instance$ | async as instance">
   <ng-container *ngIf="alarms$ | async as alarms">
     <app-slanted-label *ngIf="alarms.length"
-                       color="red"
+                       color="#ff4100"
                        icon="notifications_active"
                        iconColor="black"
                        shake="true"
+                       highlight="true"
                        selectable="true"
                        routerLink="/monitor/alarms"
                        [queryParams]="{instance: instance.name}">

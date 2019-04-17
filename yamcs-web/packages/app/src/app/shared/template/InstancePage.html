@@ -79,16 +79,16 @@
                               *ngIf="false">
           Command Stack
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/command-history"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Command History
-        </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
                               routerLink="/commanding/command-queues"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Command Queues
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/commanding/command-history"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Command History
         </app-sidebar-nav-item>
       </div>
 

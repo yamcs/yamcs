@@ -3,10 +3,21 @@
 }
 
 :host(.shake) .mat-icon {
-  -webkit-animation: yshake 2s infinite cubic-bezier(.36,.07,.19,.97) both;
   animation: yshake 0.82s infinite cubic-bezier(.36,.07,.19,.97) both;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
+}
+
+:host(.highlight) polygon {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: highlight 2s infinite forwards;
+}
+
+@keyframes highlight {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 :host(.selectable) svg:hover {
@@ -20,24 +31,6 @@
 
 text, polygon, #icon-wrapper {
   pointer-events: none;
-}
-
-@-webkit-keyframes yshake {
-  10%, 90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-
-  20%, 80% {
-    transform: translate3d(2px, 0, 0);
-  }
-
-  30%, 50%, 70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-
-  40%, 60% {
-    transform: translate3d(4px, 0, 0);
-  }
 }
 
 @keyframes yshake {
