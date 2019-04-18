@@ -27,7 +27,7 @@ export class AlarmLabel implements OnDestroy {
           this.clearAlarmSubscription();
         }
         this.instance$.next(connectionInfo.instance);
-        this.setupAlarmSubscription(connectionInfo.instance.name);
+        this.setupAlarmSubscription();
       } else {
         this.clearAlarmSubscription();
         this.instance$.next(null);
@@ -35,8 +35,8 @@ export class AlarmLabel implements OnDestroy {
     });
   }
 
-  private setupAlarmSubscription(instance: string) {
-    this.instanceClient = this.yamcs.yamcsClient.createInstanceClient(instance);
+  private setupAlarmSubscription() {
+    this.instanceClient = this.yamcs.getInstanceClient()!;
     this.instanceClient.getAlarmUpdates().then(response => {
       this.alarmSubscription = response.alarm$.subscribe(alarm => {
         this.processAlarm(alarm);
@@ -49,9 +49,6 @@ export class AlarmLabel implements OnDestroy {
   private clearAlarmSubscription() {
     if (this.alarmSubscription) {
       this.alarmSubscription.unsubscribe();
-    }
-    if (this.instanceClient) {
-      this.instanceClient.closeConnection();
     }
     this.alarms$.next([]);
   }

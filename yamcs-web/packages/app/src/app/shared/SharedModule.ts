@@ -57,6 +57,7 @@ import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { AlarmLabel } from './widgets/AlarmLabel';
+import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
 import { Label } from './widgets/Label';
@@ -111,6 +112,7 @@ const sharedComponents = [
   AlarmLabel,
   AlarmLevel,
   ColumnChooser,
+  ConnectedLabel,
   DetailPane,
   DetailToolbar,
   Dots,

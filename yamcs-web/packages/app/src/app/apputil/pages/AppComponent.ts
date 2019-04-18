@@ -27,6 +27,7 @@ export class AppComponent implements OnDestroy {
   tag: string;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
+  connected$: Observable<boolean>;
   user$: Observable<User | null>;
 
   sidebar$: Observable<boolean>;
@@ -38,7 +39,7 @@ export class AppComponent implements OnDestroy {
 
   constructor(
     yamcs: YamcsService,
-    private router: Router,
+    router: Router,
     route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
@@ -46,6 +47,7 @@ export class AppComponent implements OnDestroy {
     configService: ConfigService,
   ) {
     this.tag = configService.getTag();
+    this.connected$ = yamcs.yamcsClient.connected$;
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
 

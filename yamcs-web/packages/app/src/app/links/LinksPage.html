@@ -7,7 +7,7 @@
             *ngIf="mayControlLinks()"
             (click)="enableSelectedLinks()"
             [disabled]="!allowGroupEnable()">
-      <mat-icon>check</mat-icon>
+      <mat-icon>link</mat-icon>
       ENABLE
     </button>
     <button mat-button
@@ -15,7 +15,7 @@
             *ngIf="mayControlLinks()"
             (click)="disableSelectedLinks()"
             [disabled]="!allowGroupDisable()">
-      <mat-icon>close</mat-icon>
+      <mat-icon>link_off</mat-icon>
       DISABLE
     </button>
   </app-instance-toolbar>

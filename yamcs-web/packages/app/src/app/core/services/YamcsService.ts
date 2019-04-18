@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material';
 import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
-
 
 /**
  * Singleton service for facilitating working with a websocket connection
@@ -21,9 +19,6 @@ export class YamcsService {
 
   private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
   private timeInfoSubscription: Subscription;
-
-  constructor(private dialog: MatDialog) {
-  }
 
   /**
    * Prepares a (new) instance.

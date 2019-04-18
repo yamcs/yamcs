@@ -18,12 +18,12 @@
     </ng-container>
     <span style="flex: 1 1 auto"></span>
 
-    <app-slanted-label *ngIf="tag"
-                       color="lime"
-                       style="margin-top: 8px">
-      {{ tag }}
-    </app-slanted-label>
-    <app-alarm-label style="margin-top: 8px"></app-alarm-label>
+    <app-connected-label [connected]="connected$ | async"
+                         [tag]="tag"
+                         style="margin-top: 8px"></app-connected-label>
+
+    <app-alarm-label *ngIf="connectionInfo$ | async"
+                     style="margin-top: 8px"></app-alarm-label>
 
     <ng-container *ngIf="user$ | async as user">
       <mat-menu #userMenu="matMenu" overlapTrigger="false">

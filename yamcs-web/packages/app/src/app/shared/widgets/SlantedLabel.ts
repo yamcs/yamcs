@@ -38,7 +38,7 @@ export class SlantedLabel implements AfterViewInit {
   icon: string;
 
   @Input()
-  iconColor = 'white';
+  iconColor = 'black';
 
   @Input()
   shake = false;
