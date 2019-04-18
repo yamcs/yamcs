@@ -23,6 +23,7 @@ import org.yamcs.cfdp.pdu.FaultHandlerOverride;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FileStoreRequest;
+import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
@@ -209,17 +210,13 @@ public class CfdpTransfer extends CfdpTransaction {
             sendPacket(getEofPacket(ConditionCode.CancelRequestReceived));
             this.currentState = CfdpTransferState.CANCELED;
             break;
-
         case CANCELED:
-            // TODO, we should we not issue Condition Code (or even call an appropriate sender FaultHandler)?
             this.state = Cfdp.TransferState.FAILED;
             break;
         default:
             throw new IllegalStateException("packet in unknown/illegal state");
         }
     }
-
-    // TODO acknowledged versus not acknowledged
 
     private MetadataPacket getMetadataPacket() {
         // create packet header
@@ -361,9 +358,16 @@ public class CfdpTransfer extends CfdpTransaction {
                 }
                 break;
             case Finished:
-                if (currentState == CfdpTransferState.EOF_ACK_RECEIVED ||
-                        currentState == CfdpTransferState.RESENDING) {
-                    currentState = CfdpTransferState.FINISHED_RECEIVED;
+                // depending on the conditioncode, the transfer was a success or a failure
+                FinishedPacket p = (FinishedPacket) packet;
+                if (p.getConditionCode() != ConditionCode.NoError) {
+                    // TODO, Ideally we log the Condition Code (or even call an appropriate sender FaultHandler)?
+                    this.state = Cfdp.TransferState.FAILED;
+                } else {
+                    if (currentState == CfdpTransferState.EOF_ACK_RECEIVED ||
+                            currentState == CfdpTransferState.RESENDING) {
+                        currentState = CfdpTransferState.FINISHED_RECEIVED;
+                    }
                 }
                 break;
             case NAK:
@@ -381,7 +385,9 @@ public class CfdpTransfer extends CfdpTransaction {
             default:
                 break;
             }
-        } else {
+        } else
+
+        {
             // TODO incoming data
         }
     }

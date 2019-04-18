@@ -118,4 +118,8 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.Finished;
     }
 
+    public ConditionCode getConditionCode() {
+        return this.conditionCode;
+    }
+
 }
