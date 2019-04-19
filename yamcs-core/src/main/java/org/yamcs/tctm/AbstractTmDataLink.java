@@ -35,6 +35,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
 
     final protected String yamcsInstance;
     final protected String name;
+
     final YConfiguration config;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";

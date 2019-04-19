@@ -13,8 +13,8 @@ import org.yamcs.yarch.Bucket;
 
 public class PutRequest extends CfdpRequest {
 
-    private int sourceId;
-    private int destinationId;
+    private long sourceId;
+    private long destinationId;
     private String targetPath;
     private byte[] packetData;
     private String objectName;
@@ -24,7 +24,7 @@ public class PutRequest extends CfdpRequest {
     private long checksum;
     private boolean acknowledged;
 
-    public PutRequest(int sourceId, int destinationId, String objectName, String targetPath, boolean overwrite,
+    public PutRequest(long sourceId, long destinationId, String objectName, String targetPath, boolean overwrite,
             boolean acknowledged, boolean createpath, Bucket b, byte[] data) {
         super(CfdpRequestType.PUT);
         this.sourceId = sourceId;
@@ -39,11 +39,11 @@ public class PutRequest extends CfdpRequest {
         this.checksum = calculateChecksum(data);
     }
 
-    public int getSourceId() {
+    public long getSourceId() {
         return this.sourceId;
     }
 
-    public int getDestinationId() {
+    public long getDestinationId() {
         return destinationId;
     }
 

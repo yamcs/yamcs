@@ -20,7 +20,7 @@ import org.yamcs.yarch.YarchException;
 public class CfdpDatabaseInstance implements StreamSubscriber {
     static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
 
-    Map<CfdpTransactionId, CfdpTransfer> transfers = new HashMap<CfdpTransactionId, CfdpTransfer>();
+    Map<CfdpTransactionId, CfdpOutgoingTransfer> transfers = new HashMap<CfdpTransactionId, CfdpOutgoingTransfer>();
 
     private String instanceName;
 
@@ -41,22 +41,22 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         return instanceName;
     }
 
-    public void addCfdpTransfer(CfdpTransfer transfer) {
+    public void addCfdpTransfer(CfdpOutgoingTransfer transfer) {
         transfers.put(transfer.getTransactionId(), transfer);
     }
 
-    public CfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
+    public CfdpOutgoingTransfer getCfdpTransfer(CfdpTransactionId transferId) {
         return transfers.get(transferId);
     }
 
-    public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
+    public Collection<CfdpOutgoingTransfer> getCfdpTransfers(boolean all) {
         return all
                 ? this.transfers.values()
                 : this.transfers.values().stream().filter(transfer -> transfer.isOngoing())
                         .collect(Collectors.toList());
     }
 
-    public Collection<CfdpTransfer> getCfdpTransfers(List<Long> transferIds) {
+    public Collection<CfdpOutgoingTransfer> getCfdpTransfers(List<Long> transferIds) {
         List<CfdpTransactionId> transactionIds = transferIds.stream()
                 .map(x -> new CfdpTransactionId(CfdpDatabase.mySourceId, x)).collect(Collectors.toList());
         return this.transfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
@@ -78,27 +78,27 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         }
     }
 
-    private CfdpTransfer processPutRequest(PutRequest request) {
-        CfdpTransfer transfer = new CfdpTransfer(request, this.cfdpOut);
+    private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(request, this.cfdpOut);
         transfers.put(transfer.getTransactionId(), transfer);
         transfer.start();
         return transfer;
     }
 
-    private CfdpTransfer processPauseRequest(PauseRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
+    private CfdpOutgoingTransfer processPauseRequest(PauseRequest request) {
+        CfdpOutgoingTransfer transfer = request.getTransfer();
         transfer.pause();
         return transfer;
     }
 
-    private CfdpTransfer processResumeRequest(ResumeRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
+    private CfdpOutgoingTransfer processResumeRequest(ResumeRequest request) {
+        CfdpOutgoingTransfer transfer = request.getTransfer();
         transfer.resumeTransfer();
         return transfer;
     }
 
-    private CfdpTransfer processCancelRequest(CancelRequest request) {
-        CfdpTransfer transfer = request.getTransfer();
+    private CfdpOutgoingTransfer processCancelRequest(CancelRequest request) {
+        CfdpOutgoingTransfer transfer = request.getTransfer();
         transfer.cancelTransfer();
         return transfer;
     }
@@ -111,6 +111,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         if (transfers.containsKey(id)) {
             transaction = transfers.get(id);
         } else {
+            // the communication partner has initiated a transfer
             transaction = instantiateTransaction(packet);
         }
 

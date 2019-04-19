@@ -9,14 +9,14 @@ package org.yamcs.cfdp;
 
 public class ResumeRequest extends CfdpRequest {
 
-    private CfdpTransfer transfer;
+    private CfdpOutgoingTransfer transfer;
 
-    public ResumeRequest(CfdpTransfer transfer) {
+    public ResumeRequest(CfdpOutgoingTransfer transfer) {
         super(CfdpRequestType.RESUME);
         this.transfer = transfer;
     }
 
-    public CfdpTransfer getTransfer() {
+    public CfdpOutgoingTransfer getTransfer() {
         return this.transfer;
     }
 

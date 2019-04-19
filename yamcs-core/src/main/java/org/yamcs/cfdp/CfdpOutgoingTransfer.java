@@ -34,9 +34,9 @@ import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.yarch.Stream;
 
-public class CfdpTransfer extends CfdpTransaction {
+public class CfdpOutgoingTransfer extends CfdpTransaction {
 
-    private static final Logger log = LoggerFactory.getLogger(CfdpTransfer.class);
+    private static final Logger log = LoggerFactory.getLogger(CfdpOutgoingTransfer.class);
 
     private enum CfdpTransferState {
         START,
@@ -52,6 +52,7 @@ public class CfdpTransfer extends CfdpTransaction {
         CANCELED
     }
 
+    @SuppressWarnings("unused")
     private final boolean unbounded = false; // only known file length transfers
     private final boolean withCrc = false; // no CRCs are used
     private boolean acknowledged = false;
@@ -86,7 +87,7 @@ public class CfdpTransfer extends CfdpTransaction {
 
     private PutRequest request;
 
-    public CfdpTransfer(PutRequest request, Stream cfdpOut) {
+    public CfdpOutgoingTransfer(PutRequest request, Stream cfdpOut) {
         super(request.getSourceId(), cfdpOut);
         YConfiguration conf = YConfiguration.getConfiguration("cfdp");
         this.entitySize = conf.getInt("entityIdLength");
@@ -315,7 +316,7 @@ public class CfdpTransfer extends CfdpTransaction {
         return this.request.getPacketLength();
     }
 
-    public CfdpTransfer cancel() {
+    public CfdpOutgoingTransfer cancel() {
         // IF cancelled, return myself, otherwise return null id, otherwise return null
         return this;
     }
@@ -327,17 +328,17 @@ public class CfdpTransfer extends CfdpTransaction {
         throw new java.lang.UnsupportedOperationException("CFDP ConditionCode " + code + " not yet supported");
     }
 
-    public CfdpTransfer pause() {
+    public CfdpOutgoingTransfer pause() {
         sleeping = true;
         return this;
     }
 
-    public CfdpTransfer resumeTransfer() {
+    public CfdpOutgoingTransfer resumeTransfer() {
         sleeping = false;
         return this;
     }
 
-    public CfdpTransfer cancelTransfer() {
+    public CfdpOutgoingTransfer cancelTransfer() {
         sleeping = false; // wake up if sleeping
         currentState = CfdpTransferState.CANCELING;
         return this;
@@ -385,10 +386,8 @@ public class CfdpTransfer extends CfdpTransaction {
             default:
                 break;
             }
-        } else
-
-        {
-            // TODO incoming data
+        } else {
+            // TODO, unexpected packet
         }
     }
 

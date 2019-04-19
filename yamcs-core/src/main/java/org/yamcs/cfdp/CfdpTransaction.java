@@ -8,7 +8,7 @@ public abstract class CfdpTransaction extends Thread {
     protected CfdpTransactionId myId;
     private Stream cfdpOut;
 
-    public CfdpTransaction(int initiatorEntity, Stream cfdpOut) {
+    public CfdpTransaction(long initiatorEntity, Stream cfdpOut) {
         this.myId = new CfdpTransactionId(initiatorEntity);
         this.cfdpOut = cfdpOut;
     }

@@ -9,14 +9,14 @@ package org.yamcs.cfdp;
 
 public class CancelRequest extends CfdpRequest {
 
-    private CfdpTransfer transfer;
+    private CfdpOutgoingTransfer transfer;
 
-    public CancelRequest(CfdpTransfer transfer) {
+    public CancelRequest(CfdpOutgoingTransfer transfer) {
         super(CfdpRequestType.CANCEL);
         this.transfer = transfer;
     }
 
-    public CfdpTransfer getTransfer() {
+    public CfdpOutgoingTransfer getTransfer() {
         return this.transfer;
     }
 

@@ -14,7 +14,7 @@ import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpDatabase;
 import org.yamcs.cfdp.CfdpDatabaseInstance;
 import org.yamcs.cfdp.CfdpTransaction;
-import org.yamcs.cfdp.CfdpTransfer;
+import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.PutRequest;
 import org.yamcs.cfdp.ResumeRequest;
@@ -42,6 +42,11 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 public class CfdpRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
+
+    public CfdpRestHandler() {
+        // TODO, hardcoded yamcsInstance
+        // CfdpDatabaseInstance ci = CfdpDatabase.getInstance("simulator");
+    }
 
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "POST")
     public void CfdpUpload(RestRequest req) throws HttpException {
@@ -76,7 +81,7 @@ public class CfdpRestHandler extends RestHandler {
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
         boolean acknowledged = req.getQueryParameterAsBoolean("reliable", false);
 
-        CfdpTransfer transfer = (CfdpTransfer) ci.processRequest(
+        CfdpOutgoingTransfer transfer = (CfdpOutgoingTransfer) ci.processRequest(
                 // TODO, hardcoded destination
                 new PutRequest(CfdpDatabase.mySourceId, 24, objName, target, overwrite, acknowledged, createpath, b,
                         objData));
@@ -153,13 +158,13 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         InfoTransfersResponse.Builder itr = InfoTransfersResponse.newBuilder();
 
-        for (CfdpTransfer transfer : transfers) {
+        for (CfdpOutgoingTransfer transfer : transfers) {
             itr.addTransfers(TransferStatus.newBuilder()
                     .setTransferId(transfer.getTransactionId().getSequenceNumber())
                     .setState(transfer.getTransferState())
@@ -183,7 +188,7 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
@@ -221,7 +226,7 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
@@ -249,7 +254,7 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
