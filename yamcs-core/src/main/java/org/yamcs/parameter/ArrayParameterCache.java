@@ -339,7 +339,7 @@ public class ArrayParameterCache implements ParameterCache {
             if (et == 0xFFFF) {
                 return null;
             } else {
-                return Type.valueOf(et);
+                return Type.forNumber(et);
             }
         }
 
@@ -348,7 +348,7 @@ public class ArrayParameterCache implements ParameterCache {
             if (rt == 0xFFFF) {
                 return null;
             } else {
-                return Type.valueOf(rt);
+                return Type.forNumber(rt);
             }
 
         }
@@ -572,6 +572,7 @@ public class ArrayParameterCache implements ParameterCache {
                 return ValueUtility.getBinaryValue((byte[]) (((Object[]) o)[idx]));
             case AGGREGATE:
             case ARRAY:
+            case ENUMERATED:
                 return (Value) (((Object[]) o)[idx]);
             default:
                 throw new IllegalStateException("Unknown type " + type); 
@@ -646,6 +647,7 @@ public class ArrayParameterCache implements ParameterCache {
                 break;
             case AGGREGATE:
             case ARRAY:
+            case ENUMERATED:
                 ((Object[]) o)[pos] = v;
                 break;
             default:
@@ -672,6 +674,7 @@ public class ArrayParameterCache implements ParameterCache {
             case BINARY:
             case AGGREGATE:
             case ARRAY:
+            case ENUMERATED:
                 return new Object[INITIAL_CAPACITY];
             }
             throw new IllegalStateException("Unnown type " + type);

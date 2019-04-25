@@ -14,6 +14,7 @@ import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.BinaryValue;
 import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.DoubleValue;
+import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.FloatValue;
 import org.yamcs.parameter.SInt32Value;
 import org.yamcs.parameter.SInt64Value;
@@ -289,6 +290,9 @@ public class ValueUtility {
         case ARRAY:
             fillInArray(b, (ArrayValue) v);
             return b.build();
+        case ENUMERATED:
+            EnumeratedValue ev = (EnumeratedValue) v;
+            return b.setSint64Value(ev.getSint64Value()).setStringValue(ev.getStringValue()).build();
         default:
             throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
@@ -458,5 +462,9 @@ public class ValueUtility {
         default:
             return false;
         }
+    }
+
+    public static Value getEnumeratedValue(long longValue, String stringValue) {
+        return new EnumeratedValue(longValue, stringValue);
     }
 }

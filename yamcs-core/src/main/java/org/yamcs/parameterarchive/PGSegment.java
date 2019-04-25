@@ -71,6 +71,7 @@ public class PGSegment {
         case BINARY:
             return new BinaryValueSegment(true);
         case STRING:
+        case ENUMERATED:
             return new StringValueSegment(true);
         case SINT32:
             return new IntValueSegment(true);

@@ -1,6 +1,5 @@
 package org.yamcs.parameter;
 
-import org.yamcs.xtce.PathElement;
 
 public abstract class Value {
     public abstract org.yamcs.protobuf.Yamcs.Value.Type getType();

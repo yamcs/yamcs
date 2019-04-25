@@ -135,6 +135,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         case DOUBLE:
             return new ResolvedValue(v.getDoubleValue(), false, floatEvaluator);
         case STRING:
+        case ENUMERATED:
             return new ResolvedValue(v.getStringValue(), false, stringEvaluator);
         case BINARY:
             return new ResolvedValue(v.getBinaryValue(), false, binaryEvaluator);

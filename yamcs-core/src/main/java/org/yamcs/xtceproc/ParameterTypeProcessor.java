@@ -35,7 +35,6 @@ import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 
-
 /**
  * Responsible for converting between raw and engineering value by usage of calibrators or by simple type conversions.
  * 
@@ -57,8 +56,9 @@ public class ParameterTypeProcessor {
      * @param pval
      */
     public void calibrate(ContainerProcessingContext pcontext, ParameterValue pval) {
-        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pdata.getParameterType(pval.getParameter()), pval.getRawValue());
-        if(engValue!=null) {
+        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator,
+                pdata.getParameterType(pval.getParameter()), pval.getRawValue());
+        if (engValue != null) {
             pval.setEngineeringValue(engValue);
         } else {
             pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
@@ -67,14 +67,15 @@ public class ParameterTypeProcessor {
 
     public void calibrate(ParameterValue pval) {
         Value engValue = doCalibrate(null, null, pdata.getParameterType(pval.getParameter()), pval.getRawValue());
-        if(engValue!=null) {
+        if (engValue != null) {
             pval.setEngineeringValue(engValue);
         } else {
             pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
         }
     }
 
-    private Value doCalibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterType ptype, Value rawValue) {
+    private Value doCalibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterType ptype,
+            Value rawValue) {
         Value engValue;
 
         if (ptype instanceof EnumeratedParameterType) {
@@ -92,34 +93,37 @@ public class ParameterTypeProcessor {
         } else if (ptype instanceof AbsoluteTimeParameterType) {
             engValue = calibrateAbsoluteTime(pvalues, (AbsoluteTimeParameterType) ptype, rawValue);
         } else if (ptype instanceof AggregateParameterType) {
-            engValue = calibrateAggregate(pvalues, contextEvaluator, (AggregateParameterType) ptype, (AggregateValue) rawValue);
+            engValue = calibrateAggregate(pvalues, contextEvaluator, (AggregateParameterType) ptype,
+                    (AggregateValue) rawValue);
         } else if (ptype instanceof ArrayParameterType) {
             engValue = calibrateArray(pvalues, contextEvaluator, (ArrayParameterType) ptype, (ArrayValue) rawValue);
         } else {
             throw new IllegalArgumentException("Extraction of " + ptype + " not implemented");
         }
         return engValue;
-       
+
     }
 
     private static Value calibrateEnumerated(EnumeratedParameterType ept, Value rawValue) {
         switch (rawValue.getType()) {
         case UINT32:
-            return ValueUtility.getStringValue(ept.calibrate(rawValue.getUint32Value()));
+            return ValueUtility.getEnumeratedValue(rawValue.getUint32Value(), ept.calibrate(rawValue.getUint32Value()));
         case UINT64:
-            return ValueUtility.getStringValue(ept.calibrate(rawValue.getUint64Value()));
+            return ValueUtility.getEnumeratedValue(rawValue.getUint64Value(), ept.calibrate(rawValue.getUint64Value()));
         case SINT32:
-            return ValueUtility.getStringValue(ept.calibrate(rawValue.getSint32Value()));
+            return ValueUtility.getEnumeratedValue(rawValue.getSint32Value(), ept.calibrate(rawValue.getSint32Value()));
         case SINT64:
-            return ValueUtility.getStringValue(ept.calibrate(rawValue.getSint64Value()));
+            return ValueUtility.getEnumeratedValue(rawValue.getSint64Value(), ept.calibrate(rawValue.getSint64Value()));
         case FLOAT:
-            return ValueUtility.getStringValue(ept.calibrate((long) rawValue.getFloatValue()));
+            return ValueUtility.getEnumeratedValue((long) rawValue.getFloatValue(),
+                    ept.calibrate((long) rawValue.getFloatValue()));
         case DOUBLE:
-            return ValueUtility.getStringValue(ept.calibrate((long) rawValue.getDoubleValue()));
+            return ValueUtility.getEnumeratedValue((long) rawValue.getDoubleValue(),
+                    ept.calibrate((long) rawValue.getDoubleValue()));
         case STRING:
             try {
                 long l = Long.decode(rawValue.getStringValue());
-                return ValueUtility.getStringValue(ept.calibrate(l));
+                return ValueUtility.getEnumeratedValue(l, ept.calibrate(l));
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to long", ept.getName(), rawValue.getStringValue());
                 return null;
@@ -127,7 +131,7 @@ public class ParameterTypeProcessor {
         case BINARY:
             byte[] b = rawValue.getBinaryValue();
             long l = binaryToLong(b);
-            return ValueUtility.getStringValue(ept.calibrate(l));
+            return ValueUtility.getEnumeratedValue(l, ept.calibrate(l));
         default:
             throw new IllegalStateException(
                     "Unsupported raw value type '" + rawValue.getType() + "' cannot be calibrated as an enumeration");
@@ -139,9 +143,9 @@ public class ParameterTypeProcessor {
      */
     private static long binaryToLong(byte[] b) {
         byte[] b1 = b;
-        if(b.length<8) {
-           b1 = new byte[8];
-           System.arraycopy(b, 0, b1, 8-b.length, b.length);
+        if (b.length < 8) {
+            b1 = new byte[8];
+            System.arraycopy(b, 0, b1, 8 - b.length, b.length);
         }
         return ByteArrayUtils.decodeLong(b1, 0);
     }
@@ -189,7 +193,7 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateInteger(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, Value rawValue) {
-        if(!hasCalibrator(ipt) && ipt.getValueType() == rawValue.getType()) {
+        if (!hasCalibrator(ipt) && ipt.getValueType() == rawValue.getType()) {
             return rawValue;
         }
         switch (rawValue.getType()) {
@@ -221,12 +225,12 @@ public class ParameterTypeProcessor {
 
     private boolean hasCalibrator(NumericParameterType npt) {
         DataEncoding encoding = npt.getEncoding();
-        if(encoding==null) {
+        if (encoding == null) {
             return false;
         }
-        if(encoding instanceof NumericDataEncoding) {
+        if (encoding instanceof NumericDataEncoding) {
             NumericDataEncoding nde = (NumericDataEncoding) encoding;
-            return nde.getContextCalibratorList()!=null || nde.getDefaultCalibrator()!=null;
+            return nde.getContextCalibratorList() != null || nde.getDefaultCalibrator() != null;
         } else {
             return false;
         }
@@ -260,7 +264,7 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateFloat(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, Value rawValue) {
-        if(!hasCalibrator(ptype) && ptype.getValueType() == rawValue.getType()) {
+        if (!hasCalibrator(ptype) && ptype.getValueType() == rawValue.getType()) {
             return rawValue;
         }
         switch (rawValue.getType()) {
@@ -398,13 +402,14 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value calibrateAggregate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, AggregateParameterType ptype, AggregateValue rawValue) {
+    private Value calibrateAggregate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator,
+            AggregateParameterType ptype, AggregateValue rawValue) {
         AggregateValue engValue = new AggregateValue(ptype.getMemberNames());
-        for(Member m: ptype.getMemberList()) {
+        for (Member m : ptype.getMemberList()) {
             Value rv = rawValue.getMemberValue(m.getName());
-            if(rv!=null) {
+            if (rv != null) {
                 Value ev = doCalibrate(pvalues, contextEvaluator, (ParameterType) m.getType(), rv);
-                if(ev!=null) {
+                if (ev != null) {
                     engValue.setMemberValue(m.getName(), ev);
                 } else {
                     return null;
@@ -415,26 +420,28 @@ public class ParameterTypeProcessor {
         }
         return engValue;
     }
-    
-    private Value calibrateArray(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ArrayParameterType ptype, ArrayValue rawValue) {
+
+    private Value calibrateArray(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator,
+            ArrayParameterType ptype, ArrayValue rawValue) {
         ParameterType engValueType = (ParameterType) ptype.getElementType();
-        boolean hasCalibrator = (engValueType instanceof NumericParameterType) && hasCalibrator((NumericParameterType) engValueType);
-        if(!hasCalibrator && rawValue.getElementType() == engValueType.getValueType()) {
+        boolean hasCalibrator = (engValueType instanceof NumericParameterType)
+                && hasCalibrator((NumericParameterType) engValueType);
+        if (!hasCalibrator && rawValue.getElementType() == engValueType.getValueType()) {
             return rawValue;
-        } 
+        }
         int fl = rawValue.flatLength();
         Value rv = rawValue.getElementValue(0);
         Value ev = doCalibrate(pvalues, contextEvaluator, engValueType, rv);
-        if(ev == null) {
+        if (ev == null) {
             return null;
         }
         ArrayValue engValue = new ArrayValue(rawValue.getDimensions(), ev.getType());
         engValue.setElementValue(0, ev);
-        for(int i = 1; i<fl; i++) {
+        for (int i = 1; i < fl; i++) {
             rv = rawValue.getElementValue(i);
-            if(rv!=null) {
+            if (rv != null) {
                 ev = doCalibrate(pvalues, contextEvaluator, engValueType, rv);
-                if(ev!=null) {
+                if (ev != null) {
                     engValue.setElementValue(i, ev);
                 } else {
                     return null;

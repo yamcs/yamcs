@@ -30,6 +30,8 @@ message Value {
     BOOLEAN = 9;
     AGGREGATE = 10;
     ARRAY = 11;
+    //enumerated values have both an integer (sint64Value) and a string representation
+    ENUMERATED = 12;
   }
   required Type type = 1;
   optional float floatValue = 2;
