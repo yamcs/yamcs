@@ -1,0 +1,5 @@
+root = true
+
+[*.rst]
+indent_style = space
+indent_size = 4

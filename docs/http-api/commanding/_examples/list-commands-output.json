@@ -1,0 +1,137 @@
+{
+  "entry" : [ {
+    "commandId" : {
+      "generationTime" : 1491552506387,
+      "origin" : "user@my-machine",
+      "sequenceNumber" : 1,
+         "commandName" : "/YSS/SIMULATOR/DUMP_RECORDING"
+       },
+       "attr" : [ {
+         "name" : "binary",
+         "value" : {
+           "type" : "BINARY",
+           "binaryValue" : "GGTAAAAAAAAAAABqAAAABnNkZnFzZgAAAAAH"
+         }
+       }, {
+         "name" : "username",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "admin"
+         }
+       }, {
+         "name" : "source",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "YSS/SIMULATOR/DUMP_RECORDING(filename: \"sdfqsf\", speed: 7)"
+         }
+       }, {
+         "name" : "TransmissionConstraints",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "NA"
+         }
+       }, {
+         "name" : "Final_Sequence_Count",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "80"
+         }
+       }, {
+         "name" : "Acknowledge_FSC_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK: OK"
+         }
+       }, {
+         "name" : "Acknowledge_FSC_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552507470
+         }
+       }, {
+         "name" : "Acknowledge_FRC_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK: OK"
+         }
+       }, {
+         "name" : "Acknowledge_FRC_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552507870
+         }
+       }, {
+         "name" : "Acknowledge_DASS_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK: OK"
+         }
+       }, {
+         "name" : "Acknowledge_DASS_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552508270
+         }
+       }, {
+         "name" : "Acknowledge_MCS_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK: OK"
+         }
+       }, {
+         "name" : "Acknowledge_MCS_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552508670
+         }
+       }, {
+         "name" : "Acknowledge_A_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK A: OK"
+         }
+       }, {
+         "name" : "Acknowledge_A_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552509070
+         }
+       }, {
+         "name" : "Acknowledge_B_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK B: OK"
+         }
+       }, {
+         "name" : "Acknowledge_B_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552510070
+         }
+       }, {
+         "name" : "Acknowledge_C_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK C: OK"
+         }
+       }, {
+         "name" : "Acknowledge_C_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552511070
+         }
+       }, {
+         "name" : "Acknowledge_D_Status",
+         "value" : {
+           "type" : "STRING",
+           "stringValue" : "ACK D: OK"
+         }
+       }, {
+         "name" : "Acknowledge_D_Time",
+         "value" : {
+           "type" : "TIMESTAMP",
+           "timestampValue" : 1491552517070
+         }
+       } ]
+     } ]
+}
