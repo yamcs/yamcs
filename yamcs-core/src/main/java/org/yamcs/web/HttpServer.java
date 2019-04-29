@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,9 @@ import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
@@ -59,6 +65,7 @@ public class HttpServer extends AbstractService implements YamcsService {
     private Router apiRouter;
 
     private int port;
+    private int tlsPort;
     private boolean zeroCopyEnabled;
     private List<String> webRoots = new ArrayList<>(2);
     ThreadPoolExecutor executor;
@@ -84,6 +91,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         }
 
         port = args.getInt("port", 8090);
+        tlsPort = args.getInt("tlsPort", -1);
         zeroCopyEnabled = args.getBoolean("zeroCopyEnabled", true);
 
         if (args.containsKey("webRoot")) {
@@ -207,10 +215,12 @@ public class HttpServer extends AbstractService implements YamcsService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             notifyFailed(e);
+        } catch (Exception e) {
+            notifyFailed(e);
         }
     }
 
-    public void startServer() throws InterruptedException {
+    public void startServer() throws InterruptedException, SSLException, CertificateException {
         StaticFileHandler.init(webRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
@@ -218,21 +228,47 @@ public class HttpServer extends AbstractService implements YamcsService {
         // of worker threads to 2*number of CPU cores
         EventLoopGroup workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
+        if (port != -1) {
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                    .childHandler(new HttpServerChannelInitializer(null, apiRouter, corsConfig, wsConfig, websiteConfig));
 
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
-                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(apiRouter, corsConfig, wsConfig, websiteConfig));
+            // Bind and start to accept incoming connections.
+            bootstrap.bind(new InetSocketAddress(port)).sync();
+        } 
+        if (tlsPort != -1) {
+            SelfSignedCertificate ssc = new SelfSignedCertificate();
+            SslContext sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
+                .build();
+            
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                    .childHandler(new HttpServerChannelInitializer(sslCtx, apiRouter, corsConfig, wsConfig, websiteConfig));
 
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port)).sync();
+            // Bind and start to accept incoming connections.
+            bootstrap.bind(new InetSocketAddress(tlsPort)).sync();
+        }
 
         try {
-            log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
+            if(port!=-1) {
+                log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
+            } 
+            if (tlsPort!=-1) {
+                log.info("Web TLS address: https://{}:{}/", InetAddress.getLocalHost().getHostName(), tlsPort);
+            }
         } catch (UnknownHostException e) {
-            log.info("Web address: http://localhost:{}/", port);
+            if(port!=-1) {
+                log.info("Web address: http://localhost:{}/", port);
+            }
+            if (tlsPort!=-1) {
+                log.info("Web TLS address: https://localhost:{}/", tlsPort);
+            }
         }
     }
 
