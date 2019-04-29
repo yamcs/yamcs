@@ -1,6 +1,9 @@
 package org.yamcs.cfdp;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -17,7 +20,9 @@ import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends CfdpTransaction {
@@ -25,6 +30,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     private static final Logger log = LoggerFactory.getLogger(CfdpIncomingTransfer.class);
 
     private enum CfdpTransferState {
+        START,
         METADATA_RECEIVED,
         FILEDATA_RECEIVED,
         EOF_RECEIVED,
@@ -34,25 +40,37 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     }
 
     private CfdpTransferState currentState;
-    private TransferState state;
-    List<SegmentRequest> missingSegments;
+    List<SegmentRequest> missingSegments = new ArrayList<SegmentRequest>();
+    private boolean acknowledged = false;
+    private Bucket incomingBucket = null;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+    private String objectName;
+
+    private final long dataTimeoutMs = 5000;
 
     private DataFile incomingDataFile;
 
-    public CfdpIncomingTransfer(MetadataPacket packet, Stream cfdpOut) {
-        this(packet.getHeader().getSourceId(), cfdpOut);
+    public CfdpIncomingTransfer(MetadataPacket packet, Stream cfdpOut, Bucket target) {
+        this(packet.getHeader().getTransactionId(), cfdpOut, target);
         // create a new empty data file
         incomingDataFile = new DataFile(packet.getPacketLength());
-        this.currentState = CfdpTransferState.METADATA_RECEIVED;
+        this.acknowledged = packet.getHeader().isAcknowledged();
+        this.currentState = CfdpTransferState.START;
+        objectName = "received_" + dateFormat.format(new Date());
+
     }
 
-    public CfdpIncomingTransfer(long initiatorEntity, Stream cfdpOut) {
-        super(initiatorEntity, cfdpOut);
+    public CfdpIncomingTransfer(CfdpTransactionId id, Stream cfdpOut, Bucket target) {
+        super(id, cfdpOut);
+        incomingBucket = target;
     }
 
     @Override
     public void step() {
         switch (currentState) {
+        case START:
+            this.currentState = CfdpTransferState.START;
+            break;
         case METADATA_RECEIVED:
             // nothing to do, we're waiting for data
             state = TransferState.RUNNING;
@@ -80,21 +98,31 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     public void processPacket(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
+            case Metadata:
+                // do nothing, already processed this (constructor)
+                break;
             case EOF:
-                // check completeness
-                missingSegments = incomingDataFile.getMissingChunks();
-                if (missingSegments.isEmpty()) {
-                    sendFinishedPacket(packet);
-                    this.currentState = CfdpTransferState.FINISHED_SENT;
+                if (this.acknowledged) {
+                    // check completeness
+                    missingSegments = incomingDataFile.getMissingChunks();
+                    if (missingSegments.isEmpty()) {
+                        sendFinishedPacket(packet);
+                        this.currentState = CfdpTransferState.FINISHED_SENT;
+                    } else {
+                        sendNakPacket(packet);
+                        this.currentState = CfdpTransferState.RESENDING;
+                    }
                 } else {
-                    sendNakPacket(packet);
-                    this.currentState = CfdpTransferState.RESENDING;
+                    this.state = TransferState.COMPLETED;
+                    saveFileInBucket();
                 }
                 break;
             case ACK:
                 AckPacket ack = (AckPacket) packet;
-                if (ack.getFileDirectiveCode() == FileDirectiveCode.Finished) {
+                if (ack.getDirectiveCode() == FileDirectiveCode.Finished) {
                     this.currentState = CfdpTransferState.FINISHED_ACK_RECEIVED;
+                    this.state = TransferState.COMPLETED;
+                    saveFileInBucket();
                 } else {
                     // TODO invalid ACK received
                 }
@@ -109,10 +137,20 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
                 missingSegments.remove(new SegmentRequest(fdp.getOffset(), fdp.getOffset() + fdp.getData().length));
                 log.info("RESENT file data received: " + new String(fdp.getData()).toString());
             }
-            if (missingSegments.isEmpty()) {
-                sendFinishedPacket(packet);
-                this.currentState = CfdpTransferState.FINISHED_SENT;
+            if (this.acknowledged) {
+                if (missingSegments.isEmpty()) {
+                    sendFinishedPacket(packet);
+                    this.currentState = CfdpTransferState.FINISHED_SENT;
+                }
             }
+        }
+    }
+
+    private void saveFileInBucket() {
+        try {
+            incomingBucket.putObject(getObjectName(), null, null, incomingDataFile.getData());
+        } catch (IOException e) {
+            throw new RuntimeException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
         }
     }
 
@@ -120,7 +158,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         CfdpHeader header = new CfdpHeader(
                 true, // file directive
                 true, // towards sender
-                false, // not acknowledged
+                acknowledged,
                 false, // no CRC
                 packet.getHeader().getEntityIdLength(),
                 packet.getHeader().getSequenceNumberLength(),
@@ -140,7 +178,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         CfdpHeader header = new CfdpHeader(
                 true, // file directive
                 true, // towards sender
-                false, // not acknowledged
+                acknowledged,
                 false, // no CRC
                 packet.getHeader().getEntityIdLength(),
                 packet.getHeader().getSequenceNumberLength(),
@@ -158,5 +196,48 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
                 header);
 
         sendPacket(finished);
+    }
+
+    @Override
+    public Bucket getBucket() {
+        return incomingBucket;
+    }
+
+    @Override
+    public String getObjectName() {
+        return objectName;
+    }
+
+    @Override
+    public String getRemotePath() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public TransferDirection getDirection() {
+        return TransferDirection.DOWNLOAD;
+    }
+
+    @Override
+    public long getTotalSize() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public long getTransferredSize() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public boolean cancellable() {
+        return false;
+    }
+
+    @Override
+    public boolean pausable() {
+        return false;
     }
 }

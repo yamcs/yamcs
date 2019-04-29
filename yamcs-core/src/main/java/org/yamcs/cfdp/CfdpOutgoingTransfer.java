@@ -32,6 +32,7 @@ import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.protobuf.Cfdp;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpOutgoingTransfer extends CfdpTransaction {
@@ -73,15 +74,12 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private int EOFSendAttempts = 0;
 
     private CfdpTransferState currentState;
-    private TransferState state;
     private long transferred;
 
     private long offset = 0;
     private long end = 0;
 
     private final int pauseBetweenFileDataPackets = 1000;
-
-    private TransferDirection transferDirection;
 
     private boolean sleeping = false;
 
@@ -98,23 +96,26 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         this.request = request;
         this.currentState = CfdpTransferState.START;
         this.state = Cfdp.TransferState.RUNNING;
-        this.transferDirection = TransferDirection.UPLOAD;
     }
 
-    public TransferState getTransferState() {
-        return this.state;
+    @Override
+    public Bucket getBucket() {
+        return request.getBucket();
     }
 
-    public PutRequest getRequest() {
-        return request;
+    @Override
+    public String getObjectName() {
+        return request.getObjectName();
     }
 
+    @Override
+    public String getRemotePath() {
+        return request.getTargetPath();
+    }
+
+    @Override
     public long getTransferredSize() {
         return this.transferred;
-    }
-
-    public boolean isOngoing() {
-        return state == TransferState.RUNNING || state == TransferState.PAUSED;
     }
 
     @Override
@@ -308,10 +309,12 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         return this.currentState;
     }
 
+    @Override
     public TransferDirection getDirection() {
-        return this.transferDirection;
+        return TransferDirection.UPLOAD;
     }
 
+    @Override
     public long getTotalSize() {
         return this.request.getPacketLength();
     }
@@ -328,16 +331,19 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         throw new java.lang.UnsupportedOperationException("CFDP ConditionCode " + code + " not yet supported");
     }
 
+    @Override
     public CfdpOutgoingTransfer pause() {
         sleeping = true;
         return this;
     }
 
+    @Override
     public CfdpOutgoingTransfer resumeTransfer() {
         sleeping = false;
         return this;
     }
 
+    @Override
     public CfdpOutgoingTransfer cancelTransfer() {
         sleeping = false; // wake up if sleeping
         currentState = CfdpTransferState.CANCELING;
@@ -389,6 +395,16 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         } else {
             // TODO, unexpected packet
         }
+    }
+
+    @Override
+    public boolean cancellable() {
+        return true;
+    }
+
+    @Override
+    public boolean pausable() {
+        return true;
     }
 
 }

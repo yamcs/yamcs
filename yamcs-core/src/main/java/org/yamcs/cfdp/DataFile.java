@@ -1,5 +1,7 @@
 package org.yamcs.cfdp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -46,4 +48,20 @@ public class DataFile {
         return toReturn;
     }
 
+    public long getSize() {
+        Long last = dataFileSegments.lastKey();
+        return last + dataFileSegments.get(last).getLength();
+    }
+
+    public byte[] getData() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        dataFileSegments.entrySet().stream().forEach(e -> {
+            try {
+                baos.write((byte[]) e.getValue().getData());
+            } catch (IOException e1) {
+                throw new RuntimeException(e1);
+            }
+        });
+        return baos.toByteArray();
+    }
 }

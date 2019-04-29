@@ -1,5 +1,6 @@
 package org.yamcs.cfdp;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -8,8 +9,12 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
+import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -20,17 +25,24 @@ import org.yamcs.yarch.YarchException;
 public class CfdpDatabaseInstance implements StreamSubscriber {
     static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
 
-    Map<CfdpTransactionId, CfdpOutgoingTransfer> transfers = new HashMap<CfdpTransactionId, CfdpOutgoingTransfer>();
+    Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<CfdpTransactionId, CfdpTransaction>();
 
     private String instanceName;
 
     private Stream cfdpIn, cfdpOut;
+    private Bucket incomingBucket;
 
-    CfdpDatabaseInstance(String instanceName) throws YarchException {
+    CfdpDatabaseInstance(String instanceName) throws YarchException, IOException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         cfdpIn = ydb.getStream("cfdp_in");
         cfdpOut = ydb.getStream("cfdp_out");
         this.cfdpIn.addSubscriber(this);
+        String bucketName = YConfiguration.getConfiguration("cfdp").getString("incomingBucket");
+        BucketDatabase bdb = ydb.getBucketDatabase();
+        incomingBucket = bdb.getBucket(bucketName);
+        if (incomingBucket == null) {
+            incomingBucket = bdb.createBucket(bucketName);
+        }
     }
 
     public String getName() {
@@ -45,18 +57,18 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         transfers.put(transfer.getTransactionId(), transfer);
     }
 
-    public CfdpOutgoingTransfer getCfdpTransfer(CfdpTransactionId transferId) {
+    public CfdpTransaction getCfdpTransfer(CfdpTransactionId transferId) {
         return transfers.get(transferId);
     }
 
-    public Collection<CfdpOutgoingTransfer> getCfdpTransfers(boolean all) {
+    public Collection<CfdpTransaction> getCfdpTransfers(boolean all) {
         return all
                 ? this.transfers.values()
                 : this.transfers.values().stream().filter(transfer -> transfer.isOngoing())
                         .collect(Collectors.toList());
     }
 
-    public Collection<CfdpOutgoingTransfer> getCfdpTransfers(List<Long> transferIds) {
+    public Collection<CfdpTransaction> getCfdpTransfers(List<Long> transferIds) {
         List<CfdpTransactionId> transactionIds = transferIds.stream()
                 .map(x -> new CfdpTransactionId(CfdpDatabase.mySourceId, x)).collect(Collectors.toList());
         return this.transfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
@@ -85,20 +97,20 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         return transfer;
     }
 
-    private CfdpOutgoingTransfer processPauseRequest(PauseRequest request) {
-        CfdpOutgoingTransfer transfer = request.getTransfer();
+    private CfdpTransaction processPauseRequest(PauseRequest request) {
+        CfdpTransaction transfer = request.getTransfer();
         transfer.pause();
         return transfer;
     }
 
-    private CfdpOutgoingTransfer processResumeRequest(ResumeRequest request) {
-        CfdpOutgoingTransfer transfer = request.getTransfer();
+    private CfdpTransaction processResumeRequest(ResumeRequest request) {
+        CfdpTransaction transfer = request.getTransfer();
         transfer.resumeTransfer();
         return transfer;
     }
 
-    private CfdpOutgoingTransfer processCancelRequest(CancelRequest request) {
-        CfdpOutgoingTransfer transfer = request.getTransfer();
+    private CfdpTransaction processCancelRequest(CancelRequest request) {
+        CfdpTransaction transfer = request.getTransfer();
         transfer.cancelTransfer();
         return transfer;
     }
@@ -113,6 +125,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         } else {
             // the communication partner has initiated a transfer
             transaction = instantiateTransaction(packet);
+            transfers.put(transaction.getTransactionId(), transaction);
         }
 
         if (transaction != null) {
@@ -123,8 +136,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
-            log.error("Only CFDP transactions that are initiated by YAMCS are supported.");
-            throw new IllegalArgumentException("Only YAMCS-initiated CFDP transactions are supported");
+            return new CfdpIncomingTransfer((MetadataPacket) packet, cfdpOut, incomingBucket);
         } else {
             log.error("Rogue CFDP packet received.");
             throw new IllegalArgumentException("Rogue CFDP packet received");

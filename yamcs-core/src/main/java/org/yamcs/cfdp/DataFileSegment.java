@@ -18,4 +18,8 @@ public class DataFileSegment {
         return data.length;
     }
 
+    public byte[] getData() {
+        return data;
+    }
+
 }

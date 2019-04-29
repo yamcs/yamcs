@@ -1,5 +1,6 @@
 package org.yamcs.cfdp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,8 @@ public class CfdpDatabase {
                 instance = new CfdpDatabaseInstance(yamcsInstance);
             } catch (YarchException e) {
                 throw new RuntimeException("Cannot create cfdp database '" + yamcsInstance + "'", e);
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot get or create bucket ", e);
             }
             databases.put(yamcsInstance, instance);
         }

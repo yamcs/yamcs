@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpDatabase;
 import org.yamcs.cfdp.CfdpDatabaseInstance;
-import org.yamcs.cfdp.CfdpTransaction;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
+import org.yamcs.cfdp.CfdpTransaction;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.PutRequest;
 import org.yamcs.cfdp.ResumeRequest;
@@ -158,19 +158,19 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         InfoTransfersResponse.Builder itr = InfoTransfersResponse.newBuilder();
 
-        for (CfdpOutgoingTransfer transfer : transfers) {
+        for (CfdpTransaction transfer : transfers) {
             itr.addTransfers(TransferStatus.newBuilder()
                     .setTransferId(transfer.getTransactionId().getSequenceNumber())
                     .setState(transfer.getTransferState())
-                    .setLocalBucketName(transfer.getRequest().getBucket().getName())
-                    .setLocalObjectName(transfer.getRequest().getObjectName())
-                    .setRemotePath(transfer.getRequest().getTargetPath())
+                    .setLocalBucketName(transfer.getBucket().getName())
+                    .setLocalObjectName(transfer.getObjectName())
+                    .setRemotePath(transfer.getRemotePath())
                     .setDirection(transfer.getDirection())
                     .setTotalSize(transfer.getTotalSize())
                     .setSizeTransferred(transfer.getTransferredSize()));
@@ -188,11 +188,12 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> cancelledTransfers = transfers.stream()
+                .filter(CfdpTransaction::cancellable)
                 .map(CancelRequest::new)
                 .map(ci::processRequest)
                 .filter(x -> x != null)
@@ -226,11 +227,12 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> pausedTransfers = transfers.stream()
+                .filter(CfdpTransaction::pausable)
                 .map(PauseRequest::new)
                 .map(ci::processRequest)
                 .filter(x -> x != null)
@@ -254,11 +256,12 @@ public class CfdpRestHandler extends RestHandler {
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpOutgoingTransfer> transfers = transferIds.isEmpty()
+        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
                 ? ci.getCfdpTransfers(true)
                 : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> resumedTransfers = transfers.stream()
+                .filter(CfdpTransaction::pausable)
                 .map(ResumeRequest::new)
                 .map(ci::processRequest)
                 .filter(x -> x != null)

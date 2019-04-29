@@ -109,6 +109,10 @@ public class AckPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.ACK;
     }
 
+    public FileDirectiveCode getDirectiveCode() {
+        return this.directiveCode;
+    }
+
     public FileDirectiveSubtypeCode getFileDirectiveSubtypeCode() {
         return directiveSubtypeCode;
     }

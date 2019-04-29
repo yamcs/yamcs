@@ -92,6 +92,10 @@ public class CfdpHeader {
         return this.sourceId;
     }
 
+    public boolean isAcknowledged() {
+        return this.acknowledged;
+    }
+
     /*
      * Reads the header of the incoming buffer, which is assumed to be a complete PDU
      * Afterwards puts the buffer position right after the header 
