@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -84,7 +87,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     @Before
-    public void before() throws InterruptedException {
+    public void before() throws InterruptedException, SSLException, GeneralSecurityException {
         if (SecurityStore.getInstance().isEnabled()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }

@@ -23,7 +23,7 @@ public class YamcsConnectionProperties {
     }
 
     private Protocol protocol;
-    private boolean ssl;
+    private boolean tls;
 
     static final private String PREF_FILENAME = "YamcsConnectionProperties"; // relative to the <home>/.yamcs directory
 
@@ -65,14 +65,14 @@ public class YamcsConnectionProperties {
             relativePath = "/" + relativePath;
         }
         try {
-            return new URI("http://" + host + ":" + port + "/api/" + relativePath);
+            return new URI((tls?"http":"https")+"://" + host + ":" + port + "/api/" + relativePath);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }
     }
 
     public URI webSocketURI() {
-        String urlString = "ws://" + host + ":" + port + "/_websocket";
+        String urlString = (tls?"ws":"wss")+"://" + host + ":" + port + "/_websocket";
         if (instance != null) {
             urlString += "/" + instance;
         }
@@ -127,8 +127,8 @@ public class YamcsConnectionProperties {
         this.instance = instance;
     }
 
-    public void setSsl(boolean ssl) {
-        this.ssl = ssl;
+    public void setTls(boolean tls) {
+        this.tls = tls;
     }
 
     public void setProtocol(Protocol protocol) {
@@ -138,7 +138,7 @@ public class YamcsConnectionProperties {
     @Override
     public YamcsConnectionProperties clone() {
         YamcsConnectionProperties ycp1 = new YamcsConnectionProperties(this.host, this.port, this.instance);
-        ycp1.ssl = this.ssl;
+        ycp1.tls = this.tls;
         ycp1.protocol = this.protocol;
         ycp1.username = this.username;
         ycp1.password = this.password;
@@ -157,10 +157,10 @@ public class YamcsConnectionProperties {
     /**
      * Return the base REST API URL for connecting to yamcs
      *
-     * @return A sting of the shape http://host:port/api
+     * @return A string of the shape http://host:port/api
      */
     public String getRestApiUrl() {
-        return "http://" + host + ":" + port + "/api";
+        return (tls?"http":"https")+"://" + host + ":" + port + "/api";
     }
 
     public String getUsername() {
@@ -197,7 +197,7 @@ public class YamcsConnectionProperties {
         }
 
         if ("https".equals(u.getScheme()) || "yamcss".equals(u.getScheme())) {
-            ycd.ssl = true;
+            ycd.tls = true;
         }
         if (u.getPort() != -1) {
             ycd.port = u.getPort();
@@ -245,9 +245,15 @@ public class YamcsConnectionProperties {
         }
         return sb.toString();
     }
-
+    
+    public boolean isTls() {
+        return tls;
+    }
+    
     @Override
     public String toString() {
         return getUrl();
     }
+
+
 }

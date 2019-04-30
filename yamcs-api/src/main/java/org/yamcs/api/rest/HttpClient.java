@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -15,11 +17,15 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
+import org.yamcs.utils.CertUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -60,13 +66,20 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
     EventLoopGroup group;
     private List<Cookie> cookies;
+    private SslContext sslCtx;
+    // if set, do not verify server certificate
+    private boolean insecureTls;
 
+    KeyStore caKeyStore;
     private int maxResponseLength = 1024 * 1024;// max length of the expected response
 
     // extensions for the RestExceptionMessage
@@ -78,12 +91,13 @@ public class HttpClient {
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body,
-            String username, char[] password) throws URISyntaxException {
+            String username, char[] password) throws URISyntaxException, IOException, GeneralSecurityException {
         return doAsyncRequest(url, httpMethod, body, username, password, null);
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body,
-            String username, char[] password, HttpHeaders extraHeaders) throws URISyntaxException {
+            String username, char[] password, HttpHeaders extraHeaders)
+            throws URISyntaxException, IOException, GeneralSecurityException {
         URI uri = new URI(url);
         HttpObjectAggregator aggregator = new HttpObjectAggregator(maxResponseLength);
 
@@ -108,7 +122,7 @@ public class HttpClient {
     }
 
     public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String url, HttpMethod httpMethod,
-            String username, char[] password) throws URISyntaxException {
+            String username, char[] password) throws URISyntaxException, IOException, GeneralSecurityException {
         URI uri = new URI(url);
         CompletableFuture<BulkRestDataSender> cf = new CompletableFuture<>();
         BulkRestDataSender.ContinuationHandler chandler = new BulkRestDataSender.ContinuationHandler(cf);
@@ -202,9 +216,12 @@ public class HttpClient {
      *            send all the data to this receiver. To find out when the request has been finished, the Future has to
      *            be used
      * @return a future indicating when the operation is completed.
+     * @throws GeneralSecurityException
+     * @throws IOException
      */
     public CompletableFuture<Void> doBulkReceiveRequest(String url, HttpMethod httpMethod, byte[] body,
-            String username, char[] password, BulkRestDataReceiver receiver) throws URISyntaxException {
+            String username, char[] password, BulkRestDataReceiver receiver)
+            throws URISyntaxException, IOException, GeneralSecurityException {
         URI uri = new URI(url);
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);
 
@@ -238,11 +255,13 @@ public class HttpClient {
     }
 
     public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, String body,
-            String username, char[] password, BulkRestDataReceiver receiver) throws URISyntaxException {
+            String username, char[] password, BulkRestDataReceiver receiver)
+            throws URISyntaxException, IOException, GeneralSecurityException {
         return doBulkReceiveRequest(url, httpMethod, body.getBytes(), username, password, receiver);
     }
 
-    private ChannelFuture setupChannel(URI uri, ChannelHandler... channelHandler) {
+    private ChannelFuture setupChannel(URI uri, ChannelHandler... channelHandler)
+            throws IOException, GeneralSecurityException {
         String scheme = uri.getScheme() == null ? "http" : uri.getScheme();
         String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
         int port = uri.getPort();
@@ -250,8 +269,10 @@ public class HttpClient {
             port = 80;
         }
 
-        if (!"http".equalsIgnoreCase(scheme)) {
-            throw new IllegalArgumentException("Only HTTP is supported.");
+        if ("https".equalsIgnoreCase(scheme)) {
+            sslCtx = getSslContext();
+        } else if (!"http".equalsIgnoreCase(scheme)) {
+            throw new IllegalArgumentException("Only HTTP and HTTPS are supported.");
         }
 
         if (group == null) {
@@ -264,12 +285,50 @@ public class HttpClient {
                     @Override
                     public void initChannel(SocketChannel ch) {
                         ChannelPipeline p = ch.pipeline();
+                        if (sslCtx != null) {
+                            p.addLast(sslCtx.newHandler(ch.alloc()));
+                        }
                         p.addLast(new HttpClientCodec());
                         p.addLast(new HttpContentDecompressor());
                         p.addLast(channelHandler);
                     }
                 });
         return b.connect(host, port);
+    }
+
+    private SslContext getSslContext() throws GeneralSecurityException, SSLException {
+        if (insecureTls) {
+            return SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+        }
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        
+        if(caKeyStore!=null) {
+            tmf.init(caKeyStore);
+        } //else the default trustStore configured with -Djavax.net.ssl.trustStore is used
+        
+        return SslContextBuilder.forClient().trustManager(tmf).build();
+    }
+
+    /**
+     * In case of https connections, this file contains the CA certificates that are used to verify server certificate
+     * 
+     * @param caCertFile
+     */
+    public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
+        caKeyStore = CertUtil.loadCertFile(caCertFile);
+    }
+
+    public boolean isInsecureTls() {
+        return insecureTls;
+    }
+
+    /**
+     * if true and https connections are used, do not verify server certificate
+     * 
+     * @param insecureTls
+     */
+    public void setInsecureTls(boolean insecureTls) {
+        this.insecureTls = insecureTls;
     }
 
     private void fillInHeaders(HttpRequest request, URI uri, String username, char[] password)

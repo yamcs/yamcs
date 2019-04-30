@@ -1,6 +1,9 @@
 package org.yamcs.api.ws;
 
+import java.io.IOException;
 import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -9,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
@@ -16,6 +22,7 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.utils.CertUtil;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -23,6 +30,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -36,6 +44,9 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 
 /**
@@ -61,6 +72,8 @@ public class WebSocketClient {
     private ConnectionInfo connectionInfo;
 
     private boolean tcpKeepAlive = false;
+    private boolean insecureTls;
+    KeyStore caKeyStore;
 
     // if reconnection is enabled, how often to attempt to reconnect in case of failure
     long reconnectionInterval = 1000;
@@ -113,7 +126,7 @@ public class WebSocketClient {
         this.enableReconnection.set(enableReconnection);
     }
 
-    public ChannelFuture connect() {
+    public ChannelFuture connect() throws SSLException, GeneralSecurityException {
         callback.connecting();
         return createBootstrap();
     }
@@ -130,7 +143,7 @@ public class WebSocketClient {
         this.reconnectionInterval = reconnectionIntervalMillisec;
     }
 
-    private ChannelFuture createBootstrap() {
+    private ChannelFuture createBootstrap() throws SSLException, GeneralSecurityException {
         HttpHeaders header = new DefaultHttpHeaders();
         if (userAgent != null) {
             header.add(HttpHeaderNames.USER_AGENT, userAgent);
@@ -168,12 +181,16 @@ public class WebSocketClient {
         if (timeoutMs != null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
         }
+        SslContext sslCtx = yprops.isTls() ? getSslContext() : null;
 
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
-                ch.pipeline().addLast(
-                        new HttpClientCodec(),
+                ChannelPipeline p = ch.pipeline();
+                if (sslCtx != null) {
+                    p.addLast(sslCtx.newHandler(ch.alloc()));
+                }
+                p.addLast(new HttpClientCodec(),
                         new HttpObjectAggregator(8192),
                         // new WebSocketClientCompressionHandler(),
                         webSocketHandler);
@@ -299,5 +316,40 @@ public class WebSocketClient {
 
     void setConnectionInfo(ConnectionInfo connectionInfo) {
         this.connectionInfo = connectionInfo;
+    }
+
+    private SslContext getSslContext() throws GeneralSecurityException, SSLException {
+        if (insecureTls) {
+            return SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+        }
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+        if (caKeyStore != null) {
+            tmf.init(caKeyStore);
+        } // else the default trustStore configured with -Djavax.net.ssl.trustStore is used
+
+        return SslContextBuilder.forClient().trustManager(tmf).build();
+    }
+
+    /**
+     * In case of https connections, this file contains the CA certificates that are used to verify server certificate
+     * 
+     * @param caCertFile
+     */
+    public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
+        caKeyStore = CertUtil.loadCertFile(caCertFile);
+    }
+
+    public boolean isInsecureTls() {
+        return insecureTls;
+    }
+
+    /**
+     * if true and https connections are used, do not verify server certificate
+     * 
+     * @param insecureTls
+     */
+    public void setInsecureTls(boolean insecureTls) {
+        this.insecureTls = insecureTls;
     }
 }

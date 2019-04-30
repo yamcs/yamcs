@@ -38,7 +38,7 @@ export class WebSocketClient {
   constructor(instance?: string) {
     const currentLocation = window.location;
     let url = 'ws://';
-    if (currentLocation.protocol === 'https') {
+    if (currentLocation.protocol === 'https:') {
       url = 'wss://';
     }
     url += `${currentLocation.host}/_websocket`;

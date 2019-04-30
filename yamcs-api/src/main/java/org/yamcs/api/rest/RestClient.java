@@ -1,7 +1,9 @@
 package org.yamcs.api.rest;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -122,10 +124,11 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body.getBytes(),
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException e) { // throw a RuntimeException instead since if the code is not buggy it's
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
                                          // unlikely to have this exception thrown
-            throw new IllegalArgumentException(e);
+            throw new RuntimeException(e);
         }
+        
         if (autoclose) {
             cf.whenComplete((v, t) -> {
                 close();
@@ -154,8 +157,7 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body,
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException e) { // throw a RuntimeException instead since if the code is not buggy it's
-                                         // unlikely to have this exception thrown
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -189,7 +191,7 @@ public class RestClient {
         try {
             cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, HttpMethod.GET, body,
                     connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -317,8 +319,33 @@ public class RestClient {
         try {
             return httpClient.doBulkSendRequest(connectionProperties.getRestApiUrl() + resource, method,
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }
+    public boolean isInsecureTls() {
+        return httpClient.isInsecureTls();
+    }
+
+    /**
+     * if true and https connections are used, do not verify server certificate
+     * 
+     * @param insecureTls
+     */
+    public void setInsecureTls(boolean insecureTls) {
+        httpClient.setInsecureTls(insecureTls);
+    }
+    
+    /**
+     * In case of https connections, this file contains the CA certificates that are used to verify server certificate.
+     * 
+     * If this is not set, java will use the default mechanism with the trustStore that can be configured 
+     * via the javax.net.ssl.trustStore system property.
+     *  
+     * @param caCertFile
+     */
+    public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
+        httpClient.setCaCertFile(caCertFile);
+    }
+    
 }

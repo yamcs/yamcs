@@ -3,6 +3,11 @@ services:
   - class: org.yamcs.web.HttpServer
     args:
       port: 8090
+      #enable the following three options to have a TLS  (https) connection
+      #the crt file can contain also the CA crt
+      #tlsPort: 8091
+      #tlsCert: /opt/yamcs/etc/yamcs-server.crt
+      #tlsKey: /opt/yamcs/etc/yamcs-server.key
 
       # Where to find the files for the web interface
       webRoot: lib/yamcs-web
