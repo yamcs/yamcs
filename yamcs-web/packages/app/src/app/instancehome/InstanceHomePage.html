@@ -15,22 +15,26 @@
         <div class="card">
           <mat-card>
             <mat-card-subtitle>Alarms</mat-card-subtitle>
-            <ng-container *ngIf="unacknowledgedAlarms$ | async as alarms">
-              <ng-container *ngIf="alarms.length">
-                Requiring acknowledgment:<br>
-                <table yaDataTable>
-                  <tr *ngFor="let alarm of alarms">
-                    <td><app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level></td>
-                    <td>
-                      <a [routerLink]="['/mdb/parameters/', alarm.parameter.qualifiedName]"
-                          [queryParams]="{instance: instance.name}">
-                        {{ alarm.parameter.qualifiedName }}
-                      </a>
-                    </td>
-                  </tr>
-                </table>
+            <div class="table-wrapper">
+              <ng-container *ngIf="unacknowledgedAlarms$ | async as alarms">
+                <ng-container *ngIf="alarms.length">
+                  Requiring acknowledgment:<br>
+                  <table yaDataTable>
+                    <tr *ngFor="let alarm of alarms">
+                      <td><app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level></td>
+                      <td>
+                        <a [routerLink]="['/mdb/parameters/', alarm.parameter.qualifiedName]"
+                            [queryParams]="{instance: instance.name}">
+                          {{ alarm.parameter.qualifiedName }}
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  <p>&nbsp;</p>
+                </ng-container>
               </ng-container>
-            </ng-container>
+              <div class="fade"></div>
+            </div>
             <p style="margin-top: 1em">
               Total active alarms: <strong>{{ alarmsDataSource.getActiveAlarmCount() }}</strong>
             </p>

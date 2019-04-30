@@ -53,10 +53,13 @@ public class ArchiveCommandRestHandler extends RestHandler {
         if (req.hasRouteParam("name")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-            checkObjectPrivileges(req, ObjectPrivilegeType.Command, cmd.getQualifiedName());
+            checkObjectPrivileges(req, ObjectPrivilegeType.CommandHistory, cmd.getQualifiedName());
             sqlb.where("cmdName = ?", cmd.getQualifiedName());
         }
 
+        if (req.hasQueryParameter("q")) {
+            sqlb.where("cmdName like ?", "%" + req.getQueryParameter("q") + "%");
+        }
         if (nextToken != null) {
             // TODO this currently ignores the origin column (also part of the key)
             // Requires string comparison in StreamSQL, and an even more complicated query condition...

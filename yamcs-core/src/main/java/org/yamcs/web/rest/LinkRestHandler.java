@@ -57,30 +57,36 @@ public class LinkRestHandler extends RestHandler {
             state = req.getQueryParameter("state");
         }
 
+        ManagementService mservice = ManagementService.getInstance();
         if (state != null) {
-            ManagementService mservice = ManagementService.getInstance();
             switch (state.toLowerCase()) {
             case "enabled":
                 try {
                     mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
-                    completeOK(req);
-                    return;
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
+                break;
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
-                    completeOK(req);
-                    return;
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
+                break;
             default:
                 throw new BadRequestException("Unsupported link state '" + state + "'");
             }
-        } else {
-            completeOK(req);
         }
+
+        if (request.hasResetCounters() && request.getResetCounters()) {
+            try {
+                mservice.resetCounters(linkInfo.getInstance(), linkInfo.getName());
+            } catch (IllegalArgumentException e) {
+                throw new NotFoundException(e);
+            }
+        }
+
+        completeOK(req);
     }
 }

@@ -32,6 +32,10 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
   </dependencies>
@@ -49,7 +53,6 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
               <includeScope>runtime</includeScope>
               <excludeGroupIds>org.yamcs,org.yaml,org.codehaus.janino,net.sourceforge.jdatepicker,net.sourceforge.jexcelapi,com.google.guava,org.rocksdb,com.beust,

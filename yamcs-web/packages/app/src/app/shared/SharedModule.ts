@@ -13,6 +13,7 @@ import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard'
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
@@ -24,8 +25,10 @@ import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
+import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { ServicesTable } from './services/ServicesTable';
@@ -43,14 +46,18 @@ import { Expirable } from './template/Expirable';
 import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
+import { Interval } from './template/Interval';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
+import { SignificanceLevel } from './template/SignificanceLevel';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
 import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
+import { AlarmLabel } from './widgets/AlarmLabel';
+import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
 import { Label } from './widgets/Label';
@@ -58,6 +65,7 @@ import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { SlantedLabel } from './widgets/SlantedLabel';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
 const materialModules = [
@@ -101,8 +109,10 @@ const sharedDirectives = [
 const sharedComponents = [
   ActionLink,
   Ago,
+  AlarmLabel,
   AlarmLevel,
   ColumnChooser,
+  ConnectedLabel,
   DetailPane,
   DetailToolbar,
   Dots,
@@ -114,6 +124,7 @@ const sharedComponents = [
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,
+  Interval,
   Label,
   Labels,
   ParameterLegend,
@@ -126,6 +137,8 @@ const sharedComponents = [
   SelectParameterDialog,
   Select,
   SessionExpiredDialog,
+  SignificanceLevel,
+  SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,
   TextAction,
@@ -140,8 +153,10 @@ const pipes = [
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,
+  NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
+  SuperuserPipe,
   UnitsPipe,
   ValuePipe,
 ];
@@ -154,6 +169,7 @@ const guards = [
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   MayReadTablesGuard,
+  SuperuserGuard,
   UnselectInstanceGuard,
 ];
 

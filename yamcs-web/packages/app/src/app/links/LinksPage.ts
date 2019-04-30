@@ -1,3 +1,4 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
@@ -21,7 +22,8 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   @ViewChild('filter')
   filter: ElementRef;
 
-  selectedItem$ = new BehaviorSubject<LinkItem | null>(null);
+  // Link to show n detail pane (only on single selection)
+  detailLink$ = new BehaviorSubject<LinkItem | null>(null);
 
   columns: ColumnInfo[] = [
     { id: 'status', label: '', alwaysVisible: true },
@@ -33,6 +35,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   ];
 
   displayedColumns = [
+    'select',
     'status',
     'name',
     'in',
@@ -41,8 +44,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   ];
 
   dataSource = new MatTableDataSource<LinkItem>();
+  selection = new SelectionModel<LinkItem>(true, []);
 
-  linkSubscription: Subscription;
+  private selectionSubscription: Subscription;
+  private linkSubscription: Subscription;
 
   private itemsByName: { [key: string]: LinkItem } = {};
 
@@ -65,6 +70,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
         || item.link.type.toLowerCase().indexOf(filter) >= 0;
     };
+
+    this.selectionSubscription = this.selection.changed.subscribe(() => {
+      const selected = this.selection.selected;
+      if (selected.length === 1) {
+        this.detailLink$.next(selected[0]);
+      } else {
+        this.detailLink$.next(null);
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -112,9 +126,22 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   // the link is updated.
   tableTrackerFn = (index: number, link: Link) => link.name;
 
-  expandItem(item: LinkItem) {
+  expandItem($event: Event, item: LinkItem) {
     item.expanded = !item.expanded;
+
+    // Unselect child links when parent is collapsed
+    if (!item.expanded) {
+      for (const selectedItem of this.selection.selected) {
+        if (selectedItem.parentLink && selectedItem.parentLink.name === item.link.name) {
+          this.selection.deselect(selectedItem);
+        }
+      }
+    }
+
     this.updateDataSource();
+
+    // Prevent row selection
+    $event.stopPropagation();
   }
 
   enableLink(name: string) {
@@ -125,13 +152,19 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     this.yamcs.getInstanceClient()!.disableLink(name);
   }
 
+  resetCounters(name: string) {
+    this.yamcs.getInstanceClient()!.editLink(name, {
+      resetCounters: true,
+    });
+  }
+
   mayControlLinks() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlLinks');
   }
 
   private processLinkEvent(evt: LinkEvent) {
-    // Trigger change detection for detail pane etc
-    const selectedItem = this.selectedItem$.value;
+    // Update detail pane
+    const selectedItem = this.detailLink$.value;
     if (selectedItem && selectedItem.link.name === evt.linkInfo.name) {
       selectedItem.link = evt.linkInfo;
       for (const subitem of Object.values(this.itemsByName)) {
@@ -139,7 +172,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
           subitem.parentLink = evt.linkInfo;
         }
       }
-      this.selectedItem$.next({ ...selectedItem });
+      this.detailLink$.next({ ...selectedItem });
     }
 
     switch (evt.type) {
@@ -149,6 +182,8 @@ export class LinksPage implements AfterViewInit, OnDestroy {
         this.updateDataSource();
         break;
       case 'UNREGISTERED':
+        const item = this.itemsByName[evt.linkInfo.name];
+        this.selection.deselect(item);
         delete this.itemsByName[evt.linkInfo.name];
         this.updateDataSource();
         break;
@@ -177,6 +212,57 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     this.dataSource.data = data;
   }
 
+  allowGroupEnable() {
+    // Allow if at least one of the selected links is disabled
+    for (const item of this.selection.selected) {
+      if (item.link.disabled) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  allowGroupDisable() {
+    // Allow if at least one of the selected links is enabled
+    for (const item of this.selection.selected) {
+      if (!item.link.disabled) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+        this.selection.clear() :
+        this.dataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  toggleOne(row: LinkItem) {
+    if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
+      this.selection.clear();
+    }
+    this.selection.toggle(row);
+  }
+
+  enableSelectedLinks() {
+    for (const item of this.selection.selected) {
+      this.enableLink(item.link.name);
+    }
+  }
+
+  disableSelectedLinks() {
+    for (const item of this.selection.selected) {
+      this.disableLink(item.link.name);
+    }
+  }
+
   private updateURL() {
     const filterValue = this.filter.nativeElement.value.trim();
     this.router.navigate([], {
@@ -188,16 +274,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     });
   }
 
-  selectLink(item: LinkItem) {
-    this.selectedItem$.next(item);
-  }
-
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
     this.preferenceStore.setVisibleColumns('links', displayedColumns);
   }
 
   ngOnDestroy() {
+    if (this.selectionSubscription) {
+      this.selectionSubscription.unsubscribe();
+    }
     if (this.linkSubscription) {
       this.linkSubscription.unsubscribe();
     }

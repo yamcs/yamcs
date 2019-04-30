@@ -7,6 +7,7 @@ export interface Value {
   | 'BINARY'
   | 'BOOLEAN'
   | 'DOUBLE'
+  | 'ENUMERATED'
   | 'FLOAT'
   | 'SINT32'
   | 'SINT64'
@@ -172,10 +173,22 @@ export interface CommandHistoryAttribute {
   value: Value;
 }
 
+export interface CommandAssignment {
+  name: string;
+  value: Value;
+  userInput: boolean;
+}
+
 export interface CommandHistoryEntry {
   commandId: CommandId;
   generationTimeUTC: string;
   attr: CommandHistoryAttribute[];
+  assignment: CommandAssignment[];
+}
+
+export interface CommandHistoryPage {
+  entry?: CommandHistoryEntry[]
+  continuationToken?: string;
 }
 
 export interface Alarm {
@@ -214,6 +227,8 @@ export interface GetCommandHistoryOptions {
   stop?: string;
   pos?: number;
   limit?: number;
+  next?: string;
+  q?: string;
   order?: 'asc' | 'desc';
 }
 
@@ -324,6 +339,12 @@ export interface GetPacketIndexOptions {
   limit?: number;
 }
 
+export interface GetCompletenessIndexOptions {
+  start?: string;
+  stop?: string;
+  limit?: number;
+}
+
 export interface DownloadPacketsOptions {
   /**
    * Inclusive lower bound
@@ -359,4 +380,22 @@ export interface CommandQueueEntry {
   username: string;
   generationTimeUTC: string;
   uuid: string;
+}
+
+export interface GetTagsOptions {
+  start?: string;
+  stop?: string;
+}
+
+export interface TagsPage {
+  tag: ArchiveTag[];
+}
+
+export interface ArchiveTag {
+  id: number;
+  name: string;
+  startUTC: string;
+  stopUTC: string;
+  description: string;
+  color: string;
 }

@@ -152,6 +152,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         static short seqNum = 5000;
         CommandHistoryPublisher commandHistoryPublisher;
         String name;
+
         public MyTcDataLink(String yamcsInstance, String name, YConfiguration config) {
             this.name = name;
         }
@@ -189,6 +190,10 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         @Override
         public long getDataOutCount() {
             return 0;
+        }
+
+        @Override
+        public void resetCounters() {
         }
 
         @Override

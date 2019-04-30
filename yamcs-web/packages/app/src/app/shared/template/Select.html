@@ -1,5 +1,5 @@
 <button [matMenuTriggerFor]="selMenu" class="ya-button">
-  <mat-icon *ngIf="icon" class="icon12">{{ icon }}</mat-icon>
+  <mat-icon *ngIf="icon" class="icon12" style="vertical-align: middle">{{ icon }}</mat-icon>
   <ng-container *ngIf="selectedOption$ | async as selectedOption">
     {{ selectedOption.label }}
   </ng-container>

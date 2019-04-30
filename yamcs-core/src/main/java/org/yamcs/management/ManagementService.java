@@ -30,6 +30,7 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -59,6 +60,7 @@ public class ManagementService implements ProcessorListener {
     private AtomicInteger clientIdGenerator = new AtomicInteger();
 
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
+    List<StreamWithInfo> streams = new CopyOnWriteArrayList<>();
     List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
 
     // Used to update TM-statistics, and Link State
@@ -85,6 +87,7 @@ public class ManagementService implements ProcessorListener {
     private ManagementService() {
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
+        timer.scheduleAtFixedRate(() -> checkStreamUpdate(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
     }
 
@@ -323,6 +326,16 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
+    public void resetCounters(String instance, String linkName) {
+        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        if (o.isPresent()) {
+            LinkWithInfo lci = o.get();
+            lci.link.resetCounters();
+        } else {
+            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
+        }
+    }
+
     /**
      * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
      * has no extra effects. Either you listen, or you don't.
@@ -428,6 +441,15 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
+    private void checkStreamUpdate() {
+        for (StreamWithInfo stream : streams) {
+            if (stream.hasChanged()) {
+                tableStreamListeners.forEach(l -> l.streamUpdated(
+                        stream.instance, stream.streamInfo));
+            }
+        }
+    }
+
     private void checkLinkUpdate() {
         // see if any link has changed
         for (LinkWithInfo lwi : links) {
@@ -503,6 +525,11 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void registerStream(String instance, Stream stream) {
+        StreamInfo.Builder streamb = StreamInfo.newBuilder()
+                .setName(stream.getName())
+                .setDataCount(stream.getDataCount());
+        StreamInfo streamInfo = streamb.build();
+        streams.add(new StreamWithInfo(instance, stream, streamInfo));
         tableStreamListeners.forEach(l -> l.streamRegistered(instance, stream));
     }
 
@@ -546,6 +573,29 @@ public class ManagementService implements ProcessorListener {
                 return false;
             }
         }
+    }
 
+    static class StreamWithInfo {
+        final String instance;
+        final Stream stream;
+        StreamInfo streamInfo;
+
+        public StreamWithInfo(String instance, Stream stream, StreamInfo streamInfo) {
+            this.instance = instance;
+            this.stream = stream;
+            this.streamInfo = streamInfo;
+        }
+
+        boolean hasChanged() {
+            if (streamInfo.getDataCount() != stream.getDataCount()) {
+                streamInfo = StreamInfo.newBuilder(streamInfo)
+                        .setDataCount(stream.getDataCount())
+                        .build();
+
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

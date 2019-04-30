@@ -37,7 +37,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     ServerLocator locator;
     YConfiguration config;
     final String linkName;
-    
+
     public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         ppdb = XtceDbFactory.getInstance(instance);
         this.artemisAddress = artemisAddress;
@@ -97,6 +97,11 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        totalPpCount = 0;
     }
 
     @Override

@@ -42,7 +42,7 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
     EventProducer eventProducer;
     YConfiguration config;
     List<Link> subLinks;
-    
+
     /**
      * Creates a new UDP Frame Data Link
      * 
@@ -53,15 +53,15 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
         this.yamcsInstance = instance;
         this.name = name;
         port = args.getInt("port");
-        
+
         frameHandler = new MasterChannelFrameHandler(yamcsInstance, name, args);
         int maxLength = frameHandler.getMaxFrameSize();
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         subLinks = new ArrayList<>();
-        for(VirtualChannelHandler vch: frameHandler.getVcHandlers()) {
-            if(vch instanceof Link) {
-                Link l = (Link)vch;
+        for (VirtualChannelHandler vch : frameHandler.getVcHandlers()) {
+            if (vch instanceof Link) {
+                Link l = (Link) vch;
                 subLinks.add(l);
                 l.setParent(this);
             }
@@ -170,6 +170,11 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        validDatagramCount = 0;
     }
 
     @Override

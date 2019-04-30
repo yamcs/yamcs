@@ -58,7 +58,8 @@ public class TseDataLink extends AbstractService implements Link {
     private final Logger log;
 
     private volatile boolean disabled = false;
-    private volatile int outCount = 0;
+    private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
+    private volatile long outCount = 0;
 
     private XtceDb xtcedb;
     private String host;
@@ -209,12 +210,18 @@ public class TseDataLink extends AbstractService implements Link {
 
     @Override
     public long getDataInCount() {
-        return ppStream.getDataCount();
+        return ppStream.getDataCount() - inStartCount;
     }
 
     @Override
     public long getDataOutCount() {
         return outCount;
+    }
+
+    @Override
+    public void resetCounters() {
+        inStartCount = ppStream.getDataCount();
+        outCount = 0;
     }
 
     @Override

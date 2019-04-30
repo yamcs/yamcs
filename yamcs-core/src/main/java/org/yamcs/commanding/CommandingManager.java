@@ -1,6 +1,8 @@
 package org.yamcs.commanding;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +72,12 @@ public class CommandingManager extends AbstractService {
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
         pc.setBinary(cbr.getCmdPacket());
-        pc.setArgAssignment(cbr.getArgs());
         pc.setUsername(user.getUsername());
+
+        Set<String> userAssignedArgumentNames = argAssignmentList.stream()
+                .map(a -> a.getArgumentName())
+                .collect(Collectors.toSet());
+        pc.setArgAssignment(cbr.getArgs(), userAssignedArgumentNames);
 
         return pc;
     }

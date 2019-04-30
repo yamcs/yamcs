@@ -1,4 +1,4 @@
-import { CommandHistoryEntry } from '@yamcs/client';
+import { CommandAssignment, CommandHistoryEntry } from '@yamcs/client';
 import * as utils from '../../shared/utils';
 import { CommandHistoryStage } from './CommandHistoryStage';
 
@@ -9,6 +9,9 @@ export class CommandHistoryRecord {
   sequenceNumber: number;
 
   commandName: string;
+
+  assignments: CommandAssignment[] = [];
+  userAssignments: CommandAssignment[] = [];
 
   username: string;
 
@@ -25,11 +28,20 @@ export class CommandHistoryRecord {
   success?: boolean;
   failureMessage?: string;
 
+  transmissionConstraints?: string;
+
   constructor(entry: CommandHistoryEntry) {
     this.generationTime = entry.generationTimeUTC;
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
     this.commandName = entry.commandId.commandName;
+
+    for (const assignment of entry.assignment) {
+      this.assignments.push(assignment);
+      if (assignment.userInput) {
+        this.userAssignments.push(assignment);
+      }
+    }
 
     for (const attr of entry.attr) {
       if (attr.name === 'username') {
@@ -56,7 +68,7 @@ export class CommandHistoryRecord {
           this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
         }
       } else if (attr.name === 'TransmissionConstraints') {
-        // TODO
+        this.transmissionConstraints = attr.value.stringValue;
       } else {
         this.extra.push({ name: attr.name, value: utils.printValue(attr.value) });
       }

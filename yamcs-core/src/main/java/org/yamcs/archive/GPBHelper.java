@@ -1,8 +1,10 @@
 package org.yamcs.archive;
 
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
+import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
+import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandAssignment;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -37,7 +39,6 @@ public final class GPBHelper {
         return tm;
     }
 
-    
     public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple) {
         CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder();
         che.setCommandId(PreparedCommand.getCommandId(tuple));
@@ -51,14 +52,25 @@ public final class GPBHelper {
             if (PreparedCommand.CNAME_GENTIME.equals(name)
                     || PreparedCommand.CNAME_ORIGIN.equals(name)
                     || PreparedCommand.CNAME_SEQNUM.equals(name)
-                    || PreparedCommand.CNAME_CMDNAME.equals(name)
-                    || PreparedCommand.CNAME_ASSIGNMENTS.equals(name)) {
+                    || PreparedCommand.CNAME_CMDNAME.equals(name)) {
                 continue;
+            } else if (PreparedCommand.CNAME_ASSIGNMENTS.equals(name)) {
+                Object assignmentProto = tuple.getColumn(i);
+                if (assignmentProto != null) {
+                    AssignmentInfo assignmentInfo = (AssignmentInfo) assignmentProto;
+                    for (Assignment assignment : assignmentInfo.getAssignmentList()) {
+                        che.addAssignment(CommandAssignment.newBuilder()
+                                .setName(assignment.getName())
+                                .setValue(assignment.getValue())
+                                .setUserInput(assignment.hasUserInput() && assignment.getUserInput()));
+                    }
+                }
+            } else {
+                che.addAttr(CommandHistoryAttribute.newBuilder()
+                        .setName(name)
+                        .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, tuple.getColumn(i))))
+                        .build());
             }
-            che.addAttr(CommandHistoryAttribute.newBuilder()
-                    .setName(name)
-                    .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, tuple.getColumn(i))))
-                    .build());
         }
         return che.build();
     }

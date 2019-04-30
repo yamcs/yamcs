@@ -1,0 +1,37 @@
+<!--
+  Background images urls via *.html instead of *.css.
+  This prevents an issue where assets are not correctly resolved
+  on yamcs-web rebuilds that use the ng-packagr output.
+ -->
+<ng-container [ngSwitch]="significance?.consequenceLevel">
+
+  <div *ngSwitchCase="'WATCH'"
+        class="watch"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+
+  <div *ngSwitchCase="'WARNING'"
+        class="warning"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+
+  <div *ngSwitchCase="'DISTRESS'"
+        class="distress"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+
+  <div *ngSwitchCase="'CRITICAL'"
+        class="critical"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+
+  <div *ngSwitchCase="'SEVERE'"
+        class="severe"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+
+  <div *ngSwitchDefault
+        class="none"
+        [class.grayscale]="grayscale"
+        style="background-image: url('/static/assets/level-sprite.png')"></div>
+</ng-container>

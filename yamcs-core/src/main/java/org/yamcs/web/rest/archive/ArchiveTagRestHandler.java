@@ -9,6 +9,7 @@ import org.yamcs.protobuf.Rest.CreateTagRequest;
 import org.yamcs.protobuf.Rest.EditTagRequest;
 import org.yamcs.protobuf.Rest.ListTagsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -38,7 +39,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             tagDb.getTags(interval, new TagReceiver() {
                 @Override
                 public void onTag(ArchiveTag tag) {
-                    responseb.addTag(tag);
+                    responseb.addTag(enrichTag(tag));
                 }
 
                 @Override
@@ -60,7 +61,18 @@ public class ArchiveTagRestHandler extends RestHandler {
         int tagId = req.getIntegerRouteParam("tagId");
 
         ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId);
-        completeOK(req, tag);
+        completeOK(req, enrichTag(tag));
+    }
+
+    private ArchiveTag enrichTag(ArchiveTag tag) {
+        ArchiveTag.Builder enrichedTag = ArchiveTag.newBuilder(tag);
+        if (tag.hasStart()) {
+            enrichedTag.setStartUTC(TimeEncoding.toString(tag.getStart()));
+        }
+        if (tag.hasStop()) {
+            enrichedTag.setStopUTC(TimeEncoding.toString(tag.getStop()));
+        }
+        return enrichedTag.build();
     }
 
     /**

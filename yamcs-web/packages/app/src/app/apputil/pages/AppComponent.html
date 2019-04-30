@@ -1,45 +1,60 @@
 <mat-toolbar color="primary">
   <mat-toolbar-row class="app-bar">
+    <button mat-icon-button
+            *ngIf="showMenuToggle$ | async"
+            (click)="toggleSidebar()">
+      <mat-icon>menu</mat-icon>
+    </button>
     <div class="vmiddle" class="logo-wrapper">
       <a routerLink="/">
-        <img src="/static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">
+        <img src="/static/assets/yamcs_white_30.png" style="margin-top: 12px">
       </a>
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-      <div class="top-divider">&nbsp;</div>
       <button mat-button (click)="openInstanceDialog()">
         <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
         <mat-icon>arrow_drop_down</mat-icon>
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
-    <mat-menu #appMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item (click)="toggleDarkTheme()">
-        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-        Dark Mode:
-        <span *ngIf="darkMode$ | async">On</span>
-        <span *ngIf="!(darkMode$ | async)">Off</span>
-      </button>
-    </mat-menu>
-    <button mat-icon-button [matMenuTriggerFor]="appMenu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
+
+    <app-connected-label [connected]="connected$ | async"
+                         [tag]="tag"
+                         style="margin-top: 8px"></app-connected-label>
+
+    <app-alarm-label *ngIf="connectionInfo$ | async"
+                     style="margin-top: 8px"></app-alarm-label>
 
     <ng-container *ngIf="user$ | async as user">
       <mat-menu #userMenu="matMenu" overlapTrigger="false">
         <a mat-menu-item routerLink="profile">
+          <mat-icon>account_box</mat-icon>
           Profile
         </a>
+        <button mat-menu-item (click)="toggleDarkTheme()">
+          <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
+          Dark mode:
+          <span *ngIf="darkMode$ | async">On</span>
+          <span *ngIf="!(darkMode$ | async)">Off</span>
+        </button>
+        <ng-container *ngIf="user | superuser">
+          <mat-divider></mat-divider>
+          <a mat-menu-item routerLink="admin">
+            <mat-icon>security</mat-icon>
+            Admin CP
+          </a>
+        </ng-container>
         <mat-divider></mat-divider>
         <a mat-menu-item (click)="logout()">
-          Logout
+          <mat-icon>exit_to_app</mat-icon>
+          Sign out
         </a>
       </mat-menu>
-      <button mat-icon-button
+      <button mat-button
               [matMenuTriggerFor]="userMenu"
-              [matTooltip]="'Account: ' + user.getUsername()"
               matTooltipPosition="left">
-        <mat-icon>account_circle</mat-icon>
+        <mat-icon>person</mat-icon>
+        {{ user.getUsername() }}
       </button>
     </ng-container>
   </mat-toolbar-row>

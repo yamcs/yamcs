@@ -5,6 +5,8 @@
   <div class="panel-content">
     <div style="margin-bottom: 12px">
       <input #filter
+             class="ya-input"
+             type="text"
              placeholder="Filter commands"
              style="width: 400px">
 
@@ -19,6 +21,13 @@
             class="ya-data-table"
             style="width: 1000px"
             [dataSource]="dataSource">
+
+        <ng-container matColumnDef="significance">
+          <th mat-header-cell *matHeaderCellDef style="width: 1px">Significance</th>
+          <td mat-cell *matCellDef="let command">
+            <app-significance-level [significance]="command.significance"></app-significance-level>
+          </td>
+        </ng-container>
 
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>

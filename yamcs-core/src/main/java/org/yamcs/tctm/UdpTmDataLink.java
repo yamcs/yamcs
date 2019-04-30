@@ -36,7 +36,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     final int maxLength;
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
-    
+
     /**
      * Creates a new UDP TM Data Link
      * 
@@ -178,5 +178,10 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        validDatagramCount = 0;
     }
 }

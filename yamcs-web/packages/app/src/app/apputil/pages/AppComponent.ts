@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
@@ -22,22 +24,30 @@ export class AppComponent implements OnDestroy {
   componentCssClass: string;
 
   title = 'Yamcs';
+  tag: string;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
+  connected$: Observable<boolean>;
   user$: Observable<User | null>;
 
+  sidebar$: Observable<boolean>;
   darkMode$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
+  showMenuToggle$: Observable<boolean>;
 
   userSubscription: Subscription;
 
   constructor(
     yamcs: YamcsService,
-    private router: Router,
+    router: Router,
+    route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
+    configService: ConfigService,
   ) {
+    this.tag = configService.getTag();
+    this.connected$ = yamcs.yamcsClient.connected$;
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
 
@@ -49,10 +59,28 @@ export class AppComponent implements OnDestroy {
       }
     });
 
+    this.sidebar$ = preferenceStore.sidebar$;
+
     this.darkMode$ = preferenceStore.darkMode$;
     if (preferenceStore.isDarkMode()) {
       this.enableDarkMode();
     }
+
+    this.showMenuToggle$ = router.events.pipe(
+      filter(evt => evt instanceof NavigationEnd),
+      map(evt => {
+        let child = route;
+        while (child.firstChild) {
+          child = child.firstChild;
+        }
+
+        if (child.snapshot.data && child.snapshot.data['hasSidebar'] === false) {
+          return false;
+        } else {
+          return true;
+        }
+      }),
+    );
   }
 
   openInstanceDialog() {
@@ -67,6 +95,14 @@ export class AppComponent implements OnDestroy {
       this.disableDarkMode();
     } else {
       this.enableDarkMode();
+    }
+  }
+
+  toggleSidebar() {
+    if (this.preferenceStore.showSidebar()) {
+      this.preferenceStore.setShowSidebar(false);
+    } else {
+      this.preferenceStore.setShowSidebar(true);
     }
   }
 

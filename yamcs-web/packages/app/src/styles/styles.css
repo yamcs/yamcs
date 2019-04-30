@@ -132,7 +132,8 @@ body {
   text-align: left;
 }
 
-.ya-data-table td.status, .ya-data-table th.status {
+.ya-data-table td.status, .ya-data-table th.status,
+.ya-data-table td.iconcol, .ya-data-table th.iconcol {
   width: 1px;
   text-align: left;
 }
@@ -205,7 +206,7 @@ a.ya-link.ya-header-link {
   width: 100%;
 }
 
-.ya-form input[type="text"] {
+.ya-form input[type="text"], .ya-input {
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;

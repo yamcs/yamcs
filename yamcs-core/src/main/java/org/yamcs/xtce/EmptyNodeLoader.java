@@ -3,8 +3,11 @@ package org.yamcs.xtce;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+
 /**
  * Database "loader" that simply creates an empty SpaceSystem with the given name
  * 
@@ -12,10 +15,17 @@ import org.yamcs.ConfigurationException;
  *
  */
 public class EmptyNodeLoader implements SpaceSystemLoader {
+
     final String name;
+
+    public EmptyNodeLoader(Map<String, Object> args) {
+        name = YConfiguration.getString(args, "name");
+    }
+
     public EmptyNodeLoader(String name) {
         this.name = name;
     }
+
     @Override
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         return new SpaceSystem(name);
@@ -33,7 +43,6 @@ public class EmptyNodeLoader implements SpaceSystemLoader {
 
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-        //intentionally left empty
+        // intentionally left empty
     }
-
 }

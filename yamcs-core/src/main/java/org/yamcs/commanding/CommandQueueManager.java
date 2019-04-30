@@ -413,7 +413,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if (pc != null) {
             queue.remove(pc, false);
-            failedCommand(queue, pc, "Command rejected by " + username, true);
+            failedCommand(queue, pc, "Rejected by " + username, true);
             notifyUpdateQueue(queue);
         } else {
             log.warn("command not found in any queue");
@@ -519,7 +519,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if (queue.state == QueueState.DISABLED) {
             for (PreparedCommand pc : queue.getCommands()) {
-                failedCommand(queue, pc, "Commanding Queue disabled", true);
+                failedCommand(queue, pc, "Queue disabled", true);
             }
             queue.clear(false);
         }

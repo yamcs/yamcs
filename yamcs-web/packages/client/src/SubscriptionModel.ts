@@ -14,6 +14,7 @@ export class SubscriptionModel {
   management = false;
   processor = false;
   stream = false;
+  streams = false;
 
   parameters?: ParameterSubscriptionRequest;
   streamName?: string;

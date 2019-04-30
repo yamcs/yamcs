@@ -64,7 +64,6 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_RECORD_INITIAL_VALUES = "recordInitialValues";
     private static final String CONFIG_KEY_RECORD_LOCAL_VALUES = "recordLocalValues";
 
-    
     public static final String PROC_PARAMETERS_STREAM = "proc_param";
 
     // handles subscriptions to parameters
@@ -231,7 +230,7 @@ public class Processor extends AbstractService {
             }
 
             parameterRequestManager.init();
-            
+
             instances.put(key(yamcsInstance, name), this);
             listeners.forEach(l -> l.processorAdded(this));
         }
@@ -273,7 +272,7 @@ public class Processor extends AbstractService {
 
     private void configureAlarms(YConfiguration alarmConfig) {
         checkAlarms = alarmConfig.getBoolean("check", checkAlarms);
-        alarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("enabled", null));
+        alarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
         if (alarmServerEnabled) {
             checkAlarms = true;
         }

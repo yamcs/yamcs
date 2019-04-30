@@ -79,9 +79,16 @@ message CommandHistoryAttribute {
   optional int64 time = 3;
 }
 
+message CommandAssignment {
+  optional string name = 1;
+  optional Value value = 2;
+  optional bool userInput = 3;
+}
+
 message CommandHistoryEntry {
   required CommandId commandId = 1;
   //required string cmdName = 2; //removed because it's part of the CommandId
   repeated CommandHistoryAttribute attr = 3;
   optional string generationTimeUTC = 4;
+  repeated CommandAssignment assignment = 5;
 }

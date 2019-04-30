@@ -134,6 +134,9 @@ message ArchiveTag {
   optional int64 stop = 4;
   optional string description = 5;
   optional string color = 6;
+
+  optional string startUTC = 7;
+  optional string stopUTC = 8;
 }
 
 message TagResult {
@@ -195,6 +198,7 @@ enum ProtoDataType {
   COMMAND_QUEUE_EVENT = 18;
   CONNECTION_INFO = 19;
   INSTANCE = 20;
+  STREAM_EVENT = 21;
   
   EXTENSION_DATA = 100;
 }

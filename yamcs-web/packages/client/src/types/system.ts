@@ -5,6 +5,7 @@ export interface WebsiteConfig {
   auth: AuthInfo;
   displayScope: BucketScope;
   stackScope: BucketScope;
+  tag: string;
 }
 
 export type BucketScope = 'GLOBAL' | 'INSTANCE';
@@ -189,6 +190,16 @@ export interface LinkSubscriptionResponse {
   linkEvent$: Observable<LinkEvent>;
 }
 
+export interface StreamEvent {
+  type: string;
+  name: string;
+  dataCount: number;
+}
+
+export interface StreamEventSubscriptionResponse {
+  streamEvent$: Observable<StreamEvent>;
+}
+
 export interface StreamSubscriptionResponse {
   streamData$: Observable<StreamData>;
 }
@@ -196,6 +207,8 @@ export interface StreamSubscriptionResponse {
 export interface Stream {
   name: string;
   column: Column[];
+  script: string;
+  dataCount: number;
 }
 
 export interface StreamData {
@@ -280,6 +293,11 @@ export interface CommandQueueSubscriptionResponse {
 
 export interface ListInstancesOptions {
   filter?: string;
+}
+
+export interface EditLinkOptions {
+  state?: 'enabled' | 'disabled';
+  resetCounters?: boolean;
 }
 
 export interface EditInstanceOptions {

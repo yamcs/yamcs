@@ -40,6 +40,36 @@
         <p>&nbsp;</p>
       </ng-container>
 
+      <ng-container *ngIf="parameter.type?.dataEncoding">
+        <div class="section-divider">
+          <mat-divider></mat-divider>
+        </div>
+
+        <h4>Data Encoding</h4>
+        <table yaDataTable>
+          <tr>
+            <th>Size in Bits</th>
+            <td>{{ parameter.type?.dataEncoding?.sizeInBits }}</td>
+          </tr>
+          <tr *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
+            <th>Byte Order</th>
+            <td>
+              <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
+                {{ parameter.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
+              </ng-container>
+              <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian === undefined">
+                -
+              </ng-container>
+            </td>
+          </tr>
+          <tr>
+            <th>Encoding</th>
+            <td>{{ parameter.type?.dataEncoding?.encoding || '-' }}</td>
+          </tr>
+        </table>
+        <p>&nbsp;</p>
+      </ng-container>
+
       <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
         <div class="section-divider">
           <mat-divider></mat-divider>
@@ -93,7 +123,18 @@
               <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
               {{ range.level }}
             </td>
-            <td>{{ describeRange(range) }}</td>
+            <td>
+              <app-interval *ngIf="(range.minInclusive !== undefined
+                                || range.minExclusive !== undefined
+                                || range.maxInclusive !== undefined
+                                || range.maxExclusive !== undefined); else dash"
+                            [left]="range.minInclusive | nvl:range.minExclusive"
+                            [right]="range.maxInclusive | nvl:range.maxExclusive"
+                            [leftInclusive]="range.minInclusive !== undefined"
+                            [rightInclusive]="range.maxInclusive !== undefined">
+              </app-interval>
+              <ng-template #dash>-</ng-template>
+            </td>
           </tr>
         </table>
         <ng-template #noLevels>None</ng-template>

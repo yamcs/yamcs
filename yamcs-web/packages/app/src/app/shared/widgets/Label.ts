@@ -9,4 +9,13 @@ export class Label {
 
   @Input()
   icon: string;
+
+  @Input()
+  backgroundColor = '#eee';
+
+  @Input()
+  color = 'inherit';
+
+  @Input()
+  borderColor = 'transparent';
 }
