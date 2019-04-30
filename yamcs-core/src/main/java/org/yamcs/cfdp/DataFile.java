@@ -48,10 +48,17 @@ public class DataFile {
         return toReturn;
     }
 
-    public long getSize() {
-        Long last = dataFileSegments.lastKey();
-        return last + dataFileSegments.get(last).getLength();
+    // returns the amount of bytes received of this Data Files.
+    // Missing intermediate chunks are not yet received and are therefore not counted
+    public long getReceivedSize() {
+        return this.dataFileSegments.values().stream().map(DataFileSegment::getLength).mapToInt(Integer::intValue)
+                .sum();
     }
+
+    /**
+     * public long getSize() { Long last = dataFileSegments.lastKey(); return last +
+     * dataFileSegments.get(last).getLength(); }
+     */
 
     public byte[] getData() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

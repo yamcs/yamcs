@@ -125,7 +125,9 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
         } else {
             // the communication partner has initiated a transfer
             transaction = instantiateTransaction(packet);
-            transfers.put(transaction.getTransactionId(), transaction);
+            if (transaction != null) {
+                transfers.put(transaction.getTransactionId(), transaction);
+            }
         }
 
         if (transaction != null) {
@@ -138,8 +140,9 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
             return new CfdpIncomingTransfer((MetadataPacket) packet, cfdpOut, incomingBucket);
         } else {
-            log.error("Rogue CFDP packet received.");
-            throw new IllegalArgumentException("Rogue CFDP packet received");
+            log.error("Rogue CFDP packet received, ignoring");
+            return null;
+            // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
     }
 

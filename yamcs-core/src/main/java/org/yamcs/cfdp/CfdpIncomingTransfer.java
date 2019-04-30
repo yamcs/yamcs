@@ -45,6 +45,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     private Bucket incomingBucket = null;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
     private String objectName;
+    private long expectedFileSize;
 
     private final long dataTimeoutMs = 5000;
 
@@ -57,7 +58,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         this.acknowledged = packet.getHeader().isAcknowledged();
         this.currentState = CfdpTransferState.START;
         objectName = "received_" + dateFormat.format(new Date());
-
+        expectedFileSize = packet.getPacketLength();
     }
 
     public CfdpIncomingTransfer(CfdpTransactionId id, Stream cfdpOut, Bucket target) {
@@ -210,8 +211,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
 
     @Override
     public String getRemotePath() {
-        // TODO Auto-generated method stub
-        return null;
+        return "";
     }
 
     @Override
@@ -221,14 +221,12 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
 
     @Override
     public long getTotalSize() {
-        // TODO Auto-generated method stub
-        return 0;
+        return expectedFileSize;
     }
 
     @Override
     public long getTransferredSize() {
-        // TODO Auto-generated method stub
-        return 0;
+        return incomingDataFile.getReceivedSize();
     }
 
     @Override

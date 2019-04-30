@@ -19,6 +19,7 @@ public abstract class CfdpTransaction extends Thread {
     public CfdpTransaction(CfdpTransactionId id, Stream cfdpOut) {
         this.myId = id;
         this.cfdpOut = cfdpOut;
+        this.state = TransferState.RUNNING;
     }
 
     public CfdpTransactionId getTransactionId() {
