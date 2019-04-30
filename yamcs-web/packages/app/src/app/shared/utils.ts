@@ -156,6 +156,7 @@ function printValueWithoutPreview(value: Value): string {
       return '' + value.sint32Value;
     case 'BINARY':
       return '<binary>';
+    case 'ENUMERATED':
     case 'STRING':
       return value.stringValue!;
     case 'TIMESTAMP':

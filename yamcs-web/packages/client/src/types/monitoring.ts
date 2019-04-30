@@ -7,6 +7,7 @@ export interface Value {
   | 'BINARY'
   | 'BOOLEAN'
   | 'DOUBLE'
+  | 'ENUMERATED'
   | 'FLOAT'
   | 'SINT32'
   | 'SINT64'
