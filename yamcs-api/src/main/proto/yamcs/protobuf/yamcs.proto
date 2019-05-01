@@ -3,6 +3,8 @@ syntax="proto2";
 package yamcs.protobuf;
 option java_package = "org.yamcs.protobuf";
 
+import "google/protobuf/timestamp.proto";
+
 message StringMessage {
   required string message = 1;
 }
@@ -275,18 +277,21 @@ message ReplayStatus {
 }
 
 message TmPacketData {
-  required int64 receptionTime = 1;
+  required int64 yamcsReceptionTime = 1 [deprecated = true];
   required bytes packet = 2;
-  optional int64 generationTime = 3;
+  optional int64 yamcsGenerationTime = 3 [deprecated = true];
   optional int32 sequenceNumber = 4;
   optional NamedObjectId id = 5;
-  optional string generationTimeUTC = 6;
-  optional string receptionTimeUTC = 7;
+  optional string generationTimeUTC = 6 [deprecated = true];
+  optional string receptionTimeUTC = 7 [deprecated = true];
+  optional google.protobuf.Timestamp receptionTime = 8;
+  optional google.protobuf.Timestamp generationTime = 9;
 }
 
 message TimeInfo {
-  optional int64 currentTime = 1;
-  optional string currentTimeUTC = 2;
+  optional int64 yamcsCurrentTime = 1 [deprecated = true];
+  optional string currentTimeUTC = 2 [deprecated = true];
+  optional google.protobuf.Timestamp currentTime = 3;
 }
 
 message Event {

@@ -5,12 +5,15 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
+import "google/protobuf/timestamp.proto";
+
 
 message AcknowledgeInfo {
   optional string acknowledgedBy = 1;
   optional string acknowledgeMessage = 2;
-  optional int64 acknowledgeTime = 3;
-  optional string acknowledgeTimeUTC = 4;
+  optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];
+  optional string acknowledgeTimeUTC = 4 [deprecated = true];
+  optional google.protobuf.Timestamp acknowledgeTime = 5;
 }
 
 message AlarmData {

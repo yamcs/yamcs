@@ -5,6 +5,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -24,8 +25,8 @@ public class TmTupleTranslator implements TupleTranslator {
         long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
-        TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(tmbody)).setReceptionTime(recTime)
-                .setGenerationTime(genTime).setSequenceNumber(seqNum).build();
+        TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(tmbody)).setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime)).setSequenceNumber(seqNum).build();
         Protocol.encode(msg, tm);
         return msg;
     }

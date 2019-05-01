@@ -362,7 +362,8 @@ public final class ArchiveHelper {
                 ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
             }
             long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
-            ackb.setAcknowledgeTime(acknowledgeTime);
+            ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));
+            ackb.setYamcsAcknowledgeTime(acknowledgeTime);
             ackb.setAcknowledgeTimeUTC(TimeEncoding.toString(acknowledgeTime));
             alarmb.setAcknowledgeInfo(ackb);
         }

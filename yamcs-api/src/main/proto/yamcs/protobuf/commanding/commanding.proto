@@ -5,6 +5,8 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
+import "google/protobuf/timestamp.proto";
+
 
 
 message CommandId {
@@ -41,10 +43,11 @@ message CommandQueueEntry {
   optional string source = 5;
   optional bytes binary = 6;
   optional string username = 7;
-  optional int64 generationTime = 8;
-  optional string generationTimeUTC = 10;
+  optional int64 yamcsGenerationTime = 8 [deprecated = true];
+  optional string generationTimeUTC = 10 [deprecated = true];
   optional string uuid = 9;
   optional string comment = 11;
+  optional google.protobuf.Timestamp generationTime = 12;
 }
 
 message CommandQueueEvent {

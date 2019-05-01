@@ -47,7 +47,8 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.ui.CommandQueueControlClient;
 import org.yamcs.ui.CommandQueueListener;
-import org.yamcs.utils.TimeEncoding;
+
+import com.google.protobuf.util.Timestamps;
 
 /**
  * Display for the telecommand queues implemented in yamcs
@@ -232,7 +233,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                         if (cqe == null) {
                             continue;
                         }
-                        long timeinthequeue = TimeEncoding.currentInstant() - cqe.getGenerationTime();
+                        long timeinthequeue = System.currentTimeMillis() - Timestamps.toMillis(cqe.getGenerationTime());
                         if (timeinthequeue > oldCommandWarningTime * 1000L) {
                             int res = CommandFateDialog.showDialog(frame, cqe.getCmdId());
                             switch (res) {
@@ -401,7 +402,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             }
             for (CommandQueueEntry cqe : cmds) {
                 Object[] r = { q.getName(), cqe.getUsername(), cqe.getSource(),
-                        TimeEncoding.toString(cqe.getGenerationTime()) };
+                        Timestamps.toString(cqe.getGenerationTime()) };
                 commandTableModel.addRow(r);
             }
         }
@@ -485,7 +486,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                     ArrayList<CommandQueueEntry> cmds = commands.get(q.getName());
                     if (cmds != null) {
                         for (CommandQueueEntry cqe : cmds) {
-                            if (TimeEncoding.currentInstant() - cqe.getGenerationTime() > oldCommandWarningTime
+                            if (System.currentTimeMillis() - Timestamps.toMillis(cqe.getGenerationTime()) > oldCommandWarningTime
                                     * 1000L) {
                                 oldcommandsfound = true;
                                 break;

@@ -9,6 +9,8 @@ import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+import "google/protobuf/timestamp.proto";
+
 
 message GetApiOverviewResponse {
   message RouteInfo {
@@ -155,11 +157,11 @@ message StreamSubscribeRequest {
 }
 
 message SetSimulationTimeRequest {
-  //one of the two have to be specified
-  optional int64 time0 = 1;
-  optional string time0UTC = 2;
+  optional int64 yamcsTime0 = 1 [deprecated = true];
+  optional string time0UTC = 2 [deprecated = true];
   optional int64 simElapsedTime = 3;
   optional double simSpeed = 4;
+  optional google.protobuf.Timestamp time0 = 5;
 }
 
 message ListInstancesResponse {

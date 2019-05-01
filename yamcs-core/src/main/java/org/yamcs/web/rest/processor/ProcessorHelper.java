@@ -37,7 +37,8 @@ public class ProcessorHelper {
             if (activeAlarm.message != null) {
                 acknowledgeb.setAcknowledgeMessage(activeAlarm.message);
             }
-            acknowledgeb.setAcknowledgeTime(activeAlarm.acknowledgeTime);
+            acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
+            acknowledgeb.setYamcsAcknowledgeTime(activeAlarm.acknowledgeTime);
             acknowledgeb.setAcknowledgeTimeUTC(TimeEncoding.toString(activeAlarm.acknowledgeTime));
             alarmb.setAcknowledgeInfo(acknowledgeb.build());
         }

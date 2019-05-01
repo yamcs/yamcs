@@ -24,8 +24,6 @@ public final class ManagementGpbHelper {
     public static Statistics buildStats(Processor processor) {
         ProcessingStatistics ps = processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb = Statistics.newBuilder()
-                .setYamcsLastUpdated(ps.getLastUpdated())
-                .setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()))
                 .setInstance(processor.getInstance())
                 .setYProcessorName(processor.getName())
                 .setLastUpdated(TimestampUtil.java2Timestamp(ps.getLastUpdated()));
@@ -39,11 +37,7 @@ public final class ManagementGpbHelper {
             TmStatistics ts = TmStatistics.newBuilder()
                     .setPacketName(t.packetName)
                     .setQualifiedName(t.qualifiedName)
-                    .setYamcsLastPacketTime(t.lastPacketTime)
-                    .setYamcsLastReceived(t.lastReceived)
                     .setReceivedPackets(t.receivedPackets)
-                    .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
-                    .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
                     .setSubscribedParameterCount(t.subscribedParameterCount)
                     .setLastPacketTime(TimeEncoding.toProtobufTimestamp(t.lastPacketTime))
                     .setLastReceived(TimeEncoding.toProtobufTimestamp(t.lastReceived))
@@ -81,7 +75,8 @@ public final class ManagementGpbHelper {
                 .setSource(pc.getSource())
                 .setBinary(ByteString.copyFrom(pc.getBinary()))
                 .setUuid(pc.getUUID().toString())
-                .setGenerationTime(pc.getGenerationTime())
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
+                .setYamcsGenerationTime(pc.getGenerationTime())
                 .setGenerationTimeUTC(TimeEncoding.toString(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());
 

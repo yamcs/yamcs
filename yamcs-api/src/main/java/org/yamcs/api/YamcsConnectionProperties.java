@@ -160,7 +160,7 @@ public class YamcsConnectionProperties {
      * @return A string of the shape http://host:port/api
      */
     public String getRestApiUrl() {
-        return (tls?"http":"https")+"://" + host + ":" + port + "/api";
+        return (tls?"https":"http")+"://" + host + ":" + port + "/api";
     }
 
     public String getUsername() {

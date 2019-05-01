@@ -47,27 +47,40 @@ public final class Alarms {
         getAcknowledgeMessageBytes();
 
     /**
-     * <code>optional int64 acknowledgeTime = 3;</code>
+     * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
+     */
+    @java.lang.Deprecated boolean hasYamcsAcknowledgeTime();
+    /**
+     * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
+     */
+    @java.lang.Deprecated long getYamcsAcknowledgeTime();
+
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
+     */
+    @java.lang.Deprecated boolean hasAcknowledgeTimeUTC();
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
+     */
+    @java.lang.Deprecated java.lang.String getAcknowledgeTimeUTC();
+    /**
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
+     */
+    @java.lang.Deprecated com.google.protobuf.ByteString
+        getAcknowledgeTimeUTCBytes();
+
+    /**
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
      */
     boolean hasAcknowledgeTime();
     /**
-     * <code>optional int64 acknowledgeTime = 3;</code>
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
      */
-    long getAcknowledgeTime();
-
+    com.google.protobuf.Timestamp getAcknowledgeTime();
     /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
      */
-    boolean hasAcknowledgeTimeUTC();
-    /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
-     */
-    java.lang.String getAcknowledgeTimeUTC();
-    /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
-     */
-    com.google.protobuf.ByteString
-        getAcknowledgeTimeUTCBytes();
+    com.google.protobuf.TimestampOrBuilder getAcknowledgeTimeOrBuilder();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.alarms.AcknowledgeInfo}
@@ -76,7 +89,6 @@ public final class Alarms {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.alarms.AcknowledgeInfo)
       AcknowledgeInfoOrBuilder {
-  private static final long serialVersionUID = 0L;
     // Use AcknowledgeInfo.newBuilder() to construct.
     private AcknowledgeInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -84,6 +96,7 @@ public final class Alarms {
     private AcknowledgeInfo() {
       acknowledgedBy_ = "";
       acknowledgeMessage_ = "";
+      yamcsAcknowledgeTime_ = 0L;
       acknowledgeTimeUTC_ = "";
     }
 
@@ -97,9 +110,6 @@ public final class Alarms {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -111,6 +121,13 @@ public final class Alarms {
             case 0:
               done = true;
               break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
@@ -125,7 +142,7 @@ public final class Alarms {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              acknowledgeTime_ = input.readInt64();
+              yamcsAcknowledgeTime_ = input.readInt64();
               break;
             }
             case 34: {
@@ -134,11 +151,17 @@ public final class Alarms {
               acknowledgeTimeUTC_ = bs;
               break;
             }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
+            case 42: {
+              com.google.protobuf.Timestamp.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                subBuilder = acknowledgeTime_.toBuilder();
               }
+              acknowledgeTime_ = input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(acknowledgeTime_);
+                acknowledgeTime_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000010;
               break;
             }
           }
@@ -158,7 +181,6 @@ public final class Alarms {
       return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_descriptor;
     }
 
-    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_fieldAccessorTable
@@ -173,7 +195,7 @@ public final class Alarms {
      * <code>optional string acknowledgedBy = 1;</code>
      */
     public boolean hasAcknowledgedBy() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
      * <code>optional string acknowledgedBy = 1;</code>
@@ -215,7 +237,7 @@ public final class Alarms {
      * <code>optional string acknowledgeMessage = 2;</code>
      */
     public boolean hasAcknowledgeMessage() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional string acknowledgeMessage = 2;</code>
@@ -251,33 +273,33 @@ public final class Alarms {
       }
     }
 
-    public static final int ACKNOWLEDGETIME_FIELD_NUMBER = 3;
-    private long acknowledgeTime_;
+    public static final int YAMCSACKNOWLEDGETIME_FIELD_NUMBER = 3;
+    private long yamcsAcknowledgeTime_;
     /**
-     * <code>optional int64 acknowledgeTime = 3;</code>
+     * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
      */
-    public boolean hasAcknowledgeTime() {
-      return ((bitField0_ & 0x00000004) != 0);
+    @java.lang.Deprecated public boolean hasYamcsAcknowledgeTime() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int64 acknowledgeTime = 3;</code>
+     * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
      */
-    public long getAcknowledgeTime() {
-      return acknowledgeTime_;
+    @java.lang.Deprecated public long getYamcsAcknowledgeTime() {
+      return yamcsAcknowledgeTime_;
     }
 
     public static final int ACKNOWLEDGETIMEUTC_FIELD_NUMBER = 4;
     private volatile java.lang.Object acknowledgeTimeUTC_;
     /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
      */
-    public boolean hasAcknowledgeTimeUTC() {
-      return ((bitField0_ & 0x00000008) != 0);
+    @java.lang.Deprecated public boolean hasAcknowledgeTimeUTC() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
      */
-    public java.lang.String getAcknowledgeTimeUTC() {
+    @java.lang.Deprecated public java.lang.String getAcknowledgeTimeUTC() {
       java.lang.Object ref = acknowledgeTimeUTC_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
@@ -292,9 +314,9 @@ public final class Alarms {
       }
     }
     /**
-     * <code>optional string acknowledgeTimeUTC = 4;</code>
+     * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
      */
-    public com.google.protobuf.ByteString
+    @java.lang.Deprecated public com.google.protobuf.ByteString
         getAcknowledgeTimeUTCBytes() {
       java.lang.Object ref = acknowledgeTimeUTC_;
       if (ref instanceof java.lang.String) {
@@ -308,8 +330,28 @@ public final class Alarms {
       }
     }
 
+    public static final int ACKNOWLEDGETIME_FIELD_NUMBER = 5;
+    private com.google.protobuf.Timestamp acknowledgeTime_;
+    /**
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+     */
+    public boolean hasAcknowledgeTime() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+     */
+    public com.google.protobuf.Timestamp getAcknowledgeTime() {
+      return acknowledgeTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : acknowledgeTime_;
+    }
+    /**
+     * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getAcknowledgeTimeOrBuilder() {
+      return acknowledgeTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : acknowledgeTime_;
+    }
+
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -319,48 +361,54 @@ public final class Alarms {
       return true;
     }
 
-    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) != 0)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, acknowledgedBy_);
       }
-      if (((bitField0_ & 0x00000002) != 0)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, acknowledgeMessage_);
       }
-      if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, acknowledgeTime_);
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, yamcsAcknowledgeTime_);
       }
-      if (((bitField0_ & 0x00000008) != 0)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, acknowledgeTimeUTC_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, getAcknowledgeTime());
       }
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) != 0)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, acknowledgedBy_);
       }
-      if (((bitField0_ & 0x00000002) != 0)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, acknowledgeMessage_);
       }
-      if (((bitField0_ & 0x00000004) != 0)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, acknowledgeTime_);
+          .computeInt64Size(3, yamcsAcknowledgeTime_);
       }
-      if (((bitField0_ & 0x00000008) != 0)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, acknowledgeTimeUTC_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getAcknowledgeTime());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
+    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -371,28 +419,34 @@ public final class Alarms {
       }
       org.yamcs.protobuf.Alarms.AcknowledgeInfo other = (org.yamcs.protobuf.Alarms.AcknowledgeInfo) obj;
 
-      if (hasAcknowledgedBy() != other.hasAcknowledgedBy()) return false;
+      boolean result = true;
+      result = result && (hasAcknowledgedBy() == other.hasAcknowledgedBy());
       if (hasAcknowledgedBy()) {
-        if (!getAcknowledgedBy()
-            .equals(other.getAcknowledgedBy())) return false;
+        result = result && getAcknowledgedBy()
+            .equals(other.getAcknowledgedBy());
       }
-      if (hasAcknowledgeMessage() != other.hasAcknowledgeMessage()) return false;
+      result = result && (hasAcknowledgeMessage() == other.hasAcknowledgeMessage());
       if (hasAcknowledgeMessage()) {
-        if (!getAcknowledgeMessage()
-            .equals(other.getAcknowledgeMessage())) return false;
+        result = result && getAcknowledgeMessage()
+            .equals(other.getAcknowledgeMessage());
       }
-      if (hasAcknowledgeTime() != other.hasAcknowledgeTime()) return false;
-      if (hasAcknowledgeTime()) {
-        if (getAcknowledgeTime()
-            != other.getAcknowledgeTime()) return false;
+      result = result && (hasYamcsAcknowledgeTime() == other.hasYamcsAcknowledgeTime());
+      if (hasYamcsAcknowledgeTime()) {
+        result = result && (getYamcsAcknowledgeTime()
+            == other.getYamcsAcknowledgeTime());
       }
-      if (hasAcknowledgeTimeUTC() != other.hasAcknowledgeTimeUTC()) return false;
+      result = result && (hasAcknowledgeTimeUTC() == other.hasAcknowledgeTimeUTC());
       if (hasAcknowledgeTimeUTC()) {
-        if (!getAcknowledgeTimeUTC()
-            .equals(other.getAcknowledgeTimeUTC())) return false;
+        result = result && getAcknowledgeTimeUTC()
+            .equals(other.getAcknowledgeTimeUTC());
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
+      result = result && (hasAcknowledgeTime() == other.hasAcknowledgeTime());
+      if (hasAcknowledgeTime()) {
+        result = result && getAcknowledgeTime()
+            .equals(other.getAcknowledgeTime());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
     }
 
     @java.lang.Override
@@ -401,7 +455,7 @@ public final class Alarms {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (19 * hash) + getDescriptorForType().hashCode();
       if (hasAcknowledgedBy()) {
         hash = (37 * hash) + ACKNOWLEDGEDBY_FIELD_NUMBER;
         hash = (53 * hash) + getAcknowledgedBy().hashCode();
@@ -410,31 +464,24 @@ public final class Alarms {
         hash = (37 * hash) + ACKNOWLEDGEMESSAGE_FIELD_NUMBER;
         hash = (53 * hash) + getAcknowledgeMessage().hashCode();
       }
-      if (hasAcknowledgeTime()) {
-        hash = (37 * hash) + ACKNOWLEDGETIME_FIELD_NUMBER;
+      if (hasYamcsAcknowledgeTime()) {
+        hash = (37 * hash) + YAMCSACKNOWLEDGETIME_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getAcknowledgeTime());
+            getYamcsAcknowledgeTime());
       }
       if (hasAcknowledgeTimeUTC()) {
         hash = (37 * hash) + ACKNOWLEDGETIMEUTC_FIELD_NUMBER;
         hash = (53 * hash) + getAcknowledgeTimeUTC().hashCode();
+      }
+      if (hasAcknowledgeTime()) {
+        hash = (37 * hash) + ACKNOWLEDGETIME_FIELD_NUMBER;
+        hash = (53 * hash) + getAcknowledgeTime().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
     public static org.yamcs.protobuf.Alarms.AcknowledgeInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -494,7 +541,6 @@ public final class Alarms {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -502,7 +548,6 @@ public final class Alarms {
     public static Builder newBuilder(org.yamcs.protobuf.Alarms.AcknowledgeInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -526,7 +571,6 @@ public final class Alarms {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_descriptor;
       }
 
-      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_fieldAccessorTable
@@ -547,34 +591,37 @@ public final class Alarms {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getAcknowledgeTimeFieldBuilder();
         }
       }
-      @java.lang.Override
       public Builder clear() {
         super.clear();
         acknowledgedBy_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
         acknowledgeMessage_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        acknowledgeTime_ = 0L;
+        yamcsAcknowledgeTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
         acknowledgeTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        if (acknowledgeTimeBuilder_ == null) {
+          acknowledgeTime_ = null;
+        } else {
+          acknowledgeTimeBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
-      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_descriptor;
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AcknowledgeInfo getDefaultInstanceForType() {
         return org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AcknowledgeInfo build() {
         org.yamcs.protobuf.Alarms.AcknowledgeInfo result = buildPartial();
         if (!result.isInitialized()) {
@@ -583,65 +630,65 @@ public final class Alarms {
         return result;
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AcknowledgeInfo buildPartial() {
         org.yamcs.protobuf.Alarms.AcknowledgeInfo result = new org.yamcs.protobuf.Alarms.AcknowledgeInfo(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
         result.acknowledgedBy_ = acknowledgedBy_;
-        if (((from_bitField0_ & 0x00000002) != 0)) {
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
         result.acknowledgeMessage_ = acknowledgeMessage_;
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.acknowledgeTime_ = acknowledgeTime_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.yamcsAcknowledgeTime_ = yamcsAcknowledgeTime_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
         result.acknowledgeTimeUTC_ = acknowledgeTimeUTC_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        if (acknowledgeTimeBuilder_ == null) {
+          result.acknowledgeTime_ = acknowledgeTime_;
+        } else {
+          result.acknowledgeTime_ = acknowledgeTimeBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
       public Builder clone() {
-        return super.clone();
+        return (Builder) super.clone();
       }
-      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
+          Object value) {
+        return (Builder) super.setField(field, value);
       }
-      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
+        return (Builder) super.clearField(field);
       }
-      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
+        return (Builder) super.clearOneof(oneof);
       }
-      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
       }
-      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Alarms.AcknowledgeInfo) {
           return mergeFrom((org.yamcs.protobuf.Alarms.AcknowledgeInfo)other);
@@ -663,25 +710,26 @@ public final class Alarms {
           acknowledgeMessage_ = other.acknowledgeMessage_;
           onChanged();
         }
-        if (other.hasAcknowledgeTime()) {
-          setAcknowledgeTime(other.getAcknowledgeTime());
+        if (other.hasYamcsAcknowledgeTime()) {
+          setYamcsAcknowledgeTime(other.getYamcsAcknowledgeTime());
         }
         if (other.hasAcknowledgeTimeUTC()) {
           bitField0_ |= 0x00000008;
           acknowledgeTimeUTC_ = other.acknowledgeTimeUTC_;
           onChanged();
         }
+        if (other.hasAcknowledgeTime()) {
+          mergeAcknowledgeTime(other.getAcknowledgeTime());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
-      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -706,7 +754,7 @@ public final class Alarms {
        * <code>optional string acknowledgedBy = 1;</code>
        */
       public boolean hasAcknowledgedBy() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
        * <code>optional string acknowledgedBy = 1;</code>
@@ -782,7 +830,7 @@ public final class Alarms {
        * <code>optional string acknowledgeMessage = 2;</code>
        */
       public boolean hasAcknowledgeMessage() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional string acknowledgeMessage = 2;</code>
@@ -853,49 +901,49 @@ public final class Alarms {
         return this;
       }
 
-      private long acknowledgeTime_ ;
+      private long yamcsAcknowledgeTime_ ;
       /**
-       * <code>optional int64 acknowledgeTime = 3;</code>
+       * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
        */
-      public boolean hasAcknowledgeTime() {
-        return ((bitField0_ & 0x00000004) != 0);
+      @java.lang.Deprecated public boolean hasYamcsAcknowledgeTime() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int64 acknowledgeTime = 3;</code>
+       * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
        */
-      public long getAcknowledgeTime() {
-        return acknowledgeTime_;
+      @java.lang.Deprecated public long getYamcsAcknowledgeTime() {
+        return yamcsAcknowledgeTime_;
       }
       /**
-       * <code>optional int64 acknowledgeTime = 3;</code>
+       * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
        */
-      public Builder setAcknowledgeTime(long value) {
+      @java.lang.Deprecated public Builder setYamcsAcknowledgeTime(long value) {
         bitField0_ |= 0x00000004;
-        acknowledgeTime_ = value;
+        yamcsAcknowledgeTime_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 acknowledgeTime = 3;</code>
+       * <code>optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];</code>
        */
-      public Builder clearAcknowledgeTime() {
+      @java.lang.Deprecated public Builder clearYamcsAcknowledgeTime() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        acknowledgeTime_ = 0L;
+        yamcsAcknowledgeTime_ = 0L;
         onChanged();
         return this;
       }
 
       private java.lang.Object acknowledgeTimeUTC_ = "";
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public boolean hasAcknowledgeTimeUTC() {
-        return ((bitField0_ & 0x00000008) != 0);
+      @java.lang.Deprecated public boolean hasAcknowledgeTimeUTC() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public java.lang.String getAcknowledgeTimeUTC() {
+      @java.lang.Deprecated public java.lang.String getAcknowledgeTimeUTC() {
         java.lang.Object ref = acknowledgeTimeUTC_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
@@ -910,9 +958,9 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public com.google.protobuf.ByteString
+      @java.lang.Deprecated public com.google.protobuf.ByteString
           getAcknowledgeTimeUTCBytes() {
         java.lang.Object ref = acknowledgeTimeUTC_;
         if (ref instanceof String) {
@@ -926,9 +974,9 @@ public final class Alarms {
         }
       }
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public Builder setAcknowledgeTimeUTC(
+      @java.lang.Deprecated public Builder setAcknowledgeTimeUTC(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
@@ -939,18 +987,18 @@ public final class Alarms {
         return this;
       }
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public Builder clearAcknowledgeTimeUTC() {
+      @java.lang.Deprecated public Builder clearAcknowledgeTimeUTC() {
         bitField0_ = (bitField0_ & ~0x00000008);
         acknowledgeTimeUTC_ = getDefaultInstance().getAcknowledgeTimeUTC();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string acknowledgeTimeUTC = 4;</code>
+       * <code>optional string acknowledgeTimeUTC = 4 [deprecated = true];</code>
        */
-      public Builder setAcknowledgeTimeUTCBytes(
+      @java.lang.Deprecated public Builder setAcknowledgeTimeUTCBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
@@ -960,13 +1008,129 @@ public final class Alarms {
         onChanged();
         return this;
       }
-      @java.lang.Override
+
+      private com.google.protobuf.Timestamp acknowledgeTime_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> acknowledgeTimeBuilder_;
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public boolean hasAcknowledgeTime() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public com.google.protobuf.Timestamp getAcknowledgeTime() {
+        if (acknowledgeTimeBuilder_ == null) {
+          return acknowledgeTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : acknowledgeTime_;
+        } else {
+          return acknowledgeTimeBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public Builder setAcknowledgeTime(com.google.protobuf.Timestamp value) {
+        if (acknowledgeTimeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          acknowledgeTime_ = value;
+          onChanged();
+        } else {
+          acknowledgeTimeBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public Builder setAcknowledgeTime(
+          com.google.protobuf.Timestamp.Builder builderForValue) {
+        if (acknowledgeTimeBuilder_ == null) {
+          acknowledgeTime_ = builderForValue.build();
+          onChanged();
+        } else {
+          acknowledgeTimeBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public Builder mergeAcknowledgeTime(com.google.protobuf.Timestamp value) {
+        if (acknowledgeTimeBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+              acknowledgeTime_ != null &&
+              acknowledgeTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+            acknowledgeTime_ =
+              com.google.protobuf.Timestamp.newBuilder(acknowledgeTime_).mergeFrom(value).buildPartial();
+          } else {
+            acknowledgeTime_ = value;
+          }
+          onChanged();
+        } else {
+          acknowledgeTimeBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public Builder clearAcknowledgeTime() {
+        if (acknowledgeTimeBuilder_ == null) {
+          acknowledgeTime_ = null;
+          onChanged();
+        } else {
+          acknowledgeTimeBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public com.google.protobuf.Timestamp.Builder getAcknowledgeTimeBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getAcknowledgeTimeFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      public com.google.protobuf.TimestampOrBuilder getAcknowledgeTimeOrBuilder() {
+        if (acknowledgeTimeBuilder_ != null) {
+          return acknowledgeTimeBuilder_.getMessageOrBuilder();
+        } else {
+          return acknowledgeTime_ == null ?
+              com.google.protobuf.Timestamp.getDefaultInstance() : acknowledgeTime_;
+        }
+      }
+      /**
+       * <code>optional .google.protobuf.Timestamp acknowledgeTime = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+          getAcknowledgeTimeFieldBuilder() {
+        if (acknowledgeTimeBuilder_ == null) {
+          acknowledgeTimeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
+                  getAcknowledgeTime(),
+                  getParentForChildren(),
+                  isClean());
+          acknowledgeTime_ = null;
+        }
+        return acknowledgeTimeBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -988,12 +1152,11 @@ public final class Alarms {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<AcknowledgeInfo>
         PARSER = new com.google.protobuf.AbstractParser<AcknowledgeInfo>() {
-      @java.lang.Override
       public AcknowledgeInfo parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AcknowledgeInfo(input, extensionRegistry);
+          return new AcknowledgeInfo(input, extensionRegistry);
       }
     };
 
@@ -1006,7 +1169,6 @@ public final class Alarms {
       return PARSER;
     }
 
-    @java.lang.Override
     public org.yamcs.protobuf.Alarms.AcknowledgeInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -1125,13 +1287,15 @@ public final class Alarms {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.alarms.AlarmData)
       AlarmDataOrBuilder {
-  private static final long serialVersionUID = 0L;
     // Use AlarmData.newBuilder() to construct.
     private AlarmData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private AlarmData() {
+      seqNum_ = 0;
       type_ = 1;
+      violations_ = 0;
+      valueCount_ = 0;
     }
 
     @java.lang.Override
@@ -1144,9 +1308,6 @@ public final class Alarms {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1158,6 +1319,13 @@ public final class Alarms {
             case 0:
               done = true;
               break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
             case 8: {
               bitField0_ |= 0x00000001;
               seqNum_ = input.readUInt32();
@@ -1165,7 +1333,6 @@ public final class Alarms {
             }
             case 16: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Alarms.AlarmData.Type value = org.yamcs.protobuf.Alarms.AlarmData.Type.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(2, rawValue);
@@ -1177,7 +1344,7 @@ public final class Alarms {
             }
             case 26: {
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) != 0)) {
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
                 subBuilder = triggerValue_.toBuilder();
               }
               triggerValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
@@ -1190,7 +1357,7 @@ public final class Alarms {
             }
             case 34: {
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) != 0)) {
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 subBuilder = mostSevereValue_.toBuilder();
               }
               mostSevereValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
@@ -1203,7 +1370,7 @@ public final class Alarms {
             }
             case 42: {
               org.yamcs.protobuf.Pvalue.ParameterValue.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000010) != 0)) {
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
                 subBuilder = currentValue_.toBuilder();
               }
               currentValue_ = input.readMessage(org.yamcs.protobuf.Pvalue.ParameterValue.PARSER, extensionRegistry);
@@ -1221,7 +1388,7 @@ public final class Alarms {
             }
             case 58: {
               org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) != 0)) {
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
                 subBuilder = acknowledgeInfo_.toBuilder();
               }
               acknowledgeInfo_ = input.readMessage(org.yamcs.protobuf.Alarms.AcknowledgeInfo.PARSER, extensionRegistry);
@@ -1234,7 +1401,7 @@ public final class Alarms {
             }
             case 66: {
               org.yamcs.protobuf.Mdb.ParameterInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000080) != 0)) {
+              if (((bitField0_ & 0x00000080) == 0x00000080)) {
                 subBuilder = parameter_.toBuilder();
               }
               parameter_ = input.readMessage(org.yamcs.protobuf.Mdb.ParameterInfo.PARSER, extensionRegistry);
@@ -1248,13 +1415,6 @@ public final class Alarms {
             case 72: {
               bitField0_ |= 0x00000100;
               valueCount_ = input.readUInt32();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
               break;
             }
           }
@@ -1274,7 +1434,6 @@ public final class Alarms {
       return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AlarmData_descriptor;
     }
 
-    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AlarmData_fieldAccessorTable
@@ -1463,7 +1622,7 @@ public final class Alarms {
      * <code>optional uint32 seqNum = 1;</code>
      */
     public boolean hasSeqNum() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
      * <code>optional uint32 seqNum = 1;</code>
@@ -1478,13 +1637,12 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.alarms.AlarmData.Type type = 2;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional .yamcs.protobuf.alarms.AlarmData.Type type = 2;</code>
      */
     public org.yamcs.protobuf.Alarms.AlarmData.Type getType() {
-      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Alarms.AlarmData.Type result = org.yamcs.protobuf.Alarms.AlarmData.Type.valueOf(type_);
       return result == null ? org.yamcs.protobuf.Alarms.AlarmData.Type.ACTIVE : result;
     }
@@ -1495,7 +1653,7 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue triggerValue = 3;</code>
      */
     public boolean hasTriggerValue() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue triggerValue = 3;</code>
@@ -1516,7 +1674,7 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue mostSevereValue = 4;</code>
      */
     public boolean hasMostSevereValue() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue mostSevereValue = 4;</code>
@@ -1537,7 +1695,7 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue currentValue = 5;</code>
      */
     public boolean hasCurrentValue() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.ParameterValue currentValue = 5;</code>
@@ -1558,7 +1716,7 @@ public final class Alarms {
      * <code>optional uint32 violations = 6;</code>
      */
     public boolean hasViolations() {
-      return ((bitField0_ & 0x00000020) != 0);
+      return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
      * <code>optional uint32 violations = 6;</code>
@@ -1573,7 +1731,7 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
     public boolean hasAcknowledgeInfo() {
-      return ((bitField0_ & 0x00000040) != 0);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
      * <code>optional .yamcs.protobuf.alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
@@ -1594,7 +1752,7 @@ public final class Alarms {
      * <code>optional .yamcs.protobuf.mdb.ParameterInfo parameter = 8;</code>
      */
     public boolean hasParameter() {
-      return ((bitField0_ & 0x00000080) != 0);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
      * <code>optional .yamcs.protobuf.mdb.ParameterInfo parameter = 8;</code>
@@ -1615,7 +1773,7 @@ public final class Alarms {
      * <code>optional uint32 valueCount = 9;</code>
      */
     public boolean hasValueCount() {
-      return ((bitField0_ & 0x00000100) != 0);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
      * <code>optional uint32 valueCount = 9;</code>
@@ -1625,7 +1783,6 @@ public final class Alarms {
     }
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1659,78 +1816,76 @@ public final class Alarms {
       return true;
     }
 
-    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) != 0)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeUInt32(1, seqNum_);
       }
-      if (((bitField0_ & 0x00000002) != 0)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeEnum(2, type_);
       }
-      if (((bitField0_ & 0x00000004) != 0)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeMessage(3, getTriggerValue());
       }
-      if (((bitField0_ & 0x00000008) != 0)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeMessage(4, getMostSevereValue());
       }
-      if (((bitField0_ & 0x00000010) != 0)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(5, getCurrentValue());
       }
-      if (((bitField0_ & 0x00000020) != 0)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeUInt32(6, violations_);
       }
-      if (((bitField0_ & 0x00000040) != 0)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeMessage(7, getAcknowledgeInfo());
       }
-      if (((bitField0_ & 0x00000080) != 0)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeMessage(8, getParameter());
       }
-      if (((bitField0_ & 0x00000100) != 0)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeUInt32(9, valueCount_);
       }
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) != 0)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(1, seqNum_);
       }
-      if (((bitField0_ & 0x00000002) != 0)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
-      if (((bitField0_ & 0x00000004) != 0)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getTriggerValue());
       }
-      if (((bitField0_ & 0x00000008) != 0)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, getMostSevereValue());
       }
-      if (((bitField0_ & 0x00000010) != 0)) {
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, getCurrentValue());
       }
-      if (((bitField0_ & 0x00000020) != 0)) {
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(6, violations_);
       }
-      if (((bitField0_ & 0x00000040) != 0)) {
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(7, getAcknowledgeInfo());
       }
-      if (((bitField0_ & 0x00000080) != 0)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, getParameter());
       }
-      if (((bitField0_ & 0x00000100) != 0)) {
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(9, valueCount_);
       }
@@ -1739,6 +1894,7 @@ public final class Alarms {
       return size;
     }
 
+    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -1749,52 +1905,53 @@ public final class Alarms {
       }
       org.yamcs.protobuf.Alarms.AlarmData other = (org.yamcs.protobuf.Alarms.AlarmData) obj;
 
-      if (hasSeqNum() != other.hasSeqNum()) return false;
+      boolean result = true;
+      result = result && (hasSeqNum() == other.hasSeqNum());
       if (hasSeqNum()) {
-        if (getSeqNum()
-            != other.getSeqNum()) return false;
+        result = result && (getSeqNum()
+            == other.getSeqNum());
       }
-      if (hasType() != other.hasType()) return false;
+      result = result && (hasType() == other.hasType());
       if (hasType()) {
-        if (type_ != other.type_) return false;
+        result = result && type_ == other.type_;
       }
-      if (hasTriggerValue() != other.hasTriggerValue()) return false;
+      result = result && (hasTriggerValue() == other.hasTriggerValue());
       if (hasTriggerValue()) {
-        if (!getTriggerValue()
-            .equals(other.getTriggerValue())) return false;
+        result = result && getTriggerValue()
+            .equals(other.getTriggerValue());
       }
-      if (hasMostSevereValue() != other.hasMostSevereValue()) return false;
+      result = result && (hasMostSevereValue() == other.hasMostSevereValue());
       if (hasMostSevereValue()) {
-        if (!getMostSevereValue()
-            .equals(other.getMostSevereValue())) return false;
+        result = result && getMostSevereValue()
+            .equals(other.getMostSevereValue());
       }
-      if (hasCurrentValue() != other.hasCurrentValue()) return false;
+      result = result && (hasCurrentValue() == other.hasCurrentValue());
       if (hasCurrentValue()) {
-        if (!getCurrentValue()
-            .equals(other.getCurrentValue())) return false;
+        result = result && getCurrentValue()
+            .equals(other.getCurrentValue());
       }
-      if (hasViolations() != other.hasViolations()) return false;
+      result = result && (hasViolations() == other.hasViolations());
       if (hasViolations()) {
-        if (getViolations()
-            != other.getViolations()) return false;
+        result = result && (getViolations()
+            == other.getViolations());
       }
-      if (hasAcknowledgeInfo() != other.hasAcknowledgeInfo()) return false;
+      result = result && (hasAcknowledgeInfo() == other.hasAcknowledgeInfo());
       if (hasAcknowledgeInfo()) {
-        if (!getAcknowledgeInfo()
-            .equals(other.getAcknowledgeInfo())) return false;
+        result = result && getAcknowledgeInfo()
+            .equals(other.getAcknowledgeInfo());
       }
-      if (hasParameter() != other.hasParameter()) return false;
+      result = result && (hasParameter() == other.hasParameter());
       if (hasParameter()) {
-        if (!getParameter()
-            .equals(other.getParameter())) return false;
+        result = result && getParameter()
+            .equals(other.getParameter());
       }
-      if (hasValueCount() != other.hasValueCount()) return false;
+      result = result && (hasValueCount() == other.hasValueCount());
       if (hasValueCount()) {
-        if (getValueCount()
-            != other.getValueCount()) return false;
+        result = result && (getValueCount()
+            == other.getValueCount());
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
     }
 
     @java.lang.Override
@@ -1803,7 +1960,7 @@ public final class Alarms {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (19 * hash) + getDescriptorForType().hashCode();
       if (hasSeqNum()) {
         hash = (37 * hash) + SEQNUM_FIELD_NUMBER;
         hash = (53 * hash) + getSeqNum();
@@ -1845,17 +2002,6 @@ public final class Alarms {
       return hash;
     }
 
-    public static org.yamcs.protobuf.Alarms.AlarmData parseFrom(
-        java.nio.ByteBuffer data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Alarms.AlarmData parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
     public static org.yamcs.protobuf.Alarms.AlarmData parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1915,7 +2061,6 @@ public final class Alarms {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1923,7 +2068,6 @@ public final class Alarms {
     public static Builder newBuilder(org.yamcs.protobuf.Alarms.AlarmData prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1947,7 +2091,6 @@ public final class Alarms {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AlarmData_descriptor;
       }
 
-      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AlarmData_fieldAccessorTable
@@ -1975,7 +2118,6 @@ public final class Alarms {
           getParameterFieldBuilder();
         }
       }
-      @java.lang.Override
       public Builder clear() {
         super.clear();
         seqNum_ = 0;
@@ -2019,18 +2161,15 @@ public final class Alarms {
         return this;
       }
 
-      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Alarms.internal_static_yamcs_protobuf_alarms_AlarmData_descriptor;
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AlarmData getDefaultInstanceForType() {
         return org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AlarmData build() {
         org.yamcs.protobuf.Alarms.AlarmData result = buildPartial();
         if (!result.isInitialized()) {
@@ -2039,105 +2178,97 @@ public final class Alarms {
         return result;
       }
 
-      @java.lang.Override
       public org.yamcs.protobuf.Alarms.AlarmData buildPartial() {
         org.yamcs.protobuf.Alarms.AlarmData result = new org.yamcs.protobuf.Alarms.AlarmData(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.seqNum_ = seqNum_;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.seqNum_ = seqNum_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          if (triggerValueBuilder_ == null) {
-            result.triggerValue_ = triggerValue_;
-          } else {
-            result.triggerValue_ = triggerValueBuilder_.build();
-          }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
-          if (mostSevereValueBuilder_ == null) {
-            result.mostSevereValue_ = mostSevereValue_;
-          } else {
-            result.mostSevereValue_ = mostSevereValueBuilder_.build();
-          }
+        if (triggerValueBuilder_ == null) {
+          result.triggerValue_ = triggerValue_;
+        } else {
+          result.triggerValue_ = triggerValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        if (((from_bitField0_ & 0x00000010) != 0)) {
-          if (currentValueBuilder_ == null) {
-            result.currentValue_ = currentValue_;
-          } else {
-            result.currentValue_ = currentValueBuilder_.build();
-          }
+        if (mostSevereValueBuilder_ == null) {
+          result.mostSevereValue_ = mostSevereValue_;
+        } else {
+          result.mostSevereValue_ = mostSevereValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        if (((from_bitField0_ & 0x00000020) != 0)) {
-          result.violations_ = violations_;
+        if (currentValueBuilder_ == null) {
+          result.currentValue_ = currentValue_;
+        } else {
+          result.currentValue_ = currentValueBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        if (((from_bitField0_ & 0x00000040) != 0)) {
-          if (acknowledgeInfoBuilder_ == null) {
-            result.acknowledgeInfo_ = acknowledgeInfo_;
-          } else {
-            result.acknowledgeInfo_ = acknowledgeInfoBuilder_.build();
-          }
+        result.violations_ = violations_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        if (((from_bitField0_ & 0x00000080) != 0)) {
-          if (parameterBuilder_ == null) {
-            result.parameter_ = parameter_;
-          } else {
-            result.parameter_ = parameterBuilder_.build();
-          }
+        if (acknowledgeInfoBuilder_ == null) {
+          result.acknowledgeInfo_ = acknowledgeInfo_;
+        } else {
+          result.acknowledgeInfo_ = acknowledgeInfoBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
         }
-        if (((from_bitField0_ & 0x00000100) != 0)) {
-          result.valueCount_ = valueCount_;
+        if (parameterBuilder_ == null) {
+          result.parameter_ = parameter_;
+        } else {
+          result.parameter_ = parameterBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
         }
+        result.valueCount_ = valueCount_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
       public Builder clone() {
-        return super.clone();
+        return (Builder) super.clone();
       }
-      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
+          Object value) {
+        return (Builder) super.setField(field, value);
       }
-      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
+        return (Builder) super.clearField(field);
       }
-      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
+        return (Builder) super.clearOneof(oneof);
       }
-      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
       }
-      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Alarms.AlarmData) {
           return mergeFrom((org.yamcs.protobuf.Alarms.AlarmData)other);
@@ -2181,7 +2312,6 @@ public final class Alarms {
         return this;
       }
 
-      @java.lang.Override
       public final boolean isInitialized() {
         if (hasTriggerValue()) {
           if (!getTriggerValue().isInitialized()) {
@@ -2206,7 +2336,6 @@ public final class Alarms {
         return true;
       }
 
-      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2231,7 +2360,7 @@ public final class Alarms {
        * <code>optional uint32 seqNum = 1;</code>
        */
       public boolean hasSeqNum() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
        * <code>optional uint32 seqNum = 1;</code>
@@ -2263,13 +2392,12 @@ public final class Alarms {
        * <code>optional .yamcs.protobuf.alarms.AlarmData.Type type = 2;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional .yamcs.protobuf.alarms.AlarmData.Type type = 2;</code>
        */
       public org.yamcs.protobuf.Alarms.AlarmData.Type getType() {
-        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Alarms.AlarmData.Type result = org.yamcs.protobuf.Alarms.AlarmData.Type.valueOf(type_);
         return result == null ? org.yamcs.protobuf.Alarms.AlarmData.Type.ACTIVE : result;
       }
@@ -2295,14 +2423,14 @@ public final class Alarms {
         return this;
       }
 
-      private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_;
+      private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> triggerValueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue triggerValue = 3;</code>
        */
       public boolean hasTriggerValue() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue triggerValue = 3;</code>
@@ -2349,7 +2477,7 @@ public final class Alarms {
        */
       public Builder mergeTriggerValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
         if (triggerValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0) &&
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
               triggerValue_ != null &&
               triggerValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
             triggerValue_ =
@@ -2413,14 +2541,14 @@ public final class Alarms {
         return triggerValueBuilder_;
       }
 
-      private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_;
+      private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> mostSevereValueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue mostSevereValue = 4;</code>
        */
       public boolean hasMostSevereValue() {
-        return ((bitField0_ & 0x00000008) != 0);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue mostSevereValue = 4;</code>
@@ -2467,7 +2595,7 @@ public final class Alarms {
        */
       public Builder mergeMostSevereValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
         if (mostSevereValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) != 0) &&
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
               mostSevereValue_ != null &&
               mostSevereValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
             mostSevereValue_ =
@@ -2531,14 +2659,14 @@ public final class Alarms {
         return mostSevereValueBuilder_;
       }
 
-      private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_;
+      private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> currentValueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue currentValue = 5;</code>
        */
       public boolean hasCurrentValue() {
-        return ((bitField0_ & 0x00000010) != 0);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.ParameterValue currentValue = 5;</code>
@@ -2585,7 +2713,7 @@ public final class Alarms {
        */
       public Builder mergeCurrentValue(org.yamcs.protobuf.Pvalue.ParameterValue value) {
         if (currentValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) != 0) &&
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
               currentValue_ != null &&
               currentValue_ != org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance()) {
             currentValue_ =
@@ -2654,7 +2782,7 @@ public final class Alarms {
        * <code>optional uint32 violations = 6;</code>
        */
       public boolean hasViolations() {
-        return ((bitField0_ & 0x00000020) != 0);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
        * <code>optional uint32 violations = 6;</code>
@@ -2681,14 +2809,14 @@ public final class Alarms {
         return this;
       }
 
-      private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_;
+      private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder> acknowledgeInfoBuilder_;
       /**
        * <code>optional .yamcs.protobuf.alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
        */
       public boolean hasAcknowledgeInfo() {
-        return ((bitField0_ & 0x00000040) != 0);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional .yamcs.protobuf.alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
@@ -2735,7 +2863,7 @@ public final class Alarms {
        */
       public Builder mergeAcknowledgeInfo(org.yamcs.protobuf.Alarms.AcknowledgeInfo value) {
         if (acknowledgeInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000040) != 0) &&
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
               acknowledgeInfo_ != null &&
               acknowledgeInfo_ != org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance()) {
             acknowledgeInfo_ =
@@ -2799,14 +2927,14 @@ public final class Alarms {
         return acknowledgeInfoBuilder_;
       }
 
-      private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
+      private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
       /**
        * <code>optional .yamcs.protobuf.mdb.ParameterInfo parameter = 8;</code>
        */
       public boolean hasParameter() {
-        return ((bitField0_ & 0x00000080) != 0);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>optional .yamcs.protobuf.mdb.ParameterInfo parameter = 8;</code>
@@ -2853,7 +2981,7 @@ public final class Alarms {
        */
       public Builder mergeParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
         if (parameterBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) != 0) &&
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
               parameter_ != null &&
               parameter_ != org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance()) {
             parameter_ =
@@ -2922,7 +3050,7 @@ public final class Alarms {
        * <code>optional uint32 valueCount = 9;</code>
        */
       public boolean hasValueCount() {
-        return ((bitField0_ & 0x00000100) != 0);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
        * <code>optional uint32 valueCount = 9;</code>
@@ -2948,13 +3076,11 @@ public final class Alarms {
         onChanged();
         return this;
       }
-      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2976,12 +3102,11 @@ public final class Alarms {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<AlarmData>
         PARSER = new com.google.protobuf.AbstractParser<AlarmData>() {
-      @java.lang.Override
       public AlarmData parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AlarmData(input, extensionRegistry);
+          return new AlarmData(input, extensionRegistry);
       }
     };
 
@@ -2994,7 +3119,6 @@ public final class Alarms {
       return PARSER;
     }
 
-    @java.lang.Override
     public org.yamcs.protobuf.Alarms.AlarmData getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3023,24 +3147,26 @@ public final class Alarms {
       "\n\"yamcs/protobuf/alarms/alarms.proto\022\025ya" +
       "mcs.protobuf.alarms\032\034yamcs/protobuf/mdb/" +
       "mdb.proto\032\"yamcs/protobuf/pvalue/pvalue." +
-      "proto\"z\n\017AcknowledgeInfo\022\026\n\016acknowledged" +
-      "By\030\001 \001(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t\022\027\n\017" +
-      "acknowledgeTime\030\003 \001(\003\022\032\n\022acknowledgeTime" +
-      "UTC\030\004 \001(\t\"\225\004\n\tAlarmData\022\016\n\006seqNum\030\001 \001(\r\022" +
-      "3\n\004type\030\002 \001(\0162%.yamcs.protobuf.alarms.Al" +
-      "armData.Type\022;\n\014triggerValue\030\003 \001(\0132%.yam" +
-      "cs.protobuf.pvalue.ParameterValue\022>\n\017mos" +
-      "tSevereValue\030\004 \001(\0132%.yamcs.protobuf.pval" +
-      "ue.ParameterValue\022;\n\014currentValue\030\005 \001(\0132" +
-      "%.yamcs.protobuf.pvalue.ParameterValue\022\022" +
-      "\n\nviolations\030\006 \001(\r\022?\n\017acknowledgeInfo\030\007 " +
-      "\001(\0132&.yamcs.protobuf.alarms.AcknowledgeI" +
-      "nfo\0224\n\tparameter\030\010 \001(\0132!.yamcs.protobuf." +
-      "mdb.ParameterInfo\022\022\n\nvalueCount\030\t \001(\r\"j\n" +
-      "\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SEVE" +
-      "RITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014AC" +
-      "KNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs.p" +
-      "rotobuf"
+      "proto\032\037google/protobuf/timestamp.proto\"\274" +
+      "\001\n\017AcknowledgeInfo\022\026\n\016acknowledgedBy\030\001 \001" +
+      "(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t\022 \n\024yamcsA" +
+      "cknowledgeTime\030\003 \001(\003B\002\030\001\022\036\n\022acknowledgeT" +
+      "imeUTC\030\004 \001(\tB\002\030\001\0223\n\017acknowledgeTime\030\005 \001(" +
+      "\0132\032.google.protobuf.Timestamp\"\225\004\n\tAlarmD" +
+      "ata\022\016\n\006seqNum\030\001 \001(\r\0223\n\004type\030\002 \001(\0162%.yamc",
+      "s.protobuf.alarms.AlarmData.Type\022;\n\014trig" +
+      "gerValue\030\003 \001(\0132%.yamcs.protobuf.pvalue.P" +
+      "arameterValue\022>\n\017mostSevereValue\030\004 \001(\0132%" +
+      ".yamcs.protobuf.pvalue.ParameterValue\022;\n" +
+      "\014currentValue\030\005 \001(\0132%.yamcs.protobuf.pva" +
+      "lue.ParameterValue\022\022\n\nviolations\030\006 \001(\r\022?" +
+      "\n\017acknowledgeInfo\030\007 \001(\0132&.yamcs.protobuf" +
+      ".alarms.AcknowledgeInfo\0224\n\tparameter\030\010 \001" +
+      "(\0132!.yamcs.protobuf.mdb.ParameterInfo\022\022\n" +
+      "\nvalueCount\030\t \001(\r\"j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n",
+      "\tTRIGGERED\020\002\022\026\n\022SEVERITY_INCREASED\020\003\022\020\n\014" +
+      "PVAL_UPDATED\020\004\022\020\n\014ACKNOWLEDGED\020\005\022\013\n\007CLEA" +
+      "RED\020\006B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3055,13 +3181,14 @@ public final class Alarms {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Mdb.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
+          com.google.protobuf.TimestampProto.getDescriptor(),
         }, assigner);
     internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_alarms_AcknowledgeInfo_descriptor,
-        new java.lang.String[] { "AcknowledgedBy", "AcknowledgeMessage", "AcknowledgeTime", "AcknowledgeTimeUTC", });
+        new java.lang.String[] { "AcknowledgedBy", "AcknowledgeMessage", "YamcsAcknowledgeTime", "AcknowledgeTimeUTC", "AcknowledgeTime", });
     internal_static_yamcs_protobuf_alarms_AlarmData_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_yamcs_protobuf_alarms_AlarmData_fieldAccessorTable = new
@@ -3070,6 +3197,7 @@ public final class Alarms {
         new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", "Parameter", "ValueCount", });
     org.yamcs.protobuf.Mdb.getDescriptor();
     org.yamcs.protobuf.Pvalue.getDescriptor();
+    com.google.protobuf.TimestampProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

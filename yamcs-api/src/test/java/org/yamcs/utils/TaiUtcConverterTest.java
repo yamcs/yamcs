@@ -2,6 +2,9 @@ package org.yamcs.utils;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
@@ -120,6 +123,12 @@ public class TaiUtcConverterTest {
         ts = tuc.instantToProtobuf(t);
         t1 = tuc.protobufToInstant(ts);
         assertEquals("2016-12-31T23:59:60.500Z", TimeEncoding.toString(t1));
+        
+        
+        t = tuc.utcToInstant(new DateTimeComponents(2016, 12, 31, 20, 30, 17, 532));
+        ts = tuc.instantToProtobuf(t);
+        t1 = tuc.protobufToInstant(ts);
+        assertEquals("2016-12-31T20:30:17.532Z", TimeEncoding.toString(t1));
         
         
         t = tuc.utcToInstant(new DateTimeComponents(2017, 1, 1, 11, 59, 58, 999));

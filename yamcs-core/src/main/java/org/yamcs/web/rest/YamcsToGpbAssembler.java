@@ -60,8 +60,6 @@ public class YamcsToGpbAssembler {
                 .setApplicationName(client.getApplicationName())
                 .setAddress(client.getAddress())
                 .setUsername(client.getUser().getUsername())
-                .setYamcsLoginTime(client.getLoginTime())
-                .setLoginTimeUTC(TimeEncoding.toString(client.getLoginTime()))
                 .setId(client.getId())
                 .setState(state)
                 .setLoginTime(TimeEncoding.toProtobufTimestamp(client.getLoginTime()));

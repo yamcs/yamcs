@@ -659,9 +659,9 @@ public class PacketViewer extends JFrame implements ActionListener,
                         }
 
                         TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
-                                .setReceptionTime(TimeEncoding.getWallclockTime());
+                                .setYamcsReceptionTime(TimeEncoding.getWallclockTime());
                         if (gentime != TimeEncoding.INVALID_INSTANT) {
-                            packetb.setGenerationTime(gentime);
+                            packetb.setYamcsGenerationTime(gentime);
                         }
                         if (seqcount >= 0) {
                             packetb.setSequenceNumber(seqcount);

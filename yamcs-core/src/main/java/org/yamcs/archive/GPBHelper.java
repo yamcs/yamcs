@@ -28,10 +28,12 @@ public final class GPBHelper {
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
         TmPacketData tm = TmPacketData.newBuilder()
-                .setReceptionTime(recTime)
+                .setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
+                .setYamcsReceptionTime(recTime)
                 .setReceptionTimeUTC(TimeEncoding.toString(recTime))
                 .setPacket(ByteString.copyFrom(pbody))
-                .setGenerationTime(genTime)
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
+                .setYamcsGenerationTime(genTime)
                 .setGenerationTimeUTC(TimeEncoding.toString(genTime))
                 .setSequenceNumber(seqNum)
                 .setId(NamedObjectId.newBuilder().setName(pname).build())

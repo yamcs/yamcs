@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -102,9 +103,9 @@ public class ArchivePacketRestHandler extends RestHandler {
         // (because the gentime/seqnum condition used further down is unoptimized)
         if (nextToken != null) {
             if (desc) {
-                ir.setStop(nextToken.gentime, true);
+                ir.setStop(TimeEncoding.fromProtobufTimestamp(nextToken.gentime), true);
             } else {
-                ir.setStart(nextToken.gentime, true);
+                ir.setStart(TimeEncoding.fromProtobufTimestamp(nextToken.gentime), true);
             }
         }
         if (ir.hasInterval()) {

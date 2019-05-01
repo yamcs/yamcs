@@ -78,9 +78,11 @@ public class SimulationTimeService implements TimeService {
             SetSimulationTimeRequest request = req.bodyAsMessage(SetSimulationTimeRequest.newBuilder()).build();
 
             if (request.hasTime0()) {
-                sts.setTime0(request.getTime0());
+                sts.setTime0(TimeEncoding.fromProtobufTimestamp(request.getTime0()));
             } else if (request.hasTime0UTC()) {
                 sts.setTime0(TimeEncoding.parse(request.getTime0UTC()));
+            } else if (request.hasYamcsTime0()) {
+                sts.setTime0(request.getYamcsTime0());
             }
 
             if (request.hasSimSpeed()) {

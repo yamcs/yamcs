@@ -16,6 +16,7 @@ import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -115,9 +116,10 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
             }
             TmPacketData tm = (TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
-            long rectime = preserveIncomingReceptionTime ? tm.getReceptionTime() : timeService.getMissionTime();
-            PacketWithTime pwt = new PacketWithTime(rectime,
-                    tm.getGenerationTime(), tm.getSequenceNumber(), tm.getPacket().toByteArray());
+            long rectime = preserveIncomingReceptionTime ? TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime())
+                    : timeService.getMissionTime();
+            PacketWithTime pwt = new PacketWithTime(rectime, TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
+                    tm.getSequenceNumber(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
         } catch (Exception e) {
             log.warn("{} for message: {}", e.getMessage(), msg);
