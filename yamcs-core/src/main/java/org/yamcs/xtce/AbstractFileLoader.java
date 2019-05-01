@@ -14,42 +14,42 @@ import org.yamcs.ConfigurationException;
 
 /**
  * Abstract class for MDB loaders that load data from files (or directories with files)
- *  
+ * 
  * @author nm
  *
  */
 public abstract class AbstractFileLoader implements SpaceSystemLoader {
     protected final Logger log;
     protected String configName, path;
-    
-    
+
     public AbstractFileLoader(String path) throws ConfigurationException {
         this.path = path;
-        this.configName=new File(path).getName()+"-"+path.hashCode();
-        log=LoggerFactory.getLogger(getClass());
+        this.configName = new File(path).getName() + "-" + path.hashCode();
+        log = LoggerFactory.getLogger(getClass());
     }
-    
+
     @Override
-    public boolean needsUpdate(RandomAccessFile consistencyDateFile)  throws IOException, ConfigurationException {
+    public boolean needsUpdate(RandomAccessFile consistencyDateFile) throws IOException, ConfigurationException {
         String line;
-        while((line=consistencyDateFile.readLine())!=null) {
-            if(line.startsWith(configName)) {
-                File f=new File(path);
-                if(!f.exists()) {
-                    throw new ConfigurationException("The file "+path+" doesn't exist");
+        while ((line = consistencyDateFile.readLine()) != null) {
+            if (line.startsWith(configName)) {
+                File f = new File(path);
+                if (!f.exists()) {
+                    throw new ConfigurationException("The file " + path + " doesn't exist");
                 }
-                SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/DDD HH:mm:ss");
                 try {
-                    Date serializedDate=sdf.parse(line.substring(configName.length()+1));
-                    if(serializedDate.getTime()>=f.lastModified()) {
+                    Date serializedDate = sdf.parse(line.substring(configName.length() + 1));
+                    if (serializedDate.getTime() != f.lastModified()) {
                         log.debug("Serialized {} is up to date", configName);
                         return false;
                     } else {
-                        log.debug("Serialized {} is NOT up to date: serializedDate={}, mdbConsistencyDate={}", configName, serializedDate, new Date(f.lastModified()));
+                        log.debug("Serialized {} is NOT up to date: serializedDate={}, mdbConsistencyDate={}",
+                                configName, serializedDate, new Date(f.lastModified()));
                         return true;
                     }
                 } catch (ParseException e) {
-                    log.warn("Cannot parse the date from "+line+": ", e);
+                    log.warn("Cannot parse the date from " + line + ": ", e);
                     return true;
                 }
             }
@@ -57,16 +57,16 @@ public abstract class AbstractFileLoader implements SpaceSystemLoader {
         log.info("Could not find a line starting with 'MDB' in the consistency date file");
         return true;
     }
-    
+
     @Override
     public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
-        File f=new File(path);
-        consistencyDateFile.write(configName+" "+(new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified())+"\n");
+        File f = new File(path);
+        consistencyDateFile
+                .write(configName + " " + (new SimpleDateFormat("yyyy/DDD HH:mm:ss")).format(f.lastModified()) + "\n");
     }
-
 
     @Override
     public String getConfigName() throws ConfigurationException {
         return configName;
-    }   
+    }
 }

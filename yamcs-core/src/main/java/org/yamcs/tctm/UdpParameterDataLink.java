@@ -50,6 +50,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
     YConfiguration config;
     final String name;
+
     /**
      * Creates a new UDP data link
      * 
@@ -190,6 +191,11 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        validDatagramCount = 0;
     }
 
     @Override

@@ -54,7 +54,7 @@ public class ProcessorCreatorService extends AbstractService implements YamcsSer
             processor.start();
             notifyStarted();
         } catch (Exception e) {
-            log.error("Starting a new processor {}.{} failed: {}", yamcsInstance, processorName, e.getMessage());
+            log.error("Starting a new processor {}.{} failed: {}. Cause: {}", yamcsInstance, processorName, e.getMessage(), e.getCause());
             notifyFailed(e);
         }
     }

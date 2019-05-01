@@ -64,32 +64,32 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
         }
     }
 
+    @Override
     public void handle(TransferFrame frame) {
-        if(disabled) {
+        if (disabled) {
             log.trace("Dropping frame for VC {} because the link is disabled", frame.getVirtualChannelId());
             return;
         }
-        
+
         if (frame.containsOnlyIdleData()) {
-            if(log.isTraceEnabled()) {
+            if (log.isTraceEnabled()) {
                 log.trace("Dropping idle frame for VC {}", frame.getVirtualChannelId());
             }
             idleFrameCount++;
             return;
         }
-        
+
         if (log.isTraceEnabled()) {
-            log.trace("Processing frame VC {}, SEQ {}, FHP {}, DS {}, DE {}", frame.getVirtualChannelId(), frame.getVcFrameSeq(),
+            log.trace("Processing frame VC {}, SEQ {}, FHP {}, DS {}, DE {}", frame.getVirtualChannelId(),
+                    frame.getVcFrameSeq(),
                     frame.getFirstHeaderPointer(), frame.getDataStart(), frame.getDataEnd());
         }
-
-        
 
         int dataStart = frame.getDataStart();
         int packetStart = frame.getFirstHeaderPointer();
         int dataEnd = frame.getDataEnd();
         byte[] data = frame.getData();
-        
+
         try {
             int frameLoss = frame.lostFramesCount(lastFrameSeq);
             lastFrameSeq = frame.getVcFrameSeq();
@@ -165,6 +165,11 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
     @Override
     public long getDataOutCount() {
         return 0;
+    }
+
+    @Override
+    public void resetCounters() {
+        numPackets = 0;
     }
 
     @Override

@@ -47,8 +47,8 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     }
 
     protected void initPreprocessor(String instance, YConfiguration config) {
-        if(config!=null) {
-            if(config.containsKey(CFG_PREPRO_CLASS)) {
+        if (config != null) {
+            if (config.containsKey(CFG_PREPRO_CLASS)) {
                 this.packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS);
             } else {
                 this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
@@ -58,10 +58,11 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             this.packetPreprocessorArgs = null;
         }
-        
+
         try {
             if (packetPreprocessorArgs != null) {
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance, packetPreprocessorArgs);
+                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                        packetPreprocessorArgs);
             } else {
                 packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
             }
@@ -108,6 +109,11 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
         return 0;
     }
 
+    @Override
+    public void resetCounters() {
+        packetcount = 0;
+    }
+
     /**
      * called when a new packet is received to update the statistics
      * 
@@ -128,7 +134,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     public YConfiguration getConfig() {
         return config;
     }
-    
+
     @Override
     public String getName() {
         return name;

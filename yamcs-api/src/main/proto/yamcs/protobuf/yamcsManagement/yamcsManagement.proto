@@ -166,7 +166,7 @@ message LinkInfo {
   optional int64 dataOutCount = 11;
   optional string detailedStatus = 9;
 
-  //if this is a sublink of an aggregated data link, this is the mae of the parent
+  //if this is a sublink of an aggregated data link, this is the name of the parent
   optional string parentName = 12;
 }
 
@@ -186,4 +186,15 @@ message ServiceInfo {
   optional ServiceState state = 3;
   optional string className = 4;
   optional string processor = 5;
+}
+
+message StreamEvent {
+  enum Type {
+    CREATED = 1;
+    DELETED = 2;
+    UPDATED = 3;
+  }
+  optional Type type = 1;
+  optional string name = 2;
+  optional int64 dataCount = 3;
 }

@@ -1,8 +1,8 @@
 import { Observable } from 'rxjs';
-import { AlarmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamSubscriptionResponse, Table } from './types/system';
+import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
@@ -120,23 +120,24 @@ export class InstanceClient {
   }
 
   async enableLink(name: string) {
-    const body = JSON.stringify({
-      state: 'enabled',
-    })
+    return this.editLink(name, { state: 'enabled' })
+  }
+
+  async disableLink(name: string) {
+    return this.editLink(name, { state: 'disabled' })
+  }
+
+  async editLink(name: string, options: EditLinkOptions) {
+    const body = JSON.stringify(options);
     return this.yamcs.doFetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
   }
 
-  async disableLink(name: string) {
-    const body = JSON.stringify({
-      state: 'disabled',
-    })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
-      body,
-      method: 'PATCH',
-    });
+  async getStreamEventUpdates(): Promise<StreamEventSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.getStreamEventUpdates(this.instance);
   }
 
   async getProcessors() {
@@ -171,18 +172,16 @@ export class InstanceClient {
     return await response.json() as IssueCommandResponse;
   }
 
-  async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
+  async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryPage> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as CommandHistoryEntryWrapper;
-    return wrapper.entry || [];
+    return await response.json() as CommandHistoryPage;
   }
 
   async getCommandHistoryEntriesForParameter(qualifiedName: string, options: GetCommandHistoryOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands${qualifiedName}`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as CommandHistoryEntryWrapper;
-    return wrapper.entry || [];
+    return await response.json() as CommandHistoryPage;
   }
 
   async getCommandQueues(processorName: string) {
@@ -369,6 +368,13 @@ export class InstanceClient {
     return wrapper.group || [];
   }
 
+  async getCompletenessIndex(options: GetCompletenessIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/completeness-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
   getPacketsDownloadURL(options: DownloadPacketsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/packets`;
     return url + this.queryString(options);
@@ -483,6 +489,12 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/containers${qualifiedName}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Container;
+  }
+
+  async getTags(options: GetTagsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tags`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    return await response.json() as TagsPage;
   }
 
   async getAlgorithms(options: GetAlgorithmsOptions = {}) {

@@ -116,6 +116,11 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
+    public void resetCounters() {
+        datacount = 0;
+    }
+
+    @Override
     public void setParameterSink(ParameterSink ppListener) {
         this.ppListener = ppListener;
 

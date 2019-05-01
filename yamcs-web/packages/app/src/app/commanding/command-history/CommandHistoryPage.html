@@ -1,5 +1,14 @@
 <app-instance-page>
-  <app-instance-toolbar [hasDetailPane]="true">Command History</app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
+    Command History
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-instance-toolbar>
 
   <app-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
@@ -109,6 +118,12 @@
           </div>
         </ng-container>
 
+        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+        <h6 style="padding-top: 0">Completion</h6>
+        <div class="block">
+          <app-command-completion [item]="selectedRecord"></app-command-completion>
+        </div>
+
         <p>&nbsp;</p>
       </div>
     </ng-container>
@@ -120,32 +135,73 @@
   </app-detail-pane>
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <div class="panel-content" *ngIf="dataSource">
+
+      <form [formGroup]="filterForm">
+        <div class="filter-bar">
+          <div class="vmiddle" style="flex: 1 1 0%">
+            <input formControlName="filter"
+                   class="ya-input"
+                   type="text"
+                   placeholder="Filter by text search"
+                   style="width: 300px">
+            &nbsp;&nbsp;
+            <app-column-chooser [columns]="columns"
+                                [displayedColumns]="displayedColumns"
+                                (change)="updateColumns($event)"></app-column-chooser>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <div class="vmiddle" style="flex: 1 1 0%">
+            <app-select #intervalSelect
+                        [options]="intervalOptions"
+                        icon="access_time"
+                        (change)="updateInterval($event)"></app-select>
+            &nbsp;&nbsp;
+            <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+              <input formControlName="customStart" type="datetime" style="width: 160px">
+              <input formControlName="customStop" type="datetime" style="width: 160px">
+              &nbsp;&nbsp;
+              <button (click)="applyCustomDates()"
+                      class="ya-button"
+                      [disabled]="filterForm.invalid">Apply</button>
+            </ng-container>
+            <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+              <button class="ya-button" (click)="jumpToNow()">
+                Jump to now
+              </button>
+            </ng-container>
+
+            &nbsp;&nbsp;
+            <app-dots *ngIf="dataSource.loading$ | async">
+            </app-dots>
+          </div>
+        </div>
+      </form>
+
+      <div class="table-status" [ngSwitch]="appliedInterval">
+        <div class="message-zone">
+        </div>
+        <span *ngSwitchCase="'PT1H'">
+          Showing entries from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+        <span *ngSwitchCase="'PT6H'">
+          Showing entries from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+        <span *ngSwitchCase="'P1D'">
+          Showing entries from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+        <span *ngSwitchCase="'NO_LIMIT'">
+          Showing entries from <b>all time</b>
+        </span>
+        <span *ngSwitchCase="'CUSTOM'">
+          Showing entries from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+      </div>
+
       <table mat-table
-             *ngIf="!dataSource.isEmpty(); else empty"
              [dataSource]="dataSource"
              class="ya-data-table">
-
-        <ng-container matColumnDef="completion">
-          <th mat-header-cell *matHeaderCellDef class="status"></th>
-          <td mat-cell *matCellDef="let item" class="status">
-            <ng-container *ngIf="item.completed && item.success">
-              <mat-icon class="success" matTooltip="Completed">
-                check_circle
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngIf="item.completed && !item.success">
-              <mat-icon class="alert" [matTooltip]="item.failureMessage">
-                highlight_off
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngIf="!item.completed">
-              <mat-icon class="down">
-                lens
-              </mat-icon>
-            </ng-container>
-          </td>
-        </ng-container>
 
         <ng-container matColumnDef="generationTimeUTC">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Time</th>
@@ -155,75 +211,114 @@
         </ng-container>
 
         <ng-container matColumnDef="comment">
-          <th mat-header-cell *matHeaderCellDef style="width: 30px; text-align: center">
-            <mat-icon matTooltip="Comment">comment</mat-icon>
+          <th mat-header-cell *matHeaderCellDef class="iconcol">
+            <mat-icon matTooltip="Comment" class="icon16">comment</mat-icon>
           </th>
-          <td mat-cell *matCellDef="let item" style="text-align: center">
-            <mat-icon *ngIf="item.comment" [matTooltip]="item.comment">comment</mat-icon>
+          <td mat-cell *matCellDef="let item" class="iconcol">
+            <mat-icon *ngIf="item.comment" class="icon16" [matTooltip]="item.comment">comment</mat-icon>
             <ng-container *ngIf="!item.comment">-</ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="transmissionConstraints">
+          <th mat-header-cell *matHeaderCellDef class="status" style="text-align: center">PTV</th>
+          <td mat-cell *matCellDef="let item" class="status" style="text-align: center">
+            <ng-container [ngSwitch]="item.transmissionConstraints">
+              <mat-icon *ngSwitchCase="'OK'"
+                        matTooltip="OK"
+                        class="icon14"
+                        style="color: green">check_circle</mat-icon>
+              <mat-icon *ngSwitchCase="'NOK'"
+                        matTooltip="NOK"
+                        class="icon14"
+                        style="color: red">highlight_off</mat-icon>
+              <mat-icon *ngSwitchCase="'PENDING'"
+                        class="icon14"
+                        matTooltip="PENDING">timer</mat-icon>
+              <ng-container *ngSwitchDefault>-</ng-container>
+            </ng-container>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="command">
           <th mat-header-cell *matHeaderCellDef style="width: 350px">Command</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.source || '-' }}
+            {{ item.commandName }}
+            <button mat-stroked-button class="expandable"
+                    (click)="item.expanded = !item.expanded; $event.stopPropagation()"
+                    *ngIf="item.userAssignments.length">
+              <mat-icon>more_horiz</mat-icon>
+            </button><br>
+            <ng-container *ngIf="item.expanded">
+              <ng-container *ngFor="let assignment of item.userAssignments">
+                &nbsp;&bull; {{ assignment.name }}: {{ assignment.value | value }}<br>
+              </ng-container>
+            </ng-container>
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="source">
-          <th mat-header-cell *matHeaderCellDef style="width: 300px">Src</th>
+        <ng-container matColumnDef="issuer">
+          <th mat-header-cell *matHeaderCellDef style="width: 150px">Issuer</th>
           <td mat-cell *matCellDef="let item">
             {{ item.username }}<span *ngIf="item.origin">@{{ item.origin }}</span>
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="sourceID">
-          <th mat-header-cell *matHeaderCellDef style="width: 70px">Src.ID</th>
+        <ng-container matColumnDef="sequenceNumber">
+          <th mat-header-cell *matHeaderCellDef style="width: 70px">Sequence number</th>
           <td mat-cell *matCellDef="let item">
             {{ item.sequenceNumber }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="stages">
-          <th mat-header-cell *matHeaderCellDef>Stages</th>
-          <td mat-cell *matCellDef="let item">
+          <th mat-header-cell *matHeaderCellDef style="width: 1px">Stages</th>
+          <td mat-cell *matCellDef="let item" style="white-space: nowrap">
             <ng-container *ngFor="let step of item.stages">
-              {{ step.name }}:
               <ng-container [ngSwitch]="step.status">
-                <ng-container *ngSwitchCase="'OK'">
-                  <mat-icon class="step success" [matTooltip]="step.name + ': OK'" style="margin-right: 8px">
-                    check_circle
-                  </mat-icon>
-                </ng-container>
-                <ng-container *ngSwitchCase="'TIMEOUT'">
-                  <mat-icon class="step alert" [matTooltip]="step.name + ': TIMEOUT'" style="margin-right: 8px">
-                    timer_off
-                  </mat-icon>
-                </ng-container>
-                <ng-container *ngSwitchDefault>
-                  <mat-icon class="step alert" [matTooltip]="step.name + ': ' + step.status" style="margin-right: 8px">
-                    highlight_off
-                  </mat-icon>
-                </ng-container>
+                <app-label *ngSwitchCase="'OK'"
+                           icon="check_circle"
+                           matTooltip="OK"
+                           backgroundColor="inherit"
+                           color="green">{{ step.name }}</app-label>
+                <app-label *ngSwitchCase="'TIMEOUT'"
+                           icon="timer_off"
+                           matTooltip="TIMEOUT"
+                           backgroundColor="inherit"
+                           color="red">{{ step.name }}</app-label>
+                <app-label *ngSwitchDefault
+                           icon="highlight_off"
+                           [matTooltip]="step.status"
+                           backgroundColor="inherit"
+                           color="red">{{ step.name }}</app-label>
               </ng-container>
             </ng-container>
             <ng-container *ngIf="!item.stages.length">-</ng-container>
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="completion">
+          <th mat-header-cell *matHeaderCellDef>Completion</th>
+          <td mat-cell *matCellDef="let item">
+            <app-command-completion [item]="item"></app-command-completion>
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                  (click)="selectRecord(row)"
+                 [@rowAnimation]="row.animate"
                  [class.selected]="(selectedRecord$ | async) === row">
         </tr>
       </table>
 
-      <ng-template #empty>
-        <app-empty-message *ngIf="!(dataSource.loading$ | async)">
-          No entries in command history.
-        </app-empty-message>
-      </ng-template>
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button [disabled]="!dataSource.hasMore()"
+                class="ya-button"
+                (click)="loadMoreData()">Load More</button>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
     </div>
   </div>
 </app-instance-page>

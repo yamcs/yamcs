@@ -33,12 +33,14 @@ export class CommandsPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'significance', label: 'Significance' },
     { id: 'abstract', label: 'Abstract' },
     { id: 'shortDescription', label: 'Description' },
   ];
 
   displayedColumns = [
     'name',
+    'significance',
     'abstract',
   ];
 

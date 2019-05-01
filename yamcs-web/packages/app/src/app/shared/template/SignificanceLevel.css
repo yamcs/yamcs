@@ -1,0 +1,35 @@
+.none, .watch, .warning, .distress, .critical, .severe {
+  display: inline-block;
+  height: 5px;
+  width: 29px;
+  position: relative;
+}
+
+.none {
+  background-position: 0 0;
+}
+
+.watch {
+  background-position: 0 -5px;
+}
+
+.warning {
+  background-position: 0 -10px;
+}
+
+.distress {
+  background-position: 0 -15px;
+}
+
+.critical {
+  background-position: 0 -20px;
+}
+
+.severe {
+  background-position: 0 -25px;
+}
+
+.grayscale {
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+}

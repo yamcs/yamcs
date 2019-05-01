@@ -1,0 +1,11 @@
+<app-label *ngIf="item.completed && item.success"
+           icon="check_circle"
+           backgroundColor="inherit"
+           borderColor="green"
+           color="green">Completed</app-label>
+<app-label *ngIf="item.completed && !item.success"
+           icon="highlight_off"
+           backgroundColor="inherit"
+           borderColor="red"
+           color="red">{{ item.failureMessage }}</app-label>
+<ng-container *ngIf="!item.completed">-</ng-container>

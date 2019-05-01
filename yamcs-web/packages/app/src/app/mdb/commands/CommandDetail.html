@@ -47,7 +47,7 @@
 
   <dt>Significance</dt>
   <dd *ngIf="command.significance">
-    {{ command.significance.consequenceLevel }}
+    <app-significance-level [significance]="command.significance"></app-significance-level>
     {{ command.significance.reasonForWarning }}
   </dd>
   <dd *ngIf="!command.significance">-</dd>
@@ -67,6 +67,10 @@
         <th>Name</th>
         <th>Description</th>
         <th>Type</th>
+        <th>Encoding</th>
+        <th>Size in bits</th>
+        <th>Byte order</th>
+        <th>Range</th>
         <th>Initial value</th>
       </tr>
       <tr *ngFor="let argument of command.argument">
@@ -79,6 +83,16 @@
           <ng-container *ngIf="argument.type?.engType !== 'enumeration'">
             {{ argument.type?.engType || '-' }}
           </ng-container>
+        </td>
+        <td>{{ argument.type?.dataEncoding?.encoding || '-' }}</td>
+        <td>{{ argument.type?.dataEncoding?.sizeInBits | nvl:'-' }}</td>
+        <td>{{ argument.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}</td>
+        <td>
+          <app-interval *ngIf="(argument.type?.rangeMin || argument.type?.rangeMax); else empty"
+                        [left]="argument.type?.rangeMin"
+                        [right]="argument.type?.rangeMax">
+          </app-interval>
+          <ng-template #empty>-</ng-template>
         </td>
         <td>{{ argument.initialValue || '-'}}</td>
       </tr>

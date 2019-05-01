@@ -1,9 +1,9 @@
 span.label {
-  background-color: #eee;
   padding: 4px;
   margin-right: 5px;
   border-radius: 4px;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 span.label .mat-icon {

@@ -74,9 +74,9 @@ public abstract class AbstractIntegrationTest {
 
     protected String adminUsername = "admin";
     protected char[] adminPassword = "rootpassword".toCharArray();
-    RefMdbPacketGenerator packetGenerator; //sends data to tm_realtime
-    RefMdbPacketGenerator packetGenerator2; //sends data to tm2_realtime
-    
+    RefMdbPacketGenerator packetGenerator; // sends data to tm_realtime
+    RefMdbPacketGenerator packetGenerator2; // sends data to tm2_realtime
+
     static {
         // LoggingUtils.enableLogging();
     }
@@ -139,7 +139,8 @@ public abstract class AbstractIntegrationTest {
         return getSubscription(true, false, false, pfqname);
     }
 
-    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration, boolean usedNumericId,
+    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,
+            boolean usedNumericId,
             String... pfqname) {
         ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
         for (String p : pfqname) {
@@ -195,7 +196,7 @@ public abstract class AbstractIntegrationTest {
             packetGenerator2.generate_TM2_PKT1();
         }
     }
-    
+
     void generatePkt7(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
@@ -203,7 +204,7 @@ public abstract class AbstractIntegrationTest {
             packetGenerator.generate_PKT7();
         }
     }
-    
+
     void generatePkt8(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
@@ -211,7 +212,7 @@ public abstract class AbstractIntegrationTest {
             packetGenerator.generate_PKT8();
         }
     }
-    
+
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
@@ -294,7 +295,7 @@ public abstract class AbstractIntegrationTest {
         TmSink tmSink;
         YConfiguration config;
         String name;
-        
+
         public PacketProvider(String yinstance, String name, YConfiguration args) {
             instance[args.getInt("num", 0)] = this;
             this.config = args;
@@ -337,6 +338,10 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
+        public void resetCounters() {
+        }
+
+        @Override
         public void setTmSink(TmSink tmSink) {
             this.tmSink = tmSink;
         }
@@ -375,8 +380,9 @@ public abstract class AbstractIntegrationTest {
         static volatile ParameterProvider instance;
         XtceDb xtcedb;
         YConfiguration config;
-        
+
         String name;
+
         public ParameterProvider(String yamcsInstance, String name, YConfiguration args) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -415,6 +421,10 @@ public abstract class AbstractIntegrationTest {
         @Override
         public long getDataOutCount() {
             return seqNum * 3;
+        }
+
+        @Override
+        public void resetCounters() {
         }
 
         @Override
@@ -475,11 +485,11 @@ public abstract class AbstractIntegrationTest {
             return name;
         }
     }
-    
-  class MyBulkReceiver implements BulkRestDataReceiver {
-      List<byte[]> dist = new ArrayList<>();
-      
-      @Override
+
+    class MyBulkReceiver implements BulkRestDataReceiver {
+        List<byte[]> dist = new ArrayList<>();
+
+        @Override
         public void receiveException(Throwable t) {
             fail(t.getMessage());
         }

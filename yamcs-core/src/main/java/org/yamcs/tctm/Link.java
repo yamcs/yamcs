@@ -26,9 +26,8 @@ public interface Link {
         /**
          * the link has failed (like an internal crash while processing the data)
          */
-        FAILED
-        ;
-        
+        FAILED;
+
     }
 
     /**
@@ -58,27 +57,27 @@ public interface Link {
     public long getDataInCount();
 
     public long getDataOutCount();
-    
+
+    public void resetCounters();
+
     /**
      * Return the name of the link
-     * @return
      */
     public String getName();
-    
+
     /**
      * 
      * @return the config (args) used when creating the link
      */
     public YConfiguration getConfig();
-    
+
     /**
      * If this link is a sublink of an aggregated link, get the parent link.
-     * @return
      */
     default AggregatedDataLink getParent() {
         return null;
     }
-    
+
     /**
      * Set the parent link if this is a sublink of an aggregated link.
      */

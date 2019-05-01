@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlarmRange, EnumValue, Instance, Parameter, ParameterValue } from '@yamcs/client';
+import { EnumValue, Instance, Parameter, ParameterValue } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -61,26 +61,5 @@ export class ParameterSummaryTab {
         }
       }
     }
-  }
-
-  describeRange(range: AlarmRange) {
-    let result = '(-∞';
-    if (range.minInclusive !== undefined) {
-      result = '[' + range.minInclusive;
-    } else if (range.minExclusive !== undefined) {
-      result = '(' + range.minExclusive;
-    }
-
-    result += ', ';
-
-    if (range.maxInclusive !== undefined) {
-      result += range.maxInclusive + ']';
-    } else if (range.maxExclusive !== undefined) {
-      result += range.maxExclusive + ')';
-    } else {
-      result += '+∞)';
-    }
-
-    return result;
   }
 }

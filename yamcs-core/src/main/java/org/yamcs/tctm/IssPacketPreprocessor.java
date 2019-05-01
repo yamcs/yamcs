@@ -97,9 +97,10 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
                 computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
                 int packetCheckword = ByteArrayUtils.decodeShort(packet, n - 2);
                 if (packetCheckword != computedCheckword) {
-                    eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET,
-                            "Corrupted packet received, computed checkword: " + computedCheckword
-                                    + "; packet checkword: " + packetCheckword);
+                    String message = "Corrupted packet received, computed checkword: " + computedCheckword
+                            + "; packet checkword: " + packetCheckword;
+                    log.warn(message);
+                    eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, message);
                     corrupted = true;
                 }
             } catch (IllegalArgumentException e) {

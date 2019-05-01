@@ -53,6 +53,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         registerResource(ParameterResource.RESOURCE_NAME, new ParameterResource(this));
         registerResource(ProcessorResource.RESOURCE_NAME, new ProcessorResource(this));
         registerResource(StreamResource.RESOURCE_NAME, new StreamResource(this));
+        registerResource(StreamsResource.RESOURCE_NAME, new StreamsResource(this));
         registerResource(TimeResource.RESOURCE_NAME, new TimeResource(this));
 
         for (WebSocketResourceProvider provider : ServiceLoader.load(WebSocketResourceProvider.class)) {

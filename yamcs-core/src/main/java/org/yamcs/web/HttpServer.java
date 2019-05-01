@@ -191,6 +191,9 @@ public class HttpServer extends AbstractService implements YamcsService {
                     break;
                 }
             }
+            if (ywebsite.containsKey("tag")) {
+                configb.setTag(ywebsite.getString("tag"));
+            }
         }
         websiteConfig = configb.build();
 

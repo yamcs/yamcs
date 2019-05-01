@@ -6,7 +6,7 @@
             color="primary"
             (click)="replayRange()"
             [disabled]="!(rangeSelection$ | async)">
-      <mat-icon>replay</mat-icon>
+      <mat-icon>play_circle_filled</mat-icon>
       REPLAY RANGE
     </button>
 
@@ -16,6 +16,13 @@
             [disabled]="!(rangeSelection$ | async)">
       <mat-icon>file_download</mat-icon>
       DOWNLOAD DUMP
+    </button>
+
+    <button mat-icon-button
+            color="primary"
+            (click)="refresh()"
+            matTooltip="Refresh view">
+      <mat-icon>refresh</mat-icon>
     </button>
   </app-instance-toolbar>
 

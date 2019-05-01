@@ -5,6 +5,10 @@ mat-toolbar {
   color: rgba(0, 0, 0, .654);
 }
 
+mat-toolbar-row {
+  padding-left: 24px;
+}
+
 .drop-down {
   border-left: 1px solid #d3d3d3;
   min-width: 0;

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 import org.yamcs.StandardTupleDefinitions;
@@ -48,6 +49,7 @@ public class PreparedCommand {
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, Value> argAssignment;
+    private Set<String> userAssignedArgumentNames;
 
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = "gentime";
@@ -158,6 +160,7 @@ public class PreparedCommand {
                 assignmentb.addAssignment(Assignment.newBuilder()
                         .setName(entry.getKey().getName())
                         .setValue(ValueUtility.toGbp(entry.getValue()))
+                        .setUserInput(userAssignedArgumentNames.contains(entry.getKey().getName()))
                         .build());
             }
         }
@@ -299,8 +302,9 @@ public class PreparedCommand {
         this.transmissionContraintCheckStart = transmissionContraintCheckStart;
     }
 
-    public void setArgAssignment(Map<Argument, Value> argAssignment) {
+    public void setArgAssignment(Map<Argument, Value> argAssignment, Set<String> userAssignedArgumentNames) {
         this.argAssignment = argAssignment;
+        this.userAssignedArgumentNames = userAssignedArgumentNames;
     }
 
     public Map<Argument, Value> getArgAssignment() {
