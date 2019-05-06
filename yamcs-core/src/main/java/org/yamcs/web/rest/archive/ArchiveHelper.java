@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
+import org.yamcs.protobuf.Alarms.AlarmType;
+import org.yamcs.protobuf.Alarms.ParameterAlarmData;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.ColumnInfo;
 import org.yamcs.protobuf.Archive.EnumValue;
@@ -35,6 +37,7 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.archive.ParameterRanger.Range;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
+import org.yamcs.web.rest.processor.ProcessorHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
@@ -340,8 +343,8 @@ public final class ArchiveHelper {
         return eventb.build();
     }
 
-    final static AlarmData tupleToAlarmData(Tuple tuple) {
-        AlarmData.Builder alarmb = AlarmData.newBuilder();
+    final static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
+        ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
 
         ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
@@ -369,5 +372,53 @@ public final class ArchiveHelper {
         }
 
         return alarmb.build();
+    }
+    
+    final static AlarmData parameterAlarmTupleToAlarmData(Tuple tuple) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        alarmb.setType(AlarmType.PARAMETER);
+        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+        alarmb.setId(pval.getId());
+        alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
+        setAckInfo(alarmb, tuple);
+        
+        if (tuple.hasColumn("severityIncreasedPV")) {
+            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+        }
+        alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
+        return alarmb.build();
+    }
+    
+    final static AlarmData eventAlarmTupleToAlarmData(Tuple tuple) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        alarmb.setType(AlarmType.EVENT);
+      
+        Event ev = (Event) tuple.getColumn("triggerEvent");
+        alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
+        alarmb.setId(ProcessorHelper.getAlarmId(ev));
+        setAckInfo(alarmb, tuple);
+        
+        if (tuple.hasColumn("severityIncreasedEvent")) {
+            ev = (Event) tuple.getColumn("severityIncreasedEvent");
+        }
+        alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
+
+        return alarmb.build();
+    }
+    
+    
+    static void setAckInfo(AlarmData.Builder alarmb, Tuple tuple ) {
+        if (tuple.hasColumn("acknowledgedBy")) {
+            AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
+            ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
+            if (tuple.hasColumn("acknowledgeMessage")) {
+                ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
+            }
+            long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
+            ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));          
+            alarmb.setAcknowledgeInfo(ackb);
+        }
     }
 }

@@ -17,12 +17,16 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.AlarmChecker;
+import org.yamcs.xtceproc.ParameterAlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -35,6 +39,8 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class ParameterRequestManager extends AbstractService implements ParameterListener {
     Logger log;
+
+    static final String REALTIME_ALARM_SERVER = "alarms_realtime";
     // Maps the parameters to the request(subscription id) in which they have been asked
     private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<>();
 
@@ -49,7 +55,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     // contains subscribe all
     private SubscriptionArray subscribeAll = new SubscriptionArray();
 
-    private AlarmChecker alarmChecker;
+    private ParameterAlarmChecker alarmChecker;
     private Map<Class<?>, ParameterProvider> parameterProviders = new LinkedHashMap<>();
 
     private static AtomicInteger lastSubscriptionId = new AtomicInteger();
@@ -58,7 +64,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     // if all parameter shall be subscribed/processed
     private boolean shouldSubcribeAllParameters = false;
 
-    AlarmServer alarmServer;
+    AlarmServer<Parameter, ParameterValue> parameterAlarmServer;
     Map<DataSource, SoftwareParameterManager> spm = new HashMap<>();
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
@@ -72,17 +78,17 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
         shouldSubcribeAllParameters = yproc.isSubscribeAll();
-        
+
         this.lastValueCache = yproc.getLastValueCache();
 
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
-            alarmChecker = new AlarmChecker(this, yproc.getProcessorData(), lastSubscriptionId.incrementAndGet());
+            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData(), lastSubscriptionId.incrementAndGet());
         }
         if (yproc.hasAlarmServer()) {
-            alarmServer = new AlarmServer(yproc.getInstance(), "alarms_realtime");
-            alarmChecker.enableServer(alarmServer);
+            parameterAlarmServer = new AlarmServer<>(yproc.getInstance());
+            alarmChecker.enableServer(parameterAlarmServer);
         }
 
         if (cacheConfig.enabled) {
@@ -101,14 +107,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * This is called after all the parameter providers have been added but before the start. 
+     * This is called after all the parameter providers have been added but before the start.
      */
     public void init() {
         if (shouldSubcribeAllParameters) {
             for (ParameterProvider prov : parameterProviders.values()) {
                 prov.startProvidingAll();
             }
-        } else if (alarmServer != null) { // at least get all that have alarms
+        } else if (parameterAlarmServer != null) { // at least get all that have alarms
             for (Parameter p : processor.getXtceDb().getParameters()) {
                 if (p.getParameterType() != null && p.getParameterType().hasAlarm()) {
                     try {
@@ -528,7 +534,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return (T) parameterProviders.get(type);
     }
 
-    public AlarmChecker getAlarmChecker() {
+    public ParameterAlarmChecker getAlarmChecker() {
         return alarmChecker;
     }
 
@@ -548,8 +554,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return sb.toString();
     }
 
-    public AlarmServer getAlarmServer() {
-        return alarmServer;
+    public AlarmServer<Parameter, ParameterValue> getAlarmServer() {
+        return parameterAlarmServer;
     }
 
     public boolean hasParameterCache() {
@@ -606,16 +612,24 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
     @Override
     protected void doStart() {
-        if (alarmServer != null) {
-            alarmServer.startAsync();
+        if (parameterAlarmServer != null) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+            Stream s = ydb.getStream(REALTIME_ALARM_SERVER);
+            if (s == null) {
+                notifyFailed(new ConfigurationException("Cannot find a stream named '" + REALTIME_ALARM_SERVER + "'"));
+                return;
+            }
+            parameterAlarmServer.subscribeAlarm(new ParameterAlarmStreamer(s));
+            parameterAlarmServer.startAsync();
         }
+
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
-        if (alarmServer != null) {
-            alarmServer.stopAsync();
+        if (parameterAlarmServer != null) {
+            parameterAlarmServer.stopAsync();
         }
         notifyStopped();
     }
@@ -632,8 +646,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @param swParameterManager
      */
     public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManager swParameterManager) {
-        if(spm.containsKey(ds)) {
-            throw new IllegalStateException("There is already a soft parameter manager for "+ds);
+        if (spm.containsKey(ds)) {
+            throw new IllegalStateException("There is already a soft parameter manager for " + ds);
         }
         spm.put(ds, swParameterManager);
     }

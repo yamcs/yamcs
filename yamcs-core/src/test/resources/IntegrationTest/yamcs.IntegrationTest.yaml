@@ -5,6 +5,7 @@ services:
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
   - class: org.yamcs.archive.IndexServer
+  - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
   - class: org.yamcs.ProcessorCreatorService
     args: 
@@ -46,5 +47,6 @@ streamConfig:
   cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["sys_param", "pp_realtime", "proc_param"]
-  alarm: ["alarms_realtime"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
   tc: ["tc_realtime"]

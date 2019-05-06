@@ -220,6 +220,14 @@ public final class Yamcs {
      */
     STREAM_EVENT(21),
     /**
+     * <code>PARAMETER_ALARM_DATA = 22;</code>
+     */
+    PARAMETER_ALARM_DATA(22),
+    /**
+     * <code>EVENT_ALARM_DATA = 23;</code>
+     */
+    EVENT_ALARM_DATA(23),
+    /**
      * <code>EXTENSION_DATA = 100;</code>
      */
     EXTENSION_DATA(100),
@@ -318,6 +326,14 @@ public final class Yamcs {
      */
     public static final int STREAM_EVENT_VALUE = 21;
     /**
+     * <code>PARAMETER_ALARM_DATA = 22;</code>
+     */
+    public static final int PARAMETER_ALARM_DATA_VALUE = 22;
+    /**
+     * <code>EVENT_ALARM_DATA = 23;</code>
+     */
+    public static final int EVENT_ALARM_DATA_VALUE = 23;
+    /**
      * <code>EXTENSION_DATA = 100;</code>
      */
     public static final int EXTENSION_DATA_VALUE = 100;
@@ -358,6 +374,8 @@ public final class Yamcs {
         case 19: return CONNECTION_INFO;
         case 20: return INSTANCE;
         case 21: return STREAM_EVENT;
+        case 22: return PARAMETER_ALARM_DATA;
+        case 23: return EVENT_ALARM_DATA;
         case 100: return EXTENSION_DATA;
         default: return null;
       }
@@ -28271,20 +28289,20 @@ public final class Yamcs {
     long getGenerationTime();
 
     /**
-     * <code>required int64 receptionTime = 3;</code>
+     * <code>optional int64 receptionTime = 3;</code>
      */
     boolean hasReceptionTime();
     /**
-     * <code>required int64 receptionTime = 3;</code>
+     * <code>optional int64 receptionTime = 3;</code>
      */
     long getReceptionTime();
 
     /**
-     * <code>required int32 seqNumber = 4;</code>
+     * <code>optional int32 seqNumber = 4;</code>
      */
     boolean hasSeqNumber();
     /**
-     * <code>required int32 seqNumber = 4;</code>
+     * <code>optional int32 seqNumber = 4;</code>
      */
     int getSeqNumber();
 
@@ -28726,13 +28744,13 @@ public final class Yamcs {
     public static final int RECEPTIONTIME_FIELD_NUMBER = 3;
     private long receptionTime_;
     /**
-     * <code>required int64 receptionTime = 3;</code>
+     * <code>optional int64 receptionTime = 3;</code>
      */
     public boolean hasReceptionTime() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required int64 receptionTime = 3;</code>
+     * <code>optional int64 receptionTime = 3;</code>
      */
     public long getReceptionTime() {
       return receptionTime_;
@@ -28741,13 +28759,13 @@ public final class Yamcs {
     public static final int SEQNUMBER_FIELD_NUMBER = 4;
     private int seqNumber_;
     /**
-     * <code>required int32 seqNumber = 4;</code>
+     * <code>optional int32 seqNumber = 4;</code>
      */
     public boolean hasSeqNumber() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required int32 seqNumber = 4;</code>
+     * <code>optional int32 seqNumber = 4;</code>
      */
     public int getSeqNumber() {
       return seqNumber_;
@@ -29002,14 +29020,6 @@ public final class Yamcs {
         return false;
       }
       if (!hasGenerationTime()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasReceptionTime()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSeqNumber()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -29549,12 +29559,6 @@ public final class Yamcs {
         if (!hasGenerationTime()) {
           return false;
         }
-        if (!hasReceptionTime()) {
-          return false;
-        }
-        if (!hasSeqNumber()) {
-          return false;
-        }
         if (!hasMessage()) {
           return false;
         }
@@ -29693,19 +29697,19 @@ public final class Yamcs {
 
       private long receptionTime_ ;
       /**
-       * <code>required int64 receptionTime = 3;</code>
+       * <code>optional int64 receptionTime = 3;</code>
        */
       public boolean hasReceptionTime() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required int64 receptionTime = 3;</code>
+       * <code>optional int64 receptionTime = 3;</code>
        */
       public long getReceptionTime() {
         return receptionTime_;
       }
       /**
-       * <code>required int64 receptionTime = 3;</code>
+       * <code>optional int64 receptionTime = 3;</code>
        */
       public Builder setReceptionTime(long value) {
         bitField0_ |= 0x00000004;
@@ -29714,7 +29718,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 receptionTime = 3;</code>
+       * <code>optional int64 receptionTime = 3;</code>
        */
       public Builder clearReceptionTime() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -29725,19 +29729,19 @@ public final class Yamcs {
 
       private int seqNumber_ ;
       /**
-       * <code>required int32 seqNumber = 4;</code>
+       * <code>optional int32 seqNumber = 4;</code>
        */
       public boolean hasSeqNumber() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required int32 seqNumber = 4;</code>
+       * <code>optional int32 seqNumber = 4;</code>
        */
       public int getSeqNumber() {
         return seqNumber_;
       }
       /**
-       * <code>required int32 seqNumber = 4;</code>
+       * <code>optional int32 seqNumber = 4;</code>
        */
       public Builder setSeqNumber(int value) {
         bitField0_ |= 0x00000008;
@@ -29746,7 +29750,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int32 seqNumber = 4;</code>
+       * <code>optional int32 seqNumber = 4;</code>
        */
       public Builder clearSeqNumber() {
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -31048,8 +31052,8 @@ public final class Yamcs {
       " \001(\003B\002\030\001\022\032\n\016currentTimeUTC\030\002 \001(\tB\002\030\001\022/\n\013" +
       "currentTime\030\003 \001(\0132\032.google.protobuf.Time" +
       "stamp\"\352\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016gener" +
-      "ationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021" +
-      "\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messa" +
+      "ationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \001(\003\022\021" +
+      "\n\tseqNumber\030\004 \001(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messa" +
       "ge\030\006 \002(\t\022;\n\010severity\030\007 \001(\0162#.yamcs.proto",
       "buf.Event.EventSeverity:\004INFO\022\031\n\021generat" +
       "ionTimeUTC\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001" +
@@ -31058,7 +31062,7 @@ public final class Yamcs {
       "H\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVER" +
       "E\020\007*\005\010d\020\221N\"!\n\021ProcessorTypeInfo\022\014\n\004type\030" +
       "\001 \003(\t*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
-      "\n\004STOP\020\003*\217\003\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
+      "\n\004STOP\020\003*\277\003\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
       "\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020" +
       "\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHI",
       "VE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t" +
@@ -31067,8 +31071,9 @@ public final class Yamcs {
       "\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK" +
       "_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMM" +
       "AND_QUEUE_EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\014" +
-      "\n\010INSTANCE\020\024\022\020\n\014STREAM_EVENT\020\025\022\022\n\016EXTENS" +
-      "ION_DATA\020dB\024\n\022org.yamcs.protobuf"
+      "\n\010INSTANCE\020\024\022\020\n\014STREAM_EVENT\020\025\022\030\n\024PARAME" +
+      "TER_ALARM_DATA\020\026\022\024\n\020EVENT_ALARM_DATA\020\027\022\022" +
+      "\n\016EXTENSION_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

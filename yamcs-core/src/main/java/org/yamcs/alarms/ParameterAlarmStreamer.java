@@ -3,27 +3,24 @@ package org.yamcs.alarms;
 import java.util.ArrayList;
 
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
-public class AlarmStreamer implements AlarmListener {
-    enum AlarmEvent {
-        TRIGGERED, UPDATED, SEVERITY_INCREASED, ACKNOWLEDGED, CLEARED;
-    }
-
+public class ParameterAlarmStreamer implements AlarmListener<ParameterValue> {
     static public final DataType PARAMETER_DATA_TYPE = DataType
             .protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
 
     Stream stream;
 
-    public AlarmStreamer(Stream s) {
+    public ParameterAlarmStreamer(Stream s) {
         this.stream = s;
     }
 
-    private ArrayList<Object> getTupleKey(ActiveAlarm activeAlarm, AlarmEvent e) {
+    private ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm, AlarmNotificationType e) {
         ArrayList<Object> al = new ArrayList<>(7);
 
         // triggerTime
@@ -39,9 +36,9 @@ public class AlarmStreamer implements AlarmListener {
     }
 
     @Override
-    public void notifyTriggered(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
+    public void notifyTriggered(ActiveAlarm<ParameterValue> activeAlarm) {
+        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.TRIGGERED);
 
         tdef.addColumn("triggerPV", PARAMETER_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder()
@@ -53,9 +50,9 @@ public class AlarmStreamer implements AlarmListener {
     }
 
     @Override
-    public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
+    public void notifySeverityIncrease(ActiveAlarm<ParameterValue> activeAlarm) {
+        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.SEVERITY_INCREASED);
 
         tdef.addColumn("severityIncreasedPV", PARAMETER_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder()
@@ -67,14 +64,14 @@ public class AlarmStreamer implements AlarmListener {
     }
 
     @Override
-    public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
+    public void notifyValueUpdate(ActiveAlarm<ParameterValue> activeAlarm) {
         // do not send parameter updates
     }
 
     @Override
-    public void notifyAcknowledged(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.ACKNOWLEDGED);
+    public void notifyAcknowledged(ActiveAlarm<ParameterValue> activeAlarm) {
+        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.ACKNOWLEDGED);
 
         tdef.addColumn("acknowledgedBy", DataType.STRING);
         String username = activeAlarm.usernameThatAcknowledged;
@@ -96,9 +93,9 @@ public class AlarmStreamer implements AlarmListener {
     }
 
     @Override
-    public void notifyCleared(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
+    public void notifyCleared(ActiveAlarm<ParameterValue> activeAlarm) {
+        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
+        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.CLEARED);
 
         tdef.addColumn("clearedPV", PARAMETER_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder()

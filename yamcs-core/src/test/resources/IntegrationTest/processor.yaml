@@ -22,10 +22,11 @@ realtime:
         - class: org.yamcs.parameter.LocalParameterManager
     config:
         subscribeAll: true
-        #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
+        #check parameter and event alarms and also enable the alarm servers (that keeps track of unacknowledged alarms)
         alarm:
-            check: true
-            server: enabled
+            parameterCheck: true
+            parameterServer: enabled
+            eventServer: enabled
         parameterCache:
             enabled: true
             cacheAll: true

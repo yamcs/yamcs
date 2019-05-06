@@ -1,59 +1,48 @@
 package org.yamcs.alarms;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.xtceproc.ParameterAlarmChecker;
 
 import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Maintains a list of active alarms.
+ * <p>
+ * (S,T) can be one of: (Parameter,ParamerValue) or (EventId, Event)
+ * <p>
+ * This class implements functionality common for parameter alarms and event alarms.
+ * <p>
+ * Specific functionality for each alarm type (e.g. disabling alarms) should be implemented in the respective {@link ParameterAlarmChecker} or
+ * {@link EventAlarmServer}.
+ * 
  */
-public class AlarmServer extends AbstractService {
+public class AlarmServer<S, T> extends AbstractService {
 
-    private EventProducer eventProducer;
-    private Map<Parameter, ActiveAlarm> activeAlarms = new ConcurrentHashMap<>();
+    private Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
+
     // Last value of each param (for detecting changes in value)
     final String yamcsInstance;
-    private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
-    private Set<AlarmListener> alarmListeners = new HashSet<>();
-    private String streamName;
+    static private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
+
+    private List<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * alarm server without a listener (used for unit tests )
      * 
      * @param yamcsInstance
      */
-    AlarmServer(String yamcsInstance) {
+    public AlarmServer(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource("AlarmServer");
-    }
-
-    /**
-     * Creates an alarm server that pushes all alarms to a stream
-     * 
-     * @param yamcsInstance
-     * @param streamName
-     */
-    public AlarmServer(String yamcsInstance, String streamName) {
-        this.yamcsInstance = yamcsInstance;
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource("AlarmServer");
-        this.streamName = streamName;
     }
 
     /**
@@ -61,53 +50,37 @@ public class AlarmServer extends AbstractService {
      * 
      * @return the current set of active alarms
      */
-    public Map<Parameter, ActiveAlarm> subscribe(AlarmListener listener) {
+    public Map<S, ActiveAlarm<T>> subscribeAlarm(AlarmListener<T> listener) {
         alarmListeners.add(listener);
         return activeAlarms;
     }
 
-    public void unsubscribe(AlarmListener listener) {
+    public void unsubscribeAlarm(AlarmListener<T> listener) {
         alarmListeners.remove(listener);
     }
 
     /**
      * Returns the current set of active alarms
      */
-    public Map<Parameter, ActiveAlarm> getActiveAlarms() {
+    public Map<S, ActiveAlarm<T>> getActiveAlarms() {
         return activeAlarms;
     }
 
     @Override
     public void doStart() {
-        if (streamName != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-            Stream s = ydb.getStream(streamName);
-            if (s == null) {
-                notifyFailed(new ConfigurationException("Cannot find a stream named '" + streamName + "'"));
-                return;
-            }
-            subscribe(new AlarmStreamer(s));
-        }
         notifyStarted();
     }
 
-    @Override
-    public void doStop() {
-        notifyStopped();
-    }
-
-    public void update(ParameterValue pv, int minViolations) {
+    public void update(T pv, int minViolations) {
         update(pv, minViolations, false);
     }
 
-    public void update(ParameterValue pv, int minViolations, boolean autoAck) {
-        Parameter param = pv.getParameter();
+    public void update(T value, int minViolations, boolean autoAck) {
+        S alarmId = getObjectId(value);
 
-        ActiveAlarm activeAlarm = activeAlarms.get(pv.getParameter());
+        ActiveAlarm<T> activeAlarm = activeAlarms.get(alarmId);
 
-        boolean noAlarm = (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
-                || pv.getMonitoringResult() == null
-                || pv.getMonitoringResult() == MonitoringResult.DISABLED);
+        boolean noAlarm = isOkNoAlarm(value);
 
         if (noAlarm) {
             if (activeAlarm == null) {
@@ -115,30 +88,30 @@ public class AlarmServer extends AbstractService {
             }
 
             if (activeAlarm.violations < minViolations) {
-                log.debug("Clearing glitch for {}", param.getQualifiedName());
-                activeAlarms.remove(param);
+                log.debug("Clearing glitch for {}", getName(alarmId));
+                activeAlarms.remove(alarmId);
                 return;
             }
 
-            activeAlarm.currentValue = pv;
+            activeAlarm.currentValue = value;
             if ((activeAlarm.acknowledged) || (activeAlarm.autoAcknowledge)) {
-                for (AlarmListener l : alarmListeners) {
+                for (AlarmListener<T> l : alarmListeners) {
                     l.notifyCleared(activeAlarm);
                 }
-                activeAlarms.remove(pv.getParameter());
+                activeAlarms.remove(alarmId);
             } else {
                 activeAlarm.valueCount++;
-                for (AlarmListener l : alarmListeners) {
-                    l.notifyParameterValueUpdate(activeAlarm);
+                for (AlarmListener<T> l : alarmListeners) {
+                    l.notifyValueUpdate(activeAlarm);
                 }
             }
 
-        } else { // out of limits
+        } else { // alarm
             if (activeAlarm == null) {
-                activeAlarm = new ActiveAlarm(pv, autoAck);
-                activeAlarms.put(pv.getParameter(), activeAlarm);
+                activeAlarm = new ActiveAlarm<T>(value, autoAck);
+                activeAlarms.put(alarmId, activeAlarm);
             } else {
-                activeAlarm.currentValue = pv;
+                activeAlarm.currentValue = value;
                 activeAlarm.violations++;
                 activeAlarm.valueCount++;
             }
@@ -148,36 +121,72 @@ public class AlarmServer extends AbstractService {
 
             if (!activeAlarm.triggered) {
                 activeAlarm.triggered = true;
-                for (AlarmListener l : alarmListeners) {
+                for (AlarmListener<T> l : alarmListeners) {
                     l.notifyTriggered(activeAlarm);
                 }
             } else {
-                if (moreSevere(pv.getMonitoringResult(), activeAlarm.mostSevereValue.getMonitoringResult())) {
-                    activeAlarm.mostSevereValue = pv;
-                    for (AlarmListener l : alarmListeners) {
+                if (moreSevere(value, activeAlarm.mostSevereValue)) {
+                    activeAlarm.mostSevereValue = value;
+                    for (AlarmListener<T> l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);
                     }
                 }
-                for (AlarmListener l : alarmListeners) {
-                    l.notifyParameterValueUpdate(activeAlarm);
+                for (AlarmListener<T> l : alarmListeners) {
+                    l.notifyValueUpdate(activeAlarm);
                 }
             }
 
-            activeAlarms.put(pv.getParameter(), activeAlarm);
+            activeAlarms.put(alarmId, activeAlarm);
         }
     }
 
-    public ActiveAlarm acknowledge(Parameter p, int id, String username, long ackTime, String message)
+    private S getObjectId(T value) {
+        if (value instanceof ParameterValue) {
+            return (S) ((ParameterValue) value).getParameter();
+        } else if (value instanceof Event) {
+            Event ev = (Event) value;
+            return (S) new EventId(ev.getSource(), ev.getType());
+        } else {
+            throw new IllegalArgumentException("Unknonw object type " + value.getClass());
+        }
+    }
+
+    static private String getName(Object objectId) {
+        if (objectId instanceof Parameter) {
+            return ((Parameter) objectId).getQualifiedName();
+        } else if (objectId instanceof EventId) {
+            EventId eid = (EventId) objectId;
+            return eid.source + "." + eid.type;
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    static private boolean isOkNoAlarm(Object value) {
+        if (value instanceof ParameterValue) {
+            ParameterValue pv = (ParameterValue) value;
+            return (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
+                    || pv.getMonitoringResult() == null
+                    || pv.getMonitoringResult() == MonitoringResult.DISABLED);
+        } else if (value instanceof Event) {
+            Event ev = (Event) value;
+            return ev.getSeverity() == null || ev.getSeverity() == EventSeverity.INFO;
+        } else {
+            throw new IllegalStateException("Unknown value " + value.getClass());
+        }
+
+    }
+
+    public ActiveAlarm<T> acknowledge(S objectId, int id, String username, long ackTime, String message)
             throws CouldNotAcknowledgeAlarmException {
-        ActiveAlarm aa = activeAlarms.get(p);
+        ActiveAlarm<T> aa = activeAlarms.get(objectId);
         if (aa == null) {
-            throw new CouldNotAcknowledgeAlarmException(
-                    "Parameter " + p.getQualifiedName() + " is not in state of alarm");
+            throw new CouldNotAcknowledgeAlarmException(objectId + " is not in state of alarm");
         }
         if (aa.id != id) {
-            log.warn("Got acknowledge for parameter {} but the id does not match", p);
+            log.warn("Got acknowledge for {} but the id does not match", objectId);
             throw new CouldNotAcknowledgeAlarmException(
-                    "Alarm Id " + id + " does not match parameter " + p.getQualifiedName());
+                    "Alarm Id " + id + " does not match parameter " + objectId);
         }
 
         aa.acknowledged = true;
@@ -185,44 +194,87 @@ public class AlarmServer extends AbstractService {
         aa.acknowledgeTime = ackTime;
         aa.message = message;
         alarmListeners.forEach(l -> l.notifyAcknowledged(aa));
-
-        if (aa.currentValue.getMonitoringResult() == MonitoringResult.IN_LIMITS
-                || aa.currentValue.getMonitoringResult() == MonitoringResult.DISABLED
-                || aa.currentValue.getMonitoringResult() == null) {
-
-            activeAlarms.remove(p);
+        if (isOkNoAlarm(aa.currentValue)) {
+            activeAlarms.remove(objectId);
             alarmListeners.forEach(l -> l.notifyCleared(aa));
         }
 
         return aa;
     }
 
+    protected static boolean moreSevere(Object newValue, Object oldValue) {
+        if (newValue instanceof ParameterValue) {
+            return moreSevere(((ParameterValue) newValue).getMonitoringResult(),
+                    ((ParameterValue) oldValue).getMonitoringResult());
+        } else if (newValue instanceof Event) {
+            return moreSevere(((Event) newValue).getSeverity(), ((Event) oldValue).getSeverity());
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
     protected static boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
-        if (mr1 == mr2) {
-            return false;
+        return mr1.getNumber() > mr2.getNumber();
+    }
+
+    protected static boolean moreSevere(EventSeverity es1, EventSeverity es2) {
+        return es1.getNumber() > es2.getNumber();
+    }
+
+    @Override
+    public void doStop() {
+        notifyStopped();
+    }
+
+    /**
+     * The id of an event for an alarm is its (source,type)
+     * <p>
+     * This means if an alarm is active and an event is generated with the same (source,type) a new alarm will not be
+     * created but the old one updated
+     * 
+     * @author nm
+     *
+     */
+    public static class EventId {
+        final String source;
+        final String type;
+
+        public EventId(String source, String type) {
+            this.source = source;
+            this.type = type;
         }
-        switch (mr2) {
-        case WATCH:
-            if (mr1 == MonitoringResult.WARNING) {
-                return true;
-            }
-            // fall
-        case WARNING:
-            if (mr1 == MonitoringResult.DISTRESS) {
-                return true;
-            }
-            // fall
-        case DISTRESS:
-            if (mr1 == MonitoringResult.CRITICAL) {
-                return true;
-            }
-            // fall
-        case CRITICAL:
-            if (mr1 == MonitoringResult.SEVERE) {
-                return true;
-            }
-        default:
-            return false;
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((source == null) ? 0 : source.hashCode());
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            return result;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            EventId other = (EventId) obj;
+
+            if (source == null) {
+                if (other.source != null)
+                    return false;
+            } else if (!source.equals(other.source))
+                return false;
+            if (type == null) {
+                if (other.type != null)
+                    return false;
+            } else if (!type.equals(other.type))
+                return false;
+            return true;
+        }
+
     }
 }

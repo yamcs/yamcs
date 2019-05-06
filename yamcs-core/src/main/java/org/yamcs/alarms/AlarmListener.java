@@ -1,10 +1,10 @@
 package org.yamcs.alarms;
 
-public interface AlarmListener {
+public interface AlarmListener<T> {
     
-    public void notifyTriggered(ActiveAlarm activeAlarm) ;
-    public void notifySeverityIncrease(ActiveAlarm activeAlarm);    
-    public void notifyParameterValueUpdate(ActiveAlarm activeAlarm);
-    public void notifyAcknowledged(ActiveAlarm activeAlarm);    
-    public void notifyCleared(ActiveAlarm activeAlarm);
+    public void notifyTriggered(ActiveAlarm<T> activeAlarm) ;
+    public void notifySeverityIncrease(ActiveAlarm<T> activeAlarm);    
+    public void notifyValueUpdate(ActiveAlarm<T> activeAlarm);
+    public void notifyAcknowledged(ActiveAlarm<T> activeAlarm);    
+    public void notifyCleared(ActiveAlarm<T> activeAlarm);
 }

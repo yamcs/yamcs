@@ -90,7 +90,7 @@ public class RestEventProducer extends AbstractEventProducer {
         }
         restClient.doRequest(eventResource, HttpMethod.POST, req.build().toByteArray());
     }
-
+    
     @Override
     public String toString() {
         return RestEventProducer.class.getName() + " sending events to " + connProp;
