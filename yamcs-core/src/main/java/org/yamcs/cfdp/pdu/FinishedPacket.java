@@ -64,8 +64,8 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
 
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
-        this.generatedByEndSystem = CfdpUtils.isBitOfByteSet(temp, 5);
-        this.dataInComplete = CfdpUtils.isBitOfByteSet(temp, 6);
+        this.generatedByEndSystem = CfdpUtils.isBitOfByteSet(temp, 4);
+        this.dataInComplete = CfdpUtils.isBitOfByteSet(temp, 5);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
 
         while (buffer.hasRemaining()) {
