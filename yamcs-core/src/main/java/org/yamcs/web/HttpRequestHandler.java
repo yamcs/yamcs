@@ -51,6 +51,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.ssl.NotSslRecordException;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
@@ -258,7 +259,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("Will close channel due to exception", cause);
+        if(cause instanceof NotSslRecordException) {
+            log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing the channel");
+        } else {
+            log.error("Will close channel due to exception", cause);
+        }
         ctx.close();
     }
 
