@@ -1,5 +1,9 @@
-Version 4.9.4 released 
+Version 4.9.4 released 7-May-2019
 - fixes replay with multiple XTCE root containers
+- added support for HTTPS
+- added the Enumerated parameter value type (previously, the values for the XTCE Enumerated
+parameter types were represented as parameter values with String engineering
+value and Integer raw value)
 
 Version 4.9.3 released 3-April-2019
 - fixes command queues displays
