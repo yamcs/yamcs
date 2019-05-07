@@ -50,8 +50,10 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
             }
         }
 
-        for (CommandQueue q : commandQueueManager.getQueues()) {
-            sendInitialUpdateQueue(q);
+        if (commandQueueManager != null) {
+            for (CommandQueue q : commandQueueManager.getQueues()) {
+                sendInitialUpdateQueue(q);
+            }
         }
 
         return null;
