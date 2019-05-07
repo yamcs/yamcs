@@ -232,7 +232,11 @@ public class YamcsConnectionProperties {
 
     public String getUrl() {
         StringBuilder sb = new StringBuilder();
-        sb.append(protocol + "://");
+        if (tls) {
+            sb.append(protocol + "s://");
+        } else {
+            sb.append(protocol + "://");
+        }
         if (host != null) {
             sb.append(host);
             if (port != -1) {
