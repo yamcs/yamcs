@@ -3,7 +3,6 @@ package org.yamcs;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.yamcs.StreamConfig.StandardStreamType;
@@ -77,7 +76,8 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
         for (String streamName : streams) {
             StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
             SequenceContainer rootContainer;
-            if (sce.getRootContainer() != null) {
+            
+            if (sce!=null && sce.getRootContainer() != null) {
                 rootContainer = sce.getRootContainer();
             } else {
                 rootContainer = xtcedb.getRootSequenceContainer();
