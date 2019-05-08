@@ -25739,11 +25739,11 @@ public final class Yamcs {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+     * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
      */
     @java.lang.Deprecated boolean hasYamcsReceptionTime();
     /**
-     * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+     * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
      */
     @java.lang.Deprecated long getYamcsReceptionTime();
 
@@ -25988,13 +25988,13 @@ public final class Yamcs {
     public static final int YAMCSRECEPTIONTIME_FIELD_NUMBER = 1;
     private long yamcsReceptionTime_;
     /**
-     * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+     * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
      */
     @java.lang.Deprecated public boolean hasYamcsReceptionTime() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+     * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
      */
     @java.lang.Deprecated public long getYamcsReceptionTime() {
       return yamcsReceptionTime_;
@@ -26198,10 +26198,6 @@ public final class Yamcs {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasYamcsReceptionTime()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       if (!hasPacket()) {
         memoizedIsInitialized = 0;
         return false;
@@ -26700,9 +26696,6 @@ public final class Yamcs {
       }
 
       public final boolean isInitialized() {
-        if (!hasYamcsReceptionTime()) {
-          return false;
-        }
         if (!hasPacket()) {
           return false;
         }
@@ -26735,19 +26728,19 @@ public final class Yamcs {
 
       private long yamcsReceptionTime_ ;
       /**
-       * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+       * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
        */
       @java.lang.Deprecated public boolean hasYamcsReceptionTime() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+       * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
        */
       @java.lang.Deprecated public long getYamcsReceptionTime() {
         return yamcsReceptionTime_;
       }
       /**
-       * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+       * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder setYamcsReceptionTime(long value) {
         bitField0_ |= 0x00000001;
@@ -26756,7 +26749,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 yamcsReceptionTime = 1 [deprecated = true];</code>
+       * <code>optional int64 yamcsReceptionTime = 1 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder clearYamcsReceptionTime() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -31043,7 +31036,7 @@ public final class Yamcs {
       "\024\n\014errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016" +
       "INITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED" +
       "\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\306\002" +
-      "\n\014TmPacketData\022\036\n\022yamcsReceptionTime\030\001 \002" +
+      "\n\014TmPacketData\022\036\n\022yamcsReceptionTime\030\001 \001" +
       "(\003B\002\030\001\022\016\n\006packet\030\002 \002(\014\022\037\n\023yamcsGeneratio" +
       "nTime\030\003 \001(\003B\002\030\001\022\026\n\016sequenceNumber\030\004 \001(\005\022" +
       ")\n\002id\030\005 \001(\0132\035.yamcs.protobuf.NamedObject" +

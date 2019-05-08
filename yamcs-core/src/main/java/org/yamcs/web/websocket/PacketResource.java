@@ -105,6 +105,8 @@ public class PacketResource implements WebSocketResource {
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
                             .setSequenceNumber(seqNumber)
+                            .setYamcsReceptionTime(receptionTime)
+                            .setYamcsGenerationTime(genTime)
                             .build();
                     client.sendData(ProtoDataType.TM_PACKET, tm);
                 }
