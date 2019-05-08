@@ -1,3 +1,7 @@
+Version 4.9.5 released 9-May-2019
+- fixed bug in 4.9.4 that causes the websocket packet subscriptions to fail (meaning
+that Packet Viewer was not working)
+
 Version 4.9.4 released 7-May-2019
 - fixes replay with multiple XTCE root containers
 - added support for HTTPS
