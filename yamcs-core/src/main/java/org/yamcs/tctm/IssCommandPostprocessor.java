@@ -12,6 +12,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.GpsCcsdsTime;
+import org.yamcs.utils.TimeEncoding;
 
 public class IssCommandPostprocessor implements CommandPostprocessor {
     static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);
@@ -65,7 +67,12 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // fix packet length
 
-        int seqCount = seqFiller.fill(bb, pc.getCommandId().getGenerationTime());
+        int seqCount = seqFiller.fill(binary);
+        
+        GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());
+        bb.putInt(6, gpsTime.coarseTime);
+        bb.put(10, gpsTime.fineTime);
+        
         commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if (checksumIndicator) {
             int pos = binary.length - 2;

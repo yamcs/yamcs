@@ -1,11 +1,9 @@
 package org.yamcs.tctm;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yamcs.utils.GpsCcsdsTime;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ByteArrayUtils;
 
 /**
  * Fills in the time, seq and checksum
@@ -33,25 +31,22 @@ public class CcsdsSeqCountFiller {
     }
 
     /**
-     * generates a sequence count and fills it in plus the checksum and the generation time
-     * returns the generated sequence count
+     * generates a sequence count and fills it in
      * 
      * @param bb
      * @param genTime
+     * @return  returns the generated sequence count
      */
-    public int fill(ByteBuffer bb, long genTime) {
-        int apid = bb.getShort(0) & 0x07FF;
+    public int fill(byte[] packet) {
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+        
+        int apid = (apidseqcount >> 16) & 0x07FF;
+        int seqFlags = apidseqcount >>> 14;
+        
         int seqCount = getSeqCount(apid);
-        int seqFlags = bb.getShort(2) >>> 14;
 
-        bb.putShort(2, (short) ((seqFlags << 14) | seqCount));
-
-        GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(genTime);
-        bb.putInt(6, gpsTime.coarseTime);
-        bb.put(10, gpsTime.fineTime);
+        ByteArrayUtils.encodeShort((short) ((seqFlags << 14) | seqCount), packet, 2);
 
         return seqCount;
     }
-    
-    
 }
