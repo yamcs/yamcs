@@ -40,7 +40,7 @@ public abstract class AbstractFileLoader implements SpaceSystemLoader {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/DDD HH:mm:ss");
                 try {
                     Date serializedDate = sdf.parse(line.substring(configName.length() + 1));
-                    if (serializedDate.getTime() != f.lastModified()) {
+                    if (serializedDate.getTime() == f.lastModified()) {
                         log.debug("Serialized {} is up to date", configName);
                         return false;
                     } else {
