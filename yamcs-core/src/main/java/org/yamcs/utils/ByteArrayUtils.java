@@ -141,6 +141,13 @@ public class ByteArrayUtils {
                 ((a[offset + 3] & 0xFF));
     }
 
+    public static int decodeIntLE(byte[] a, int offset) {
+        return ((a[offset+3] & 0xFF) << 24) +
+                ((a[offset + 2] & 0xFF) << 16) +
+                ((a[offset + 1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
+
     public static byte[] encode3Bytes(int x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 16);
         a[offset + 1] = (byte) (x >> 8);
@@ -164,9 +171,20 @@ public class ByteArrayUtils {
 
     }
 
+    
     public static int decodeShort(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
     }
-
+    
+    /**
+     * Decode short little endian
+     * @param a
+     * @param offset
+     * @return
+     */
+    public static int decodeShortLE(byte[] a, int offset) {
+        return ((a[offset+1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
 }
