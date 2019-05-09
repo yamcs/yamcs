@@ -84,16 +84,9 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.ui.packetviewer.PacketViewer.TreeEntry;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DatabaseLoadException;
-import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -159,6 +152,10 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
 
         packetPreprocessor = new IssPacketPreprocessor(null);
+        //packetPreprocessor = new CfsPacketPreprocessor(null);
+
+        packetPreprocessor.checkForSequenceDiscontinuity(false);
+
         // table to the left which shows one row per packet
         packetsTable = new PacketsTable(this);
         packetsTable.setMaxLines(maxLines);

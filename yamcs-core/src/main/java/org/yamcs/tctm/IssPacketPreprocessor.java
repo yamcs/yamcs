@@ -57,6 +57,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     ErrorDetectionWordCalculator errorDetectionCalculator;
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
     private static final Logger log = LoggerFactory.getLogger(IssPacketPreprocessor.class);
+    private boolean checkForSequenceDiscontinuity = true;
     
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
@@ -111,7 +112,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         }
 
         
-        if (((seq - oldseq) & 0x3FFF) != 1) {
+        if (checkForSequenceDiscontinuity && ((seq - oldseq) & 0x3FFF) != 1) {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: "+apid+" old seq: "+oldseq+" newseq: "+seq);
         }
@@ -123,8 +124,13 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         pwt.setCorrupted(corrupted);
         return pwt;
     }
-    
-    
-    
+
+    public boolean checkForSequenceDiscontinuity() {
+        return checkForSequenceDiscontinuity;
+    }
+
+    public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
+        this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
+    }
 
 }

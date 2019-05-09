@@ -5,14 +5,15 @@ import org.yamcs.archive.PacketWithTime;
 /**
  * The packet preprocessor is responsible for extracting basic information required for yamcs packet processing:
  * <ul>
- * <li> packet generation time</li>
- * <li> packet acquisition time</li>
- * <li> sequence count</li>
+ * <li>packet generation time</li>
+ * <li>packet acquisition time</li>
+ * <li>sequence count</li>
  * </ul>
  * <br>
  * 
- * It is assumed that the (generation time, sequence count) uniquely identify the packet. 
- * <br><br>
+ * It is assumed that the (generation time, sequence count) uniquely identify the packet.
+ * <br>
+ * <br>
  * The implementing classes need to have a constructor with one or two arguments:
  * <ul>
  * <li>MyPackerPreprocessor (String yamcsInstance), or</li>
@@ -20,11 +21,11 @@ import org.yamcs.archive.PacketWithTime;
  * </ul>
  * <br>
  * 
- * The second one will be called if the preprocessor is declared with "args". 
+ * The second one will be called if the preprocessor is declared with "args".
  *
  */
 public interface PacketPreprocessor {
-       
+
     /**
      * transforms a binary packet into a {@link PacketWithTime}
      * 
@@ -34,4 +35,13 @@ public interface PacketPreprocessor {
      * @return
      */
     public PacketWithTime process(byte[] packet);
+
+    /**
+     * The packet preprocessor processes multiple packets that should be in sequence. This flag can be used to check
+     * that indeed the packets are in sequence and produce a warning otherwise.
+     * 
+     * @param checkForSequenceDiscontinuity
+     */
+    public default void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
+    }
 }
