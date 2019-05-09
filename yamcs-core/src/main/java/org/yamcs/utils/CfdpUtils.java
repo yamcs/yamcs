@@ -57,11 +57,11 @@ public class CfdpUtils {
      * return the result as an unsigned long,
      * moves the position of the buffer to after the read bytes
      * 
-     * TODO: what if nrOfBytesToRead > 8
+     * Note that if nrOfBytesToRead > 8, a cap to 8 bytes is done
      * 
      */
     public static Long getUnsignedLongFromBuffer(ByteBuffer buffer, int nrOfBytesToRead) {
-        byte[] temp = new byte[nrOfBytesToRead];
+        byte[] temp = new byte[java.lang.Math.min(nrOfBytesToRead, 8)];
         buffer.get(temp);
         return getUnsignedLongFromByteArray(temp);
     }
