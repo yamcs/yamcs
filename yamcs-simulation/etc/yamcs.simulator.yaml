@@ -44,6 +44,7 @@ services:
           type: AOS # AOS, TM or USLP
           tmFrameLength: 512
           tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+  - class: org.yamcs.cfdp.CfdpRetrieverService
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
@@ -162,7 +163,7 @@ dataLinks:
     class: org.yamcs.tctm.UdpTcDataLink
     args: 
       stream: cfdp_out
-      targethost: 10.1.10.114
+      targethost: 10.1.10.35
       targetport: 5010
 
 mdb:

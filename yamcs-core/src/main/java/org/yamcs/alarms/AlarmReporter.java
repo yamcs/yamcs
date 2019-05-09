@@ -294,4 +294,5 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
             this.monitoringResult = monitoringResult;
         }
     }
+
 }

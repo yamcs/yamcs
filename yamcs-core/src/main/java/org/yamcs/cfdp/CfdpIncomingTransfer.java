@@ -9,6 +9,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.AckPacket;
+import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
+import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
@@ -104,6 +106,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
                 break;
             case EOF:
                 if (this.acknowledged) {
+                    sendAckEofPacket(packet);
                     // check completeness
                     missingSegments = incomingDataFile.getMissingChunks();
                     if (missingSegments.isEmpty()) {
@@ -153,6 +156,27 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         } catch (IOException e) {
             throw new RuntimeException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
         }
+    }
+
+    private void sendAckEofPacket(CfdpPacket packet) {
+        CfdpHeader header = new CfdpHeader(
+                true, // file directive
+                true, // towards sender
+                acknowledged,
+                false, // no CRC
+                packet.getHeader().getEntityIdLength(),
+                packet.getHeader().getSequenceNumberLength(),
+                packet.getHeader().getSourceId(),
+                packet.getHeader().getDestinationId(),
+                packet.getHeader().getSequenceNumber());
+        AckPacket ack = new AckPacket(
+                FileDirectiveCode.EOF,
+                FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
+                ConditionCode.NoError,
+                TransactionStatus.Active,
+                header);
+        sendPacket(ack);
+
     }
 
     private void sendNakPacket(CfdpPacket packet) {

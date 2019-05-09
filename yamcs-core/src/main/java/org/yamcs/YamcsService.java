@@ -5,6 +5,4 @@ import com.google.common.util.concurrent.Service;
 /**
  * Tag interface for Yamcs services.
  */
-public interface YamcsService extends Service {
-
-}
+public interface YamcsService extends Service {}

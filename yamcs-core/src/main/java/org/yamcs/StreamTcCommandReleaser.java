@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
@@ -9,31 +8,33 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
+
 /**
  * Sends commands to yamcs streams
+ * 
  * @author nm
  *
  */
 public class StreamTcCommandReleaser extends AbstractService implements CommandReleaser {
     Stream stream;
     String streamName;
-    String yamcsInstance; 
+    String yamcsInstance;
 
     volatile long sentTcCount;
 
     public StreamTcCommandReleaser(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        if(!config.containsKey("stream")) {
+        if (!config.containsKey("stream")) {
             throw new ConfigurationException("Please specify the stream in the config (args)");
         }
         this.streamName = config.getString("stream");
     }
-    
+
     @Override
     public void init(Processor proc) {
         proc.setCommandReleaser(this);
     }
-    
+
     @Override
     public void releaseCommand(PreparedCommand pc) {
         stream.emitTuple(pc.toTuple());
@@ -44,8 +45,8 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     protected void doStart() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         stream = ydb.getStream(streamName);
-        if(stream==null) {
-            ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
+        if (stream == null) {
+            ConfigurationException e = new ConfigurationException("Cannot find stream '" + streamName + "'");
             notifyFailed(e);
         } else {
             notifyStarted();
@@ -61,6 +62,4 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     protected void doStop() {
         notifyStopped();
     }
-
-    
 }

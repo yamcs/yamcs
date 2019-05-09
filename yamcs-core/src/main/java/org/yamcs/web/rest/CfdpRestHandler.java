@@ -43,10 +43,7 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 public class CfdpRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
 
-    public CfdpRestHandler() {
-        // TODO, hardcoded yamcsInstance
-        // CfdpDatabaseInstance ci = CfdpDatabase.getInstance("simulator");
-    }
+    public CfdpRestHandler() {}
 
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "POST")
     public void CfdpUpload(RestRequest req) throws HttpException {

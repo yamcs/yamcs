@@ -92,8 +92,9 @@ public class AlgorithmManager extends AbstractService
 
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
-    
+
     final YConfiguration config;
+
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
@@ -117,7 +118,6 @@ public class AlgorithmManager extends AbstractService
         }
     }
 
-    @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
@@ -467,7 +467,7 @@ public class AlgorithmManager extends AbstractService
 
     public void clearAlgorithmOverride(CustomAlgorithm calg) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
-        if(algOverr==null) {
+        if (algOverr == null) {
             return;
         }
         deactivateAlgorithm(algOverr, globalCtx);
@@ -475,22 +475,23 @@ public class AlgorithmManager extends AbstractService
     }
 
     /**
-     * Override the algorithm 
+     * Override the algorithm
+     * 
      * @param calg
      * @param text
      */
     public void setAlgorithmText(CustomAlgorithm calg, String text) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
-        if(algOverr==null) {
-            deactivateAlgorithm(calg, globalCtx);    
+        if (algOverr == null) {
+            deactivateAlgorithm(calg, globalCtx);
         } else {
             deactivateAlgorithm(algOverr, globalCtx);
         }
-        
-        
+
         AlgorithmExecutorFactory factory = factories.get(calg.getLanguage());
-        if(factory == null) {
-            throw new AlgorithmException("No factory available for algorithms with language '"+calg.getLanguage()+"'");
+        if (factory == null) {
+            throw new AlgorithmException(
+                    "No factory available for algorithms with language '" + calg.getLanguage() + "'");
         }
         algOverr = calg.copy();
         algOverr.setAlgorithmText(text);

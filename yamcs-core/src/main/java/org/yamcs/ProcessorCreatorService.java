@@ -64,4 +64,5 @@ public class ProcessorCreatorService extends AbstractService implements YamcsSer
         processor.quit();
         notifyStopped();
     }
+
 }
