@@ -68,9 +68,8 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
-    // TODO
-    private final long EOFAckTimeoutMs = 3000;
-    private final int maxEOFResendAttempts = 5;
+    private long EOFAckTimeoutMs;
+    private int maxEOFResendAttempts;
     private int EOFSendAttempts = 0;
 
     private CfdpTransferState currentState;
@@ -91,6 +90,9 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         this.entitySize = conf.getInt("entityIdLength");
         this.seqNrSize = conf.getInt("sequenceNrLength");
         this.maxDataSize = conf.getInt("maxPduSize") - 4 - 2 * this.entitySize - this.seqNrSize - 4;
+        this.EOFAckTimeoutMs = conf.getInt("EOFAckTimeoutMs");
+        this.maxEOFResendAttempts = conf.getInt("maxEOFResendAttempts");
+
         this.acknowledged = request.isAcknowledged();
 
         this.request = request;
@@ -150,7 +152,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                     while (sleeping) {
                         Thread.sleep(100);
                     }
-                    Thread.sleep(pauseBetweenFileDataPackets);
+                    // Thread.sleep(pauseBetweenFileDataPackets);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
