@@ -173,8 +173,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         }
 
         // TODO this should probably become CfdpUdpTcDataLink
-        if (link instanceof UdpTcDataLink) {
-            UdpTcDataLink udtl = (UdpTcDataLink) link;
+        if (link instanceof CfdpUdpTcDataLink) {
+            CfdpUdpTcDataLink udtl = (CfdpUdpTcDataLink) link;
             if (s != null) {
                 s.addSubscriber(new StreamSubscriber() {
                     @Override
