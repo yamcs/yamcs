@@ -142,11 +142,11 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
             if (this.currentState == CfdpTransferState.RESENDING) {
                 missingSegments.remove(new SegmentRequest(fdp.getOffset(), fdp.getOffset() + fdp.getData().length));
                 log.info("RESENT file data received: " + new String(fdp.getData()).toString());
-            }
-            if (this.acknowledged) {
-                if (missingSegments.isEmpty()) {
-                    sendFinishedPacket(packet);
-                    this.currentState = CfdpTransferState.FINISHED_SENT;
+                if (this.acknowledged) {
+                    if (missingSegments.isEmpty()) {
+                        sendFinishedPacket(packet);
+                        this.currentState = CfdpTransferState.FINISHED_SENT;
+                    }
                 }
             }
         }

@@ -68,8 +68,8 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
-    private long EOFAckTimeoutMs;
-    private int maxEOFResendAttempts;
+    private long EOFAckTimeoutMs = 3000; // configurable
+    private int maxEOFResendAttempts = 5; // configurable
     private int EOFSendAttempts = 0;
 
     private CfdpTransferState currentState;
