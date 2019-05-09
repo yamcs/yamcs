@@ -172,7 +172,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
         }
 
-        // TODO this should probably become CfdpUdpTcDataLink
         if (link instanceof CfdpUdpTcDataLink) {
             CfdpUdpTcDataLink udtl = (CfdpUdpTcDataLink) link;
             if (s != null) {
