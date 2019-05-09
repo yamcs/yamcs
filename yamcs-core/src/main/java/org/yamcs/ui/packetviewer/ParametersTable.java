@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.ui.packetviewer.PacketViewer.Range;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
@@ -42,19 +43,19 @@ public class ParametersTable extends JTable implements ListSelectionListener {
     private static final Color GRAYISH_COLOR = new Color(235, 235, 235);
     private static final String ADD_PARAMETER_TO_LEFT = "Apply as Left Column";
     
-    private static final String[] COLUMNS = { "Name", "Eng Value",
-        "Raw Value", "Nominal Low", "Nominal High", "Danger Low",
-        "Danger High", "Bit Offset", "Bit Size", "Calibration" };
-
+   
     private List<Integer> rowsWithSearchResults = new ArrayList<Integer>();
 
     private PacketViewer packetViewer;
     private String lastSearchTerm;
 
     private RightClickMenu rightClickMenu = new RightClickMenu();
+    ParametersTableModel parametersTableModel = new ParametersTableModel();
+    
     public ParametersTable(PacketViewer packetViewer) {
-        super(new DefaultTableModel(COLUMNS, 0));
         this.packetViewer = packetViewer;
+        setModel(parametersTableModel);
+        
         setPreferredScrollableViewportSize(new Dimension(600, 400));
         setFillsViewportHeight(true);
         getSelectionModel().addListSelectionListener(this);
@@ -64,7 +65,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         addMouseListener(linkListener);
         addMouseMotionListener(linkListener);
 
-        for (String colname : COLUMNS)
+        for (String colname : ParametersTableModel.COLUMNS)
             getColumn(colname).setPreferredWidth(85);
         getColumnModel().getColumn(0).setPreferredWidth(300);
         setAutoResizeMode(AUTO_RESIZE_OFF);
@@ -107,12 +108,8 @@ public class ParametersTable extends JTable implements ListSelectionListener {
     }
 
     public void clear() {
-        ((DefaultTableModel) getModel()).setRowCount(0);
+        parametersTableModel.clear();
         clearSearchResults();
-    }
-
-    public void addRow(Object[] vec) {
-        ((DefaultTableModel) getModel()).addRow(vec);
     }
 
     @Override

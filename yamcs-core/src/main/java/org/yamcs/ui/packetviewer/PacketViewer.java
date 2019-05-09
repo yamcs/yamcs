@@ -84,6 +84,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.packetviewer.PacketViewer.TreeEntry;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
@@ -840,16 +841,10 @@ public class PacketViewer extends JFrame implements ActionListener,
 
             @Override
             public void run() {
-                Object[] vec = new Object[parametersTable.getColumnCount()];
-                DataEncoding encoding;
-                Calibrator calib;
-                Object paramtype;
-
                 parametersTable.clear();
                 structureRoot.removeAllChildren();
 
                 for (ParameterValue value : params) {
-
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
                     if (value instanceof ContainerParameterValue) {
@@ -857,40 +852,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         getTreeNode(cpv.getSequenceEntry().getSequenceContainer())
                                 .add(new TreeEntry(cpv));
                     }
-
-                    // add new row for parameter table
-
-                    vec[0] = value.getParameter();
-
-                    vec[1] = (value.getEngValue() != null) ? value.getEngValue().toString() : null;
-                    vec[2] = (value.getRawValue() != null) ? value.getRawValue().toString() : null;
-
-                    vec[3] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMin());
-                    vec[4] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMax());
-
-                    vec[5] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMin());
-                    vec[6] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMax());
-                    if (value instanceof ContainerParameterValue) {
-                        ContainerParameterValue cpv = (ContainerParameterValue) value;
-                        vec[7] = String.valueOf(cpv.getAbsoluteBitOffset());
-                        vec[8] = String.valueOf(cpv.getBitSize());
-                    }
-
-                    paramtype = value.getParameter().getParameterType();
-                    if (paramtype instanceof EnumeratedParameterType) {
-                        vec[9] = paramtype;
-                    } else if (paramtype instanceof BaseDataType) {
-                        encoding = ((BaseDataType) paramtype).getEncoding();
-                        calib = null;
-                        if (encoding instanceof IntegerDataEncoding) {
-                            calib = ((IntegerDataEncoding) encoding).getDefaultCalibrator();
-                        } else if (encoding instanceof FloatDataEncoding) {
-                            calib = ((FloatDataEncoding) encoding).getDefaultCalibrator();
-                        }
-                        vec[9] = calib == null ? "" : calib.toString();
-                    }
-
-                    parametersTable.addRow(vec);
+                    parametersTable.parametersTableModel.addRow(value);
                 }
 
                 structureRoot.setUserObject(currentPacket);
@@ -908,6 +870,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
                 // select first row
                 parametersTable.setRowSelectionInterval(0, 0);
+                parametersTable.parametersTableModel.fireTableDataChanged();
             }
         });
     }
