@@ -49,8 +49,6 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     private String objectName;
     private long expectedFileSize;
 
-    private final long dataTimeoutMs = 5000;
-
     private DataFile incomingDataFile;
 
     public CfdpIncomingTransfer(MetadataPacket packet, Stream cfdpOut, Bucket target) {
@@ -83,7 +81,8 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
             // TODO, timeout + request resend
             break;
         case EOF_RECEIVED:
-            // TODO must send FinishedPacket
+            // unreachable, virtual state, after receiving EOF, Finished packet is immediately
+            // sent back and state updated accordingly
             break;
         case FINISHED_SENT:
             // nothing to do, awaiting the ack
@@ -128,11 +127,14 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
                     this.state = TransferState.COMPLETED;
                     saveFileInBucket();
                 } else {
-                    // TODO invalid ACK received
+                    // we're not expecting any other ACK, so log and ignore
+                    log.info("received unexpected ACK, with directive code ", ack.getDirectiveCode().name());
                 }
                 break;
             default:
-                // TODO, unexpected packet
+                // we're not expecting any other FileDirective packet, so log and ignore
+                log.info("received unexpected File Directive packet of type ",
+                        ((FileDirective) packet).getFileDirectiveCode().name());
             }
         } else {
             FileDataPacket fdp = (FileDataPacket) packet;
