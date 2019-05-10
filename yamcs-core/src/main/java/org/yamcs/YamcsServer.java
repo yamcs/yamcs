@@ -41,6 +41,7 @@ import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TemplateUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -49,6 +50,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  *
@@ -127,7 +129,7 @@ public class YamcsServer {
             String name = null;
             servclass = servconf.getString("class");
             args = servconf.get("args");
-            if(args instanceof Map) {
+            if (args instanceof Map) {
                 args = servconf.getConfig("args");
             }
             name = servconf.getString("name", servclass.substring(servclass.lastIndexOf('.') + 1));
@@ -158,7 +160,7 @@ public class YamcsServer {
             names.add(name);
         }
 
-    return serviceList;
+        return serviceList;
 
     }
 
@@ -171,6 +173,7 @@ public class YamcsServer {
      */
     public static void startServices(List<ServiceWithConfig> serviceList) throws ConfigurationException {
         for (ServiceWithConfig swc : serviceList) {
+            staticlog.debug("Starting service {}", swc.getName());
             swc.service.startAsync();
             try {
                 swc.service.awaitRunning();
@@ -384,28 +387,31 @@ public class YamcsServer {
      *            the name of the instance
      * 
      * @return the newly created instance
+     * @throws IOException
      */
-    public YamcsServerInstance restartYamcsInstance(String instanceName) {
+    public YamcsServerInstance restartInstance(String instanceName) throws IOException {
         YamcsServerInstance ysi = instances.get(instanceName);
 
         if (ysi.state() == InstanceState.RUNNING) {
             try {
                 ysi.stop();
             } catch (IllegalStateException e) {
-                staticlog.error("Instance did not terminate normally", e);
+                staticlog.warn("Instance did not terminate normally", e);
             }
         }
         YarchDatabase.removeInstance(instanceName);
         XtceDbFactory.remove(instanceName);
         staticlog.info("Re-loading instance '{}'", instanceName);
 
+        ysi.init(getConf(instanceName));
+        ysi.startAsync();
         try {
-            ysi.init(getConf(instanceName));
-            ysi.startAsync();
-        } catch (IOException e) {
-            staticlog.error("Failed to init/start instance '{}'", instanceName, e);
+            ysi.awaitRunning();
+        } catch (IllegalStateException e) {
+            Throwable t = ExceptionUtil.unwind(e.getCause());
+            staticlog.warn("Failed to start instance", t);
+            throw new UncheckedExecutionException(t);
         }
-
         return ysi;
     }
 
@@ -472,7 +478,7 @@ public class YamcsServer {
         if (ysi.state() == InstanceState.RUNNING) {
             return ysi;
         } else if (ysi.state() == InstanceState.FAILED) {
-            return restartYamcsInstance(instanceName);
+            return restartInstance(instanceName);
         }
 
         if (getNumOnlineInstances() >= maxOnlineInstances) {
@@ -487,6 +493,7 @@ public class YamcsServer {
             ysi.init(getConf(instanceName));
         }
         ysi.startAsync();
+        ysi.awaitRunning();
         return ysi;
     }
 
@@ -790,5 +797,7 @@ public class YamcsServer {
     public static YamcsServer getServer() {
         return server;
     }
+
+  
 
 }

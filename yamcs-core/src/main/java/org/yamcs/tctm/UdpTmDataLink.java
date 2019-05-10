@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Receives telemetry packets via UDP. One UDP datagram = one TM packet.
@@ -65,8 +64,10 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     public void run() {
         while (isRunning()) {
             PacketWithTime pwrt = getNextPacket();
-            tmSink.processPacket(pwrt);
-            while (disabled) {
+            if(pwrt!=null) {
+                tmSink.processPacket(pwrt);
+            }
+            while (isRunning() && disabled) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -75,6 +76,11 @@ public class UdpTmDataLink extends AbstractTmDataLink {
                 }
             }
         }
+    }
+
+    @Override
+    public void triggerShutdown() {
+        tmSocket.close();
     }
 
     /**
@@ -86,7 +92,6 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     public PacketWithTime getNextPacket() {
         ByteBuffer packet = null;
 
-        long rectime = TimeEncoding.INVALID_INSTANT;
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
@@ -119,7 +124,11 @@ public class UdpTmDataLink extends AbstractTmDataLink {
                 packet.put(data, offset, pktLength);
                 break;
             } catch (IOException e) {
-                log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
+                if (!isRunning()) {// the triggerShutdown will close the socket and that will generate an exception
+                                   // which we ignore here
+                    return null;
+                }
+                log.warn("exception thrown when reading from the UDP socket at port {}", port, e);
             }
         }
 

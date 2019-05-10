@@ -2,8 +2,6 @@ package org.yamcs;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +13,9 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
@@ -25,6 +25,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Represents a Yamcs instance together with the instance specific services
@@ -46,13 +48,19 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     YamcsServerInstance(String name) {
         this.instanceName = name;
-        log = LoggingUtils.getLogger(YamcsServer.class, name);
+        log = LoggingUtils.getLogger(YamcsServerInstance.class, name);
     }
 
     @Override
     protected void doStart() {
-        // Note that instance should already be init-ed before attempting guava start.
-        YamcsServer.startServices(serviceList);
+        for (ServiceWithConfig swc : serviceList) {
+            log.info("Starting service {}", swc.getServiceClass());
+            swc.service.startAsync();
+        }
+        for (ServiceWithConfig swc : serviceList) {
+            log.info("Starting service {}", swc.getServiceClass());
+            ServiceUtil.awaitServiceRunning(swc.service);
+        }
         notifyStarted();
     }
 
@@ -60,17 +68,13 @@ public class YamcsServerInstance extends YamcsInstanceService {
     protected void doStop() {
         for (int i = serviceList.size() - 1; i >= 0; i--) {
             ServiceWithConfig swc = serviceList.get(i);
-            Service s = swc.service;
-            s.stopAsync();
-            try {
-                s.awaitTerminated(YamcsServer.SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                log.error("Service {} did not stop in {} seconds", s.getClass().getName(),
-                        YamcsServer.SERVICE_STOP_GRACE_TIME);
-            } catch (IllegalStateException e) {
-                log.error("Service {} was in a bad state: {}", s.getClass().getName(), e.getMessage());
-            }
+            swc.service.stopAsync();
         }
+        for (int i = serviceList.size() - 1; i >= 0; i--) {
+            ServiceWithConfig swc = serviceList.get(i);
+            ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
+        }    
+
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         ydb.close();
         YarchDatabase.removeInstance(instanceName);
@@ -107,17 +111,6 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public XtceDb getXtceDb() {
         return xtceDb;
-    }
-
-    /**
-     * Starts this instance, and waits until it is running
-     * 
-     * @throws IllegalStateException
-     *             if the instance fails to start
-     */
-    public void start() throws IllegalStateException {
-        startAsync();
-        awaitRunning();
     }
 
     /**
@@ -191,19 +184,6 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public List<ServiceWithConfig> getServices() {
         return new ArrayList<>(serviceList);
-    }
-
-    /**
-     * Registers an instance-specific service and starts it up
-     */
-    public void createAndStartService(String serviceClass, Map<String, Object> args)
-            throws ConfigurationException, IOException {
-        Map<String, Object> serviceConf = new HashMap<>(2);
-        serviceConf.put("class", serviceClass);
-        serviceConf.put("args", args);
-        List<ServiceWithConfig> newServices = YamcsServer.createServices(instanceName, Arrays.asList(YConfiguration.wrap(serviceConf)));
-        serviceList.addAll(newServices);
-        YamcsServer.startServices(newServices);
     }
 
     public void startService(String serviceName) throws ConfigurationException, IOException {

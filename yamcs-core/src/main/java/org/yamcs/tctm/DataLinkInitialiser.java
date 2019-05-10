@@ -9,11 +9,13 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -367,7 +369,13 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
     protected void doStart() {
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
+                log.debug("Starting service link {}", name);
                 ((Service) link).startAsync();
+            }
+        });
+        linksByName.forEach((name, link) -> {
+            if (link instanceof Service) {
+                ServiceUtil.awaitServiceRunning((Service) link);
             }
         });
         notifyStarted();
@@ -379,7 +387,13 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         linksByName.forEach((name, link) -> {
             mgrsrv.unregisterLink(yamcsInstance, name);
             if (link instanceof Service) {
+                System.out.println("stopping service "+link+" "+link.hashCode());
                 ((Service) link).stopAsync();
+            }
+        });
+        linksByName.forEach((name, link) -> {
+            if (link instanceof Service) {
+               ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });
         notifyStopped();

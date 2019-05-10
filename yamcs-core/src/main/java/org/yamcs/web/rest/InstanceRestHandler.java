@@ -102,7 +102,11 @@ public class InstanceRestHandler extends RestHandler {
             break;
         case "restarted":
             cf = CompletableFuture.supplyAsync(() -> {
-                return yamcsServer.restartYamcsInstance(instance);
+                try {
+                    return yamcsServer.restartInstance(instance);
+                } catch (IOException e) {
+                    throw new UncheckedExecutionException(e);
+                }
             });
             break;
         case "running":
