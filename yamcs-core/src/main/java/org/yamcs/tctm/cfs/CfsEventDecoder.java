@@ -86,8 +86,7 @@ public class CfsEventDecoder extends AbstractService  implements YamcsService, S
         byte[] packet = (byte[]) t.getColumn("packet");
         
         int msgId = ByteArrayUtils.decodeShort(packet, 0);
-        System.out.println("got packet with msgId: "+msgId);
-
+       
         if(msgIds.contains(msgId)) {
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);
             long gentime = (Long) t.getColumn(TM_GENTIME_COLUMN);

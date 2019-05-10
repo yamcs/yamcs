@@ -68,11 +68,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         long sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
         int millisec = ByteArrayUtils.decodeShortLE(packet, 10);
 
-        long gpsMillisec = 1000*sec +millisec;
-        long instant = TimeEncoding.fromGpsMillisec(gpsMillisec);
-        System.out.println("millisec: " + millisec + " sec: " + sec+" gpsMillisec: "+gpsMillisec+" instant: "+TimeEncoding.toString(instant));
-        
-        return TimeEncoding.fromGpsMillisec(gpsMillisec);
+        return TimeEncoding.fromGpsMillisec(1000 * sec + millisec);
     }
 
     public boolean checkForSequenceDiscontinuity() {

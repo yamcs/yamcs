@@ -39,7 +39,7 @@ import com.google.common.util.concurrent.RateLimiter;
 public class UdpTcDataLink extends AbstractService implements TcDataLink, SystemParametersProducer {
 
     protected DatagramSocket socket = null;
-    protected String host = "whirl";
+    protected String host;
     protected int port = 10003;
     protected CommandHistoryPublisher commandHistoryListener;
     SelectionKey selectionKey;
@@ -109,7 +109,6 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
 
     @Override
     protected void doStart() {
-        System.out.println("Hi");
         setupSysVariables();
         this.timer = new ScheduledThreadPoolExecutor(2);
         try {
@@ -180,16 +179,12 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
 
     @Override
     public Status getLinkStatus() {
-
         return Status.OK;
-
     }
 
     @Override
     public String getDetailedStatus() {
-
         return String.format("OK, connected to %s:%d", host, port);
-
     }
 
     @Override
@@ -212,6 +207,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
         commandQueue.clear();
         commandQueue.offer(SIGNAL_QUIT);
         timer.shutdownNow();
+        socket.close();
         notifyStopped();
     }
 
