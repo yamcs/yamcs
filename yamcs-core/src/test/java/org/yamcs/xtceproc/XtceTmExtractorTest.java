@@ -819,6 +819,44 @@ public class XtceTmExtractorTest {
         assertEquals(0x0102, pv.getEngValue().getUint32Value());
     }
     
+    
+    @Test
+    public void testPKT11_TerminatedStringWithSize() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
+
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        Parameter p = xtcedb.getParameter("/REFMDB/SUBSYS1/terminatedString_with_max_size");
+        
+        tmExtractor.provideAll();
+        String s = "blabla";
+        byte[] bb = tmGenerator.generate_PKT11(s, (byte) 55);
+        
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ParameterValueList received = tmExtractor.getParameterResult();
+        ParameterValue pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/terminatedString_with_max_size"));
+        assertEquals(s, pv.getEngValue().getStringValue());
+        pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/para_after_terminatedString_with_max_size"));
+        assertEquals(55, pv.getEngValue().getUint32Value());
+       
+        s = "string of 20 chars..";
+        bb = tmGenerator.generate_PKT11(s, (byte)77);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        received = tmExtractor.getParameterResult();
+        pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/terminatedString_with_max_size"));
+        assertEquals(s, pv.getEngValue().getStringValue());
+        pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/para_after_terminatedString_with_max_size"));
+        assertEquals(77, pv.getEngValue().getUint32Value());
+        
+        s = "string longer than 20 chars";
+        bb = tmGenerator.generate_PKT11(s, (byte)99);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        received = tmExtractor.getParameterResult();
+        pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/terminatedString_with_max_size"));
+        assertEquals(s.substring(0, 20), pv.getEngValue().getStringValue());
+        pv = received.getFirstInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/para_after_terminatedString_with_max_size"));
+        assertEquals(99, pv.getEngValue().getUint32Value());
+    }
+
     void printParaList(ParameterValueList pvl) {
         System.out.println(String.format("%-30s %10s %10s", "name", "eng", "raw"));
         System.out.println(String.format("----------------------------------------------------"));

@@ -91,13 +91,13 @@ public class StringDataEncoding extends DataEncoding {
         case LEADING_SIZE:
             sb.append("sizeInBitsOfSizeTag="+getSizeInBitsOfSizeTag());
             if(getSizeInBits()!=-1) {
-                sb.append(", minSizeInBits="+getSizeInBits());
+                sb.append(", sizeInBits="+getSizeInBits());
             }
             break;
         case TERMINATION_CHAR:
             sb.append("terminationChar="+getTerminationChar());
             if(getSizeInBits()!=-1) {
-                sb.append(", minSizeInBits="+getSizeInBits());
+                sb.append(", sizeInBits="+getSizeInBits());
             }
             break;
         case CUSTOM:

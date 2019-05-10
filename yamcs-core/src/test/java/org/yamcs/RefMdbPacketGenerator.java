@@ -40,9 +40,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt4Length = headerLength + 4;
     public final int pkt5Length = headerLength + pFixedBinary1.length + pPrependedSizeBinary1.length;
     public final int pkt6Length = headerLength + 5;
-    
-    
-    
+
     public final int pkt2Length = 8;
     public final int pkt1_ListLength = pkt1Length;
     public final int pkt1_AndLength = pkt1Length;
@@ -67,9 +65,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile long pIntegerPara1_11_1_unsigned_value = 2952790014L; // the equivalent unsigned value
     public volatile float pFloatPara1_20_1 = (float) (Math.PI / 2);
     public volatile int pTimePara_sec6_1 = 1;
-    public volatile byte pTimePara_sec6_2 = (byte)128;
+    public volatile byte pTimePara_sec6_2 = (byte) 128;
 
-    
     public volatile byte pLEIntegerPara1_2_1 = 13;
     public volatile short pLEIntegerPara1_2_2 = 1300;
     public volatile int pLEIntegerPara1_2_3 = 130000;
@@ -137,7 +134,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public void setTmProcessor(TmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
     }
-    
+
     public byte[] generate_PKT1_1() {
         ByteBuffer bb = ByteBuffer.allocate(pkt1_1Length);
         fill_PKT1_1(bb);
@@ -175,12 +172,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     public byte[] generate_TM2_PKT1() {
         ByteBuffer bb = ByteBuffer.allocate(12);
-        bb.putInt(1);//pkt id
-        bb.putInt(20); //para1
-        bb.putFloat((float)3.15); //para2
+        bb.putInt(1);// pkt id
+        bb.putInt(20); // para1
+        bb.putFloat((float) 3.15); // para2
         sendToTmProcessor(bb);
         return bb.array();
     }
+
     /**
      * Generate a packet with configurable content
      */
@@ -243,7 +241,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
-
     public byte[] generate_PKT4() {
         ByteBuffer bb = ByteBuffer.allocate(pkt4Length);
         fill_PKT4(bb);
@@ -257,6 +254,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb.array();
     }
+
     private void fill_PKT5(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 5);
         bb.position(headerLength);
@@ -264,14 +262,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put(pPrependedSizeBinary1);
     }
 
-    
     public byte[] generate_PKT6() {
         ByteBuffer bb = ByteBuffer.allocate(pkt6Length);
         fill_PKT6(bb);
         sendToTmProcessor(bb);
         return bb.array();
     }
-        
+
     public ByteBuffer generate_PKT2() {
         ByteBuffer bb = ByteBuffer.allocate(pkt2Length);
         fill_PKT2(bb);
@@ -388,7 +385,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         xs = (short) ((3 << 11) | apid);
         bb.putShort(0, xs);
 
-        AtomicInteger a = seqCount.computeIfAbsent(apid, r-> new AtomicInteger(0));
+        AtomicInteger a = seqCount.computeIfAbsent(apid, r -> new AtomicInteger(0));
 
         // Seq Flags (2 bits) Seq Count(14 bits)
         xs = (short) ((3 << 14) | a.getAndIncrement());
@@ -504,14 +501,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(headerLength);
         bb.putFloat(pFloatPara1_20_1);
     }
-    
+
     private void fill_PKT6(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 6);
         bb.position(headerLength);
         bb.putInt(pTimePara_sec6_1);
         bb.put(pTimePara_sec6_2);
     }
-    
+
     private void fill_PKT2(ByteBuffer bb) {
         bb.position(4);
         bb.putShort((short) (pIntegerPara2_1 & 0xFFFF));
@@ -566,7 +563,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.putFloat(pFloatPara1_10_3);
     }
 
-
     private void fill_PKT1_12(ByteBuffer bb) {
         fill_PKT1(bb, 12);
         int offset = pkt1Length;
@@ -574,8 +570,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte) ';');
     }
-
-
 
     private void fill_PKT3(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 318813009);
@@ -598,11 +592,12 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put((byte) 14); // block_para4 = 14
     }
 
-    //######################### PKT7
+    // ######################### PKT7
     public final int pkt7Length = headerLength + 7;
     public byte paggr1_member1 = 2;
     public short paggr1_member2 = 30;
-    public float paggr1_member3 =2.72f;
+    public float paggr1_member3 = 2.72f;
+
     public byte[] generate_PKT7() {
         ByteBuffer bb = ByteBuffer.allocate(pkt7Length);
         fill_CcsdsHeader(bb, 995, 7);
@@ -614,36 +609,37 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
-    //########################### PKT8
+    // ########################### PKT8
     public final int para_pkt8_count = 150;
-    public final int pkt8Length = headerLength + 1 + 7*para_pkt8_count;
+    public final int pkt8Length = headerLength + 1 + 7 * para_pkt8_count;
+
     public byte[] generate_PKT8() {
         ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
         fill_CcsdsHeader(bb, 995, 8);
         bb.position(headerLength);
-        bb.put((byte)para_pkt8_count);
-        for(int i=0; i< para_pkt8_count; i++) {
-            bb.put((byte)i);
-            bb.putShort((short)(i*2));
-            bb.putFloat(i/2.0f);
+        bb.put((byte) para_pkt8_count);
+        for (int i = 0; i < para_pkt8_count; i++) {
+            bb.put((byte) i);
+            bb.putShort((short) (i * 2));
+            bb.putFloat(i / 2.0f);
         }
 
         sendToTmProcessor(bb);
         return bb.array();
     }
 
-    //########################### PKT9
+    // ########################### PKT9
     public final int pkt9Length = headerLength + 6;
+
     public byte[] generate_PKT9(short obId, int v) {
         ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
         fill_CcsdsHeader(bb, 995, 9);
         bb.putShort(obId);
         bb.putInt(v);
-        
+
         sendToTmProcessor(bb);
         return bb.array();
     }
-
 
     public byte[] generate_PKT10() {
         int pkt10Length = headerLength + pStringBooleanPara10_1.length() + 1;
@@ -656,7 +652,17 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
-
+    public byte[] generate_PKT11(String s, byte v) {
+        int strLength = 20;
+        int pkt11Length = headerLength + strLength + 1;
+        ByteBuffer bb = ByteBuffer.allocate(pkt11Length);
+        fill_CcsdsHeader(bb, 995, 11);
+        byte[] sb = s.getBytes();
+        bb.put(sb, 0, Math.min(20, sb.length));
+        bb.put(headerLength + strLength, v);
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
 
     private void putFixedStringParam(ByteBuffer bb, String value, int bits) {
         int baSize = bits / 8;
@@ -700,7 +706,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     private void sendToTmProcessor(ByteBuffer bb) {
-        
+
         long gentime = generationTime;
         if (gentime == TimeEncoding.INVALID_INSTANT) {
             gentime = TimeEncoding.getWallclockTime();
@@ -709,13 +715,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
-        if(tmProcessor!=null) {
+        if (tmProcessor != null) {
             tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.getInt(0), bb.array()));
         }
     }
-    
+
     public void simulateGap(int apid) {
-        AtomicInteger a = seqCount.computeIfAbsent(apid, r-> new AtomicInteger(0));
+        AtomicInteger a = seqCount.computeIfAbsent(apid, r -> new AtomicInteger(0));
         a.incrementAndGet();
     }
 
@@ -734,7 +740,4 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         notifyStopped();
     }
 
-   
-
-  
 }

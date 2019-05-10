@@ -132,12 +132,14 @@ public class DataEncodingDecoder {
     }
 
     private Value extractRawString(StringDataEncoding sde) {
-        if (buffer.getPosition() % 8 != 0) {
+        int position = buffer.getPosition();
+        if ((position & 7) != 0) {
             log.warn("String data that does not start at byte boundary not supported. bitPosition: {}", buffer);
             return null;
         }
 
         int sizeInBytes = 0;
+        int extraBytes = 0;
         switch (sde.getSizeType()) {
         case FIXED:
             sizeInBytes = sde.getSizeInBits() >> 3;
@@ -146,11 +148,19 @@ public class DataEncodingDecoder {
             sizeInBytes = (int) buffer.getBits(sde.getSizeInBitsOfSizeTag());
             break;
         case TERMINATION_CHAR:
-            int p = buffer.getPosition();
-            while (buffer.getByte() != sde.getTerminationChar()) {
-                sizeInBytes++;
+            if(sde.getSizeInBits()==-1) {
+                while (buffer.getByte() != sde.getTerminationChar()) {
+                    sizeInBytes++;
+                }    
+                extraBytes = 1;
+            } else {
+                int maxSize = sde.getSizeInBits() >> 3;
+                while (sizeInBytes<maxSize && buffer.getByte() != sde.getTerminationChar()) {
+                    sizeInBytes++;
+                } 
+                extraBytes = maxSize - sizeInBytes;
             }
-            buffer.setPosition(p);
+            buffer.setPosition(position);
             break;
         default: // shouldn't happen, CUSTOM should have an binary transform algorithm
             throw new IllegalStateException();
@@ -158,9 +168,7 @@ public class DataEncodingDecoder {
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
 
-        if (sde.getSizeType() == SizeType.TERMINATION_CHAR) {
-            buffer.getByte();// the termination char
-        }
+        buffer.skip(extraBytes<<3);
         return ValueUtility.getStringValue(new String(b, Charset.forName(sde.getEncoding())));
     }
 

@@ -369,4 +369,13 @@ public class BitBuffer {
         ensureByteBoundary();
         return b.length - offset - (position >> 3);
     }
+
+    /**
+     * Move the  position by specified number of bits
+     * 
+     * @param numBits
+     */
+    public void skip(int numBits) {
+        position+=numBits;
+    }
 }
