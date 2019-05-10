@@ -381,7 +381,7 @@ public class YamcsServer {
     }
 
     /**
-     * Restarts a yamcs instance. As we cannot restart instances, we create a new one and replace the old one.
+     * Restarts a yamcs instance.
      * 
      * @param instanceName
      *            the name of the instance
@@ -392,7 +392,7 @@ public class YamcsServer {
     public YamcsServerInstance restartInstance(String instanceName) throws IOException {
         YamcsServerInstance ysi = instances.get(instanceName);
 
-        if (ysi.state() == InstanceState.RUNNING) {
+        if (ysi.state() == InstanceState.RUNNING || ysi.state()==InstanceState.FAILED) {
             try {
                 ysi.stop();
             } catch (IllegalStateException e) {

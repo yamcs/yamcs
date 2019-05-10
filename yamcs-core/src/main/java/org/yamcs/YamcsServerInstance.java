@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
@@ -13,7 +11,6 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
@@ -25,7 +22,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -81,10 +77,14 @@ public class YamcsServerInstance extends YamcsInstanceService {
         notifyStopped();
     }
 
-    void init(YConfiguration conf) throws IOException {
+    void init(YConfiguration conf) {
         this.conf = conf;
         initAsync();
-        awaitInitialized();
+        try {
+            awaitInitialized();
+        } catch (IllegalStateException e) {
+            throw new UncheckedExecutionException(e.getCause());
+        }
     }
 
     @Override
