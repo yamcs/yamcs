@@ -116,6 +116,6 @@ export class YamcsService {
    * Returns latest mission time for the currently active instance (if any).
    */
   getMissionTime() {
-    return new Date(Date.parse(this.timeInfo$.getValue()!.currentTimeUTC));
+    return new Date(Date.parse(this.timeInfo$.getValue()!.currentTime));
   }
 }

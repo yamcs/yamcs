@@ -19,7 +19,7 @@
           <mat-icon *ngIf="!processor.replay" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'RUNNING'" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'PAUSED'" class="down icon16">lens</mat-icon>
-          {{ connectionInfo.processor.name }} / {{ timeInfo.currentTimeUTC | datetime }}
+          {{ connectionInfo.processor.name }} / {{ timeInfo.currentTime | datetime }}
         </button>
       </ng-container>
     </ng-container>

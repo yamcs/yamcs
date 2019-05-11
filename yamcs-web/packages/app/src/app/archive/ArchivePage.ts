@@ -67,7 +67,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
       this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
         if (this.timeline) {
-          this.timeline.setWallclockTime(timeInfo.currentTimeUTC);
+          this.timeline.setWallclockTime(timeInfo.currentTime);
         }
       });
     });

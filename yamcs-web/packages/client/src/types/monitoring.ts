@@ -58,8 +58,7 @@ export interface Event {
 }
 
 export interface TimeInfo {
-  currentTime: number;
-  currentTimeUTC: string;
+  currentTime: string;
 }
 
 export interface ParameterData {
@@ -206,7 +205,7 @@ export interface Alarm {
 export interface AcknowledgeInfo {
   acknowledgedBy: string;
   acknowledgedMessage: string;
-  acknowledgeTimeUTC: string;
+  acknowledgeTime: string;
 }
 
 export interface GetAlarmsOptions {
@@ -378,7 +377,7 @@ export interface CommandQueueEntry {
   source: string;
   binary: string;
   username: string;
-  generationTimeUTC: string;
+  generationTime: string;
   uuid: string;
 }
 
