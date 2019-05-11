@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
@@ -363,6 +363,27 @@ export class InstanceClient {
 
   async getPacketIndex(options: GetPacketIndexOptions): Promise<IndexGroup[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/packet-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getParameterIndex(options: GetParameterIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameter-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getCommandIndex(options: GetCommandIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/command-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getEventIndex(options: GetEventIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/event-index`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as IndexResult;
     return wrapper.group || [];

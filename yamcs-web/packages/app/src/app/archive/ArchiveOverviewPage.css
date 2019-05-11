@@ -41,3 +41,9 @@
   opacity: 0.75;
   font-size: small;
 }
+
+label.legend {
+  font-size: small;
+  padding: 3px 5px;
+  margin-right: 10px;
+}

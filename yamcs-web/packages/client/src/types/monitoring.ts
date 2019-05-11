@@ -338,6 +338,27 @@ export interface GetPacketIndexOptions {
   limit?: number;
 }
 
+export interface GetParameterIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface GetCommandIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface GetEventIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
 export interface GetCompletenessIndexOptions {
   start?: string;
   stop?: string;

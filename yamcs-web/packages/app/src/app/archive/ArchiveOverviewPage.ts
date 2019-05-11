@@ -1,10 +1,11 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Instance } from '@yamcs/client';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { IndexGroup, Instance } from '@yamcs/client';
 import { Event, Range, Timeline, TimelineOptions } from '@yamcs/timeline';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../core/services/PreferenceStore';
@@ -23,8 +24,23 @@ import { TimelineTooltip } from './TimelineTooltip';
 })
 export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
+  completenessBg = 'orange';
+  completenessFg = 'rgb(173, 94, 0)';
+  packetsBg = 'palegoldenrod';
+  packetsFg = '#555';
+  parametersBg = 'navajowhite';
+  parametersFg = '#1c4b8b';
+
+  legendOptions = [
+    { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
+    { id: 'packets', name: 'Packets', bg: this.packetsBg, fg: this.packetsFg, checked: true },
+    { id: 'parameters', name: 'Parameters', bg: this.parametersBg, fg: this.parametersFg, checked: true },
+  ];
+
   @ViewChild('container')
   container: ElementRef;
+
+  filterForm: FormGroup;
 
   instance: Instance;
 
@@ -63,6 +79,16 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         }
       }
     });
+
+    this.filterForm = new FormGroup({});
+    const queryParams = this.route.snapshot.queryParamMap;
+    for (const option of this.legendOptions) {
+      let checked = option.checked;
+      if (queryParams.has(option.id)) {
+        checked = queryParams.get(option.id) === 'true';
+      }
+      this.filterForm.addControl(option.id, new FormControl(checked));
+    }
 
     yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
       this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
@@ -129,12 +155,17 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         start: this.timeline.visibleStart,
         stop: this.timeline.visibleStop,
       });
+      const legendParams: Params = {};
+      for (const option of this.legendOptions) {
+        legendParams[option.id] = this.filterForm.value[option.id];
+      }
       this.router.navigate([], {
         relativeTo: this.route,
         queryParamsHandling: 'merge',
         queryParams: {
           c: this.timeline.visibleCenter.toISOString(),
           z: this.timeline.getZoom(),
+          ...legendParams,
         },
         replaceUrl: true,
       });
@@ -181,25 +212,46 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
     this.timeline.on('loadRange', evt => {
 
+      let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+      if (this.filterForm.value['completeness']) {
+        completenessPromise = this.yamcs.getInstanceClient()!.getCompletenessIndex({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        });
+      }
+
+      let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+      if (this.filterForm.value['packets']) {
+        tmPromise = this.yamcs.getInstanceClient()!.getPacketIndex({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        });
+      }
+
+      let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+      if (this.filterForm.value['parameters']) {
+        parameterPromise = this.yamcs.getInstanceClient()!.getParameterIndex({
+          start: evt.loadStart.toISOString(),
+          stop: evt.loadStop.toISOString(),
+          limit: 1000,
+        });
+      }
+
       Promise.all([
         this.yamcs.getInstanceClient()!.getTags({
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
         }),
-        this.yamcs.getInstanceClient()!.getCompletenessIndex({
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        }),
-        this.yamcs.getInstanceClient()!.getPacketIndex({
-          start: evt.loadStart.toISOString(),
-          stop: evt.loadStop.toISOString(),
-          limit: 1000,
-        })
+        completenessPromise,
+        tmPromise,
+        parameterPromise,
       ]).then(responses => {
         const tags = responses[0].tag || [];
         const completenessGroups = responses[1];
-        const tmHistogramGroups = responses[2];
+        const tmGroups = responses[2];
+        const parameterGroups = responses[3];
 
         const bands = [];
 
@@ -224,18 +276,18 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             id: 'Tags',
             type: 'EventBand',
             label: 'Tags',
-            // draggable: true,
             interactive: true,
             interactiveSidebar: false,
             style: {
-              marginTop: 8,
-              marginBottom: 8,
+              marginTop: 4,
+              marginBottom: 4,
             },
             events,
           });
         }
 
-        for (const group of completenessGroups) {
+        for (let i = 0; i < completenessGroups.length; i++) {
+          const group = completenessGroups[i];
           const events: Event[] = [];
           for (const entry of group.entry) {
             const event: Event = {
@@ -252,55 +304,110 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             }
             events.push(event);
           }
+          const extraStyles: {[key: string]: any} = {};
+          if (i < completenessGroups.length - 1) {
+            extraStyles['dividerColor'] = 'transparent';
+          }
           bands.push({
             id: group.id.name,
             type: 'EventBand',
             label: group.id.name,
-            // draggable: true,
             interactive: true,
             interactiveSidebar: false,
             wrap: false,
             style: {
-              marginTop: 8,
-              marginBottom: 8,
+              ...extraStyles,
+              backgroundColor: this.completenessBg,
+              textColor: this.completenessFg,
+              marginTop: 4,
+              marginBottom: 4,
             },
             events,
           });
         }
 
-        for (const packetName of this.packetNames) {
-          const events: Event[] = [];
-          for (const group of tmHistogramGroups) {
-            if (group.id.name !== packetName) {
-              continue;
-            }
-            for (const entry of group.entry) {
-              const event: Event = {
-                start: entry.start,
-                stop: entry.stop,
-                milestone: false,
-                data: {
-                  count: entry.count,
-                }
-              };
-              if (entry.count > 1) {
-                const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
-                event.title = `${(entry.count / sec).toFixed(1)} Hz`;
+        if (this.filterForm.value['packets']) {
+          for (let i = 0; i < this.packetNames.length; i++) {
+            const packetName = this.packetNames[i];
+            const events: Event[] = [];
+            for (const group of tmGroups) {
+              if (group.id.name !== packetName) {
+                continue;
               }
-              events.push(event);
+              for (const entry of group.entry) {
+                const event: Event = {
+                  start: entry.start,
+                  stop: entry.stop,
+                  milestone: false,
+                  data: {
+                    count: entry.count,
+                  }
+                };
+                if (entry.count > 1) {
+                  const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
+                  event.title = `${(entry.count / sec).toFixed(1)} Hz`;
+                }
+                events.push(event);
+              }
             }
+            const extraStyles: {[key: string]: any} = {};
+            if (i < this.packetNames.length - 1) {
+              extraStyles['dividerColor'] = 'transparent';
+            }
+            bands.push({
+              id: packetName,
+              type: 'EventBand',
+              label: packetName,
+              interactive: true,
+              interactiveSidebar: false,
+              wrap: false,
+              style: {
+                ...extraStyles,
+                backgroundColor: this.packetsBg,
+                textColor: this.packetsFg,
+                marginTop: 4,
+                marginBottom: 4,
+              },
+              events,
+            });
+          }
+        }
+
+        for (let i = 0; i < parameterGroups.length; i++) {
+          const group = parameterGroups[i];
+          const events: Event[] = [];
+          for (const entry of group.entry) {
+            const event: Event = {
+              start: entry.start,
+              stop: entry.stop,
+              milestone: false,
+              data: {
+                count: entry.count,
+              }
+            };
+            if (entry.count > 1) {
+              const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
+              event.title = `${(entry.count / sec).toFixed(1)} Hz`;
+            }
+            events.push(event);
+          }
+          const extraStyles: {[key: string]: any} = {};
+          if (i < parameterGroups.length - 1) {
+            extraStyles['dividerColor'] = 'transparent';
           }
           bands.push({
-            id: packetName,
+            id: group.id.name,
             type: 'EventBand',
-            label: packetName,
-            // draggable: true,
+            label: group.id.name,
             interactive: true,
             interactiveSidebar: false,
             wrap: false,
             style: {
-              marginTop: 8,
-              marginBottom: 8,
+              ...extraStyles,
+              backgroundColor: this.parametersBg,
+              textColor: this.parametersFg,
+              marginTop: 4,
+              marginBottom: 4,
             },
             events,
           });
@@ -401,6 +508,10 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         },
       });
     }
+  }
+
+  updateLegend() {
+    this.refresh();
   }
 
   ngOnDestroy() {
