@@ -26,6 +26,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
 
   columns: ColumnInfo[] = [
+    { id: 'select', label: '', alwaysVisible: true },
     { id: 'status', label: '', alwaysVisible: true },
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'className', label: 'Class Name' },
