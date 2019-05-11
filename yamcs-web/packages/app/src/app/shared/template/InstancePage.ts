@@ -34,8 +34,8 @@ export class InstancePage implements OnInit, OnDestroy {
   commandingExpanded = false;
   mdbActive = false;
   mdbExpanded = false;
-  systemActive = false;
-  systemExpanded = false;
+  archiveActive = false;
+  archiveExpanded = false;
 
   private routerSubscription: Subscription;
 
@@ -64,9 +64,9 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/commanding.*/)) {
         this.commandingActive = true;
         this.commandingExpanded = true;
-      } else if (url.match(/\/system.*/)) {
-        this.systemActive = true;
-        this.systemExpanded = true;
+      } else if (url.match(/\/archive.*/)) {
+        this.archiveActive = true;
+        this.archiveExpanded = true;
       } else if (url.match(/\/monitor.*/)) {
         this.monitoringActive = true;
         this.monitoringExpanded = true;
@@ -104,7 +104,7 @@ export class InstancePage implements OnInit, OnDestroy {
     this.monitoringExpanded = false;
     this.commandingExpanded = false;
     this.mdbExpanded = false;
-    this.systemExpanded = false;
+    this.archiveExpanded = false;
   }
 
   toggleMonitoringGroup() {
@@ -125,18 +125,14 @@ export class InstancePage implements OnInit, OnDestroy {
     this.mdbExpanded = !expanded;
   }
 
-  toggleSystemGroup() {
-    const expanded = this.systemExpanded;
+  toggleArchiveGroup() {
+    const expanded = this.archiveExpanded;
     this.collapseAllGroups();
-    this.systemExpanded = !expanded;
+    this.archiveExpanded = !expanded;
   }
 
   showEventsItem() {
     return this.user.hasSystemPrivilege('ReadEvents');
-  }
-
-  showServicesItem() {
-    return this.user.hasSystemPrivilege('ControlServices');
   }
 
   showTablesItem() {

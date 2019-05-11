@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Table } from '@yamcs/client';
-
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Table } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../utils';
 
-import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './TableScriptTab.html',

@@ -9,7 +9,7 @@ import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
-import { GlobalServicesPage } from './services/GlobalServicesPage';
+import { ServicesPage } from './services/ServicesPage';
 
 const routes: Routes = [
   {
@@ -49,7 +49,7 @@ const routes: Routes = [
       },
       {
         path: 'services',
-        component: GlobalServicesPage,
+        component: ServicesPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
     ]
@@ -68,5 +68,5 @@ export const routingComponents = [
   BucketsPage,
   BucketPage,
   BucketPlaceholderPage,
-  GlobalServicesPage,
+  ServicesPage,
 ];

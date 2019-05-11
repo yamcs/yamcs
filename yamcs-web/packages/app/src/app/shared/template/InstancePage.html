@@ -126,11 +126,33 @@
         </div>
       </ng-container>
 
-      <app-sidebar-nav-item routerLink="/archive"
-                            [queryParams]="{instance: instance.name}">
-        <mat-icon class="item-icon">view_list</mat-icon>
-        TM Archive
-      </app-sidebar-nav-item>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="archiveActive"
+                     (click)="toggleArchiveGroup()">
+        <mat-icon class="item-icon">storage</mat-icon>
+        Archive
+      </mat-list-item>
+      <div *ngIf="archiveExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/archive"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Overview
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item *ngIf="showTablesItem()"
+                              routerLink="/archive/tables"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Tables
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item *ngIf="showStreamsItem()"
+                              routerLink="/archive/streams"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Streams
+        </app-sidebar-nav-item>
+      </div>
 
       <app-sidebar-nav-item *ngFor="let extraItem of extraItems"
                             [routerLink]="['/monitor', extraItem.routerLink]"
@@ -138,40 +160,11 @@
         {{ extraItem.label }}
       </app-sidebar-nav-item>
 
-      <mat-list-item class="nav-item-group"
-                     [class.active]="systemActive"
-                     (click)="toggleSystemGroup()">
+      <app-sidebar-nav-item routerLink="/system"
+                            [queryParams]="{instance: instance.name}">
         <mat-icon class="item-icon">memory</mat-icon>
         System
-      </mat-list-item>
-      <div *ngIf="systemExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item *ngIf="showServicesItem()"
-                              routerLink="/system/services"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Services
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="showTablesItem()"
-                              routerLink="/system/tables"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Tables
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="showStreamsItem()"
-                              routerLink="/system/streams"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Streams
-        </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item routerLink="/system/jvm"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          JVM
-        </app-sidebar-nav-item>
-      </div>
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

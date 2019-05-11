@@ -31,8 +31,6 @@ import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
-import { ServicesTable } from './services/ServicesTable';
-import { ServiceState } from './services/ServiceState';
 import { ActionLink } from './template/ActionLink';
 import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
@@ -130,8 +128,6 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
-  ServiceState,
-  ServicesTable,
   SidebarNavItem,
   SelectInstanceDialog,
   SelectParameterDialog,

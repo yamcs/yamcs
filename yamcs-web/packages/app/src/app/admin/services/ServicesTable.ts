@@ -2,8 +2,6 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input,
 import { MatSort, MatTableDataSource } from '@angular/material';
 import { Service } from '@yamcs/client';
 
-
-
 @Component({
   selector: 'app-services-table',
   templateUrl: './ServicesTable.html',

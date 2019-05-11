@@ -1,18 +1,18 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { GeneralInfo, Parameter } from '@yamcs/client';
-import { AuthService } from '../../core/services/AuthService';
-import { Synchronizer } from '../../core/services/Synchronizer';
-import { YamcsService } from '../../core/services/YamcsService';
-import { DyDataSource } from '../../shared/widgets/DyDataSource';
+import { AuthService } from '../core/services/AuthService';
+import { Synchronizer } from '../core/services/Synchronizer';
+import { YamcsService } from '../core/services/YamcsService';
+import { DyDataSource } from '../shared/widgets/DyDataSource';
 
 
 @Component({
-  templateUrl: './JvmPage.html',
-  styleUrls: ['./JvmPage.css'],
+  templateUrl: './SystemPage.html',
+  styleUrls: ['./SystemPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class JvmPage implements OnDestroy {
+export class SystemPage implements OnDestroy {
 
   info$: Promise<GeneralInfo>;
 
@@ -24,7 +24,7 @@ export class JvmPage implements OnDestroy {
   jvmThreadCountDataSource: DyDataSource;
 
   constructor(yamcs: YamcsService, title: Title, private authService: AuthService, synchronizer: Synchronizer) {
-    title.setTitle('JVM Stats');
+    title.setTitle('System');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {

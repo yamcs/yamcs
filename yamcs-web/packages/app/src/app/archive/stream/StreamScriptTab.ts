@@ -1,12 +1,12 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Stream } from '@yamcs/client';
-
+import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../utils';
 
-import { ActivatedRoute } from '@angular/router';
 
-import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './StreamScriptTab.html',

@@ -17,11 +17,11 @@ import { TimelineTooltip } from './TimelineTooltip';
 
 
 @Component({
-  templateUrl: './ArchivePage.html',
-  styleUrls: ['./ArchivePage.css'],
+  templateUrl: './ArchiveOverviewPage.html',
+  styleUrls: ['./ArchiveOverviewPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ArchivePage implements AfterViewInit, OnDestroy {
+export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
   @ViewChild('container')
   container: ElementRef;
@@ -51,7 +51,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private dateTimePipe: DateTimePipe,
     private snackBar: MatSnackBar,
   ) {
-    title.setTitle('TM Archive');
+    title.setTitle('Archive Overview');
     this.instance = yamcs.getInstance();
 
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
