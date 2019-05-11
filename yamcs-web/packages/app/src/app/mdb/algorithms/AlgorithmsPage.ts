@@ -47,7 +47,7 @@ export class AlgorithmsPage implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    title.setTitle('Algorithms - Yamcs');
+    title.setTitle('Algorithms');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('algorithms');
     if (cols.length) {

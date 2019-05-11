@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Stream, Instance } from '@yamcs/client';
-
-import { ActivatedRoute } from '@angular/router';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { Instance, Stream } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
+
 
 @Component({
   templateUrl: './StreamPage.html',
@@ -19,7 +19,7 @@ export class StreamPage {
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
-    title.setTitle(name + ' - Yamcs');
+    title.setTitle(name);
     this.stream$ = yamcs.getInstanceClient()!.getStream(name);
     this.instance = yamcs.getInstance();
   }

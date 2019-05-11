@@ -19,7 +19,7 @@ export class AlgorithmPage {
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
     this.algorithm$ = yamcs.getInstanceClient()!.getAlgorithm(qualifiedName);
     this.algorithm$.then(algorithm => {
-      title.setTitle(algorithm.name + ' - Yamcs');
+      title.setTitle(algorithm.name);
     });
   }
 }

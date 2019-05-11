@@ -95,7 +95,7 @@ export class ParameterPage implements OnDestroy {
           title += ' ↑';
         }
       }
-      this.title.setTitle(title + ' - Yamcs');
+      this.title.setTitle(title);
     }
   }
 

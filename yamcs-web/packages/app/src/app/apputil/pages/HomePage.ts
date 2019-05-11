@@ -49,7 +49,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    title.setTitle('Instances - Yamcs');
+    title.setTitle('Instances');
 
     this.dataSource.filterPredicate = (instance, filter) => {
       return instance.name.toLowerCase().indexOf(filter) >= 0;

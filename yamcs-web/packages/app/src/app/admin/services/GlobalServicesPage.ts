@@ -13,7 +13,7 @@ export class GlobalServicesPage {
   dataSource = new MatTableDataSource<Service>();
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Services - Yamcs');
+    title.setTitle('Services');
     this.refreshDataSources();
   }
 

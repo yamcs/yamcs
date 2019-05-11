@@ -53,7 +53,7 @@ export class ParametersPage implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    title.setTitle('Parameters - Yamcs');
+    title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('parameters');
     if (cols.length) {

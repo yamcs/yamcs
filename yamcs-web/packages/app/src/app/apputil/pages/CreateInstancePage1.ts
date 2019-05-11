@@ -26,7 +26,7 @@ export class CreateInstancePage1 {
   ];
 
   constructor(private yamcs: YamcsService, title: Title, private router: Router) {
-    title.setTitle('Create an Instance - Yamcs');
+    title.setTitle('Create an Instance');
     this.yamcs.yamcsClient.getInstanceTemplates().then(templates => {
       this.dataSource.data = templates;
     });

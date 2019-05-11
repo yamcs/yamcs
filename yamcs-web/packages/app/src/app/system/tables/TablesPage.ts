@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
-
-import { Table, Instance } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
-import { MatTableDataSource, MatSort } from '@angular/material';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { Instance, Table } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './TablesPage.html',
@@ -22,7 +22,7 @@ export class TablesPage implements AfterViewInit {
   dataSource = new MatTableDataSource<Table>();
 
   constructor(yamcs: YamcsService, title: Title) {
-    title.setTitle('Tables - Yamcs');
+    title.setTitle('Tables');
     yamcs.getInstanceClient()!.getTables().then(tables => {
       this.dataSource.data = tables;
     });

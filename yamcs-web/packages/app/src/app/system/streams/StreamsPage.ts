@@ -30,7 +30,7 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   private itemsByName: { [key: string]: StreamItem } = {};
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Streams - Yamcs');
+    title.setTitle('Streams');
     /*yamcs.getInstanceClient()!.getStreams().then(streams => {
       this.dataSource.data = streams;
     });*/

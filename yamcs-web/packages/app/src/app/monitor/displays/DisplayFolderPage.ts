@@ -46,7 +46,7 @@ export class DisplayFolderPage implements OnDestroy {
     private authService: AuthService,
     private configService: ConfigService,
   ) {
-    title.setTitle('Displays - Yamcs');
+    title.setTitle('Displays');
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
 

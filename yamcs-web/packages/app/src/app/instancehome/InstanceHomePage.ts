@@ -32,7 +32,7 @@ export class InstanceHomePage implements OnDestroy {
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
-    title.setTitle(this.instance.name + ' - Yamcs');
+    title.setTitle(this.instance.name);
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
         filter(stats => stats.yProcessorName === processor.name),

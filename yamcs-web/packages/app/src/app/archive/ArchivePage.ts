@@ -51,7 +51,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private dateTimePipe: DateTimePipe,
     private snackBar: MatSnackBar,
   ) {
-    title.setTitle('TM Archive - Yamcs');
+    title.setTitle('TM Archive');
     this.instance = yamcs.getInstance();
 
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {

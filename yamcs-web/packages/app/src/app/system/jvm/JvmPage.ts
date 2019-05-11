@@ -24,7 +24,7 @@ export class JvmPage implements OnDestroy {
   jvmThreadCountDataSource: DyDataSource;
 
   constructor(yamcs: YamcsService, title: Title, private authService: AuthService, synchronizer: Synchronizer) {
-    title.setTitle('JVM Stats - Yamcs');
+    title.setTitle('JVM Stats');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {

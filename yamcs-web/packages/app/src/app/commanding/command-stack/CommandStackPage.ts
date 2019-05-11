@@ -17,7 +17,7 @@ export class CommandStackPage {
   ];
 
   constructor(title: Title) {
-    title.setTitle('Command Stack - Yamcs');
+    title.setTitle('Command Stack');
     this.dataSource.data = [{
       command: 'test1',
     }, {

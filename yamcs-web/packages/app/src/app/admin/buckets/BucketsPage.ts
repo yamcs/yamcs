@@ -49,7 +49,7 @@ export class BucketsPage implements AfterViewInit {
     private route: ActivatedRoute,
     title: Title,
   ) {
-    title.setTitle('Buckets - Yamcs');
+    title.setTitle('Buckets');
     this.storageClient = this.yamcs.createStorageClient();
 
     yamcs.yamcsClient.getInstances({

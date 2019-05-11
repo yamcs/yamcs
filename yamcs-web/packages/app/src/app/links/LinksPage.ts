@@ -61,7 +61,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private router: Router,
     private preferenceStore: PreferenceStore,
   ) {
-    title.setTitle('Links - Yamcs');
+    title.setTitle('Links');
     const cols = preferenceStore.getVisibleColumns('links');
     if (cols.length) {
       this.displayedColumns = cols;

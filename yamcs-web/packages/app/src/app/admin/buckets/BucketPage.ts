@@ -43,7 +43,7 @@ export class BucketPage implements OnDestroy {
   ) {
     this.bucketInstance = route.snapshot.parent!.paramMap.get('instance')!;
     this.name = route.snapshot.parent!.paramMap.get('name')!;
-    title.setTitle(name + ' - Yamcs');
+    title.setTitle(name);
     this.storageClient = yamcs.createStorageClient();
 
     this.loadCurrentFolder();

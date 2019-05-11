@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Table, Instance } from '@yamcs/client';
-
-import { ActivatedRoute } from '@angular/router';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { Instance, Table } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
+
 
 @Component({
   templateUrl: './TablePage.html',
@@ -19,7 +19,7 @@ export class TablePage {
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
-    title.setTitle(name + ' - Yamcs');
+    title.setTitle(name);
     this.table$ = yamcs.getInstanceClient()!.getTable(name);
     this.instance = yamcs.getInstance();
   }

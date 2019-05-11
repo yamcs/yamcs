@@ -41,7 +41,7 @@ export class AlarmsPage implements OnInit, AfterViewInit, OnDestroy {
   private alarmsSubscription: Subscription;
 
   constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
-    title.setTitle('Alarms - Yamcs');
+    title.setTitle('Alarms');
     this.instance = this.yamcs.getInstance();
     this.selectionSubscription = this.selection.changed.subscribe(() => {
       const selected = this.selection.selected;

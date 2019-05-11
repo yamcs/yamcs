@@ -36,7 +36,7 @@ export class CommandPage {
   changeCommand(qualifiedName: string) {
     this.yamcs.getInstanceClient()!.getCommand(qualifiedName).then(command => {
       this.command$.next(command);
-      this.title.setTitle(command.name + ' - Yamcs');
+      this.title.setTitle(command.name);
     });
   }
 

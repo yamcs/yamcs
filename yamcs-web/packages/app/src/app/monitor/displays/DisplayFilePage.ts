@@ -105,7 +105,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       this.filename = this.objectName.substring(idx);
     }
 
-    this.title.setTitle(this.filename + ' - Yamcs');
+    this.title.setTitle(this.filename);
 
     if (reloadViewer) {
       //console.log('force reload');

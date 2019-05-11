@@ -14,7 +14,7 @@ export class ProfilePage {
   user$: Observable<User | null>;
 
   constructor(authService: AuthService, title: Title) {
-    title.setTitle('Profile - Yamcs');
+    title.setTitle('Profile');
     this.user$ = authService.user$;
   }
 }

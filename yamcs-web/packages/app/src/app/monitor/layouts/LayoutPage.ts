@@ -46,7 +46,7 @@ export class LayoutPage implements OnDestroy {
     this.bucketInstance = configService.getDisplayBucketInstance();
 
     this.layoutName = route.snapshot.paramMap.get('name')!;
-    title.setTitle(this.layoutName + ' - Yamcs');
+    title.setTitle(this.layoutName);
 
     this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
     screenfull.on('change', this.fullscreenListener);

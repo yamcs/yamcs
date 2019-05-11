@@ -95,7 +95,7 @@ export class CommandHistoryPage {
     title: Title,
     synchronizer: Synchronizer,
   ) {
-    title.setTitle('Command History - Yamcs');
+    title.setTitle('Command History');
     this.instance = yamcs.getInstance();
 
     const cols = preferenceStore.getVisibleColumns('events');
