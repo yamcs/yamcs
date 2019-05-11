@@ -4,6 +4,15 @@ import { AdminHomeRoutingModule, routingComponents } from './AdminHomeRoutingMod
 import { AdminPage } from './AdminPage';
 import { AdminPageTemplate } from './AdminPageTemplate';
 import { AdminToolbar } from './AdminToolbar';
+import { CreateBucketDialog } from './buckets/CreateBucketDialog';
+import { RenameObjectDialog } from './buckets/RenameObjectDialog';
+import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
+
+const dialogComponents = [
+  CreateBucketDialog,
+  RenameObjectDialog,
+  UploadObjectsDialog,
+];
 
 @NgModule({
   imports: [
@@ -12,10 +21,14 @@ import { AdminToolbar } from './AdminToolbar';
   ],
   declarations: [
     routingComponents,
+    dialogComponents,
     AdminPage,
     AdminPageTemplate,
     AdminToolbar,
   ],
+  entryComponents: [
+    dialogComponents,
+  ]
 })
 export class AdminModule {
 }

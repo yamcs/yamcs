@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Create bucket</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <label>
+      Bucket name
+      <input type="text" formControlName="name">
+    </label>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-button (click)="save()" color="primary" [disabled]="!form.valid">SAVE</button>
+</mat-dialog-actions>

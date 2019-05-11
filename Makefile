@@ -26,6 +26,10 @@ test:
 live:
 	@./make-live-devel.sh --yss
 
+.PHONY: run
+run: live
+	@live/bin/yamcsd
+
 .PHONY: install
 install:
 	@install -d $(DESTDIR)$(PREFIX)/yamcs || exit

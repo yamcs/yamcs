@@ -4,7 +4,9 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { AdminPage } from './AdminPage';
-import { GlobalBucketsPage } from './buckets/GlobalBucketsPage';
+import { BucketPage } from './buckets/BucketPage';
+import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
+import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { GlobalServicesPage } from './services/GlobalServicesPage';
@@ -25,8 +27,20 @@ const routes: Routes = [
       },
       {
         path: 'buckets',
-        component: GlobalBucketsPage,
+        pathMatch: 'full',
+        component: BucketsPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'buckets/:instance/:name',
+        component: BucketPlaceholderPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+        children: [
+          {
+            path: '**',
+            component: BucketPage,
+          }
+        ],
       },
       {
         path: 'clients',
@@ -51,6 +65,8 @@ export class AdminHomeRoutingModule { }
 export const routingComponents = [
   AdminHomePage,
   ClientsPage,
-  GlobalBucketsPage,
+  BucketsPage,
+  BucketPage,
+  BucketPlaceholderPage,
   GlobalServicesPage,
 ];
