@@ -8,6 +8,7 @@ import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { Oops } from './pages/Oops';
 import { ProfilePage } from './pages/ProfilePage';
 import { ServerUnavailablePage } from './pages/ServerUnavailablePage';
 
@@ -20,6 +21,7 @@ const apputilComponents = [
   HomePage,
   LoginPage,
   NotFoundPage,
+  Oops,
   ProfilePage,
   ServerUnavailablePage,
 ];

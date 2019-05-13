@@ -1,0 +1,35 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Plugins
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table">
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef width="200">Name</th>
+        <td mat-cell *matCellDef="let plugin">{{ plugin.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef width="300">Description</th>
+        <td mat-cell *matCellDef="let plugin">{{ plugin.description || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="version">
+        <th mat-header-cell *matHeaderCellDef width="150">Version</th>
+        <td mat-cell *matCellDef="let plugin">{{ plugin.version || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="vendor">
+        <th mat-header-cell *matHeaderCellDef>Maintainer</th>
+        <td mat-cell *matCellDef="let plugin">{{ plugin.vendor || '-' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</app-admin-page>

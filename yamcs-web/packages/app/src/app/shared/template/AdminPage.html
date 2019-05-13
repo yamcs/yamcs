@@ -9,17 +9,36 @@
 
     <mat-nav-list dense>
       <app-sidebar-nav-item routerLink="/admin" exact="true">
-        General
+        <mat-icon class="item-icon">home</mat-icon>
+        Home
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/plugins">
+        <mat-icon class="item-icon">pages</mat-icon>
+        Plugins
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/clients">
+        <mat-icon class="item-icon">devices</mat-icon>
         Connected Clients
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/services">
+        <mat-icon class="item-icon">traffic</mat-icon>
         Services
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/buckets">
+        <mat-icon class="item-icon">shopping_basket</mat-icon>
         Buckets
       </app-sidebar-nav-item>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="rocksDbActive"
+                     (click)="toggleRocksDbGroup()">
+        <mat-icon class="item-icon" svgIcon="rocksdb"></mat-icon>
+        RocksDB
+      </mat-list-item>
+      <div *ngIf="rocksDbExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
+          Open Databases
+        </app-sidebar-nav-item>
+      </div>
     </mat-nav-list>
   </mat-sidenav>
 

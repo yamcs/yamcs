@@ -103,3 +103,23 @@ message ExecuteSqlRequest {
 message ExecuteSqlResponse {
   optional string result = 1;
 }
+
+message ListRocksDbTablespacesResponse {
+  repeated RocksDbTablespaceInfo tablespace = 1;
+}
+
+message RocksDbTablespaceInfo {
+  optional string name = 1;
+  optional string dataDir = 2;
+  repeated RocksDbDatabaseInfo database = 3;
+}
+
+message ListRocksDbDatabasesResponse {
+  repeated RocksDbDatabaseInfo database = 1;
+}
+
+message RocksDbDatabaseInfo {
+  optional string tablespace = 1;
+  optional string dataDir = 2;
+  optional string dbPath = 3;
+}

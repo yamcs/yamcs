@@ -3,7 +3,7 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
+import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper } from './types/internal';
 import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo, WebsiteConfig } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
@@ -209,6 +209,24 @@ export default class YamcsClient implements HttpHandler {
   async getClientUpdates(): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient!.getClientUpdates();
+  }
+
+  async getRocksDbDatabases() {
+    const url = `${this.apiUrl}/archive/rocksdb/databases`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as RocksDbDatabasesWrapper;
+    return wrapper.database || [];
+  }
+
+  async getRocksDbDatabaseProperties(tablespace: string, dbPath='') {
+    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/properties/${dbPath}`;
+    const response = await this.doFetch(url);
+    return await response.text();
+  }
+
+  async compactRocksDbDatabase(tablespace: string, dbPath='') {
+    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/compact/${dbPath}`;
+    return await this.doFetch(url);
   }
 
   async editClient(clientId: number, options: EditClientRequest) {

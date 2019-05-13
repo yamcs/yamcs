@@ -1,6 +1,6 @@
 import { SpaceSystem } from './mdb';
 import { Alarm, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, Service, Stream, Table } from './system';
+import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, Service, Stream, Table } from './system';
 
 
 
@@ -98,4 +98,8 @@ export interface PacketNameWrapper {
 
 export interface BucketsWrapper {
   bucket: Bucket[];
+}
+
+export interface RocksDbDatabasesWrapper {
+  database: RocksDbDatabase[];
 }

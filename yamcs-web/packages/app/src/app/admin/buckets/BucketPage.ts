@@ -58,7 +58,6 @@ export class BucketPage implements OnDestroy {
     const options: ListObjectsOptions = {
       delimiter: '/',
     };
-    console.log('current folder', this.route.snapshot.url);
     const routeSegments = this.route.snapshot.url;
     if (routeSegments.length) {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';

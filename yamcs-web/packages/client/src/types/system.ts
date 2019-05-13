@@ -32,7 +32,7 @@ export interface GeneralInfo {
   revision: string;
   serverId: string;
   defaultYamcsInstance: string;
-  plugin: PluginInfo;
+  plugin: PluginInfo[];
 }
 
 export interface PluginInfo {
@@ -353,4 +353,10 @@ export interface CreateInstanceRequest {
   template: string;
   templateArgs?: { [key: string]: string };
   labels?: { [key: string]: string };
+}
+
+export interface RocksDbDatabase {
+  tablespace: string;
+  dbPath: string;
+  dataDir: string;
 }

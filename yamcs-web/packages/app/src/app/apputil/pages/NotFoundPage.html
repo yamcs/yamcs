@@ -1,13 +1,23 @@
 <div class="panel-content mat-typography">
-  <h2>404: Not Found</h2>
-  <p>
-    It looks like
-    <ng-container *ngIf="page">
-      the page
-      <a [href]="page" class="ya-link">{{ page }}</a>
-    </ng-container>
-    <ng-container *ngIf="!page">this page</ng-container>
-    doesn't exist yet.
-  </p>
-  <a routerLink="/" class="ya-link">Go to homepage</a>
+  <p>&nbsp;</p>
+  <table style="padding-left: 60px">
+    <tr>
+      <td style="vertical-align: top">
+        <h2>404: Not Found</h2>
+        <p>
+          It looks like
+          <ng-container *ngIf="page">
+            the page
+            <a [href]="page" class="ya-link">{{ page }}</a>
+          </ng-container>
+          <ng-container *ngIf="!page">this page</ng-container>
+          doesn't exist yet.
+        </p>
+        <a routerLink="/" class="ya-link">Go to homepage</a>
+      </td>
+      <td style="padding-left: 15em; padding-right: 5em">
+        <app-oops></app-oops>
+      </td>
+    </tr>
+  </table>
 </div>

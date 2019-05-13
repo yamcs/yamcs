@@ -4,9 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Instance, Table } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
-
-
 @Component({
   templateUrl: './TablePage.html',
   styleUrls: ['./TablePage.css'],

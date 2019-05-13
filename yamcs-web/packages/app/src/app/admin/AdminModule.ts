@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { AdminHomeRoutingModule, routingComponents } from './AdminHomeRoutingModule';
-import { AdminPage } from './AdminPage';
-import { AdminPageTemplate } from './AdminPageTemplate';
-import { AdminToolbar } from './AdminToolbar';
+import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
@@ -19,20 +16,17 @@ const dialogComponents = [
 @NgModule({
   imports: [
     SharedModule,
-    AdminHomeRoutingModule,
+    AdminRoutingModule,
   ],
   declarations: [
     routingComponents,
     dialogComponents,
-    AdminPage,
-    AdminPageTemplate,
-    AdminToolbar,
     ServiceState,
     ServicesTable,
   ],
   entryComponents: [
     dialogComponents,
-  ]
+  ],
 })
 export class AdminModule {
 }

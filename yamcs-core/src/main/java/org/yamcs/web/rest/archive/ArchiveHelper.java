@@ -12,6 +12,7 @@ import org.yamcs.protobuf.Archive.ColumnInfo;
 import org.yamcs.protobuf.Archive.EnumValue;
 import org.yamcs.protobuf.Archive.PartitioningInfo;
 import org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType;
+import org.yamcs.protobuf.Archive.RocksDbDatabaseInfo;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
@@ -43,6 +44,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.rocksdb.Tablespace;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
@@ -53,6 +55,14 @@ import com.google.protobuf.MessageLite;
  * Collects all archive-related conversions performed in the web api (x towards archive.proto)
  */
 public final class ArchiveHelper {
+
+    final static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
+        RocksDbDatabaseInfo.Builder databaseb = RocksDbDatabaseInfo.newBuilder()
+                .setTablespace(tablespace.getName())
+                .setDataDir(tablespace.getDataDir())
+                .setDbPath(dbPath);
+        return databaseb.build();
+    }
 
     final static TableInfo toTableInfo(TableDefinition def) {
         TableInfo.Builder infob = TableInfo.newBuilder();
