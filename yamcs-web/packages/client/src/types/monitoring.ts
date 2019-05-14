@@ -58,8 +58,7 @@ export interface Event {
 }
 
 export interface TimeInfo {
-  currentTime: number;
-  currentTimeUTC: string;
+  currentTime: string;
 }
 
 export interface ParameterData {
@@ -206,7 +205,7 @@ export interface Alarm {
 export interface AcknowledgeInfo {
   acknowledgedBy: string;
   acknowledgedMessage: string;
-  acknowledgeTimeUTC: string;
+  acknowledgeTime: string;
 }
 
 export interface GetAlarmsOptions {
@@ -339,6 +338,27 @@ export interface GetPacketIndexOptions {
   limit?: number;
 }
 
+export interface GetParameterIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface GetCommandIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface GetEventIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
 export interface GetCompletenessIndexOptions {
   start?: string;
   stop?: string;
@@ -378,7 +398,7 @@ export interface CommandQueueEntry {
   source: string;
   binary: string;
   username: string;
-  generationTimeUTC: string;
+  generationTime: string;
   uuid: string;
 }
 

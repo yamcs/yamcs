@@ -9,11 +9,10 @@ export class StorageClient {
 
   async createBucket(instance: string, options: CreateBucketRequest) {
     const body = JSON.stringify(options);
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}`, {
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}`, {
       body,
       method: 'POST',
     });
-    return await response.json() as Event;
   }
 
   async getBuckets(instance: string): Promise<Bucket[]> {

@@ -2,12 +2,19 @@ package org.yamcs.web.rest.archive;
 
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
+import org.yamcs.protobuf.Archive.ListRocksDbDatabasesResponse;
+import org.yamcs.protobuf.Archive.ListRocksDbTablespacesResponse;
+import org.yamcs.protobuf.Archive.RocksDbDatabaseInfo;
+import org.yamcs.protobuf.Archive.RocksDbTablespaceInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -26,6 +33,56 @@ import io.netty.buffer.ByteBufUtil;
 
 public class RocksDbMaintenanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RocksDbMaintenanceRestHandler.class);
+
+    @Route(path = "/api/archive/rocksdb/tablespaces", method = "GET")
+    public void listTablespaces(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
+
+        List<RocksDbTablespaceInfo> unsorted = new ArrayList<>();
+        RdbStorageEngine storageEngine = RdbStorageEngine.getInstance();
+        for (Tablespace tblsp : storageEngine.getTablespaces().values()) {
+            RocksDbTablespaceInfo.Builder tablespaceb = RocksDbTablespaceInfo.newBuilder()
+                    .setName(tblsp.getName())
+                    .setDataDir(tblsp.getDataDir());
+            RDBFactory rdbf = tblsp.getRdbFactory();
+            for (String dbPath : rdbf.getOpenDbPaths()) {
+                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                tablespaceb.addDatabase(database);
+            }
+            unsorted.add(tablespaceb.build());
+        }
+
+        ListRocksDbTablespacesResponse.Builder responseb = ListRocksDbTablespacesResponse.newBuilder();
+        Collections.sort(unsorted, (t1, t2) -> t1.getName().compareTo(t2.getName()));
+        responseb.addAllTablespace(unsorted);
+        completeOK(req, responseb.build());
+    }
+
+    @Route(path = "/api/archive/rocksdb/databases", method = "GET")
+    public void listDatabases(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
+
+        List<RocksDbDatabaseInfo> unsorted = new ArrayList<>();
+        RdbStorageEngine storageEngine = RdbStorageEngine.getInstance();
+        for (Tablespace tblsp : storageEngine.getTablespaces().values()) {
+            RDBFactory rdbf = tblsp.getRdbFactory();
+            for (String dbPath : rdbf.getOpenDbPaths()) {
+                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                unsorted.add(database);
+            }
+        }
+
+        ListRocksDbDatabasesResponse.Builder responseb = ListRocksDbDatabasesResponse.newBuilder();
+        Collections.sort(unsorted, (db1, db2) -> {
+            if (db1.getTablespace().equals(db2.getTablespace())) {
+                return db1.getDbPath().compareTo(db2.getDbPath());
+            } else {
+                return db1.getTablespace().compareTo(db2.getTablespace());
+            }
+        });
+        responseb.addAllDatabase(unsorted);
+        completeOK(req, responseb.build());
+    }
 
     @Route(path = "/api/archive/rocksdb/:tablespace/properties", method = "GET")
     @Route(path = "/api/archive/rocksdb/:tablespace/properties/:dbpath*", method = "GET")
@@ -93,7 +150,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
 
         try {
             yrdb.getDb().compactRange();
-            completeOK(req);    
+            completeOK(req);
         } catch (RocksDBException e) {
             log.error("Error when compacting database", e);
             completeWithError(req, new InternalServerErrorException(e));
@@ -101,6 +158,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
             rdbFactory.dispose(yrdb);
         }
     }
+
     @Route(path = "/api/archive/rocksdb/list", method = "GET")
     public void listOpenDbs(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);

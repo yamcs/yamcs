@@ -107,7 +107,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-       
+
         return l.get(0);
     }
 }

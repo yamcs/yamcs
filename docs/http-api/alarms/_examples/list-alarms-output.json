@@ -1,0 +1,123 @@
+{
+    "alarm" : [ {
+      "seqNum" : 1,
+      "triggerValue" : {
+        "id" : {
+          "name" : "/YSS/SIMULATOR/BatteryVoltage2"
+        },
+        "rawValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 49
+        },
+        "engValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 49
+        },
+        "acquisitionTime" : 1448229350720,
+        "generationTime" : 1448229333628,
+        "acquisitionStatus" : "ACQUIRED",
+        "processingStatus" : true,
+        "monitoringResult" : "WATCH",
+        "rangeCondition": "LOW",
+        "acquisitionTimeUTC" : "2015-11-22T21:55:14.720Z",
+        "generationTimeUTC" : "2015-11-22T21:54:57.628Z",
+        "expirationTime" : 1448229357720,
+        "expirationTimeUTC" : "2015-11-22T21:55:21.720Z",
+        "alarmRange" : [ {
+          "level" : "WATCH",
+          "minInclusive" : 50.0
+        }, {
+          "level" : "WARNING",
+          "minInclusive" : 40.0
+        }, {
+          "level" : "DISTRESS",
+          "minInclusive" : 30.0
+        }, {
+          "level" : "CRITICAL",
+          "minInclusive" : 20.0
+        }, {
+          "level" : "SEVERE",
+          "minInclusive" : 10.0
+        } ]
+      },
+      "mostSevereValue" : {
+        "id" : {
+          "name" : "/YSS/SIMULATOR/BatteryVoltage2"
+        },
+        "rawValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 39
+        },
+        "engValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 39
+        },
+        "acquisitionTime" : 1448229413038,
+        "generationTime" : 1448229395945,
+        "acquisitionStatus" : "ACQUIRED",
+        "processingStatus" : true,
+        "monitoringResult" : "WARNING",
+        "rangeCondition": "LOW",
+        "acquisitionTimeUTC" : "2015-11-22T21:56:17.038Z",
+        "generationTimeUTC" : "2015-11-22T21:55:59.945Z",
+        "expirationTime" : 1448229420038,
+        "expirationTimeUTC" : "2015-11-22T21:56:24.038Z",
+        "alarmRange" : [ {
+          "level" : "WATCH",
+          "minInclusive" : 50.0
+        }, {
+          "level" : "WARNING",
+          "minInclusive" : 40.0
+        }, {
+          "level" : "DISTRESS",
+          "minInclusive" : 30.0
+        }, {
+          "level" : "CRITICAL",
+          "minInclusive" : 20.0
+        }, {
+          "level" : "SEVERE",
+          "minInclusive" : 10.0
+        } ]
+      },
+      "currentValue" : {
+        "id" : {
+          "name" : "/YSS/SIMULATOR/BatteryVoltage2"
+        },
+        "rawValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 48
+        },
+        "engValue" : {
+          "type" : "UINT32",
+          "uint32Value" : 48
+        },
+        "acquisitionTime" : 1448229356954,
+        "generationTime" : 1448229339867,
+        "acquisitionStatus" : "ACQUIRED",
+        "processingStatus" : true,
+        "monitoringResult" : "WATCH",
+        "rangeCondition": "LOW",
+        "acquisitionTimeUTC" : "2015-11-22T21:55:20.954Z",
+        "generationTimeUTC" : "2015-11-22T21:55:03.867Z",
+        "expirationTime" : 1448229363954,
+        "expirationTimeUTC" : "2015-11-22T21:55:27.954Z",
+        "alarmRange" : [ {
+          "level" : "WATCH",
+          "minInclusive" : 50.0
+        }, {
+          "level" : "WARNING",
+          "minInclusive" : 40.0
+        }, {
+          "level" : "DISTRESS",
+          "minInclusive" : 30.0
+        }, {
+          "level" : "CRITICAL",
+          "minInclusive" : 20.0
+        }, {
+          "level" : "SEVERE",
+          "minInclusive" : 10.0
+        } ]
+      }
+    } ]
+  }
+  

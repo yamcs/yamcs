@@ -3,11 +3,20 @@ import { SharedModule } from '../shared/SharedModule';
 import { ArchiveRoutingModule, routingComponents } from './ArchiveRoutingModule';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { JumpToDialog } from './JumpToDialog';
+import { ColumnValuePipe } from './pipes/ColumnValuePipe';
+import { StreamDataComponent } from './stream/StreamDataComponent';
+import { RecordComponent } from './table/RecordComponent';
+import { ShowEnumDialog } from './table/ShowEnumDialog';
 import { TimelineTooltip } from './TimelineTooltip';
 
 const dialogComponents = [
   DownloadDumpDialog,
   JumpToDialog,
+  ShowEnumDialog,
+];
+
+const pipes = [
+  ColumnValuePipe,
 ];
 
 @NgModule({
@@ -18,6 +27,9 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    pipes,
+    RecordComponent,
+    StreamDataComponent,
     TimelineTooltip,
   ],
   entryComponents: [

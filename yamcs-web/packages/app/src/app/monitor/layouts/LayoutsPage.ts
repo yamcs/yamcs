@@ -32,7 +32,7 @@ export class LayoutsPage {
     private dialog: MatDialog,
     configService: ConfigService,
   ) {
-    title.setTitle('Layouts - Yamcs');
+    title.setTitle('Layouts');
     this.instance = yamcs.getInstance();
     this.bucketInstance = configService.getDisplayBucketInstance();
     this.storageClient = yamcs.createStorageClient();

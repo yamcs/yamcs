@@ -1,11 +1,21 @@
 <div class="panel-content mat-typography">
-  <h2>403: Forbidden</h2>
-  <p>
-    You do not have sufficient privileges to access
-    <ng-container *ngIf="page">
-      <a [href]="page" class="ya-link">{{ page }}</a>
-    </ng-container>
-    <ng-container *ngIf="!page">this page</ng-container>
-  </p>
-  <a routerLink="/" class="ya-link">Go to homepage</a>
+  <p>&nbsp;</p>
+  <table style="padding-left: 60px">
+    <tr>
+      <td style="vertical-align: top">
+        <h2>403: Forbidden</h2>
+        <p>
+          You do not have sufficient privileges to access
+          <ng-container *ngIf="page">
+            <a [href]="page" class="ya-link">{{ page }}</a>
+          </ng-container>
+          <ng-container *ngIf="!page">this page</ng-container>
+        </p>
+        <a routerLink="/" class="ya-link">Go to homepage</a>
+      </td>
+      <td style="padding-left: 15em; padding-right: 5em">
+        <app-oops></app-oops>
+      </td>
+    </tr>
+  </table>
 </div>

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Alarm, GeneralInfo, Instance, MissionDatabase, TmStatistics } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -27,10 +28,11 @@ export class InstanceHomePage implements OnDestroy {
   info$: Promise<GeneralInfo>;
   mdb$: Promise<MissionDatabase>;
 
-  constructor(yamcs: YamcsService, authService: AuthService) {
+  constructor(yamcs: YamcsService, authService: AuthService, title: Title) {
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
+    title.setTitle(this.instance.name);
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
         filter(stats => stats.yProcessorName === processor.name),

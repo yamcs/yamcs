@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>Rename file</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="filenameForm" class="ya-form">
+    <label [class.invalid]="filenameForm.get('name')?.invalid">
+      Name
+      <input #filename type="text" formControlName="name">
+    </label>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button
+          (click)="rename()"
+          color="primary"
+          [disabled]="!filenameForm.valid">RENAME</button>
+</mat-dialog-actions>

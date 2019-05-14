@@ -55,7 +55,7 @@ export class ContainersPage implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    title.setTitle('Containers - Yamcs');
+    title.setTitle('Containers');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('containers');
     if (cols.length) {

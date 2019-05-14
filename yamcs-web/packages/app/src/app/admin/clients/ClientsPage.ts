@@ -31,7 +31,7 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
   private clientsById: { [key: string]: ClientInfo } = {};
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Clients - Yamcs');
+    title.setTitle('Clients');
 
     this.yamcs.yamcsClient.getClientUpdates().then(response => {
       this.clientSubscription = response.client$.subscribe(evt => {

@@ -1,0 +1,27 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Services
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-icon-button
+            color="primary"
+            (click)="refresh()"
+            matTooltip="Refresh view">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <form [formGroup]="filterForm">
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
+          <small>Instance:&nbsp;</small>
+          <app-select [options]="instanceOptions$ | async"
+                      (change)="updateInstance($event)"></app-select>
+        </div>
+      </div>
+    </form>
+    <app-services-table [dataSource]="dataSource"
+                        (startService)="startService($event)"
+                        (stopService)="stopService($event)"></app-services-table>
+  </div>
+</app-admin-page>

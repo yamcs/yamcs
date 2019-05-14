@@ -51,7 +51,7 @@ export class CommandsPage implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    title.setTitle('Commands - Yamcs');
+    title.setTitle('Commands');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('commands');
     if (cols.length) {

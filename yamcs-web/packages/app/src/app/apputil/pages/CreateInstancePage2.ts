@@ -24,7 +24,7 @@ export class CreateInstancePage2 {
     title: Title,
     route: ActivatedRoute,
   ) {
-    title.setTitle('Create an Instance - Yamcs');
+    title.setTitle('Create an Instance');
     this.form = formBuilder.group({
       name: new FormControl('', [Validators.required])
     });

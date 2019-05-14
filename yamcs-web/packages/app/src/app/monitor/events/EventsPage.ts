@@ -118,7 +118,7 @@ export class EventsPage {
     title: Title,
     synchronizer: Synchronizer,
   ) {
-    title.setTitle('Events - Yamcs');
+    title.setTitle('Events');
 
     // Consider site-specific configuration
     if (appConfig.events) {
