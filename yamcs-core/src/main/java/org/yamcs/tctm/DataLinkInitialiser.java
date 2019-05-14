@@ -11,7 +11,6 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
-import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
@@ -135,20 +134,14 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
                 boolean dropCorrupted = linkArgs.getBoolean("dropCorruptedPackets", true);
                 tmLink.setTmSink(pwrt -> {
-                    if (pwrt == null || (pwrt.isCorrupted() && dropCorrupted)) {
+                    if (pwrt.isCorrupted() && dropCorrupted) {
                         return;
                     }
-                    if (link instanceof CfdpUdpTmDataLink) {
-                        Tuple t = new Tuple(StandardTupleDefinitions.CFDP,
-                                new Object[] { (long) 1, (long) pwrt.getSeqCount(), pwrt.getPacket() });
-                        stream.emitTuple(t);
-                    } else {
-                        long time = pwrt.getGenerationTime();
-                        byte[] pkt = pwrt.getPacket();
-                        Tuple t = new Tuple(StandardTupleDefinitions.TM,
-                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
-                        stream.emitTuple(t);
-                    }
+                    long time = pwrt.getGenerationTime();
+                    byte[] pkt = pwrt.getPacket();
+                    Tuple t = new Tuple(StandardTupleDefinitions.TM,
+                            new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
+                    stream.emitTuple(t);
                 });
             }
         }
@@ -170,23 +163,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
                 });
             }
             tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
-        }
-
-        if (link instanceof CfdpUdpTcDataLink) {
-            CfdpUdpTcDataLink udtl = (CfdpUdpTcDataLink) link;
-            if (s != null) {
-                s.addSubscriber(new StreamSubscriber() {
-                    @Override
-                    public void onTuple(Stream s, Tuple tuple) {
-                        udtl.sendCfdpPacket(CfdpPacket.fromTuple(tuple));
-                    }
-
-                    @Override
-                    public void streamClosed(Stream stream) {
-                        stopAsync();
-                    }
-                });
-            }
         }
 
         if (link instanceof ParameterDataLink) {
