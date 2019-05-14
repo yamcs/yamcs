@@ -2,6 +2,7 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.channels.SelectionKey;
@@ -10,8 +11,6 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import java.net.DatagramSocket;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
@@ -75,7 +74,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
     }
 
     public UdpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-        this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getConfig(spec));
+        this(yamcsInstance, name, YConfiguration.getConfiguration("udp").getConfig(spec));
     }
 
     private void configure(String yamcsInstance, YConfiguration config) {
@@ -114,7 +113,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
         try {
             socket = new DatagramSocket();
         } catch (SocketException e) {
-           notifyFailed(e);
+            notifyFailed(e);
         }
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
@@ -283,6 +282,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
         return Arrays.asList(linkStatus, dataCount);
     }
 
+    @Override
     public YConfiguration getConfig() {
         return config;
     }
