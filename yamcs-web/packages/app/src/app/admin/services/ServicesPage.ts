@@ -96,7 +96,7 @@ export class ServicesPage {
     }
   }
 
-  private refresh() {
+  refresh() {
     this.updateURL();
     const instance = this.filterForm.get('instance')!.value;
     let promise;
