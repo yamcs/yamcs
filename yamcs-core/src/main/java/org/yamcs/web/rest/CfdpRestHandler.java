@@ -43,13 +43,9 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 public class CfdpRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
 
-    public CfdpRestHandler() {}
-
-    @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "POST")
+    @Route(path = "/api/cfdp/:instance/:bucketName/:objectName*", method = "POST")
     public void CfdpUpload(RestRequest req) throws HttpException {
         byte[] objData;
-
-        log.info("CfdpUpload");
 
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
@@ -92,8 +88,6 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "GET")
     public void CfdpDownload(RestRequest req) throws HttpException {
-        log.info("CfdpDownload");
-
         /**
          * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
          * BucketRestHandler.uploadObject
@@ -108,7 +102,7 @@ public class CfdpRestHandler extends RestHandler {
 
         // TODO, sane values for contentType and metadata
         String contentType = "";
-        Map<String, String> metadata = new HashMap<String, String>();
+        Map<String, String> metadata = new HashMap<>();
 
         try {
             bucket.putObject(objName, contentType, metadata, objectData);
@@ -129,8 +123,6 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/list", method = "GET")
     public void CfdpList(RestRequest req) throws HttpException {
-        log.info("CfdpInfo");
-
         ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
 
         String remotePath = req.getQueryParameter("target");
@@ -148,8 +140,6 @@ public class CfdpRestHandler extends RestHandler {
     // TODO update rest doc
     @Route(path = "/api/cfdp/:instance/info", method = "GET")
     public void CfdpInfo(RestRequest req) throws HttpException {
-        log.info("CfdpList");
-
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
@@ -178,8 +168,6 @@ public class CfdpRestHandler extends RestHandler {
     // TODO update rest doc
     @Route(path = "/api/cfdp/:instance/cancel", method = "POST")
     public void CfdpCancel(RestRequest req) throws HttpException {
-        log.info("CfdpCancel");
-
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
@@ -206,8 +194,6 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/delete", method = "POST")
     public void CfdpDelete(RestRequest req) throws HttpException {
-        log.info("CfdpDelete");
-
         String pathToDelete = req.getQueryParameter("target");
         // TODO issue delete command
 
@@ -217,8 +203,6 @@ public class CfdpRestHandler extends RestHandler {
     // TODO update rest documentation
     @Route(path = "/api/cfdp/:instance/pause", method = "POST")
     public void CfdpPause(RestRequest req) throws HttpException {
-        log.info("CfdpPause");
-
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
@@ -246,8 +230,6 @@ public class CfdpRestHandler extends RestHandler {
     // TODO update rest documentation
     @Route(path = "/api/cfdp/:instance/resume", method = "POST")
     public void CfdpResume(RestRequest req) throws HttpException {
-        log.info("CfdpResume");
-
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
         CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);

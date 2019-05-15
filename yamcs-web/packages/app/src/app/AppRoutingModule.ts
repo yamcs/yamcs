@@ -57,6 +57,11 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
+        path: 'cfdp',
+        loadChildren: 'src/app/cfdp/CfdpModule#CfdpModule',
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'commanding',
         loadChildren: 'src/app/commanding/CommandingModule#CommandingModule',
         canActivate: [AuthGuard],

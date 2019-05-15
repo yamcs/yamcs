@@ -92,6 +92,12 @@
         </app-sidebar-nav-item>
       </div>
 
+      <app-sidebar-nav-item routerLink="/cfdp"
+                            [queryParams]="{instance: instance.name}">
+        <mat-icon class="item-icon">cloud_queue</mat-icon>
+        CFDP File Transfer
+      </app-sidebar-nav-item>
+
       <ng-container *ngIf="showMDB()">
         <mat-list-item class="nav-item-group"
                       [class.active]="mdbActive"

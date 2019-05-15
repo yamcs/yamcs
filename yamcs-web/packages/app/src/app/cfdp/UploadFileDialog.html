@@ -1,0 +1,53 @@
+<div class="local-selector mat-typography">
+  <form [formGroup]="localForm" class="ya-form">
+    <h2>Select local file</h2>
+    <label class="table-caption">Bucket</label>
+    <div class="bucket-table-wrapper">
+      <table mat-table [dataSource]="dataSource" class="ya-data-table">
+
+        <ng-container cdkColumnDef="name">
+          <td mat-cell *cdkCellDef="let bucket">
+            <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
+            {{ bucket.name }}
+          </td>
+        </ng-container>
+
+        <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+                [ngClass]="{selected: (row === (selectedBucket$ | async))}"
+                (click)="selectBucket(row)"></tr>
+      </table>
+    </div>
+    <div class="object-table-wrapper">
+      <ng-container *ngIf="selectedBucket$ | async as bucket">
+        <app-object-selector formControlName="object" [instance]="instance.name" [bucket]="bucket"></app-object-selector>
+      </ng-container>
+    </div>
+  </form>
+</div>
+
+<div class="remote-selector mat-typography">
+  <form [formGroup]="remoteForm" class="ya-form">
+    <h2 style="margin-top: 16px">Specify remote destination</h2>
+    <label>
+      Filename
+      <input type="text" formControlName="destination"
+             placeholder="e.g. /CF:/filename">
+    </label>
+
+    <h2 style="margin-top: 32px">Options</h2>
+    <label>
+      <input type="checkbox" formControlName="reliable"> Reliable
+    </label>
+  </form>
+</div>
+
+<div class="footer mat-typography">
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <button mat-button mat-dialog-close>CANCEL</button>
+      <button mat-raised-button color="primary"
+              [disabled]="!localForm.valid || !remoteForm.valid"
+              (click)="startTransfer()">START TRANSFER</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+</div>
