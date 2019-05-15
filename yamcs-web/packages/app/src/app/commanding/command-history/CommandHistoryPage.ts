@@ -98,7 +98,7 @@ export class CommandHistoryPage {
     title.setTitle('Command History');
     this.instance = yamcs.getInstance();
 
-    const cols = preferenceStore.getVisibleColumns('events');
+    const cols = preferenceStore.getVisibleColumns('cmdhist');
     if (cols.length) {
       this.displayedColumns = cols;
     }

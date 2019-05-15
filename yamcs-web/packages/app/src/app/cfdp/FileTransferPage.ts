@@ -39,7 +39,7 @@ export class FileTransferPage implements OnDestroy {
       let ongoingCount = 0;
       let failedCount = 0;
       let successfulCount = 0;
-      for (const transfer of page.transfers) {
+      for (const transfer of (page.transfers || [])) {
         if (transfer.state === 'RUNNING' || transfer.state === 'PAUSED') {
           ongoingCount++;
         } else if (transfer.state === 'FAILED') {
