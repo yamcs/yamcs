@@ -18,6 +18,11 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.RateLimiter;
@@ -53,9 +58,11 @@ public class CfdpUdpTcDataLink extends AbstractService implements Runnable, Link
     PacketDequeueAndSend packetSender;
 
     private YConfiguration config;
-
+    final private String yamcsInstance;
+    
     public CfdpUdpTcDataLink(String yamcsInstance, String name, YConfiguration config)
             throws ConfigurationException {
+        this.yamcsInstance = yamcsInstance;
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.name = name;
         this.config = config;
@@ -91,6 +98,22 @@ public class CfdpUdpTcDataLink extends AbstractService implements Runnable, Link
 
     @Override
     protected void doStart() {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        String streamName = config.getString("stream");
+        Stream s = ydb.getStream(streamName);
+        if(s==null) {
+            notifyFailed(new ConfigurationException("Cannot find stream '"+streamName+"'"));
+            return;
+        }
+        s.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {  }
+            
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                sendCfdpPacket(CfdpPacket.fromTuple(tuple));
+            }
+        });
         this.timer = new ScheduledThreadPoolExecutor(2);
         packetSender = new PacketDequeueAndSend();
         timer.execute(packetSender);
