@@ -9,7 +9,6 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.tctm.Packet;
-import org.yamcs.utils.CfdpUtils;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -19,7 +18,6 @@ public abstract class CfdpPacket implements Packet {
     protected CfdpHeader header;
 
     private final static int CCSDSHeaderSizeTC = 8;
-    private final static int CCSDSHeaderSizeTM = 12;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
 
@@ -65,14 +63,6 @@ public abstract class CfdpPacket implements Packet {
     protected abstract int calculateDataFieldLength();
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
-        // read (and ignore) CCSDS header
-        // depending on the type of the packet (TM or TC),
-        // the secondary CCSDS header has a different size
-        buffer.position(buffer.position() +
-                (CfdpUtils.isBitOfByteSet(buffer.get(0), 3)
-                        ? CCSDSHeaderSizeTC
-                        : CCSDSHeaderSizeTM));
-
         CfdpHeader header = new CfdpHeader(buffer);
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
@@ -154,7 +144,14 @@ public abstract class CfdpPacket implements Packet {
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {
-        return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("packet"))));
+        System.out.println("CfdpPacket. fromtuple: "+tuple.getDefinition());
+        if(tuple.hasColumn("pdu")) {
+            return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("pdu"))));
+        } else {
+            ByteBuffer bb = ByteBuffer.wrap((byte[]) (tuple.getColumn("packet")));
+            bb.position(CCSDSHeaderSizeTC);
+            return CfdpPacket.getCFDPPacket(bb.slice());
+        }
     }
 
     public CfdpTransactionId getTransactionId() {
