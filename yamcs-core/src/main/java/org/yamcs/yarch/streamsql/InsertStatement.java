@@ -3,8 +3,10 @@ package org.yamcs.yarch.streamsql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -24,49 +26,52 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
 public class InsertStatement extends StreamSqlStatement {
     String name;
     StreamExpression expression;
-    static Logger log=LoggerFactory.getLogger(InsertStatement.class.getName());
+    static Logger log = LoggerFactory.getLogger(InsertStatement.class.getName());
     InsertMode insertMode;
-    
+
     public InsertStatement(String name, StreamExpression expression, InsertMode mode) {
-        this.name=name;
-        this.expression=expression;
-        this.insertMode=mode;
+        this.name = name;
+        this.expression = expression;
+        this.insertMode = mode;
     }
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance ydb=YarchDatabase.getInstance(c.getDbName());
-        synchronized(ydb) {
-            TableDefinition outputTableDef=null;
-            TupleDefinition outputTuple;
-            Stream outputStream=null;
-            if((outputTableDef=ydb.getTable(name))!=null) {
-                outputTuple=outputTableDef.getTupleDefinition();
-            } else if((outputStream=ydb.getStream(name))!=null) {
-                outputTuple=outputStream.getDefinition();
-            } else {
-                throw new ResourceNotFoundException(name);	
-            }
-            expression.bind(c);
-            Stream inputStream=expression.execute(c);
-            TupleDefinition inputTuple=inputStream.getDefinition();
-            // compatibility check disabled since we switched to the dynamic schema
-       //     String reason=TupleDefinition.checkCompatibility(inputTuple, outputTuple); 
-       //     if(reason!=null) throw new IncompatibilityException(reason);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
 
-            if(outputTableDef!=null) {
-                try {
-                    //writing into a table
-                    TableWriter tableWriter=ydb.getStorageEngine(outputTableDef).newTableWriter(ydb, outputTableDef, insertMode);
-                    inputStream.addSubscriber(tableWriter);
-                    return new StreamSqlResult();
-                } catch(YarchException e) {
-                    log.warn("Got exception when creatin table", e);
-                    throw new GenericStreamSqlException(e.getMessage());
-                }
-            }
+        TableDefinition outputTableDef = ydb.getTable(name);
+        Stream outputStream = outputTableDef==null?  ydb.getStream(name): null;
+        
+        if(outputTableDef==null && outputStream==null) {
+            throw new ResourceNotFoundException(name); 
         }
-        log.warn("Insert into streams not yet implemented");
-        throw new NotImplementedException("Inserting into streams");
+        
+        expression.bind(c);
+        Stream inputStream = expression.execute(c);
+
+        if (outputTableDef != null) {
+            try {
+                // writing into a table
+                TableWriter tableWriter = ydb.getStorageEngine(outputTableDef).newTableWriter(ydb, outputTableDef,
+                        insertMode);
+                inputStream.addSubscriber(tableWriter);
+                
+            } catch (YarchException e) {
+                log.warn("Got exception when creatin table", e);
+                throw new GenericStreamSqlException(e.getMessage());
+            }
+        } else {
+            inputStream.addSubscriber(new StreamSubscriber() {
+                @Override
+                public void streamClosed(Stream stream) {}
+                
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                    outputStream.emitTuple(tuple);
+                }
+            });
+            
+        }
+        return new StreamSqlResult();
     }
 }
