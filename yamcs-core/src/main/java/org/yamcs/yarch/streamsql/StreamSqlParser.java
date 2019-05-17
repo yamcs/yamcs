@@ -15,6 +15,7 @@ import org.yamcs.utils.parser.SimpleCharStream;
 import org.yamcs.utils.parser.ParseException;
 
 import org.yamcs.yarch.*;
+import org.yamcs.yarch.streamsql.funct.*;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 
@@ -1728,7 +1729,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
   List<Expression> args=new ArrayList<Expression>();
   Expression expr;
     expr = Expression();
-                       args.add(expr);
+                         args.add(expr);
     label_15:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1740,8 +1741,8 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         break label_15;
       }
       jj_consume_token(125);
-      Expression();
-                       args.add(expr);
+      expr = Expression();
+                              args.add(expr);
     }
    {if (true) return args;}
     throw new Error("Missing return statement in function");

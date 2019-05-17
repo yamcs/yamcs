@@ -12,6 +12,7 @@ import org.yamcs.utils.parser.Token;
 import org.yamcs.utils.parser.SimpleCharStream;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.*;
+import org.yamcs.yarch.streamsql.funct.*;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 

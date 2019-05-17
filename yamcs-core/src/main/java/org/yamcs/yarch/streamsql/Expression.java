@@ -122,7 +122,7 @@ public abstract class Expression {
     protected void fillCode_getValueBody(StringBuilder code) throws StreamSqlException {
     }
 
-    protected abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
+    public abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
 
     private static AtomicInteger counter = new AtomicInteger();
 

@@ -16,7 +16,7 @@ public class LikeExpression extends Expression {
     }
 
     @Override
-    protected void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
+    public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
         if(likeClause.negation) {
             code.append("!");
         }
