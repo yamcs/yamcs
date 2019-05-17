@@ -197,8 +197,8 @@ public class SelectExpression implements StreamExpression {
                 }
                 for (Expression expr : aggExpr.children) {
                     expr.bind(inputDef);
-                    if (aggInputDef.getColumn(expr.getColName()) == null) {
-                        aggInputDef.addColumn(expr.getColName(), expr.getType());
+                    if (aggInputDef.getColumn(expr.getColumnName()) == null) {
+                        aggInputDef.addColumn(expr.getColumnName(), expr.getType());
                         aggInputList.add(expr);
                     }
                     if (!(expr instanceof ColumnExpression)) {
@@ -213,7 +213,7 @@ public class SelectExpression implements StreamExpression {
             aggOutputDef = new TupleDefinition();
             for (AggregateExpression aggExpr : aggList) {
                 aggExpr.bindAggregate((aggInputDef == null) ? inputDef : aggInputDef);
-                aggOutputDef.addColumn(aggExpr.getColName(), aggExpr.getType());
+                aggOutputDef.addColumn(aggExpr.getColumnName(), aggExpr.getType());
             }
         }
 

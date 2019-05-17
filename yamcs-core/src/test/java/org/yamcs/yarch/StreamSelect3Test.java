@@ -65,11 +65,12 @@ public class StreamSelect3Test extends YarchTestCase {
     public void testExtractShortWithCondition() throws Exception {
         createFeeder1();
 
-        res = execute("create stream stream_out1 as select substring(x, 2) from stream_in where extract_int(x, 0) = 2");
+        res = execute("create stream stream_out1 as select substring(x, 2) as name_subs from stream_in where extract_int(x, 0) = 2");
         List<Tuple> l = fetchAll("stream_out1");
         assertEquals(1, l.size());
-        
-        byte[] x = (byte[]) l.get(0).getColumn(0);
+        Tuple t0 = l.get(0);
+        assertEquals("name_subs", t0.getColumnDefinition(0).getName());
+        byte[] x = (byte[]) t0.getColumn(0);
         assertEquals(2, ByteArrayUtils.decodeShort(x, 0));
     }
 }

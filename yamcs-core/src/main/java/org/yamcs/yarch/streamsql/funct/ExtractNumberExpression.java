@@ -21,7 +21,7 @@ public class ExtractNumberExpression extends Expression {
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
 
-        String c0name = children[0].getColName();
+        String c0name = children[0].getColumnName();
         code.append("org.yamcs.utils.ByteArrayUtils.");
         if(numBytes==2) {
             code.append("decodeShort");
