@@ -1,3 +1,6 @@
 <div class="panel-content">
-  <app-file-transfer-table [dataSource]="dataSource"></app-file-transfer-table>
+  <app-file-transfer-table *ngIf="dataSource.data.length; else noData" [dataSource]="dataSource"></app-file-transfer-table>
+  <ng-template #noData>
+    No successful transfers.
+  </ng-template>
 </div>
