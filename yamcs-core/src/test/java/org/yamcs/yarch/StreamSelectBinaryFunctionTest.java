@@ -9,7 +9,7 @@ import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
-public class StreamSelect3Test extends YarchTestCase {
+public class StreamSelectBinaryFunctionTest extends YarchTestCase {
     StreamSqlResult res;
     final int n = 10;
 
