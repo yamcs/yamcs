@@ -44,4 +44,9 @@ public class CfdpTransactionId {
     public int hashCode() {
         return Objects.hash(sequenceNumber, initiatorEntity);
     }
+    
+    @Override
+    public String toString() {
+        return initiatorEntity+"_"+sequenceNumber;
+    }
 }
