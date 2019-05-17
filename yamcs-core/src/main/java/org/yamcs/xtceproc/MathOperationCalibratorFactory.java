@@ -3,9 +3,9 @@ package org.yamcs.xtceproc;
 import java.util.List;
 import java.util.Stack;
 
-import org.codehaus.janino.Location;
+import org.codehaus.commons.compiler.LocatedException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.util.LocatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.InputParameter;

@@ -7,6 +7,7 @@ import java.util.List;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
+import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.Stream;
@@ -255,7 +256,12 @@ public class SelectExpression implements StreamExpression {
             cselectList = new ArrayList<>();
             for (SelectItem item : selectList) {
                 if (item != SelectItem.STAR) {
-                    cselectList.add(item.expr.compile());
+                    Expression expr = item.expr;
+                    if(expr.isConstant()) {
+                        cselectList.add(new ConstantValueCompiledExpression(expr.getConstantValue(), new ColumnDefinition(expr.getColumnName(), expr.getType())));
+                    } else {
+                        cselectList.add(item.expr.compile());
+                    }
                 } else {
                     cselectList.add(SelectStream.STAR);
                 }

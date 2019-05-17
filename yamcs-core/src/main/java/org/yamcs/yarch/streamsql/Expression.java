@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
@@ -21,7 +22,8 @@ public abstract class Expression {
     protected TupleDefinition inputDef;
 
     protected boolean hasAggregates;
-    protected boolean constant = false;
+    protected Object constantValue;
+
     String colName;
     static Logger log = LoggerFactory.getLogger(Expression.class);
 
@@ -43,7 +45,7 @@ public abstract class Expression {
     }
 
     final public boolean isConstant() {
-        return constant;
+        return constantValue != null;
     }
 
     /**
@@ -91,6 +93,13 @@ public abstract class Expression {
             for (Expression c : children) {
                 c.fillCode_Declarations(code);
             }
+        }
+        if (constantValue != null && constantValue instanceof byte[]) {
+            byte[] v = (byte[]) constantValue;
+            code.append("\tbyte[] const_").append(getColumnName()).append(" = ")
+            .append("org.yamcs.utils.StringConverter.hexStringToArray(\"")
+            .append(StringConverter.arrayToHexString(v))
+            .append("\");\n");
         }
     }
 
@@ -181,5 +190,9 @@ public abstract class Expression {
 
     public void setColumnName(String name) {
         this.colName = name;
+    }
+
+    public Object getConstantValue() {
+        return constantValue;
     }
 }

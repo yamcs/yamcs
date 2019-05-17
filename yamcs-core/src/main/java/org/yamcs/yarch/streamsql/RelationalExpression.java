@@ -19,8 +19,8 @@ public class RelationalExpression extends Expression {
     public RelationalExpression(Expression left, Expression right, RelOp relOp) throws ParseException {
         super(new Expression[] { left, right });
         this.relOp = relOp;
-        if (left.isConstant() && right.isConstant())
-            constant = true;
+       // if (left.isConstant() && right.isConstant())
+     //       constant = true;
     }
 
     public RelOp getRelation() {
@@ -41,7 +41,7 @@ public class RelationalExpression extends Expression {
             ColumnExpression cexpr = (ColumnExpression) children[0];
             Object cvalue;
             if (children[1] instanceof ValueExpression) {
-                cvalue = ((ValueExpression) children[1]).value;
+                cvalue = children[1].getConstantValue();
             } else {
                 CompiledExpression compexpr = children[1].compile();
                 cvalue = compexpr.getValue(null);

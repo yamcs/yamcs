@@ -22,6 +22,9 @@ public class FunctionExpressionFactory {
                 int.class, 2, boolean.class, false));
         functions.put("extract_int", new FunctConfig(ExtractNumberExpression.class, 
                 int.class, 4, boolean.class, false));
+        functions.put("extract_3bytes", new FunctConfig(ExtractNumberExpression.class, 
+                int.class, 3, boolean.class, false));
+        addFunction("unhex",UnhexExpression.class);
         
     }
     

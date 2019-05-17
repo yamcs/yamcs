@@ -9,70 +9,69 @@ import org.yamcs.utils.parser.ParseException;
 
 /**
  * This represents a constant value coming from some sql expression
- *  for example: select 3 from x
+ * for example: select 3 from x
+ * 
  * @author nm
  *
  */
 public class ValueExpression extends Expression {
-    Object value;
-
     ValueExpression(Object value) {
         super(null);
-        this.value=value;
-        constant=true;
+        this.constantValue = value;
     }
 
     @Override
     public String toString() {
-        return value.toString();
+        return constantValue.toString();
     }
 
     @Override
     public void doBind() throws StreamSqlException {
-        type=DataType.typeOf(value);
+        type = DataType.typeOf(constantValue);
     }
 
     ValueExpression getNegative() throws ParseException {
         Object newv;
-        if(value instanceof Byte) {
-            newv = (byte)-1*(Byte)value;
-        } else if(value instanceof Short) {
-            newv = (short)-1*(Short)value;
-        } else if(value instanceof Integer) {
-            newv = (int)-1*(Integer)value;
-        } else if(value instanceof Double) {
-            newv = (double)-1*(Double)value;
-        } else if(value instanceof Long) {
-            newv = (long)-1*(Long)value;
+        if (constantValue instanceof Byte) {
+            newv = (byte) -1 * (Byte) constantValue;
+        } else if (constantValue instanceof Short) {
+            newv = (short) -1 * (Short) constantValue;
+        } else if (constantValue instanceof Integer) {
+            newv = (int) -1 * (Integer) constantValue;
+        } else if (constantValue instanceof Double) {
+            newv = (double) -1 * (Double) constantValue;
+        } else if (constantValue instanceof Long) {
+            newv = (long) -1 * (Long) constantValue;
         } else {
-            throw new ParseException("Cannot have a negative value of a "+value.getClass());
+            throw new ParseException("Cannot have a negative value of a " + constantValue.getClass());
         }
         return new ValueExpression(newv);
     }
-    
+
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        if((value instanceof Byte) || (value instanceof Short) || (value instanceof Integer)) {
-            code.append(value.toString());
-        } else if(value instanceof Long) {
-            code.append(value.toString()).append("l");
-        } else if(value instanceof String) {
+        if ((constantValue instanceof Byte) || (constantValue instanceof Short) || (constantValue instanceof Integer)) {
+            code.append(constantValue.toString());
+        } else if (constantValue instanceof Long) {
+            code.append(constantValue.toString()).append("l");
+        } else if (constantValue instanceof String) {
             code.append('"');
-            escapeJavaString((String)value, code);
+            escapeJavaString((String) constantValue, code);
             code.append('"');
         } else {
-            throw new NotImplementedException(value.getClass()+" not usable in constants");
+            throw new NotImplementedException(constantValue.getClass() + " not usable in constants");
         }
     }
 
     @Override
     public CompiledExpression compile() {
-        ColumnDefinition def=new ColumnDefinition(value.toString(), type);
-        return new ConstantValueCompiledExpression(value, def);
+        ColumnDefinition def = new ColumnDefinition(constantValue.toString(), type);
+        return new ConstantValueCompiledExpression(constantValue, def);
     }
-    
+
     /**
      * Copied (and modified a little) from org.apache.commons.lang
+     * 
      * @param s
      * @return
      */
@@ -84,9 +83,9 @@ public class ValueExpression extends Expression {
 
             // handle unicode
             if (ch > 0xfff) {
-                sb.append("\\u" +  Integer.toHexString(ch).toUpperCase());
+                sb.append("\\u" + Integer.toHexString(ch).toUpperCase());
             } else if (ch > 0xff) {
-                sb.append("\\u0" +  Integer.toHexString(ch).toUpperCase());
+                sb.append("\\u0" + Integer.toHexString(ch).toUpperCase());
             } else if (ch > 0x7f) {
                 sb.append("\\u00" + Integer.toHexString(ch).toUpperCase());
             } else if (ch < 32) {
@@ -111,7 +110,7 @@ public class ValueExpression extends Expression {
                     sb.append('\\');
                     sb.append('r');
                     break;
-                default :
+                default:
                     if (ch > 0xf) {
                         sb.append("\\u00" + Integer.toHexString(ch).toUpperCase());
                     } else {
@@ -129,11 +128,11 @@ public class ValueExpression extends Expression {
                     sb.append('\\');
                     sb.append('\\');
                     break;
-                default :
+                default:
                     sb.append(ch);
                     break;
                 }
-            } 
+            }
         }
     }
 }

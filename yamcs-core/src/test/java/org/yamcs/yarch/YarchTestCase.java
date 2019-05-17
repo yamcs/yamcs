@@ -82,13 +82,46 @@ public abstract class YarchTestCase {
     }
 
     protected List<Tuple> fetchAll(String streamName) throws InterruptedException {
+        return fetch(streamName, null);
+    }
+    
+    /**
+     * fetch all tuples from outStream. 
+     * If inStream is specified, do an inStream.start() after subscribing to outStream
+     * otherwise do an outStream.start()
+     * 
+     * The termination condition is also dictated by the stream where start is used
+     * 
+     */
+    protected List<Tuple> fetch(String outStream, String inStream) throws InterruptedException {
         final List<Tuple> tuples = new ArrayList<Tuple>();
         final Semaphore semaphore = new Semaphore(0);
-        Stream s = ydb.getStream(streamName);
-        if (s == null)
-            throw new IllegalArgumentException("No stream named '" + streamName + "' in instance " + instance);
-        s.addSubscriber(new StreamSubscriber() {
-
+        Stream out = ydb.getStream(outStream);
+        if (out == null) {
+            throw new IllegalArgumentException("No stream named '" + outStream + "' in instance " + instance);
+        }
+        Stream streamToStart = null;
+        if(inStream!=null) {
+            streamToStart = ydb.getStream(inStream);
+            if(streamToStart == null) {
+                throw new IllegalArgumentException("No stream named '" + inStream + "' in instance " + instance);
+            }
+            streamToStart.addSubscriber(new StreamSubscriber() {
+                
+                @Override
+                public void streamClosed(Stream stream) {
+                    semaphore.release();
+                }
+                
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                }
+            });
+        } else {
+            streamToStart = out;
+        }
+        
+        out.addSubscriber(new StreamSubscriber() {
             @Override
             public void streamClosed(Stream stream) {
                 semaphore.release();
@@ -99,11 +132,14 @@ public abstract class YarchTestCase {
                 tuples.add(tuple);
             }
         });
-        s.start();
+        
+        streamToStart.start();
+        
         semaphore.acquire();
         return tuples;
     }
 
+    
     protected void assertNumElementsEqual(Iterator<?> iter, int k) {
         int num =0;
         while(iter.hasNext()) {
