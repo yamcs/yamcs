@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class StreamSelect3Test extends YarchTestCase {
@@ -72,5 +73,21 @@ public class StreamSelect3Test extends YarchTestCase {
         assertEquals("name_subs", t0.getColumnDefinition(0).getName());
         byte[] x = (byte[]) t0.getColumn(0);
         assertEquals(2, ByteArrayUtils.decodeShort(x, 0));
+    }
+    
+    @Test
+    public void testUnhex() throws Exception {
+        createFeeder1();
+        res = execute("create stream stream_out1 as select unhex('010203') + x as c_x from stream_in");
+        List<Tuple> l = fetchAll("stream_out1");
+        byte[] ic  = new byte[4];
+        assertEquals(n, l.size());
+        for(int i =0; i<n; i++) {
+            Tuple t = l.get(i);
+            ByteArrayUtils.encodeInt(i, ic, 0);
+            byte[] cx = (byte[]) t.getColumn("c_x");
+            assertEquals(303, cx.length);
+           assertEquals("010203"+StringConverter.arrayToHexString(ic), StringConverter.arrayToHexString(cx).substring(0, 14));
+        }
     }
 }

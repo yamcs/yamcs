@@ -3,9 +3,9 @@ package org.yamcs.algorithms;
 import java.util.Arrays;
 import java.util.List;
 
-import org.codehaus.janino.Location;
+import org.codehaus.commons.compiler.LocatedException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.util.LocatedException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;

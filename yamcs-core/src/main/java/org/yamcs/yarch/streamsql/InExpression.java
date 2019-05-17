@@ -51,7 +51,7 @@ public class InExpression extends Expression {
         for (int i = 1; i < children.length; i++) {
             Object cvalue;
             if (children[1] instanceof ValueExpression) {
-                cvalue = ((ValueExpression) children[i]).value;
+                cvalue = children[i].getConstantValue();
             } else {
                 CompiledExpression compexpr = children[i].compile();
                 cvalue = compexpr.getValue(null);

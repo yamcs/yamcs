@@ -6,7 +6,7 @@ public class NegativeExpression extends Expression {
 
     public NegativeExpression(Expression expr) throws ParseException {
         super(new Expression[] { expr });
-        constant = expr.isConstant();
+    //    constant = expr.isConstant();
     }
 
     @Override

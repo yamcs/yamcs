@@ -1,8 +1,8 @@
 package org.yamcs.xtceproc;
 
-import org.codehaus.janino.Location;
+import org.codehaus.commons.compiler.LocatedException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.util.LocatedException;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 
 public class JavaExpressionCalibratorFactory {
