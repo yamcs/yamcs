@@ -57,7 +57,7 @@ public class CfsTcTmSplitter extends AbstractService implements YamcsService {
                 byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
                 int msgId = ByteArrayUtils.decodeShort(packet, 0);
                 if(msgId == cfdpTmMsgId) {
-                    cfdpOutStream.emitTuple(tuple);
+                    cfdpInStream.emitTuple(tuple);
                 } else {
                     tmRealtimeStream.emitTuple(tuple);
                 }
