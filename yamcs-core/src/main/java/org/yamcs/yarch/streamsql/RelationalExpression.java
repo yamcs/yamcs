@@ -6,8 +6,10 @@ import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 import org.yamcs.utils.parser.ParseException;
+
 /**
  * Expressions of type "x &gt; y"
+ * 
  * @author nm
  *
  */
@@ -15,11 +17,11 @@ public class RelationalExpression extends Expression {
     RelOp relOp;
 
     public RelationalExpression(Expression left, Expression right, RelOp relOp) throws ParseException {
-        super(new Expression[] {left,right});
-        this.relOp=relOp;
-        if(left.isConstant() && right.isConstant()) constant=true;
+        super(new Expression[] { left, right });
+        this.relOp = relOp;
+        if (left.isConstant() && right.isConstant())
+            constant = true;
     }
-
 
     public RelOp getRelation() {
         return relOp;
@@ -28,26 +30,26 @@ public class RelationalExpression extends Expression {
     @Override
     public Expression addFilter(DbReaderStream tableStream) throws StreamSqlException {
         if ((children[1] instanceof ColumnExpression) && (children[0].isConstant())) {
-            //swap left with right
-            Expression tmp=children[1];
-            children[1]=children[0];
-            children[0]=tmp;
-            relOp=relOp.getOppsite();
+            // swap left with right
+            Expression tmp = children[1];
+            children[1] = children[0];
+            children[0] = tmp;
+            relOp = relOp.getOppsite();
         }
 
-        if((children[0] instanceof ColumnExpression) && children[1].isConstant()) {
-            ColumnExpression cexpr=(ColumnExpression) children[0];
+        if ((children[0] instanceof ColumnExpression) && children[1].isConstant()) {
+            ColumnExpression cexpr = (ColumnExpression) children[0];
             Object cvalue;
-            if(children[1] instanceof ValueExpression) {
-                cvalue=((ValueExpression)children[1]).value;
+            if (children[1] instanceof ValueExpression) {
+                cvalue = ((ValueExpression) children[1]).value;
             } else {
-                CompiledExpression compexpr=children[1].compile();
-                cvalue=compexpr.getValue(null);
+                CompiledExpression compexpr = children[1].compile();
+                cvalue = compexpr.getValue(null);
             }
 
-            if(tableStream.addRelOpFilter(cexpr,relOp,cvalue))
+            if (tableStream.addRelOpFilter(cexpr, relOp, cvalue))
                 return null;
-            else 
+            else
                 return this;
         } else {
             return this;
@@ -56,10 +58,11 @@ public class RelationalExpression extends Expression {
 
     @Override
     public void doBind() throws StreamSqlException {
-        DataType ltype=children[0].getType();
-        DataType rtype=children[1].getType();
-        if(!compatibleTypes(ltype,rtype)) throw new StreamSqlException(ErrCode.INCOMPATIBLE, ltype+" and "+rtype);
-        type=DataType.BOOLEAN;
+        DataType ltype = children[0].getType();
+        DataType rtype = children[1].getType();
+        if (!compatibleTypes(ltype, rtype))
+            throw new StreamSqlException(ErrCode.INCOMPATIBLE, ltype + " and " + rtype);
+        type = DataType.BOOLEAN;
     }
 
     private boolean compatibleTypes(DataType ltype, DataType rtype) {
@@ -70,27 +73,35 @@ public class RelationalExpression extends Expression {
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
         code.append("(");
-
-        switch(relOp) {
-        case NOT_EQUAL:
-            code.append("!");
-        case EQUAL: //intentional fall through
-            children[0].fillCode_getValueReturn(code);
-            code.append(".equals(");
-            children[1].fillCode_getValueReturn(code);
-            code.append(")");
-            break;
-        default:
+        DataType ch0dt = children[0].getType();
+        if (DataType.isNumber(ch0dt)) {
             children[0].fillCode_getValueReturn(code);
             code.append(relOp.getSign());
             children[1].fillCode_getValueReturn(code);
+        } else {
+            switch (relOp) {
+            case NOT_EQUAL:
+                code.append("!");
+            case EQUAL: // intentional fall through
+                children[0].fillCode_getValueReturn(code);
+                if (DataType.isNumber(ch0dt)) {
+                    code.append(" == ");
+                    children[1].fillCode_getValueReturn(code);
+                } else {
+                    code.append(".equals(");
+                    children[1].fillCode_getValueReturn(code);
+                    code.append(")");
+                }
+                break;
+            default:
+                throw new StreamSqlException(ErrCode.COMPILE_ERROR, "Cannot use " + relOp + " not supported for data type " + ch0dt);
+            }
         }
-
         code.append(")");
     }
 
     @Override
     public String toString() {
-        return children[0]+" "+relOp.getSign()+" "+children[1];
+        return children[0] + " " + relOp.getSign() + " " + children[1];
     }
 }

@@ -1,6 +1,5 @@
 package org.yamcs.yarch.streamsql;
 
-import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codehaus.janino.SimpleCompiler;
@@ -13,19 +12,19 @@ import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public abstract class CompilableAggregateExpression extends AggregateExpression {
-    
-    public CompilableAggregateExpression(Expression[] args, boolean star)throws ParseException {
+
+    public CompilableAggregateExpression(Expression[] args, boolean star) throws ParseException {
         super(args, star);
     }
 
-    private static AtomicInteger counter=new AtomicInteger();
-    
+    private static AtomicInteger counter = new AtomicInteger();
+
     @Override
     public CompiledAggregateExpression getCompiledAggregate() throws StreamSqlException {
-        String className = "AggregateExpression"+counter.incrementAndGet();
-        StringBuilder code=new StringBuilder();
+        String className = "AggregateExpression" + counter.incrementAndGet();
+        StringBuilder code = new StringBuilder();
         code.append("package org.yamcs.yarch;\n")
-        .append("public class "+className+" implements CompiledAggregateExpression {\n");
+                .append("public class " + className + " implements CompiledAggregateExpression {\n");
         aggregateFillCode_Declarations(code);
 
         code.append("\tpublic void newData(Tuple tuple) {\n");
@@ -39,22 +38,23 @@ public abstract class CompilableAggregateExpression extends AggregateExpression 
         code.append("\tpublic void clear() {\n");
         aggregateFillCode_clear(code);
         code.append("\t}\n")
-        .append("}");
+                .append("}");
 
         try {
-            SimpleCompiler compiler=new SimpleCompiler();
+            SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(code.toString());
-            Class<?> cexprClass = compiler.getClassLoader().loadClass("org.yamcs.yarch."+className);
+            Class<?> cexprClass = compiler.getClassLoader().loadClass("org.yamcs.yarch." + className);
             return (CompiledAggregateExpression) cexprClass.newInstance();
         } catch (Exception e) {
-            throw new StreamSqlException(ErrCode.COMPILE_ERROR, e.toString()); 
+            throw new StreamSqlException(ErrCode.COMPILE_ERROR, e.toString());
         }
     }
 
     protected abstract void aggregateFillCode_clear(StringBuilder code);
 
     protected abstract void aggregateFillCode_getValue(StringBuilder code);
+
     protected abstract void aggregateFillCode_newData(StringBuilder code) throws StreamSqlException;
 
-    protected abstract void aggregateFillCode_Declarations(StringBuilder code);  
+    protected abstract void aggregateFillCode_Declarations(StringBuilder code);
 }
