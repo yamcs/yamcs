@@ -21,7 +21,7 @@ public class FirstValExpression extends AggregateExpression {
         } else if (children.length>1) {
             //TODO
         } else if (children.length==1) {
-            type=inputDef.getColumn(children[0].getColName()).getType();
+            type=inputDef.getColumn(children[0].getColumnName()).getType();
         } else {
             throw new IllegalStateException();
         }
@@ -32,7 +32,7 @@ public class FirstValExpression extends AggregateExpression {
         if(star)  return new CompiledFirstVal(null, star);
         String[] args=new String[children.length];
         for(int i=0; i<children.length; i++) {
-            args[i]=children[i].getColName();
+            args[i]=children[i].getColumnName();
         }
         return new CompiledFirstVal(args,star);
     }

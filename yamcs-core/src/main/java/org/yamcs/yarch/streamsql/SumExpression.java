@@ -38,7 +38,7 @@ public class SumExpression extends CompilableAggregateExpression {
     protected void aggregateFillCode_newData(StringBuilder code) throws StreamSqlException {
         fillCode_AllInputDefVars(code);
         // code.append("\t\tsum+=col"+children[0].getColName()+".get"+children[0].getType().capitalized()+"()");
-        code.append("\t\tsum+=col" + children[0].getColName());
+        code.append("\t\tsum+=col" + children[0].getColumnName());
         code.append(";\n");
     }
 }

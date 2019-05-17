@@ -175,7 +175,11 @@ public abstract class Expression {
      * 
      * @return
      */
-    public String getColName() {
+    public String getColumnName() {
         return colName;
+    }
+
+    public void setColumnName(String name) {
+        this.colName = name;
     }
 }

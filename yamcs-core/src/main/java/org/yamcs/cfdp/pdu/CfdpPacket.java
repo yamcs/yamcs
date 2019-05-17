@@ -144,7 +144,6 @@ public abstract class CfdpPacket implements Packet {
     }
 
     public static CfdpPacket fromTuple(Tuple tuple) {
-        System.out.println("CfdpPacket. fromtuple: "+tuple.getDefinition());
         if(tuple.hasColumn("pdu")) {
             return CfdpPacket.getCFDPPacket(ByteBuffer.wrap((byte[]) (tuple.getColumn("pdu"))));
         } else {
