@@ -387,7 +387,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         linksByName.forEach((name, link) -> {
             mgrsrv.unregisterLink(yamcsInstance, name);
             if (link instanceof Service) {
-                System.out.println("stopping service "+link+" "+link.hashCode());
                 ((Service) link).stopAsync();
             }
         });

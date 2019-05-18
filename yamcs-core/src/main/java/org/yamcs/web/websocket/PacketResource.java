@@ -98,9 +98,9 @@ public class PacketResource implements WebSocketResource {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-                    long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
+                    long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
                     long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
-                    int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+                    int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                     TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))

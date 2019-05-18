@@ -117,7 +117,6 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        System.out.println("tuple: "+tuple);
         CfdpPacket packet = CfdpPacket.fromTuple(tuple);
         CfdpTransactionId id = packet.getTransactionId();
         CfdpTransaction transaction = null;

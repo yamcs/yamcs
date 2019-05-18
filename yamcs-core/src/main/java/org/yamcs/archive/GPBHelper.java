@@ -24,8 +24,8 @@ public final class GPBHelper {
     public static TmPacketData tupleToTmPacketData(Tuple tuple) {
         long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
         byte[] pbody = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
-        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
         TmPacketData tm = TmPacketData.newBuilder()
                 .setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))

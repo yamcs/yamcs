@@ -72,9 +72,6 @@ public class StreamInitializer {
             case sqlFile:
                 loadSqlFile(sce.name);
                 break; // filename in fact
-            case cfdp:
-                createCfdpStream(sce.name);
-                break;
             default:
                 throw new IllegalArgumentException("Unknown stream type " + sce.type);
             }
@@ -88,10 +85,6 @@ public class StreamInitializer {
 
     private void createTcStream(String streamName) throws StreamSqlException, ParseException {
         ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
-    }
-
-    private void createCfdpStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.CFDP.getStringDefinition());
     }
 
     private void createTmStream(String streamName) throws StreamSqlException, ParseException {

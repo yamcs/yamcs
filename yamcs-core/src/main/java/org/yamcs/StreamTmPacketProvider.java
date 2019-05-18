@@ -127,8 +127,8 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
         @Override
         public void onTuple(Stream s, Tuple tuple) {
             long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
-            long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
-            int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+            long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+            int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
             PacketWithTime pwrt = new PacketWithTime(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;

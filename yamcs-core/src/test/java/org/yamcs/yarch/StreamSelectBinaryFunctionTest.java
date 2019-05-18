@@ -90,4 +90,17 @@ public class StreamSelectBinaryFunctionTest extends YarchTestCase {
            assertEquals("010203"+StringConverter.arrayToHexString(ic), StringConverter.arrayToHexString(cx).substring(0, 14));
         }
     }
+    
+    @Test
+    public void testBinaryColName() throws Exception {
+        createFeeder1();
+        res = execute("create stream stream_out1 as select x as binary from stream_in");
+        List<Tuple> l = fetchAll("stream_out1");
+        assertEquals(n, l.size());
+        for(int i =0; i<n; i++) {
+            Tuple t = l.get(i);
+            byte[] cx = (byte[]) t.getColumn("binary");
+            assertEquals(300, cx.length);
+        }
+    }
 }

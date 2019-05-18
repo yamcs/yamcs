@@ -23,8 +23,8 @@ public class TmTupleTranslator implements TupleTranslator {
 
         byte[] tmbody = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
         long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
-        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
-        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(tmbody)).setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime)).setSequenceNumber(seqNum).build();
         Protocol.encode(msg, tm);

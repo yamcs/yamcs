@@ -5,8 +5,8 @@ import org.yamcs.yarch.TupleDefinition;
 
 public class StandardTupleDefinitions {
 
-    public static final String TM_GENTIME_COLUMN = "gentime";
-    public static final String TM_SEQNUM_COLUMN = "seqNum";
+    public static final String GENTIME_COLUMN = "gentime";
+    public static final String SEQNUM_COLUMN = "seqNum";
     public static final String TM_RECTIME_COLUMN = "rectime";
     public static final String TM_PACKET_COLUMN = "packet";
     public static final String CMDHIST_TUPLE_COL_CMDNAME = "cmdName";
@@ -15,11 +15,13 @@ public class StandardTupleDefinitions {
     public static final String PARAMETER_COL_SEQ_NUM = "seqNum";
     public static final String PARAMETER_COL_GROUP = "group";
     public static final String PARAMETER_COL_GENTIME = "gentime";
-
+    
+    public static final String TC_ORIGIN_COLUMN = "origin";
+    
     public static final TupleDefinition TM = new TupleDefinition();
     static {
-        TM.addColumn(TM_GENTIME_COLUMN, DataType.TIMESTAMP);
-        TM.addColumn(TM_SEQNUM_COLUMN, DataType.INT);
+        TM.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
+        TM.addColumn(SEQNUM_COLUMN, DataType.INT);
         // reception or recording time (useful in case we import data from other recordings which provide this)
         TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
         TM.addColumn(TM_PACKET_COLUMN, DataType.BINARY);
@@ -28,9 +30,9 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition TC = new TupleDefinition();
     // this is the commandId (used as the primary key when recording), other columns are handled dynamically
     static {
-        TC.addColumn("gentime", DataType.TIMESTAMP);
-        TC.addColumn("origin", DataType.STRING);
-        TC.addColumn("seqNum", DataType.INT);
+        TC.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
+        TC.addColumn(TC_ORIGIN_COLUMN, DataType.STRING);
+        TC.addColumn(SEQNUM_COLUMN, DataType.INT);
         TC.addColumn(CMDHIST_TUPLE_COL_CMDNAME, DataType.ENUM);
     }
 
@@ -50,7 +52,7 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition EVENT = new TupleDefinition();
     // this is the commandId (used as the primary key when recording), the rest will be handled dynamically
     static {
-        EVENT.addColumn("gentime", DataType.TIMESTAMP);
+        EVENT.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
         EVENT.addColumn("source", DataType.ENUM);
         EVENT.addColumn("seqNum", DataType.INT);
         EVENT.addColumn("body", DataType.protobuf("org.yamcs.protobuf.Yamcs$Event"));
@@ -63,13 +65,5 @@ public class StandardTupleDefinitions {
         ALARM.addColumn("parameter", DataType.STRING);
         ALARM.addColumn("seqNum", DataType.INT);
         ALARM.addColumn("event", DataType.STRING);
-    }
-
-    public static final TupleDefinition CFDP = new TupleDefinition();
-    // outgoing CFDP packets
-    static {
-        CFDP.addColumn("transferId", DataType.INT);
-        CFDP.addColumn("seqNum", DataType.INT);
-        CFDP.addColumn("packet", DataType.BINARY);
     }
 }

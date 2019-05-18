@@ -33,11 +33,7 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     
     @Override
     public byte[] process(PreparedCommand pc) {
-        
         byte[] binary = pc.getBinary();
-        System.out.println("got binary "+StringConverter.arrayToHexString(binary));
-        
-        
         ByteArrayUtils.encodeShort(binary.length - 7, binary, 4);// set packet length
         int seqCount = seqFiller.fill(binary);
         commandHistoryPublisher.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
@@ -52,7 +48,6 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
         binary[CHECKSUM_OFFSET] = (byte) checksum;
         
         commandHistoryPublisher.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
-        System.out.println("sending binary "+StringConverter.arrayToHexString(binary));
         return binary;
     }
     

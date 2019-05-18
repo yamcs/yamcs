@@ -67,7 +67,13 @@ public class StreamSqlParser {
             throw new StreamSqlException(StreamSqlException.ErrCode.BAD_ARG_TYPE, "Expected String, got "+o.getClass()); 
         }
     }
-
+    DataType getBasicDataType(String type) throws ParseException {
+        if("TIMESTAMP".equalsIgnoreCase(type)) {return DataType.TIMESTAMP;}
+        if("PARAMETER_VALUE".equalsIgnoreCase(type)) {return DataType.PARAMETER_VALUE;}
+        if("BINARY".equalsIgnoreCase(type))  {return DataType.BINARY;}
+    
+        throw new ParseException("Unknown data type '"+type+"'");
+    }
 }
 PARSER_END(StreamSqlParser)
 
@@ -97,7 +103,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_AS: "AS">
 |   <K_ASC:"ASC">
 |   <K_BETWEEN:"BETWEEN">
-|   <K_BINARY:"BINARY">
 |   <K_BOOLEAN:"BOOLEAN">
 |   <K_BY:"BY">
 |   <K_BYTE:"BYTE">
@@ -140,6 +145,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_KEY:"KEY">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
+|   <K_LONG:"LONG">
 |   <K_MERGE:"MERGE">
 |   <K_MOD:"MOD">
 |   <K_NOT:"NOT">
@@ -181,8 +187,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLES:"TABLES">
 |   <K_TIME:"TIME">
 |   <K_TIME_AND_VALUE:"TIME_AND_VALUE">
-|   <K_TIMESTAMP:"TIMESTAMP">
-|   <K_PARAMETER_VALUE:"PARAMETER_VALUE">
 |   <K_TUPLES:"TUPLES">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UPDATE:"UPDATE">
@@ -224,28 +228,25 @@ TOKEN:
   | < S_QMARK: "?" >
 }
 
-DataType BasicDataTypeDefinition():
+
+DataType DataTypeDefinition():
 {
     Token className;
 }
 {
-    "INT" {return DataType.INT;}
+       "INT" {return DataType.INT;}
+    |  "LONG" {return DataType.LONG;}
     |  "BOOLEAN" {return DataType.BYTE;}
     |  "BYTE" {return DataType.BYTE;}
     |  "SHORT" {return DataType.SHORT;}
     |  "DOUBLE" {return DataType.DOUBLE;}
-    |  "TIMESTAMP" {return DataType.TIMESTAMP;}
-    |  "PARAMETER_VALUE" {return DataType.PARAMETER_VALUE;}
     |  "STRING"  {return DataType.STRING;}
     |  "ENUM"  {return DataType.ENUM;}
-    |  "BINARY"  {return DataType.BINARY;}
     |  "PROTOBUF" "(" className= <S_STRING> ")"   {return DataType.protobuf(getNonEscapedString(className.image));}
+    | <S_IDENTIFIER> {return getBasicDataType(token.image);}
+    
 }
 
-
-/* ---------------- DECLARATIONS SECTION ends here ------------------ */
-
-/* ---------------- Code Section starts here ---------------------- */
 
 StreamSqlStatement OneStatement() throws StreamSqlException: {
     StreamSqlStatement statement;
@@ -319,7 +320,7 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     CreateTableStatement cts;
 } {
     <K_CREATE> <K_TABLE> [<K_IF> <K_NOT> <K_EXISTS> {ifNotExists=true;}] tableName=ObjectName()
-    "(" (columnName=ObjectName() columnType=BasicDataTypeDefinition() "," {tupleDefinition.addColumn(columnName,columnType);} )+
+    "(" (columnName=ObjectName() columnType=DataTypeDefinition() "," {tupleDefinition.addColumn(columnName,columnType);} )+
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
      ")"
      {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey);}
@@ -955,8 +956,8 @@ TupleDefinition TupleDefinition() throws StreamSqlException: {
     DataType columnType;
 } {
     "(" 
-    	columnName=ObjectName() columnType=BasicDataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);}
-    ("," columnName=ObjectName() columnType=BasicDataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);})*
+    	columnName=ObjectName() columnType=DataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);}
+    ("," columnName=ObjectName() columnType=DataTypeDefinition() {tupleDefinition.addColumn(columnName,columnType);})*
     ")"
     {
         return tupleDefinition;

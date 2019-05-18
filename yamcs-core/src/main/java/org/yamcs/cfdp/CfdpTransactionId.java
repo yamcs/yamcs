@@ -2,9 +2,12 @@ package org.yamcs.cfdp;
 
 import java.util.Objects;
 
+import org.yamcs.utils.TimeEncoding;
+
 public class CfdpTransactionId {
-    private long sequenceNumber;
+    private int sequenceNumber;
     private long initiatorEntity;
+    private final long startTime;
 
     static IdGenerator transactionNrGenerator = new IdGenerator();
 
@@ -13,11 +16,12 @@ public class CfdpTransactionId {
     }
 
     public CfdpTransactionId(long entityId, long sequenceNumber) {
+        this.startTime = TimeEncoding.getWallclockTime();//TODO use mission time?
         this.initiatorEntity = entityId;
-        this.sequenceNumber = sequenceNumber;
+        this.sequenceNumber = (int)sequenceNumber;
     }
 
-    public long getSequenceNumber() {
+    public int getSequenceNumber() {
         return sequenceNumber;
     }
 
@@ -48,5 +52,9 @@ public class CfdpTransactionId {
     @Override
     public String toString() {
         return initiatorEntity+"_"+sequenceNumber;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 }

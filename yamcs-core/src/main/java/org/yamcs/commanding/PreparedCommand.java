@@ -52,9 +52,9 @@ public class PreparedCommand {
     private Set<String> userAssignedArgumentNames;
 
     // column names to use when converting to tuple
-    public final static String CNAME_GENTIME = "gentime";
-    public final static String CNAME_SEQNUM = "seqNum";
-    public final static String CNAME_ORIGIN = "origin";
+    public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
+    public final static String CNAME_SEQNUM = StandardTupleDefinitions.SEQNUM_COLUMN;
+    public final static String CNAME_ORIGIN = StandardTupleDefinitions.TC_ORIGIN_COLUMN;
     public final static String CNAME_USERNAME = "username";
     public final static String CNAME_BINARY = "binary";
     public final static String CNAME_CMDNAME = "cmdName";
@@ -210,13 +210,14 @@ public class PreparedCommand {
         }
 
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
-        pc.argAssignment = new HashMap<>();
-        for (Assignment assignment : assignments.getAssignmentList()) {
-            Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
-            Value v = ValueUtility.fromGpb(assignment.getValue());
-            pc.argAssignment.put(arg, v);
+        if (assignments != null) {
+            pc.argAssignment = new HashMap<>();
+            for (Assignment assignment : assignments.getAssignmentList()) {
+                Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
+                Value v = ValueUtility.fromGpb(assignment.getValue());
+                pc.argAssignment.put(arg, v);
+            }
         }
-
         return pc;
     }
 

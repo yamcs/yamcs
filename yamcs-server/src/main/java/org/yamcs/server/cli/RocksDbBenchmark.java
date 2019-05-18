@@ -84,8 +84,8 @@ class RocksDbBenchmark extends Command {
         if (tblDef == null) {
             TupleDefinition tdef = XtceTmRecorder.RECORDED_TM_TUPLE_DEFINITION;
             tblDef = new TableDefinition(tableName, tdef,
-                    Arrays.asList(StandardTupleDefinitions.TM_GENTIME_COLUMN,
-                            StandardTupleDefinitions.TM_SEQNUM_COLUMN));
+                    Arrays.asList(StandardTupleDefinitions.GENTIME_COLUMN,
+                            StandardTupleDefinitions.SEQNUM_COLUMN));
             tblDef.setHistogramColumns(Arrays.asList(XtceTmRecorder.PNAME_COLUMN));
 
             PartitioningSpec pspec = PartitioningSpec.valueSpec(XtceTmRecorder.PNAME_COLUMN);

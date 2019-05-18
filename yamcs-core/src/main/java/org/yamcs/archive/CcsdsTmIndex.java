@@ -478,7 +478,7 @@ public class CcsdsTmIndex implements TmIndex {
             return cf;
         }
 
-        String timeColumnName = StandardTupleDefinitions.TM_GENTIME_COLUMN;
+        String timeColumnName = StandardTupleDefinitions.GENTIME_COLUMN;
         String streamName = "histo_rebuild_" + streamCounter.incrementAndGet();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {

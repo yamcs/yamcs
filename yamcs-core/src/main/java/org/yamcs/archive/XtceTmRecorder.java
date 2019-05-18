@@ -63,8 +63,8 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
 
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION = new TupleDefinition();
     static {
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN, DataType.INT);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.GENTIME_COLUMN, DataType.TIMESTAMP);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_PACKET_COLUMN, DataType.BINARY);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)

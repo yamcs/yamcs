@@ -29,91 +29,91 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_BETWEEN = 13;
   /** RegularExpression Id. */
-  int K_BINARY = 14;
+  int K_BOOLEAN = 14;
   /** RegularExpression Id. */
-  int K_BOOLEAN = 15;
+  int K_BY = 15;
   /** RegularExpression Id. */
-  int K_BY = 16;
+  int K_BYTE = 16;
   /** RegularExpression Id. */
-  int K_BYTE = 17;
+  int K_CHAR = 17;
   /** RegularExpression Id. */
-  int K_CHAR = 18;
+  int K_CLOSE = 18;
   /** RegularExpression Id. */
-  int K_CLOSE = 19;
+  int K_COLUMN_FAMILY = 19;
   /** RegularExpression Id. */
-  int K_COLUMN_FAMILY = 20;
+  int K_COMPRESSED = 20;
   /** RegularExpression Id. */
-  int K_COMPRESSED = 21;
+  int K_CREATE = 21;
   /** RegularExpression Id. */
-  int K_CREATE = 22;
+  int K_CURRENT = 22;
   /** RegularExpression Id. */
-  int K_CURRENT = 23;
+  int K_DATABASES = 23;
   /** RegularExpression Id. */
-  int K_DATABASES = 24;
+  int K_DATADIR = 24;
   /** RegularExpression Id. */
-  int K_DATADIR = 25;
+  int K_DATE = 25;
   /** RegularExpression Id. */
-  int K_DATE = 26;
+  int K_DECIMAL = 26;
   /** RegularExpression Id. */
-  int K_DECIMAL = 27;
+  int K_DELETE = 27;
   /** RegularExpression Id. */
-  int K_DELETE = 28;
+  int K_DESC = 28;
   /** RegularExpression Id. */
-  int K_DESC = 29;
+  int K_DESCRIBE = 29;
   /** RegularExpression Id. */
-  int K_DESCRIBE = 30;
+  int K_DISTINCT = 30;
   /** RegularExpression Id. */
-  int K_DISTINCT = 31;
+  int K_DOUBLE = 31;
   /** RegularExpression Id. */
-  int K_DOUBLE = 32;
+  int K_DROP = 32;
   /** RegularExpression Id. */
-  int K_DROP = 33;
+  int K_ENGINE = 33;
   /** RegularExpression Id. */
-  int K_ENGINE = 34;
+  int K_ENGINES = 34;
   /** RegularExpression Id. */
-  int K_ENGINES = 35;
+  int K_ENUM = 35;
   /** RegularExpression Id. */
-  int K_ENUM = 36;
+  int K_ESCAPE = 36;
   /** RegularExpression Id. */
-  int K_ESCAPE = 37;
+  int K_EXISTS = 37;
   /** RegularExpression Id. */
-  int K_EXISTS = 38;
+  int K_FIXED_DELAY = 38;
   /** RegularExpression Id. */
-  int K_FIXED_DELAY = 39;
+  int K_FLOAT = 39;
   /** RegularExpression Id. */
-  int K_FLOAT = 40;
+  int K_FROM = 40;
   /** RegularExpression Id. */
-  int K_FROM = 41;
+  int K_HAVING = 41;
   /** RegularExpression Id. */
-  int K_HAVING = 42;
+  int K_HISTOGRAM = 42;
   /** RegularExpression Id. */
-  int K_HISTOGRAM = 43;
+  int K_IF = 43;
   /** RegularExpression Id. */
-  int K_IF = 44;
+  int K_IN = 44;
   /** RegularExpression Id. */
-  int K_IN = 45;
+  int K_IN_KEY = 45;
   /** RegularExpression Id. */
-  int K_IN_KEY = 46;
+  int K_INPUT = 46;
   /** RegularExpression Id. */
-  int K_INPUT = 47;
+  int K_INDEX = 47;
   /** RegularExpression Id. */
-  int K_INDEX = 48;
+  int K_INSERT = 48;
   /** RegularExpression Id. */
-  int K_INSERT = 49;
+  int K_INSERT_APPEND = 49;
   /** RegularExpression Id. */
-  int K_INSERT_APPEND = 50;
+  int K_INT = 50;
   /** RegularExpression Id. */
-  int K_INT = 51;
+  int K_INTO = 51;
   /** RegularExpression Id. */
-  int K_INTO = 52;
+  int K_IS = 52;
   /** RegularExpression Id. */
-  int K_IS = 53;
+  int K_KEY = 53;
   /** RegularExpression Id. */
-  int K_KEY = 54;
+  int K_LIKE = 54;
   /** RegularExpression Id. */
-  int K_LIKE = 55;
+  int K_LIMIT = 55;
   /** RegularExpression Id. */
-  int K_LIMIT = 56;
+  int K_LONG = 56;
   /** RegularExpression Id. */
   int K_MERGE = 57;
   /** RegularExpression Id. */
@@ -197,55 +197,51 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_TIME_AND_VALUE = 97;
   /** RegularExpression Id. */
-  int K_TIMESTAMP = 98;
+  int K_TUPLES = 98;
   /** RegularExpression Id. */
-  int K_PARAMETER_VALUE = 99;
+  int K_UNIQUE = 99;
   /** RegularExpression Id. */
-  int K_TUPLES = 100;
+  int K_UPDATE = 100;
   /** RegularExpression Id. */
-  int K_UNIQUE = 101;
+  int K_UPSERT = 101;
   /** RegularExpression Id. */
-  int K_UPDATE = 102;
+  int K_UPSERT_APPEND = 102;
   /** RegularExpression Id. */
-  int K_UPSERT = 103;
+  int K_USE = 103;
   /** RegularExpression Id. */
-  int K_UPSERT_APPEND = 104;
+  int K_USING = 104;
   /** RegularExpression Id. */
-  int K_USE = 105;
+  int K_VALUE = 105;
   /** RegularExpression Id. */
-  int K_USING = 106;
+  int K_WHEN = 106;
   /** RegularExpression Id. */
-  int K_VALUE = 107;
+  int K_WHERE = 107;
   /** RegularExpression Id. */
-  int K_WHEN = 108;
+  int S_INTEGER = 108;
   /** RegularExpression Id. */
-  int K_WHERE = 109;
+  int S_FLOAT = 109;
   /** RegularExpression Id. */
-  int S_INTEGER = 110;
+  int EXPONENT = 110;
   /** RegularExpression Id. */
-  int S_FLOAT = 111;
+  int DIGIT = 111;
   /** RegularExpression Id. */
-  int EXPONENT = 112;
+  int SIGN = 112;
   /** RegularExpression Id. */
-  int DIGIT = 113;
+  int S_STRING = 113;
   /** RegularExpression Id. */
-  int SIGN = 114;
+  int LINE_COMMENT = 114;
   /** RegularExpression Id. */
-  int S_STRING = 115;
+  int MULTI_LINE_COMMENT = 115;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 116;
+  int S_IDENTIFIER = 116;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 117;
+  int LETTER = 117;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 118;
+  int SPECIAL_CHARS = 118;
   /** RegularExpression Id. */
-  int LETTER = 119;
+  int S_DOUBLE_QUOTED_IDENTIFIER = 119;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 120;
-  /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 121;
-  /** RegularExpression Id. */
-  int S_QMARK = 122;
+  int S_QMARK = 120;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -266,7 +262,6 @@ public interface StreamSqlParserConstants {
     "\"AS\"",
     "\"ASC\"",
     "\"BETWEEN\"",
-    "\"BINARY\"",
     "\"BOOLEAN\"",
     "\"BY\"",
     "\"BYTE\"",
@@ -309,6 +304,7 @@ public interface StreamSqlParserConstants {
     "\"KEY\"",
     "\"LIKE\"",
     "\"LIMIT\"",
+    "\"LONG\"",
     "\"MERGE\"",
     "\"MOD\"",
     "\"NOT\"",
@@ -350,8 +346,6 @@ public interface StreamSqlParserConstants {
     "\"TABLES\"",
     "\"TIME\"",
     "\"TIME_AND_VALUE\"",
-    "\"TIMESTAMP\"",
-    "\"PARAMETER_VALUE\"",
     "\"TUPLES\"",
     "\"UNIQUE\"",
     "\"UPDATE\"",

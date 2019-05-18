@@ -42,22 +42,26 @@ public class ColumnExpression extends Expression {
 
     @Override
     public void doBind() throws StreamSqlException {
-        cdef = inputDef.getColumn(name);
-        if (cdef == null) {
+       ColumnDefinition inputCdef = inputDef.getColumn(name);
+        if (inputCdef == null) {
             int idx = name.indexOf(".");
             if(idx!=-1) { //protobuf column
-                checkProtobuf(name.substring(0, idx), name.substring(idx+1));
-            }       
+                bindProtobuf(name.substring(0, idx), name.substring(idx+1));
+            } else {
+                throw new GenericStreamSqlException("'" + name + "' is not an input column");    
+            }
+            cdef = new ColumnDefinition(colName, type);
         } else {
-            type = cdef.getType();    
-        }
-
-        if(cdef==null) {
-            throw new GenericStreamSqlException("'" + name + "' is not an input column");
+            type = inputCdef.getType();
+            if(name.equals(colName)) {
+                cdef = inputCdef;
+            } else {
+                cdef = new ColumnDefinition(colName, type);
+            }
         }
     }
 
-    private void checkProtobuf (String className, String fieldName) throws GenericStreamSqlException {
+    private void bindProtobuf (String className, String fieldName) throws GenericStreamSqlException {
         cdef = inputDef.getColumn(className);
         if(cdef==null) {
             throw new GenericStreamSqlException("'" + name + "' is not an input column");

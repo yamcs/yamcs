@@ -159,7 +159,6 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
      */
     @Override
     public void sendTc(PreparedCommand pc) {
-        System.out.println("send tc");
         if (disabled) {
             log.warn("TC disabled, ignoring command {}", pc.getCommandId());
             return;
