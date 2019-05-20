@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -53,6 +54,10 @@ public class BackFiller implements StreamSubscriber {
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
+    
+    //this is used to ensure that only one filler tasks runs at once (among all the yamcs instances)
+    static Semaphore fillerTaskSemaphore = new Semaphore(1); 
+    
     private final Logger log = LoggerFactory.getLogger(BackFiller.class);
 
     //set of segments that have to be rebuilt following monitoring of streams
@@ -61,6 +66,8 @@ public class BackFiller implements StreamSubscriber {
     private List<Stream> subscribedStreams;
     //how often (in seconds) the fillup based on the stream monitoring is started
     long streamUpdateFillFrequency;
+    
+    boolean reducedNumberOfFillerTasks = true;
 
     BackFiller(ParameterArchive parchive, Map<String, Object> config) {
         this.parchive = parchive;
@@ -102,6 +109,9 @@ public class BackFiller implements StreamSubscriber {
     @SuppressWarnings("unchecked")
     private void parseConfig(Map<String, Object> config) {
         warmupTime = 1000L * YConfiguration.getInt(config, "warmupTime", 60);
+        if(config.containsKey("reducedNumberOfFillerTasks")) {
+            reducedNumberOfFillerTasks = YConfiguration.getBoolean(config, "reducedNumberOfFillerTasks");
+        }
         if(config.containsKey("schedule")) {
             List<Object> l = YConfiguration.getList(config, "schedule");
             schedules = new ArrayList<>(l.size());
@@ -148,6 +158,16 @@ public class BackFiller implements StreamSubscriber {
     }
 
     private void runTask(long start , long stop) {
+        if(reducedNumberOfFillerTasks) {
+            log.info("Aquiring permit to execute filler task");
+            try {
+                fillerTaskSemaphore.acquire();
+            } catch (InterruptedException e) {
+                log.error("interrupted exception when Aquiring permit to execute filler task");
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
         try {
             start = SortedTimeSegment.getSegmentStart(start);
             stop = SortedTimeSegment.getSegmentEnd(stop)+1;
@@ -172,6 +192,8 @@ public class BackFiller implements StreamSubscriber {
             log.info("Parameter archive fillup for interval {} finished, number of processed parameter samples: {}", timePeriod, aft.getNumProcessedParameters() );
         }  catch (Exception e) {
             log.error("Error when running the archive filler task",e);
+        } finally {
+            fillerTaskSemaphore.release();
         }
     }
 
