@@ -118,4 +118,11 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.Metadata;
     }
 
+    public String getSourceFilename() {
+        return new String(sourceFileName.getValue());
+    }
+    
+    public String getDestinationFilename() {
+        return new String(destinationFileName.getValue());
+    }
 }

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.tctm.Packet;
 import org.yamcs.yarch.DataType;
@@ -111,8 +110,7 @@ public abstract class CfdpPacket implements Packet {
 
     @Override
     public byte[] toByteArray() {
-        ByteBuffer buffer = ByteBuffer
-                .allocate(YConfiguration.getConfiguration("cfdp").getInt("maxPduSize"));
+        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + header.getDataLength());
 
         getHeader().writeToBuffer(buffer);
         writeCFDPPacket(buffer);
@@ -120,14 +118,7 @@ public abstract class CfdpPacket implements Packet {
             calculateAndAddCrc(buffer);
         }
 
-        // now we can calculate and insert the CCSDS header
-        short endPosition = (short) buffer.position();
-        buffer.rewind();
-
-        byte[] toReturn = new byte[endPosition];
-        buffer.rewind();
-        buffer.get(toReturn);
-        return toReturn;
+        return buffer.array();
     }
 
     public Tuple toTuple(CfdpTransactionId transferId) {

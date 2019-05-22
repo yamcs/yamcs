@@ -6,12 +6,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -34,6 +37,8 @@ import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
+
+import static org.yamcs.cfdp.CfdpService.*;
 
 public class CfdpOutgoingTransfer extends CfdpTransaction {
 
@@ -58,7 +63,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private final boolean withCrc = false; // no CRCs are used
     private boolean acknowledged = false;
     private final boolean withSegmentation = false; // segmentation not supported
-    private int entitySize;
+    private int entityIdLength;
     private int seqNrSize;
     private int maxDataSize;
 
@@ -68,8 +73,8 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
-    private long EOFAckTimeoutMs = 3000; // configurable
-    private int maxEOFResendAttempts = 5; // configurable
+    private long eofAckTimeoutMs = 3000; // configurable
+    private int maxEofResendAttempts = 5; // configurable
     private int EOFSendAttempts = 0;
 
     private CfdpTransferState currentState;
@@ -78,21 +83,22 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private long offset = 0;
     private long end = 0;
 
-    private final int pauseBetweenFileDataPackets = 1000;
+    private int sleepBetweenPdusMs = 500;
 
     private boolean sleeping = false;
 
     private PutRequest request;
 
-    public CfdpOutgoingTransfer(PutRequest request, Stream cfdpOut) {
-        super(request.getSourceId(), cfdpOut);
-        YConfiguration conf = YConfiguration.getConfiguration("cfdp");
-        this.entitySize = conf.getInt("entityIdLength");
-        this.seqNrSize = conf.getInt("sequenceNrLength");
-        this.maxDataSize = conf.getInt("maxPduSize") - 4 - 2 * this.entitySize - this.seqNrSize - 4;
-        this.EOFAckTimeoutMs = conf.getInt("EOFAckTimeoutMs");
-        this.maxEOFResendAttempts = conf.getInt("maxEOFResendAttempts");
-
+    public CfdpOutgoingTransfer(ScheduledThreadPoolExecutor executor, PutRequest request, Stream cfdpOut, YConfiguration conf, EventProducer eventProducer) {
+        super(executor, request.getSourceId(), cfdpOut, eventProducer);
+        this.entityIdLength = conf.getInt("entityIdLength", 2);
+        this.seqNrSize = conf.getInt("sequenceNrLength", 4);
+        int maxPduSize = conf.getInt("maxPduSize", 512);
+        this.maxDataSize =  maxPduSize - 4 - 2 * this.entityIdLength - this.seqNrSize - 4;
+        this.eofAckTimeoutMs = conf.getInt("eofAckTimeoutMs", 3000);
+        this.maxEofResendAttempts = conf.getInt("maxEofResendAttempts", 5);
+        this.sleepBetweenPdusMs = conf.getInt("sleepBetweenPdusMs", 500);
+        
         this.acknowledged = request.isAcknowledged();
 
         this.request = request;
@@ -122,7 +128,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     @Override
     public void run() {
-        while (isOngoing()) {
+        if (state==TransferState.RUNNING && !sleeping) {
             step();
         }
     }
@@ -148,14 +154,6 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
             if (offset == request.getPacketLength()) {
                 this.currentState = CfdpTransferState.SENDING_FINISHED;
             } else {
-                try {
-                    while (sleeping) {
-                        Thread.sleep(100);
-                    }
-                    // Thread.sleep(pauseBetweenFileDataPackets);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 end = Math.min(offset + maxDataSize, request.getPacketLength());
                 nextPacket = getNextFileDataPacket();
                 sentFileDataPackets.put(offset, nextPacket);
@@ -180,14 +178,14 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         case EOF_SENT:
             if (this.acknowledged) {
                 // wait for the EOF_ACK
-                if (System.currentTimeMillis() > EOFAckTimer + EOFAckTimeoutMs) {
-                    if (EOFSendAttempts < maxEOFResendAttempts) {
-                        log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEOFResendAttempts);
+                if (System.currentTimeMillis() > EOFAckTimer + eofAckTimeoutMs) {
+                    if (EOFSendAttempts < maxEofResendAttempts) {
+                        log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEofResendAttempts);
                         sendPacket(eofPacket);
                         EOFSendAttempts++;
                         EOFAckTimer = System.currentTimeMillis();
                     } else {
-                        log.info("Resend attempts ({}) of EOF reached", maxEOFResendAttempts);
+                        eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED, "Resend attempts ("+maxEofResendAttempts+") of EOF reached");
                         // resend attempts exceeded the limit
                         // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
                         // appropriate sender FaultHandler. See 4.1.7.1.d
@@ -209,6 +207,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         case FINISHED_ACK_SENT:
             // we're done;
             state = TransferState.COMPLETED;
+            executor.remove(this);
             break;
         case CANCELING:
             sendPacket(getEofPacket(ConditionCode.CancelRequestReceived));
@@ -216,6 +215,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
             break;
         case CANCELED:
             this.state = Cfdp.TransferState.FAILED;
+            executor.remove(this);
             break;
         default:
             throw new IllegalStateException("packet in unknown/illegal state");
@@ -229,7 +229,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 false, // it's sent towards the receiver
                 acknowledged,
                 withCrc, // no CRC
-                entitySize,
+                entityIdLength,
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
@@ -253,7 +253,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 false, // it's sent towards the receiver
                 acknowledged,
                 withCrc, // no CRC
-                entitySize,
+                entityIdLength,
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
@@ -272,7 +272,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 false, // towards receiver
                 acknowledged,
                 withCrc,
-                entitySize,
+                entityIdLength,
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(),
                 request.getDestinationId(),
@@ -293,7 +293,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 false, // towards receiver
                 acknowledged,
                 withCrc,
-                entitySize,
+                entityIdLength,
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(),
                 request.getDestinationId(),
@@ -321,11 +321,6 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         return this.request.getPacketLength();
     }
 
-    public CfdpOutgoingTransfer cancel() {
-        // IF cancelled, return myself, otherwise return null id, otherwise return null
-        return this;
-    }
-
     private TLV getFaultLocation(ConditionCode code) {
         if (code == ConditionCode.NoError) {
             return null;
@@ -351,6 +346,11 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         currentState = CfdpTransferState.CANCELING;
         return this;
     }
+    
+    public void start() {
+        executor.scheduleAtFixedRate(this, 0, sleepBetweenPdusMs, TimeUnit.MILLISECONDS);
+    }
+
 
     public long getTransferredBytes() {
         return transferred;
@@ -408,5 +408,4 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     public boolean pausable() {
         return true;
     }
-
 }

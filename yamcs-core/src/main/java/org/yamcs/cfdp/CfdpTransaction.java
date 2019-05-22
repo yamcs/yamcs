@@ -1,25 +1,31 @@
 package org.yamcs.cfdp;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
-public abstract class CfdpTransaction extends Thread {
-
+public abstract class CfdpTransaction implements Runnable {
     protected CfdpTransactionId myId;
     private Stream cfdpOut;
     protected TransferState state;
-
-    public CfdpTransaction(long initiatorEntity, Stream cfdpOut) {
-        this(new CfdpTransactionId(initiatorEntity), cfdpOut);
+    final protected ScheduledThreadPoolExecutor executor;
+    final protected EventProducer eventProducer;
+    
+    public CfdpTransaction(ScheduledThreadPoolExecutor executor, long initiatorEntity, Stream cfdpOut, EventProducer eventProducer) {
+        this(executor, new CfdpTransactionId(initiatorEntity), cfdpOut, eventProducer);
     }
 
-    public CfdpTransaction(CfdpTransactionId id, Stream cfdpOut) {
+    public CfdpTransaction(ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut, EventProducer eventProducer) {
         this.myId = id;
         this.cfdpOut = cfdpOut;
         this.state = TransferState.RUNNING;
+        this.executor = executor;
+        this.eventProducer = eventProducer;
     }
 
     public CfdpTransactionId getTransactionId() {
@@ -71,5 +77,9 @@ public abstract class CfdpTransaction extends Thread {
     public CfdpTransaction cancelTransfer() {
         // default behavior, do nothing
         return this;
+    }
+
+    public CfdpTransactionId getId() {
+        return myId;
     }
 }

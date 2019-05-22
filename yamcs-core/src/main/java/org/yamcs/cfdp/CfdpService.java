@@ -5,14 +5,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsService;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.web.HttpServer;
+import org.yamcs.web.rest.CfdpRestHandler;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.Stream;
@@ -22,39 +31,64 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-public class CfdpDatabaseInstance implements StreamSubscriber {
-    static Logger log = LoggerFactory.getLogger(CfdpDatabaseInstance.class.getName());
+import com.google.common.util.concurrent.AbstractService;
+
+public class CfdpService extends AbstractService implements StreamSubscriber, YamcsService {
+    static Logger log = LoggerFactory.getLogger(CfdpService.class.getName());
 
     Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<CfdpTransactionId, CfdpTransaction>();
-
-    private String instanceName;
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    
+    private String yamcsInstance;
 
     private Stream cfdpIn, cfdpOut;
     private Bucket incomingBucket;
-
-    CfdpDatabaseInstance(String instanceName) throws YarchException, IOException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
-        cfdpIn = ydb.getStream("cfdp_in");
-        cfdpOut = ydb.getStream("cfdp_out");
+    private long mySourceId;
+    private long destinationId;
+    final YConfiguration config;
+    final static String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
+    final static String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
+    final static String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
+    final static String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
+    
+    private EventProducer eventProducer;
+    
+    public CfdpService(String yamcsInstance, YConfiguration config) throws YarchException, IOException {
+        this.config = config;
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        String inStream = config.getString("inStream", "cfdp_in");
+        String outStream = config.getString("outStream", "cfdp_out");
+        
+        mySourceId = config.getLong("sourceId");
+        destinationId = config.getLong("destinationId");
+        
+        
+        cfdpIn = ydb.getStream(inStream);
+        if(cfdpIn==null) {
+            throw new ConfigurationException("cannot find stream "+inStream);
+        }
+        cfdpOut = ydb.getStream(outStream);
+        if(cfdpOut==null) {
+            throw new ConfigurationException("cannot find stream "+outStream);
+        }
+        
         this.cfdpIn.addSubscriber(this);
-        String bucketName = YConfiguration.getConfiguration("cfdp").getString("incomingBucket");
+        
+        String bucketName = config.getString("incomingBucket", "cfdpDown");
         BucketDatabase bdb = ydb.getBucketDatabase();
         incomingBucket = bdb.getBucket(bucketName);
         if (incomingBucket == null) {
             incomingBucket = bdb.createBucket(bucketName);
         }
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
     }
 
     public String getName() {
-        return instanceName;
+        return yamcsInstance;
     }
 
     public String getYamcsInstance() {
-        return instanceName;
-    }
-
-    public void addCfdpTransfer(CfdpOutgoingTransfer transfer) {
-        transfers.put(transfer.getTransactionId(), transfer);
+        return yamcsInstance;
     }
 
     public CfdpTransaction getCfdpTransfer(CfdpTransactionId transferId) {
@@ -70,7 +104,7 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
 
     public Collection<CfdpTransaction> getCfdpTransfers(List<Long> transferIds) {
         List<CfdpTransactionId> transactionIds = transferIds.stream()
-                .map(x -> new CfdpTransactionId(CfdpDatabase.mySourceId, x)).collect(Collectors.toList());
+                .map(x -> new CfdpTransactionId(mySourceId, x)).collect(Collectors.toList());
         return this.transfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
                 .collect(Collectors.toList());
     }
@@ -91,7 +125,9 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     }
 
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(request, this.cfdpOut);
+        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED, "Starting new CFDP upload "+request.getObjectName()+" -> "+request.getTargetPath());
+        
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, this.cfdpOut, config, eventProducer);
         transfers.put(transfer.getTransactionId(), transfer);
         transfer.start();
         return transfer;
@@ -138,14 +174,36 @@ public class CfdpDatabaseInstance implements StreamSubscriber {
     private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
-            return new CfdpIncomingTransfer((MetadataPacket) packet, cfdpOut, incomingBucket);
+            MetadataPacket mpkt = (MetadataPacket) packet;
+            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED, "Starting new CFDP downlink "+mpkt.getSourceFilename()+" -> "+mpkt.getDestinationFilename());
+            return new CfdpIncomingTransfer(executor, mpkt, cfdpOut, incomingBucket, eventProducer);
         } else {
-            log.error("Rogue CFDP packet received, ignoring");
+            eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PACKET, "Unexpected CFDP packet received; "+packet.getHeader());
             return null;
             // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
     }
+    @Override
+    protected void doStart() {
+        log.info("CfdpService starting");
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        httpServer.registerRouteHandler(yamcsInstance, new CfdpRestHandler(this));
+
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        notifyStopped();
+    }
 
     @Override
     public void streamClosed(Stream stream) {}
+
+    public CfdpOutgoingTransfer upload(String objName, String target, boolean overwrite, boolean acknowledged,
+            boolean createpath, Bucket b, byte[] objData) {
+        
+        return processPutRequest(new PutRequest(mySourceId, destinationId, objName, target, overwrite, acknowledged, createpath, b,
+                objData));
+    }
 }

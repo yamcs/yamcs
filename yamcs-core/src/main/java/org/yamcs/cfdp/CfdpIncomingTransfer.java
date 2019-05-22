@@ -5,9 +5,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -32,13 +34,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     private static final Logger log = LoggerFactory.getLogger(CfdpIncomingTransfer.class);
 
     private enum CfdpTransferState {
-        START,
-        METADATA_RECEIVED,
-        FILEDATA_RECEIVED,
-        EOF_RECEIVED,
-        RESENDING,
-        FINISHED_SENT,
-        FINISHED_ACK_RECEIVED
+        START, METADATA_RECEIVED, FILEDATA_RECEIVED, EOF_RECEIVED, RESENDING, FINISHED_SENT, FINISHED_ACK_RECEIVED
     }
 
     private CfdpTransferState currentState;
@@ -51,8 +47,9 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
 
     private DataFile incomingDataFile;
 
-    public CfdpIncomingTransfer(MetadataPacket packet, Stream cfdpOut, Bucket target) {
-        this(packet.getHeader().getTransactionId(), cfdpOut, target);
+    public CfdpIncomingTransfer(ScheduledThreadPoolExecutor executor, MetadataPacket packet, Stream cfdpOut,
+            Bucket target, EventProducer eventProducer) {
+        this(executor, packet.getHeader().getTransactionId(), cfdpOut, target, eventProducer);
         // create a new empty data file
         incomingDataFile = new DataFile(packet.getPacketLength());
         this.acknowledged = packet.getHeader().isAcknowledged();
@@ -61,8 +58,9 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         expectedFileSize = packet.getPacketLength();
     }
 
-    public CfdpIncomingTransfer(CfdpTransactionId id, Stream cfdpOut, Bucket target) {
-        super(id, cfdpOut);
+    public CfdpIncomingTransfer(ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut,
+            Bucket target, EventProducer eventProducer) {
+        super(executor, id, cfdpOut, eventProducer);
         incomingBucket = target;
     }
 
@@ -239,5 +237,11 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     @Override
     public boolean pausable() {
         return false;
+    }
+
+    @Override
+    public void run() {
+        // TODO - we should setup some timers to check the incoming file is delivered ok
+
     }
 }

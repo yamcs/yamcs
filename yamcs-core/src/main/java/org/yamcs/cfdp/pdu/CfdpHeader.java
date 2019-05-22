@@ -8,22 +8,22 @@ import org.yamcs.utils.CfdpUtils;
 public class CfdpHeader {
 
     /*
-    Header (Variable size):
-        3 bits      = Version ('000')
-        1 bit       = PDU type (0 = File Directive, 1 = File Data)
-        1 bit       = Direction (0 = towards receiver, 1 = towards sender)
-        1 bit       = Transmission mode (0 = acknowledged, 1 = unacknowledged)
-        1 bit       = CRC flag (0 = CRC not present, 1 = CRC present)
-        1 bit       = reserved ('0')
-        16 bits     = PDU data field length (in octets)
-        1 bit       = reserved ('0')
-        3 bits      = length of entity IDs (number of octets in entity ID minus 1)
-        1 bit       = reserved ('0')
-        3 bits      = length of transaction sequence number (number of octets in sequence number minus 1)
-        variable    = source entity id (UINT)
-        variable    = transaction sequence number (UINT)
-        variable    = destination entity id (UINT)
-    */
+     * Header (Variable size):
+     * 3 bits = Version ('000')
+     * 1 bit = PDU type (0 = File Directive, 1 = File Data)
+     * 1 bit = Direction (0 = towards receiver, 1 = towards sender)
+     * 1 bit = Transmission mode (0 = acknowledged, 1 = unacknowledged)
+     * 1 bit = CRC flag (0 = CRC not present, 1 = CRC present)
+     * 1 bit = reserved ('0')
+     * 16 bits = PDU data field length (in octets)
+     * 1 bit = reserved ('0')
+     * 3 bits = length of entity IDs (number of octets in entity ID minus 1)
+     * 1 bit = reserved ('0')
+     * 3 bits = length of transaction sequence number (number of octets in sequence number minus 1)
+     * variable = source entity id (UINT)
+     * variable = transaction sequence number (UINT)
+     * variable = destination entity id (UINT)
+     */
 
     // header types
     private boolean fileDirective, towardsSender, acknowledged, withCrc;
@@ -98,7 +98,7 @@ public class CfdpHeader {
 
     /*
      * Reads the header of the incoming buffer, which is assumed to be a complete PDU
-     * Afterwards puts the buffer position right after the header 
+     * Afterwards puts the buffer position right after the header
      */
     private void readPduHeader(ByteBuffer buffer) {
         byte tempByte = buffer.get();
@@ -131,6 +131,26 @@ public class CfdpHeader {
         buffer.put(CfdpUtils.longToBytes(sourceId, entityIdLength));
         buffer.put(CfdpUtils.longToBytes(sequenceNr, sequenceNumberLength));
         buffer.put(CfdpUtils.longToBytes(destinationId, entityIdLength));
+    }
+
+    @Override
+    public String toString() {
+        return "CfdpHeader [fileDirective=" + fileDirective + ", towardsSender=" + towardsSender + ", acknowledged="
+                + acknowledged + ", withCrc=" + withCrc + ", dataLength=" + dataLength + ", entityIdLength="
+                + entityIdLength + ", sequenceNumberLength=" + sequenceNumberLength + ", sourceId=" + sourceId
+                + ", destinationId=" + destinationId + ", sequenceNr=" + sequenceNr + "]";
+    }
+
+    public int getDataLength() {
+        return dataLength;
+    }
+
+    /**
+     * 
+     * @return the header length
+     */
+    public int getLength() {
+        return 4 + entityIdLength + sequenceNumberLength + entityIdLength;
     }
 
 }

@@ -11,12 +11,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CancelRequest;
-import org.yamcs.cfdp.CfdpDatabase;
-import org.yamcs.cfdp.CfdpDatabaseInstance;
+import org.yamcs.cfdp.CfdpService;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpTransaction;
 import org.yamcs.cfdp.PauseRequest;
-import org.yamcs.cfdp.PutRequest;
 import org.yamcs.cfdp.ResumeRequest;
 import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
 import org.yamcs.protobuf.Cfdp.DownloadResponse;
@@ -42,13 +40,15 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 public class CfdpRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
-
+    final CfdpService cfdpService;
+    
+    public CfdpRestHandler(CfdpService cfdpService) {
+        this.cfdpService = cfdpService;
+    }
+    
     @Route(path = "/api/cfdp/:instance/:bucketName/:objectName*", method = "POST")
     public void CfdpUpload(RestRequest req) throws HttpException {
         byte[] objData;
-
-        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
 
         /**
          * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
@@ -74,10 +74,8 @@ public class CfdpRestHandler extends RestHandler {
         boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
         boolean acknowledged = req.getQueryParameterAsBoolean("reliable", false);
 
-        CfdpOutgoingTransfer transfer = (CfdpOutgoingTransfer) ci.processRequest(
-                // TODO, hardcoded destination
-                new PutRequest(CfdpDatabase.mySourceId, 24, objName, target, overwrite, acknowledged, createpath, b,
-                        objData));
+        CfdpOutgoingTransfer transfer = cfdpService.upload(objName, target, overwrite, acknowledged, createpath, b,
+                        objData);
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
@@ -142,12 +140,10 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpInfo(RestRequest req) throws HttpException {
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
-        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
-
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
         Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? ci.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
-                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+                ? cfdpService.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
+                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         InfoTransfersResponse.Builder itr = InfoTransfersResponse.newBuilder();
 
@@ -170,17 +166,15 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpCancel(RestRequest req) throws HttpException {
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
-        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
-
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
         Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? ci.getCfdpTransfers(true)
-                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+                ? cfdpService.getCfdpTransfers(true)
+                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> cancelledTransfers = transfers.stream()
                 .filter(CfdpTransaction::cancellable)
                 .map(CancelRequest::new)
-                .map(ci::processRequest)
+                .map(cfdpService::processRequest)
                 .filter(x -> x != null)
                 .collect(Collectors.toList());
 
@@ -205,17 +199,15 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpPause(RestRequest req) throws HttpException {
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
-        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
-
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
         Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? ci.getCfdpTransfers(true)
-                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+                ? cfdpService.getCfdpTransfers(true)
+                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> pausedTransfers = transfers.stream()
                 .filter(CfdpTransaction::pausable)
                 .map(PauseRequest::new)
-                .map(ci::processRequest)
+                .map(cfdpService::processRequest)
                 .filter(x -> x != null)
                 .collect(Collectors.toList());
 
@@ -232,17 +224,15 @@ public class CfdpRestHandler extends RestHandler {
     public void CfdpResume(RestRequest req) throws HttpException {
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
 
-        CfdpDatabaseInstance ci = CfdpDatabase.getInstance(yamcsInstance);
-
         List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
         Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? ci.getCfdpTransfers(true)
-                : ci.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+                ? cfdpService.getCfdpTransfers(true)
+                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
 
         List<CfdpTransaction> resumedTransfers = transfers.stream()
                 .filter(CfdpTransaction::pausable)
                 .map(ResumeRequest::new)
-                .map(ci::processRequest)
+                .map(cfdpService::processRequest)
                 .filter(x -> x != null)
                 .collect(Collectors.toList());
 
