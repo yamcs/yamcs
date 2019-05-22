@@ -13,7 +13,7 @@ enum TransferState {
    RUNNING = 1;
    PAUSED = 2;
    FAILED = 3;
-   COMPLETED = 4;
+   SUCCEEDED = 4;
 }
 
 message RemoteFile {
@@ -22,25 +22,42 @@ message RemoteFile {
 }
 
 //message sent as reponse to the info and also when starting a new transfer
-message TransferStatus {
-
+message TransferInfo {
   optional uint64 transferId = 1;
   optional TransferState state = 2;
 
-  optional string localBucketName = 3;
-  optional string localObjectName = 4;
+  optional string bucketInstance = 3;
+  optional string bucketName = 4;
+  optional string objectName = 5;
 
+  optional string remotePath = 6;
+  optional TransferDirection direction = 7;
+
+  optional uint64 totalSize = 8;
+  optional uint64 sizeTransferred = 9;
+}
+
+message CreateTransferRequest {
+  message UploadOptions {
+    optional bool overwrite = 1;
+    optional bool createPath = 2;
+    optional bool reliable = 3;
+  }
+  message DownloadOptions {
+  }
+
+  optional TransferDirection direction = 1;
+  optional string bucketInstance = 2;
+  optional string bucket = 3;
+  optional string objectName = 4;
   optional string remotePath = 5;
-  optional TransferDirection direction = 6;
-
-  optional uint64 totalSize = 7;
-  optional uint64 sizeTransferred = 8;
-  
+  optional downloadOptions = 6;
+  optional uploadOptions = 7;
 }
 
 //message sent as the response to the info transfers
-message InfoTransfersResponse {
-  repeated TransferStatus transfers = 1;
+message ListTransfersResponse {
+  repeated TransferInfo transfer = 1;
 }
 
 //message sent as the response to the cancel transfers
@@ -62,14 +79,4 @@ message ResumedTransfersResponse {
 message ListRemoteFilesResponse {
   required string remotePath = 1;
   repeated RemoteFile filepaths = 2;
-}
-
-//message sent as the response to the download call
-message DownloadResponse {
-  required uint64 transferId = 1;
-}
-
-//message sent as the response to the upload call
-message UploadResponse {
-  required uint64 transferId = 1;
 }

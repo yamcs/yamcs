@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CancelRequest;
-import org.yamcs.cfdp.CfdpService;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
+import org.yamcs.cfdp.CfdpService;
 import org.yamcs.cfdp.CfdpTransaction;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
@@ -37,17 +37,19 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
  * @author ddw
  *
  */
-
 public class CfdpRestHandler extends RestHandler {
+
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
+
     final CfdpService cfdpService;
-    
+
     public CfdpRestHandler(CfdpService cfdpService) {
         this.cfdpService = cfdpService;
     }
-    
-    @Route(path = "/api/cfdp/:instance/:bucketName/:objectName*", method = "POST")
-    public void CfdpUpload(RestRequest req) throws HttpException {
+
+    @Route(path = "/api/cfdp/transfers/:instance/:bucketName/:objectName*", method = "POST")
+    public void createTransfer(RestRequest req) throws HttpException {
+
         byte[] objData;
 
         /**
@@ -75,7 +77,7 @@ public class CfdpRestHandler extends RestHandler {
         boolean acknowledged = req.getQueryParameterAsBoolean("reliable", false);
 
         CfdpOutgoingTransfer transfer = cfdpService.upload(objName, target, overwrite, acknowledged, createpath, b,
-                        objData);
+                objData);
 
         UploadResponse.Builder ur = UploadResponse.newBuilder();
 
