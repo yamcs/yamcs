@@ -43,7 +43,8 @@
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
             ],
             "scripts": [
-              "node_modules/fontfaceobserver/fontfaceobserver.standalone.js"
+              "node_modules/fontfaceobserver/fontfaceobserver.standalone.js",
+              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ]
           },
           "configurations": {

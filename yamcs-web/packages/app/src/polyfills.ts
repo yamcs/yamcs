@@ -1,4 +1,4 @@
-/** IE9, IE10 and IE11 requires all of the following polyfills. **/
+import '@webcomponents/custom-elements/custom-elements.min';
 import 'core-js/es6/array';
 import 'core-js/es6/date';
 import 'core-js/es6/function';
