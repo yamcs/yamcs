@@ -141,7 +141,6 @@ public class CfsEventDecoder extends AbstractService implements YamcsService, St
                 .setSeqNumber(0).setSource("/CFS/CPU" + processorId + "/" + app).setSeverity(evSev)
                 .setType("EVID" + eventId).setMessage(msg).build();
 
-        System.out.println("Sending event " + ev);
         eventProducer.sendEvent(ev);
     }
 
