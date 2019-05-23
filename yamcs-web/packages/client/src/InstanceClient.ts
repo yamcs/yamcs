@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { TransfersPage } from './types/cfdp';
+import { CreateTransferRequest, Transfer, TransfersPage } from './types/cfdp';
 import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
@@ -532,21 +532,19 @@ export class InstanceClient {
   }
 
   async getCfdpTransfers() {
-    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/info`;
+    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/transfers`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as TransfersPage;
   }
 
-  async uploadCfdpFile(bucket: string, objectName: string, remoteFile: string, reliable: boolean) {
-    const options = {
-      target: remoteFile,
-      reliable,
-    }
-    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/${bucket}/${objectName}` + this.queryString(options);
+  async createCfdpTransfer(options: CreateTransferRequest) {
+    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/transfers`
+    const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
+      body,
       method: 'POST',
     });
-    return await response.json();
+    return await response.json() as Transfer;
   }
 
   closeConnection() {

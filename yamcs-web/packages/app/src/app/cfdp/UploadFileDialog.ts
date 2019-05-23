@@ -30,7 +30,7 @@ export class UploadFileDialog {
   ) {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
-    this.storageClient.getBuckets(this.instance.name).then(buckets => {
+    this.storageClient.getBuckets('_global').then(buckets => {
       this.dataSource.data = buckets || [];
     });
     this.localForm = formBuilder.group({
@@ -47,11 +47,15 @@ export class UploadFileDialog {
   }
 
   startTransfer() {
-    const bucket = this.selectedBucket$.value!.name;
-    const objectName = this.localForm.value['object'];
-    const remoteFile = this.remoteForm.value['destination'];
-    const reliable = this.remoteForm.value['reliable'];
-    this.yamcs.getInstanceClient()!.uploadCfdpFile(bucket, objectName, remoteFile, reliable).then(() => {
+    this.yamcs.getInstanceClient()!.createCfdpTransfer({
+      direction: 'UPLOAD',
+      bucket: this.selectedBucket$.value!.name,
+      objectName: this.localForm.value['object'],
+      remotePath: this.remoteForm.value['destination'],
+      uploadOptions: {
+        reliable: this.remoteForm.value['reliable']
+      }
+    }).then(() => {
       this.dialogRef.close();
     });
   }

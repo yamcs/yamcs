@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
-import { Transfer } from '@yamcs/client';
 import { Subscription } from 'rxjs';
-import { Synchronizer } from '../core/services/Synchronizer';
-import { YamcsService } from '../core/services/YamcsService';
+import { CfdpService } from './CfdpService';
+import { TransferItem } from './TransferItem';
 
 @Component({
   templateUrl: './FailedTransfersTab.html',
@@ -11,25 +10,22 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class FailedTransfersTab implements OnDestroy {
 
-  dataSource = new MatTableDataSource<Transfer>();
+  dataSource = new MatTableDataSource<TransferItem>();
 
-  private syncSubscription: Subscription;
+  private cfdpSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
-    this.refresh();
-    this.syncSubscription = synchronizer.sync(() => this.refresh());
-  }
-
-  private refresh() {
-    this.yamcs.getInstanceClient()!.getCfdpTransfers().then(page => {
-      this.dataSource.data = (page.transfers || [])
-        .filter(t => t.state === 'FAILED');
+  constructor(cfdpService: CfdpService) {
+    cfdpService.refresh();
+    this.cfdpSubscription = cfdpService.transfers$.subscribe(transfers => {
+      this.dataSource.data = transfers.filter(
+        t => t.state === 'FAILED'
+      );
     });
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
+    if (this.cfdpSubscription) {
+      this.cfdpSubscription.unsubscribe();
     }
   }
 }

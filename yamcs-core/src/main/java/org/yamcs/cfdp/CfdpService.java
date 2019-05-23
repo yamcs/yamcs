@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -36,9 +35,9 @@ import com.google.common.util.concurrent.AbstractService;
 public class CfdpService extends AbstractService implements StreamSubscriber, YamcsService {
     static Logger log = LoggerFactory.getLogger(CfdpService.class.getName());
 
-    Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<CfdpTransactionId, CfdpTransaction>();
+    Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<>();
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-    
+
     private String yamcsInstance;
 
     private Stream cfdpIn, cfdpOut;
@@ -50,32 +49,32 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
     final static String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
     final static String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
     final static String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
-    
+
     private EventProducer eventProducer;
-    
+
     public CfdpService(String yamcsInstance, YConfiguration config) throws YarchException, IOException {
         this.config = config;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         String inStream = config.getString("inStream", "cfdp_in");
         String outStream = config.getString("outStream", "cfdp_out");
-        
+
         mySourceId = config.getLong("sourceId");
         destinationId = config.getLong("destinationId");
-        
-        
+
         cfdpIn = ydb.getStream(inStream);
-        if(cfdpIn==null) {
-            throw new ConfigurationException("cannot find stream "+inStream);
+        if (cfdpIn == null) {
+            throw new ConfigurationException("cannot find stream " + inStream);
         }
         cfdpOut = ydb.getStream(outStream);
-        if(cfdpOut==null) {
-            throw new ConfigurationException("cannot find stream "+outStream);
+        if (cfdpOut == null) {
+            throw new ConfigurationException("cannot find stream " + outStream);
         }
-        
+
         this.cfdpIn.addSubscriber(this);
-        
+
+        YarchDatabaseInstance globalYdb = YarchDatabase.getInstance("_global");
         String bucketName = config.getString("incomingBucket", "cfdpDown");
-        BucketDatabase bdb = ydb.getBucketDatabase();
+        BucketDatabase bdb = globalYdb.getBucketDatabase();
         incomingBucket = bdb.getBucket(bucketName);
         if (incomingBucket == null) {
             incomingBucket = bdb.createBucket(bucketName);
@@ -93,6 +92,10 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
 
     public CfdpTransaction getCfdpTransfer(CfdpTransactionId transferId) {
         return transfers.get(transferId);
+    }
+
+    public CfdpTransaction getCfdpTransfer(long transferId) {
+        return transfers.get(new CfdpTransactionId(mySourceId, transferId));
     }
 
     public Collection<CfdpTransaction> getCfdpTransfers(boolean all) {
@@ -125,9 +128,11 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
     }
 
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
-        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED, "Starting new CFDP upload "+request.getObjectName()+" -> "+request.getTargetPath());
-        
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, this.cfdpOut, config, eventProducer);
+        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                "Starting new CFDP upload " + request.getObjectName() + " -> " + request.getTargetPath());
+
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, this.cfdpOut, config,
+                eventProducer);
         transfers.put(transfer.getTransactionId(), transfer);
         transfer.start();
         return transfer;
@@ -175,17 +180,19 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
         if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
             MetadataPacket mpkt = (MetadataPacket) packet;
-            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED, "Starting new CFDP downlink "+mpkt.getSourceFilename()+" -> "+mpkt.getDestinationFilename());
+            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                    "Starting new CFDP downlink " + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
             return new CfdpIncomingTransfer(executor, mpkt, cfdpOut, incomingBucket, eventProducer);
         } else {
-            eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PACKET, "Unexpected CFDP packet received; "+packet.getHeader());
+            eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PACKET,
+                    "Unexpected CFDP packet received; " + packet.getHeader());
             return null;
             // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
     }
+
     @Override
     protected void doStart() {
-        log.info("CfdpService starting");
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
         httpServer.registerRouteHandler(yamcsInstance, new CfdpRestHandler(this));
 
@@ -198,12 +205,14 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
     }
 
     @Override
-    public void streamClosed(Stream stream) {}
+    public void streamClosed(Stream stream) {
+    }
 
     public CfdpOutgoingTransfer upload(String objName, String target, boolean overwrite, boolean acknowledged,
             boolean createpath, Bucket b, byte[] objData) {
-        
-        return processPutRequest(new PutRequest(mySourceId, destinationId, objName, target, overwrite, acknowledged, createpath, b,
-                objData));
+
+        return processPutRequest(
+                new PutRequest(mySourceId, destinationId, objName, target, overwrite, acknowledged, createpath, b,
+                        objData));
     }
 }

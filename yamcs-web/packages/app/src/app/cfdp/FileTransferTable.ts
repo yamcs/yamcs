@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
-import { Transfer } from '@yamcs/client';
+import { TransferItem } from './TransferItem';
 
 @Component({
   selector: 'app-file-transfer-table',
@@ -10,14 +10,14 @@ import { Transfer } from '@yamcs/client';
 export class FileTransferTable {
 
   displayedColumns = [
+    'startTime',
     'localFile',
     'direction',
     'remoteFile',
     'size',
-    'progress',
     'status',
   ];
 
   @Input()
-  dataSource = new MatTableDataSource<Transfer>();
+  dataSource = new MatTableDataSource<TransferItem>();
 }

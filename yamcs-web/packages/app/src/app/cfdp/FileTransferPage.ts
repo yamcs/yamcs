@@ -3,8 +3,8 @@ import { MatDialog } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
+import { CfdpService } from './CfdpService';
 import { UploadFileDialog } from './UploadFileDialog';
 
 @Component({
@@ -20,26 +20,21 @@ export class FileTransferPage implements OnDestroy {
   failedCount$ = new BehaviorSubject<number>(0);
   successfulCount$ = new BehaviorSubject<number>(0);
 
-  private syncSubscription: Subscription;
+  private cfdpSubscription: Subscription;
 
   constructor(
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
-    synchronizer: Synchronizer,
+    private cfdpService: CfdpService,
   ) {
     title.setTitle('CFDP File Transfer');
     this.instance = yamcs.getInstance();
-    this.refresh();
-    this.syncSubscription = synchronizer.sync(() => this.refresh());
-  }
-
-  private refresh() {
-    this.yamcs.getInstanceClient()!.getCfdpTransfers().then(page => {
+    this.cfdpSubscription = cfdpService.transfers$.subscribe(transfers => {
       let ongoingCount = 0;
       let failedCount = 0;
       let successfulCount = 0;
-      for (const transfer of (page.transfers || [])) {
+      for (const transfer of transfers) {
         if (transfer.state === 'RUNNING' || transfer.state === 'PAUSED') {
           ongoingCount++;
         } else if (transfer.state === 'FAILED') {
@@ -54,6 +49,10 @@ export class FileTransferPage implements OnDestroy {
     });
   }
 
+  public refresh() {
+    this.cfdpService.refresh();
+  }
+
   uploadFile() {
     const dialogRef = this.dialog.open(UploadFileDialog, {
       width: '70%',
@@ -66,8 +65,8 @@ export class FileTransferPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
+    if (this.cfdpSubscription) {
+      this.cfdpSubscription.unsubscribe();
     }
   }
 }

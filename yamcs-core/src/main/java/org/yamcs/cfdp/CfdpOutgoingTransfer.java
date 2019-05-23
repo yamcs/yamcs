@@ -1,14 +1,16 @@
 package org.yamcs.cfdp;
 
+import static org.yamcs.cfdp.CfdpService.ETYPE_EOF_LIMIT_REACHED;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -38,8 +40,6 @@ import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
-import static org.yamcs.cfdp.CfdpService.*;
-
 public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpOutgoingTransfer.class);
@@ -68,7 +68,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private int maxDataSize;
 
     // maps offsets to FileDataPackets
-    private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<Long, FileDataPacket>();
+    private Map<Long, FileDataPacket> sentFileDataPackets = new HashMap<>();
     private Queue<FileDataPacket> toResend;
 
     private EofPacket eofPacket;
@@ -89,16 +89,17 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     private PutRequest request;
 
-    public CfdpOutgoingTransfer(ScheduledThreadPoolExecutor executor, PutRequest request, Stream cfdpOut, YConfiguration conf, EventProducer eventProducer) {
+    public CfdpOutgoingTransfer(ScheduledThreadPoolExecutor executor, PutRequest request, Stream cfdpOut,
+            YConfiguration conf, EventProducer eventProducer) {
         super(executor, request.getSourceId(), cfdpOut, eventProducer);
         this.entityIdLength = conf.getInt("entityIdLength", 2);
         this.seqNrSize = conf.getInt("sequenceNrLength", 4);
         int maxPduSize = conf.getInt("maxPduSize", 512);
-        this.maxDataSize =  maxPduSize - 4 - 2 * this.entityIdLength - this.seqNrSize - 4;
+        this.maxDataSize = maxPduSize - 4 - 2 * this.entityIdLength - this.seqNrSize - 4;
         this.eofAckTimeoutMs = conf.getInt("eofAckTimeoutMs", 3000);
         this.maxEofResendAttempts = conf.getInt("maxEofResendAttempts", 5);
         this.sleepBetweenPdusMs = conf.getInt("sleepBetweenPdusMs", 500);
-        
+
         this.acknowledged = request.isAcknowledged();
 
         this.request = request;
@@ -128,7 +129,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     @Override
     public void run() {
-        if (state==TransferState.RUNNING && !sleeping) {
+        if (state == TransferState.RUNNING && !sleeping) {
             step();
         }
     }
@@ -185,7 +186,8 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                         EOFSendAttempts++;
                         EOFAckTimer = System.currentTimeMillis();
                     } else {
-                        eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED, "Resend attempts ("+maxEofResendAttempts+") of EOF reached");
+                        eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED,
+                                "Resend attempts (" + maxEofResendAttempts + ") of EOF reached");
                         // resend attempts exceeded the limit
                         // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
                         // appropriate sender FaultHandler. See 4.1.7.1.d
@@ -346,11 +348,10 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         currentState = CfdpTransferState.CANCELING;
         return this;
     }
-    
+
     public void start() {
         executor.scheduleAtFixedRate(this, 0, sleepBetweenPdusMs, TimeUnit.MILLISECONDS);
     }
-
 
     public long getTransferredBytes() {
         return transferred;
@@ -380,7 +381,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 }
                 break;
             case NAK:
-                toResend = new LinkedList<FileDataPacket>();
+                toResend = new LinkedList<>();
                 for (SegmentRequest segment : ((NakPacket) packet).getSegmentRequests()) {
                     toResend.addAll(sentFileDataPackets.entrySet().stream()
                             .filter(x -> segment.isInRange(x.getKey()))

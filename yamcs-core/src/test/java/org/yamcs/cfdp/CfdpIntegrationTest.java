@@ -18,7 +18,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.protobuf.Cfdp.TransferStatus;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
@@ -67,7 +66,7 @@ public class CfdpIntegrationTest {
     private void uploadAndCheck(String objName, byte[] data) throws Exception {
         Future<String> responseFuture = restClient.doRequest(
                 "/cfdp/" + yamcsInstance + "/" + bucketName + "/" + objName + "?target=cfdp-tgt1", HttpMethod.POST, "");
-        TransferStatus ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
+        // TransferState ts = fromJson(responseFuture.get(), TransferState.newBuilder()).build();
 
         /*        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
         

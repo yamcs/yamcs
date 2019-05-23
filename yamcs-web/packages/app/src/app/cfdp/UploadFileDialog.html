@@ -19,7 +19,7 @@
     </div>
     <div class="object-table-wrapper">
       <ng-container *ngIf="selectedBucket$ | async as bucket">
-        <app-object-selector formControlName="object" [instance]="instance.name" [bucket]="bucket"></app-object-selector>
+        <app-object-selector formControlName="object" instance="_global" [bucket]="bucket"></app-object-selector>
       </ng-container>
     </div>
   </form>

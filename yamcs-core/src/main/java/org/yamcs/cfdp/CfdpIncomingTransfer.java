@@ -38,7 +38,7 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
     }
 
     private CfdpTransferState currentState;
-    List<SegmentRequest> missingSegments = new ArrayList<SegmentRequest>();
+    List<SegmentRequest> missingSegments = new ArrayList<>();
     private boolean acknowledged = false;
     private Bucket incomingBucket = null;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");

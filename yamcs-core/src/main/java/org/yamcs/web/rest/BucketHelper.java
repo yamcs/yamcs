@@ -26,14 +26,18 @@ public class BucketHelper {
 
     static void checkReadBucketPrivilege(RestRequest req) throws HttpException {
         String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
-        if (bucketName.equals(getUserBucketName(req.getUser()))) {
+        checkReadBucketPrivilege(bucketName, req.getUser());
+    }
+
+    static void checkReadBucketPrivilege(String bucketName, User user) throws HttpException {
+        if (bucketName.equals(getUserBucketName(user))) {
             return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
                     // anyway)
         }
 
-        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
-                && !req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
+                && !user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                && !user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
             throw new ForbiddenException("Insufficient privileges to read bucket '" + bucketName + "'");
         }
     }

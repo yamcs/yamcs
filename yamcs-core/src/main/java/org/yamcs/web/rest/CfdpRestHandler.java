@@ -3,10 +3,8 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,22 +12,30 @@ import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpService;
 import org.yamcs.cfdp.CfdpTransaction;
+import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
-import org.yamcs.protobuf.Cfdp.CancelTransfersResponse;
-import org.yamcs.protobuf.Cfdp.DownloadResponse;
-import org.yamcs.protobuf.Cfdp.InfoTransfersResponse;
+import org.yamcs.protobuf.Cfdp.CreateTransferRequest;
+import org.yamcs.protobuf.Cfdp.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.Cfdp.EditTransferRequest;
 import org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse;
-import org.yamcs.protobuf.Cfdp.PausedTransfersResponse;
+import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
 import org.yamcs.protobuf.Cfdp.RemoteFile;
-import org.yamcs.protobuf.Cfdp.ResumedTransfersResponse;
-import org.yamcs.protobuf.Cfdp.TransferStatus;
-import org.yamcs.protobuf.Cfdp.UploadResponse;
+import org.yamcs.protobuf.Cfdp.TransferDirection;
+import org.yamcs.protobuf.Cfdp.TransferInfo;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.BucketDatabase;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
+
+import com.google.protobuf.Timestamp;
 
 /**
  * Implements the CFDP Protocol
@@ -47,82 +53,132 @@ public class CfdpRestHandler extends RestHandler {
         this.cfdpService = cfdpService;
     }
 
-    @Route(path = "/api/cfdp/transfers/:instance/:bucketName/:objectName*", method = "POST")
+    @Route(path = "/api/cfdp/:instance/transfers", method = "GET")
+    public void listTransfers(RestRequest req) throws HttpException {
+        List<CfdpTransaction> transactions = new ArrayList<>(cfdpService.getCfdpTransfers(true));
+        Collections.sort(transactions, (c1, c2) -> {
+            return Long.compare(
+                    c1.getTransactionId().getStartTime(),
+                    c2.getTransactionId().getStartTime());
+        });
+
+        ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
+        for (CfdpTransaction transaction : transactions) {
+            responseb.addTransfer(toTransferInfo(transaction));
+        }
+        completeOK(req, responseb.build());
+    }
+
+    @Route(path = "/api/cfdp/:instance/transfers/:id", method = "GET")
+    public void getTransfer(RestRequest req) throws HttpException {
+        long transactionId = req.getLongRouteParam("id");
+
+        CfdpTransaction transaction = verifyTransaction(req, transactionId);
+        completeOK(req, toTransferInfo(transaction));
+    }
+
+    @Route(path = "/api/cfdp/:instance/transfers", method = "POST")
     public void createTransfer(RestRequest req) throws HttpException {
+        CreateTransferRequest request = req.bodyAsMessage(CreateTransferRequest.newBuilder()).build();
+        if (!request.hasDirection()) {
+            throw new BadRequestException("Direction not specified");
+        }
 
         byte[] objData;
 
-        /**
-         * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
-         * BucketRestHandler.getObject
-         */
-        BucketHelper.checkReadBucketPrivilege(req);
-        String objName = req.getRouteParam(BucketHelper.OBJECT_NAME_PARAM);
-        Bucket b = BucketHelper.verifyAndGetBucket(req);
+        String bucketName = request.getBucket();
+        BucketHelper.checkReadBucketPrivilege(bucketName, req.getUser());
+
+        String objectName = request.getObjectName();
+
+        YarchDatabaseInstance ydi = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
+        BucketDatabase bdb;
         try {
-            ObjectProperties props = b.findObject(objName);
+            bdb = ydi.getBucketDatabase();
+        } catch (YarchException e) {
+            throw new InternalServerErrorException("Bucket database not available");
+        }
+
+        Bucket bucket;
+        try {
+            bucket = bdb.getBucket(bucketName);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error while resolving bucket", e);
+        }
+
+        try {
+            ObjectProperties props = bucket.findObject(objectName);
             if (props == null) {
                 throw new NotFoundException(req);
             }
-            objData = b.getObject(objName);
+            objData = bucket.getObject(objectName);
         } catch (IOException e) {
-            log.error("Error when retrieving object {} from bucket {} ", objName, b.getName(), e);
+            log.error("Error when retrieving object {} from bucket {}", objectName, bucketName, e);
             throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
         }
-        /** /copied */
 
-        String target = req.getQueryParameter("target");
-        boolean overwrite = req.getQueryParameterAsBoolean("overwrite", true);
-        boolean createpath = req.getQueryParameterAsBoolean("createpath", true);
-        boolean acknowledged = req.getQueryParameterAsBoolean("reliable", false);
+        if (request.getDirection() == TransferDirection.UPLOAD) {
+            boolean overwrite = true;
+            boolean createPath = true;
+            boolean reliable = false;
+            if (request.hasUploadOptions()) {
+                UploadOptions opts = request.getUploadOptions();
+                if (opts.hasOverwrite()) {
+                    overwrite = opts.getOverwrite();
+                }
+                if (opts.hasCreatePath()) {
+                    createPath = opts.getCreatePath();
+                }
+                if (opts.hasReliable()) {
+                    reliable = opts.getReliable();
+                }
+            }
 
-        CfdpOutgoingTransfer transfer = cfdpService.upload(objName, target, overwrite, acknowledged, createpath, b,
-                objData);
-
-        UploadResponse.Builder ur = UploadResponse.newBuilder();
-
-        ur.setTransferId(transfer.getTransactionId().getSequenceNumber());
-
-        completeOK(req, ur.build());
-    }
-
-    @Route(path = "/api/cfdp/:instance/:bucketName/:objectName", method = "GET")
-    public void CfdpDownload(RestRequest req) throws HttpException {
-        /**
-         * TODO largely copied from BucketRestHandler, probably better/easier to do a REST call to
-         * BucketRestHandler.uploadObject
-         */
-        BucketHelper.checkManageBucketPrivilege(req);
-        Bucket bucket = BucketHelper.verifyAndGetBucket(req);
-        String objName = req.getRouteParam(BucketHelper.OBJECT_NAME_PARAM);
-        BucketHelper.verifyObjectName(objName);
-
-        // TODO, get this data from the CFDP transfer
-        byte[] objectData = null;
-
-        // TODO, sane values for contentType and metadata
-        String contentType = "";
-        Map<String, String> metadata = new HashMap<>();
-
-        try {
-            bucket.putObject(objName, contentType, metadata, objectData);
-        } catch (IOException e) {
-            log.error("Error when uploading object {} to bucket {} ", objName, bucket.getName(), e);
-            throw new InternalServerErrorException("Error when uploading object to bucket: " + e.getMessage());
+            String target = request.getRemotePath();
+            CfdpOutgoingTransfer transfer = cfdpService.upload(objectName, target, overwrite,
+                    reliable, createPath, bucket, objData);
+            completeOK(req, toTransferInfo(transfer));
+        } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
+            throw new BadRequestException("Download not yet implemented");
+        } else {
+            throw new BadRequestException("Unexpected direction '" + request.getDirection() + "'");
         }
-
-        // TODO, get the transferId using the CFDP service
-        long transferId = 0;
-
-        DownloadResponse.Builder dr = DownloadResponse.newBuilder();
-
-        dr.setTransferId(transferId);
-
-        completeCREATED(req, dr.build());
     }
 
-    @Route(path = "/api/cfdp/list", method = "GET")
-    public void CfdpList(RestRequest req) throws HttpException {
+    @Route(path = "/api/cfdp/:instance/transfers/:id", method = { "PATCH", "PUT", "POST" })
+    public void editTransfer(RestRequest req) throws HttpException {
+        EditTransferRequest request = req.bodyAsMessage(EditTransferRequest.newBuilder()).build();
+        long transactionId = req.getLongRouteParam("id");
+        CfdpTransaction transaction = verifyTransaction(req, transactionId);
+        if (request.hasOperation()) {
+            switch (request.getOperation()) {
+            case "pause":
+                if (transaction.pausable()) {
+                    cfdpService.processRequest(new PauseRequest(transaction));
+                } else {
+                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be paused");
+                }
+                break;
+            case "cancel":
+                if (transaction.cancellable()) {
+                    cfdpService.processRequest(new CancelRequest(transaction));
+                } else {
+                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be cancelled");
+                }
+                break;
+            case "resume":
+                if (transaction.pausable()) {
+                    cfdpService.processRequest(new ResumeRequest(transaction));
+                } else {
+                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be resumed");
+                }
+            }
+        }
+    }
+
+    // TODO @Route(path = "/api/cfdp/:instance/filestore", method = "GET")
+    // TODO @Route(path = "/api/cfdp/:instance/filestore/path*", method = "GET")
+    public void listRemoteFiles(RestRequest req) throws HttpException {
         ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
 
         String remotePath = req.getQueryParameter("target");
@@ -137,112 +193,29 @@ public class CfdpRestHandler extends RestHandler {
         completeOK(req, lrfr.build());
     }
 
-    // TODO update rest doc
-    @Route(path = "/api/cfdp/:instance/info", method = "GET")
-    public void CfdpInfo(RestRequest req) throws HttpException {
-        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-
-        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? cfdpService.getCfdpTransfers(req.getQueryParameterAsBoolean("all", true))
-                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
-
-        InfoTransfersResponse.Builder itr = InfoTransfersResponse.newBuilder();
-
-        for (CfdpTransaction transfer : transfers) {
-            itr.addTransfers(TransferStatus.newBuilder()
-                    .setTransferId(transfer.getTransactionId().getSequenceNumber())
-                    .setState(transfer.getTransferState())
-                    .setLocalBucketName(transfer.getBucket().getName())
-                    .setLocalObjectName(transfer.getObjectName())
-                    .setRemotePath(transfer.getRemotePath())
-                    .setDirection(transfer.getDirection())
-                    .setTotalSize(transfer.getTotalSize())
-                    .setSizeTransferred(transfer.getTransferredSize()));
+    private CfdpTransaction verifyTransaction(RestRequest req, long transactionId) throws NotFoundException {
+        CfdpTransaction transaction = cfdpService.getCfdpTransfer(transactionId);
+        if (transaction == null) {
+            throw new NotFoundException(req, "No such transaction");
+        } else {
+            return transaction;
         }
-        completeOK(req, itr.build());
     }
 
-    // TODO update rest doc
-    @Route(path = "/api/cfdp/:instance/cancel", method = "POST")
-    public void CfdpCancel(RestRequest req) throws HttpException {
-        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-
-        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? cfdpService.getCfdpTransfers(true)
-                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
-
-        List<CfdpTransaction> cancelledTransfers = transfers.stream()
-                .filter(CfdpTransaction::cancellable)
-                .map(CancelRequest::new)
-                .map(cfdpService::processRequest)
-                .filter(x -> x != null)
-                .collect(Collectors.toList());
-
-        CancelTransfersResponse.Builder ctr = CancelTransfersResponse.newBuilder();
-
-        for (CfdpTransaction transfer : cancelledTransfers) {
-            ctr.addTransfers(transfer.getTransactionId().getSequenceNumber());
-        }
-        completeOK(req, ctr.build());
-    }
-
-    @Route(path = "/api/cfdp/delete", method = "POST")
-    public void CfdpDelete(RestRequest req) throws HttpException {
-        String pathToDelete = req.getQueryParameter("target");
-        // TODO issue delete command
-
-        completeOK(req);
-    }
-
-    // TODO update rest documentation
-    @Route(path = "/api/cfdp/:instance/pause", method = "POST")
-    public void CfdpPause(RestRequest req) throws HttpException {
-        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-
-        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? cfdpService.getCfdpTransfers(true)
-                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
-
-        List<CfdpTransaction> pausedTransfers = transfers.stream()
-                .filter(CfdpTransaction::pausable)
-                .map(PauseRequest::new)
-                .map(cfdpService::processRequest)
-                .filter(x -> x != null)
-                .collect(Collectors.toList());
-
-        PausedTransfersResponse.Builder ptr = PausedTransfersResponse.newBuilder();
-
-        for (CfdpTransaction transfer : pausedTransfers) {
-            ptr.addTransfers(transfer.getTransactionId().getSequenceNumber());
-        }
-        completeOK(req, ptr.build());
-    }
-
-    // TODO update rest documentation
-    @Route(path = "/api/cfdp/:instance/resume", method = "POST")
-    public void CfdpResume(RestRequest req) throws HttpException {
-        String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-
-        List<String> transferIds = req.getQueryParameterList("transaction ids", new ArrayList<String>());
-        Collection<CfdpTransaction> transfers = transferIds.isEmpty()
-                ? cfdpService.getCfdpTransfers(true)
-                : cfdpService.getCfdpTransfers(transferIds.stream().map(Long::parseLong).collect(Collectors.toList()));
-
-        List<CfdpTransaction> resumedTransfers = transfers.stream()
-                .filter(CfdpTransaction::pausable)
-                .map(ResumeRequest::new)
-                .map(cfdpService::processRequest)
-                .filter(x -> x != null)
-                .collect(Collectors.toList());
-
-        ResumedTransfersResponse.Builder rtr = ResumedTransfersResponse.newBuilder();
-
-        for (CfdpTransaction transfer : resumedTransfers) {
-            rtr.addTransfers(transfer.getTransactionId().getSequenceNumber());
-        }
-        completeOK(req, rtr.build());
+    private static TransferInfo toTransferInfo(CfdpTransaction transaction) {
+        CfdpTransactionId id = transaction.getTransactionId();
+        id.getStartTime();
+        Timestamp startTime = TimeEncoding.toProtobufTimestamp(id.getStartTime());
+        return TransferInfo.newBuilder()
+                .setTransactionId(id.getSequenceNumber())
+                .setStartTime(startTime)
+                .setState(transaction.getTransferState())
+                .setBucket(transaction.getBucket().getName())
+                .setObjectName(transaction.getObjectName())
+                .setRemotePath(transaction.getRemotePath())
+                .setDirection(transaction.getDirection())
+                .setTotalSize(transaction.getTotalSize())
+                .setSizeTransferred(transaction.getTransferredSize())
+                .build();
     }
 }
