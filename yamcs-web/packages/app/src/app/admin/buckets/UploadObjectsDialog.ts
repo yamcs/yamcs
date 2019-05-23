@@ -2,7 +2,6 @@ import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { StorageClient } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -15,8 +14,6 @@ export class UploadObjectsDialog {
 
   @ViewChild('files')
   filesInput: ElementRef;
-
-  uploading$ = new BehaviorSubject<boolean>(false);
 
   private storageClient: StorageClient;
 
@@ -46,8 +43,7 @@ export class UploadObjectsDialog {
 
     const files: {[key: string]: File} = this.filesInput.nativeElement.files;
 
-    const uploadPromises = [];
-    this.uploading$.next(true);
+    const uploads = [];
     for (const key in files) {
       if (!isNaN(parseInt(key, 10))) {
         const file = files[key];
@@ -56,16 +52,10 @@ export class UploadObjectsDialog {
         const bucketInstance = this.data.bucketInstance;
         const bucket = this.data.bucket;
         const promise = this.storageClient.uploadObject(bucketInstance, bucket, fullPath, file);
-        uploadPromises.push(promise);
+        uploads.push({ 'filename': file.name, promise });
       }
     }
 
-    Promise.all(uploadPromises).then(() => {
-      this.uploading$.next(false);
-      this.dialogRef.close(true);
-    }).catch(() => {
-      this.uploading$.next(false);
-      this.dialogRef.close(true);
-    });
+    this.dialogRef.close(uploads);
   }
 }

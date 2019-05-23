@@ -1,15 +1,17 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog, MatTableDataSource } from '@angular/material';
+import { MatDialog, MatDialogRef, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
+import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
 import { RenameObjectDialog } from './RenameObjectDialog';
+import { Upload } from './Upload';
 import { UploadObjectsDialog } from './UploadObjectsDialog';
+import { UploadProgressDialog } from './UploadProgressDialog';
 
 @Component({
   templateUrl: './BucketPage.html',
@@ -31,8 +33,14 @@ export class BucketPage implements OnDestroy {
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
+  uploads$ = new BehaviorSubject<Upload[]>([]);
+
   private routerSubscription: Subscription;
   private storageClient: StorageClient;
+
+  private progressDialogOpen = false;
+
+  private dialogRef: MatDialogRef<any>;
 
   constructor(
     private dialog: MatDialog,
@@ -118,11 +126,52 @@ export class BucketPage implements OnDestroy {
         path: this.getCurrentPath(),
       }
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadCurrentFolder();
+    dialogRef.afterClosed().subscribe((uploads: Upload[]) => {
+      if (uploads.length) {
+        this.showUploadProgress().then(() => {
+          for (const upload of uploads) {
+            this.trackUpload(upload);
+          }
+          this.settlePromises(uploads.map(u => u.promise)).then(() => {
+            this.loadCurrentFolder();
+          });
+        });
       }
     });
+  }
+
+  /**
+   * Returns a promise that is always successful and that captures
+   * the success/error of the passed promises.
+   */
+  private settlePromises(promises: Promise<any>[]) {
+    return Promise.all(promises.map(promise => {
+      return promise.then(
+        value => ({ state: 'fullfilled', value }),
+        value => ({ state: 'rejected', value })
+      );
+    }));
+  }
+
+  private trackUpload(upload: Upload) {
+    upload.promise.then(() => {
+      upload.complete = true;
+      this.uploads$.next([... this.uploads$.value]);
+    }).catch((err: HttpError) => {
+      err.response.json().then(msg => {
+        upload.complete = true;
+        upload.err = msg['msg'];
+        this.uploads$.next([... this.uploads$.value]);
+      }).catch(() => {
+        upload.complete = true;
+        upload.err = err.statusText;
+        this.uploads$.next([... this.uploads$.value]);
+      });
+    });
+    this.uploads$.next([
+      ...this.uploads$.value,
+      upload,
+    ]);
   }
 
   private getCurrentPath() {
@@ -216,15 +265,23 @@ export class BucketPage implements OnDestroy {
       }
 
       dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
-        const uploadPromises: any[] = [];
-        for (const droppedFile of droppedFiles) {
-          const objectPath = objectPrefix + droppedFile._fullPath;
-          const promise = this.storageClient.uploadObject(this.bucketInstance, this.name, objectPath, droppedFile);
-          uploadPromises.push(promise);
+        if (droppedFiles.length) {
+          const uploadPromises: any[] = [];
+
+          this.showUploadProgress().then(() => {
+            for (const droppedFile of droppedFiles) {
+              const objectPath = objectPrefix + droppedFile._fullPath;
+              const promise = this.storageClient.uploadObject(
+                this.bucketInstance, this.name, objectPath, droppedFile);
+              this.trackUpload({ filename: droppedFile._fullPath, promise });
+              uploadPromises.push(promise);
+            }
+
+            this.settlePromises(uploadPromises).then(() => {
+              this.loadCurrentFolder();
+            });
+          });
         }
-        Promise.all(uploadPromises).finally(() => {
-          this.loadCurrentFolder();
-        });
       });
     }
     this.dragActive$.next(false);
@@ -247,9 +304,45 @@ export class BucketPage implements OnDestroy {
     return path || '/';
   }
 
+  private async showUploadProgress() {
+    if (this.progressDialogOpen) {
+      return;
+    }
+
+    this.dialogRef = this.dialog.open(UploadProgressDialog, {
+      position: {
+        bottom: '10px',
+        right: '10px',
+      },
+      width: '500px',
+      data: {
+        uploads$: this.uploads$
+      },
+      hasBackdrop: false,
+      autoFocus: false,
+      panelClass: ['progress-dialog', 'mat-elevation-z2'],
+    });
+    this.dialogRef.afterOpened().subscribe(() => this.progressDialogOpen = true);
+    this.dialogRef.afterClosed().subscribe(() => {
+      this.uploads$.next([]);
+      this.progressDialogOpen = false;
+    });
+
+    return new Promise<any>((resolve, reject) => {
+      this.dialogRef.afterOpened().subscribe(() => {
+        resolve(true);
+      }, err => {
+        reject(err);
+      });
+    });
+  }
+
   ngOnDestroy() {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
+    }
+    if (this.dialogRef) {
+      this.dialogRef.close();
     }
   }
 }
@@ -266,4 +359,3 @@ export interface BreadCrumbItem {
   name: string;
   route: string;
 }
-

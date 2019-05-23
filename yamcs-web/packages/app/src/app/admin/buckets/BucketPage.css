@@ -24,3 +24,13 @@
   border: 1px solid rgba(27, 97, 185, 1);
   z-index: 10;
 }
+
+::ng-deep .progress-dialog .mat-dialog-container {
+  box-shadow: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+::ng-deep .progress-dialog .mat-dialog-content {
+  overflow: hidden;
+}

@@ -4,6 +4,7 @@ import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
+import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 
@@ -11,6 +12,7 @@ const dialogComponents = [
   CreateBucketDialog,
   RenameObjectDialog,
   UploadObjectsDialog,
+  UploadProgressDialog,
 ];
 
 @NgModule({
