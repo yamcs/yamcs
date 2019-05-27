@@ -1,5 +1,5 @@
-Yamcs Server Manual
-===================
+Yamcs User Guide
+================
 
 .. toctree::
     :maxdepth: 1

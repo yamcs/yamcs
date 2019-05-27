@@ -108,7 +108,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('yamcs-server/index', 'yamcs-server.tex', 'Yamcs Server Manual', 'Space Applications Services', 'manual'),
+    ('user-guide/index', 'user-guide.tex', 'Yamcs User Guide', 'Space Applications Services', 'manual'),
     ('http-api/index', 'yamcs-http-api.tex', 'Yamcs HTTP API', 'Space Applications Services', 'manual'),
 ]
 

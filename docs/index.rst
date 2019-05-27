@@ -3,7 +3,9 @@ Yamcs Documentation
 ===================
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
+    :caption: Using Yamcs
 
-    yamcs-server/index
-    http-api/index
+    User Guide <user-guide/index>
+    HTTP API <http-api/index>
+
