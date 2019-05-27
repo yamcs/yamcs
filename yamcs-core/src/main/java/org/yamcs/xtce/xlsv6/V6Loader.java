@@ -255,7 +255,7 @@ public class V6Loader extends V6LoaderBase {
             // If major version number matches, but minor number differs
             if (supported && !FORMAT_VERSION.equals(version)) {
                 log.info("Some spreadsheet features for '{}' may not be supported by this loader: "
-                        + "Spreadsheet version (%) differs from loader supported version (%s)", ctx.file, version,
+                        + "Spreadsheet version ({}) differs from loader supported version ({})", ctx.file, version,
                         FORMAT_VERSION);
             }
         }
@@ -1680,7 +1680,7 @@ public class V6Loader extends V6LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }
         }
-        
+
         if (hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
             if (atype instanceof IntegerArgumentType) {
                 if (((IntegerArgumentType) atype).isSigned()) {
