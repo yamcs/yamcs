@@ -17,8 +17,6 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-# set classpath
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
-# run the program
-exec "$_RUNJAVA" -classpath "$CLASSPATH" org.yamcs.ui.archivebrowser.ArchiveBrowser "$@"
+exec "$_RUNJAVA" org.yamcs.ui.archivebrowser.ArchiveBrowser "$@"

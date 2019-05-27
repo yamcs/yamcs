@@ -9,9 +9,11 @@ fi
 CLASSPATH="$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
 
 # Add etc directory to load config resources
-CLASSPATH=$YAMCS_HOME/etc:$CLASSPATH:$YAMCS_HOME
-# Add the lib directory to load the xtce derived values
-CLASSPATH=$CLASSPATH:$YAMCS_HOME/lib
+if [ -z "$ETC_DIR" ]; then
+  CLASSPATH=$YAMCS_HOME/etc:$CLASSPATH
+else
+  CLASSPATH=$ETC_DIR:$CLASSPATH
+fi
 
 export CLASSPATH
 

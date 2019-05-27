@@ -31,6 +31,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.ManagementService;
@@ -47,10 +51,6 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yaml.snakeyaml.Yaml;
-
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.State;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  *

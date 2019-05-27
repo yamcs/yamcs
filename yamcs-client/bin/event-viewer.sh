@@ -17,12 +17,6 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-# set classpath
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
-#otherwise we get some errors when connecting to CD-MCS CIS
-LANG=C
-export LANG
-
-# run the program
 exec "$_RUNJAVA" org.yamcs.ui.eventviewer.EventViewer "$@"
