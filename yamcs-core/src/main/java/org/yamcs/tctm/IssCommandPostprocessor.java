@@ -47,7 +47,6 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         if (secHeaderFlag) {
             checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
         }
-
         int newLength = binary.length;
         if (checksumIndicator) { // 2 extra bytes for the checkword
             newLength += 2;
@@ -66,7 +65,6 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         }
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // fix packet length
-
         int seqCount = seqFiller.fill(binary);
         
         GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());

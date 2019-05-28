@@ -44,27 +44,28 @@ services:
           type: AOS # AOS, TM or USLP
           tmFrameLength: 512
           tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
-  - class: org.yamcs.cfdp.CfdpRetrieverService
+  - class: org.yamcs.cfdp.CfdpService
+    args:
+       sourceId: 5
+       destinationId: 24
+       sequenceNrLength: 4
+       maxPduSize: 512
+       incomingBucket: "cfdpDown"
+       eofAckTimeoutMs: 3000
+       maxEofResendAttempts: 5
+
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
 
 dataLinks:
   - name: tm_realtime
-    enabledAtStartup: false
+    enabledAtStartup: true
     class: org.yamcs.tctm.TcpTmDataLink
     args:
       stream: tm_realtime
       host: localhost
       port: 10015
-  - name: cfdp_in
-    class: org.yamcs.tctm.CfdpUdpTmDataLink
-    args:
-      stream: cfdp_in
-      host: localhost
-      port: 1235
-      packetInputStreamClassName: org.yamcs.tctm.CfdpPacketInputStream
-      packetPreprocessorClassName: org.yamcs.tctm.CfdpPacketPreprocessor
   - name: tm2_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
@@ -122,6 +123,7 @@ dataLinks:
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 
   - name: UDP_FRAME_IN
+    enabledAtStartup: false
     class: org.yamcs.tctm.UdpTmFrameLink
     args:
        port: 10017 #UDP port to listen to
@@ -159,13 +161,6 @@ dataLinks:
             stream: "tm_dump"
           #vcId 63 is reserved for idle data and it does not have to be defined
 
-  - name: cfdp_out
-    class: org.yamcs.tctm.UdpTcDataLink
-    args: 
-      stream: cfdp_out
-      targethost: 10.1.10.35
-      targetport: 5010
-
 mdb:
   # Configuration of the active loaders
   # Valid loaders are: sheet, xtce or fully qualified name of the class
@@ -181,7 +176,7 @@ mdb:
       - type: "sheet"
         spec: "mdb/tse/simulator.xls"
   #Loads the performance testing mission database
-  - type: "org.yamcs.simulator.PerfMdbLoader"
+  - type: "org.yamcs.simulation.simulator.PerfMdbLoader"
     args:
       numPackets: 18
       packetSize: 1476
@@ -197,7 +192,5 @@ streamConfig:
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   alarm: ["alarms_realtime"]
-  tc: ["tc_realtime", "cfdp_out"]
-  sqlFile: "etc/tc_streams.sql"
-  cfdp: 
-    - name: "cfdp_in" 
+  tc: ["tc_realtime"]
+  sqlFile: "etc/extra_streams.sql"

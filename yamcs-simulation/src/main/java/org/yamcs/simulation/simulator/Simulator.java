@@ -4,9 +4,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -15,24 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cfdp.DataFile;
-import org.yamcs.cfdp.DataFileSegment;
-import org.yamcs.cfdp.FileDirective;
-import org.yamcs.cfdp.pdu.AckPacket;
-import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
-import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
-import org.yamcs.cfdp.pdu.CfdpHeader;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FileStoreResponse;
-import org.yamcs.cfdp.pdu.FinishedPacket;
-import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.NakPacket;
-import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -50,7 +30,6 @@ public class Simulator extends AbstractService {
     int maxLength = DEFAULT_MAX_LENGTH;
     private TmTcLink tmLink;
     private TmTcLink tm2Link;
-    private UdpLink cfdpLink;
     private TmTcLink losLink;
     private UdpFrameLink frameLink;
 
@@ -65,14 +44,14 @@ public class Simulator extends AbstractService {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
 
-    private DataFile cfdpDataFile = null;
-    List<SegmentRequest> missingSegments;
-
     int tmCycle = 0;
     AtomicInteger tm2SeqCount = new AtomicInteger(0);
     ErrorDetectionWordCalculator edwc2 = new CrcCciitCalculator();
 
     ScheduledThreadPoolExecutor executor;
+
+    static final int CFDP_APID = 2045;
+    CfdpReceiver cfdpReceiver;
 
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
         losRecorder = new LosRecorder(dataDir);
@@ -131,163 +110,7 @@ public class Simulator extends AbstractService {
         }
     }
 
-    protected void transmitCfdp(CfdpPacket packet) {
-        cfdpLink.sendPacket(packet.toByteArray());
-    }
-
-    protected void processCfdp(CfdpPacket packet) {
-        if (packet.getHeader().isFileDirective()) {
-            switch (((FileDirective) packet).getFileDirectiveCode()) {
-            case EOF:
-                // 1 in 2 chance that we did not receive the EOF packet
-                if (Math.random() > 0.5) {
-                    break;
-                }
-
-                log.info("EOF CFDP packet received, sending back ACK (EOF) packet");
-                EofPacket p = (EofPacket) packet;
-
-                CfdpHeader header = new CfdpHeader(
-                        true,
-                        true,
-                        false,
-                        false,
-                        packet.getHeader().getEntityIdLength(),
-                        packet.getHeader().getSequenceNumberLength(),
-                        packet.getHeader().getSourceId(),
-                        packet.getHeader().getDestinationId(),
-                        packet.getHeader().getSequenceNumber());
-                AckPacket EofAck = new AckPacket(
-                        FileDirectiveCode.EOF,
-                        FileDirectiveSubtypeCode.FinishedByWaypointOrOther,
-                        ConditionCode.NoError,
-                        TransactionStatus.Active,
-                        header);
-                transmitCfdp(EofAck);
-
-                log.info("ACK (EOF) sent, delaying a bit and sending Finished packet");
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                // checking the file completeness;
-                missingSegments = cfdpDataFile.getMissingChunks();
-                if (missingSegments.isEmpty()) {
-                    log.info("File complete, sending back FinishedPacket");
-                    header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
-
-                    FinishedPacket finished = new FinishedPacket(
-                            ConditionCode.NoError,
-                            true, // generated by end system
-                            false, // data complete
-                            FileStatus.SuccessfulRetention,
-                            new ArrayList<FileStoreResponse>(),
-                            null,
-                            header);
-
-                    transmitCfdp(finished);
-                } else {
-                    header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
-
-                    NakPacket nak = new NakPacket(
-                            missingSegments.get(0).getSegmentStart(),
-                            missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
-                            missingSegments,
-                            header);
-                    transmitCfdp(nak);
-                    log.info("File not complete, NAK sent back");
-
-                }
-                break;
-            case Finished:
-                log.info("Finished CFDP packet received");
-                break;
-            case ACK:
-                log.info("ACK CFDP packet received");
-                break;
-            case Metadata:
-                log.info("Metadata CFDP packet received");
-                MetadataPacket metadata = (MetadataPacket) packet;
-                long packetLength = metadata.getPacketLength();
-                cfdpDataFile = new DataFile(packetLength);
-                break;
-            case NAK:
-                log.info("NAK CFDP packet received");
-                break;
-            case Prompt:
-                log.info("Prompt CFDP packet received");
-                break;
-            case KeepAlive:
-                log.info("KeepAlive CFDP packet received");
-                break;
-            default:
-                log.error("CFDP packet of unknown type received");
-                break;
-            }
-        } else {
-            FileDataPacket fdp = (FileDataPacket) packet;
-            if (missingSegments == null || missingSegments.isEmpty()) {
-                // we're not in "resending mode"
-                // 1 in 5 chance to 'loose' the packet
-                if (Math.random() > 0.8) {
-                    log.info("'loosing' a FileDataPacket");
-                } else {
-                    cfdpDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
-                    log.info("file data received: " + new String(fdp.getData()).toString());
-                }
-            } else {
-                // we're resending
-                cfdpDataFile.addSegment(new DataFileSegment(fdp.getOffset(), fdp.getData()));
-                missingSegments.remove(new SegmentRequest(fdp.getOffset(), fdp.getOffset() + fdp.getData().length));
-                log.info("RESENT file data received: " + new String(fdp.getData()).toString());
-                if (missingSegments.isEmpty()) {
-                    CfdpHeader header = new CfdpHeader(
-                            true, // file directive
-                            true, // towards sender
-                            false, // not acknowledged
-                            false, // no CRC
-                            packet.getHeader().getEntityIdLength(),
-                            packet.getHeader().getSequenceNumberLength(),
-                            packet.getHeader().getSourceId(),
-                            packet.getHeader().getDestinationId(),
-                            packet.getHeader().getSequenceNumber());
-
-                    FinishedPacket finished = new FinishedPacket(
-                            ConditionCode.NoError,
-                            true, // generated by end system
-                            false, // data complete
-                            FileStatus.SuccessfulRetention,
-                            new ArrayList<FileStoreResponse>(),
-                            null,
-                            header);
-
-                    transmitCfdp(finished);
-
-                }
-            }
-        }
-    }
+   
 
     protected void transmitTM2(byte[] packet) {
         if (!isLOS()) {
@@ -523,22 +346,23 @@ public class Simulator extends AbstractService {
 
     public void setTmLink(TmTcLink tmLink) {
         this.tmLink = tmLink;
+        cfdpReceiver = new CfdpReceiver(tmLink);
     }
 
     public void setTm2Link(TmTcLink tm2Link) {
         this.tm2Link = tm2Link;
     }
 
-    public void setCfdpLink(UdpLink cfdpLink) {
-        this.cfdpLink = cfdpLink;
-    }
-
     public void processTc(CCSDSPacket tc) {
-        tmLink.ackPacketSend(ackPacket(tc, 0, 0));
-        try {
-            pendingCommands.put(tc);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        if (tc.getApid() == CFDP_APID) {
+            cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+        } else {
+            tmLink.ackPacketSend(ackPacket(tc, 0, 0));
+            try {
+                pendingCommands.put(tc);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

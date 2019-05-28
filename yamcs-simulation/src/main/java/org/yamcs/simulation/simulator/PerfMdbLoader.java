@@ -1,4 +1,4 @@
-package org.yamcs.simulator;
+package org.yamcs.simulation.simulator;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.simulation.simulator.PerfPacketGenerator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.IntegerDataEncoding;

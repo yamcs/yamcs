@@ -70,6 +70,11 @@ public abstract class CfdpPacket implements Packet {
 
     public static CfdpPacket getCFDPPacket(ByteBuffer buffer) {
         CfdpHeader header = new CfdpHeader(buffer);
+        int limit = header.getLength()+header.getDataLength();
+        if(limit > buffer.limit()) {
+            throw new IllegalArgumentException("buffer too short, from header expected "+limit+" bytes, but only "+buffer.limit()+" bytes available");
+        }
+        buffer.limit(limit);
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
             switch (FileDirectiveCode.readFileDirectiveCode(buffer)) {
@@ -120,7 +125,15 @@ public abstract class CfdpPacket implements Packet {
 
         return buffer.array();
     }
-
+    public void writeToBuffer(ByteBuffer buffer) {
+        header.writeToBuffer(buffer);
+        writeCFDPPacket(buffer);
+        if (header.withCrc()) {
+            calculateAndAddCrc(buffer);
+        }
+    }
+    
+    
     public Tuple toTuple(CfdpTransactionId transferId) {
         TupleDefinition td = CFDP.copy();
         ArrayList<Object> al = new ArrayList<>();
@@ -153,5 +166,7 @@ public abstract class CfdpPacket implements Packet {
     private void calculateAndAddCrc(ByteBuffer buffer) {
         throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
     }
+
+ 
 
 }

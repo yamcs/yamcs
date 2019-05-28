@@ -98,7 +98,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
 
     @Override
     protected int calculateDataFieldLength() {
-        int toReturn = 1; // condition code + some status bits
+        int toReturn = 2; // condition code + some status bits
         for (FileStoreResponse fsr : this.filestoreResponses) {
             toReturn += 2 // first byte of the FileStoreResponse + 1 time a LV length
                     + fsr.getFirstFileName().getValue().length;

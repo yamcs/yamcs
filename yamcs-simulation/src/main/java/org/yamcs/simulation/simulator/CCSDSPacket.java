@@ -14,24 +14,24 @@ import org.yamcs.utils.TimeEncoding;
 public class CCSDSPacket {
 
     /*
-        primary header (6 bytes):
-        	3 bit = version
-        	1 bit = type (0 = system packet, 1 = payload packet)
-        	1 bit = 2nd header present
-        	11 bit = apid
-    
-        	2 bit = grouping, 01 = first, 00 = cont, 10 = last packet of group
-        	14 bit = seq
-    
-        	16 bit = packet length (excluding primary header) minus 1
-    
-        secondary header (10 bytes):
-        	32 bit = coarse time (seconds since 1970)
-        	8 bit = fine time
-        	2 bits = time id (see constants)
-        	1 bit = checksum present (2 bytes after user data)
-        	5 bits = packet type (see constants)
-        	32 bit = packet id
+     * primary header (6 bytes):
+     * 3 bit = version
+     * 1 bit = type (0 = system packet, 1 = payload packet)
+     * 1 bit = 2nd header present
+     * 11 bit = apid
+     * 
+     * 2 bit = grouping, 01 = first, 00 = cont, 10 = last packet of group
+     * 14 bit = seq
+     * 
+     * 16 bit = packet length (excluding primary header) minus 1
+     * 
+     * secondary header (10 bytes):
+     * 32 bit = coarse time (seconds since 1970)
+     * 8 bit = fine time
+     * 2 bits = time id (see constants)
+     * 1 bit = checksum present (2 bytes after user data)
+     * 5 bits = packet type (see constants)
+     * 32 bit = packet id
      */
 
     final byte SH_TIME_ID_NO_TIME_FIELD = 0;
@@ -52,19 +52,25 @@ public class CCSDSPacket {
     // Header Attributes
 
     private int apid, packetid, packetType, seq;
-    private long timeMillis; //yamcs time 
+    private long timeMillis; // yamcs time
     private short w;
 
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private boolean checksumPresent;
 
     public CCSDSPacket(ByteBuffer buffer) {
+
         this.buffer = buffer;
+
         apid = buffer.getShort(0) & 0x07ff;
         seq = buffer.getShort(2) & 0x3fff;
-        packetType = (byte) (buffer.get(11) & 0x0F); // get the packet type
-        packetid = buffer.getInt(12);
-        timeMillis = TimeEncoding.fromGpsCcsdsTime(buffer.getInt(6),  buffer.get(10));
+        int seqHeaderFlag = (buffer.getShort(0) & 0x0800) >> 11;
+
+        if (seqHeaderFlag == 1) {
+            packetType = (byte) (buffer.get(11) & 0x0F); // get the packet type
+            packetid = buffer.getInt(12);
+            timeMillis = TimeEncoding.fromGpsCcsdsTime(buffer.getInt(6), buffer.get(10));
+        }
     }
 
     public CCSDSPacket(int userDataLength, int packetid) {
@@ -99,7 +105,7 @@ public class CCSDSPacket {
 
         putHeader();
     }
-    
+
     public void setTime(long instant) {
         timeMillis = instant;
         putHeader();
@@ -211,5 +217,8 @@ public class CCSDSPacket {
         return buffer.array();
     }
 
-   
+    public int getApid() {
+        return apid;
+    }
+
 }
