@@ -27,9 +27,11 @@ public class ColumnExpression extends Expression {
     // after binding
     ColumnDefinition cdef;
 
-    //for protobuf columns
+    // for protobuf columns
+    String className;
+    String fieldName;
     FieldDescriptor fieldDescriptor;
-    
+
     ColumnExpression(String name) throws ParseException {
         super(null);
         this.name = name;
@@ -42,18 +44,20 @@ public class ColumnExpression extends Expression {
 
     @Override
     public void doBind() throws StreamSqlException {
-       ColumnDefinition inputCdef = inputDef.getColumn(name);
+        ColumnDefinition inputCdef = inputDef.getColumn(name);
         if (inputCdef == null) {
             int idx = name.indexOf(".");
-            if(idx!=-1) { //protobuf column
-                bindProtobuf(name.substring(0, idx), name.substring(idx+1));
+            if (idx != -1) { // protobuf column
+                className = name.substring(0, idx);
+                fieldName =  name.substring(idx + 1);
+                bindProtobuf(className, fieldName);
             } else {
-                throw new GenericStreamSqlException("'" + name + "' is not an input column");    
+                throw new GenericStreamSqlException("'" + name + "' is not an input column");
             }
             cdef = new ColumnDefinition(colName, type);
         } else {
             type = inputCdef.getType();
-            if(name.equals(colName)) {
+            if (name.equals(colName)) {
                 cdef = inputCdef;
             } else {
                 cdef = new ColumnDefinition(colName, type);
@@ -61,20 +65,21 @@ public class ColumnExpression extends Expression {
         }
     }
 
-    private void bindProtobuf (String className, String fieldName) throws GenericStreamSqlException {
+    private void bindProtobuf(String className, String fieldName) throws GenericStreamSqlException {
         cdef = inputDef.getColumn(className);
-        if(cdef==null) {
+        if (cdef == null) {
             throw new GenericStreamSqlException("'" + name + "' is not an input column");
         }
 
         DataType dt = cdef.getType();
-        if(dt instanceof ProtobufDataType) {
+        if (dt instanceof ProtobufDataType) {
             ProtobufDataType pdt = (ProtobufDataType) dt;
             Descriptor d = pdt.getDescriptor();
             fieldDescriptor = d.findFieldByName(fieldName);
-            if(fieldDescriptor==null) {
+            if (fieldDescriptor == null) {
                 throw new GenericStreamSqlException("'" + name + "' is not an input column");
-            };
+            }
+            ;
             type = getType(fieldDescriptor.getType());
         } else {
             throw new GenericStreamSqlException("'" + name + "' is not an input column");
@@ -82,7 +87,7 @@ public class ColumnExpression extends Expression {
     }
 
     private DataType getType(Type type) throws GenericStreamSqlException {
-        switch(type) {
+        switch (type) {
         case BOOL:
             return DataType.BOOLEAN;
         case BYTES:
@@ -91,7 +96,7 @@ public class ColumnExpression extends Expression {
             return DataType.DOUBLE;
         case FLOAT:
             return DataType.DOUBLE;
-        
+
         case FIXED32:
         case INT32:
         case SINT32:
@@ -108,16 +113,16 @@ public class ColumnExpression extends Expression {
         case ENUM:
             return DataType.STRING;
         }
-        throw new GenericStreamSqlException("Cannot use protobuf fields of type '"+type+"' in sql expressions") ;
+        throw new GenericStreamSqlException("Cannot use protobuf fields of type '" + type + "' in sql expressions");
     }
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        if(fieldDescriptor==null) {
+        if (fieldName == null) {
             code.append("col" + name);
         } else {
-            code.append("col" + cdef.getName()+".get"+capitalizeFirstLetter(fieldDescriptor.getName())+"()");
-            if(fieldDescriptor.getType()==Type.ENUM) {
+            code.append("col" + className + ".get" + capitalizeFirstLetter(fieldName) + "()");
+            if (fieldDescriptor.getType() == Type.ENUM) {
                 code.append(".name()");
             }
         }
@@ -132,8 +137,7 @@ public class ColumnExpression extends Expression {
     public String toString() {
         return name;
     }
-    
-    
+
     private String capitalizeFirstLetter(String original) {
         if (original == null || original.length() == 0) {
             return original;
