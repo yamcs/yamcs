@@ -16,7 +16,7 @@ import pkg_resources
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_ext'))
 
-project = u'Yamcs Server'
+project = u'Yamcs'
 copyright = u'2019, Space Applications Services'
 author = u'Yamcs Team'
 
@@ -65,18 +65,14 @@ extlinks = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'nature'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    #'description': 'Yamcs Server',
-    'fixed_sidebar': False,
-    'show_powered_by': False,
-    'font_family': 'Helvetica,Arial,sans-serif',
-    'font_size': '15px',
+    'sidebarwidth': '300px',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
