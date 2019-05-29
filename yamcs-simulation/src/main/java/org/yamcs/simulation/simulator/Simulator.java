@@ -60,6 +60,7 @@ public class Simulator extends AbstractService {
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
+        cfdpReceiver = new CfdpReceiver(this);
     }
 
     /**
@@ -97,7 +98,7 @@ public class Simulator extends AbstractService {
         }
     }
 
-    protected void transmitRealtimeTM(CCSDSPacket packet) {
+    public void transmitRealtimeTM(CCSDSPacket packet) {
         packet.fillChecksum();
         if (isLOS()) {
             losRecorder.record(packet);
@@ -346,7 +347,6 @@ public class Simulator extends AbstractService {
 
     public void setTmLink(TmTcLink tmLink) {
         this.tmLink = tmLink;
-        cfdpReceiver = new CfdpReceiver(tmLink);
     }
 
     public void setTm2Link(TmTcLink tm2Link) {

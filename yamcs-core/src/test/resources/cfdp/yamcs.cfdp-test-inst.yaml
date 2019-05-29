@@ -1,12 +1,20 @@
-services:
-   - class: org.yamcs.cfdp.DummyCfdpService
+services:   
+   - class: org.yamcs.cfdp.CfdpService
      args: 
-         data_in_stream: cdfp_in
-         data_out_stream: cdfp_out
+         inStream: cfdp_in
+         outStream: cfdp_out
+         sourceId: 12
+         destinationId: 15
+         sleepBetweenPdusMs: 10
 
 
 mdb:
   - type: "emptyNode"
     spec: "CFDP"
+    
 
 
+
+streamConfig:
+  sqlFile: "src/test/resources/cfdp/cfdp-streams.sql"
+                                  

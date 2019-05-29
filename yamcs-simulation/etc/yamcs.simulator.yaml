@@ -60,7 +60,7 @@ services:
 
 dataLinks:
   - name: tm_realtime
-    enabledAtStartup: true
+    enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
     args:
       stream: tm_realtime
@@ -123,7 +123,7 @@ dataLinks:
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 
   - name: UDP_FRAME_IN
-    enabledAtStartup: false
+    enabledAtStartup: true
     class: org.yamcs.tctm.UdpTmFrameLink
     args:
        port: 10017 #UDP port to listen to

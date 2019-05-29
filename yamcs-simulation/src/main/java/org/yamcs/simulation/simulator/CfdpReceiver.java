@@ -25,15 +25,23 @@ import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 
+/**
+ * Receives CFDP files.
+ * <p>
+ * It doesn't store them but just print a message at the end of the reception.
+ * 
+ * @author nm
+ *
+ */
 public class CfdpReceiver {
     private static final Logger log = LoggerFactory.getLogger(CfdpReceiver.class);
-    final TmTcLink tmLink;
+    final Simulator simulator;
 
     private DataFile cfdpDataFile = null;
     List<SegmentRequest> missingSegments;
 
-    public CfdpReceiver(TmTcLink tmLink) {
-        this.tmLink = tmLink;
+    public CfdpReceiver(Simulator simulator) {
+        this.simulator = simulator;
     }
 
     protected void processCfdp(ByteBuffer buffer) {
@@ -190,7 +198,6 @@ public class CfdpReceiver {
     }
 
     protected void transmitCfdp(CfdpPacket packet) {
-
         CfdpHeader header = packet.getHeader();
 
         int length = 16 + header.getLength() + header.getDataLength();
@@ -199,6 +206,7 @@ public class CfdpReceiver {
         buffer.putShort(4, (short) (length - 7));
         buffer.position(16);
         packet.writeToBuffer(buffer.slice());
-        tmLink.sendPacket(buffer.array());
+        
+        simulator.transmitRealtimeTM(new CCSDSPacket(buffer));
     }
 }
