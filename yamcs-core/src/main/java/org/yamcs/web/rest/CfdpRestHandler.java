@@ -105,6 +105,9 @@ public class CfdpRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Error while resolving bucket", e);
         }
+        if(bucket==null) {
+            throw new BadRequestException("No bucket by name '"+bucketName+"'");
+        }
 
         try {
             ObjectProperties props = bucket.findObject(objectName);

@@ -1,14 +1,12 @@
 package org.yamcs.cfdp;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Future;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,10 +16,16 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.protobuf.Cfdp.CreateTransferRequest;
+import org.yamcs.protobuf.Cfdp.TransferDirection;
+import org.yamcs.protobuf.Cfdp.TransferInfo;
 import org.yamcs.utils.FileUtils;
+import org.yamcs.web.rest.BucketRestHandler;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -51,8 +55,8 @@ public class CfdpIntegrationTest {
     @Before
     public void before() throws InterruptedException {
         restClient = new RestClient(ycp);
-        restClient.setAcceptMediaType(MediaType.JSON);
-        restClient.setSendMediaType(MediaType.JSON);
+        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        restClient.setSendMediaType(MediaType.PROTOBUF);
         restClient.setAutoclose(false);
     }
 
@@ -64,8 +68,15 @@ public class CfdpIntegrationTest {
     }
 
     private void uploadAndCheck(String objName, byte[] data) throws Exception {
-        Future<String> responseFuture = restClient.doRequest(
-                "/cfdp/" + yamcsInstance + "/" + bucketName + "/" + objName + "?target=cfdp-tgt1", HttpMethod.POST, "");
+        MyFileReceiver rec = new MyFileReceiver();
+        
+        CreateTransferRequest ctr = CreateTransferRequest.newBuilder().setBucket(bucketName).setObjectName(objName).setDirection(TransferDirection.UPLOAD).build();
+        Future<byte[]> responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers", HttpMethod.POST, ctr.toByteArray());
+        TransferInfo tinf = TransferInfo.parseFrom(responseFuture.get());
+        System.out.println(tinf);
+        assertEquals(data.length, tinf.getTotalSize());
+
+        
         // TransferState ts = fromJson(responseFuture.get(), TransferState.newBuilder()).build();
 
         /*        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
@@ -95,7 +106,7 @@ public class CfdpIntegrationTest {
 
     // create an object in a bucket
     private byte[] createObject(String objName, int size) throws Exception {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
         BucketDatabase bd = ydb.getBucketDatabase();
         Bucket bucket = bd.createBucket(bucketName);
         byte[] data = new byte[size];
@@ -113,6 +124,18 @@ public class CfdpIntegrationTest {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream cfdpIn = ydb.getStream("cfdp_in");
             Stream cfdpOut = ydb.getStream("cfdp_out");
+            
+            cfdpOut.addSubscriber(new StreamSubscriber() {
+                
+                @Override
+                public void streamClosed(Stream stream) { }
+                
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                    System.out.println("got tuple "+tuple);
+                    
+                }
+            });
 
             // TODO start a receiver with those two streams
         }
@@ -127,25 +150,4 @@ public class CfdpIntegrationTest {
         JsonFormat.parser().merge(json, builder);
         return builder;
     }
-
-    public static void enableLogging() {
-
-        Logger logger = Logger.getLogger("org.yamcs");
-        logger.setLevel(Level.ALL);
-        ConsoleHandler ch = null;
-
-        for (Handler h : Logger.getLogger("").getHandlers()) {
-            if (h instanceof ConsoleHandler) {
-                ch = (ConsoleHandler) h;
-                break;
-            }
-        }
-        if (ch == null) {
-            ch = new ConsoleHandler();
-            Logger.getLogger("").addHandler(ch);
-        }
-        ch.setLevel(Level.ALL);
-
-    }
-
 }
