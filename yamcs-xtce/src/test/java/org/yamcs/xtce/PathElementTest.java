@@ -3,6 +3,7 @@ package org.yamcs.xtce;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.yamcs.xtce.util.DataTypeUtil;
 
 public class PathElementTest {
     
@@ -19,5 +20,23 @@ public class PathElementTest {
         PathElement pe = PathElement.fromString("abc");
         assertEquals("abc", pe.name);
         assertNull(pe.index);
+    }
+    
+    
+    @Test
+    public void test3() {
+        IntegerParameterType intType =   new IntegerParameterType("m1type");
+        AggregateParameterType aggType = new AggregateParameterType("aggType");
+        Member m1 = new Member("m1");
+        m1.setDataType(intType);
+        aggType.addMember(m1);
+        ArrayParameterType arrayType = new ArrayParameterType("test", 1);
+        arrayType.setElementType(aggType);
+       // PathElement[] path = new PathElement[] {new PathElement("m1", new int[] {2})};
+        PathElement[] path = new PathElement[] {PathElement.fromString("[3]")};
+        DataType dt = DataTypeUtil.getMemberType(arrayType, path);
+        
+        
+        assertEquals(intType, dt);
     }
 }

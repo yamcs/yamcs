@@ -10,13 +10,33 @@ import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
+import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtceproc.DataTypeProcessor;
 
 public class AggregateUtilTest {
+    
+    @Test
+    public void testSubtype() {
+        IntegerParameterType intType =   new IntegerParameterType("m1type");
+        AggregateParameterType aggType = new AggregateParameterType("aggType");
+        Member m1 = new Member("m1");
+        m1.setDataType(intType);
+        aggType.addMember(m1);
+        ArrayParameterType arrayType = new ArrayParameterType("test", 1);
+        arrayType.setElementType(aggType);
+        PathElement[] path = AggregateUtil.parseReference("[2].m1");
+ 
+        DataType dt = DataTypeUtil.getMemberType(arrayType, path);
+        
+        assertEquals(intType, dt);
+    }
+    
+    
     @Test
     public void testPatchAggregate() {
         Parameter p = getAggregateParameter();
