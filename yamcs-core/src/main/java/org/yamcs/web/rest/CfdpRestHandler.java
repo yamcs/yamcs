@@ -47,14 +47,10 @@ public class CfdpRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
 
-    final CfdpService cfdpService;
-
-    public CfdpRestHandler(CfdpService cfdpService) {
-        this.cfdpService = cfdpService;
-    }
-
     @Route(path = "/api/cfdp/:instance/transfers", method = "GET")
     public void listTransfers(RestRequest req) throws HttpException {
+        CfdpService cfdpService = verifyCfdpService(req);
+
         List<CfdpTransaction> transactions = new ArrayList<>(cfdpService.getCfdpTransfers(true));
         Collections.sort(transactions, (c1, c2) -> {
             return Long.compare(
@@ -78,6 +74,8 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/:instance/transfers", method = "POST")
     public void createTransfer(RestRequest req) throws HttpException {
+        CfdpService cfdpService = verifyCfdpService(req);
+
         CreateTransferRequest request = req.bodyAsMessage(CreateTransferRequest.newBuilder()).build();
         if (!request.hasDirection()) {
             throw new BadRequestException("Direction not specified");
@@ -149,6 +147,8 @@ public class CfdpRestHandler extends RestHandler {
 
     @Route(path = "/api/cfdp/:instance/transfers/:id", method = { "PATCH", "PUT", "POST" })
     public void editTransfer(RestRequest req) throws HttpException {
+        CfdpService cfdpService = verifyCfdpService(req);
+
         EditTransferRequest request = req.bodyAsMessage(EditTransferRequest.newBuilder()).build();
         long transactionId = req.getLongRouteParam("id");
         CfdpTransaction transaction = verifyTransaction(req, transactionId);
@@ -196,6 +196,7 @@ public class CfdpRestHandler extends RestHandler {
     }
 
     private CfdpTransaction verifyTransaction(RestRequest req, long transactionId) throws NotFoundException {
+        CfdpService cfdpService = verifyCfdpService(req);
         CfdpTransaction transaction = cfdpService.getCfdpTransfer(transactionId);
         if (transaction == null) {
             throw new NotFoundException(req, "No such transaction");
@@ -220,5 +221,16 @@ public class CfdpRestHandler extends RestHandler {
                 .setSizeTransferred(transaction.getTransferredSize())
                 .setReliable(transaction.isReliable())
                 .build();
+    }
+
+    private CfdpService verifyCfdpService(RestRequest req) throws NotFoundException {
+        String instance = req.getRouteParam("instance");
+        verifyInstance(req, instance);
+
+        List<CfdpService> services = yamcsServer.getInstance(instance).getServices(CfdpService.class);
+        if (services.isEmpty()) {
+            throw new NotFoundException(req);
+        }
+        return services.get(0);
     }
 }

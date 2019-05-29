@@ -4,7 +4,6 @@ Yamcs User Guide
 .. toctree::
     :maxdepth: 1
     :titlesonly:
-    :numbered:
 
     general/index
     mdb/index

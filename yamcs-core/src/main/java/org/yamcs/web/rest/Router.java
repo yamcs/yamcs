@@ -107,12 +107,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public Router(ExecutorService executor) {
         this.offThreadExecutor = executor;
+        registerRouteHandler(null, new CfdpRestHandler());
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new InstanceRestHandler());
-        registerRouteHandler(null, new TemplateRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
-        registerRouteHandler(null, new UserRestHandler());
         registerRouteHandler(null, new ServiceRestHandler());
+        registerRouteHandler(null, new TemplateRestHandler());
+        registerRouteHandler(null, new UserRestHandler());
 
         registerRouteHandler(null, new ArchiveAlarmRestHandler());
         registerRouteHandler(null, new ArchiveCommandRestHandler());
@@ -121,13 +122,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ArchiveIndexDownloadsRestHandler());
         registerRouteHandler(null, new ArchiveIndexRestHandler());
         registerRouteHandler(null, new ArchivePacketRestHandler());
-        registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
         registerRouteHandler(null, new ArchiveParameterRestHandler());
         registerRouteHandler(null, new ArchiveStreamRestHandler());
         registerRouteHandler(null, new ArchiveSqlRestHandler());
         registerRouteHandler(null, new ArchiveTableRestHandler());
         registerRouteHandler(null, new ArchiveTagRestHandler());
         registerRouteHandler(null, new BucketRestHandler());
+        registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
         registerRouteHandler(null, new RocksDbMaintenanceRestHandler());
 
         registerRouteHandler(null, new ProcessorRestHandler());
@@ -189,7 +190,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             if (yamcsInstance != null) { // Expand :instance upon registration (only for dynamic routes)
                 if (!routeString.contains(":instance")) {
                     log.warn("Dynamically added route {} {} is instance-specific, yet does not "
-                            + ", contain ':instance' in its url. Routing of incoming requests "
+                            + "contain ':instance' in its url. Routing of incoming requests "
                             + "will be ambiguous.", routeConfig.httpMethod, routeConfig.originalPath);
                 }
                 routeString = routeString.replace(":instance", yamcsInstance);

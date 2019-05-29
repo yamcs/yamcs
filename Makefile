@@ -4,6 +4,8 @@ ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
 
+PACKAGE := $(shell find distribution/target -name 'yamcs*.tar.gz' -not -name 'yamcs-client*')
+
 .PHONY: all
 all: build
 
@@ -33,4 +35,9 @@ run: live
 .PHONY: install
 install:
 	@install -d $(DESTDIR)$(PREFIX)/yamcs || exit
-	@tar -xzf distribution/target/yamcs.tar.gz --strip-components=1 -C $(DESTDIR)$(PREFIX)/yamcs
+	@tar -xzf $(PACKAGE) --strip-components=1 -C $(DESTDIR)$(PREFIX)/yamcs
+	@echo "Yamcs Server installed to `cd $(DESTDIR)$(PREFIX)/yamcs; pwd`"
+	@echo
+	@echo "You may want to add Yamcs Server executables to your PATH:"
+	@echo "  export PATH=`cd $(DESTDIR)$(PREFIX)/yamcs/bin; pwd`:\$$PATH"
+

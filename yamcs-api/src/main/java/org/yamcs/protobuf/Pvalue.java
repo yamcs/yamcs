@@ -616,22 +616,18 @@ public final class Pvalue {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.ParameterValue)
       ParameterValueOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use ParameterValue.newBuilder() to construct.
     private ParameterValue(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private ParameterValue() {
-      acquisitionTime_ = 0L;
-      generationTime_ = 0L;
       acquisitionStatus_ = 0;
-      processingStatus_ = false;
       monitoringResult_ = 0;
       rangeCondition_ = 0;
       acquisitionTimeUTC_ = "";
       generationTimeUTC_ = "";
       alarmRange_ = java.util.Collections.emptyList();
-      expireMillis_ = 0L;
-      numericId_ = 0;
     }
 
     @java.lang.Override
@@ -644,6 +640,9 @@ public final class Pvalue {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -655,16 +654,9 @@ public final class Pvalue {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+              if (((bitField0_ & 0x00000001) != 0)) {
                 subBuilder = id_.toBuilder();
               }
               id_ = input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry);
@@ -677,7 +669,7 @@ public final class Pvalue {
             }
             case 18: {
               org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              if (((bitField0_ & 0x00000002) != 0)) {
                 subBuilder = rawValue_.toBuilder();
               }
               rawValue_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
@@ -690,7 +682,7 @@ public final class Pvalue {
             }
             case 26: {
               org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+              if (((bitField0_ & 0x00000004) != 0)) {
                 subBuilder = engValue_.toBuilder();
               }
               engValue_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
@@ -713,6 +705,7 @@ public final class Pvalue {
             }
             case 48: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.AcquisitionStatus value = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(6, rawValue);
@@ -729,6 +722,7 @@ public final class Pvalue {
             }
             case 64: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.MonitoringResult value = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(8, rawValue);
@@ -740,6 +734,7 @@ public final class Pvalue {
             }
             case 72: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.RangeCondition value = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(9, rawValue);
@@ -762,7 +757,7 @@ public final class Pvalue {
               break;
             }
             case 202: {
-              if (!((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+              if (!((mutable_bitField0_ & 0x00000800) != 0)) {
                 alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>();
                 mutable_bitField0_ |= 0x00000800;
               }
@@ -780,6 +775,13 @@ public final class Pvalue {
               numericId_ = input.readUInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -788,7 +790,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+        if (((mutable_bitField0_ & 0x00000800) != 0)) {
           alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
         }
         this.unknownFields = unknownFields.build();
@@ -800,6 +802,7 @@ public final class Pvalue {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterValue_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterValue_fieldAccessorTable
@@ -814,7 +817,7 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     public boolean hasId() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -835,7 +838,7 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.Value rawValue = 2;</code>
      */
     public boolean hasRawValue() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.Value rawValue = 2;</code>
@@ -856,7 +859,7 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
      */
     public boolean hasEngValue() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
@@ -877,7 +880,7 @@ public final class Pvalue {
      * <code>optional int64 acquisitionTime = 4;</code>
      */
     public boolean hasAcquisitionTime() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional int64 acquisitionTime = 4;</code>
@@ -892,7 +895,7 @@ public final class Pvalue {
      * <code>optional int64 generationTime = 5;</code>
      */
     public boolean hasGenerationTime() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional int64 generationTime = 5;</code>
@@ -907,12 +910,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6;</code>
      */
     public boolean hasAcquisitionStatus() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6;</code>
      */
     public org.yamcs.protobuf.Pvalue.AcquisitionStatus getAcquisitionStatus() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.AcquisitionStatus result = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(acquisitionStatus_);
       return result == null ? org.yamcs.protobuf.Pvalue.AcquisitionStatus.ACQUIRED : result;
     }
@@ -923,7 +927,7 @@ public final class Pvalue {
      * <code>optional bool processingStatus = 7;</code>
      */
     public boolean hasProcessingStatus() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <code>optional bool processingStatus = 7;</code>
@@ -938,12 +942,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;</code>
      */
     public boolean hasMonitoringResult() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;</code>
      */
     public org.yamcs.protobuf.Pvalue.MonitoringResult getMonitoringResult() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.MonitoringResult result = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(monitoringResult_);
       return result == null ? org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED : result;
     }
@@ -954,12 +959,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;</code>
      */
     public boolean hasRangeCondition() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000100) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;</code>
      */
     public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.RangeCondition result = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rangeCondition_);
       return result == null ? org.yamcs.protobuf.Pvalue.RangeCondition.LOW : result;
     }
@@ -974,7 +980,7 @@ public final class Pvalue {
      * <code>optional string acquisitionTimeUTC = 11;</code>
      */
     public boolean hasAcquisitionTimeUTC() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      * <pre>
@@ -1024,7 +1030,7 @@ public final class Pvalue {
      * <code>optional string generationTimeUTC = 12;</code>
      */
     public boolean hasGenerationTimeUTC() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000400) != 0);
     }
     /**
      * <code>optional string generationTimeUTC = 12;</code>
@@ -1126,7 +1132,7 @@ public final class Pvalue {
      * <code>optional int64 expireMillis = 26;</code>
      */
     public boolean hasExpireMillis() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
+      return ((bitField0_ & 0x00000800) != 0);
     }
     /**
      * <pre>
@@ -1152,7 +1158,7 @@ public final class Pvalue {
      * <code>optional uint32 numericId = 27;</code>
      */
     public boolean hasNumericId() {
-      return ((bitField0_ & 0x00001000) == 0x00001000);
+      return ((bitField0_ & 0x00001000) != 0);
     }
     /**
      * <pre>
@@ -1168,6 +1174,7 @@ public final class Pvalue {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1195,109 +1202,111 @@ public final class Pvalue {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(1, getId());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeMessage(2, getRawValue());
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeMessage(3, getEngValue());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, acquisitionTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         output.writeInt64(5, generationTime_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         output.writeEnum(6, acquisitionStatus_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         output.writeBool(7, processingStatus_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000080) != 0)) {
         output.writeEnum(8, monitoringResult_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         output.writeEnum(9, rangeCondition_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000200) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 11, acquisitionTimeUTC_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000400) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 12, generationTimeUTC_);
       }
       for (int i = 0; i < alarmRange_.size(); i++) {
         output.writeMessage(25, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000800) != 0)) {
         output.writeInt64(26, expireMillis_);
       }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+      if (((bitField0_ & 0x00001000) != 0)) {
         output.writeUInt32(27, numericId_);
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getId());
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getRawValue());
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getEngValue());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, acquisitionTime_);
       }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(5, generationTime_);
       }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+      if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(6, acquisitionStatus_);
       }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000040) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, processingStatus_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000080) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(8, monitoringResult_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000100) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(9, rangeCondition_);
       }
-      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+      if (((bitField0_ & 0x00000200) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, acquisitionTimeUTC_);
       }
-      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+      if (((bitField0_ & 0x00000400) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, generationTimeUTC_);
       }
       for (int i = 0; i < alarmRange_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(25, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+      if (((bitField0_ & 0x00000800) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(26, expireMillis_);
       }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+      if (((bitField0_ & 0x00001000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(27, numericId_);
       }
@@ -1306,7 +1315,6 @@ public final class Pvalue {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -1317,73 +1325,72 @@ public final class Pvalue {
       }
       org.yamcs.protobuf.Pvalue.ParameterValue other = (org.yamcs.protobuf.Pvalue.ParameterValue) obj;
 
-      boolean result = true;
-      result = result && (hasId() == other.hasId());
+      if (hasId() != other.hasId()) return false;
       if (hasId()) {
-        result = result && getId()
-            .equals(other.getId());
+        if (!getId()
+            .equals(other.getId())) return false;
       }
-      result = result && (hasRawValue() == other.hasRawValue());
+      if (hasRawValue() != other.hasRawValue()) return false;
       if (hasRawValue()) {
-        result = result && getRawValue()
-            .equals(other.getRawValue());
+        if (!getRawValue()
+            .equals(other.getRawValue())) return false;
       }
-      result = result && (hasEngValue() == other.hasEngValue());
+      if (hasEngValue() != other.hasEngValue()) return false;
       if (hasEngValue()) {
-        result = result && getEngValue()
-            .equals(other.getEngValue());
+        if (!getEngValue()
+            .equals(other.getEngValue())) return false;
       }
-      result = result && (hasAcquisitionTime() == other.hasAcquisitionTime());
+      if (hasAcquisitionTime() != other.hasAcquisitionTime()) return false;
       if (hasAcquisitionTime()) {
-        result = result && (getAcquisitionTime()
-            == other.getAcquisitionTime());
+        if (getAcquisitionTime()
+            != other.getAcquisitionTime()) return false;
       }
-      result = result && (hasGenerationTime() == other.hasGenerationTime());
+      if (hasGenerationTime() != other.hasGenerationTime()) return false;
       if (hasGenerationTime()) {
-        result = result && (getGenerationTime()
-            == other.getGenerationTime());
+        if (getGenerationTime()
+            != other.getGenerationTime()) return false;
       }
-      result = result && (hasAcquisitionStatus() == other.hasAcquisitionStatus());
+      if (hasAcquisitionStatus() != other.hasAcquisitionStatus()) return false;
       if (hasAcquisitionStatus()) {
-        result = result && acquisitionStatus_ == other.acquisitionStatus_;
+        if (acquisitionStatus_ != other.acquisitionStatus_) return false;
       }
-      result = result && (hasProcessingStatus() == other.hasProcessingStatus());
+      if (hasProcessingStatus() != other.hasProcessingStatus()) return false;
       if (hasProcessingStatus()) {
-        result = result && (getProcessingStatus()
-            == other.getProcessingStatus());
+        if (getProcessingStatus()
+            != other.getProcessingStatus()) return false;
       }
-      result = result && (hasMonitoringResult() == other.hasMonitoringResult());
+      if (hasMonitoringResult() != other.hasMonitoringResult()) return false;
       if (hasMonitoringResult()) {
-        result = result && monitoringResult_ == other.monitoringResult_;
+        if (monitoringResult_ != other.monitoringResult_) return false;
       }
-      result = result && (hasRangeCondition() == other.hasRangeCondition());
+      if (hasRangeCondition() != other.hasRangeCondition()) return false;
       if (hasRangeCondition()) {
-        result = result && rangeCondition_ == other.rangeCondition_;
+        if (rangeCondition_ != other.rangeCondition_) return false;
       }
-      result = result && (hasAcquisitionTimeUTC() == other.hasAcquisitionTimeUTC());
+      if (hasAcquisitionTimeUTC() != other.hasAcquisitionTimeUTC()) return false;
       if (hasAcquisitionTimeUTC()) {
-        result = result && getAcquisitionTimeUTC()
-            .equals(other.getAcquisitionTimeUTC());
+        if (!getAcquisitionTimeUTC()
+            .equals(other.getAcquisitionTimeUTC())) return false;
       }
-      result = result && (hasGenerationTimeUTC() == other.hasGenerationTimeUTC());
+      if (hasGenerationTimeUTC() != other.hasGenerationTimeUTC()) return false;
       if (hasGenerationTimeUTC()) {
-        result = result && getGenerationTimeUTC()
-            .equals(other.getGenerationTimeUTC());
+        if (!getGenerationTimeUTC()
+            .equals(other.getGenerationTimeUTC())) return false;
       }
-      result = result && getAlarmRangeList()
-          .equals(other.getAlarmRangeList());
-      result = result && (hasExpireMillis() == other.hasExpireMillis());
+      if (!getAlarmRangeList()
+          .equals(other.getAlarmRangeList())) return false;
+      if (hasExpireMillis() != other.hasExpireMillis()) return false;
       if (hasExpireMillis()) {
-        result = result && (getExpireMillis()
-            == other.getExpireMillis());
+        if (getExpireMillis()
+            != other.getExpireMillis()) return false;
       }
-      result = result && (hasNumericId() == other.hasNumericId());
+      if (hasNumericId() != other.hasNumericId()) return false;
       if (hasNumericId()) {
-        result = result && (getNumericId()
-            == other.getNumericId());
+        if (getNumericId()
+            != other.getNumericId()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -1392,7 +1399,7 @@ public final class Pvalue {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasId()) {
         hash = (37 * hash) + ID_FIELD_NUMBER;
         hash = (53 * hash) + getId().hashCode();
@@ -1459,6 +1466,17 @@ public final class Pvalue {
     }
 
     public static org.yamcs.protobuf.Pvalue.ParameterValue parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Pvalue.ParameterValue parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Pvalue.ParameterValue parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
@@ -1517,6 +1535,7 @@ public final class Pvalue {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1524,6 +1543,7 @@ public final class Pvalue {
     public static Builder newBuilder(org.yamcs.protobuf.Pvalue.ParameterValue prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1552,6 +1572,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterValue_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterValue_fieldAccessorTable
@@ -1578,6 +1599,7 @@ public final class Pvalue {
           getAlarmRangeFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (idBuilder_ == null) {
@@ -1627,15 +1649,18 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterValue_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterValue getDefaultInstanceForType() {
         return org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterValue build() {
         org.yamcs.protobuf.Pvalue.ParameterValue result = buildPartial();
         if (!result.isInitialized()) {
@@ -1644,68 +1669,69 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterValue buildPartial() {
         org.yamcs.protobuf.Pvalue.ParameterValue result = new org.yamcs.protobuf.Pvalue.ParameterValue(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          if (idBuilder_ == null) {
+            result.id_ = id_;
+          } else {
+            result.id_ = idBuilder_.build();
+          }
           to_bitField0_ |= 0x00000001;
         }
-        if (idBuilder_ == null) {
-          result.id_ = id_;
-        } else {
-          result.id_ = idBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          if (rawValueBuilder_ == null) {
+            result.rawValue_ = rawValue_;
+          } else {
+            result.rawValue_ = rawValueBuilder_.build();
+          }
           to_bitField0_ |= 0x00000002;
         }
-        if (rawValueBuilder_ == null) {
-          result.rawValue_ = rawValue_;
-        } else {
-          result.rawValue_ = rawValueBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          if (engValueBuilder_ == null) {
+            result.engValue_ = engValue_;
+          } else {
+            result.engValue_ = engValueBuilder_.build();
+          }
           to_bitField0_ |= 0x00000004;
         }
-        if (engValueBuilder_ == null) {
-          result.engValue_ = engValue_;
-        } else {
-          result.engValue_ = engValueBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.acquisitionTime_ = acquisitionTime_;
           to_bitField0_ |= 0x00000008;
         }
-        result.acquisitionTime_ = acquisitionTime_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.generationTime_ = generationTime_;
           to_bitField0_ |= 0x00000010;
         }
-        result.generationTime_ = generationTime_;
-        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((from_bitField0_ & 0x00000020) != 0)) {
           to_bitField0_ |= 0x00000020;
         }
         result.acquisitionStatus_ = acquisitionStatus_;
-        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.processingStatus_ = processingStatus_;
           to_bitField0_ |= 0x00000040;
         }
-        result.processingStatus_ = processingStatus_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+        if (((from_bitField0_ & 0x00000080) != 0)) {
           to_bitField0_ |= 0x00000080;
         }
         result.monitoringResult_ = monitoringResult_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+        if (((from_bitField0_ & 0x00000100) != 0)) {
           to_bitField0_ |= 0x00000100;
         }
         result.rangeCondition_ = rangeCondition_;
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+        if (((from_bitField0_ & 0x00000200) != 0)) {
           to_bitField0_ |= 0x00000200;
         }
         result.acquisitionTimeUTC_ = acquisitionTimeUTC_;
-        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+        if (((from_bitField0_ & 0x00000400) != 0)) {
           to_bitField0_ |= 0x00000400;
         }
         result.generationTimeUTC_ = generationTimeUTC_;
         if (alarmRangeBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          if (((bitField0_ & 0x00000800) != 0)) {
             alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
             bitField0_ = (bitField0_ & ~0x00000800);
           }
@@ -1713,45 +1739,52 @@ public final class Pvalue {
         } else {
           result.alarmRange_ = alarmRangeBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.expireMillis_ = expireMillis_;
           to_bitField0_ |= 0x00000800;
         }
-        result.expireMillis_ = expireMillis_;
-        if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
+        if (((from_bitField0_ & 0x00002000) != 0)) {
+          result.numericId_ = numericId_;
           to_bitField0_ |= 0x00001000;
         }
-        result.numericId_ = numericId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Pvalue.ParameterValue) {
           return mergeFrom((org.yamcs.protobuf.Pvalue.ParameterValue)other);
@@ -1837,6 +1870,7 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (hasId()) {
           if (!getId().isInitialized()) {
@@ -1856,6 +1890,7 @@ public final class Pvalue {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1875,14 +1910,14 @@ public final class Pvalue {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Yamcs.NamedObjectId id_ = null;
+      private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
       /**
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public boolean hasId() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
@@ -1929,7 +1964,7 @@ public final class Pvalue {
        */
       public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+          if (((bitField0_ & 0x00000001) != 0) &&
               id_ != null &&
               id_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
             id_ =
@@ -1993,14 +2028,14 @@ public final class Pvalue {
         return idBuilder_;
       }
 
-      private org.yamcs.protobuf.Yamcs.Value rawValue_ = null;
+      private org.yamcs.protobuf.Yamcs.Value rawValue_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> rawValueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.Value rawValue = 2;</code>
        */
       public boolean hasRawValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.Value rawValue = 2;</code>
@@ -2047,7 +2082,7 @@ public final class Pvalue {
        */
       public Builder mergeRawValue(org.yamcs.protobuf.Yamcs.Value value) {
         if (rawValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+          if (((bitField0_ & 0x00000002) != 0) &&
               rawValue_ != null &&
               rawValue_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
             rawValue_ =
@@ -2111,14 +2146,14 @@ public final class Pvalue {
         return rawValueBuilder_;
       }
 
-      private org.yamcs.protobuf.Yamcs.Value engValue_ = null;
+      private org.yamcs.protobuf.Yamcs.Value engValue_;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> engValueBuilder_;
       /**
        * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
        */
       public boolean hasEngValue() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
@@ -2165,7 +2200,7 @@ public final class Pvalue {
        */
       public Builder mergeEngValue(org.yamcs.protobuf.Yamcs.Value value) {
         if (engValueBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+          if (((bitField0_ & 0x00000004) != 0) &&
               engValue_ != null &&
               engValue_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
             engValue_ =
@@ -2234,7 +2269,7 @@ public final class Pvalue {
        * <code>optional int64 acquisitionTime = 4;</code>
        */
       public boolean hasAcquisitionTime() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int64 acquisitionTime = 4;</code>
@@ -2266,7 +2301,7 @@ public final class Pvalue {
        * <code>optional int64 generationTime = 5;</code>
        */
       public boolean hasGenerationTime() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional int64 generationTime = 5;</code>
@@ -2298,12 +2333,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6;</code>
        */
       public boolean hasAcquisitionStatus() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6;</code>
        */
       public org.yamcs.protobuf.Pvalue.AcquisitionStatus getAcquisitionStatus() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.AcquisitionStatus result = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(acquisitionStatus_);
         return result == null ? org.yamcs.protobuf.Pvalue.AcquisitionStatus.ACQUIRED : result;
       }
@@ -2334,7 +2370,7 @@ public final class Pvalue {
        * <code>optional bool processingStatus = 7;</code>
        */
       public boolean hasProcessingStatus() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <code>optional bool processingStatus = 7;</code>
@@ -2366,12 +2402,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;</code>
        */
       public boolean hasMonitoringResult() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000080) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;</code>
        */
       public org.yamcs.protobuf.Pvalue.MonitoringResult getMonitoringResult() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.MonitoringResult result = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(monitoringResult_);
         return result == null ? org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED : result;
       }
@@ -2402,12 +2439,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;</code>
        */
       public boolean hasRangeCondition() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000100) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;</code>
        */
       public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.RangeCondition result = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rangeCondition_);
         return result == null ? org.yamcs.protobuf.Pvalue.RangeCondition.LOW : result;
       }
@@ -2442,7 +2480,7 @@ public final class Pvalue {
        * <code>optional string acquisitionTimeUTC = 11;</code>
        */
       public boolean hasAcquisitionTimeUTC() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000200) != 0);
       }
       /**
        * <pre>
@@ -2538,7 +2576,7 @@ public final class Pvalue {
        * <code>optional string generationTimeUTC = 12;</code>
        */
       public boolean hasGenerationTimeUTC() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000400) != 0);
       }
       /**
        * <code>optional string generationTimeUTC = 12;</code>
@@ -2612,7 +2650,7 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_ =
         java.util.Collections.emptyList();
       private void ensureAlarmRangeIsMutable() {
-        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+        if (!((bitField0_ & 0x00000800) != 0)) {
           alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>(alarmRange_);
           bitField0_ |= 0x00000800;
          }
@@ -2913,7 +2951,7 @@ public final class Pvalue {
           alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder>(
                   alarmRange_,
-                  ((bitField0_ & 0x00000800) == 0x00000800),
+                  ((bitField0_ & 0x00000800) != 0),
                   getParentForChildren(),
                   isClean());
           alarmRange_ = null;
@@ -2931,7 +2969,7 @@ public final class Pvalue {
        * <code>optional int64 expireMillis = 26;</code>
        */
       public boolean hasExpireMillis() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
+        return ((bitField0_ & 0x00001000) != 0);
       }
       /**
        * <pre>
@@ -2984,7 +3022,7 @@ public final class Pvalue {
        * <code>optional uint32 numericId = 27;</code>
        */
       public boolean hasNumericId() {
-        return ((bitField0_ & 0x00002000) == 0x00002000);
+        return ((bitField0_ & 0x00002000) != 0);
       }
       /**
        * <pre>
@@ -3028,11 +3066,13 @@ public final class Pvalue {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3054,11 +3094,12 @@ public final class Pvalue {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterValue>
         PARSER = new com.google.protobuf.AbstractParser<ParameterValue>() {
+      @java.lang.Override
       public ParameterValue parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ParameterValue(input, extensionRegistry);
+        return new ParameterValue(input, extensionRegistry);
       }
     };
 
@@ -3071,6 +3112,7 @@ public final class Pvalue {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Pvalue.ParameterValue getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3180,6 +3222,7 @@ public final class Pvalue {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.ParameterStatus)
       ParameterStatusOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use ParameterStatus.newBuilder() to construct.
     private ParameterStatus(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -3189,7 +3232,6 @@ public final class Pvalue {
       monitoringResult_ = 0;
       rangeCondition_ = 0;
       alarmRange_ = java.util.Collections.emptyList();
-      expireMillis_ = 0L;
     }
 
     @java.lang.Override
@@ -3202,6 +3244,9 @@ public final class Pvalue {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -3213,15 +3258,9 @@ public final class Pvalue {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.AcquisitionStatus value = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
@@ -3233,6 +3272,7 @@ public final class Pvalue {
             }
             case 16: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.MonitoringResult value = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(2, rawValue);
@@ -3244,6 +3284,7 @@ public final class Pvalue {
             }
             case 24: {
               int rawValue = input.readEnum();
+                @SuppressWarnings("deprecation")
               org.yamcs.protobuf.Pvalue.RangeCondition value = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(3, rawValue);
@@ -3254,7 +3295,7 @@ public final class Pvalue {
               break;
             }
             case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
                 alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>();
                 mutable_bitField0_ |= 0x00000008;
               }
@@ -3267,6 +3308,13 @@ public final class Pvalue {
               expireMillis_ = input.readInt64();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3275,7 +3323,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((mutable_bitField0_ & 0x00000008) != 0)) {
           alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
         }
         this.unknownFields = unknownFields.build();
@@ -3287,6 +3335,7 @@ public final class Pvalue {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterStatus_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterStatus_fieldAccessorTable
@@ -3301,12 +3350,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 1;</code>
      */
     public boolean hasAcquisitionStatus() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 1;</code>
      */
     public org.yamcs.protobuf.Pvalue.AcquisitionStatus getAcquisitionStatus() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.AcquisitionStatus result = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(acquisitionStatus_);
       return result == null ? org.yamcs.protobuf.Pvalue.AcquisitionStatus.ACQUIRED : result;
     }
@@ -3317,12 +3367,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 2;</code>
      */
     public boolean hasMonitoringResult() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 2;</code>
      */
     public org.yamcs.protobuf.Pvalue.MonitoringResult getMonitoringResult() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.MonitoringResult result = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(monitoringResult_);
       return result == null ? org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED : result;
     }
@@ -3333,12 +3384,13 @@ public final class Pvalue {
      * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 3;</code>
      */
     public boolean hasRangeCondition() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 3;</code>
      */
     public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+      @SuppressWarnings("deprecation")
       org.yamcs.protobuf.Pvalue.RangeCondition result = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rangeCondition_);
       return result == null ? org.yamcs.protobuf.Pvalue.RangeCondition.LOW : result;
     }
@@ -3408,7 +3460,7 @@ public final class Pvalue {
      * <code>optional int64 expireMillis = 5;</code>
      */
     public boolean hasExpireMillis() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -3422,6 +3474,7 @@ public final class Pvalue {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3431,40 +3484,42 @@ public final class Pvalue {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         output.writeEnum(1, acquisitionStatus_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeEnum(2, monitoringResult_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeEnum(3, rangeCondition_);
       }
       for (int i = 0; i < alarmRange_.size(); i++) {
         output.writeMessage(4, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(5, expireMillis_);
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, acquisitionStatus_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, monitoringResult_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, rangeCondition_);
       }
@@ -3472,7 +3527,7 @@ public final class Pvalue {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(5, expireMillis_);
       }
@@ -3481,7 +3536,6 @@ public final class Pvalue {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -3492,28 +3546,27 @@ public final class Pvalue {
       }
       org.yamcs.protobuf.Pvalue.ParameterStatus other = (org.yamcs.protobuf.Pvalue.ParameterStatus) obj;
 
-      boolean result = true;
-      result = result && (hasAcquisitionStatus() == other.hasAcquisitionStatus());
+      if (hasAcquisitionStatus() != other.hasAcquisitionStatus()) return false;
       if (hasAcquisitionStatus()) {
-        result = result && acquisitionStatus_ == other.acquisitionStatus_;
+        if (acquisitionStatus_ != other.acquisitionStatus_) return false;
       }
-      result = result && (hasMonitoringResult() == other.hasMonitoringResult());
+      if (hasMonitoringResult() != other.hasMonitoringResult()) return false;
       if (hasMonitoringResult()) {
-        result = result && monitoringResult_ == other.monitoringResult_;
+        if (monitoringResult_ != other.monitoringResult_) return false;
       }
-      result = result && (hasRangeCondition() == other.hasRangeCondition());
+      if (hasRangeCondition() != other.hasRangeCondition()) return false;
       if (hasRangeCondition()) {
-        result = result && rangeCondition_ == other.rangeCondition_;
+        if (rangeCondition_ != other.rangeCondition_) return false;
       }
-      result = result && getAlarmRangeList()
-          .equals(other.getAlarmRangeList());
-      result = result && (hasExpireMillis() == other.hasExpireMillis());
+      if (!getAlarmRangeList()
+          .equals(other.getAlarmRangeList())) return false;
+      if (hasExpireMillis() != other.hasExpireMillis()) return false;
       if (hasExpireMillis()) {
-        result = result && (getExpireMillis()
-            == other.getExpireMillis());
+        if (getExpireMillis()
+            != other.getExpireMillis()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -3522,7 +3575,7 @@ public final class Pvalue {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasAcquisitionStatus()) {
         hash = (37 * hash) + ACQUISITIONSTATUS_FIELD_NUMBER;
         hash = (53 * hash) + acquisitionStatus_;
@@ -3549,6 +3602,17 @@ public final class Pvalue {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Pvalue.ParameterStatus parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Pvalue.ParameterStatus parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Pvalue.ParameterStatus parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3608,6 +3672,7 @@ public final class Pvalue {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3615,6 +3680,7 @@ public final class Pvalue {
     public static Builder newBuilder(org.yamcs.protobuf.Pvalue.ParameterStatus prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3642,6 +3708,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterStatus_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterStatus_fieldAccessorTable
@@ -3665,6 +3732,7 @@ public final class Pvalue {
           getAlarmRangeFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         acquisitionStatus_ = 0;
@@ -3684,15 +3752,18 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterStatus_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterStatus getDefaultInstanceForType() {
         return org.yamcs.protobuf.Pvalue.ParameterStatus.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterStatus build() {
         org.yamcs.protobuf.Pvalue.ParameterStatus result = buildPartial();
         if (!result.isInitialized()) {
@@ -3701,24 +3772,25 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterStatus buildPartial() {
         org.yamcs.protobuf.Pvalue.ParameterStatus result = new org.yamcs.protobuf.Pvalue.ParameterStatus(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.acquisitionStatus_ = acquisitionStatus_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000002;
         }
         result.monitoringResult_ = monitoringResult_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
         result.rangeCondition_ = rangeCondition_;
         if (alarmRangeBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          if (((bitField0_ & 0x00000008) != 0)) {
             alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
             bitField0_ = (bitField0_ & ~0x00000008);
           }
@@ -3726,41 +3798,48 @@ public final class Pvalue {
         } else {
           result.alarmRange_ = alarmRangeBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.expireMillis_ = expireMillis_;
           to_bitField0_ |= 0x00000008;
         }
-        result.expireMillis_ = expireMillis_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Pvalue.ParameterStatus) {
           return mergeFrom((org.yamcs.protobuf.Pvalue.ParameterStatus)other);
@@ -3815,10 +3894,12 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3843,12 +3924,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 1;</code>
        */
       public boolean hasAcquisitionStatus() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 1;</code>
        */
       public org.yamcs.protobuf.Pvalue.AcquisitionStatus getAcquisitionStatus() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.AcquisitionStatus result = org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(acquisitionStatus_);
         return result == null ? org.yamcs.protobuf.Pvalue.AcquisitionStatus.ACQUIRED : result;
       }
@@ -3879,12 +3961,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 2;</code>
        */
       public boolean hasMonitoringResult() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 2;</code>
        */
       public org.yamcs.protobuf.Pvalue.MonitoringResult getMonitoringResult() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.MonitoringResult result = org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(monitoringResult_);
         return result == null ? org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED : result;
       }
@@ -3915,12 +3998,13 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 3;</code>
        */
       public boolean hasRangeCondition() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.pvalue.RangeCondition rangeCondition = 3;</code>
        */
       public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+        @SuppressWarnings("deprecation")
         org.yamcs.protobuf.Pvalue.RangeCondition result = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rangeCondition_);
         return result == null ? org.yamcs.protobuf.Pvalue.RangeCondition.LOW : result;
       }
@@ -3949,7 +4033,7 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_ =
         java.util.Collections.emptyList();
       private void ensureAlarmRangeIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (!((bitField0_ & 0x00000008) != 0)) {
           alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>(alarmRange_);
           bitField0_ |= 0x00000008;
          }
@@ -4250,7 +4334,7 @@ public final class Pvalue {
           alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder>(
                   alarmRange_,
-                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
                   isClean());
           alarmRange_ = null;
@@ -4267,7 +4351,7 @@ public final class Pvalue {
        * <code>optional int64 expireMillis = 5;</code>
        */
       public boolean hasExpireMillis() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <pre>
@@ -4305,11 +4389,13 @@ public final class Pvalue {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -4331,11 +4417,12 @@ public final class Pvalue {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterStatus>
         PARSER = new com.google.protobuf.AbstractParser<ParameterStatus>() {
+      @java.lang.Override
       public ParameterStatus parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ParameterStatus(input, extensionRegistry);
+        return new ParameterStatus(input, extensionRegistry);
       }
     };
 
@@ -4348,6 +4435,7 @@ public final class Pvalue {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Pvalue.ParameterStatus getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -4456,6 +4544,7 @@ public final class Pvalue {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.ParameterData)
       ParameterDataOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use ParameterData.newBuilder() to construct.
     private ParameterData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -4463,9 +4552,6 @@ public final class Pvalue {
     private ParameterData() {
       parameter_ = java.util.Collections.emptyList();
       group_ = "";
-      generationTime_ = 0L;
-      seqNum_ = 0;
-      subscriptionId_ = 0;
     }
 
     @java.lang.Override
@@ -4478,6 +4564,9 @@ public final class Pvalue {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -4489,15 +4578,8 @@ public final class Pvalue {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>();
                 mutable_bitField0_ |= 0x00000001;
               }
@@ -4526,6 +4608,13 @@ public final class Pvalue {
               subscriptionId_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4534,7 +4623,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           parameter_ = java.util.Collections.unmodifiableList(parameter_);
         }
         this.unknownFields = unknownFields.build();
@@ -4546,6 +4635,7 @@ public final class Pvalue {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterData_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterData_fieldAccessorTable
@@ -4601,7 +4691,7 @@ public final class Pvalue {
      * <code>optional string group = 2;</code>
      */
     public boolean hasGroup() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
@@ -4655,7 +4745,7 @@ public final class Pvalue {
      * <code>optional int64 generationTime = 3;</code>
      */
     public boolean hasGenerationTime() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional int64 generationTime = 3;</code>
@@ -4670,7 +4760,7 @@ public final class Pvalue {
      * <code>optional int32 seqNum = 4;</code>
      */
     public boolean hasSeqNum() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <code>optional int32 seqNum = 4;</code>
@@ -4689,7 +4779,7 @@ public final class Pvalue {
      * <code>optional int32 subscriptionId = 5;</code>
      */
     public boolean hasSubscriptionId() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -4703,6 +4793,7 @@ public final class Pvalue {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4718,26 +4809,28 @@ public final class Pvalue {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < parameter_.size(); i++) {
         output.writeMessage(1, parameter_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, group_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         output.writeInt64(3, generationTime_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt32(4, seqNum_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt32(5, subscriptionId_);
       }
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4747,18 +4840,18 @@ public final class Pvalue {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, parameter_.get(i));
       }
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, group_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, generationTime_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(4, seqNum_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(5, subscriptionId_);
       }
@@ -4767,7 +4860,6 @@ public final class Pvalue {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -4778,31 +4870,30 @@ public final class Pvalue {
       }
       org.yamcs.protobuf.Pvalue.ParameterData other = (org.yamcs.protobuf.Pvalue.ParameterData) obj;
 
-      boolean result = true;
-      result = result && getParameterList()
-          .equals(other.getParameterList());
-      result = result && (hasGroup() == other.hasGroup());
+      if (!getParameterList()
+          .equals(other.getParameterList())) return false;
+      if (hasGroup() != other.hasGroup()) return false;
       if (hasGroup()) {
-        result = result && getGroup()
-            .equals(other.getGroup());
+        if (!getGroup()
+            .equals(other.getGroup())) return false;
       }
-      result = result && (hasGenerationTime() == other.hasGenerationTime());
+      if (hasGenerationTime() != other.hasGenerationTime()) return false;
       if (hasGenerationTime()) {
-        result = result && (getGenerationTime()
-            == other.getGenerationTime());
+        if (getGenerationTime()
+            != other.getGenerationTime()) return false;
       }
-      result = result && (hasSeqNum() == other.hasSeqNum());
+      if (hasSeqNum() != other.hasSeqNum()) return false;
       if (hasSeqNum()) {
-        result = result && (getSeqNum()
-            == other.getSeqNum());
+        if (getSeqNum()
+            != other.getSeqNum()) return false;
       }
-      result = result && (hasSubscriptionId() == other.hasSubscriptionId());
+      if (hasSubscriptionId() != other.hasSubscriptionId()) return false;
       if (hasSubscriptionId()) {
-        result = result && (getSubscriptionId()
-            == other.getSubscriptionId());
+        if (getSubscriptionId()
+            != other.getSubscriptionId()) return false;
       }
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -4811,7 +4902,7 @@ public final class Pvalue {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getParameterCount() > 0) {
         hash = (37 * hash) + PARAMETER_FIELD_NUMBER;
         hash = (53 * hash) + getParameterList().hashCode();
@@ -4838,6 +4929,17 @@ public final class Pvalue {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Pvalue.ParameterData parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Pvalue.ParameterData parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Pvalue.ParameterData parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -4897,6 +4999,7 @@ public final class Pvalue {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -4904,6 +5007,7 @@ public final class Pvalue {
     public static Builder newBuilder(org.yamcs.protobuf.Pvalue.ParameterData prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -4927,6 +5031,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterData_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterData_fieldAccessorTable
@@ -4950,6 +5055,7 @@ public final class Pvalue {
           getParameterFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (parameterBuilder_ == null) {
@@ -4969,15 +5075,18 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_ParameterData_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterData getDefaultInstanceForType() {
         return org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterData build() {
         org.yamcs.protobuf.Pvalue.ParameterData result = buildPartial();
         if (!result.isInitialized()) {
@@ -4986,12 +5095,13 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.ParameterData buildPartial() {
         org.yamcs.protobuf.Pvalue.ParameterData result = new org.yamcs.protobuf.Pvalue.ParameterData(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (parameterBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             parameter_ = java.util.Collections.unmodifiableList(parameter_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -4999,53 +5109,60 @@ public final class Pvalue {
         } else {
           result.parameter_ = parameterBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
         result.group_ = group_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.generationTime_ = generationTime_;
           to_bitField0_ |= 0x00000002;
         }
-        result.generationTime_ = generationTime_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.seqNum_ = seqNum_;
           to_bitField0_ |= 0x00000004;
         }
-        result.seqNum_ = seqNum_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.subscriptionId_ = subscriptionId_;
           to_bitField0_ |= 0x00000008;
         }
-        result.subscriptionId_ = subscriptionId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Pvalue.ParameterData) {
           return mergeFrom((org.yamcs.protobuf.Pvalue.ParameterData)other);
@@ -5102,6 +5219,7 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         for (int i = 0; i < getParameterCount(); i++) {
           if (!getParameter(i).isInitialized()) {
@@ -5111,6 +5229,7 @@ public final class Pvalue {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5133,7 +5252,7 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Pvalue.ParameterValue> parameter_ =
         java.util.Collections.emptyList();
       private void ensureParameterIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>(parameter_);
           bitField0_ |= 0x00000001;
          }
@@ -5362,7 +5481,7 @@ public final class Pvalue {
           parameterBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
                   parameter_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -5381,7 +5500,7 @@ public final class Pvalue {
        * <code>optional string group = 2;</code>
        */
       public boolean hasGroup() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <pre>
@@ -5487,7 +5606,7 @@ public final class Pvalue {
        * <code>optional int64 generationTime = 3;</code>
        */
       public boolean hasGenerationTime() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional int64 generationTime = 3;</code>
@@ -5519,7 +5638,7 @@ public final class Pvalue {
        * <code>optional int32 seqNum = 4;</code>
        */
       public boolean hasSeqNum() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int32 seqNum = 4;</code>
@@ -5555,7 +5674,7 @@ public final class Pvalue {
        * <code>optional int32 subscriptionId = 5;</code>
        */
       public boolean hasSubscriptionId() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <pre>
@@ -5593,11 +5712,13 @@ public final class Pvalue {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -5619,11 +5740,12 @@ public final class Pvalue {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterData>
         PARSER = new com.google.protobuf.AbstractParser<ParameterData>() {
+      @java.lang.Override
       public ParameterData parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ParameterData(input, extensionRegistry);
+        return new ParameterData(input, extensionRegistry);
       }
     };
 
@@ -5636,6 +5758,7 @@ public final class Pvalue {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Pvalue.ParameterData getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5677,6 +5800,7 @@ public final class Pvalue {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.TimeSeries)
       TimeSeriesOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TimeSeries.newBuilder() to construct.
     private TimeSeries(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -5695,6 +5819,9 @@ public final class Pvalue {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -5706,20 +5833,20 @@ public final class Pvalue {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.TimeSeries.Sample>();
                 mutable_bitField0_ |= 0x00000001;
               }
               sample_.add(
                   input.readMessage(org.yamcs.protobuf.Pvalue.TimeSeries.Sample.PARSER, extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -5730,7 +5857,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           sample_ = java.util.Collections.unmodifiableList(sample_);
         }
         this.unknownFields = unknownFields.build();
@@ -5742,6 +5869,7 @@ public final class Pvalue {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_fieldAccessorTable
@@ -5810,16 +5938,13 @@ public final class Pvalue {
         com.google.protobuf.GeneratedMessageV3 implements
         // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.TimeSeries.Sample)
         SampleOrBuilder {
+    private static final long serialVersionUID = 0L;
       // Use Sample.newBuilder() to construct.
       private Sample(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
       }
       private Sample() {
         time_ = "";
-        avg_ = 0D;
-        min_ = 0D;
-        max_ = 0D;
-        n_ = 0;
       }
 
       @java.lang.Override
@@ -5832,6 +5957,9 @@ public final class Pvalue {
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
             com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -5843,13 +5971,6 @@ public final class Pvalue {
               case 0:
                 done = true;
                 break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
               case 10: {
                 com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
@@ -5876,6 +5997,13 @@ public final class Pvalue {
                 n_ = input.readInt32();
                 break;
               }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
             }
           }
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -5893,6 +6021,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_Sample_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_Sample_fieldAccessorTable
@@ -5907,7 +6036,7 @@ public final class Pvalue {
        * <code>optional string time = 1;</code>
        */
       public boolean hasTime() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string time = 1;</code>
@@ -5949,7 +6078,7 @@ public final class Pvalue {
        * <code>optional double avg = 2;</code>
        */
       public boolean hasAvg() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional double avg = 2;</code>
@@ -5964,7 +6093,7 @@ public final class Pvalue {
        * <code>optional double min = 3;</code>
        */
       public boolean hasMin() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional double min = 3;</code>
@@ -5979,7 +6108,7 @@ public final class Pvalue {
        * <code>optional double max = 4;</code>
        */
       public boolean hasMax() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional double max = 4;</code>
@@ -5994,7 +6123,7 @@ public final class Pvalue {
        * <code>optional int32 n = 5;</code>
        */
       public boolean hasN() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <code>optional int32 n = 5;</code>
@@ -6004,6 +6133,7 @@ public final class Pvalue {
       }
 
       private byte memoizedIsInitialized = -1;
+      @java.lang.Override
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
         if (isInitialized == 1) return true;
@@ -6013,47 +6143,49 @@ public final class Pvalue {
         return true;
       }
 
+      @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, time_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           output.writeDouble(2, avg_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           output.writeDouble(3, min_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           output.writeDouble(4, max_);
         }
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           output.writeInt32(5, n_);
         }
         unknownFields.writeTo(output);
       }
 
+      @java.lang.Override
       public int getSerializedSize() {
         int size = memoizedSize;
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, time_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(2, avg_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(3, min_);
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(4, max_);
         }
-        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(5, n_);
         }
@@ -6062,7 +6194,6 @@ public final class Pvalue {
         return size;
       }
 
-      private static final long serialVersionUID = 0L;
       @java.lang.Override
       public boolean equals(final java.lang.Object obj) {
         if (obj == this) {
@@ -6073,40 +6204,36 @@ public final class Pvalue {
         }
         org.yamcs.protobuf.Pvalue.TimeSeries.Sample other = (org.yamcs.protobuf.Pvalue.TimeSeries.Sample) obj;
 
-        boolean result = true;
-        result = result && (hasTime() == other.hasTime());
+        if (hasTime() != other.hasTime()) return false;
         if (hasTime()) {
-          result = result && getTime()
-              .equals(other.getTime());
+          if (!getTime()
+              .equals(other.getTime())) return false;
         }
-        result = result && (hasAvg() == other.hasAvg());
+        if (hasAvg() != other.hasAvg()) return false;
         if (hasAvg()) {
-          result = result && (
-              java.lang.Double.doubleToLongBits(getAvg())
-              == java.lang.Double.doubleToLongBits(
-                  other.getAvg()));
+          if (java.lang.Double.doubleToLongBits(getAvg())
+              != java.lang.Double.doubleToLongBits(
+                  other.getAvg())) return false;
         }
-        result = result && (hasMin() == other.hasMin());
+        if (hasMin() != other.hasMin()) return false;
         if (hasMin()) {
-          result = result && (
-              java.lang.Double.doubleToLongBits(getMin())
-              == java.lang.Double.doubleToLongBits(
-                  other.getMin()));
+          if (java.lang.Double.doubleToLongBits(getMin())
+              != java.lang.Double.doubleToLongBits(
+                  other.getMin())) return false;
         }
-        result = result && (hasMax() == other.hasMax());
+        if (hasMax() != other.hasMax()) return false;
         if (hasMax()) {
-          result = result && (
-              java.lang.Double.doubleToLongBits(getMax())
-              == java.lang.Double.doubleToLongBits(
-                  other.getMax()));
+          if (java.lang.Double.doubleToLongBits(getMax())
+              != java.lang.Double.doubleToLongBits(
+                  other.getMax())) return false;
         }
-        result = result && (hasN() == other.hasN());
+        if (hasN() != other.hasN()) return false;
         if (hasN()) {
-          result = result && (getN()
-              == other.getN());
+          if (getN()
+              != other.getN()) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -6115,7 +6242,7 @@ public final class Pvalue {
           return memoizedHashCode;
         }
         int hash = 41;
-        hash = (19 * hash) + getDescriptorForType().hashCode();
+        hash = (19 * hash) + getDescriptor().hashCode();
         if (hasTime()) {
           hash = (37 * hash) + TIME_FIELD_NUMBER;
           hash = (53 * hash) + getTime().hashCode();
@@ -6144,6 +6271,17 @@ public final class Pvalue {
         return hash;
       }
 
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
       public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6203,6 +6341,7 @@ public final class Pvalue {
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
 
+      @java.lang.Override
       public Builder newBuilderForType() { return newBuilder(); }
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
@@ -6210,6 +6349,7 @@ public final class Pvalue {
       public static Builder newBuilder(org.yamcs.protobuf.Pvalue.TimeSeries.Sample prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
+      @java.lang.Override
       public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
             ? new Builder() : new Builder().mergeFrom(this);
@@ -6233,6 +6373,7 @@ public final class Pvalue {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_Sample_descriptor;
         }
 
+        @java.lang.Override
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_Sample_fieldAccessorTable
@@ -6255,6 +6396,7 @@ public final class Pvalue {
                   .alwaysUseFieldBuilders) {
           }
         }
+        @java.lang.Override
         public Builder clear() {
           super.clear();
           time_ = "";
@@ -6270,15 +6412,18 @@ public final class Pvalue {
           return this;
         }
 
+        @java.lang.Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_Sample_descriptor;
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.TimeSeries.Sample getDefaultInstanceForType() {
           return org.yamcs.protobuf.Pvalue.TimeSeries.Sample.getDefaultInstance();
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.TimeSeries.Sample build() {
           org.yamcs.protobuf.Pvalue.TimeSeries.Sample result = buildPartial();
           if (!result.isInitialized()) {
@@ -6287,61 +6432,69 @@ public final class Pvalue {
           return result;
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.TimeSeries.Sample buildPartial() {
           org.yamcs.protobuf.Pvalue.TimeSeries.Sample result = new org.yamcs.protobuf.Pvalue.TimeSeries.Sample(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.time_ = time_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.avg_ = avg_;
             to_bitField0_ |= 0x00000002;
           }
-          result.avg_ = avg_;
-          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((from_bitField0_ & 0x00000004) != 0)) {
+            result.min_ = min_;
             to_bitField0_ |= 0x00000004;
           }
-          result.min_ = min_;
-          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.max_ = max_;
             to_bitField0_ |= 0x00000008;
           }
-          result.max_ = max_;
-          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          if (((from_bitField0_ & 0x00000010) != 0)) {
+            result.n_ = n_;
             to_bitField0_ |= 0x00000010;
           }
-          result.n_ = n_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
         }
 
+        @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
+        @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
-          return (Builder) super.setField(field, value);
+            java.lang.Object value) {
+          return super.setField(field, value);
         }
+        @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
+        @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
+        @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
         }
+        @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
         }
+        @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
           if (other instanceof org.yamcs.protobuf.Pvalue.TimeSeries.Sample) {
             return mergeFrom((org.yamcs.protobuf.Pvalue.TimeSeries.Sample)other);
@@ -6375,10 +6528,12 @@ public final class Pvalue {
           return this;
         }
 
+        @java.lang.Override
         public final boolean isInitialized() {
           return true;
         }
 
+        @java.lang.Override
         public Builder mergeFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -6403,7 +6558,7 @@ public final class Pvalue {
          * <code>optional string time = 1;</code>
          */
         public boolean hasTime() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional string time = 1;</code>
@@ -6479,7 +6634,7 @@ public final class Pvalue {
          * <code>optional double avg = 2;</code>
          */
         public boolean hasAvg() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>optional double avg = 2;</code>
@@ -6511,7 +6666,7 @@ public final class Pvalue {
          * <code>optional double min = 3;</code>
          */
         public boolean hasMin() {
-          return ((bitField0_ & 0x00000004) == 0x00000004);
+          return ((bitField0_ & 0x00000004) != 0);
         }
         /**
          * <code>optional double min = 3;</code>
@@ -6543,7 +6698,7 @@ public final class Pvalue {
          * <code>optional double max = 4;</code>
          */
         public boolean hasMax() {
-          return ((bitField0_ & 0x00000008) == 0x00000008);
+          return ((bitField0_ & 0x00000008) != 0);
         }
         /**
          * <code>optional double max = 4;</code>
@@ -6575,7 +6730,7 @@ public final class Pvalue {
          * <code>optional int32 n = 5;</code>
          */
         public boolean hasN() {
-          return ((bitField0_ & 0x00000010) == 0x00000010);
+          return ((bitField0_ & 0x00000010) != 0);
         }
         /**
          * <code>optional int32 n = 5;</code>
@@ -6601,11 +6756,13 @@ public final class Pvalue {
           onChanged();
           return this;
         }
+        @java.lang.Override
         public final Builder setUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
           return super.setUnknownFields(unknownFields);
         }
 
+        @java.lang.Override
         public final Builder mergeUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
           return super.mergeUnknownFields(unknownFields);
@@ -6627,11 +6784,12 @@ public final class Pvalue {
 
       @java.lang.Deprecated public static final com.google.protobuf.Parser<Sample>
           PARSER = new com.google.protobuf.AbstractParser<Sample>() {
+        @java.lang.Override
         public Sample parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Sample(input, extensionRegistry);
+          return new Sample(input, extensionRegistry);
         }
       };
 
@@ -6644,6 +6802,7 @@ public final class Pvalue {
         return PARSER;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.TimeSeries.Sample getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
@@ -6686,6 +6845,7 @@ public final class Pvalue {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -6695,6 +6855,7 @@ public final class Pvalue {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < sample_.size(); i++) {
@@ -6703,6 +6864,7 @@ public final class Pvalue {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -6717,7 +6879,6 @@ public final class Pvalue {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -6728,11 +6889,10 @@ public final class Pvalue {
       }
       org.yamcs.protobuf.Pvalue.TimeSeries other = (org.yamcs.protobuf.Pvalue.TimeSeries) obj;
 
-      boolean result = true;
-      result = result && getSampleList()
-          .equals(other.getSampleList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getSampleList()
+          .equals(other.getSampleList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -6741,7 +6901,7 @@ public final class Pvalue {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getSampleCount() > 0) {
         hash = (37 * hash) + SAMPLE_FIELD_NUMBER;
         hash = (53 * hash) + getSampleList().hashCode();
@@ -6751,6 +6911,17 @@ public final class Pvalue {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6810,6 +6981,7 @@ public final class Pvalue {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -6817,6 +6989,7 @@ public final class Pvalue {
     public static Builder newBuilder(org.yamcs.protobuf.Pvalue.TimeSeries prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -6840,6 +7013,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_fieldAccessorTable
@@ -6863,6 +7037,7 @@ public final class Pvalue {
           getSampleFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (sampleBuilder_ == null) {
@@ -6874,15 +7049,18 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_TimeSeries_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.TimeSeries getDefaultInstanceForType() {
         return org.yamcs.protobuf.Pvalue.TimeSeries.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.TimeSeries build() {
         org.yamcs.protobuf.Pvalue.TimeSeries result = buildPartial();
         if (!result.isInitialized()) {
@@ -6891,11 +7069,12 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.TimeSeries buildPartial() {
         org.yamcs.protobuf.Pvalue.TimeSeries result = new org.yamcs.protobuf.Pvalue.TimeSeries(this);
         int from_bitField0_ = bitField0_;
         if (sampleBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             sample_ = java.util.Collections.unmodifiableList(sample_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -6907,32 +7086,39 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Pvalue.TimeSeries) {
           return mergeFrom((org.yamcs.protobuf.Pvalue.TimeSeries)other);
@@ -6975,10 +7161,12 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -7001,7 +7189,7 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> sample_ =
         java.util.Collections.emptyList();
       private void ensureSampleIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.TimeSeries.Sample>(sample_);
           bitField0_ |= 0x00000001;
          }
@@ -7230,18 +7418,20 @@ public final class Pvalue {
           sampleBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Pvalue.TimeSeries.Sample, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder>(
                   sample_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           sample_ = null;
         }
         return sampleBuilder_;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -7263,11 +7453,12 @@ public final class Pvalue {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<TimeSeries>
         PARSER = new com.google.protobuf.AbstractParser<TimeSeries>() {
+      @java.lang.Override
       public TimeSeries parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TimeSeries(input, extensionRegistry);
+        return new TimeSeries(input, extensionRegistry);
       }
     };
 
@@ -7280,6 +7471,7 @@ public final class Pvalue {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Pvalue.TimeSeries getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -7321,6 +7513,7 @@ public final class Pvalue {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.Ranges)
       RangesOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use Ranges.newBuilder() to construct.
     private Ranges(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -7339,6 +7532,9 @@ public final class Pvalue {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -7350,20 +7546,20 @@ public final class Pvalue {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 range_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.Ranges.Range>();
                 mutable_bitField0_ |= 0x00000001;
               }
               range_.add(
                   input.readMessage(org.yamcs.protobuf.Pvalue.Ranges.Range.PARSER, extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -7374,7 +7570,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           range_ = java.util.Collections.unmodifiableList(range_);
         }
         this.unknownFields = unknownFields.build();
@@ -7386,6 +7582,7 @@ public final class Pvalue {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_fieldAccessorTable
@@ -7454,6 +7651,7 @@ public final class Pvalue {
         com.google.protobuf.GeneratedMessageV3 implements
         // @@protoc_insertion_point(message_implements:yamcs.protobuf.pvalue.Ranges.Range)
         RangeOrBuilder {
+    private static final long serialVersionUID = 0L;
       // Use Range.newBuilder() to construct.
       private Range(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
@@ -7461,7 +7659,6 @@ public final class Pvalue {
       private Range() {
         timeStart_ = "";
         timeStop_ = "";
-        count_ = 0;
       }
 
       @java.lang.Override
@@ -7474,6 +7671,9 @@ public final class Pvalue {
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
             com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -7485,13 +7685,6 @@ public final class Pvalue {
               case 0:
                 done = true;
                 break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
               case 10: {
                 com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000001;
@@ -7506,7 +7699,7 @@ public final class Pvalue {
               }
               case 26: {
                 org.yamcs.protobuf.Yamcs.Value.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                if (((bitField0_ & 0x00000004) != 0)) {
                   subBuilder = engValue_.toBuilder();
                 }
                 engValue_ = input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry);
@@ -7520,6 +7713,13 @@ public final class Pvalue {
               case 32: {
                 bitField0_ |= 0x00000008;
                 count_ = input.readInt32();
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
                 break;
               }
             }
@@ -7539,6 +7739,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_Range_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_Range_fieldAccessorTable
@@ -7553,7 +7754,7 @@ public final class Pvalue {
        * <code>optional string timeStart = 1;</code>
        */
       public boolean hasTimeStart() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <code>optional string timeStart = 1;</code>
@@ -7595,7 +7796,7 @@ public final class Pvalue {
        * <code>optional string timeStop = 2;</code>
        */
       public boolean hasTimeStop() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional string timeStop = 2;</code>
@@ -7637,7 +7838,7 @@ public final class Pvalue {
        * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
        */
       public boolean hasEngValue() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
@@ -7658,7 +7859,7 @@ public final class Pvalue {
        * <code>optional int32 count = 4;</code>
        */
       public boolean hasCount() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional int32 count = 4;</code>
@@ -7668,6 +7869,7 @@ public final class Pvalue {
       }
 
       private byte memoizedIsInitialized = -1;
+      @java.lang.Override
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
         if (isInitialized == 1) return true;
@@ -7683,39 +7885,41 @@ public final class Pvalue {
         return true;
       }
 
+      @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, timeStart_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 2, timeStop_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           output.writeMessage(3, getEngValue());
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           output.writeInt32(4, count_);
         }
         unknownFields.writeTo(output);
       }
 
+      @java.lang.Override
       public int getSerializedSize() {
         int size = memoizedSize;
         if (size != -1) return size;
 
         size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((bitField0_ & 0x00000001) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, timeStart_);
         }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, timeStop_);
         }
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(3, getEngValue());
         }
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(4, count_);
         }
@@ -7724,7 +7928,6 @@ public final class Pvalue {
         return size;
       }
 
-      private static final long serialVersionUID = 0L;
       @java.lang.Override
       public boolean equals(final java.lang.Object obj) {
         if (obj == this) {
@@ -7735,29 +7938,28 @@ public final class Pvalue {
         }
         org.yamcs.protobuf.Pvalue.Ranges.Range other = (org.yamcs.protobuf.Pvalue.Ranges.Range) obj;
 
-        boolean result = true;
-        result = result && (hasTimeStart() == other.hasTimeStart());
+        if (hasTimeStart() != other.hasTimeStart()) return false;
         if (hasTimeStart()) {
-          result = result && getTimeStart()
-              .equals(other.getTimeStart());
+          if (!getTimeStart()
+              .equals(other.getTimeStart())) return false;
         }
-        result = result && (hasTimeStop() == other.hasTimeStop());
+        if (hasTimeStop() != other.hasTimeStop()) return false;
         if (hasTimeStop()) {
-          result = result && getTimeStop()
-              .equals(other.getTimeStop());
+          if (!getTimeStop()
+              .equals(other.getTimeStop())) return false;
         }
-        result = result && (hasEngValue() == other.hasEngValue());
+        if (hasEngValue() != other.hasEngValue()) return false;
         if (hasEngValue()) {
-          result = result && getEngValue()
-              .equals(other.getEngValue());
+          if (!getEngValue()
+              .equals(other.getEngValue())) return false;
         }
-        result = result && (hasCount() == other.hasCount());
+        if (hasCount() != other.hasCount()) return false;
         if (hasCount()) {
-          result = result && (getCount()
-              == other.getCount());
+          if (getCount()
+              != other.getCount()) return false;
         }
-        result = result && unknownFields.equals(other.unknownFields);
-        return result;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
       }
 
       @java.lang.Override
@@ -7766,7 +7968,7 @@ public final class Pvalue {
           return memoizedHashCode;
         }
         int hash = 41;
-        hash = (19 * hash) + getDescriptorForType().hashCode();
+        hash = (19 * hash) + getDescriptor().hashCode();
         if (hasTimeStart()) {
           hash = (37 * hash) + TIMESTART_FIELD_NUMBER;
           hash = (53 * hash) + getTimeStart().hashCode();
@@ -7788,6 +7990,17 @@ public final class Pvalue {
         return hash;
       }
 
+      public static org.yamcs.protobuf.Pvalue.Ranges.Range parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Pvalue.Ranges.Range parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
       public static org.yamcs.protobuf.Pvalue.Ranges.Range parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -7847,6 +8060,7 @@ public final class Pvalue {
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
 
+      @java.lang.Override
       public Builder newBuilderForType() { return newBuilder(); }
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
@@ -7854,6 +8068,7 @@ public final class Pvalue {
       public static Builder newBuilder(org.yamcs.protobuf.Pvalue.Ranges.Range prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
+      @java.lang.Override
       public Builder toBuilder() {
         return this == DEFAULT_INSTANCE
             ? new Builder() : new Builder().mergeFrom(this);
@@ -7877,6 +8092,7 @@ public final class Pvalue {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_Range_descriptor;
         }
 
+        @java.lang.Override
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_Range_fieldAccessorTable
@@ -7900,6 +8116,7 @@ public final class Pvalue {
             getEngValueFieldBuilder();
           }
         }
+        @java.lang.Override
         public Builder clear() {
           super.clear();
           timeStart_ = "";
@@ -7917,15 +8134,18 @@ public final class Pvalue {
           return this;
         }
 
+        @java.lang.Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
           return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_Range_descriptor;
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.Ranges.Range getDefaultInstanceForType() {
           return org.yamcs.protobuf.Pvalue.Ranges.Range.getDefaultInstance();
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.Ranges.Range build() {
           org.yamcs.protobuf.Pvalue.Ranges.Range result = buildPartial();
           if (!result.isInitialized()) {
@@ -7934,61 +8154,69 @@ public final class Pvalue {
           return result;
         }
 
+        @java.lang.Override
         public org.yamcs.protobuf.Pvalue.Ranges.Range buildPartial() {
           org.yamcs.protobuf.Pvalue.Ranges.Range result = new org.yamcs.protobuf.Pvalue.Ranges.Range(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((from_bitField0_ & 0x00000001) != 0)) {
             to_bitField0_ |= 0x00000001;
           }
           result.timeStart_ = timeStart_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((from_bitField0_ & 0x00000002) != 0)) {
             to_bitField0_ |= 0x00000002;
           }
           result.timeStop_ = timeStop_;
-          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((from_bitField0_ & 0x00000004) != 0)) {
+            if (engValueBuilder_ == null) {
+              result.engValue_ = engValue_;
+            } else {
+              result.engValue_ = engValueBuilder_.build();
+            }
             to_bitField0_ |= 0x00000004;
           }
-          if (engValueBuilder_ == null) {
-            result.engValue_ = engValue_;
-          } else {
-            result.engValue_ = engValueBuilder_.build();
-          }
-          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.count_ = count_;
             to_bitField0_ |= 0x00000008;
           }
-          result.count_ = count_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
         }
 
+        @java.lang.Override
         public Builder clone() {
-          return (Builder) super.clone();
+          return super.clone();
         }
+        @java.lang.Override
         public Builder setField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
-          return (Builder) super.setField(field, value);
+            java.lang.Object value) {
+          return super.setField(field, value);
         }
+        @java.lang.Override
         public Builder clearField(
             com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return (Builder) super.clearField(field);
+          return super.clearField(field);
         }
+        @java.lang.Override
         public Builder clearOneof(
             com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return (Builder) super.clearOneof(oneof);
+          return super.clearOneof(oneof);
         }
+        @java.lang.Override
         public Builder setRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, Object value) {
-          return (Builder) super.setRepeatedField(field, index, value);
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
         }
+        @java.lang.Override
         public Builder addRepeatedField(
             com.google.protobuf.Descriptors.FieldDescriptor field,
-            Object value) {
-          return (Builder) super.addRepeatedField(field, value);
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
         }
+        @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
           if (other instanceof org.yamcs.protobuf.Pvalue.Ranges.Range) {
             return mergeFrom((org.yamcs.protobuf.Pvalue.Ranges.Range)other);
@@ -8021,6 +8249,7 @@ public final class Pvalue {
           return this;
         }
 
+        @java.lang.Override
         public final boolean isInitialized() {
           if (hasEngValue()) {
             if (!getEngValue().isInitialized()) {
@@ -8030,6 +8259,7 @@ public final class Pvalue {
           return true;
         }
 
+        @java.lang.Override
         public Builder mergeFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -8054,7 +8284,7 @@ public final class Pvalue {
          * <code>optional string timeStart = 1;</code>
          */
         public boolean hasTimeStart() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000001) != 0);
         }
         /**
          * <code>optional string timeStart = 1;</code>
@@ -8130,7 +8360,7 @@ public final class Pvalue {
          * <code>optional string timeStop = 2;</code>
          */
         public boolean hasTimeStop() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000002) != 0);
         }
         /**
          * <code>optional string timeStop = 2;</code>
@@ -8201,14 +8431,14 @@ public final class Pvalue {
           return this;
         }
 
-        private org.yamcs.protobuf.Yamcs.Value engValue_ = null;
+        private org.yamcs.protobuf.Yamcs.Value engValue_;
         private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> engValueBuilder_;
         /**
          * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
          */
         public boolean hasEngValue() {
-          return ((bitField0_ & 0x00000004) == 0x00000004);
+          return ((bitField0_ & 0x00000004) != 0);
         }
         /**
          * <code>optional .yamcs.protobuf.Value engValue = 3;</code>
@@ -8255,7 +8485,7 @@ public final class Pvalue {
          */
         public Builder mergeEngValue(org.yamcs.protobuf.Yamcs.Value value) {
           if (engValueBuilder_ == null) {
-            if (((bitField0_ & 0x00000004) == 0x00000004) &&
+            if (((bitField0_ & 0x00000004) != 0) &&
                 engValue_ != null &&
                 engValue_ != org.yamcs.protobuf.Yamcs.Value.getDefaultInstance()) {
               engValue_ =
@@ -8324,7 +8554,7 @@ public final class Pvalue {
          * <code>optional int32 count = 4;</code>
          */
         public boolean hasCount() {
-          return ((bitField0_ & 0x00000008) == 0x00000008);
+          return ((bitField0_ & 0x00000008) != 0);
         }
         /**
          * <code>optional int32 count = 4;</code>
@@ -8350,11 +8580,13 @@ public final class Pvalue {
           onChanged();
           return this;
         }
+        @java.lang.Override
         public final Builder setUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
           return super.setUnknownFields(unknownFields);
         }
 
+        @java.lang.Override
         public final Builder mergeUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
           return super.mergeUnknownFields(unknownFields);
@@ -8376,11 +8608,12 @@ public final class Pvalue {
 
       @java.lang.Deprecated public static final com.google.protobuf.Parser<Range>
           PARSER = new com.google.protobuf.AbstractParser<Range>() {
+        @java.lang.Override
         public Range parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Range(input, extensionRegistry);
+          return new Range(input, extensionRegistry);
         }
       };
 
@@ -8393,6 +8626,7 @@ public final class Pvalue {
         return PARSER;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.Ranges.Range getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
@@ -8435,6 +8669,7 @@ public final class Pvalue {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -8450,6 +8685,7 @@ public final class Pvalue {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < range_.size(); i++) {
@@ -8458,6 +8694,7 @@ public final class Pvalue {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -8472,7 +8709,6 @@ public final class Pvalue {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -8483,11 +8719,10 @@ public final class Pvalue {
       }
       org.yamcs.protobuf.Pvalue.Ranges other = (org.yamcs.protobuf.Pvalue.Ranges) obj;
 
-      boolean result = true;
-      result = result && getRangeList()
-          .equals(other.getRangeList());
-      result = result && unknownFields.equals(other.unknownFields);
-      return result;
+      if (!getRangeList()
+          .equals(other.getRangeList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @java.lang.Override
@@ -8496,7 +8731,7 @@ public final class Pvalue {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getRangeCount() > 0) {
         hash = (37 * hash) + RANGE_FIELD_NUMBER;
         hash = (53 * hash) + getRangeList().hashCode();
@@ -8506,6 +8741,17 @@ public final class Pvalue {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Pvalue.Ranges parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Pvalue.Ranges parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Pvalue.Ranges parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -8565,6 +8811,7 @@ public final class Pvalue {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -8572,6 +8819,7 @@ public final class Pvalue {
     public static Builder newBuilder(org.yamcs.protobuf.Pvalue.Ranges prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -8595,6 +8843,7 @@ public final class Pvalue {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_fieldAccessorTable
@@ -8618,6 +8867,7 @@ public final class Pvalue {
           getRangeFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (rangeBuilder_ == null) {
@@ -8629,15 +8879,18 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Pvalue.internal_static_yamcs_protobuf_pvalue_Ranges_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.Ranges getDefaultInstanceForType() {
         return org.yamcs.protobuf.Pvalue.Ranges.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.Ranges build() {
         org.yamcs.protobuf.Pvalue.Ranges result = buildPartial();
         if (!result.isInitialized()) {
@@ -8646,11 +8899,12 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Pvalue.Ranges buildPartial() {
         org.yamcs.protobuf.Pvalue.Ranges result = new org.yamcs.protobuf.Pvalue.Ranges(this);
         int from_bitField0_ = bitField0_;
         if (rangeBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             range_ = java.util.Collections.unmodifiableList(range_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -8662,32 +8916,39 @@ public final class Pvalue {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.setField(field, value);
+          java.lang.Object value) {
+        return super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Pvalue.Ranges) {
           return mergeFrom((org.yamcs.protobuf.Pvalue.Ranges)other);
@@ -8730,6 +8991,7 @@ public final class Pvalue {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         for (int i = 0; i < getRangeCount(); i++) {
           if (!getRange(i).isInitialized()) {
@@ -8739,6 +9001,7 @@ public final class Pvalue {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -8761,7 +9024,7 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Pvalue.Ranges.Range> range_ =
         java.util.Collections.emptyList();
       private void ensureRangeIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           range_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.Ranges.Range>(range_);
           bitField0_ |= 0x00000001;
          }
@@ -8990,18 +9253,20 @@ public final class Pvalue {
           rangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Pvalue.Ranges.Range, org.yamcs.protobuf.Pvalue.Ranges.Range.Builder, org.yamcs.protobuf.Pvalue.Ranges.RangeOrBuilder>(
                   range_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           range_ = null;
         }
         return rangeBuilder_;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -9023,11 +9288,12 @@ public final class Pvalue {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<Ranges>
         PARSER = new com.google.protobuf.AbstractParser<Ranges>() {
+      @java.lang.Override
       public Ranges parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Ranges(input, extensionRegistry);
+        return new Ranges(input, extensionRegistry);
       }
     };
 
@@ -9040,6 +9306,7 @@ public final class Pvalue {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Pvalue.Ranges getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -9099,7 +9366,7 @@ public final class Pvalue {
       "rotobuf.Value\022\'\n\010engValue\030\003 \001(\0132\025.yamcs." +
       "protobuf.Value\022\027\n\017acquisitionTime\030\004 \001(\003\022" +
       "\026\n\016generationTime\030\005 \001(\003\022C\n\021acquisitionSt" +
-      "atus\030\006 \001(\0162(.yamcs.protobuf.pvalue.Acqui",
+      "atus\030\006 \001(\0162(.yamcs.protobuf.pvalue.Acqui" +
       "sitionStatus\022\030\n\020processingStatus\030\007 \001(\010\022A" +
       "\n\020monitoringResult\030\010 \001(\0162\'.yamcs.protobu" +
       "f.pvalue.MonitoringResult\022=\n\016rangeCondit" +
@@ -9109,7 +9376,7 @@ public final class Pvalue {
       "\003(\0132\036.yamcs.protobuf.mdb.AlarmRange\022\024\n\014e" +
       "xpireMillis\030\032 \001(\003\022\021\n\tnumericId\030\033 \001(\r\"\242\002\n" +
       "\017ParameterStatus\022C\n\021acquisitionStatus\030\001 " +
-      "\001(\0162(.yamcs.protobuf.pvalue.AcquisitionS",
+      "\001(\0162(.yamcs.protobuf.pvalue.AcquisitionS" +
       "tatus\022A\n\020monitoringResult\030\002 \001(\0162\'.yamcs." +
       "protobuf.pvalue.MonitoringResult\022=\n\016rang" +
       "eCondition\030\003 \001(\0162%.yamcs.protobuf.pvalue" +
@@ -9119,7 +9386,7 @@ public final class Pvalue {
       "\030\001 \003(\0132%.yamcs.protobuf.pvalue.Parameter" +
       "Value\022\r\n\005group\030\002 \001(\t\022\026\n\016generationTime\030\003" +
       " \001(\003\022\016\n\006seqNum\030\004 \001(\005\022\026\n\016subscriptionId\030\005" +
-      " \001(\005\"\220\001\n\nTimeSeries\0228\n\006sample\030\001 \003(\0132(.ya",
+      " \001(\005\"\220\001\n\nTimeSeries\0228\n\006sample\030\001 \003(\0132(.ya" +
       "mcs.protobuf.pvalue.TimeSeries.Sample\032H\n" +
       "\006Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003mi" +
       "n\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005\"\242\001\n\006Rang" +
@@ -9129,7 +9396,7 @@ public final class Pvalue {
       ".yamcs.protobuf.Value\022\r\n\005count\030\004 \001(\005*M\n\021" +
       "AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_R" +
       "ECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*o\n\020M" +
-      "onitoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMI",
+      "onitoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMI" +
       "TS\020\001\022\t\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n\010DISTRESS" +
       "\020\r\022\014\n\010CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n\016RangeCon" +
       "dition\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022org.yamcs.p" +

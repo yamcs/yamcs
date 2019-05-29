@@ -12,15 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.web.HttpServer;
-import org.yamcs.web.rest.CfdpRestHandler;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.Stream;
@@ -193,9 +190,6 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
 
     @Override
     protected void doStart() {
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
-        httpServer.registerRouteHandler(yamcsInstance, new CfdpRestHandler(this));
-
         notifyStarted();
     }
 
