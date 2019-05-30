@@ -44,12 +44,3 @@ Get data on a the Mission Database for the given Yamcs instance::
       optional string version = 3;
       repeated SpaceSystemInfo spaceSystem = 4;
     }
-
-
-.. rubric:: Java-serialized XtceDb
-
-Use HTTP header::
-
-    Accept: application/x-java-serialized-object
-
-This returns a full java-serialized binary dump of the :javadoc:`~org.yamcs.xtce.XtceDb` object for this instance. You will need a dependency on the LGPL ``yamcs-api`` jar if you want to interpret it.
