@@ -15,7 +15,7 @@ import org.yamcs.xtce.PathElement;
  */
 public class ParameterWithId {
     final NamedObjectId id; // the id used by the client to subscribe
-   
+
     final PathElement[] path; // the path to reach the end element in case the subscribed parameter is an aggregate
                               // or array
     final Parameter p; // the parameter the id refers to
@@ -25,7 +25,7 @@ public class ParameterWithId {
         this.id = id;
         this.path = path;
     }
-    
+
     public NamedObjectId getId() {
         return id;
     }
@@ -43,10 +43,10 @@ public class ParameterWithId {
      * @return the qualified name of the parameter plus the aggregate part if any
      */
     public String getQualifiedName() {
-        if(path==null) {
+        if (path == null) {
             return p.getQualifiedName();
         } else {
-            return p.getQualifiedName()+AggregateUtil.toString(path);
+            return p.getQualifiedName() + AggregateUtil.toString(path);
         }
     }
 

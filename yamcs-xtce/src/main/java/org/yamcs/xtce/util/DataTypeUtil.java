@@ -24,11 +24,11 @@ public class DataTypeUtil {
 
         for (PathElement pe : path) {
             String name = pe.getName();
-            if (type instanceof AggregateDataType) {
+            if (ptype instanceof AggregateDataType) {
                 if (name == null) {
                     return null;
                 }
-                Member m = ((AggregateDataType) type).getMember(name);
+                Member m = ((AggregateDataType) ptype).getMember(name);
                 if (m == null) {
                     return null;
                 }
@@ -37,9 +37,9 @@ public class DataTypeUtil {
                 return null;
             }
 
-            if (type instanceof ArrayDataType) {
+            if (ptype instanceof ArrayDataType) {
                 if (pe.getIndex() != null) {
-                    ptype = ((ArrayDataType) type).getElementType();
+                    ptype = ((ArrayDataType) ptype).getElementType();
                 } else {
                     return null;
                 }
@@ -47,5 +47,4 @@ public class DataTypeUtil {
         }
         return ptype;
     }
-
 }
