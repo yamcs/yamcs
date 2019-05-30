@@ -130,6 +130,8 @@ public class ValueUtility {
             return v.getSint64Value();
         case UINT64:
             return v.getUint64Value();
+        case ENUMERATED:
+            return v.getStringValue();
         default:
             throw new IllegalArgumentException("cannot values of type " + v.getType());
         }
@@ -158,6 +160,8 @@ public class ValueUtility {
             return v.getSint64Value();
         case UINT64:
             return v.getUint64Value();
+        case ENUMERATED:
+            return v.getStringValue();
         default:
             throw new IllegalArgumentException("cannot values of type " + v.getType());
         }
@@ -184,6 +188,8 @@ public class ValueUtility {
             return DataType.LONG;
         case BOOLEAN:
             return DataType.BOOLEAN;
+        case ENUMERATED:
+            return DataType.ENUM;
         default:
             throw new IllegalArgumentException("cannot values of type " + type);
         }
@@ -217,6 +223,8 @@ public class ValueUtility {
         case UINT32:
             return a.getUint32Value() == b.getUint32Value();
         case UINT64:
+            return a.getUint64Value() == b.getUint64Value();
+        case ENUMERATED:
             return a.getUint64Value() == b.getUint64Value();
         default:
             throw new IllegalArgumentException("Unexpected type " + a.getType());
@@ -252,6 +260,8 @@ public class ValueUtility {
         case UINT32:
             return Integer.compareUnsigned(a.getUint32Value(), b.getUint32Value());
         case UINT64:
+            return Long.compareUnsigned(a.getUint64Value(), b.getUint64Value());
+        case ENUMERATED:
             return Long.compareUnsigned(a.getUint64Value(), b.getUint64Value());
         default:
             throw new IllegalArgumentException("Unexpected type " + a.getType());
@@ -345,6 +355,8 @@ public class ValueUtility {
             return fromGbpArray(v);
         case AGGREGATE:
             return fromGbpAggregate(v);
+        case ENUMERATED:
+            return new EnumeratedValue(v.getSint64Value(), v.getStringValue());
         default:
             throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
