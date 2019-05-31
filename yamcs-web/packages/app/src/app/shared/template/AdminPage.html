@@ -1,4 +1,7 @@
-<mat-sidenav-container class="mat-typography">
+<app-message-bar #messageBar></app-message-bar>
+
+<mat-sidenav-container class="mat-typography"
+                       [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
     <mat-toolbar class="module-title">
       <mat-toolbar-row>

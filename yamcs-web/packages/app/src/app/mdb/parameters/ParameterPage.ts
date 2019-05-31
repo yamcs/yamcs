@@ -2,13 +2,15 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Instance, Parameter, ParameterValue } from '@yamcs/client';
+import { Instance, Parameter, ParameterValue, Value } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
 import { ValuePipe } from '../../shared/pipes/ValuePipe';
 import { SetParameterDialog } from './SetParameterDialog';
+
 
 @Component({
   templateUrl: './ParameterPage.html',
@@ -28,6 +30,7 @@ export class ParameterPage implements OnDestroy {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private authService: AuthService,
+    private messageService: MessageService,
     private dialog: MatDialog,
     private title: Title,
     private valuePipe: ValuePipe,
@@ -119,10 +122,18 @@ export class ParameterPage implements OnDestroy {
   }
 
   setParameter() {
-    this.dialog.open(SetParameterDialog, {
+    const parameter = this.parameter$.value!;
+    const dialogRef = this.dialog.open(SetParameterDialog, {
       width: '400px',
       data: {
         parameter: this.parameter$.value
+      }
+    });
+    dialogRef.afterClosed().subscribe((value: Value) => {
+      if (value) {
+        this.yamcs.getInstanceClient()!
+          .setParameterValue('realtime', parameter.qualifiedName, value)
+          .catch(err => this.messageService.showError(err));
       }
     });
   }

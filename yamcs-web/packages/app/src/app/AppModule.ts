@@ -35,7 +35,7 @@ import { SharedModule } from './shared/SharedModule';
       },
       multi: true,
       deps: [ ConfigService ]
-    },
+    }
   ],
   exports: [
     BrowserModule,

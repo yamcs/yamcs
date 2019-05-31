@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Argument, ArgumentAssignment, Command } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -23,6 +24,7 @@ export class IssueCommandDialog {
   constructor(
     private dialogRef: MatDialogRef<IssueCommandDialog>,
     private yamcs: YamcsService,
+    private messageService: MessageService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
 
@@ -77,11 +79,18 @@ export class IssueCommandDialog {
         }
       }
     }
+
+    this.dialogRef.close();
+
     const processor = this.yamcs.getProcessor();
     this.yamcs.getInstanceClient()!.issueCommand(processor.name, this.data.command.qualifiedName, {
       assignment: assignments,
       comment: comment || undefined,
-    }).then(response => this.dialogRef.close(response));
+    }).then(() => {
+      this.messageService.showInfo('Command issued');
+    }).catch(err => {
+      this.messageService.showError(err);
+    });
   }
 
   private isArgumentWithInitialValue(argumentName: string) {

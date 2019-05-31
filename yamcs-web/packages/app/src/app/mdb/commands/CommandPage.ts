@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Command, Instance } from '@yamcs/client';
@@ -22,7 +21,6 @@ export class CommandPage {
     private yamcs: YamcsService,
     private title: Title,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
   ) {
     this.instance = yamcs.getInstance();
 
@@ -42,18 +40,9 @@ export class CommandPage {
   }
 
   issueCommand() {
-    const dialogRef = this.dialog.open(IssueCommandDialog, {
+    this.dialog.open(IssueCommandDialog, {
       width: '400px',
       data: { command: this.command$.value! },
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('got result', result);
-        this.snackBar.open(`Command issued`, undefined, {
-          horizontalPosition: 'end',
-          duration: 3000,
-        });
-      }
     });
   }
 }

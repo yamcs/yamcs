@@ -59,8 +59,7 @@ export class SetParameterDialog {
   save() {
     const userValue = this.form.value.value;
     const value = this.toValue(userValue, this.parameter.type!);
-    this.yamcs.getInstanceClient()!.setParameterValue('realtime', this.parameter.qualifiedName, value)
-      .then(() => this.dialogRef.close());
+    this.dialogRef.close(value);
   }
 
   private toValue(userValue: any, type: ParameterType): Value {

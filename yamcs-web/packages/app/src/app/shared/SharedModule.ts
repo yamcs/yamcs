@@ -75,6 +75,7 @@ import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
+import { MessageBar } from './template/MessageBar';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
 import { SignificanceLevel } from './template/SignificanceLevel';
@@ -159,14 +160,15 @@ const sharedComponents = [
   Interval,
   Label,
   Labels,
+  MessageBar,
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
-  SidebarNavItem,
   SelectInstanceDialog,
   SelectParameterDialog,
   Select,
   SessionExpiredDialog,
+  SidebarNavItem,
   SignificanceLevel,
   SlantedLabel,
   StartReplayDialog,

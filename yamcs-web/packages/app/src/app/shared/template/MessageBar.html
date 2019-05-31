@@ -1,0 +1,11 @@
+<mat-toolbar class="message-bar"
+             [@openClose]="show$ | async"
+             *ngIf="errorMessage$ | async as message">
+  <span style="flex: 1 1 auto"></span>
+  <mat-icon>report_problem</mat-icon>&nbsp; {{ message }}
+  <span style="flex: 1 1 auto"></span>
+
+  <button mat-icon-button (click)="dismiss()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-toolbar>

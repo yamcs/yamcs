@@ -7,6 +7,10 @@ mat-sidenav-container {
   background-color: #fff;
 }
 
+mat-sidenav-container.message-bar-visible {
+  top: 112px; /* 48 + 64*/
+}
+
 mat-sidenav {
   width: 250px;
   background-color: #fafafa;

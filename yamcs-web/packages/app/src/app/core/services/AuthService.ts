@@ -30,27 +30,30 @@ export class AuthService {
      * to the login page.
      */
     yamcsService.yamcsClient.setHttpInterceptor(async (next: HttpHandler, url: string, init?: RequestInit) => {
+
+      let response;
       try {
         // Verify or fetch a token when necessary
         await this.loginAutomatically();
 
         init = this.modifyRequest(init);
-        let response = await next.handle(url, init);
+        response = await next.handle(url, init);
         if (response.status === 401) {
-
           // Server must have refused our access token. Attempt to refresh.
           this.clearCookie('access_token');
           await this.loginAutomatically();
-
-          init = this.modifyRequest(init);
-          response = await next.handle(url, init);
         }
-
-        return response;
       } catch (err) {
         this.logout(true);
         throw err;
       }
+
+      if (response.status === 401) {
+        init = this.modifyRequest(init);
+        response = await next.handle(url, init);
+      }
+
+      return response;
     });
   }
 

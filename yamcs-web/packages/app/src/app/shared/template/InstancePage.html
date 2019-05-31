@@ -1,4 +1,8 @@
-<mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
+<app-message-bar #messageBar></app-message-bar>
+
+<mat-sidenav-container class="mat-typography"
+                       [class.message-bar-visible]="messageBar.show$ | async"
+                       *ngIf="instance$ | async as instance">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
     <mat-toolbar class="module-title" (click)="searchInput.focus()" style="cursor: text">
       <mat-toolbar-row style="cursor: text">
