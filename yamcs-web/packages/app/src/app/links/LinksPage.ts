@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Link, LinkEvent } from '@yamcs/client';
@@ -19,7 +19,7 @@ import { LinkItem } from './LinkItem';
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
 
-  @ViewChild('filter')
+  @ViewChild('filter', { static: true })
   filter: ElementRef;
 
   // Link to show n detail pane (only on single selection)

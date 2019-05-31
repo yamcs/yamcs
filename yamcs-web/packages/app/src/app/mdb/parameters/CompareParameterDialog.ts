@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Parameter } from '@yamcs/client';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
@@ -19,10 +19,10 @@ export class CompareParameterDialog implements OnInit {
 
   filteredOptions: Observable<Parameter[]>;
 
-  @ViewChild('palette')
+  @ViewChild('palette', { static: true })
   palette: ColorPalette;
 
-  @ViewChild('thickness')
+  @ViewChild('thickness', { static: true })
   thickness: Thickness;
 
   constructor(

@@ -6,7 +6,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 })
 export class TimelineTooltip {
 
-  @ViewChild('tt')
+  @ViewChild('tt', { static: true })
   tt: ElementRef;
 
   show(text: string, left: number, top: number) {

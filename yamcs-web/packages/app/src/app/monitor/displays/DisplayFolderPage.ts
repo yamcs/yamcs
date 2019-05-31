@@ -1,6 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog, MatTableDataSource } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Instance, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
@@ -21,7 +22,7 @@ import { UploadFilesDialog } from './UploadFilesDialog';
 })
 export class DisplayFolderPage implements OnDestroy {
 
-  @ViewChild('droparea')
+  @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
   instance: Instance;

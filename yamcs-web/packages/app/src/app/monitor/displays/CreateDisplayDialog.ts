@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Instance, StorageClient } from '@yamcs/client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -19,7 +19,7 @@ export class CreateDisplayDialog {
   // Page 2
   filenameForm: FormGroup;
 
-  @ViewChild('filename')
+  @ViewChild('filename', { static: false })
   filenameInput: ElementRef;
 
   private instance: Instance;

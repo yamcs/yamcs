@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { StorageClient } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';

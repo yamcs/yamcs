@@ -19,7 +19,7 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
   @Input()
   pval: ParameterValue;
 
-  @ViewChild('container')
+  @ViewChild('container', { static: true })
   private container: ElementRef;
 
   private watchLowRange: SVGRectElement;

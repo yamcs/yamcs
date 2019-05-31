@@ -1,6 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef, MatTableDataSource } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
@@ -20,7 +21,7 @@ import { UploadProgressDialog } from './UploadProgressDialog';
 })
 export class BucketPage implements OnDestroy {
 
-  @ViewChild('droparea')
+  @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
   bucketInstance: string;

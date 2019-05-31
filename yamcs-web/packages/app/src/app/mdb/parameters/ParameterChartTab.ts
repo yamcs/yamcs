@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Parameter } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
@@ -19,7 +19,7 @@ import { SelectRangeDialog } from './SelectRangeDialog';
 })
 export class ParameterChartTab implements OnDestroy {
 
-  @ViewChild(ParameterPlot)
+  @ViewChild(ParameterPlot, { static: false })
   plot: ParameterPlot;
 
   parameter$: Promise<Parameter>;

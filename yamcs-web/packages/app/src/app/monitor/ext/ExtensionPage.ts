@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class ExtensionPage implements OnInit {
 
-  @ViewChild(PageContentHost)
+  @ViewChild(PageContentHost, { static: true })
   extensionHost: PageContentHost;
 
   title: string;

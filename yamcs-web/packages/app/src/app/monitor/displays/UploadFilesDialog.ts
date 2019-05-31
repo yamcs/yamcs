@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -14,7 +14,7 @@ export class UploadFilesDialog {
 
   formGroup: FormGroup;
 
-  @ViewChild('files')
+  @ViewChild('files', { static: false })
   filesInput: ElementRef;
 
   uploading$ = new BehaviorSubject<boolean>(false);

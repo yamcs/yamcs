@@ -16,7 +16,7 @@ import { LayoutState } from './LayoutState';
 })
 export class LayoutPage implements OnDestroy {
 
-  @ViewChild('layout')
+  @ViewChild('layout', { static: false })
   private layout: Layout;
 
   instance: Instance;

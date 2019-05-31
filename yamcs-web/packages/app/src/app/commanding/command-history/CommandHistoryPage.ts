@@ -30,7 +30,7 @@ export class CommandHistoryPage {
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
-  @ViewChild('intervalSelect')
+  @ViewChild('intervalSelect', { static: false })
   intervalSelect: Select;
 
   validStart: Date | null;

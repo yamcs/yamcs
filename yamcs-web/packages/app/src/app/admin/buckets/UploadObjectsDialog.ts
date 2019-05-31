@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -12,7 +12,7 @@ export class UploadObjectsDialog {
 
   formGroup: FormGroup;
 
-  @ViewChild('files')
+  @ViewChild('files', { static: true })
   filesInput: ElementRef;
 
   private storageClient: StorageClient;

@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetCommandsOptions, Instance } from '@yamcs/client';
@@ -20,13 +20,13 @@ export class CommandsPage implements AfterViewInit {
   shortName = false;
   pageSize = 100;
 
-  @ViewChild('top')
+  @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatPaginator)
+  @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild('filter')
+  @ViewChild('filter', { static: true })
   filter: ElementRef;
 
   dataSource: CommandsDataSource;

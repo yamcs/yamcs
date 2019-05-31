@@ -1,6 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatDialog, MatSort } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { Alarm, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -15,7 +16,7 @@ import { AlarmsDataSource } from './AlarmsDataSource';
 })
 export class AlarmsPage implements OnInit, AfterViewInit, OnDestroy {
 
-  @ViewChild(MatSort)
+  @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
   instance: Instance;

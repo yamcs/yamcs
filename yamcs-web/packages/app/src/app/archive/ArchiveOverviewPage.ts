@@ -2,7 +2,8 @@ import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { IndexGroup, Instance } from '@yamcs/client';
@@ -37,7 +38,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     { id: 'parameters', name: 'Parameters', bg: this.parametersBg, fg: this.parametersFg, checked: true },
   ];
 
-  @ViewChild('container')
+  @ViewChild('container', { static: true })
   container: ElementRef;
 
   filterForm: FormGroup;

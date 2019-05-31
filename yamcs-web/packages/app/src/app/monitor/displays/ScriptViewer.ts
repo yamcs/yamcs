@@ -24,7 +24,7 @@ import { Viewer } from './Viewer';
 })
 export class ScriptViewer implements Viewer, OnDestroy {
 
-  @ViewChild('scriptContainer')
+  @ViewChild('scriptContainer', { static: true })
   private scriptContainer: ElementRef;
 
   private editor: ace.Editor;

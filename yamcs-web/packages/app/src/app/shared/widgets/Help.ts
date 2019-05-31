@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HelpDialog } from '../dialogs/HelpDialog';
 
@@ -12,7 +12,7 @@ export class Help {
   @Input()
   dialogTitle: string;
 
-  @ViewChild('dialogContent')
+  @ViewChild('dialogContent', { static: true })
   dialogContent: ElementRef;
 
   constructor(private dialog: MatDialog, private sanitizer: DomSanitizer) {

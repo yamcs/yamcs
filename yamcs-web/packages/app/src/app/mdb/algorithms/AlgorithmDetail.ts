@@ -16,7 +16,7 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 })
 export class AlgorithmDetail implements AfterViewInit, OnDestroy {
 
-  @ViewChild('text')
+  @ViewChild('text', { static: true })
   textContainer: ElementRef;
 
   @Input()

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
@@ -29,7 +29,7 @@ const defaultInterval = 'PT1H';
 })
 export class EventsPage {
 
-  @ViewChild('intervalSelect')
+  @ViewChild('intervalSelect', { static: false })
   intervalSelect: Select;
 
   validStart: Date | null;

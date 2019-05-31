@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Input, OnChanges } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';

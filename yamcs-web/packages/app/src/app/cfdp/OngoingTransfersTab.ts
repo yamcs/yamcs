@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { Transfer } from '@yamcs/client';
 import { Subscription } from 'rxjs';
 import { CfdpService } from './CfdpService';

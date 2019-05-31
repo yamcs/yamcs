@@ -27,7 +27,7 @@ import { Viewer } from './Viewer';
 })
 export class OpiDisplayViewer implements Viewer, OnDestroy {
 
-  @ViewChild('displayContainer')
+  @ViewChild('displayContainer', { static: true })
   private displayContainer: ElementRef;
 
   private objectName: string;

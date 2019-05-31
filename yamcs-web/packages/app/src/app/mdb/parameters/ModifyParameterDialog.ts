@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ColorPalette } from './ColorPalette';
 import { Thickness } from './Thickness';
 
@@ -10,10 +10,10 @@ import { Thickness } from './Thickness';
 })
 export class ModifyParameterDialog {
 
-  @ViewChild('palette')
+  @ViewChild('palette', { static: true })
   palette: ColorPalette;
 
-  @ViewChild('thickness')
+  @ViewChild('thickness', { static: true })
   thickness: Thickness;
 
   constructor(

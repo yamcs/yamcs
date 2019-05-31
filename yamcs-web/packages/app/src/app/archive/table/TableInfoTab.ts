@@ -5,7 +5,7 @@ import { Table } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ShowEnumDialog } from './ShowEnumDialog';
 
 @Component({

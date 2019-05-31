@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';

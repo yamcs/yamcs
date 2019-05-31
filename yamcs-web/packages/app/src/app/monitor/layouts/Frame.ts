@@ -31,19 +31,19 @@ type DisplayType = 'OPI' | 'PAR' | 'USS';
 })
 export class Frame implements NavigationHandler {
 
-  @ViewChild('container')
+  @ViewChild('container', { static: true })
   private containerRef: ElementRef;
 
-  @ViewChild('titlebar')
+  @ViewChild('titlebar', { static: true })
   private titlebarRef: ElementRef;
 
-  @ViewChild('frameActions')
+  @ViewChild('frameActions', { static: true })
   private frameActionsRef: ElementRef;
 
-  @ViewChild('frameContent')
+  @ViewChild('frameContent', { static: true })
   private frameContentRef: ElementRef;
 
-  @ViewChild(ViewerHost)
+  @ViewChild(ViewerHost, { static: true })
   private viewerHost: ViewerHost;
 
   id: string;

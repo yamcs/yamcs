@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { InstanceTemplate } from '@yamcs/client';

@@ -5,7 +5,8 @@
       "es2017",
       "dom"
     ],
-    "target": "es5",
+    "module": "esnext",
+    "target": "es2015",
 
     "outDir": "./dist/out-tsc",
     "baseUrl": "./",

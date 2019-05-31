@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Instance, Table } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -12,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class TablesPage implements AfterViewInit {
 
-  @ViewChild(MatSort)
+  @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
   instance: Instance;

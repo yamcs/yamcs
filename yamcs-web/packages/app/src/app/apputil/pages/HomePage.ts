@@ -1,6 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
@@ -17,13 +19,13 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class HomePage implements AfterViewInit, OnDestroy {
 
-  @ViewChild('filter')
+  @ViewChild('filter', { static: true })
   filter: ElementRef;
 
-  @ViewChild(MatSort)
+  @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  @ViewChild(MatPaginator)
+  @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
   private instancesByName: { [key: string]: Instance } = {};

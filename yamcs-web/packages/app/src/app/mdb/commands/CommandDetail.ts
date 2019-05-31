@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { Argument, Command, Instance } from '@yamcs/client';
 import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 

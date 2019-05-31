@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';

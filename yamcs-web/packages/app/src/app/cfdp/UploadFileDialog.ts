@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MatTableDataSource } from '@angular/material';
+import { MatDialogRef } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Bucket, Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';

@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -84,7 +84,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @ContentChildren(ParameterSeries)
   seriesComponents: QueryList<ParameterSeries>;
 
-  @ViewChild('graphContainer')
+  @ViewChild('graphContainer', { static: true })
   graphContainer: ElementRef;
 
   dygraph: any;

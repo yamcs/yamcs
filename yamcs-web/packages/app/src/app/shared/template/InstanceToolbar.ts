@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConnectionInfo, Processor, TimeInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';

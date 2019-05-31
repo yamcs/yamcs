@@ -31,13 +31,13 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   instance: Instance;
 
-  @ViewChild(ViewerControlsHost)
+  @ViewChild(ViewerControlsHost, { static: true })
   private controlsHost: ViewerControlsHost;
 
-  @ViewChild('viewerContainer')
+  @ViewChild('viewerContainer', { static: true })
   private viewerContainer: ElementRef;
 
-  @ViewChild(ViewerHost)
+  @ViewChild(ViewerHost, { static: true })
   private viewerHost: ViewerHost;
 
   private viewer: Viewer;

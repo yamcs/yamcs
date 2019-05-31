@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
-import { MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { CommandQueue } from '@yamcs/client';
 import { Observable } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -14,7 +15,7 @@ export class CommandQueuesTable implements AfterViewInit {
   @Input()
   cqueues$: Observable<CommandQueue[]>;
 
-  @ViewChild(MatSort)
+  @ViewChild(MatSort, { static: false })
   sort: MatSort;
 
   dataSource = new MatTableDataSource<CommandQueue>();

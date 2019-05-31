@@ -52,16 +52,16 @@ export class SlantedLabel implements AfterViewInit {
   @Input()
   margin = 10;
 
-  @ViewChild('container')
+  @ViewChild('container', { static: true })
   private container: ElementRef;
 
-  @ViewChild('text')
+  @ViewChild('text', { static: true })
   private text: ElementRef;
 
-  @ViewChild('outline')
+  @ViewChild('outline', { static: true })
   private outline: ElementRef;
 
-  @ViewChild('iconHolder')
+  @ViewChild('iconHolder', { static: true })
   private iconHolder: ElementRef;
 
   async ngAfterViewInit() {

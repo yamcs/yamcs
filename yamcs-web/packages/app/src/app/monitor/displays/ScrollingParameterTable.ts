@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { Instance, ParameterValue } from '@yamcs/client';
 import { Subscription } from 'rxjs';
 import { Synchronizer } from '../../core/services/Synchronizer';

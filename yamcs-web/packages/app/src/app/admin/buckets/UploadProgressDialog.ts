@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Upload } from './Upload';
@@ -14,7 +14,7 @@ export class UploadProgressDialog {
 
   uploads$: Observable<Upload[]>;
 
-  @ViewChild('tableWrapper')
+  @ViewChild('tableWrapper', { static: true })
   tableWrapper: ElementRef;
 
   constructor(

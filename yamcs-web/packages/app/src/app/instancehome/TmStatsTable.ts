@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Instance, TmStatistics } from '@yamcs/client';
 import { Observable, Subscription } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';
@@ -15,7 +16,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   tmstats$: Observable<TmStatistics[]>;
   tmstatsSubscription: Subscription;
 
-  @ViewChild(MatSort)
+  @ViewChild(MatSort, { static: false })
   sort: MatSort;
 
   dataSource = new MatTableDataSource<TmStatistics>();

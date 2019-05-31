@@ -17,7 +17,7 @@ import { FrameState, LayoutState } from './LayoutState';
 })
 export class Layout implements OnInit, OnDestroy {
 
-  @ViewChild('wrapper')
+  @ViewChild('wrapper', { static: true })
   public wrapperRef: ElementRef;
 
   @Input()
@@ -29,10 +29,10 @@ export class Layout implements OnInit, OnDestroy {
   @Output()
   stateChange = new EventEmitter<LayoutState>();
 
-  @ViewChild('scrollPane')
+  @ViewChild('scrollPane', { static: true })
   private scrollPaneRef: ElementRef;
 
-  @ViewChild(FrameHost)
+  @ViewChild(FrameHost, { static: true })
   private frameHost: FrameHost;
 
   showNavigator$: BehaviorSubject<boolean>;

@@ -54,7 +54,7 @@ const routes: Routes = [
       },
       {
         path: 'rocksdb',
-        loadChildren: 'src/app/rocksdb/RocksDbModule#RocksDbModule',
+        loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
       }
     ]
   }

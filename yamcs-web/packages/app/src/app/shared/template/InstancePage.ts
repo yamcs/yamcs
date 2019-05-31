@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Instance, Parameter } from '@yamcs/client';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';

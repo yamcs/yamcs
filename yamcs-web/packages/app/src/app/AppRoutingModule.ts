@@ -48,47 +48,47 @@ const routes: Routes = [
       },
       {
         path: 'archive',
-        loadChildren: 'src/app/archive/ArchiveModule#ArchiveModule',
+        loadChildren: () => import('src/app/archive/ArchiveModule').then(m => m.ArchiveModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'admin',
-        loadChildren: 'src/app/admin/AdminModule#AdminModule',
+        loadChildren: () => import('src/app/admin/AdminModule').then(m => m.AdminModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'cfdp',
-        loadChildren: 'src/app/cfdp/CfdpModule#CfdpModule',
+        loadChildren: () => import('src/app/cfdp/CfdpModule').then(m => m.CfdpModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'commanding',
-        loadChildren: 'src/app/commanding/CommandingModule#CommandingModule',
+        loadChildren: () => import('src/app/commanding/CommandingModule').then(m => m.CommandingModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'instance',
-        loadChildren: 'src/app/instancehome/InstanceHomeModule#InstanceHomeModule',
+        loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'links',
-        loadChildren: 'src/app/links/LinksModule#LinksModule',
+        loadChildren: () => import('src/app/links/LinksModule').then(m => m.LinksModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'monitor',
-        loadChildren: 'src/app/monitor/MonitorModule#MonitorModule',
+        loadChildren: () => import('src/app/monitor/MonitorModule').then(m => m.MonitorModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'mdb',
-        loadChildren: 'src/app/mdb/MdbModule#MdbModule',
+        loadChildren: () => import('src/app/mdb/MdbModule').then(m => m.MdbModule),
         canActivate: [AuthGuard],
       },
       {
         path: 'system',
-        loadChildren: 'src/app/system/SystemModule#SystemModule',
+        loadChildren: () => import('src/app/system/SystemModule').then(m => m.SystemModule),
         canActivate: [AuthGuard],
       },
       {

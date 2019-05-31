@@ -1,6 +1,6 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { subtractDuration } from '../../shared/utils';

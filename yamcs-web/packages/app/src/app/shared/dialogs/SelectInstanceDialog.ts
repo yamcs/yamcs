@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { MatDialogRef, MatSelectionList, MatSelectionListChange } from '@angular/material';
+import { MatDialogRef } from '@angular/material/dialog';
+import { MatSelectionList, MatSelectionListChange } from '@angular/material/list';
 import { Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -11,7 +12,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class SelectInstanceDialog implements AfterViewInit {
 
-  @ViewChild(MatSelectionList)
+  @ViewChild(MatSelectionList, { static: true })
   selectionList: MatSelectionList;
 
   instances$: Promise<Instance[]>;

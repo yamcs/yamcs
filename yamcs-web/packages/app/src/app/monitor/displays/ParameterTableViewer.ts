@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ConfigService } from '../../core/services/ConfigService';
