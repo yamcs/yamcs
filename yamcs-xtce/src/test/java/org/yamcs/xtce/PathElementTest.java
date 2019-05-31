@@ -33,7 +33,7 @@ public class PathElementTest {
         ArrayParameterType arrayType = new ArrayParameterType("test", 1);
         arrayType.setElementType(aggType);
        // PathElement[] path = new PathElement[] {new PathElement("m1", new int[] {2})};
-        PathElement[] path = new PathElement[] {PathElement.fromString("[3]")};
+        PathElement[] path = new PathElement[] {PathElement.fromString("[3]"), PathElement.fromString("m1")};
         DataType dt = DataTypeUtil.getMemberType(arrayType, path);
         
         

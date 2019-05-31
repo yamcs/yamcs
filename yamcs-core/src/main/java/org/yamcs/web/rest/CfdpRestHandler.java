@@ -72,7 +72,6 @@ public class CfdpRestHandler extends RestHandler {
     @Route(path = "/api/cfdp/:instance/transfers/:id", method = "GET")
     public void getTransfer(RestRequest req) throws HttpException {
         long transactionId = req.getLongRouteParam("id");
-
         CfdpTransaction transaction = verifyTransaction(req, transactionId);
         completeOK(req, toTransferInfo(transaction));
     }
@@ -219,6 +218,7 @@ public class CfdpRestHandler extends RestHandler {
                 .setDirection(transaction.getDirection())
                 .setTotalSize(transaction.getTotalSize())
                 .setSizeTransferred(transaction.getTransferredSize())
+                .setReliable(transaction.isReliable())
                 .build();
     }
 }

@@ -10,16 +10,16 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * Preprocessor for the CFS TM packets
+ * Preprocessor for the CFS TM packets:
+ * <ul>
  * <li>CCSDS primary header 6 bytes</li>
  * <li>Time seconds (GPS -TBD) 4 bytes</li>
  * <li>Time milliseconds 2 bytes</li>
- *
+ * </ul>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     ErrorDetectionWordCalculator errorDetectionCalculator;

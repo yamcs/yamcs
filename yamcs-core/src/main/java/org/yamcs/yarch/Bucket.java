@@ -43,7 +43,14 @@ public interface Bucket {
 
     void putObject(String objectName, String contentType, Map<String, String> metadata, byte[] objectData)
             throws IOException;
-
+    
+    /**
+     * Retrieve object from the bucket. Returns null if object does not exist. 
+     * 
+     * @param objectName
+     * @return
+     * @throws IOException
+     */
     byte[] getObject(String objectName) throws IOException;
 
     void deleteObject(String objectName) throws IOException;

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,9 +17,13 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.protobuf.Cfdp.CreateTransferRequest;
+import org.yamcs.protobuf.Cfdp.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferInfo;
+import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.web.rest.BucketRestHandler;
 import org.yamcs.yarch.Bucket;
@@ -36,20 +41,31 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class CfdpIntegrationTest {
     Random random = new Random();
-    String bucketName = "cfdp-bucket";
+   
     String yamcsInstance = "cfdp-test-inst";
+    
+    //files to be sent are created here
+    static Bucket outgoingBucket;
+    
+    //MyReceiver will place the file in this bucket
+    static Bucket incomingBucket;
+    
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9193, yamcsInstance);
 
     RestClient restClient;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        // enableLogging();
 
         File dataDir = new File("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursively(dataDir.toPath());
         YConfiguration.setup("cfdp");
         YamcsServer.setupYamcsServer();
+        
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
+        BucketDatabase bd = ydb.getBucketDatabase();
+        incomingBucket = bd.createBucket("cfdp-bucket-in");
+        outgoingBucket = bd.createBucket("cfdp-bucket-out");
     }
 
     @Before
@@ -61,57 +77,53 @@ public class CfdpIntegrationTest {
     }
 
     @Test
-    public void testRandomFileUpload() throws Exception {
-        byte[] data = createObject("randomfile", 1000);
-        uploadAndCheck("randomfile", data);
-
+    public void testRandomFileUploadClass1() throws Exception {
+        byte[] data = createObject("randomfile1", 1000);
+        uploadAndCheck("randomfile1", data, false);
     }
 
-    private void uploadAndCheck(String objName, byte[] data) throws Exception {
+    @Test
+    public void testRandomFileUploadClass2() throws Exception {
+        byte[] data = createObject("randomfile2", 1000);
+        uploadAndCheck("randomfile2", data, true);
+    }
+    
+    private void uploadAndCheck(String objName, byte[] data, boolean reliable) throws Exception {
         MyFileReceiver rec = new MyFileReceiver();
         
-        CreateTransferRequest ctr = CreateTransferRequest.newBuilder().setBucket(bucketName).setObjectName(objName).setDirection(TransferDirection.UPLOAD).build();
+        CreateTransferRequest ctr = CreateTransferRequest.newBuilder().setBucket(outgoingBucket.getName()).setObjectName(objName)
+                .setDirection(TransferDirection.UPLOAD)
+                .setUploadOptions(UploadOptions.newBuilder().setReliable(reliable).build())
+                .build();
         Future<byte[]> responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers", HttpMethod.POST, ctr.toByteArray());
         TransferInfo tinf = TransferInfo.parseFrom(responseFuture.get());
-        System.out.println(tinf);
         assertEquals(data.length, tinf.getTotalSize());
-
+        assertEquals(TransferState.RUNNING, tinf.getState());
+        assertEquals(reliable, tinf.getReliable());
+        TransferInfo tinfo1 = null;
         
-        // TransferState ts = fromJson(responseFuture.get(), TransferState.newBuilder()).build();
-
-        /*        Future<String> responseFuture = restClient.doRequest("/cfdp/list", HttpMethod.GET, "");
-        
-        // Future<String> responseFuture =
-        // restClient.doRequest("/cfdp/"+yamcsInstance+"/"+bucketName+"/"+objName+"?target=cfdp-tgt1", HttpMethod.POST,
-        // "");
-        
-        TransferStatus ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
-        int id = 5;
-        MyFileReceiver rx = new MyFileReceiver();
-        
-        // TODO ...check maybe in a loop that the transfer is progressing until finished
-        
-        while (ts.getSizeTransferred() < ts.getTotalSize()) {
-            responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/info?id=" + id, HttpMethod.GET, "");
-            ts = fromJson(responseFuture.get(), TransferStatus.newBuilder()).build();
-            // TODO assert this assert that
+        for(int i=0; i<3; i++) {
             Thread.sleep(1000);
+            responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers/"+tinf.getTransactionId(), HttpMethod.GET);
+            tinfo1 = TransferInfo.parseFrom(responseFuture.get());
+            
+            if(tinfo1.getState()==TransferState.COMPLETED) {
+                break;
+            }
         }
+        assertNotNull(tinfo1);
+        assertEquals(TransferState.COMPLETED, tinfo1.getState());
         
-        assertEquals(data, rx.data);
+        byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
+        assertArrayEquals(data, recdata);
         
-        */ // more checks
-
     }
 
     // create an object in a bucket
     private byte[] createObject(String objName, int size) throws Exception {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
-        BucketDatabase bd = ydb.getBucketDatabase();
-        Bucket bucket = bd.createBucket(bucketName);
         byte[] data = new byte[size];
         random.nextBytes(data);
-        bucket.putObject(objName, "bla", Collections.emptyMap(), data);
+        outgoingBucket.putObject(objName, "bla", Collections.emptyMap(), data);
 
         return data;
     }
@@ -119,27 +131,31 @@ public class CfdpIntegrationTest {
     // this should retrieve the file
     class MyFileReceiver {
         byte[] data;
-
+        CfdpIncomingTransfer trsf;
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        
         MyFileReceiver() {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream cfdpIn = ydb.getStream("cfdp_in");
             Stream cfdpOut = ydb.getStream("cfdp_out");
             
             cfdpOut.addSubscriber(new StreamSubscriber() {
-                
                 @Override
                 public void streamClosed(Stream stream) { }
                 
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    System.out.println("got tuple "+tuple);
-                    
+                  
+                   CfdpPacket packet =  CfdpPacket.fromTuple(tuple);
+                   if(trsf == null) {
+                       MetadataPacket mdp = (MetadataPacket) packet;
+                       trsf = new CfdpIncomingTransfer(executor, (MetadataPacket) mdp, cfdpIn, incomingBucket, null);
+                   } else {
+                       trsf.processPacket(packet);
+                   }
                 }
             });
-
-            // TODO start a receiver with those two streams
         }
-
     }
 
     protected static String getYamcsInstance() {

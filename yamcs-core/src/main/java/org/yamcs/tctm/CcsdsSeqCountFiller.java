@@ -33,8 +33,7 @@ public class CcsdsSeqCountFiller {
     /**
      * generates a sequence count and fills it in
      * 
-     * @param bb
-     * @param genTime
+     * @param packet
      * @return  returns the generated sequence count
      */
     public int fill(byte[] packet) {

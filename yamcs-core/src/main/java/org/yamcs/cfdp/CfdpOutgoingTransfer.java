@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -61,7 +62,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     @SuppressWarnings("unused")
     private final boolean unbounded = false; // only known file length transfers
     private final boolean withCrc = false; // no CRCs are used
-    private boolean acknowledged = false;
+  
     private final boolean withSegmentation = false; // segmentation not supported
     private int entityIdLength;
     private int seqNrSize;
@@ -88,6 +89,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private boolean sleeping = false;
 
     private PutRequest request;
+    private ScheduledFuture<?> scheduledFuture;
 
     public CfdpOutgoingTransfer(ScheduledThreadPoolExecutor executor, PutRequest request, Stream cfdpOut,
             YConfiguration conf, EventProducer eventProducer) {
@@ -136,6 +138,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     @Override
     public void step() {
+     
         switch (currentState) {
         case START:
             sendPacket(getMetadataPacket());
@@ -196,6 +199,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 } // else, we wait some more
             } else {
                 state = TransferState.COMPLETED;
+                scheduledFuture.cancel(true);
             }
             break;
         case EOF_ACK_RECEIVED:
@@ -209,7 +213,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         case FINISHED_ACK_SENT:
             // we're done;
             state = TransferState.COMPLETED;
-            executor.remove(this);
+            scheduledFuture.cancel(true);
             break;
         case CANCELING:
             sendPacket(getEofPacket(ConditionCode.CancelRequestReceived));
@@ -217,7 +221,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
             break;
         case CANCELED:
             this.state = Cfdp.TransferState.FAILED;
-            executor.remove(this);
+            scheduledFuture.cancel(true);
             break;
         default:
             throw new IllegalStateException("packet in unknown/illegal state");
@@ -350,21 +354,26 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     }
 
     public void start() {
-        executor.scheduleAtFixedRate(this, 0, sleepBetweenPdusMs, TimeUnit.MILLISECONDS);
+        scheduledFuture = executor.scheduleAtFixedRate(this, 0, sleepBetweenPdusMs, TimeUnit.MILLISECONDS);
     }
 
     public long getTransferredBytes() {
         return transferred;
     }
-
     @Override
     public void processPacket(CfdpPacket packet) {
+        executor.submit(() -> doProcessPacket(packet));
+    }
+    
+    private void doProcessPacket(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case ACK:
                 if (currentState == CfdpTransferState.EOF_SENT && ((AckPacket) packet)
                         .getFileDirectiveSubtypeCode() == FileDirectiveSubtypeCode.FinishedByWaypointOrOther) {
                     currentState = CfdpTransferState.EOF_ACK_RECEIVED;
+                } else {
+                    log.warn("Received ACK packet while in {} state", currentState);
                 }
                 break;
             case Finished:
@@ -409,4 +418,5 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     public boolean pausable() {
         return true;
     }
+    
 }
