@@ -36,6 +36,7 @@ message TransferInfo {
 
   optional uint64 totalSize = 8;
   optional uint64 sizeTransferred = 9;
+  optional bool reliable = 10;
 }
 
 message CreateTransferRequest {
