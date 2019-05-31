@@ -96,8 +96,7 @@ public class ArrayValue extends Value {
         }
         elements[flatIndex(idx)] = v;
     }
-
-    public int flatIndex(int[] idx) {
+    public static int flatIndex(int[] dim, int[] idx) {
         if (idx.length == 1) {
             return idx[0];
         }
@@ -107,6 +106,9 @@ public class ArrayValue extends Value {
             n = n * dim[i] + idx[i];
         }
         return n;
+    }
+    public int flatIndex(int[] idx) {
+        return flatIndex(dim, idx);
     }
 
     static public int flatSize(int[] dim) {
