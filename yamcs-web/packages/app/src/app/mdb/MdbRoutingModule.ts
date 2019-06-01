@@ -10,11 +10,8 @@ import { CommandPage } from './commands/CommandPage';
 import { CommandsPage } from './commands/CommandsPage';
 import { ContainerPage } from './containers/ContainerPage';
 import { ContainersPage } from './containers/ContainersPage';
-import { ParameterChartTab } from './parameters/ParameterChartTab';
-import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
-import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 
 
 const routes = [{
@@ -54,25 +51,6 @@ const routes = [{
   }, {
     path: 'parameters/:qualifiedName',
     component: ParameterPage,
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'summary'
-      },
-      {
-        path: 'summary',
-        component: ParameterSummaryTab,
-      },
-      {
-        path: 'chart',
-        component: ParameterChartTab,
-      },
-      {
-        path: 'data',
-        component: ParameterDataTab,
-      }
-    ]
   }]
 }];
 
@@ -91,7 +69,4 @@ export const routingComponents = [
   ContainerPage,
   ParametersPage,
   ParameterPage,
-  ParameterDataTab,
-  ParameterChartTab,
-  ParameterSummaryTab,
 ];

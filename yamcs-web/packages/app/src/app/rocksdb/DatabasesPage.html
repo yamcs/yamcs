@@ -8,15 +8,6 @@
            [dataSource]="dataSource"
            class="ya-data-table">
 
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef width="200">Database</th>
-        <td mat-cell *matCellDef="let database">
-          <a [routerLink]="[database.tablespace, database.dbPath]">
-            {{ database.tablespace }}://{{ database.dbPath }}
-          </a>
-        </td>
-      </ng-container>
-
       <ng-container matColumnDef="tablespace">
         <th mat-header-cell *matHeaderCellDef width="150">Tablespace</th>
         <td mat-cell *matCellDef="let database">{{ database.tablespace || '-' }}</td>
@@ -24,12 +15,16 @@
 
       <ng-container matColumnDef="dataDir">
         <th mat-header-cell *matHeaderCellDef width="300">Data Dir</th>
-        <td mat-cell *matCellDef="let database">{{ database.dataDir || '-' }}</td>
+        <td mat-cell *matCellDef="let database">
+          <a [routerLink]="[database.tablespace, database.dbPath]">
+            {{ database.dataDir }}<ng-container *ngIf="database.dbPath">/{{ database.dbPath }}</ng-container>
+          </a>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="dbPath">
         <th mat-header-cell *matHeaderCellDef width="150">DB Path</th>
-        <td mat-cell *matCellDef="let database">{{ database.dbPath || '-' }}</td>
+        <td mat-cell *matCellDef="let database">{{ database.dbPath || '(root)' }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

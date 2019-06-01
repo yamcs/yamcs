@@ -4,7 +4,7 @@ import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { ModifyParameterDialog } from '../../mdb/parameters/ModifyParameterDialog';
+import { ModifyParameterDialog } from '../../monitor/parameters/ModifyParameterDialog';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';

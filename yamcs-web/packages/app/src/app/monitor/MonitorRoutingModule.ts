@@ -14,6 +14,11 @@ import { EventsPage } from './events/EventsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
+import { ParameterChartTab } from './parameters/ParameterChartTab';
+import { ParameterDataTab } from './parameters/ParameterDataTab';
+import { ParameterPage } from './parameters/ParameterPage';
+import { ParametersPage } from './parameters/ParametersPage';
+import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 
 const routes: Routes = [
   {
@@ -57,22 +62,41 @@ const routes: Routes = [
             canDeactivate: [DisplayFilePageDirtyGuard],
           }
         ]
-      },
-      {
+      }, {
         path: 'events',
         component: EventsPage,
         canActivate: [MayReadEventsGuard],
-      },
-      {
+      }, {
         path: 'layouts',
         pathMatch: 'full',
         component: LayoutsPage,
-      },
-      {
+      }, {
         path: 'layouts/:name',
         component: LayoutPage,
-      },
-      {
+      }, {
+        path: 'parameters',
+        pathMatch: 'full',
+        component: ParametersPage,
+      }, {
+        path: 'parameters/:qualifiedName',
+        component: ParameterPage,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'summary'
+          }, {
+            path: 'summary',
+            component: ParameterSummaryTab,
+          }, {
+            path: 'chart',
+            component: ParameterChartTab,
+          }, {
+            path: 'data',
+            component: ParameterDataTab,
+          }
+        ]
+      }, {
         path: 'ext/:name',
         component: ExtensionPage,
       }
@@ -99,4 +123,9 @@ export const routingComponents = [
   ExtensionPage,
   LayoutsPage,
   LayoutPage,
+  ParametersPage,
+  ParameterPage,
+  ParameterDataTab,
+  ParameterChartTab,
+  ParameterSummaryTab,
 ];

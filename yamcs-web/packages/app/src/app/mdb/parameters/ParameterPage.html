@@ -9,41 +9,11 @@
         </a>/{{ alias.name }}{{ offset$ | async}}
       </ng-container>
     </ng-container>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <button *ngIf="isWritable() && maySetParameter()"
-            mat-button
-            color="primary"
-            (click)="setParameter()">
-      <mat-icon>edit</mat-icon>
-      SET VALUE
-    </button>
   </app-instance-toolbar>
 
-  <nav mat-tab-nav-bar>
-    <a mat-tab-link
-        routerLink="summary"
-        routerLinkActive #rla="routerLinkActive"
-        [active]="rla.isActive"
-        [queryParams]="{instance: instance.name}">
-      Summary
-    </a>
-    <a mat-tab-link
-        routerLink="chart"
-        routerLinkActive #rlb="routerLinkActive"
-        [active]="rlb.isActive"
-        [queryParams]="{instance: instance.name}">
-      Chart
-    </a>
-    <a mat-tab-link
-        routerLink="data"
-        routerLinkActive #rld="routerLinkActive"
-        [active]="rld.isActive"
-        [queryParams]="{instance: instance.name}">
-      Historical Data
-    </a>
-  </nav>
-
-  <div class="tab-content-wrapper" [class.noscroll]="rlb.isActive">
-    <router-outlet></router-outlet>
+  <div class="panel-content">
+    <app-parameter-detail [instance]="instance"
+                          [parameter]="parameter">
+    </app-parameter-detail>
   </div>
 </app-instance-page>

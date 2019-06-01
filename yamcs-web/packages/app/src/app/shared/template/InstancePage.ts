@@ -95,7 +95,7 @@ export class InstancePage implements OnInit, OnDestroy {
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     const instance = this.yamcs.getInstance();
     this.searchControl.setValue('');
-    this.router.navigate(['/mdb/parameters/', event.option.value], {
+    this.router.navigate(['/monitor/parameters/', event.option.value], {
       queryParams: { instance: instance.name, }
     });
   }

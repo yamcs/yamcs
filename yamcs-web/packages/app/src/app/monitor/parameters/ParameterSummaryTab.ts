@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { EnumValue, Instance, Parameter, ParameterValue } from '@yamcs/client';
+import { Instance, Parameter, ParameterValue } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ParameterSummaryTab.html',
-  styleUrls: ['./ParameterSummaryTab.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterSummaryTab {
@@ -48,18 +47,5 @@ export class ParameterSummaryTab {
         });
       });
     });
-  }
-
-  getDefaultAlarmLevel(parameter: Parameter, enumValue: EnumValue) {
-    if (parameter.type && parameter.type.defaultAlarm) {
-      const alarm = parameter.type.defaultAlarm;
-      if (alarm.enumerationAlarm) {
-        for (const enumAlarm of alarm.enumerationAlarm) {
-          if (enumAlarm.label === enumValue.label) {
-            return enumAlarm.level;
-          }
-        }
-      }
-    }
   }
 }

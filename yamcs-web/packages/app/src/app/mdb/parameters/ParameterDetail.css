@@ -1,23 +1,8 @@
-.meter-size-constrainer {
-  display: inline-block;
-  width: 160px; /* about as large as the timestamp */
-  position: relative;
-}
-
 .dl-horizontal dt {
   text-align: left;
 }
 
-span.pval {
-  font-size: 16px;
-  line-height: 20px;
-  margin: -8px 0 16px;
-  bottom: -5px;
-  color: rgba(0,0,0,.987);
-  font-weight: 400;
-}
-
-.subtext {
-  font-size: smaller;
-  white-space: nowrap;
+.section-divider {
+  padding-top: 12px;
+  padding-bottom: 12px;
 }

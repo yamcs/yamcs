@@ -74,6 +74,12 @@ export interface ParameterType {
   defaultAlarm: AlarmInfo;
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
+  member: Member[];
+}
+
+export interface Member {
+  name: string;
+  type: ParameterType;
 }
 
 export interface AbsoluteTimeInfo {

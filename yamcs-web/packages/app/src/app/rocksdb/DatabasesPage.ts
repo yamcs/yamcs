@@ -11,9 +11,8 @@ import { YamcsService } from '../core/services/YamcsService';
 export class DatabasesPage {
 
   displayedColumns = [
-    'name',
-    'tablespace',
     'dataDir',
+    'tablespace',
     'dbPath',
   ];
 

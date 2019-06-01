@@ -44,6 +44,11 @@
         Monitoring
       </mat-list-item>
       <div *ngIf="monitoringExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/monitor/parameters"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Parameters
+        </app-sidebar-nav-item>
         <app-sidebar-nav-item routerLink="/monitor/displays"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
@@ -98,7 +103,7 @@
 
       <app-sidebar-nav-item routerLink="/cfdp"
                             [queryParams]="{instance: instance.name}">
-        <mat-icon class="item-icon">cloud_queue</mat-icon>
+        <mat-icon class="item-icon">file_copy</mat-icon>
         CFDP File Transfer
       </app-sidebar-nav-item>
 
@@ -106,7 +111,7 @@
         <mat-list-item class="nav-item-group"
                       [class.active]="mdbActive"
                       (click)="toggleMdbGroup()">
-          <mat-icon class="item-icon">book</mat-icon>
+          <mat-icon class="item-icon">style</mat-icon>
           MDB
         </mat-list-item>
         <div *ngIf="mdbExpanded" class="nav-item-group-items">

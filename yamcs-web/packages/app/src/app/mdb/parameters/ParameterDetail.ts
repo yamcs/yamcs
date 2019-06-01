@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Instance, Parameter, ParameterValue } from '@yamcs/client';
+import { EnumValue, Instance, Parameter } from '@yamcs/client';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -15,6 +15,16 @@ export class ParameterDetail {
   @Input()
   parameter: Parameter;
 
-  @Input()
-  currentValue: ParameterValue;
+  getDefaultAlarmLevel(parameter: Parameter, enumValue: EnumValue) {
+    if (parameter.type && parameter.type.defaultAlarm) {
+      const alarm = parameter.type.defaultAlarm;
+      if (alarm.enumerationAlarm) {
+        for (const enumAlarm of alarm.enumerationAlarm) {
+          if (enumAlarm.label === enumValue.label) {
+            return enumAlarm.level;
+          }
+        }
+      }
+    }
+  }
 }

@@ -29,17 +29,30 @@ import { FrameHost } from './layouts/FrameHost';
 import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
+import { ColorPalette } from './parameters/ColorPalette';
+import { CompareParameterDialog } from './parameters/CompareParameterDialog';
+import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
+import { ParameterDetail } from './parameters/ParameterDetail';
+import { ParameterValuesTable } from './parameters/ParameterValuesTable';
+import { SelectRangeDialog } from './parameters/SelectRangeDialog';
+import { SetParameterDialog } from './parameters/SetParameterDialog';
+import { SeverityMeter } from './parameters/SeverityMeter';
+import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
 
 const dialogComponents = [
   AcknowledgeAlarmDialog,
+  CompareParameterDialog,
   CreateDisplayDialog,
   CreateEventDialog,
   CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
   ExportArchiveDataDialog,
+  ModifyParameterDialog,
   RenameDisplayDialog,
   RenameLayoutDialog,
+  SelectRangeDialog,
+  SetParameterDialog,
   UploadFilesDialog,
 ];
 
@@ -77,12 +90,17 @@ const viewers = [
     pipes,
     viewers,
     AlarmDetail,
+    ColorPalette,
     DisplayNavigator,
     Frame,
     EventSeverity,
     Layout,
     MultipleParameterTable,
+    ParameterDetail,
+    ParameterValuesTable,
     ScrollingParameterTable,
+    SeverityMeter,
+    Thickness,
   ],
   entryComponents: [
     dialogComponents,
