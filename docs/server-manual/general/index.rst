@@ -6,7 +6,6 @@ General Information
     :caption: Table of Contents
 
     model
-    fundamentals
     installation
 
 Yamcs Server, or short Yamcs, is a central component for monitoring and controlling remote devices. Yamcs stores and processes packets, and provides an interface for end-user applications to subscribe to realtime or archived data. Typical use cases for such applications include telemetry displays and commanding tools.

@@ -1,9 +1,6 @@
 Parameter Archive Internals
 ===========================
 
-Why not store the values on change only?
-----------------------------------------
-
 The Parameter Archive stores for each parameter tuples (t\ :sub:`i`, ev\ :sub:`i`, rv\ :sub:`i`, ps\ :sub:`i`). In Yamcs the timestamp is 8 bytes long, the raw and engineering values are of usual types (signed/unsigned 32/64 integer, 32/64 floating point, string, boolean, binary) and the parameter status is a protobuf message.
 
 In a typical space data stream there are many parameters that do not change very often (like an device ON/OFF status). For these, the space required to store the timestamp can greatly exceed in size the space required for storing the value (if simple compression is used).
@@ -117,4 +114,4 @@ Future Work
   
   | It would be desirable to backfill only parts of the archive. Indeed, some ground generated data may not suffer necessarily of gaps and could be just realtime filled. Currently there is no possibility to specify what parts of the archive to be back-filled.
   
-  | Another useful feature would be to trigger the back filling automatically when gaps are filled in the :doc:`stream-archive/index`.
+  | Another useful feature would be to trigger the back filling automatically when gaps are filled in Yamcs database tables.

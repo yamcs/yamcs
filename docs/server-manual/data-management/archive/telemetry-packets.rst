@@ -1,5 +1,5 @@
-Packet Telemetry
-================
+Telemetry Packets
+=================
 
 This table is created by the :doc:`../../services/instance/xtce-tm-recorder` and uses the generation time and sequence number as primary key:
 

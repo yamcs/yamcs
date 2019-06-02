@@ -9,9 +9,10 @@ Yamcs Server Manual
     general/index
     installation/index
     mdb/index
+    data-management/index
     links/index
+    processors/index
     tc/index
-    archive/index
     services/index
     logging/index
     security/index
