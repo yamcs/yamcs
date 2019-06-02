@@ -1,7 +1,7 @@
 Alarms
 ======
 
-This table is created by the :doc:`../../instance-services/alarm-recorder` and uses the trigger time, parameter name and sequence number as primary key:
+This table is created by the :doc:`../../services/instance/alarm-recorder` and uses the trigger time, parameter name and sequence number as primary key:
 
 .. code-block:: text
 

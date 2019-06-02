@@ -1,7 +1,7 @@
 TSE Data Link
 =============
 
-Sends telecommands to a configured `../global-services/tse-commander` and reads back output as processed parameters.
+Sends telecommands to a configured `../services/global/tse-commander` and reads back output as processed parameters.
 
 
 Class Name

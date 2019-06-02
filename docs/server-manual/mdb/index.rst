@@ -5,33 +5,15 @@ Mission Database
     :maxdepth: 1
     :caption: Table of Contents
 
-    spreadsheet-loader
-    xtce-loader
-    empty-node
+    parameter-definitions
+    container-definitions
+    alarm-definitions
+    algorithm-definitions
+    command-definitions
+    loaders/index
 
-The Yamcs Mission Database is composed of a hierarchical structure, each node in the hierarchy being an XTCE SpaceSystem. Each SpaceSystem contains the following data:
+The Mission Database describes the telemetry and commands that are processed by Yamcs. It tells Yamcs how to decode packets or how to encode telecommands.
 
-* Telemetry
-* Telecommands
-* Parameters
-* Algorithms
+The database organizes TM/TC definitions by **space system**. A space system may contain other sub-space systems, thereby structuring the definitions in logical groups. Space systems have a name and can be uniquely identified via UNIX-like paths starting from the root of the space system hierarchy. For example: ``/BogusSAT/SC001/BusElectronics`` could be the name of a sub-space system under ``/BogusSAT/SC001``. The root space system is ``/``.
 
-For faster access, the database is cached serialized on disk in the cache directory. The cached mission database is composed of two files, one storing the data itself and the other one storing the time when the cache file has been created. These files should be considered Yamcs internal and are subject to change.
- 
-Different loaders are possible for each node in the hiearchy. A loader can load a node and its subnodes (but cannot load two parallel nodes).
-
-.. code-block:: yaml
-
-    refmdb:
-      - type: "sheet"
-        spec: "mdb/refmdb-ccsds.xls"
-        subLoaders:
-          - type: "sheet"
-            spec: "mdb/refmdb-subsys1.xls"
-
-    simulator:
-      - type: "sheet"
-        spec: "mdb/simulator-ccsds.xls"
-        subLoaders:
-          - type: "sheet"
-            spec: "mdb/simulator-tmtc.xls"
+The terminology used in the Yamcs Mission Database is very close to the terminology used in the XTCE exchange format. XTCE prescribes a useful set of building blocks: space systems, containers, parameters, commands, algorithms, etc.

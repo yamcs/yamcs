@@ -1,26 +1,18 @@
-Packet Telemetry
-================
+Container Definitions
+=====================
 
-The Yamcs Server implements a subset of XTCE (XML Telemetric and Command Exchange) for telemetry processing. Only the concepts defined by the standard are supported.
+Containers are the equivalent of packets in the usual terminology.
 
-For information about XTCE, please refer to `<http://www.xtce.org>`_.
-
-
-Sequence Containers
--------------------
-
-Sequence containers are the equivalent of packets in the usual terminology.
-
-A sequence container employs two mechanism to overcome limitations of the traditional "packet with parameters" approach. These mechanisms are *aggregation* and *inheritance*.
+A container employs two mechanism to overcome limitations of the traditional "packet with parameters" approach. These mechanisms are *aggregation* and *inheritance*.
 
 
 Container Aggregation
 ---------------------
 
-A sequence container contains *sequence entries* which can be of two types:
+A container contains sequence entries which can be of two types:
 
-#. Parameter entries: these point to normal parameters.
-#. Container entries: these point to other containers which are then included in the big container.
+#. **Parameter entries** pointing to normal parameters.
+#. **Container entries** pointing to other containers which are then included in the big container.
 
 Special attention must be given to the specification of positions of entries in the container. For performance reasons, it is preferable that all positions are absolute (i.e. relative to the beginning of the container) rather than relative to the previous entry. The Excel spreadsheet loader tries to transform the relative positions specified in the spreadsheet into absolute positions.
 
@@ -32,7 +24,7 @@ If an entry's position depends on another entry (it can be the same in case the 
 Container Inheritance
 ---------------------
 
-Sequence containers can point to another sequence container through the baseContainer property, meaning that the baseContainer is extended with additional sequence entries. The inheritance is based on a condition put on the parameters from the baseContainer (e.g. a EDR_HK packet is a CCSDS packet with ``apid=943`` and ``packetid=0x1300abcd``).
+Containers can point to another container through the baseContainer property, meaning that the baseContainer is extended with additional sequence entries. The inheritance is based on a condition put on the parameters from the baseContainer (e.g. a EDR_HK packet is a CCSDS packet with ``apid=943`` and ``packetid=0x1300abcd``).
 
 
 Little Endian Parameter Encoding

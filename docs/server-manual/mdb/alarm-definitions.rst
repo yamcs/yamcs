@@ -1,5 +1,5 @@
-Alarms
-======
+Alarm Definitions
+=================
 
 Yamcs supports the XTCE notion of *alarms*. Based on the value of a parameter, Yamcs assigns a monitoring result to each parameter. The default monitoring result is DISABLED.
 

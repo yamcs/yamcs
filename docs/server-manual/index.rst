@@ -10,12 +10,9 @@ Yamcs Server Manual
     installation/index
     mdb/index
     links/index
-    tm/index
     tc/index
     archive/index
-    global-services/index
-    instance-services/index
-    processor-services/index
+    services/index
     logging/index
     security/index
     web-interface/index

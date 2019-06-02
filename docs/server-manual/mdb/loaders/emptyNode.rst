@@ -1,8 +1,7 @@
 Empty Node
 ==========
 
-This loader allows to create an empty node (SpaceSystem) with a given name.
-
+This loader allows to create an empty node in the space system hierarchy with a given name.
 
 For example this configuration will create two parallel nodes ``/N1`` and ``/N2`` and underneath each of them, load the xls files of the simulator.
 

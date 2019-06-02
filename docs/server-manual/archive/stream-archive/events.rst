@@ -1,7 +1,7 @@
 Events
 ======
 
-This table is created by the :doc:`../../instance-services/event-recorder` and uses the generation time, source and sequence number as primary key:
+This table is created by the :doc:`../../services/instance/event-recorder` and uses the generation time, source and sequence number as primary key:
 
 .. code-block:: text
 

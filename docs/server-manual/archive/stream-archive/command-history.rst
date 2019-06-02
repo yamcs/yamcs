@@ -1,7 +1,7 @@
 Command History
 ===============
 
-This table is created by the :doc:`../../instance-services/command-history-recorder` and uses the generation time, origin and sequence number as primary key:
+This table is created by the :doc:`../../services/instance/command-history-recorder` and uses the generation time, origin and sequence number as primary key:
 
 .. code-block:: text
 

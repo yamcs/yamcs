@@ -1,7 +1,7 @@
 Parameters
 ----------
 
-This table is created by the :doc:`../../instance-services/parameter-recorder` and uses the generation time and sequence number as primary key:
+This table is created by the :doc:`../../services/instance/parameter-recorder` and uses the generation time and sequence number as primary key:
 
 .. code-block:: text
 
