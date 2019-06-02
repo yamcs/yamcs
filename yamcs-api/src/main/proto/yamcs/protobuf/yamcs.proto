@@ -201,6 +201,8 @@ enum ProtoDataType {
   CONNECTION_INFO = 19;
   INSTANCE = 20;
   STREAM_EVENT = 21;
+  PARAMETER_ALARM_DATA = 22;
+  EVENT_ALARM_DATA = 23;
   
   EXTENSION_DATA = 100;
 }
@@ -294,6 +296,7 @@ message TimeInfo {
   optional google.protobuf.Timestamp currentTime = 3;
 }
 
+
 message Event {
   enum EventSeverity {
     INFO = 0;
@@ -309,8 +312,8 @@ message Event {
   }
   required string source = 1;
   required int64 generationTime = 2;
-  required int64 receptionTime = 3;
-  required int32 seqNumber = 4;
+  optional int64 receptionTime = 3;
+  optional int32 seqNumber = 4;
   optional string type = 5;
   required string message = 6;
   optional EventSeverity severity = 7[default=INFO];

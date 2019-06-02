@@ -58,12 +58,22 @@ public class StandardTupleDefinitions {
         EVENT.addColumn("body", DataType.protobuf("org.yamcs.protobuf.Yamcs$Event"));
     }
 
-    public static final TupleDefinition ALARM = new TupleDefinition();
+    public static final TupleDefinition PARAMETER_ALARM = new TupleDefinition();
     // user time, parameter name sequence number and event
     static {
-        ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
-        ALARM.addColumn("parameter", DataType.STRING);
-        ALARM.addColumn("seqNum", DataType.INT);
-        ALARM.addColumn("event", DataType.STRING);
+        PARAMETER_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
+        PARAMETER_ALARM.addColumn("parameter", DataType.STRING);
+        PARAMETER_ALARM.addColumn("seqNum", DataType.INT);
+        PARAMETER_ALARM.addColumn("event", DataType.STRING);
     }
+    
+    public static final TupleDefinition EVENT_ALARM = new TupleDefinition();
+    // user time, parameter name sequence number and event
+    static {
+        EVENT_ALARM.addColumn("triggerTime", DataType.TIMESTAMP);
+        EVENT_ALARM.addColumn("eventSource", DataType.STRING);
+        EVENT_ALARM.addColumn("seqNum", DataType.INT);
+        EVENT_ALARM.addColumn("alarmEvent", DataType.STRING);
+    }
+    
 }

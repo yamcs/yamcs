@@ -218,8 +218,8 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         if (request.hasSource()) {
             eventb.setSource(request.getSource());
-            if (eventb.hasSeqNumber()) { // 'should' be linked to source
-                eventb.setSeqNumber(eventb.getSeqNumber());
+            if (request.hasSequenceNumber()) { // 'should' be linked to source
+                eventb.setSeqNumber(request.getSequenceNumber());
             } else {
                 eventb.setSeqNumber(eventSequenceNumber.getAndIncrement());
             }

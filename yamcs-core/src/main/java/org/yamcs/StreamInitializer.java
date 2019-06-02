@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -50,59 +51,33 @@ public class StreamInitializer {
     public void createStreams() throws StreamSqlException, ParseException, IOException {
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         for (StreamConfigEntry sce : sc.getEntries()) {
-            switch (sce.type) {
-            case cmdHist:
-                createCmdHistoryStream(sce.name);
-                break;
-            case tm:
-                createTmStream(sce.name);
-                break;
-            case param:
-                createParamStream(sce.name);
-                break;
-            case tc:
-                createTcStream(sce.name);
-                break;
-            case event:
-                createEventStream(sce.name);
-                break;
-            case alarm:
-                createAlarmStream(sce.name);
-                break;
-            case sqlFile:
-                loadSqlFile(sce.name);
-                break; // filename in fact
-            default:
+            if (sce.type == StreamConfig.StandardStreamType.cmdHist) {
+                createStream(sce.name, StandardTupleDefinitions.TC);
+            } else if (sce.type == StreamConfig.StandardStreamType.tm) {
+                createStream(sce.name, StandardTupleDefinitions.TM);
+            } else if (sce.type == StreamConfig.StandardStreamType.param) {
+                createStream(sce.name, StandardTupleDefinitions.PARAMETER);
+            } else if (sce.type == StreamConfig.StandardStreamType.tc) {
+                createStream(sce.name, StandardTupleDefinitions.TC);
+            } else if (sce.type == StreamConfig.StandardStreamType.event) {
+                createStream(sce.name, StandardTupleDefinitions.EVENT);
+            } else if (sce.type == StreamConfig.StandardStreamType.parameterAlarm) {
+                createStream(sce.name, StandardTupleDefinitions.PARAMETER_ALARM);
+            } else if (sce.type == StreamConfig.StandardStreamType.eventAlarm) {
+                createStream(sce.name, StandardTupleDefinitions.EVENT_ALARM);
+            } else if (sce.type == StreamConfig.StandardStreamType.sqlFile) {
+                loadSqlFile(sce.name); // filename in fact
+            } else {
                 throw new IllegalArgumentException("Unknown stream type " + sce.type);
             }
         }
 
     }
 
-    private void createEventStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.EVENT.getStringDefinition());
+    private void createStream(String streamName, TupleDefinition tdef) throws StreamSqlException, ParseException {
+        ydb.execute("create stream " + streamName + tdef.getStringDefinition());
     }
 
-    private void createTcStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
-    }
-
-    private void createTmStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TM.getStringDefinition());
-    }
-
-    private void createParamStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName
-                + StandardTupleDefinitions.PARAMETER.getStringDefinition());
-    }
-
-    private void createCmdHistoryStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
-    }
-
-    private void createAlarmStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + StandardTupleDefinitions.ALARM.getStringDefinition());
-    }
 
     private void loadSqlFile(Object o) throws IOException, StreamSqlException, ParseException {
         if (!(o instanceof String)) {
@@ -112,9 +87,8 @@ public class StreamInitializer {
         String filename = (String) o;
         File f = new File(filename);
         ExecutionContext context = new ExecutionContext(yamcsInstance);
-        FileReader reader = new FileReader(f);
-        StreamSqlParser parser = new StreamSqlParser(reader);
-        try {
+        try(FileReader reader = new FileReader(f)){
+            StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;
             while ((stmt = parser.StreamSqlStatement()) != null) {
                 stmt.execute(context);

@@ -28,6 +28,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.HttpClient;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -61,12 +62,15 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.ValueHelper;
+import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
+import org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.SubscribedParameter;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -1113,7 +1117,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         ListServiceInfoResponse r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        assertEquals(9, r.getServiceList().size());
+        assertEquals(10, r.getServiceList().size());
 
         ServiceInfo servInfo = r.getServiceList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
@@ -1163,6 +1167,25 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(e2);
         assertEquals(e1.getGenerationTime(), e2.getGenerationTime());
         assertEquals(e1.getMessage(), e2.getMessage());
+    }
+    
+    @Test
+    public void testEventAlarms() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("alarms", "subscribe", AlarmSubscriptionRequest.newBuilder().setType(AlarmSubscriptionType.EVENT).build());
+        wsClient.sendRequest(wsr).get();
+        RestEventProducer rep = new RestEventProducer(ycp);
+        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test").setSeverity(EventSeverity.WARNING).setSeqNumber(1)
+                .setGenerationTime(TimeEncoding.getWallclockTime())
+                .setMessage("event1").build();
+        rep.sendEvent(e1);
+        
+        Event e2 = Event.newBuilder(e1).setCreatedBy("admin").build();
+        
+        EventAlarmData ea1 = wsListener.eventAlarmDataList.poll(2, TimeUnit.SECONDS);
+        
+        assertNotNull(ea1);
+        Event e3 = Event.newBuilder(ea1.getTriggerValue()).clearReceptionTime().build();
+        assertTrue(e2.equals(e3));
     }
 
     @Test

@@ -32,13 +32,13 @@ public class AlarmServerTest {
     
     @Test
     public void test1 () throws CouldNotAcknowledgeAlarmException {
-        AlarmServer as = new AlarmServer("toto");
+        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.subscribe(l);
+        as.subscribeAlarm(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1);
         
-        ActiveAlarm aa = l.triggered.remove();
+        ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
@@ -80,13 +80,13 @@ public class AlarmServerTest {
     
     @Test
     public void test2 () throws CouldNotAcknowledgeAlarmException {
-        AlarmServer as = new AlarmServer("toto");
+        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.subscribe(l);
+        as.subscribeAlarm(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1);
         
-        ActiveAlarm aa = l.triggered.remove();
+        ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
@@ -116,13 +116,13 @@ public class AlarmServerTest {
 
     @Test
     public void testAutoAck () {
-        AlarmServer as = new AlarmServer("toto");
+        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.subscribe(l);
+        as.subscribeAlarm(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1, true);
         
-        ActiveAlarm aa = l.triggered.remove();
+        ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
@@ -138,9 +138,9 @@ public class AlarmServerTest {
     
     @Test(expected = CouldNotAcknowledgeAlarmException.class)
     public void testAcknowledgeButNoAlarm() throws CouldNotAcknowledgeAlarmException {
-        AlarmServer as = new AlarmServer("toto");
+        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.subscribe(l);
+        as.subscribeAlarm(l);
         
         long ackTime = 123L;
         as.acknowledge(p1, 1, "a-user", ackTime, "bla");
@@ -148,13 +148,13 @@ public class AlarmServerTest {
     
     @Test(expected = CouldNotAcknowledgeAlarmException.class)
     public void testAcknowledgeButNoParameterMatch() throws CouldNotAcknowledgeAlarmException {
-        AlarmServer as = new AlarmServer("toto");
+        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.subscribe(l);
+        as.subscribeAlarm(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
         as.update(pv1_0, 1, true);
         
-        ActiveAlarm aa = l.triggered.remove();
+        ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
@@ -170,35 +170,35 @@ public class AlarmServerTest {
         assertFalse(AlarmServer.moreSevere(MonitoringResult.CRITICAL, MonitoringResult.CRITICAL));
     }
     
-    class MyListener implements AlarmListener {
-        Queue<ActiveAlarm> triggered = new LinkedList<>();
-        Queue<ActiveAlarm> updated = new LinkedList<>();
-        Queue<ActiveAlarm> severityIncreased = new LinkedList<>();
-        Queue<ActiveAlarm> acknowledged = new LinkedList<>();
-        Queue<ActiveAlarm> cleared = new LinkedList<>();
+    class MyListener implements AlarmListener<ParameterValue> {
+        Queue<ActiveAlarm<ParameterValue>> triggered = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> updated = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> severityIncreased = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> acknowledged = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> cleared = new LinkedList<>();
         
         @Override
-        public void notifyTriggered(ActiveAlarm activeAlarm) {
+        public void notifyTriggered(ActiveAlarm<ParameterValue> activeAlarm) {
             triggered.add(activeAlarm);
         }
         
         @Override
-        public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
+        public void notifyValueUpdate(ActiveAlarm<ParameterValue> activeAlarm) {
             updated.add(activeAlarm);
         }
         
         @Override
-        public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+        public void notifySeverityIncrease(ActiveAlarm<ParameterValue> activeAlarm) {
             severityIncreased.add(activeAlarm);
         }
         
         @Override
-        public void notifyAcknowledged(ActiveAlarm activeAlarm) {
+        public void notifyAcknowledged(ActiveAlarm<ParameterValue> activeAlarm) {
             acknowledged.add(activeAlarm);
         }
         
         @Override
-        public void notifyCleared(ActiveAlarm activeAlarm) {
+        public void notifyCleared(ActiveAlarm<ParameterValue> activeAlarm) {
             cleared.add(activeAlarm);
         }
     }

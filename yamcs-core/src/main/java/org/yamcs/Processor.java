@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
+import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -93,8 +94,9 @@ public class Processor extends AbstractService {
     private String type;
     private final String yamcsInstance;
 
-    private boolean checkAlarms = true;
-    private boolean alarmServerEnabled = false;
+    private boolean checkParameterAlarms = true;
+    private boolean parameterAlarmServerEnabled = false;
+    private boolean eventAlarmServerEnabled = false;
 
     private String creator = "system";
     private boolean persistent = false;
@@ -127,7 +129,9 @@ public class Processor extends AbstractService {
     boolean recordInitialValues;
     boolean recordLocalValues;
     StreamParameterSender streamParameterSender;
-
+    EventAlarmServer eventAlarmServer;
+    
+    
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
             throw new ProcessorException("The processor name must not be empty");
@@ -271,12 +275,30 @@ public class Processor extends AbstractService {
     }
 
     private void configureAlarms(YConfiguration alarmConfig) {
-        checkAlarms = alarmConfig.getBoolean("check", checkAlarms);
-        alarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
-        if (alarmServerEnabled) {
-            checkAlarms = true;
+        if(alarmConfig.containsKey("check")) {
+            log.warn("Deprectiation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
+            checkParameterAlarms = alarmConfig.getBoolean("check");
+        }
+        checkParameterAlarms = alarmConfig.getBoolean("parameterCheck", checkParameterAlarms);
+        if(alarmConfig.containsKey("server")) {
+            log.warn("Deprectiation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
+            parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
+        }
+        if(alarmConfig.containsKey("parameterServer")) {
+            parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("parameterServer"));
+        }
+        if (parameterAlarmServerEnabled) {
+            checkParameterAlarms = true;
+        }
+        
+        eventAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("eventServer", null));
+        
+        if(eventAlarmServerEnabled) {
+            eventAlarmServer = new EventAlarmServer(yamcsInstance, alarmConfig);
         }
     }
+
+   
 
     private void configureParameterCache(YConfiguration cacheConfig) {
         boolean enabled = cacheConfig.getBoolean("enabled", false);
@@ -340,19 +362,21 @@ public class Processor extends AbstractService {
             startIfNecessary(parameterRequestManager);
             startIfNecessary(tmPacketProvider);
             startIfNecessary(commandingManager);
-
+            startIfNecessary(eventAlarmServer);
+            
             for (ServiceWithConfig swc : serviceList) {
                 startIfNecessary(swc.service);
             }
 
             tmProcessor.awaitRunning();
-            ;
+            
             awaitIfNecessary(commandHistoryRequestManager);
             awaitIfNecessary(commandHistoryProvider);
             awaitIfNecessary(parameterRequestManager);
             awaitIfNecessary(tmPacketProvider);
             awaitIfNecessary(commandingManager);
-
+            awaitIfNecessary(eventAlarmServer);
+            
             for (ServiceWithConfig swc : serviceList) {
                 swc.service.awaitRunning();
             }
@@ -376,6 +400,7 @@ public class Processor extends AbstractService {
         }
     }
 
+    
     private void awaitIfNecessary(Service service) {
         if (service != null) {
             service.awaitRunning();
@@ -533,6 +558,7 @@ public class Processor extends AbstractService {
         return processors;
     }
 
+    
     /**
      * Closes the processor by stoping the tm/pp and tc It can be that there are still clients connected, but they will
      * not get any data and new clients can not connect to these processors anymore. Once it is closed, you can create a
@@ -567,7 +593,9 @@ public class Processor extends AbstractService {
         if (tmPacketProvider != null) {
             tmPacketProvider.stopAsync();
         }
-
+        if(eventAlarmServer!=null) {
+            eventAlarmServer.stopAsync();
+        }
         log.info("Processor {} is out of business", name);
 
         if (getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
@@ -666,11 +694,11 @@ public class Processor extends AbstractService {
     }
 
     public boolean hasAlarmChecker() {
-        return checkAlarms;
+        return checkParameterAlarms;
     }
 
     public boolean hasAlarmServer() {
-        return alarmServerEnabled;
+        return parameterAlarmServerEnabled;
     }
 
     public ScheduledThreadPoolExecutor getTimer() {
@@ -757,5 +785,9 @@ public class Processor extends AbstractService {
 
     public boolean recordLocalValues() {
         return recordLocalValues;
+    }
+
+    public EventAlarmServer getEventAlarmServer() {
+        return eventAlarmServer;
     }
 }

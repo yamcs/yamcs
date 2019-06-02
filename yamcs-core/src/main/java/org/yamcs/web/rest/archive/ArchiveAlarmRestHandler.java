@@ -2,6 +2,7 @@ package org.yamcs.web.rest.archive;
 
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
+import org.yamcs.protobuf.Alarms.ParameterAlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -20,15 +21,63 @@ import org.yamcs.yarch.Tuple;
 public class ArchiveAlarmRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/alarms", method = "GET")
-    @Route(path = "/api/archive/:instance/alarms/:parameter*", method = "GET")
-    // @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
     public void listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
 
-        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.TABLE_NAME);
+        SqlBuilder sqlbParam = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
+        SqlBuilder sqlbEvent = new SqlBuilder(AlarmRecorder.EVENT_ALARM_TABLE_NAME);
+        IntervalResult ir = req.scanForInterval();
+        if (ir.hasInterval()) {
+            sqlbParam.where(ir.asSqlCondition("triggerTime"));
+            sqlbEvent.where(ir.asSqlCondition("triggerTime"));
+        }
+
+        /*
+         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
+         * }
+         */
+        sqlbParam.descend(req.asksDescending(true));
+        sqlbEvent.descend(req.asksDescending(true));
+        sqlbParam.limit(pos, limit);
+        sqlbEvent.limit(pos, limit);
+        
+      
+        ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
+        String q = "MERGE ("+sqlbParam.toString()+"), ("+sqlbEvent.toString()+") USING triggerTime ORDER DESC";
+        RestStreams.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                AlarmData alarm;
+                if(tuple.hasColumn("parameter")) {
+                    alarm = ArchiveHelper.parameterAlarmTupleToAlarmData(tuple);
+                } else {
+                    alarm = ArchiveHelper.eventAlarmTupleToAlarmData(tuple);
+                }
+                responseb.addAlarm(alarm);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                completeOK(req, responseb.build());
+            }
+        });
+
+    }
+    
+    
+    @Route(path = "/api/archive/:instance/alarms/:parameter*", method = "GET")
+    // @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
+    public void listParameterAlarms(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+
+        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("triggerTime"));
@@ -50,8 +99,8 @@ public class ArchiveAlarmRestHandler extends RestHandler {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
-                responseb.addAlarm(alarm);
+                ParameterAlarmData alarm = ArchiveHelper.tupleToParameterAlarmData(tuple);
+                responseb.addParameterAlarm(alarm);
             }
 
             @Override

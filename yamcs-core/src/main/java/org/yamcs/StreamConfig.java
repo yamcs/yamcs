@@ -23,7 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class StreamConfig {
     public enum StandardStreamType {
-        cmdHist, tm, param, tc, event, alarm, sqlFile;
+        cmdHist, tm, param, tc, event, parameterAlarm, eventAlarm, sqlFile;
     }
 
     List<StreamConfigEntry> entries = new ArrayList<>();
@@ -45,6 +45,10 @@ public class StreamConfig {
 
         for (Map.Entry<String, Object> m : c.getRoot().entrySet()) {
             String streamType = m.getKey();
+            if("alarm".equals(streamType)) {
+                log.warn("Deprecation in streamConfig, please change 'alarm' into 'parameterAlarm' (since version 4.10 we also have eventAlarm)");
+                streamType = "parameterAlarm";
+            }
             StandardStreamType type = null;
             try {
                 type = StandardStreamType.valueOf(streamType);

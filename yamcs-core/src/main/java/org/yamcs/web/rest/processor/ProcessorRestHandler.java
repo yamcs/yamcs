@@ -17,7 +17,8 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Alarms.AlarmData;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
@@ -40,6 +41,7 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.ServiceHelper;
 import org.yamcs.web.rest.YamcsToGpbAssembler;
+import org.yamcs.xtce.Parameter;
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -192,9 +194,9 @@ public class ProcessorRestHandler extends RestHandler {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
-            for (ActiveAlarm alarm : alarmServer.getActiveAlarms().values()) {
-                responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmData.Type.ACTIVE, alarm));
+            AlarmServer<Parameter, ParameterValue> alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            for (ActiveAlarm<ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
+                responseb.addParameterAlarm(ProcessorHelper.toParameterAlarmData(AlarmNotificationType.ACTIVE, alarm));
             }
         }
         completeOK(req, responseb.build());

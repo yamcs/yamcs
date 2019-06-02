@@ -26,7 +26,7 @@ jobs:
       jdk: openjdk8
       script:
         - mvn -DskipTests javadoc:aggregate
-        - mkdir docs
+        - mkdir -p docs
         - touch docs/.nojekyll
         - cp -r target/site/apidocs docs/javadoc
       deploy:

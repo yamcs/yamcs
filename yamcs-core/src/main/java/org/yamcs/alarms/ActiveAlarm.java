@@ -3,15 +3,18 @@ package org.yamcs.alarms;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * Keeps track of the alarm for one parameter
+ * Keeps track of the alarm for one parameter or event.
+ * <p>
+ * Note: generics parameter T can effectively be either {@link ParameterValue} or {@link Event}
  * 
  * @author nm
  *
  */
-public class ActiveAlarm {
+public class ActiveAlarm<T> {
 
     static AtomicInteger counter = new AtomicInteger();
     public int id;
@@ -28,13 +31,13 @@ public class ActiveAlarm {
     public long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
 
     // the value that triggered the alarm
-    public ParameterValue triggerValue;
+    public T triggerValue;
 
     // most severe value
-    public ParameterValue mostSevereValue;
+    public T mostSevereValue;
 
     // current value of the parameter
-    public ParameterValue currentValue;
+    public T currentValue;
 
     // message provided at triggering time
     public String message;
@@ -44,12 +47,12 @@ public class ActiveAlarm {
 
     public String usernameThatAcknowledged;
 
-    public ActiveAlarm(ParameterValue pv) {
+    public ActiveAlarm(T pv) {
         this.triggerValue = this.currentValue = this.mostSevereValue = pv;
         id = counter.getAndIncrement();
     }
 
-    public ActiveAlarm(ParameterValue pv, boolean autoAck) {
+    public ActiveAlarm(T pv, boolean autoAck) {
         this(pv);
         this.autoAcknowledge = autoAck;
     }

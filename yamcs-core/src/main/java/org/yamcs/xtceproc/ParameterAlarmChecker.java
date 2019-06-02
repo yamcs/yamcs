@@ -34,11 +34,11 @@ import org.yamcs.xtce.ParameterType;
  * ParameterRequestManager whenever a new parameter value may need alarms
  * published together with it.
  */
-public class AlarmChecker {
+public class ParameterAlarmChecker {
 
     private AlarmReporter alarmReporter;
 
-    private AlarmServer alarmServer;
+    private AlarmServer<Parameter, ParameterValue> alarmServer;
 
     private final int subscriptionId;
     ParameterRequestManager prm;
@@ -47,7 +47,7 @@ public class AlarmChecker {
     LastValueCache lastValueCache;
     final ProcessorData pdata;
     
-    public AlarmChecker(ParameterRequestManager prm, ProcessorData pdata, int subscriptionId) {
+    public ParameterAlarmChecker(ParameterRequestManager prm, ProcessorData pdata, int subscriptionId) {
         this.subscriptionId = subscriptionId;
         this.prm = prm;
         this.lastValueCache = prm.getLastValueCache();
@@ -89,7 +89,7 @@ public class AlarmChecker {
         this.alarmReporter = reporter;
     }
 
-    public void enableServer(AlarmServer server) {
+    public void enableServer(AlarmServer<Parameter, ParameterValue> server) {
         this.alarmServer = server;
     }
 
