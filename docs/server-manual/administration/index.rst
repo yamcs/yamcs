@@ -1,0 +1,9 @@
+Server Administration
+=====================
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Table of Contents
+
+    configuration
+    logging

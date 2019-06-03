@@ -8,13 +8,13 @@ Yamcs Server Manual
 
     general/index
     installation/index
+    administration/index
     mdb/index
     data-management/index
     links/index
     processors/index
     tc/index
     services/index
-    logging/index
     security/index
     web-interface/index
     programs/index
