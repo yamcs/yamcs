@@ -62,27 +62,20 @@ message AlarmData {
   
   optional AcknowledgeInfo acknowledgeInfo = 8;
   optional AlarmNotificationType notificationType = 9;
+
+  optional ParameterAlarmData parameterDetail = 10;
+  optional EventAlarmData eventDetail = 11;
 }
 
 message ParameterAlarmData {
-  optional uint32 seqNum = 1;
-  optional AlarmNotificationType notificationType = 2;
-  optional pvalue.ParameterValue triggerValue = 3;
-  optional pvalue.ParameterValue mostSevereValue = 4;
-  optional pvalue.ParameterValue currentValue = 5;
-  optional uint32 violations = 6;
-  optional AcknowledgeInfo acknowledgeInfo = 7;
-  optional mdb.ParameterInfo parameter = 8;
-  optional uint32 valueCount = 9;
+  optional pvalue.ParameterValue triggerValue = 1;
+  optional pvalue.ParameterValue mostSevereValue = 2;
+  optional pvalue.ParameterValue currentValue = 3;
+  optional mdb.ParameterInfo parameter = 4;
 }
 
 message EventAlarmData {
-  optional uint32 seqNum = 1;
-  optional AlarmNotificationType notificationType = 2;
-  optional Event triggerValue = 3;
-  optional Event mostSevereValue = 4;
-  optional Event currentValue = 5;
-  optional uint32 violations = 6;
-  optional AcknowledgeInfo acknowledgeInfo = 7;
-  optional uint32 valueCount = 9;
+  optional Event triggerEvent = 1;
+  optional Event mostSevereEvent = 2;
+  optional Event currentEvent = 3;
 }

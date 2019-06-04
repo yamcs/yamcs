@@ -109,6 +109,10 @@ export interface EventSubscriptionResponse {
   event$: Observable<Event>;
 }
 
+export interface ListAlarmsResponse {
+  alarm: Alarm[];
+}
+
 export interface AlarmSubscriptionResponse {
   alarm$: Observable<Alarm>;
 }
@@ -190,21 +194,52 @@ export interface CommandHistoryPage {
   continuationToken?: string;
 }
 
+export type AlarmNotificationType = 'ACTIVE'
+  | 'TRIGGERED'
+  | 'SEVERITY_INCREASED'
+  | 'UPDATED'
+  | 'ACKNOWLEDGED'
+  | 'CLEARED'
+  ;
+
+export type AlarmSeverity = 'WATCH'
+  | 'WARNING'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE'
+  ;
+
 export interface Alarm {
   seqNum: number;
-  type: 'ACTIVE' | 'TRIGGERED' | 'SEVERITY_INCREASED' | 'PVAL_UPDATED' | 'ACKNOWLEDGED' | 'CLEARED';
+  type: 'EVENT' | 'PARAMETER';
+  notificationType: AlarmNotificationType;
+  id: NamedObjectId;
+  triggerTime: string;
+  violations: number;
+  count: number;
+  acknowledgeInfo: AcknowledgeInfo;
+  severity: AlarmSeverity;
+
+  parameterDetail?: ParameterAlarmData;
+  eventDetail?: EventAlarmData;
+}
+
+export interface ParameterAlarmData {
   triggerValue: ParameterValue;
   mostSevereValue: ParameterValue;
   currentValue: ParameterValue;
-  violations: number;
-  valueCount: number;
-  acknowledgeInfo: AcknowledgeInfo;
   parameter: Parameter;
+}
+
+export interface EventAlarmData {
+  triggerEvent: Event;
+  mostSevereEvent: Event;
+  currentEvent: Event;
 }
 
 export interface AcknowledgeInfo {
   acknowledgedBy: string;
-  acknowledgedMessage: string;
+  acknowledgeMessage: string;
   acknowledgeTime: string;
 }
 

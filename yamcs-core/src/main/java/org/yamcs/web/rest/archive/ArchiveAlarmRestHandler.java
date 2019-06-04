@@ -2,7 +2,6 @@ package org.yamcs.web.rest.archive;
 
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Alarms.ParameterAlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -43,20 +42,14 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         sqlbEvent.descend(req.asksDescending(true));
         sqlbParam.limit(pos, limit);
         sqlbEvent.limit(pos, limit);
-        
-      
+
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        String q = "MERGE ("+sqlbParam.toString()+"), ("+sqlbEvent.toString()+") USING triggerTime ORDER DESC";
+        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING triggerTime ORDER DESC";
         RestStreams.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm;
-                if(tuple.hasColumn("parameter")) {
-                    alarm = ArchiveHelper.parameterAlarmTupleToAlarmData(tuple);
-                } else {
-                    alarm = ArchiveHelper.eventAlarmTupleToAlarmData(tuple);
-                }
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple, true);
                 responseb.addAlarm(alarm);
             }
 
@@ -65,17 +58,15 @@ public class ArchiveAlarmRestHandler extends RestHandler {
                 completeOK(req, responseb.build());
             }
         });
-
     }
-    
-    
+
     @Route(path = "/api/archive/:instance/alarms/:parameter*", method = "GET")
-    // @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
     public void listParameterAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+        boolean detail = req.getQueryParameterAsBoolean("detail", false);
 
         SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -99,8 +90,8 @@ public class ArchiveAlarmRestHandler extends RestHandler {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                ParameterAlarmData alarm = ArchiveHelper.tupleToParameterAlarmData(tuple);
-                responseb.addParameterAlarm(alarm);
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple, detail);
+                responseb.addAlarm(alarm);
             }
 
             @Override
@@ -108,44 +99,5 @@ public class ArchiveAlarmRestHandler extends RestHandler {
                 completeOK(req, responseb.build());
             }
         });
-
     }
-
-    /*-
-     Commented out because in its current form the handling is ambiguous to the previous
-     operation. Perhaps should use queryparams instead. and have parameter* always be terminal
-    @Route(path="/api/archive/:instance/alarms/:parameter*   /:triggerTime/:seqnum", method="GET")
-    public ChannelFuture getAlarm(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
-        
-        long triggerTime = req.getDateRouteParam("triggerTime");
-        int seqNum = req.getIntegerRouteParam("seqnum");
-        
-        String sql = new SqlBuilder(AlarmRecorder.TABLE_NAME)
-                .where("triggerTime = " + triggerTime)
-                .where("seqNum = " + seqNum)
-                .where("parameter = '" + p.getQualifiedName() + "'")
-                .toString();
-        
-        List<AlarmData> alarms = new ArrayList<>();
-        RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(0, 2) {
-    
-            @Override
-            public void processTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
-                alarms.add(alarm);
-            }
-        });
-        
-        if (alarms.isEmpty()) {
-            throw new NotFoundException(req, "No alarm for id (" + p.getQualifiedName() + ", " + triggerTime + ", " + seqNum + ")");
-        } else if (alarms.size() > 1) {
-            throw new InternalServerErrorException("Too many results");
-        } else {
-            return sendOK(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
-        }
-    }*/
 }

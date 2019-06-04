@@ -35,7 +35,14 @@ export class AcknowledgeAlarmDialog {
       if (comment) {
         options.comment = comment;
       }
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarm.parameter.qualifiedName, alarm.seqNum, options);
+      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
+      if (alarm.type === 'PARAMETER') {
+        this.yamcs.getInstanceClient()!.editParameterAlarm(processor.name, alarmId, alarm.seqNum, options);
+      } else if (alarm.type === 'EVENT') {
+        this.yamcs.getInstanceClient()!.editEventAlarm(processor.name, alarmId, alarm.seqNum, options);
+      } else {
+        console.warn(`Unexpected alarm type '${alarm.type}'`);
+      }
     }
     this.dialogRef.close();
   }

@@ -31,9 +31,7 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Alarms.ParameterAlarmData;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
@@ -225,8 +223,6 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<ProcessorInfo> processorInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Statistics> statisticsList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<AlarmData> alarmDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<ParameterAlarmData> parameterAlarmDataList = new LinkedBlockingQueue<>();
-        LinkedBlockingQueue<EventAlarmData> eventAlarmDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
@@ -268,12 +264,6 @@ public abstract class AbstractIntegrationTest {
                 break;
             case ALARM_DATA:
                 alarmDataList.add(data.getAlarmData());
-                break;
-            case PARAMETER_ALARM_DATA:
-                parameterAlarmDataList.add(data.getParameterAlarmData());
-                break;
-            case EVENT_ALARM_DATA:
-                eventAlarmDataList.add(data.getEventAlarmData());
                 break;
             case EVENT:
                 eventList.add(data.getEvent());

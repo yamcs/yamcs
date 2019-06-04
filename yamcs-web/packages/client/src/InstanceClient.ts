@@ -298,7 +298,9 @@ export class InstanceClient {
 
   async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient!.getAlarmUpdates();
+    return this.webSocketClient!.getAlarmUpdates({
+      detail: true,
+    });
   }
 
   async getAlarmsForParameter(qualifiedName: string, options: GetAlarmsOptions = {}) {
@@ -308,9 +310,18 @@ export class InstanceClient {
     return await wrapper.alarm || [];
   }
 
-  async editAlarm(processor: string, parameter: string, sequenceNumber: number, options: EditAlarmOptions) {
+  async editParameterAlarm(processor: string, parameter: string, sequenceNumber: number, options: EditAlarmOptions) {
     const body = JSON.stringify(options);
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}/parameters${parameter}/alarms/${sequenceNumber}`;
+    return await this.yamcs.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async editEventAlarm(processor: string, eventId: string, sequenceNumber: number, options: EditAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}/events${eventId}/alarms/${sequenceNumber}`;
     return await this.yamcs.doFetch(url, {
       body,
       method: 'PATCH',

@@ -1,6 +1,5 @@
 package org.yamcs.alarms;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -23,8 +22,8 @@ import com.google.common.util.concurrent.AbstractService;
  * <p>
  * This class implements functionality common for parameter alarms and event alarms.
  * <p>
- * Specific functionality for each alarm type (e.g. disabling alarms) should be implemented in the respective {@link ParameterAlarmChecker} or
- * {@link EventAlarmServer}.
+ * Specific functionality for each alarm type (e.g. disabling alarms) should be implemented in the respective
+ * {@link ParameterAlarmChecker} or {@link EventAlarmServer}.
  * 
  */
 public class AlarmServer<S, T> extends AbstractService {
@@ -35,7 +34,7 @@ public class AlarmServer<S, T> extends AbstractService {
     final String yamcsInstance;
     static private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
 
-    private List<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
 
     /**
      * 
@@ -51,7 +50,7 @@ public class AlarmServer<S, T> extends AbstractService {
      * @return the current set of active alarms
      */
     public Map<S, ActiveAlarm<T>> subscribeAlarm(AlarmListener<T> listener) {
-        alarmListeners.add(listener);
+        alarmListeners.addIfAbsent(listener);
         return activeAlarms;
     }
 
@@ -108,7 +107,7 @@ public class AlarmServer<S, T> extends AbstractService {
 
         } else { // alarm
             if (activeAlarm == null) {
-                activeAlarm = new ActiveAlarm<T>(value, autoAck);
+                activeAlarm = new ActiveAlarm<>(value, autoAck);
                 activeAlarms.put(alarmId, activeAlarm);
             } else {
                 activeAlarm.currentValue = value;
@@ -255,26 +254,41 @@ public class AlarmServer<S, T> extends AbstractService {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             EventId other = (EventId) obj;
 
             if (source == null) {
-                if (other.source != null)
+                if (other.source != null) {
                     return false;
-            } else if (!source.equals(other.source))
+                }
+            } else if (!source.equals(other.source)) {
                 return false;
+            }
             if (type == null) {
-                if (other.type != null)
+                if (other.type != null) {
                     return false;
-            } else if (!type.equals(other.type))
+                }
+            } else if (!type.equals(other.type)) {
                 return false;
+            }
             return true;
         }
 
+        @Override
+        public String toString() {
+            if (source.startsWith("/")) {
+                return source + "/" + type;
+            } else {
+                return "/yamcs/event/" + source + "/" + type;
+            }
+        }
     }
 }

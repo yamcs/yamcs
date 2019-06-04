@@ -41,7 +41,7 @@ export class AlarmLabel implements OnDestroy {
       this.alarmSubscription = response.alarm$.subscribe(alarm => {
         this.processAlarm(alarm);
         const alarms = Object.values(this.alarmsByName);
-        this.alarms$.next([... alarms]);
+        this.alarms$.next([...alarms]);
       });
     });
   }
@@ -54,16 +54,17 @@ export class AlarmLabel implements OnDestroy {
   }
 
   private processAlarm(alarm: Alarm) {
-    switch (alarm.type) {
+    const alarmId = alarm.id.namespace + '/' + alarm.id.name;
+    switch (alarm.notificationType) {
       case 'ACTIVE':
       case 'TRIGGERED':
       case 'SEVERITY_INCREASED':
-      case 'PVAL_UPDATED':
+      case 'UPDATED':
       case 'ACKNOWLEDGED':
-        this.alarmsByName[alarm.triggerValue.id.name] = alarm;
+        this.alarmsByName[alarmId] = alarm;
         break;
       case 'CLEARED':
-        delete this.alarmsByName[alarm.triggerValue.id.name];
+        delete this.alarmsByName[alarmId];
         break;
       default:
         console.warn('Unexpected alarm event of type', alarm.type);

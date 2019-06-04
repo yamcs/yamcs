@@ -28,6 +28,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.HttpClient;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -39,16 +40,16 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
 import org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
+import org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType;
+import org.yamcs.protobuf.Mdb.ComparisonInfo;
+import org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType;
+import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
 import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.EnumerationAlarm;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
-import org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType;
-import org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType;
-import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
-import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
-import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
+import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -63,7 +64,6 @@ import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
-import org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.SubscribedParameter;
@@ -726,15 +726,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
         assertEquals(v, pv.getEngValue());
     }
-    
+
     @Test
     public void testRestParameterSetAggregate_Invalid() throws Exception {
         BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
 
-        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10), 
-               "member2", ValueHelper.newValue(1300));
+        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
+                "member2", ValueHelper.newValue(1300));
         requestb.setValue(ValueHelper.newArrayValue(v0));
         bulkb.addRequest(requestb);
         try {
@@ -745,7 +745,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
             assertTrue(e1.getMessage().contains("members don't match"));
             return;
         }
-        
+
         fail("should have got an exception");
     }
 
@@ -755,9 +755,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
 
-        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10), 
-               "member2", ValueHelper.newValue(1300),
-               "member3", ValueHelper.newValue(3.14));
+        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
+                "member2", ValueHelper.newValue(1300),
+                "member3", ValueHelper.newValue(3.14));
 
         requestb.setValue(ValueHelper.newArrayValue(v0, v0));
         bulkb.addRequest(requestb);
@@ -773,16 +773,16 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
         assertEquals(requestb.getValue(), pv.getEngValue());
     }
-    
+
     @Test
     public void testRestParameterSetAggregate() throws Exception {
         BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalAggregate1"));
 
-        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10), 
-               "member2", ValueHelper.newValue(1300),
-               "member3", ValueHelper.newValue(3.14));
+        Value v0 = ValueHelper.newAggregateValue("member1", ValueHelper.newValue(10),
+                "member2", ValueHelper.newValue(1300),
+                "member3", ValueHelper.newValue(3.14));
 
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
@@ -798,16 +798,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
         assertEquals(requestb.getValue(), pv.getEngValue());
     }
-    
-    
+
     @Test
     public void testRestParameterSetAggregateElement() throws Exception {
         BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1"));
 
-        Value v0 = ValueHelper.newValue(55); 
-               
+        Value v0 = ValueHelper.newValue(55);
+
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
 
@@ -817,21 +816,22 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
         // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1",
+        resp = restClient.doRequest(
+                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1",
                 HttpMethod.GET, "").get();
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
-        
+
         assertEquals(requestb.getValue(), pv.getEngValue());
     }
-    
+
     @Test
     public void testRestParameterSetArrayElement() throws Exception {
         BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue8[2]"));
 
-        Value v0 = ValueHelper.newValue((float)55.2); 
-               
+        Value v0 = ValueHelper.newValue((float) 55.2);
+
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
 
@@ -841,28 +841,30 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
         // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
+        resp = restClient.doRequest(
+                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
                 HttpMethod.GET, "").get();
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
-        
+
         assertEquals(requestb.getValue(), pv.getEngValue());
     }
-    
-    
+
     @Test
     public void testRestParameterSetArrayElement2() throws Exception {
         // test simple set just for the value
-        Value v = ValueHelper.newValue((float)89.3);
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
+        Value v = ValueHelper.newValue((float) 89.3);
+        String resp = restClient.doRequest(
+                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
                 HttpMethod.POST, toJson(v)).get();
         assertNotNull(resp);
 
         Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
         // immediately avaialble
-        resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
+        resp = restClient.doRequest(
+                "/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue8%5B2%5D",
                 HttpMethod.GET, "").get();
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
-        
+
         assertEquals(v, pv.getEngValue());
     }
 
@@ -1168,23 +1170,31 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(e1.getGenerationTime(), e2.getGenerationTime());
         assertEquals(e1.getMessage(), e2.getMessage());
     }
-    
+
     @Test
     public void testEventAlarms() throws Exception {
-        WebSocketRequest wsr = new WebSocketRequest("alarms", "subscribe", AlarmSubscriptionRequest.newBuilder().setType(AlarmSubscriptionType.EVENT).build());
+        WebSocketRequest wsr = new WebSocketRequest("alarms", "subscribe",
+                AlarmSubscriptionRequest.newBuilder().setDetail(true).build());
         wsClient.sendRequest(wsr).get();
+
+        Thread.sleep(2000);
+        wsListener.alarmDataList.clear();
+
         RestEventProducer rep = new RestEventProducer(ycp);
-        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test").setSeverity(EventSeverity.WARNING).setSeqNumber(1)
+        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
+                .setSeverity(EventSeverity.WARNING).setSeqNumber(1)
                 .setGenerationTime(TimeEncoding.getWallclockTime())
                 .setMessage("event1").build();
         rep.sendEvent(e1);
-        
+
         Event e2 = Event.newBuilder(e1).setCreatedBy("admin").build();
-        
-        EventAlarmData ea1 = wsListener.eventAlarmDataList.poll(2, TimeUnit.SECONDS);
-        
-        assertNotNull(ea1);
-        Event e3 = Event.newBuilder(ea1.getTriggerValue()).clearReceptionTime().build();
+
+        AlarmData a1 = wsListener.alarmDataList.poll(2, TimeUnit.SECONDS);
+
+        assertNotNull(a1);
+        EventAlarmData ea1 = a1.getEventDetail();
+
+        Event e3 = Event.newBuilder(ea1.getTriggerEvent()).clearReceptionTime().build();
         assertTrue(e2.equals(e3));
     }
 

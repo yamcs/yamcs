@@ -355,7 +355,6 @@ public final class ArchiveHelper {
 
     final static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
         ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
-        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
 
         ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
         alarmb.setTriggerValue(pval);
@@ -368,6 +367,46 @@ public final class ArchiveHelper {
             pval = (ParameterValue) tuple.getColumn("updatedPV");
             alarmb.setCurrentValue(pval);
         }
+
+        return alarmb.build();
+    }
+
+    final static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        setAckInfo(alarmb, tuple);
+
+        if (tuple.hasColumn("parameter")) {
+            alarmb.setType(AlarmType.PARAMETER);
+            ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+            alarmb.setId(pval.getId());
+            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
+
+            if (tuple.hasColumn("severityIncreasedPV")) {
+                pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+            }
+            alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
+
+            if (detail) {
+                ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
+                alarmb.setParameterDetail(parameterAlarmData);
+            }
+        } else {
+            alarmb.setType(AlarmType.EVENT);
+            Event ev = (Event) tuple.getColumn("triggerEvent");
+            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
+            alarmb.setId(ProcessorHelper.getAlarmId(ev));
+
+            if (tuple.hasColumn("severityIncreasedEvent")) {
+                ev = (Event) tuple.getColumn("severityIncreasedEvent");
+            }
+            alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
+        }
+
+        return alarmb.build();
+    }
+
+    static void setAckInfo(AlarmData.Builder alarmb, Tuple tuple) {
         if (tuple.hasColumn("acknowledgedBy")) {
             AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
             ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
@@ -376,58 +415,6 @@ public final class ArchiveHelper {
             }
             long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
             ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));
-            ackb.setYamcsAcknowledgeTime(acknowledgeTime);
-            ackb.setAcknowledgeTimeUTC(TimeEncoding.toString(acknowledgeTime));
-            alarmb.setAcknowledgeInfo(ackb);
-        }
-
-        return alarmb.build();
-    }
-    
-    final static AlarmData parameterAlarmTupleToAlarmData(Tuple tuple) {
-        AlarmData.Builder alarmb = AlarmData.newBuilder();
-        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
-        alarmb.setType(AlarmType.PARAMETER);
-        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
-        alarmb.setId(pval.getId());
-        alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
-        setAckInfo(alarmb, tuple);
-        
-        if (tuple.hasColumn("severityIncreasedPV")) {
-            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
-        }
-        alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
-        return alarmb.build();
-    }
-    
-    final static AlarmData eventAlarmTupleToAlarmData(Tuple tuple) {
-        AlarmData.Builder alarmb = AlarmData.newBuilder();
-        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
-        alarmb.setType(AlarmType.EVENT);
-      
-        Event ev = (Event) tuple.getColumn("triggerEvent");
-        alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
-        alarmb.setId(ProcessorHelper.getAlarmId(ev));
-        setAckInfo(alarmb, tuple);
-        
-        if (tuple.hasColumn("severityIncreasedEvent")) {
-            ev = (Event) tuple.getColumn("severityIncreasedEvent");
-        }
-        alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
-
-        return alarmb.build();
-    }
-    
-    
-    static void setAckInfo(AlarmData.Builder alarmb, Tuple tuple ) {
-        if (tuple.hasColumn("acknowledgedBy")) {
-            AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
-            ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
-            if (tuple.hasColumn("acknowledgeMessage")) {
-                ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
-            }
-            long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
-            ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));          
             alarmb.setAcknowledgeInfo(ackb);
         }
     }

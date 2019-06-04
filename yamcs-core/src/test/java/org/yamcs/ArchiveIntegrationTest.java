@@ -1,6 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -19,7 +22,6 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmSeverity;
 import org.yamcs.protobuf.Alarms.AlarmType;
@@ -35,11 +37,12 @@ import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -316,9 +319,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         mbr = new MyBulkReceiver();
         restClient.doBulkGetRequest(
-                        "/archive/IntegrationTest/indexes/pp?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", mbr)
+                "/archive/IntegrationTest/indexes/pp?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", mbr)
                 .get();
-       
+
         assertEquals(4, mbr.dist.size());
     }
 
@@ -489,31 +492,33 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testRetrieveAlarmHistory() throws Exception {
         StreamEventProducer sep = new StreamEventProducer(yamcsInstance);
-        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test").setSeverity(EventSeverity.WARNING).setSeqNumber(1)
+        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
+                .setSeverity(EventSeverity.WARNING).setSeqNumber(1)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
                 .setMessage("event1").build();
         sep.sendEvent(e1);
 
-        Event e2 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test").setSeverity(EventSeverity.ERROR).setSeqNumber(2)
+        Event e2 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
+                .setSeverity(EventSeverity.ERROR).setSeqNumber(2)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
                 .setMessage("event1").build();
         sep.sendEvent(e2);
-        
+
         String resp = restClient.doRequest(
                 "/archive/IntegrationTest/alarms?start=2019-05-12T11:00:00&stop=2019-05-12T12:00:00",
                 HttpMethod.GET, "").get();
-        
+
         ListAlarmsResponse listalarm = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
         assertEquals(1, listalarm.getAlarmCount());
         AlarmData alarm = listalarm.getAlarm(0);
         assertEquals(AlarmType.EVENT, alarm.getType());
-        
+
         assertEquals("Event-Alarm-Test", alarm.getId().getName());
-        assertEquals("IntegrationTest", alarm.getId().getNamespace());
+        assertEquals("/yamcs/event/IntegrationTest", alarm.getId().getNamespace());
         assertEquals(AlarmSeverity.CRITICAL, alarm.getSeverity());
-        
+
     }
-    
+
     @SuppressWarnings({ "unchecked" })
     private Row getRecord(int i) {
         // the column info is only required for the first record actually

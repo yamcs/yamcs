@@ -3685,45 +3685,6 @@ public final class Web {
       org.yamcs.protobuf.YamcsManagement.StreamEventOrBuilder getStreamEventOrBuilder();
 
       /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      boolean hasTransfer();
-      /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      org.yamcs.protobuf.Cfdp.TransferInfo getTransfer();
-      /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder getTransferOrBuilder();
-
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      boolean hasParameterAlarmData();
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      org.yamcs.protobuf.Alarms.ParameterAlarmData getParameterAlarmData();
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder getParameterAlarmDataOrBuilder();
-
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      boolean hasEventAlarmData();
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      org.yamcs.protobuf.Alarms.EventAlarmData getEventAlarmData();
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder getEventAlarmDataOrBuilder();
-
-      /**
        * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
        */
       boolean hasExtensionData();
@@ -3992,48 +3953,9 @@ public final class Web {
                 bitField0_ |= 0x00010000;
                 break;
               }
-              case 146: {
-                org.yamcs.protobuf.Cfdp.TransferInfo.Builder subBuilder = null;
-                if (((bitField0_ & 0x00020000) != 0)) {
-                  subBuilder = transfer_.toBuilder();
-                }
-                transfer_ = input.readMessage(org.yamcs.protobuf.Cfdp.TransferInfo.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(transfer_);
-                  transfer_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00020000;
-                break;
-              }
-              case 154: {
-                org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder subBuilder = null;
-                if (((bitField0_ & 0x00040000) != 0)) {
-                  subBuilder = parameterAlarmData_.toBuilder();
-                }
-                parameterAlarmData_ = input.readMessage(org.yamcs.protobuf.Alarms.ParameterAlarmData.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(parameterAlarmData_);
-                  parameterAlarmData_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00040000;
-                break;
-              }
-              case 162: {
-                org.yamcs.protobuf.Alarms.EventAlarmData.Builder subBuilder = null;
-                if (((bitField0_ & 0x00080000) != 0)) {
-                  subBuilder = eventAlarmData_.toBuilder();
-                }
-                eventAlarmData_ = input.readMessage(org.yamcs.protobuf.Alarms.EventAlarmData.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(eventAlarmData_);
-                  eventAlarmData_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00080000;
-                break;
-              }
               case 802: {
                 org.yamcs.protobuf.Web.WebSocketExtensionData.Builder subBuilder = null;
-                if (((bitField0_ & 0x00100000) != 0)) {
+                if (((bitField0_ & 0x00020000) != 0)) {
                   subBuilder = extensionData_.toBuilder();
                 }
                 extensionData_ = input.readMessage(org.yamcs.protobuf.Web.WebSocketExtensionData.PARSER, extensionRegistry);
@@ -4041,7 +3963,7 @@ public final class Web {
                   subBuilder.mergeFrom(extensionData_);
                   extensionData_ = subBuilder.buildPartial();
                 }
-                bitField0_ |= 0x00100000;
+                bitField0_ |= 0x00020000;
                 break;
               }
               default: {
@@ -4424,76 +4346,13 @@ public final class Web {
         return streamEvent_ == null ? org.yamcs.protobuf.YamcsManagement.StreamEvent.getDefaultInstance() : streamEvent_;
       }
 
-      public static final int TRANSFER_FIELD_NUMBER = 18;
-      private org.yamcs.protobuf.Cfdp.TransferInfo transfer_;
-      /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      public boolean hasTransfer() {
-        return ((bitField0_ & 0x00020000) != 0);
-      }
-      /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      public org.yamcs.protobuf.Cfdp.TransferInfo getTransfer() {
-        return transfer_ == null ? org.yamcs.protobuf.Cfdp.TransferInfo.getDefaultInstance() : transfer_;
-      }
-      /**
-       * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-       */
-      public org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder getTransferOrBuilder() {
-        return transfer_ == null ? org.yamcs.protobuf.Cfdp.TransferInfo.getDefaultInstance() : transfer_;
-      }
-
-      public static final int PARAMETERALARMDATA_FIELD_NUMBER = 19;
-      private org.yamcs.protobuf.Alarms.ParameterAlarmData parameterAlarmData_;
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      public boolean hasParameterAlarmData() {
-        return ((bitField0_ & 0x00040000) != 0);
-      }
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      public org.yamcs.protobuf.Alarms.ParameterAlarmData getParameterAlarmData() {
-        return parameterAlarmData_ == null ? org.yamcs.protobuf.Alarms.ParameterAlarmData.getDefaultInstance() : parameterAlarmData_;
-      }
-      /**
-       * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-       */
-      public org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder getParameterAlarmDataOrBuilder() {
-        return parameterAlarmData_ == null ? org.yamcs.protobuf.Alarms.ParameterAlarmData.getDefaultInstance() : parameterAlarmData_;
-      }
-
-      public static final int EVENTALARMDATA_FIELD_NUMBER = 20;
-      private org.yamcs.protobuf.Alarms.EventAlarmData eventAlarmData_;
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      public boolean hasEventAlarmData() {
-        return ((bitField0_ & 0x00080000) != 0);
-      }
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      public org.yamcs.protobuf.Alarms.EventAlarmData getEventAlarmData() {
-        return eventAlarmData_ == null ? org.yamcs.protobuf.Alarms.EventAlarmData.getDefaultInstance() : eventAlarmData_;
-      }
-      /**
-       * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-       */
-      public org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder getEventAlarmDataOrBuilder() {
-        return eventAlarmData_ == null ? org.yamcs.protobuf.Alarms.EventAlarmData.getDefaultInstance() : eventAlarmData_;
-      }
-
       public static final int EXTENSIONDATA_FIELD_NUMBER = 100;
       private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_;
       /**
        * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
        */
       public boolean hasExtensionData() {
-        return ((bitField0_ & 0x00100000) != 0);
+        return ((bitField0_ & 0x00020000) != 0);
       }
       /**
        * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
@@ -4575,18 +4434,6 @@ public final class Web {
             return false;
           }
         }
-        if (hasParameterAlarmData()) {
-          if (!getParameterAlarmData().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
-        if (hasEventAlarmData()) {
-          if (!getEventAlarmData().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
         memoizedIsInitialized = 1;
         return true;
       }
@@ -4646,15 +4493,6 @@ public final class Web {
           output.writeMessage(17, getStreamEvent());
         }
         if (((bitField0_ & 0x00020000) != 0)) {
-          output.writeMessage(18, getTransfer());
-        }
-        if (((bitField0_ & 0x00040000) != 0)) {
-          output.writeMessage(19, getParameterAlarmData());
-        }
-        if (((bitField0_ & 0x00080000) != 0)) {
-          output.writeMessage(20, getEventAlarmData());
-        }
-        if (((bitField0_ & 0x00100000) != 0)) {
           output.writeMessage(100, getExtensionData());
         }
         unknownFields.writeTo(output);
@@ -4735,18 +4573,6 @@ public final class Web {
             .computeMessageSize(17, getStreamEvent());
         }
         if (((bitField0_ & 0x00020000) != 0)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(18, getTransfer());
-        }
-        if (((bitField0_ & 0x00040000) != 0)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(19, getParameterAlarmData());
-        }
-        if (((bitField0_ & 0x00080000) != 0)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(20, getEventAlarmData());
-        }
-        if (((bitField0_ & 0x00100000) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(100, getExtensionData());
         }
@@ -4849,21 +4675,6 @@ public final class Web {
           if (!getStreamEvent()
               .equals(other.getStreamEvent())) return false;
         }
-        if (hasTransfer() != other.hasTransfer()) return false;
-        if (hasTransfer()) {
-          if (!getTransfer()
-              .equals(other.getTransfer())) return false;
-        }
-        if (hasParameterAlarmData() != other.hasParameterAlarmData()) return false;
-        if (hasParameterAlarmData()) {
-          if (!getParameterAlarmData()
-              .equals(other.getParameterAlarmData())) return false;
-        }
-        if (hasEventAlarmData() != other.hasEventAlarmData()) return false;
-        if (hasEventAlarmData()) {
-          if (!getEventAlarmData()
-              .equals(other.getEventAlarmData())) return false;
-        }
         if (hasExtensionData() != other.hasExtensionData()) return false;
         if (hasExtensionData()) {
           if (!getExtensionData()
@@ -4947,18 +4758,6 @@ public final class Web {
         if (hasStreamEvent()) {
           hash = (37 * hash) + STREAMEVENT_FIELD_NUMBER;
           hash = (53 * hash) + getStreamEvent().hashCode();
-        }
-        if (hasTransfer()) {
-          hash = (37 * hash) + TRANSFER_FIELD_NUMBER;
-          hash = (53 * hash) + getTransfer().hashCode();
-        }
-        if (hasParameterAlarmData()) {
-          hash = (37 * hash) + PARAMETERALARMDATA_FIELD_NUMBER;
-          hash = (53 * hash) + getParameterAlarmData().hashCode();
-        }
-        if (hasEventAlarmData()) {
-          hash = (37 * hash) + EVENTALARMDATA_FIELD_NUMBER;
-          hash = (53 * hash) + getEventAlarmData().hashCode();
         }
         if (hasExtensionData()) {
           hash = (37 * hash) + EXTENSIONDATA_FIELD_NUMBER;
@@ -5111,9 +4910,6 @@ public final class Web {
             getTmPacketFieldBuilder();
             getConnectionInfoFieldBuilder();
             getStreamEventFieldBuilder();
-            getTransferFieldBuilder();
-            getParameterAlarmDataFieldBuilder();
-            getEventAlarmDataFieldBuilder();
             getExtensionDataFieldBuilder();
           }
         }
@@ -5214,30 +5010,12 @@ public final class Web {
             streamEventBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00010000);
-          if (transferBuilder_ == null) {
-            transfer_ = null;
-          } else {
-            transferBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00020000);
-          if (parameterAlarmDataBuilder_ == null) {
-            parameterAlarmData_ = null;
-          } else {
-            parameterAlarmDataBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00040000);
-          if (eventAlarmDataBuilder_ == null) {
-            eventAlarmData_ = null;
-          } else {
-            eventAlarmDataBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00080000);
           if (extensionDataBuilder_ == null) {
             extensionData_ = null;
           } else {
             extensionDataBuilder_.clear();
           }
-          bitField0_ = (bitField0_ & ~0x00100000);
+          bitField0_ = (bitField0_ & ~0x00020000);
           return this;
         }
 
@@ -5395,36 +5173,12 @@ public final class Web {
             to_bitField0_ |= 0x00010000;
           }
           if (((from_bitField0_ & 0x00020000) != 0)) {
-            if (transferBuilder_ == null) {
-              result.transfer_ = transfer_;
-            } else {
-              result.transfer_ = transferBuilder_.build();
-            }
-            to_bitField0_ |= 0x00020000;
-          }
-          if (((from_bitField0_ & 0x00040000) != 0)) {
-            if (parameterAlarmDataBuilder_ == null) {
-              result.parameterAlarmData_ = parameterAlarmData_;
-            } else {
-              result.parameterAlarmData_ = parameterAlarmDataBuilder_.build();
-            }
-            to_bitField0_ |= 0x00040000;
-          }
-          if (((from_bitField0_ & 0x00080000) != 0)) {
-            if (eventAlarmDataBuilder_ == null) {
-              result.eventAlarmData_ = eventAlarmData_;
-            } else {
-              result.eventAlarmData_ = eventAlarmDataBuilder_.build();
-            }
-            to_bitField0_ |= 0x00080000;
-          }
-          if (((from_bitField0_ & 0x00100000) != 0)) {
             if (extensionDataBuilder_ == null) {
               result.extensionData_ = extensionData_;
             } else {
               result.extensionData_ = extensionDataBuilder_.build();
             }
-            to_bitField0_ |= 0x00100000;
+            to_bitField0_ |= 0x00020000;
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -5526,15 +5280,6 @@ public final class Web {
           if (other.hasStreamEvent()) {
             mergeStreamEvent(other.getStreamEvent());
           }
-          if (other.hasTransfer()) {
-            mergeTransfer(other.getTransfer());
-          }
-          if (other.hasParameterAlarmData()) {
-            mergeParameterAlarmData(other.getParameterAlarmData());
-          }
-          if (other.hasEventAlarmData()) {
-            mergeEventAlarmData(other.getEventAlarmData());
-          }
           if (other.hasExtensionData()) {
             mergeExtensionData(other.getExtensionData());
           }
@@ -5592,16 +5337,6 @@ public final class Web {
           }
           if (hasConnectionInfo()) {
             if (!getConnectionInfo().isInitialized()) {
-              return false;
-            }
-          }
-          if (hasParameterAlarmData()) {
-            if (!getParameterAlarmData().isInitialized()) {
-              return false;
-            }
-          }
-          if (hasEventAlarmData()) {
-            if (!getEventAlarmData().isInitialized()) {
               return false;
             }
           }
@@ -7467,360 +7202,6 @@ public final class Web {
           return streamEventBuilder_;
         }
 
-        private org.yamcs.protobuf.Cfdp.TransferInfo transfer_;
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Cfdp.TransferInfo, org.yamcs.protobuf.Cfdp.TransferInfo.Builder, org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder> transferBuilder_;
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public boolean hasTransfer() {
-          return ((bitField0_ & 0x00020000) != 0);
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public org.yamcs.protobuf.Cfdp.TransferInfo getTransfer() {
-          if (transferBuilder_ == null) {
-            return transfer_ == null ? org.yamcs.protobuf.Cfdp.TransferInfo.getDefaultInstance() : transfer_;
-          } else {
-            return transferBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public Builder setTransfer(org.yamcs.protobuf.Cfdp.TransferInfo value) {
-          if (transferBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            transfer_ = value;
-            onChanged();
-          } else {
-            transferBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00020000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public Builder setTransfer(
-            org.yamcs.protobuf.Cfdp.TransferInfo.Builder builderForValue) {
-          if (transferBuilder_ == null) {
-            transfer_ = builderForValue.build();
-            onChanged();
-          } else {
-            transferBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00020000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public Builder mergeTransfer(org.yamcs.protobuf.Cfdp.TransferInfo value) {
-          if (transferBuilder_ == null) {
-            if (((bitField0_ & 0x00020000) != 0) &&
-                transfer_ != null &&
-                transfer_ != org.yamcs.protobuf.Cfdp.TransferInfo.getDefaultInstance()) {
-              transfer_ =
-                org.yamcs.protobuf.Cfdp.TransferInfo.newBuilder(transfer_).mergeFrom(value).buildPartial();
-            } else {
-              transfer_ = value;
-            }
-            onChanged();
-          } else {
-            transferBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00020000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public Builder clearTransfer() {
-          if (transferBuilder_ == null) {
-            transfer_ = null;
-            onChanged();
-          } else {
-            transferBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00020000);
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public org.yamcs.protobuf.Cfdp.TransferInfo.Builder getTransferBuilder() {
-          bitField0_ |= 0x00020000;
-          onChanged();
-          return getTransferFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        public org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder getTransferOrBuilder() {
-          if (transferBuilder_ != null) {
-            return transferBuilder_.getMessageOrBuilder();
-          } else {
-            return transfer_ == null ?
-                org.yamcs.protobuf.Cfdp.TransferInfo.getDefaultInstance() : transfer_;
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.cfdp.TransferInfo transfer = 18;</code>
-         */
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Cfdp.TransferInfo, org.yamcs.protobuf.Cfdp.TransferInfo.Builder, org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder> 
-            getTransferFieldBuilder() {
-          if (transferBuilder_ == null) {
-            transferBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.yamcs.protobuf.Cfdp.TransferInfo, org.yamcs.protobuf.Cfdp.TransferInfo.Builder, org.yamcs.protobuf.Cfdp.TransferInfoOrBuilder>(
-                    getTransfer(),
-                    getParentForChildren(),
-                    isClean());
-            transfer_ = null;
-          }
-          return transferBuilder_;
-        }
-
-        private org.yamcs.protobuf.Alarms.ParameterAlarmData parameterAlarmData_;
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Alarms.ParameterAlarmData, org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder, org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder> parameterAlarmDataBuilder_;
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public boolean hasParameterAlarmData() {
-          return ((bitField0_ & 0x00040000) != 0);
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public org.yamcs.protobuf.Alarms.ParameterAlarmData getParameterAlarmData() {
-          if (parameterAlarmDataBuilder_ == null) {
-            return parameterAlarmData_ == null ? org.yamcs.protobuf.Alarms.ParameterAlarmData.getDefaultInstance() : parameterAlarmData_;
-          } else {
-            return parameterAlarmDataBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public Builder setParameterAlarmData(org.yamcs.protobuf.Alarms.ParameterAlarmData value) {
-          if (parameterAlarmDataBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            parameterAlarmData_ = value;
-            onChanged();
-          } else {
-            parameterAlarmDataBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00040000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public Builder setParameterAlarmData(
-            org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder builderForValue) {
-          if (parameterAlarmDataBuilder_ == null) {
-            parameterAlarmData_ = builderForValue.build();
-            onChanged();
-          } else {
-            parameterAlarmDataBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00040000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public Builder mergeParameterAlarmData(org.yamcs.protobuf.Alarms.ParameterAlarmData value) {
-          if (parameterAlarmDataBuilder_ == null) {
-            if (((bitField0_ & 0x00040000) != 0) &&
-                parameterAlarmData_ != null &&
-                parameterAlarmData_ != org.yamcs.protobuf.Alarms.ParameterAlarmData.getDefaultInstance()) {
-              parameterAlarmData_ =
-                org.yamcs.protobuf.Alarms.ParameterAlarmData.newBuilder(parameterAlarmData_).mergeFrom(value).buildPartial();
-            } else {
-              parameterAlarmData_ = value;
-            }
-            onChanged();
-          } else {
-            parameterAlarmDataBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00040000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public Builder clearParameterAlarmData() {
-          if (parameterAlarmDataBuilder_ == null) {
-            parameterAlarmData_ = null;
-            onChanged();
-          } else {
-            parameterAlarmDataBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00040000);
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder getParameterAlarmDataBuilder() {
-          bitField0_ |= 0x00040000;
-          onChanged();
-          return getParameterAlarmDataFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        public org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder getParameterAlarmDataOrBuilder() {
-          if (parameterAlarmDataBuilder_ != null) {
-            return parameterAlarmDataBuilder_.getMessageOrBuilder();
-          } else {
-            return parameterAlarmData_ == null ?
-                org.yamcs.protobuf.Alarms.ParameterAlarmData.getDefaultInstance() : parameterAlarmData_;
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.ParameterAlarmData parameterAlarmData = 19;</code>
-         */
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Alarms.ParameterAlarmData, org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder, org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder> 
-            getParameterAlarmDataFieldBuilder() {
-          if (parameterAlarmDataBuilder_ == null) {
-            parameterAlarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.yamcs.protobuf.Alarms.ParameterAlarmData, org.yamcs.protobuf.Alarms.ParameterAlarmData.Builder, org.yamcs.protobuf.Alarms.ParameterAlarmDataOrBuilder>(
-                    getParameterAlarmData(),
-                    getParentForChildren(),
-                    isClean());
-            parameterAlarmData_ = null;
-          }
-          return parameterAlarmDataBuilder_;
-        }
-
-        private org.yamcs.protobuf.Alarms.EventAlarmData eventAlarmData_;
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Alarms.EventAlarmData, org.yamcs.protobuf.Alarms.EventAlarmData.Builder, org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder> eventAlarmDataBuilder_;
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public boolean hasEventAlarmData() {
-          return ((bitField0_ & 0x00080000) != 0);
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public org.yamcs.protobuf.Alarms.EventAlarmData getEventAlarmData() {
-          if (eventAlarmDataBuilder_ == null) {
-            return eventAlarmData_ == null ? org.yamcs.protobuf.Alarms.EventAlarmData.getDefaultInstance() : eventAlarmData_;
-          } else {
-            return eventAlarmDataBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public Builder setEventAlarmData(org.yamcs.protobuf.Alarms.EventAlarmData value) {
-          if (eventAlarmDataBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            eventAlarmData_ = value;
-            onChanged();
-          } else {
-            eventAlarmDataBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00080000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public Builder setEventAlarmData(
-            org.yamcs.protobuf.Alarms.EventAlarmData.Builder builderForValue) {
-          if (eventAlarmDataBuilder_ == null) {
-            eventAlarmData_ = builderForValue.build();
-            onChanged();
-          } else {
-            eventAlarmDataBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00080000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public Builder mergeEventAlarmData(org.yamcs.protobuf.Alarms.EventAlarmData value) {
-          if (eventAlarmDataBuilder_ == null) {
-            if (((bitField0_ & 0x00080000) != 0) &&
-                eventAlarmData_ != null &&
-                eventAlarmData_ != org.yamcs.protobuf.Alarms.EventAlarmData.getDefaultInstance()) {
-              eventAlarmData_ =
-                org.yamcs.protobuf.Alarms.EventAlarmData.newBuilder(eventAlarmData_).mergeFrom(value).buildPartial();
-            } else {
-              eventAlarmData_ = value;
-            }
-            onChanged();
-          } else {
-            eventAlarmDataBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00080000;
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public Builder clearEventAlarmData() {
-          if (eventAlarmDataBuilder_ == null) {
-            eventAlarmData_ = null;
-            onChanged();
-          } else {
-            eventAlarmDataBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00080000);
-          return this;
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public org.yamcs.protobuf.Alarms.EventAlarmData.Builder getEventAlarmDataBuilder() {
-          bitField0_ |= 0x00080000;
-          onChanged();
-          return getEventAlarmDataFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        public org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder getEventAlarmDataOrBuilder() {
-          if (eventAlarmDataBuilder_ != null) {
-            return eventAlarmDataBuilder_.getMessageOrBuilder();
-          } else {
-            return eventAlarmData_ == null ?
-                org.yamcs.protobuf.Alarms.EventAlarmData.getDefaultInstance() : eventAlarmData_;
-          }
-        }
-        /**
-         * <code>optional .yamcs.protobuf.alarms.EventAlarmData eventAlarmData = 20;</code>
-         */
-        private com.google.protobuf.SingleFieldBuilderV3<
-            org.yamcs.protobuf.Alarms.EventAlarmData, org.yamcs.protobuf.Alarms.EventAlarmData.Builder, org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder> 
-            getEventAlarmDataFieldBuilder() {
-          if (eventAlarmDataBuilder_ == null) {
-            eventAlarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.yamcs.protobuf.Alarms.EventAlarmData, org.yamcs.protobuf.Alarms.EventAlarmData.Builder, org.yamcs.protobuf.Alarms.EventAlarmDataOrBuilder>(
-                    getEventAlarmData(),
-                    getParentForChildren(),
-                    isClean());
-            eventAlarmData_ = null;
-          }
-          return eventAlarmDataBuilder_;
-        }
-
         private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_;
         private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder> extensionDataBuilder_;
@@ -7828,7 +7209,7 @@ public final class Web {
          * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
          */
         public boolean hasExtensionData() {
-          return ((bitField0_ & 0x00100000) != 0);
+          return ((bitField0_ & 0x00020000) != 0);
         }
         /**
          * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
@@ -7853,7 +7234,7 @@ public final class Web {
           } else {
             extensionDataBuilder_.setMessage(value);
           }
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00020000;
           return this;
         }
         /**
@@ -7867,7 +7248,7 @@ public final class Web {
           } else {
             extensionDataBuilder_.setMessage(builderForValue.build());
           }
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00020000;
           return this;
         }
         /**
@@ -7875,7 +7256,7 @@ public final class Web {
          */
         public Builder mergeExtensionData(org.yamcs.protobuf.Web.WebSocketExtensionData value) {
           if (extensionDataBuilder_ == null) {
-            if (((bitField0_ & 0x00100000) != 0) &&
+            if (((bitField0_ & 0x00020000) != 0) &&
                 extensionData_ != null &&
                 extensionData_ != org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance()) {
               extensionData_ =
@@ -7887,7 +7268,7 @@ public final class Web {
           } else {
             extensionDataBuilder_.mergeFrom(value);
           }
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00020000;
           return this;
         }
         /**
@@ -7900,14 +7281,14 @@ public final class Web {
           } else {
             extensionDataBuilder_.clear();
           }
-          bitField0_ = (bitField0_ & ~0x00100000);
+          bitField0_ = (bitField0_ & ~0x00020000);
           return this;
         }
         /**
          * <code>optional .yamcs.protobuf.web.WebSocketExtensionData extensionData = 100;</code>
          */
         public org.yamcs.protobuf.Web.WebSocketExtensionData.Builder getExtensionDataBuilder() {
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00020000;
           onChanged();
           return getExtensionDataFieldBuilder().getBuilder();
         }
@@ -13276,13 +12657,13 @@ public final class Web {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+     * <code>optional bool detail = 1;</code>
      */
-    boolean hasType();
+    boolean hasDetail();
     /**
-     * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+     * <code>optional bool detail = 1;</code>
      */
-    org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType getType();
+    boolean getDetail();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.web.AlarmSubscriptionRequest}
@@ -13297,7 +12678,6 @@ public final class Web {
       super(builder);
     }
     private AlarmSubscriptionRequest() {
-      type_ = 2;
     }
 
     @java.lang.Override
@@ -13325,15 +12705,8 @@ public final class Web {
               done = true;
               break;
             case 8: {
-              int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
-              org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType value = org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(1, rawValue);
-              } else {
-                bitField0_ |= 0x00000001;
-                type_ = rawValue;
-              }
+              bitField0_ |= 0x00000001;
+              detail_ = input.readBool();
               break;
             }
             default: {
@@ -13368,121 +12741,20 @@ public final class Web {
               org.yamcs.protobuf.Web.AlarmSubscriptionRequest.class, org.yamcs.protobuf.Web.AlarmSubscriptionRequest.Builder.class);
     }
 
-    /**
-     * Protobuf enum {@code yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType}
-     */
-    public enum AlarmSubscriptionType
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>SUMMARY = 1;</code>
-       */
-      SUMMARY(1),
-      /**
-       * <code>PARAMETER = 2;</code>
-       */
-      PARAMETER(2),
-      /**
-       * <code>EVENT = 3;</code>
-       */
-      EVENT(3),
-      ;
-
-      /**
-       * <code>SUMMARY = 1;</code>
-       */
-      public static final int SUMMARY_VALUE = 1;
-      /**
-       * <code>PARAMETER = 2;</code>
-       */
-      public static final int PARAMETER_VALUE = 2;
-      /**
-       * <code>EVENT = 3;</code>
-       */
-      public static final int EVENT_VALUE = 3;
-
-
-      public final int getNumber() {
-        return value;
-      }
-
-      /**
-       * @deprecated Use {@link #forNumber(int)} instead.
-       */
-      @java.lang.Deprecated
-      public static AlarmSubscriptionType valueOf(int value) {
-        return forNumber(value);
-      }
-
-      public static AlarmSubscriptionType forNumber(int value) {
-        switch (value) {
-          case 1: return SUMMARY;
-          case 2: return PARAMETER;
-          case 3: return EVENT;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<AlarmSubscriptionType>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static final com.google.protobuf.Internal.EnumLiteMap<
-          AlarmSubscriptionType> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<AlarmSubscriptionType>() {
-              public AlarmSubscriptionType findValueByNumber(int number) {
-                return AlarmSubscriptionType.forNumber(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        return getDescriptor().getValues().get(ordinal());
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return org.yamcs.protobuf.Web.AlarmSubscriptionRequest.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final AlarmSubscriptionType[] VALUES = values();
-
-      public static AlarmSubscriptionType valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int value;
-
-      private AlarmSubscriptionType(int value) {
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType)
-    }
-
     private int bitField0_;
-    public static final int TYPE_FIELD_NUMBER = 1;
-    private int type_;
+    public static final int DETAIL_FIELD_NUMBER = 1;
+    private boolean detail_;
     /**
-     * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+     * <code>optional bool detail = 1;</code>
      */
-    public boolean hasType() {
+    public boolean hasDetail() {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
-     * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+     * <code>optional bool detail = 1;</code>
      */
-    public org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType getType() {
-      @SuppressWarnings("deprecation")
-      org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType result = org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType.valueOf(type_);
-      return result == null ? org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType.PARAMETER : result;
+    public boolean getDetail() {
+      return detail_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -13500,7 +12772,7 @@ public final class Web {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeEnum(1, type_);
+        output.writeBool(1, detail_);
       }
       unknownFields.writeTo(output);
     }
@@ -13513,7 +12785,7 @@ public final class Web {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(1, type_);
+          .computeBoolSize(1, detail_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13530,9 +12802,10 @@ public final class Web {
       }
       org.yamcs.protobuf.Web.AlarmSubscriptionRequest other = (org.yamcs.protobuf.Web.AlarmSubscriptionRequest) obj;
 
-      if (hasType() != other.hasType()) return false;
-      if (hasType()) {
-        if (type_ != other.type_) return false;
+      if (hasDetail() != other.hasDetail()) return false;
+      if (hasDetail()) {
+        if (getDetail()
+            != other.getDetail()) return false;
       }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
@@ -13545,9 +12818,10 @@ public final class Web {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasType()) {
-        hash = (37 * hash) + TYPE_FIELD_NUMBER;
-        hash = (53 * hash) + type_;
+      if (hasDetail()) {
+        hash = (37 * hash) + DETAIL_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getDetail());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -13682,7 +12956,7 @@ public final class Web {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        type_ = 2;
+        detail_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -13713,9 +12987,9 @@ public final class Web {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.detail_ = detail_;
           to_bitField0_ |= 0x00000001;
         }
-        result.type_ = type_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -13765,8 +13039,8 @@ public final class Web {
 
       public Builder mergeFrom(org.yamcs.protobuf.Web.AlarmSubscriptionRequest other) {
         if (other == org.yamcs.protobuf.Web.AlarmSubscriptionRequest.getDefaultInstance()) return this;
-        if (other.hasType()) {
-          setType(other.getType());
+        if (other.hasDetail()) {
+          setDetail(other.getDetail());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -13798,39 +13072,34 @@ public final class Web {
       }
       private int bitField0_;
 
-      private int type_ = 2;
+      private boolean detail_ ;
       /**
-       * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+       * <code>optional bool detail = 1;</code>
        */
-      public boolean hasType() {
+      public boolean hasDetail() {
         return ((bitField0_ & 0x00000001) != 0);
       }
       /**
-       * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+       * <code>optional bool detail = 1;</code>
        */
-      public org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType getType() {
-        @SuppressWarnings("deprecation")
-        org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType result = org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType.valueOf(type_);
-        return result == null ? org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType.PARAMETER : result;
+      public boolean getDetail() {
+        return detail_;
       }
       /**
-       * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+       * <code>optional bool detail = 1;</code>
        */
-      public Builder setType(org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
+      public Builder setDetail(boolean value) {
         bitField0_ |= 0x00000001;
-        type_ = value.getNumber();
+        detail_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional .yamcs.protobuf.web.AlarmSubscriptionRequest.AlarmSubscriptionType type = 1 [default = PARAMETER];</code>
+       * <code>optional bool detail = 1;</code>
        */
-      public Builder clearType() {
+      public Builder clearDetail() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = 2;
+        detail_ = false;
         onChanged();
         return this;
       }
@@ -24698,116 +23967,107 @@ public final class Web {
     java.lang.String[] descriptorData = {
       "\n\034yamcs/protobuf/web/web.proto\022\022yamcs.pr" +
       "otobuf.web\032\032yamcs/protobuf/yamcs.proto\032$" +
-      "yamcs/protobuf/archive/archive.proto\032\036ya" +
-      "mcs/protobuf/cfdp/cfdp.proto\032*yamcs/prot" +
-      "obuf/commanding/commanding.proto\032\"yamcs/" +
-      "protobuf/pvalue/pvalue.proto\032\"yamcs/prot" +
-      "obuf/alarms/alarms.proto\0324yamcs/protobuf" +
-      "/yamcsManagement/yamcsManagement.proto\"|" +
-      "\n\026WebSocketClientMessage\022\027\n\017protocolVers" +
-      "ion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010res" +
-      "ource\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005" +
-      " \001(\014\"\325\016\n\026WebSocketServerMessage\022D\n\004type\030" +
-      "\001 \001(\01626.yamcs.protobuf.web.WebSocketServ" +
-      "erMessage.MessageType\022L\n\005reply\030\002 \001(\0132=.y" +
-      "amcs.protobuf.web.WebSocketServerMessage" +
-      ".WebSocketReplyData\022T\n\texception\030\003 \001(\0132A" +
-      ".yamcs.protobuf.web.WebSocketServerMessa" +
-      "ge.WebSocketExceptionData\022R\n\004data\030\004 \001(\0132" +
-      "D.yamcs.protobuf.web.WebSocketServerMess" +
-      "age.WebSocketSubscriptionData\032r\n\022WebSock" +
-      "etReplyData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016" +
-      "sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001(\t\022\017\n\007me" +
-      "ssage\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032v\n\026WebSocketEx" +
-      "ceptionData\022\027\n\017protocolVersion\030\001 \001(\r\022\026\n\016" +
-      "sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001(\t\022\017\n\007me" +
-      "ssage\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\335\t\n\031WebSocketS" +
-      "ubscriptionData\022\026\n\016sequenceNumber\030\001 \001(\r\022" +
-      "+\n\004type\030\002 \001(\0162\035.yamcs.protobuf.ProtoData" +
-      "Type\022;\n\rparameterData\030\003 \001(\0132$.yamcs.prot" +
-      "obuf.pvalue.ParameterData\022?\n\007command\030\004 \001" +
-      "(\0132..yamcs.protobuf.commanding.CommandHi" +
-      "storyEntry\022D\n\rprocessorInfo\030\005 \001(\0132-.yamc" +
-      "s.protobuf.yamcsManagement.ProcessorInfo" +
-      "\022>\n\nclientInfo\030\006 \001(\0132*.yamcs.protobuf.ya" +
-      "mcsManagement.ClientInfo\022>\n\nstatistics\030\007" +
-      " \001(\0132*.yamcs.protobuf.yamcsManagement.St" +
-      "atistics\022$\n\005event\030\010 \001(\0132\025.yamcs.protobuf" +
-      ".Event\0226\n\nstreamData\030\t \001(\0132\".yamcs.proto" +
-      "buf.archive.StreamData\0223\n\talarmData\030\n \001(" +
-      "\0132 .yamcs.protobuf.alarms.AlarmData\022*\n\010t" +
-      "imeInfo\030\013 \001(\0132\030.yamcs.protobuf.TimeInfo\022" +
-      "<\n\tlinkEvent\030\014 \001(\0132).yamcs.protobuf.yamc" +
-      "sManagement.LinkEvent\022E\n\020commandQueueInf" +
-      "o\030\r \001(\0132+.yamcs.protobuf.commanding.Comm" +
-      "andQueueInfo\022G\n\021commandQueueEvent\030\016 \001(\0132" +
-      ",.yamcs.protobuf.commanding.CommandQueue" +
-      "Event\022.\n\010tmPacket\030\017 \001(\0132\034.yamcs.protobuf" +
-      ".TmPacketData\022:\n\016connectionInfo\030\020 \001(\0132\"." +
-      "yamcs.protobuf.web.ConnectionInfo\022@\n\013str" +
-      "eamEvent\030\021 \001(\0132+.yamcs.protobuf.yamcsMan" +
-      "agement.StreamEvent\0223\n\010transfer\030\022 \001(\0132!." +
-      "yamcs.protobuf.cfdp.TransferInfo\022E\n\022para" +
-      "meterAlarmData\030\023 \001(\0132).yamcs.protobuf.al" +
-      "arms.ParameterAlarmData\022=\n\016eventAlarmDat" +
-      "a\030\024 \001(\0132%.yamcs.protobuf.alarms.EventAla" +
-      "rmData\022A\n\rextensionData\030d \001(\0132*.yamcs.pr" +
-      "otobuf.web.WebSocketExtensionData\"1\n\013Mes" +
-      "sageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010\n\004DA" +
-      "TA\020\004\"4\n\026WebSocketExtensionData\022\014\n\004type\030\001" +
-      " \001(\r\022\014\n\004data\030\002 \001(\014\"8\n\024RestExceptionMessa" +
-      "ge\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"+\n\027" +
-      "LinkSubscriptionRequest\022\020\n\010instance\030\001 \001(" +
-      "\t\".\n\032StreamsSubscriptionRequest\022\020\n\010insta" +
-      "nce\030\001 \001(\t\"+\n\027CfdpSubscriptionRequest\022\020\n\010" +
-      "instance\030\001 \001(\t\"K\n\034ProcessorSubscriptionR" +
-      "equest\022\025\n\rallProcessors\030\001 \001(\010\022\024\n\014allInst" +
-      "ances\030\002 \001(\010\"P\n\035ManagementSubscriptionReq" +
-      "uest\022\022\n\nclientInfo\030\001 \001(\010\022\033\n\023processorSta" +
-      "tistics\030\003 \001(\010\"\267\001\n\030AlarmSubscriptionReque" +
-      "st\022[\n\004type\030\001 \001(\0162B.yamcs.protobuf.web.Al" +
-      "armSubscriptionRequest.AlarmSubscription" +
-      "Type:\tPARAMETER\">\n\025AlarmSubscriptionType" +
-      "\022\013\n\007SUMMARY\020\001\022\r\n\tPARAMETER\020\002\022\t\n\005EVENT\020\003\"" +
-      "x\n!CommandHistorySubscriptionRequest\0227\n\t" +
-      "commandId\030\001 \003(\0132$.yamcs.protobuf.command" +
-      "ing.CommandId\022\032\n\022ignorePastCommands\030\002 \001(" +
-      "\010\"\303\001\n\034ParameterSubscriptionRequest\022)\n\002id" +
-      "\030\001 \003(\0132\035.yamcs.protobuf.NamedObjectId\022\026\n" +
-      "\016abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpirat" +
-      "ion\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\026\n\016subs" +
-      "criptionId\030\005 \001(\005\022\025\n\ruseNumericIds\030\006 \001(\010\"" +
-      "S\n\023SubscribedParameter\022)\n\002id\030\001 \001(\0132\035.yam" +
-      "cs.protobuf.NamedObjectId\022\021\n\tnumericId\030\002" +
-      " \001(\r\"\244\001\n\035ParameterSubscriptionResponse\022." +
-      "\n\007invalid\030\002 \003(\0132\035.yamcs.protobuf.NamedOb" +
-      "jectId\022\026\n\016subscriptionId\030\003 \001(\005\022;\n\nsubscr" +
-      "ibed\030\004 \003(\0132\'.yamcs.protobuf.web.Subscrib" +
-      "edParameter\"F\n\030TimeSubscriptionResponse\022" +
-      "*\n\010timeInfo\030\001 \001(\0132\030.yamcs.protobuf.TimeI" +
-      "nfo\"a\n\035ProcessorSubscriptionResponse\022@\n\t" +
-      "processor\030\001 \001(\0132-.yamcs.protobuf.yamcsMa" +
-      "nagement.ProcessorInfo\"\245\001\n\016ConnectionInf" +
-      "o\022\020\n\010clientId\030\001 \001(\005\022?\n\010instance\030\002 \001(\0132-." +
-      "yamcs.protobuf.yamcsManagement.YamcsInst" +
-      "ance\022@\n\tprocessor\030\003 \001(\0132-.yamcs.protobuf" +
-      ".yamcsManagement.ProcessorInfo\"k\n\010AuthFl" +
-      "ow\022/\n\004type\030\001 \001(\0162!.yamcs.protobuf.web.Au" +
-      "thFlow.Type\".\n\004Type\022\014\n\010PASSWORD\020\001\022\014\n\010RED" +
-      "IRECT\020\002\022\n\n\006SPNEGO\020\003\"U\n\010AuthInfo\022\035\n\025requi" +
-      "reAuthentication\030\001 \001(\010\022*\n\004flow\030\002 \003(\0132\034.y" +
-      "amcs.protobuf.web.AuthFlow\"\234\001\n\rTokenResp" +
-      "onse\022\024\n\014access_token\030\001 \001(\t\022\022\n\ntoken_type" +
-      "\030\002 \001(\t\022\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_to" +
-      "ken\030\004 \001(\t\0226\n\004user\030\005 \001(\0132(.yamcs.protobuf" +
-      ".yamcsManagement.UserInfo\"\371\001\n\rWebsiteCon" +
-      "fig\022*\n\004auth\030\001 \001(\0132\034.yamcs.protobuf.web.A" +
-      "uthInfo\022C\n\014displayScope\030\002 \001(\0162-.yamcs.pr" +
-      "otobuf.web.WebsiteConfig.BucketScope\022A\n\n" +
-      "stackScope\030\003 \001(\0162-.yamcs.protobuf.web.We" +
-      "bsiteConfig.BucketScope\022\013\n\003tag\030\004 \001(\t\"\'\n\013" +
-      "BucketScope\022\n\n\006GLOBAL\020\001\022\014\n\010INSTANCE\020\002B\024\n" +
-      "\022org.yamcs.protobuf"
+      "yamcs/protobuf/archive/archive.proto\032*ya" +
+      "mcs/protobuf/commanding/commanding.proto" +
+      "\032\"yamcs/protobuf/pvalue/pvalue.proto\032\"ya" +
+      "mcs/protobuf/alarms/alarms.proto\0324yamcs/" +
+      "protobuf/yamcsManagement/yamcsManagement" +
+      ".proto\"|\n\026WebSocketClientMessage\022\027\n\017prot" +
+      "ocolVersion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(" +
+      "\r\022\020\n\010resource\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014" +
+      "\n\004data\030\005 \001(\014\"\232\r\n\026WebSocketServerMessage\022" +
+      "D\n\004type\030\001 \001(\01626.yamcs.protobuf.web.WebSo" +
+      "cketServerMessage.MessageType\022L\n\005reply\030\002" +
+      " \001(\0132=.yamcs.protobuf.web.WebSocketServe" +
+      "rMessage.WebSocketReplyData\022T\n\texception" +
+      "\030\003 \001(\0132A.yamcs.protobuf.web.WebSocketSer" +
+      "verMessage.WebSocketExceptionData\022R\n\004dat" +
+      "a\030\004 \001(\0132D.yamcs.protobuf.web.WebSocketSe" +
+      "rverMessage.WebSocketSubscriptionData\032r\n" +
+      "\022WebSocketReplyData\022\027\n\017protocolVersion\030\001" +
+      " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001" +
+      "(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032v\n\026Web" +
+      "SocketExceptionData\022\027\n\017protocolVersion\030\001" +
+      " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003 \001" +
+      "(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\242\010\n\031We" +
+      "bSocketSubscriptionData\022\026\n\016sequenceNumbe" +
+      "r\030\001 \001(\r\022+\n\004type\030\002 \001(\0162\035.yamcs.protobuf.P" +
+      "rotoDataType\022;\n\rparameterData\030\003 \001(\0132$.ya" +
+      "mcs.protobuf.pvalue.ParameterData\022?\n\007com" +
+      "mand\030\004 \001(\0132..yamcs.protobuf.commanding.C" +
+      "ommandHistoryEntry\022D\n\rprocessorInfo\030\005 \001(" +
+      "\0132-.yamcs.protobuf.yamcsManagement.Proce" +
+      "ssorInfo\022>\n\nclientInfo\030\006 \001(\0132*.yamcs.pro" +
+      "tobuf.yamcsManagement.ClientInfo\022>\n\nstat" +
+      "istics\030\007 \001(\0132*.yamcs.protobuf.yamcsManag" +
+      "ement.Statistics\022$\n\005event\030\010 \001(\0132\025.yamcs." +
+      "protobuf.Event\0226\n\nstreamData\030\t \001(\0132\".yam" +
+      "cs.protobuf.archive.StreamData\0223\n\talarmD" +
+      "ata\030\n \001(\0132 .yamcs.protobuf.alarms.AlarmD" +
+      "ata\022*\n\010timeInfo\030\013 \001(\0132\030.yamcs.protobuf.T" +
+      "imeInfo\022<\n\tlinkEvent\030\014 \001(\0132).yamcs.proto" +
+      "buf.yamcsManagement.LinkEvent\022E\n\020command" +
+      "QueueInfo\030\r \001(\0132+.yamcs.protobuf.command" +
+      "ing.CommandQueueInfo\022G\n\021commandQueueEven" +
+      "t\030\016 \001(\0132,.yamcs.protobuf.commanding.Comm" +
+      "andQueueEvent\022.\n\010tmPacket\030\017 \001(\0132\034.yamcs." +
+      "protobuf.TmPacketData\022:\n\016connectionInfo\030" +
+      "\020 \001(\0132\".yamcs.protobuf.web.ConnectionInf" +
+      "o\022@\n\013streamEvent\030\021 \001(\0132+.yamcs.protobuf." +
+      "yamcsManagement.StreamEvent\022A\n\rextension" +
+      "Data\030d \001(\0132*.yamcs.protobuf.web.WebSocke" +
+      "tExtensionData\"1\n\013MessageType\022\t\n\005REPLY\020\002" +
+      "\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSocketEx" +
+      "tensionData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"" +
+      "8\n\024RestExceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n" +
+      "\003msg\030\002 \001(\t*\005\010d\020\311\001\"+\n\027LinkSubscriptionReq" +
+      "uest\022\020\n\010instance\030\001 \001(\t\".\n\032StreamsSubscri" +
+      "ptionRequest\022\020\n\010instance\030\001 \001(\t\"+\n\027CfdpSu" +
+      "bscriptionRequest\022\020\n\010instance\030\001 \001(\t\"K\n\034P" +
+      "rocessorSubscriptionRequest\022\025\n\rallProces" +
+      "sors\030\001 \001(\010\022\024\n\014allInstances\030\002 \001(\010\"P\n\035Mana" +
+      "gementSubscriptionRequest\022\022\n\nclientInfo\030" +
+      "\001 \001(\010\022\033\n\023processorStatistics\030\003 \001(\010\"*\n\030Al" +
+      "armSubscriptionRequest\022\016\n\006detail\030\001 \001(\010\"x" +
+      "\n!CommandHistorySubscriptionRequest\0227\n\tc" +
+      "ommandId\030\001 \003(\0132$.yamcs.protobuf.commandi" +
+      "ng.CommandId\022\032\n\022ignorePastCommands\030\002 \001(\010" +
+      "\"\303\001\n\034ParameterSubscriptionRequest\022)\n\002id\030" +
+      "\001 \003(\0132\035.yamcs.protobuf.NamedObjectId\022\026\n\016" +
+      "abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpirati" +
+      "on\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\026\n\016subsc" +
+      "riptionId\030\005 \001(\005\022\025\n\ruseNumericIds\030\006 \001(\010\"S" +
+      "\n\023SubscribedParameter\022)\n\002id\030\001 \001(\0132\035.yamc" +
+      "s.protobuf.NamedObjectId\022\021\n\tnumericId\030\002 " +
+      "\001(\r\"\244\001\n\035ParameterSubscriptionResponse\022.\n" +
+      "\007invalid\030\002 \003(\0132\035.yamcs.protobuf.NamedObj" +
+      "ectId\022\026\n\016subscriptionId\030\003 \001(\005\022;\n\nsubscri" +
+      "bed\030\004 \003(\0132\'.yamcs.protobuf.web.Subscribe" +
+      "dParameter\"F\n\030TimeSubscriptionResponse\022*" +
+      "\n\010timeInfo\030\001 \001(\0132\030.yamcs.protobuf.TimeIn" +
+      "fo\"a\n\035ProcessorSubscriptionResponse\022@\n\tp" +
+      "rocessor\030\001 \001(\0132-.yamcs.protobuf.yamcsMan" +
+      "agement.ProcessorInfo\"\245\001\n\016ConnectionInfo" +
+      "\022\020\n\010clientId\030\001 \001(\005\022?\n\010instance\030\002 \001(\0132-.y" +
+      "amcs.protobuf.yamcsManagement.YamcsInsta" +
+      "nce\022@\n\tprocessor\030\003 \001(\0132-.yamcs.protobuf." +
+      "yamcsManagement.ProcessorInfo\"k\n\010AuthFlo" +
+      "w\022/\n\004type\030\001 \001(\0162!.yamcs.protobuf.web.Aut" +
+      "hFlow.Type\".\n\004Type\022\014\n\010PASSWORD\020\001\022\014\n\010REDI" +
+      "RECT\020\002\022\n\n\006SPNEGO\020\003\"U\n\010AuthInfo\022\035\n\025requir" +
+      "eAuthentication\030\001 \001(\010\022*\n\004flow\030\002 \003(\0132\034.ya" +
+      "mcs.protobuf.web.AuthFlow\"\234\001\n\rTokenRespo" +
+      "nse\022\024\n\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030" +
+      "\002 \001(\t\022\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_tok" +
+      "en\030\004 \001(\t\0226\n\004user\030\005 \001(\0132(.yamcs.protobuf." +
+      "yamcsManagement.UserInfo\"\371\001\n\rWebsiteConf" +
+      "ig\022*\n\004auth\030\001 \001(\0132\034.yamcs.protobuf.web.Au" +
+      "thInfo\022C\n\014displayScope\030\002 \001(\0162-.yamcs.pro" +
+      "tobuf.web.WebsiteConfig.BucketScope\022A\n\ns" +
+      "tackScope\030\003 \001(\0162-.yamcs.protobuf.web.Web" +
+      "siteConfig.BucketScope\022\013\n\003tag\030\004 \001(\t\"\'\n\013B" +
+      "ucketScope\022\n\n\006GLOBAL\020\001\022\014\n\010INSTANCE\020\002B\024\n\022" +
+      "org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -24822,7 +24082,6 @@ public final class Web {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Archive.getDescriptor(),
-          org.yamcs.protobuf.Cfdp.getDescriptor(),
           org.yamcs.protobuf.Commanding.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
           org.yamcs.protobuf.Alarms.getDescriptor(),
@@ -24857,7 +24116,7 @@ public final class Web {
     internal_static_yamcs_protobuf_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-        new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", "ConnectionInfo", "StreamEvent", "Transfer", "ParameterAlarmData", "EventAlarmData", "ExtensionData", });
+        new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", "ConnectionInfo", "StreamEvent", "ExtensionData", });
     internal_static_yamcs_protobuf_web_WebSocketExtensionData_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_yamcs_protobuf_web_WebSocketExtensionData_fieldAccessorTable = new
@@ -24905,7 +24164,7 @@ public final class Web {
     internal_static_yamcs_protobuf_web_AlarmSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_web_AlarmSubscriptionRequest_descriptor,
-        new java.lang.String[] { "Type", });
+        new java.lang.String[] { "Detail", });
     internal_static_yamcs_protobuf_web_CommandHistorySubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_yamcs_protobuf_web_CommandHistorySubscriptionRequest_fieldAccessorTable = new
@@ -24974,7 +24233,6 @@ public final class Web {
         new java.lang.String[] { "Auth", "DisplayScope", "StackScope", "Tag", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Archive.getDescriptor();
-    org.yamcs.protobuf.Cfdp.getDescriptor();
     org.yamcs.protobuf.Commanding.getDescriptor();
     org.yamcs.protobuf.Pvalue.getDescriptor();
     org.yamcs.protobuf.Alarms.getDescriptor();

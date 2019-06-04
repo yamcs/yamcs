@@ -1,62 +1,74 @@
-<ng-container *ngIf="plotDataSource$ | async as plotDataSource">
-  <div style="height: 300px; position: relative; overflow: hidden">
-    <app-parameter-plot [dataSource]="plotDataSource" duration="PT20M">
-      <app-parameter-series [parameter]="alarm.parameter.qualifiedName"
-                            [grid]="true"
-                            [axisLineWidth]="0">
-      </app-parameter-series>
-    </app-parameter-plot>
+<ng-container *ngIf="alarm.type === 'PARAMETER'">
+  <h6>Parameter</h6>
+  <div class="block">
+    <a [routerLink]="['/monitor/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
+      [queryParams]="{instance: instance.name}"
+      class="ya-link">
+      {{ alarm.id.namespace }}/{{ alarm.id.name }}
+    </a>
   </div>
 </ng-container>
 
-<h6>Parameter</h6>
-<div class="block">
-  <a [routerLink]="['/mdb/parameters/', alarm.triggerValue.id.name]"
-     [queryParams]="{instance: instance.name}"
-     class="ya-link">
-    {{ alarm.triggerValue.id.name }}
-  </a>
-</div>
+<ng-container *ngIf="alarm.type === 'EVENT'">
+  <h6>Event</h6>
+  <div class="block">
+    {{ alarm.id.namespace }}/{{ alarm.id.name }}
+  </div>
+</ng-container>
 
 <h6>Severity</h6>
 <div class="block">
-    <app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level>
-    {{ alarm.triggerValue.monitoringResult }}
-    on {{ alarm.triggerValue.generationTimeUTC | datetime }}
+    <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+    {{ alarm.severity }}
+</div>
 
-    <ng-container *ngIf="alarm.triggerValue.generationTimeUTC != alarm.mostSevereValue.generationTimeUTC">
-      <br>
-      <app-alarm-level [level]="alarm.mostSevereValue.monitoringResult"></app-alarm-level>
-      {{ alarm.mostSevereValue.monitoringResult }}
-      on {{ alarm.mostSevereValue.generationTimeUTC | datetime }}
+<ng-container *ngIf="alarm.parameterDetail as parameterDetail">
+  <br>
+  <mat-divider></mat-divider>
+
+  <h6>Trigger value</h6>
+  <div class="block">
+    <app-alarm-level [level]="alarm.severity" [grayscale]="true"></app-alarm-level>
+    &nbsp;{{ parameterDetail.triggerValue.engValue | value }}
+    <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
+    <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+  </div>
+
+  <br>
+  <mat-divider></mat-divider>
+
+  <h6>Current value</h6>
+  <div class="block">
+    <app-expirable [pval]="parameterDetail.currentValue">
+      <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
+      &nbsp;{{ parameterDetail.currentValue.engValue | value }}
+      <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
+      <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
+    </app-expirable>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.eventDetail as eventDetail">
+  <br>
+  <mat-divider></mat-divider>
+
+  <h6>Trigger event</h6>
+  <div class="block">
+    {{ eventDetail.triggerEvent.message }}
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.acknowledgeInfo">
+  <br>
+  <mat-divider></mat-divider>
+
+  <h6>Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</h6>
+  <div class="block">
+    On {{ alarm.acknowledgeInfo.acknowledgeTime | datetime }}
+    <ng-container *ngIf="alarm.acknowledgeInfo.acknowledgeMessage">
+      <blockquote style="border-left: 4px solid #eee; padding-left: 1em; font-style: italic">
+        {{ alarm.acknowledgeInfo.acknowledgeMessage }}
+      </blockquote>
     </ng-container>
-
-    <br>
-    <app-alarm-level [level]="alarm.currentValue.monitoringResult"></app-alarm-level>
-    {{ alarm.currentValue.monitoringResult }}
-    currently
-</div>
-
-<br>
-<mat-divider></mat-divider>
-
-<h6>Trigger value</h6>
-<div class="block">
-  <app-alarm-level [level]="alarm.triggerValue.monitoringResult" [grayscale]="true"></app-alarm-level>
-  &nbsp;{{ alarm.triggerValue.engValue | value }}
-  <span *ngIf="alarm.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
-  <span *ngIf="alarm.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
-</div>
-
-<br>
-<mat-divider></mat-divider>
-
-<h6>Current value</h6>
-<div class="block">
-  <app-expirable [pval]="alarm.currentValue">
-    <app-alarm-level [level]="alarm.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
-    &nbsp;{{ alarm.currentValue.engValue | value }}
-    <span *ngIf="alarm.currentValue.rangeCondition === 'LOW'">&#8595;</span>
-    <span *ngIf="alarm.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
-  </app-expirable>
-</div>
+  </div>
+</ng-container>

@@ -245,6 +245,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         dataSeqCount++;
         if (!channel.isOpen()) {
             log.info("Skipping update of type {}. Channel is already closed", dataType);
+            ctx.close();
             return;
         }
 

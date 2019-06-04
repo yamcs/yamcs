@@ -46,7 +46,7 @@ export class InstanceHomePage implements OnDestroy {
     this.alarmsDataSource.loadAlarms('realtime');
     this.unacknowledgedAlarms$ = this.alarmsDataSource.alarms$.pipe(
       map(alarms => {
-        return alarms.filter(alarm => alarm.type !== 'CLEARED' && alarm.type !== 'ACKNOWLEDGED');
+        return alarms.filter(alarm => alarm.notificationType !== 'CLEARED' && alarm.notificationType !== 'ACKNOWLEDGED');
       }),
     );
 

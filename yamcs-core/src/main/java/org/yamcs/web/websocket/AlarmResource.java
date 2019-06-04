@@ -7,11 +7,9 @@ import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Alarms.ParameterAlarmData;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
-import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
-import org.yamcs.protobuf.Web.AlarmSubscriptionRequest.AlarmSubscriptionType;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.web.rest.processor.ProcessorHelper;
@@ -33,9 +31,7 @@ public class AlarmResource implements WebSocketResource {
 
     MyAlarmListener<ParameterValue> plistener = new MyAlarmListener<>();
     MyAlarmListener<Event> elistener = new MyAlarmListener<>();
-    private boolean subscribeParamAlarms;
-    private boolean subscribeEventAlarms;
-    private boolean subscribeSummaryAlarms;
+    private boolean sendDetail;
 
     public AlarmResource(ConnectedWebSocketClient client) {
         this.client = client;
@@ -49,20 +45,13 @@ public class AlarmResource implements WebSocketResource {
     @Override
     public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        AlarmSubscriptionRequest.AlarmSubscriptionType type = AlarmSubscriptionType.SUMMARY;
+        sendDetail = false;
         if (ctx.getData() != null) {
             AlarmSubscriptionRequest req = decoder.decodeMessageData(ctx, AlarmSubscriptionRequest.newBuilder())
                     .build();
-            if (req.hasType()) {
-                type = req.getType();
+            if (req.hasDetail()) {
+                sendDetail = req.getDetail();
             }
-        }
-        if (type == AlarmSubscriptionType.PARAMETER) {
-            subscribeParamAlarms = true;
-        } else if (type == AlarmSubscriptionType.EVENT) {
-            subscribeEventAlarms = true;
-        } else {
-            subscribeSummaryAlarms = true;
         }
 
         client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
@@ -73,24 +62,11 @@ public class AlarmResource implements WebSocketResource {
 
     @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        AlarmSubscriptionRequest.AlarmSubscriptionType type = AlarmSubscriptionType.PARAMETER;
-        if (ctx.getData() != null) {
-            AlarmSubscriptionRequest req = decoder.decodeMessageData(ctx, AlarmSubscriptionRequest.newBuilder())
-                    .build();
-            if (req.hasType()) {
-                type = req.getType();
-            }
+        if (parameterAlarmServer != null) {
+            parameterAlarmServer.unsubscribeAlarm(plistener);
         }
-        if (type == AlarmSubscriptionType.PARAMETER) {
-            subscribeParamAlarms = false;
-            if (parameterAlarmServer != null) {
-                parameterAlarmServer.unsubscribeAlarm(plistener);
-            }
-        } else {
-            subscribeEventAlarms = false;
-            if (eventAlarmServer != null) {
-                eventAlarmServer.unsubscribeAlarm(elistener);
-            }
+        if (eventAlarmServer != null) {
+            eventAlarmServer.unsubscribeAlarm(elistener);
         }
 
         subscribed = false;
@@ -102,20 +78,28 @@ public class AlarmResource implements WebSocketResource {
         if (parameterAlarmServer != null) {
             parameterAlarmServer.unsubscribeAlarm(plistener);
         }
+        if (eventAlarmServer != null) {
+            eventAlarmServer.unsubscribeAlarm(elistener);
+        }
     }
 
     @Override
     public void unselectProcessor() {
         if (parameterAlarmServer != null) {
             parameterAlarmServer.unsubscribeAlarm(plistener);
+            parameterAlarmServer = null;
         }
-        parameterAlarmServer = null;
+        if (eventAlarmServer != null) {
+            eventAlarmServer.unsubscribeAlarm(elistener);
+            eventAlarmServer = null;
+        }
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
         if (processor.hasAlarmServer()) {
             parameterAlarmServer = processor.getParameterRequestManager().getAlarmServer();
+            eventAlarmServer = processor.getEventAlarmServer();
         }
         if (subscribed) {
             applySubscription();
@@ -123,13 +107,22 @@ public class AlarmResource implements WebSocketResource {
     }
 
     private void applySubscription() {
-        if ((subscribeParamAlarms || subscribeSummaryAlarms) && parameterAlarmServer != null) {
+        // Every subscribe request may change a previous subscribe request
+        // Therefore unregister past listeners, before maybe re-adding some of them.
+        if (parameterAlarmServer != null) {
+            parameterAlarmServer.unsubscribeAlarm(plistener);
+        }
+        if (eventAlarmServer != null) {
+            eventAlarmServer.unsubscribeAlarm(elistener);
+        }
+
+        if (parameterAlarmServer != null) {
             for (ActiveAlarm<ParameterValue> activeAlarm : parameterAlarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmNotificationType.ACTIVE, activeAlarm);
             }
             parameterAlarmServer.subscribeAlarm(plistener);
         }
-        if ((subscribeEventAlarms || subscribeSummaryAlarms) && eventAlarmServer != null) {
+        if (eventAlarmServer != null) {
             for (ActiveAlarm<Event> activeAlarm : eventAlarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmNotificationType.ACTIVE, activeAlarm);
             }
@@ -165,16 +158,7 @@ public class AlarmResource implements WebSocketResource {
     }
 
     private void sendAlarm(AlarmNotificationType type, ActiveAlarm<?> activeAlarm) {
-        if (subscribeParamAlarms && activeAlarm.triggerValue instanceof ParameterValue) {
-            client.sendData(ProtoDataType.PARAMETER_ALARM_DATA, ProcessorHelper.toParameterAlarmData(type,
-                    (ActiveAlarm<ParameterValue>) activeAlarm));
-        }
-        
-        if (subscribeEventAlarms && activeAlarm.triggerValue instanceof Event) {
-                client.sendData(ProtoDataType.EVENT_ALARM_DATA, ProcessorHelper.toEventAlarmData(type, (ActiveAlarm<Event>) activeAlarm));
-        }
-        if(subscribeSummaryAlarms) {
-            client.sendData(ProtoDataType.ALARM_DATA, ProcessorHelper.toSummaryAlarmData(type, activeAlarm));
-        }
+        AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm, sendDetail);
+        client.sendData(ProtoDataType.ALARM_DATA, alarmData);
     }
 }

@@ -5,7 +5,6 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/archive/archive.proto";
-import "yamcs/protobuf/cfdp/cfdp.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
@@ -61,9 +60,6 @@ message WebSocketServerMessage {
     optional TmPacketData tmPacket = 15;
     optional ConnectionInfo connectionInfo = 16;
     optional yamcsManagement.StreamEvent streamEvent = 17;
-    optional cfdp.TransferInfo transfer = 18;
-    optional alarms.ParameterAlarmData parameterAlarmData = 19;
-    optional alarms.EventAlarmData eventAlarmData = 20;
     
     optional WebSocketExtensionData extensionData = 100;
   }
@@ -110,12 +106,7 @@ message ManagementSubscriptionRequest {
 }
 
 message AlarmSubscriptionRequest {
-  enum AlarmSubscriptionType {
-      SUMMARY = 1;
-      PARAMETER = 2;
-      EVENT = 3;   
-  }
-  optional AlarmSubscriptionType type = 1 [default = PARAMETER];
+  optional bool detail = 1;
 }
 
 message CommandHistorySubscriptionRequest {

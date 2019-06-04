@@ -1,8 +1,7 @@
 import { DataSource } from '@angular/cdk/table';
-import { Alarm, MonitoringResult } from '@yamcs/client';
+import { Alarm, AlarmSeverity } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import * as utils from '../../shared/utils';
 
 export class AlarmsDataSource extends DataSource<Alarm> {
 
@@ -12,7 +11,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
   alarmSubscription: Subscription;
 
   private alarmsByName: { [key: string]: Alarm } = {};
-  private sortColumn = 'parameter';
+  private sortColumn = 'source';
   private sortDirection = 'asc';
 
   constructor(private yamcs: YamcsService) {
@@ -52,40 +51,32 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     const alarms = Object.values(this.alarmsByName);
     alarms.sort((a1, a2) => {
       let rc = 0;
-      if (this.sortColumn === 'parameter') {
-        rc = a1.parameter.qualifiedName.localeCompare(a2.parameter.qualifiedName);
+      if (this.sortColumn === 'source') {
+        const id1 = a1.id.namespace + '/' + a1.id.name;
+        const id2 = a2.id.namespace + '/' + a2.id.name;
+        rc = id1.localeCompare(id2);
       } else if (this.sortColumn === 'severity') {
-        const m1 = this.getNumericMonitoringResult(a1.triggerValue.monitoringResult);
-        const m2 = this.getNumericMonitoringResult(a2.triggerValue.monitoringResult);
+        const m1 = this.getNumericSeverity(a1.severity);
+        const m2 = this.getNumericSeverity(a2.severity);
         rc = (m1 < m2) ? -1 : ((m1 === m2) ? 0 : 1);
       } else if (this.sortColumn === 'violations') {
         rc = (a1.violations < a2.violations) ? -1 : ((a1.violations === a2.violations) ? 0 : 1);
       } else if (this.sortColumn === 'time') {
-        rc = a1.triggerValue.generationTimeUTC.localeCompare(a2.triggerValue.generationTimeUTC);
-      } else if (this.sortColumn === 'currentValue') {
-        const v1 = utils.printValue(a1.currentValue.engValue);
-        const v2 = utils.printValue(a2.currentValue.engValue);
-        rc = v1.localeCompare(v2);
-      } else if (this.sortColumn === 'value') {
-        const v1 = utils.printValue(a1.triggerValue.engValue);
-        const v2 = utils.printValue(a2.triggerValue.engValue);
-        rc = v1.localeCompare(v2);
+        rc = a1.triggerTime.localeCompare(a2.triggerTime);
       }
       return this.sortDirection === 'asc' ? rc : -rc;
     });
     this.alarms$.next([... alarms]);
   }
 
-  private getNumericMonitoringResult(monitoringResult: MonitoringResult) {
-    switch (monitoringResult) {
-      case 'DISABLED': return 0;
-      case 'IN_LIMITS': return 1;
-      case 'WATCH': return 2;
-      case 'WARNING': return 3;
-      case 'DISTRESS': return 4;
-      case 'CRITICAL': return 5;
-      case 'SEVERE': return 6;
-      default: return 7;
+  private getNumericSeverity(severity: AlarmSeverity) {
+    switch (severity) {
+      case 'WATCH': return 0;
+      case 'WARNING': return 1;
+      case 'DISTRESS': return 2;
+      case 'CRITICAL': return 3;
+      case 'SEVERE': return 4;
+      default: return 5;
     }
   }
 
@@ -100,7 +91,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
   getUnacknowledgedCount() {
     let total = 0;
     for (const alarm of this.alarms$.getValue()) {
-      if (alarm.type !== 'CLEARED' && alarm.type !== 'ACKNOWLEDGED') {
+      if (alarm.notificationType !== 'CLEARED' && alarm.notificationType !== 'ACKNOWLEDGED') {
         total++;
       }
     }
@@ -116,19 +107,20 @@ export class AlarmsDataSource extends DataSource<Alarm> {
   }
 
   private processAlarm(alarm: Alarm) {
-    switch (alarm.type) {
+    const alarmId = alarm.id.namespace + '/' + alarm.id.name;
+    switch (alarm.notificationType) {
       case 'ACTIVE':
       case 'TRIGGERED':
       case 'SEVERITY_INCREASED':
-      case 'PVAL_UPDATED':
+      case 'UPDATED':
       case 'ACKNOWLEDGED':
-        this.alarmsByName[alarm.triggerValue.id.name] = alarm;
+        this.alarmsByName[alarmId] = alarm;
         break;
       case 'CLEARED':
-        delete this.alarmsByName[alarm.triggerValue.id.name];
+        delete this.alarmsByName[alarmId];
         break;
       default:
-        console.warn('Unexpected alarm event of type', alarm.type);
+        console.warn('Unexpected alarm event of type', alarm.notificationType);
     }
   }
 }

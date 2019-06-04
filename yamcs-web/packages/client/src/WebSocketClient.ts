@@ -4,7 +4,7 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
+import { AlarmSubscriptionRequest, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -222,9 +222,9 @@ export class WebSocketClient {
     });
   }
 
-  async getAlarmUpdates() {
+  async getAlarmUpdates(options?: AlarmSubscriptionRequest) {
     this.subscriptionModel.alarms = true;
-    const requestId = this.emit({ alarms: 'subscribe' });
+    const requestId = this.emit({ alarms: 'subscribe', data: options });
 
     return new Promise<AlarmSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
@@ -236,7 +236,7 @@ export class WebSocketClient {
           const response = {} as AlarmSubscriptionResponse;
           response.alarm$ = this.webSocketConnection$.pipe(
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'ALARM_DATA'),
+            filter((msg: WebSocketServerMessage) => msg[3].dt!.endsWith('ALARM_DATA')),
             map(msg => msg[3].data as Alarm),
           );
           resolve(response);

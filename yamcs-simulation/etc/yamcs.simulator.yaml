@@ -191,6 +191,7 @@ streamConfig:
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
-  alarm: ["alarms_realtime"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
   tc: ["tc_realtime"]
   sqlFile: "etc/extra_streams.sql"

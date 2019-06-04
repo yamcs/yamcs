@@ -3,7 +3,7 @@
 <mat-dialog-content class="mat-typography">
   <p>
     <ng-container *ngIf="data.alarms.length === 1">
-      {{ data.alarms[0].parameter.qualifiedName }}
+      {{ data.alarms[0].id.namespace }}/{{ data.alarms[0].id.name }}
     </ng-container>
     <ng-container *ngIf="data.alarms.length !== 1">
       {{ data.alarms.length }} selected alarms.

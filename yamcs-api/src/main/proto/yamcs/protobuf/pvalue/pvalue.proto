@@ -5,7 +5,6 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
-import "google/protobuf/timestamp.proto";
 
 
 //this can also be called validity status

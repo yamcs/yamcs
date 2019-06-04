@@ -14,8 +14,10 @@ import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.management.ManagementService;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -284,7 +286,7 @@ public abstract class RestHandler extends RouteHandler {
         int aggSep = AggregateUtil.findSeparator(pathName);
 
         PathElement[] aggPath = null;
-        String nwa = pathName; //name without the aggregate part
+        String nwa = pathName; // name without the aggregate part
         if (aggSep >= 0) {
             nwa = pathName.substring(0, aggSep);
             try {
@@ -319,12 +321,12 @@ public abstract class RestHandler extends RouteHandler {
         if (p == null) {
             throw new NotFoundException(req, "No parameter named " + pathName);
         }
-        
+
         if (aggPath != null) {
             if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {
                 throw new NotFoundException(req, "Nonexistent array/aggregate path in name " + pathName);
             }
-            name+=AggregateUtil.toString(aggPath);
+            name += AggregateUtil.toString(aggPath);
         }
 
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
@@ -464,7 +466,8 @@ public abstract class RestHandler extends RouteHandler {
         throw new NotFoundException(req, "No such container");
     }
 
-    protected static AlarmServer verifyAlarmServer(Processor processor) throws BadRequestException {
+    protected static AlarmServer<Parameter, ParameterValue> verifyParameterAlarmServer(Processor processor)
+            throws BadRequestException {
         if (!processor.hasAlarmServer()) {
             String instance = processor.getInstance();
             String processorName = processor.getName();
@@ -472,6 +475,17 @@ public abstract class RestHandler extends RouteHandler {
                     "Alarms are not enabled for processor '" + instance + "/" + processorName + "'");
         } else {
             return processor.getParameterRequestManager().getAlarmServer();
+        }
+    }
+
+    protected static EventAlarmServer verifyEventAlarmServer(Processor processor) throws BadRequestException {
+        if (!processor.hasAlarmServer()) {
+            String instance = processor.getInstance();
+            String processorName = processor.getName();
+            throw new BadRequestException(
+                    "Alarms are not enabled for processor '" + instance + "/" + processorName + "'");
+        } else {
+            return processor.getEventAlarmServer();
         }
     }
 

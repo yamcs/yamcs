@@ -54,7 +54,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             "POST" })
     public void patchParameterAlarm(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        AlarmServer alarmServer = verifyAlarmServer(processor);
+        AlarmServer<Parameter, org.yamcs.parameter.ParameterValue> alarmServer = verifyParameterAlarmServer(processor);
 
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
@@ -89,7 +89,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 alarmServer.acknowledge(p, seqNum, username, processor.getCurrentTime(), comment);
                 completeOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
-                log.debug("Did not acknowledge alarm {}.{}", seqNum, e.getMessage());
+                log.debug("Did not acknowledge alarm {}. {}", seqNum, e.getMessage());
                 throw new BadRequestException(e.getMessage());
             }
             break;
@@ -102,7 +102,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        
+
         ParameterWithId pid = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
@@ -110,7 +110,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
         Parameter p = pid.getParameter();
         org.yamcs.parameter.ParameterValue pv;
-        if(pid.getPath()==null) {
+        if (pid.getPath() == null) {
             pv = new org.yamcs.parameter.ParameterValue(p);
         } else {
             pv = new PartialParameterValue(p, pid.getPath());
@@ -141,12 +141,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 pidList.stream().map(p -> p.getParameter().getQualifiedName()).collect(Collectors.toList()));
 
         Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
-        for(int i=0; i<pidList.size(); i++) {
+        for (int i = 0; i < pidList.size(); i++) {
             SetParameterValueRequest r = request.getRequest(i);
             ParameterWithId pid = pidList.get(i);
             Parameter p = pid.getParameter();
             org.yamcs.parameter.ParameterValue pv;
-            if(pid.getPath()==null) {
+            if (pid.getPath() == null) {
                 pv = new org.yamcs.parameter.ParameterValue(p);
             } else {
                 pv = new PartialParameterValue(p, pid.getPath());

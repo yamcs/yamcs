@@ -54,65 +54,47 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="parameter">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Parameter</th>
+        <ng-container matColumnDef="source">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Source</th>
           <td mat-cell *matCellDef="let alarm">
-            <a [routerLink]="['/mdb/parameters/', alarm.triggerValue.id.name]"
-              [queryParams]="{instance: instance.name}">
-              {{ alarm.triggerValue.id.name }}
-            </a>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="spaceSystem">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Space System</th>
-          <td mat-cell *matCellDef="let alarm">
-            <a [routerLink]="['/mdb/parameters/', alarm.triggerValue.id.name]"
-                [queryParams]="{instance: instance.name}">
-              {{ alarm.triggerValue.id.name }}
-            </a>
+            <ng-container [ngSwitch]="alarm.type">
+              <ng-container *ngSwitchCase="'PARAMETER'">
+                <a [routerLink]="['/monitor/parameters' + alarm.id.namespace + '/' + alarm.id.name]"
+                   [queryParams]="{instance: instance.name}">
+                  {{ alarm.id.namespace }}/{{ alarm.id.name }}
+                </a>
+              </ng-container>
+              <ng-container *ngSwitchCase="'EVENT'">
+                {{ alarm.id.namespace }}/{{ alarm.id.name }}
+              </ng-container>
+            </ng-container>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="time">
           <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Alarm Time</th>
           <td mat-cell *matCellDef="let alarm">
-            <span [matTooltip]="alarm.triggerValue.generationTimeUTC | datetime">
-              <app-ago [time]="alarm.triggerValue.generationTimeUTC"></app-ago>
+            <span [matTooltip]="alarm.triggerTime | datetime">
+              <app-ago [time]="alarm.triggerTime"></app-ago>
             </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="currentValue">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Current Value</th>
-          <td mat-cell *matCellDef="let alarm">
-            <app-expirable [pval]="alarm.currentValue">
-              <app-alarm-level [level]="alarm.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
-              &nbsp;{{ alarm.currentValue.engValue | value }}
-              <span *ngIf="alarm.currentValue.rangeCondition === 'LOW'">&#8595;</span>
-              <span *ngIf="alarm.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
-            </app-expirable>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="severity">
           <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Severity</th>
           <td mat-cell *matCellDef="let alarm">
-            <app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level>
+            <app-alarm-level [level]="alarm.severity"></app-alarm-level>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Alarm Type</th>
-          <td mat-cell *matCellDef="let alarm">Out of Limits</td>
-        </ng-container>
-
-        <ng-container matColumnDef="value">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Trigger Value</th>
-          <td mat-cell *matCellDef="let alarm" class="alert">
-            {{ alarm.triggerValue.engValue | value }}
-            <span *ngIf="alarm.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
-            <span *ngIf="alarm.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Alarm Type</th>
+          <td mat-cell *matCellDef="let alarm">
+            <ng-container [ngSwitch]="alarm.type">
+              <ng-container *ngSwitchCase="'PARAMETER'">Parameter</ng-container>
+              <ng-container *ngSwitchCase="'EVENT'">Event</ng-container>
+              <ng-container *ngSwitchDefault>-</ng-container>
+            </ng-container>
           </td>
         </ng-container>
 
@@ -120,7 +102,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 90px">Violations</th>
           <td mat-cell *matCellDef="let alarm" style="text-align: right">
             {{ alarm.violations | number }}
-            ({{ ((alarm.violations / alarm.valueCount) * 100) | number: '1.2-2' }}%)
+            ({{ ((alarm.violations / alarm.count) * 100) | number: '1.2-2' }}%)
           </td>
         </ng-container>
 

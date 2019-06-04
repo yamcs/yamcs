@@ -249,7 +249,7 @@ export class DyDataSource {
 
   private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
     const dyAnnotations: DyAnnotation[] = [];
-    for (const alarm of alarms) {
+    /*for (const alarm of alarms) {
       const t = new Date();
       t.setTime(Date.parse(alarm.triggerValue.generationTimeUTC));
       const value = convertValueToNumber(alarm.triggerValue.engValue);
@@ -268,7 +268,7 @@ export class DyDataSource {
           // attachAtBottom: true,
         });
       }
-    }
+    }*/
     return dyAnnotations;
   }
 

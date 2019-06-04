@@ -171,6 +171,10 @@ export interface ReplaySpeed {
   param: number;
 }
 
+export interface AlarmSubscriptionRequest {
+  detail?: boolean;
+}
+
 export interface ProcessorSubscriptionRequest {
   allProcessors?: boolean;
   allInstances?: boolean;

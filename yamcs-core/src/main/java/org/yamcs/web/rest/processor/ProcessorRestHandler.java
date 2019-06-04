@@ -15,6 +15,7 @@ import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
@@ -24,6 +25,7 @@ import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -194,9 +196,14 @@ public class ProcessorRestHandler extends RestHandler {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
-            AlarmServer<Parameter, ParameterValue> alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            AlarmServer<Parameter, ParameterValue> alarmServer = processor.getParameterRequestManager()
+                    .getAlarmServer();
             for (ActiveAlarm<ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
-                responseb.addParameterAlarm(ProcessorHelper.toParameterAlarmData(AlarmNotificationType.ACTIVE, alarm));
+                responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
+            }
+            EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
+            for (ActiveAlarm<Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
+                responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
             }
         }
         completeOK(req, responseb.build());

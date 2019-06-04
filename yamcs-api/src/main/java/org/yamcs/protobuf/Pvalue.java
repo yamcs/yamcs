@@ -9359,48 +9359,47 @@ public final class Pvalue {
     java.lang.String[] descriptorData = {
       "\n\"yamcs/protobuf/pvalue/pvalue.proto\022\025ya" +
       "mcs.protobuf.pvalue\032\032yamcs/protobuf/yamc" +
-      "s.proto\032\034yamcs/protobuf/mdb/mdb.proto\032\037g" +
-      "oogle/protobuf/timestamp.proto\"\263\004\n\016Param" +
-      "eterValue\022)\n\002id\030\001 \001(\0132\035.yamcs.protobuf.N" +
-      "amedObjectId\022\'\n\010rawValue\030\002 \001(\0132\025.yamcs.p" +
-      "rotobuf.Value\022\'\n\010engValue\030\003 \001(\0132\025.yamcs." +
-      "protobuf.Value\022\027\n\017acquisitionTime\030\004 \001(\003\022" +
-      "\026\n\016generationTime\030\005 \001(\003\022C\n\021acquisitionSt" +
-      "atus\030\006 \001(\0162(.yamcs.protobuf.pvalue.Acqui" +
-      "sitionStatus\022\030\n\020processingStatus\030\007 \001(\010\022A" +
-      "\n\020monitoringResult\030\010 \001(\0162\'.yamcs.protobu" +
-      "f.pvalue.MonitoringResult\022=\n\016rangeCondit" +
-      "ion\030\t \001(\0162%.yamcs.protobuf.pvalue.RangeC" +
-      "ondition\022\032\n\022acquisitionTimeUTC\030\013 \001(\t\022\031\n\021" +
-      "generationTimeUTC\030\014 \001(\t\0222\n\nalarmRange\030\031 " +
-      "\003(\0132\036.yamcs.protobuf.mdb.AlarmRange\022\024\n\014e" +
-      "xpireMillis\030\032 \001(\003\022\021\n\tnumericId\030\033 \001(\r\"\242\002\n" +
-      "\017ParameterStatus\022C\n\021acquisitionStatus\030\001 " +
-      "\001(\0162(.yamcs.protobuf.pvalue.AcquisitionS" +
-      "tatus\022A\n\020monitoringResult\030\002 \001(\0162\'.yamcs." +
+      "s.proto\032\034yamcs/protobuf/mdb/mdb.proto\"\263\004" +
+      "\n\016ParameterValue\022)\n\002id\030\001 \001(\0132\035.yamcs.pro" +
+      "tobuf.NamedObjectId\022\'\n\010rawValue\030\002 \001(\0132\025." +
+      "yamcs.protobuf.Value\022\'\n\010engValue\030\003 \001(\0132\025" +
+      ".yamcs.protobuf.Value\022\027\n\017acquisitionTime" +
+      "\030\004 \001(\003\022\026\n\016generationTime\030\005 \001(\003\022C\n\021acquis" +
+      "itionStatus\030\006 \001(\0162(.yamcs.protobuf.pvalu" +
+      "e.AcquisitionStatus\022\030\n\020processingStatus\030" +
+      "\007 \001(\010\022A\n\020monitoringResult\030\010 \001(\0162\'.yamcs." +
       "protobuf.pvalue.MonitoringResult\022=\n\016rang" +
-      "eCondition\030\003 \001(\0162%.yamcs.protobuf.pvalue" +
-      ".RangeCondition\0222\n\nalarmRange\030\004 \003(\0132\036.ya" +
-      "mcs.protobuf.mdb.AlarmRange\022\024\n\014expireMil" +
-      "lis\030\005 \001(\003\"\230\001\n\rParameterData\0228\n\tparameter" +
-      "\030\001 \003(\0132%.yamcs.protobuf.pvalue.Parameter" +
-      "Value\022\r\n\005group\030\002 \001(\t\022\026\n\016generationTime\030\003" +
-      " \001(\003\022\016\n\006seqNum\030\004 \001(\005\022\026\n\016subscriptionId\030\005" +
-      " \001(\005\"\220\001\n\nTimeSeries\0228\n\006sample\030\001 \003(\0132(.ya" +
-      "mcs.protobuf.pvalue.TimeSeries.Sample\032H\n" +
-      "\006Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003mi" +
-      "n\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005\"\242\001\n\006Rang" +
-      "es\0222\n\005range\030\001 \003(\0132#.yamcs.protobuf.pvalu" +
-      "e.Ranges.Range\032d\n\005Range\022\021\n\ttimeStart\030\001 \001" +
-      "(\t\022\020\n\010timeStop\030\002 \001(\t\022\'\n\010engValue\030\003 \001(\0132\025" +
-      ".yamcs.protobuf.Value\022\r\n\005count\030\004 \001(\005*M\n\021" +
-      "AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_R" +
-      "ECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*o\n\020M" +
-      "onitoringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMI" +
-      "TS\020\001\022\t\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n\010DISTRESS" +
-      "\020\r\022\014\n\010CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n\016RangeCon" +
-      "dition\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022org.yamcs.p" +
-      "rotobuf"
+      "eCondition\030\t \001(\0162%.yamcs.protobuf.pvalue" +
+      ".RangeCondition\022\032\n\022acquisitionTimeUTC\030\013 " +
+      "\001(\t\022\031\n\021generationTimeUTC\030\014 \001(\t\0222\n\nalarmR" +
+      "ange\030\031 \003(\0132\036.yamcs.protobuf.mdb.AlarmRan" +
+      "ge\022\024\n\014expireMillis\030\032 \001(\003\022\021\n\tnumericId\030\033 " +
+      "\001(\r\"\242\002\n\017ParameterStatus\022C\n\021acquisitionSt" +
+      "atus\030\001 \001(\0162(.yamcs.protobuf.pvalue.Acqui" +
+      "sitionStatus\022A\n\020monitoringResult\030\002 \001(\0162\'" +
+      ".yamcs.protobuf.pvalue.MonitoringResult\022" +
+      "=\n\016rangeCondition\030\003 \001(\0162%.yamcs.protobuf" +
+      ".pvalue.RangeCondition\0222\n\nalarmRange\030\004 \003" +
+      "(\0132\036.yamcs.protobuf.mdb.AlarmRange\022\024\n\014ex" +
+      "pireMillis\030\005 \001(\003\"\230\001\n\rParameterData\0228\n\tpa" +
+      "rameter\030\001 \003(\0132%.yamcs.protobuf.pvalue.Pa" +
+      "rameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016generatio" +
+      "nTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005\022\026\n\016subscript" +
+      "ionId\030\005 \001(\005\"\220\001\n\nTimeSeries\0228\n\006sample\030\001 \003" +
+      "(\0132(.yamcs.protobuf.pvalue.TimeSeries.Sa" +
+      "mple\032H\n\006Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(" +
+      "\001\022\013\n\003min\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005\"\242" +
+      "\001\n\006Ranges\0222\n\005range\030\001 \003(\0132#.yamcs.protobu" +
+      "f.pvalue.Ranges.Range\032d\n\005Range\022\021\n\ttimeSt" +
+      "art\030\001 \001(\t\022\020\n\010timeStop\030\002 \001(\t\022\'\n\010engValue\030" +
+      "\003 \001(\0132\025.yamcs.protobuf.Value\022\r\n\005count\030\004 " +
+      "\001(\005*M\n\021AcquisitionStatus\022\014\n\010ACQUIRED\020\000\022\020" +
+      "\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED" +
+      "\020\003*o\n\020MonitoringResult\022\014\n\010DISABLED\020\000\022\r\n\t" +
+      "IN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n\010D" +
+      "ISTRESS\020\r\022\014\n\010CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n\016R" +
+      "angeCondition\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022org." +
+      "yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9415,7 +9414,6 @@ public final class Pvalue {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Mdb.getDescriptor(),
-          com.google.protobuf.TimestampProto.getDescriptor(),
         }, assigner);
     internal_static_yamcs_protobuf_pvalue_ParameterValue_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -9461,7 +9459,6 @@ public final class Pvalue {
         new java.lang.String[] { "TimeStart", "TimeStop", "EngValue", "Count", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Mdb.getDescriptor();
-    com.google.protobuf.TimestampProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

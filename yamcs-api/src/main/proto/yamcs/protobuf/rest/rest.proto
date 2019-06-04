@@ -200,9 +200,7 @@ message EditTagRequest {
 }
 
 message ListAlarmsResponse {
-  repeated alarms.ParameterAlarmData parameterAlarm = 1;
-  repeated alarms.EventAlarmData eventAlarm = 2;
-  repeated alarms.AlarmData alarm = 3;
+  repeated alarms.AlarmData alarm = 1;
 }
 
 message EditAlarmRequest {
