@@ -2,6 +2,7 @@ package org.yamcs.utils;
 
 import static org.junit.Assert.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -19,7 +20,31 @@ public class IntArrayTest {
         assertEquals(3, s1.size());
     
         checkSortedAndEqual(s1, l);
-        
+    }
+    
+    @Test
+    public void testSortSorted50000() {
+        int n = 50000;
+        IntArray a = new IntArray();
+        for(int i=0; i<n; i++) {
+           a.add(1);
+        }
+        List<Integer> l = toList(a);
+        a.sort(l);
+        System.out.println("a.count: "+a.count);
+        assertEquals(n, a.size());
+    
+        checkSortedAndEqual(a, l);
+    }
+
+    @Test
+    public void testSortEquals() {
+        IntArray s1 = IntArray.wrap(3, 3, 3);
+        List<Integer> l = toList(s1);
+        s1.sort(l);
+        assertEquals(3, s1.size());
+    
+        checkSortedAndEqual(s1, l);
     }
     
     @Test
@@ -42,7 +67,6 @@ public class IntArrayTest {
         assertEquals(n, a.size());
     
         checkSortedAndEqual(a, l);
-        
     }
     
     @Test
@@ -60,7 +84,7 @@ public class IntArrayTest {
         for(int i=0; i<a.size(); i++) {
             assertEquals(a.get(i), (int)l.get(i));
             if(i>0) {
-                assertTrue(a.get(i-1) < a.get(i));
+                assertTrue(a.get(i-1) <= a.get(i));
             }
         }
         

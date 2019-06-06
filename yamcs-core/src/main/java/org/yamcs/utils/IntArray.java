@@ -103,7 +103,7 @@ public class IntArray {
     public IntStream stream() {
         return Arrays.stream(a, 0, length);
     }
-    
+
     public boolean isEmpty() {
         return a.length == 0;
     }
@@ -175,7 +175,9 @@ public class IntArray {
      * See {@link Arrays#binarySearch(int[], int)} for details.
      * 
      * If the array is not sorted, the behaviour is undefined.
-     * @param x - the value to be searched for
+     * 
+     * @param x
+     *            - the value to be searched for
      * @return
      */
     public int binarySearch(int x) {
@@ -194,34 +196,41 @@ public class IntArray {
         if (list.size() != length) {
             throw new IllegalArgumentException("The list has not the same number of elements as the array");
         }
-        quickSort(0, length-1, list);
+        quickSort(0, length - 1, list);
     }
-    
+
     private void quickSort(int lo, int hi, List<?> list) {
-        if (lo < hi) {
-            int partitionIndex = partition(lo, hi, list);
-     
-            quickSort(lo, partitionIndex-1, list);
-            quickSort(partitionIndex+1, hi, list);
+        while (lo < hi) {
+            int pi = partition(lo, hi, list);
+            if (pi - lo < hi - pi) {
+                quickSort(lo, pi - 1, list);
+                lo = pi + 1;
+            } else {
+                quickSort(pi + 1, hi, list);
+                hi = pi - 1;
+            }
         }
     }
-    
+
+    public int count = 0;
+
     private int partition(int lo, int hi, List<?> list) {
         int pivot = a[hi];
-        int i = lo-1;
-     
+        int i = lo - 1;
+
         for (int j = lo; j < hi; j++) {
-            if (a[j] <= pivot) {
+            count++;
+            if (a[j] < pivot) {
                 i++;
                 swap(i, j, list);
             }
         }
-     
-        swap(i+1, hi, list);
-     
-        return i+1;
+
+        swap(i + 1, hi, list);
+
+        return i + 1;
     }
-    
+
     private void swap(int i, int j, List<?> list) {
         int tmp = a[i];
         a[i] = a[j];
