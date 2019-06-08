@@ -18,12 +18,6 @@ public class TmTransferFrame extends AbstractTransferFrame {
         super(data, spacecraftId, virtualChannelId);
     }
 
-    
-    public static TmTransferFrame parseData(byte[] data) throws CorruptedFrameException {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-
     @Override
     public boolean containsOnlyIdleData() {
         return idle;
