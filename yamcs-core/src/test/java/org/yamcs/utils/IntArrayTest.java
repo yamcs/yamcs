@@ -2,7 +2,6 @@ package org.yamcs.utils;
 
 import static org.junit.Assert.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
