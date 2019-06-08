@@ -4,7 +4,7 @@ ifeq ($(PREFIX),)
 	PREFIX := /usr/local
 endif
 
-PACKAGE := $(shell find distribution/target -name 'yamcs*.tar.gz' -not -name 'yamcs-client*')
+PACKAGE := $(shell find distribution -name 'yamcs*.tar.gz' -not -name 'yamcs-client*')
 
 .PHONY: all
 all: build
@@ -15,10 +15,14 @@ clean:
 
 .PHONY: build
 build:
-	@mvn install -DskipTests
+	@mvn install -DskipTests -Dassembly.skipAssembly
 
 .PHONY: rebuild
 rebuild: clean all
+
+.PHONY: package
+package: build
+	@mvn -f distribution/pom.xml package
 
 .PHONY: test
 test:
