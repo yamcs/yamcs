@@ -1,20 +1,15 @@
 package org.yamcs.simulation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import org.yamcs.spi.Plugin;
 
 public class SimulationPlugin implements Plugin {
 
     private String version;
 
-    public SimulationPlugin() throws IOException {
-        try (InputStream in = SimulationPlugin.class.getResourceAsStream("/META-INF/org.yamcs.simulation.properties")) {
-            Properties props = new Properties();
-            props.load(in);
-            version = props.getProperty("version");
+    public SimulationPlugin() {
+        Package pkg = getClass().getPackage();
+        if (pkg != null) {
+            version = pkg.getImplementationVersion();
         }
     }
 
