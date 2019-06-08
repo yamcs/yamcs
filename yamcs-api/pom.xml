@@ -13,10 +13,6 @@
   <name>Yamcs API</name>
   <description>Used by external clients to communicate with Yamcs</description>
 
-  <build>
-    <finalName>${project.artifactId}-${project.version}</finalName>
-  </build>
-
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -71,4 +67,21 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <finalName>${project.artifactId}-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
