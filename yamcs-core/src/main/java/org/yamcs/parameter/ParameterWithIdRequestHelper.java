@@ -205,7 +205,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         return prm;
     }
 
-    public int subscribeAll(String namespace, User user) throws NoPermissionException {
+    public int subscribeAll(User user) throws NoPermissionException {
         checkParameterPrivilege(user, ".*");
         subscribeAllId = prm.subscribeAll(this);
         return subscribeAllId;

@@ -186,12 +186,11 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
 
     @Override
     public WebSocketReply subscribeAll(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        StringMessage stringMessage = decoder.decodeMessageData(ctx, StringMessage.newBuilder()).build();
         if (allSubscriptionId != -1) {
             throw new WebSocketException(ctx.getRequestId(), "Already subscribed for this client");
         }
         try {
-            allSubscriptionId = pidrm.subscribeAll(stringMessage.getMessage(), client.getUser());
+            allSubscriptionId = pidrm.subscribeAll(client.getUser());
         } catch (NoPermissionException e) {
             throw new WebSocketException(ctx.getRequestId(), "No permission", e);
         }
