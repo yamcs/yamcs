@@ -134,6 +134,10 @@ public class FileSystemBucket implements Bucket {
         }
     }
 
+    public Path getBucketRoot() {
+        return root;
+    }
+
     private ObjectProperties toObjectProperties(String objectName, Path file, BasicFileAttributes attrs) {
         ObjectProperties.Builder props = ObjectProperties.newBuilder();
         props.setName(objectName);

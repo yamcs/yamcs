@@ -31,10 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.State;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.ManagementService;
@@ -51,6 +47,10 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yaml.snakeyaml.Yaml;
+
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  *
@@ -117,7 +117,6 @@ public class YamcsServer {
      * @throws IOException
      * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
     static List<ServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig)
             throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
@@ -392,7 +391,7 @@ public class YamcsServer {
     public YamcsServerInstance restartInstance(String instanceName) throws IOException {
         YamcsServerInstance ysi = instances.get(instanceName);
 
-        if (ysi.state() == InstanceState.RUNNING || ysi.state()==InstanceState.FAILED) {
+        if (ysi.state() == InstanceState.RUNNING || ysi.state() == InstanceState.FAILED) {
             try {
                 ysi.stop();
             } catch (IllegalStateException e) {
@@ -549,7 +548,7 @@ public class YamcsServer {
         }
         try {
             String tmplResource = "/instance-templates/" + template + "/template.yaml";
-            InputStream is = YConfiguration.resolver.getConfigurationStream(tmplResource);
+            InputStream is = YConfiguration.getResolver().getConfigurationStream(tmplResource);
 
             StringBuilder buf = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
@@ -797,7 +796,5 @@ public class YamcsServer {
     public static YamcsServer getServer() {
         return server;
     }
-
-  
 
 }

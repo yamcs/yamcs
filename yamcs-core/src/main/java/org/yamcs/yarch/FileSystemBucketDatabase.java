@@ -88,6 +88,10 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         Files.delete(path);
     }
 
+    public Path getRootPath() {
+        return root;
+    }
+
     private static long calculateSize(Path dir) throws IOException {
         AtomicLong size = new AtomicLong(0);
         Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);

@@ -351,7 +351,6 @@ public class YConfiguration {
         }
     }
 
-   
     /**
      * 
      * Please use {@link #getConfig} to get a child config instead of accessing the map directly
@@ -458,10 +457,10 @@ public class YConfiguration {
         }
         return getDouble(key);
     }
+
     /**
      * This is the same like the method above but will create a {class: "string"} for strings rather than throwing an
-     * exception.
-     * It is to be used when loading service list which can be specified just by the class name.
+     * exception. It is to be used when loading service list which can be specified just by the class name.
      * 
      * @param key
      * @return
@@ -479,7 +478,7 @@ public class YConfiguration {
                 if (o1 instanceof Map) {
                     r.add(new YConfiguration(this, key + "[" + i + "]", (Map) o1));
                 } else if (o1 instanceof String) {
-                    Map<String, Object> m1 = new HashMap<String, Object>();
+                    Map<String, Object> m1 = new HashMap<>();
                     m1.put("class", o1);
                     r.add(new YConfiguration(this, key + "[" + i + "]", (Map) m1));
                 } else {
@@ -493,7 +492,6 @@ public class YConfiguration {
         return r;
     }
 
-  
     @SuppressWarnings("unchecked")
     public <T> List<T> getSubList(String key, String key1) throws ConfigurationException {
         checkKey(key, Map.class);
@@ -692,6 +690,10 @@ public class YConfiguration {
         YConfiguration.resolver = resolver;
     }
 
+    public static YConfigurationResolver getResolver() {
+        return YConfiguration.resolver;
+    }
+
     /**
      * Default config file resolver. Looks for configuration files in the classpath and in the user config directory
      * (~/.yamcs/).
@@ -750,9 +752,8 @@ public class YConfiguration {
 
     /**
      * Returns a value of an enumeration that matches ignoring case the string obtained from the config with the given
-     * key.
-     * Throws an Configurationexception if the key does not exist in config or if it does not map to a valid enumeration
-     * value
+     * key. Throws an Configurationexception if the key does not exist in config or if it does not map to a valid
+     * enumeration value
      * 
      * @param config
      * @param key
@@ -781,8 +782,7 @@ public class YConfiguration {
     }
 
     /**
-     * Create a new configuration wrapping around a map
-     * The resulting config will have no parent
+     * Create a new configuration wrapping around a map The resulting config will have no parent
      * 
      * @param m
      * @return
@@ -821,7 +821,7 @@ public class YConfiguration {
             sb.append(c.rootLocation).append(":");
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
