@@ -177,7 +177,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         }
         int subscriptionId = 0;
         try {
-            subscriptionId = prh.subscribeAll(namespace, null);
+            subscriptionId = prh.subscribeAll(null);
             subscriptions.put(subscriptionId, dataAddress);
             yclient.sendReply(replyto, "OK", null);
         } catch (NoPermissionException e) {
