@@ -53,6 +53,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     // how often to check expiration
     private static long CHECK_EXPIRATION_INTERVAL = 1000;
     final static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    int subscribeAllId = -1;
 
     public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
         this.prm = prm;
@@ -206,7 +207,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public int subscribeAll(String namespace, User user) throws NoPermissionException {
         checkParameterPrivilege(user, ".*");
-        return prm.subscribeAll(this);
+        subscribeAllId = prm.subscribeAll(this);
+        return subscribeAllId;
     }
 
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
@@ -264,6 +266,10 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
      */
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
+        if(subscriptionId == subscribeAllId) {
+            updateAllSubscription(subscriptionId, items);
+            return;
+        }
         Subscription subscription = subscriptions.get(subscriptionId);
         if (subscription == null) { // probably the subscription has just been removed
             log.debug("Received an updateItems for an unknown subscription {}", subscriptionId);
@@ -285,6 +291,14 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             for (ParameterValue pv : items) {
                 addValueForAllSubscribedIds(plist, subscription, pv);
             }
+        }
+        listener.update(subscriptionId, plist);
+    }
+
+    private void updateAllSubscription(int subscriptionId, List<ParameterValue> items) {
+        List<ParameterValueWithId> plist = new ArrayList<>(items.size());
+        for(ParameterValue pv: items) {
+            plist.add(new ParameterValueWithId(pv, NamedObjectId.newBuilder().setName(pv.getParameterQualifiedNamed()).build()));
         }
         listener.update(subscriptionId, plist);
     }
@@ -439,6 +453,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     public void quit() {
         for (int subscriptionId : subscriptions.keySet()) {
             prm.removeRequest(subscriptionId);
+        }
+        if(subscribeAllId!=-1) {
+            prm.unsubscribeAll(subscribeAllId);
         }
     }
 
