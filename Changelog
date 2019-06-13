@@ -1,3 +1,8 @@
+Version 4.10.0 released 13-Jun-2019
+- added a UDP TC data link
+- added pre/post processors for cFS
+- added initial CFDP support
+
 Version 4.9.5 released 9-May-2019
 - fixed bug in 4.9.4 that causes the websocket packet subscriptions to fail (meaning
 that Packet Viewer was not working)

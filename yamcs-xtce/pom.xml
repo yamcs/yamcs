@@ -6,7 +6,7 @@
     <artifactId>yamcs</artifactId>
     <groupId>org.yamcs</groupId>
 
-    <version>4.9.6-SNAPSHOT</version>
+    <version>4.10.0</version>
     <relativePath>..</relativePath>
   </parent>
 
