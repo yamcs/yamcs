@@ -18,6 +18,19 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartDocument;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -43,6 +56,8 @@ import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Container;
@@ -63,6 +78,9 @@ import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatDataEncoding.Encoding;
 import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValue;
@@ -73,12 +91,6 @@ import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.MathOperator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.CommandContainer;
-import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.util.UnresolvedNameReference;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
-import org.yamcs.xtce.Repeat;
-import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -92,6 +104,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.ReferenceTime;
+import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
@@ -103,33 +116,19 @@ import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
-import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.TriggeredMathOperation;
+import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumerationRange;
-import org.yamcs.xtce.Header;
-import org.yamcs.xtce.InputParameter;
-import org.yamcs.xtce.IntegerArgumentType;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartDocument;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.UnresolvedNameReference;
+import org.yamcs.xtce.util.UnresolvedParameterReference;
 
 /**
- * This class reads the XTCE XML files. XML document is accessed with the use of
- * the Stax Iterator API.
+ * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
  * 
  * @author mu
  * 
@@ -267,6 +266,8 @@ public class XtceStaxReader {
     private static final String XTCE_DIMENSION_LIST = "DimensionList";
     private static final String XTCE_SIZE = "Size";
     private static final String XTCE_DIMENSION = "Dimension";
+    private static final String XTCE_STARTING_INDEX = "StartingIndex";
+    private static final String XTCE_ENDING_INDEX = "EndingIndex";
     private static final String XTCE_ANCILLARY_DATA_SET = "AncillaryDataSet";
     private static final String XTCE_VALID_RANGE = "ValidRange";
     private static final String XTCE_BINARY_ENCODING = "BinaryEncoding";
@@ -274,7 +275,7 @@ public class XtceStaxReader {
     private static final String XTCE_VERIFIER_SET = "VerifierSet";
     private static final String XTCE_CONTAINER_REF = "ContainerRef";
     private static final String XTCE_CHECK_WINDOW = "CheckWindow";
-    
+
     /**
      * Logging subsystem
      */
@@ -293,8 +294,8 @@ public class XtceStaxReader {
     /**
      * Statistics about the skipped sections. (good for overview about unimplemented features)
      */
-    private Map<String, Integer> xtceSkipStatistics = new HashMap<String, Integer>();
-    private Set<String> excludedContainers = new HashSet<String>();
+    private Map<String, Integer> xtceSkipStatistics = new HashMap<>();
+    private Set<String> excludedContainers = new HashSet<>();
     String fileName;
 
     /**
@@ -358,14 +359,15 @@ public class XtceStaxReader {
                     spaceSystem.getParameterCount(true), spaceSystem.getSequenceContainerCount(true),
                     spaceSystem.getMetaCommandCount(true));
         } catch (IllegalArgumentException e) {
+            e.printStackTrace(); ///
             throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
         }
         return spaceSystem;
     }
 
     /**
-     * Method called on start document event. Currently just logs the
-     * information contained in the xml preamble of the parsed file.
+     * Method called on start document event. Currently just logs the information contained in the xml preamble of the
+     * parsed file.
      * 
      * @param start
      *            Start document event object
@@ -375,8 +377,8 @@ public class XtceStaxReader {
     }
 
     /**
-     * Start of reading at the root of the document. According to the XTCE
-     * schema the root element is &lt;SpaceSystem&gt;
+     * Start of reading at the root of the document. According to the XTCE schema the root element is
+     * &lt;SpaceSystem&gt;
      * 
      * @throws XMLStreamException
      */
@@ -428,8 +430,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * Extraction of the AliasSet section Current implementation does nothing,
-     * just skips whole section
+     * Extraction of the AliasSet section Current implementation does nothing, just skips whole section
      * 
      * @return Set of aliases defined for the object
      * @throws XMLStreamException
@@ -456,8 +457,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * Extraction of the AliasSet section Current implementation does nothing,
-     * just skips whole section
+     * Extraction of the AliasSet section Current implementation does nothing, just skips whole section
      * 
      * @throws XMLStreamException
      */
@@ -479,8 +479,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * Extraction of the Header section Current implementation does nothing,
-     * just skips whole section
+     * Extraction of the Header section Current implementation does nothing, just skips whole section
      * 
      * @param spaceSystem
      * 
@@ -491,11 +490,15 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         Header h = new Header();
 
-        String value = readMandatoryAttribute("version", xmlEvent.asStartElement());
-        h.setVersion(value);
+        String value = readAttribute("version", xmlEvent.asStartElement(), null);
+        if (value != null) {
+            h.setVersion(value);
+        }
 
-        value = readMandatoryAttribute("date", xmlEvent.asStartElement());
-        h.setDate(value);
+        value = readAttribute("date", xmlEvent.asStartElement(), null);
+        if (value != null) {
+            h.setDate(value);
+        }
         spaceSystem.setHeader(h);
 
         while (true) {
@@ -921,7 +924,7 @@ public class XtceStaxReader {
     private List<NumericContextAlarm> readNumericContextAlarmList(SpaceSystem spaceSystem)
             throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_CONTEXT_ALARM_LIST);
-        List<NumericContextAlarm> contextAlarmList = new ArrayList<NumericContextAlarm>();
+        List<NumericContextAlarm> contextAlarmList = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -1243,8 +1246,10 @@ public class XtceStaxReader {
 
         // sizeInBits attribute
         int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 8);
-        if(sizeInBits<0 || sizeInBits>64) {
-            throw new XMLStreamException("Invalid sizeInBits "+sizeInBits+" specified for integer data encoding. Supported are between 0 and 64.",
+        if (sizeInBits < 0 || sizeInBits > 64) {
+            throw new XMLStreamException(
+                    "Invalid sizeInBits " + sizeInBits
+                            + " specified for integer data encoding. Supported are between 0 and 64.",
                     xmlEvent.getLocation());
         }
         integerDataEncoding = new IntegerDataEncoding(sizeInBits);
@@ -1473,7 +1478,7 @@ public class XtceStaxReader {
         log.trace(XTCE_SPLINE_CALIBRATOR);
         checkStartElementPreconditions();
 
-        ArrayList<SplinePoint> splinePoints = new ArrayList<SplinePoint>();
+        ArrayList<SplinePoint> splinePoints = new ArrayList<>();
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1487,8 +1492,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * Instantiate SplinePoint element.
-     * This element has two required attributes: raw, calibrated
+     * Instantiate SplinePoint element. This element has two required attributes: raw, calibrated
      * 
      * @return
      * @throws XMLStreamException
@@ -1515,7 +1519,7 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         int maxExponent = 0;
-        HashMap<Integer, Double> polynome = new HashMap<Integer, Double>();
+        HashMap<Integer, Double> polynome = new HashMap<>();
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1556,7 +1560,7 @@ public class XtceStaxReader {
     private List<UnitType> readUnitSet() throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_UNIT_SET);
 
-        List<UnitType> units = new ArrayList<UnitType>();
+        List<UnitType> units = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -1666,7 +1670,7 @@ public class XtceStaxReader {
     private List<EnumerationContextAlarm> readEnumerationContextAlarmList(SpaceSystem spaceSystem,
             EnumeratedParameterType enumParamType) throws XMLStreamException {
         log.trace(XTCE_CONTEXT_ALARM_LIST);
-        List<EnumerationContextAlarm> contextAlarmList = new ArrayList<EnumerationContextAlarm>();
+        List<EnumerationContextAlarm> contextAlarmList = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -2246,11 +2250,36 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_DIMENSION)) {
-                skipXtceSection(XTCE_DIMENSION);
-            } else if (isStartElementWithName(XTCE_SIZE)) {
+                l.add(readDimension(spaceSystem));
+            } else if (isStartElementWithName(XTCE_SIZE)) { // FIXME not in XTCE ?
                 l.add(readIntegerValue(spaceSystem));
             } else if (isEndElementWithName(XTCE_DIMENSION_LIST)) {
                 return l;
+            } else {
+                logUnknown();
+            }
+        }
+    }
+
+    // Currently only reads an index range like 0..30 which is interpreted as
+    // size: 31.
+    private IntegerValue readDimension(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_DIMENSION);
+        checkStartElementPreconditions();
+
+        IntegerValue endingIndex = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_STARTING_INDEX)) {
+                skipXtceSection(XTCE_STARTING_INDEX); // Assume always '0'
+            } else if (isStartElementWithName(XTCE_ENDING_INDEX)) {
+                endingIndex = readIntegerValue(spaceSystem);
+            } else if (isEndElementWithName(XTCE_DIMENSION)) {
+                if (endingIndex != null && endingIndex instanceof FixedIntegerValue) {
+                    long v = ((FixedIntegerValue) endingIndex).getValue();
+                    return new FixedIntegerValue(v + 1);
+                }
+                throw new XMLStreamException("Dimension indexes must be specified with FixedValue");
             } else {
                 logUnknown();
             }
@@ -3068,7 +3097,7 @@ public class XtceStaxReader {
 
             if (xmlEvent.isStartElement() && xmlEvent.asStartElement().getName().getLocalPart().endsWith("Verifier")) {
                 CommandVerifier cmdVerifier = readVerifier(spaceSystem);
-                if(cmdVerifier!=null) {
+                if (cmdVerifier != null) {
                     mc.addVerifier(cmdVerifier);
                 }
             } else if (isEndElementWithName(XTCE_VERIFIER_SET)) {
@@ -3092,10 +3121,10 @@ public class XtceStaxReader {
                 readContainerRef(spaceSystem, cmdVerifier);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
                 cmdVerifier = new CommandVerifier(CommandVerifier.Type.ALGORITHM, stage);
-                
+
             } else if (isStartElementWithName(XTCE_CHECK_WINDOW)) {
                 CheckWindow cw = readCheckWindow(spaceSystem);
-                if(cmdVerifier !=null) {
+                if (cmdVerifier != null) {
                     cmdVerifier.setCheckWindow(cw);
                 }
             } else if (isEndElementWithName(tag)) {
@@ -3106,7 +3135,6 @@ public class XtceStaxReader {
         }
     }
 
-    
     private void readContainerRef(SpaceSystem spaceSystem, CommandVerifier cmdVerifier)
             throws XMLStreamException {
         String refName = readMandatoryAttribute("containerRef", xmlEvent.asStartElement());
@@ -3122,43 +3150,43 @@ public class XtceStaxReader {
             spaceSystem.addUnresolvedReference(nr);
         }
         xmlEvent = xmlEventReader.nextEvent();
-        if(!isEndElementWithName(XTCE_CONTAINER_REF)) {
+        if (!isEndElementWithName(XTCE_CONTAINER_REF)) {
             throw new IllegalStateException(XTCE_CONTAINER_REF + " end element expected");
         }
     }
-    
+
     private CheckWindow readCheckWindow(SpaceSystem spaceSystem)
             throws XMLStreamException {
         StartElement element = xmlEvent.asStartElement();
         String v = readAttribute("timeToStartChecking", element, null);
         long timeToStartChecking = v == null ? -1 : parseDuration(v);
-        
+
         long timeToStopChecking = parseDuration(readMandatoryAttribute("timeToStopChecking", element));
-        
+
         v = readAttribute("timeWindowIsRelativeTo", element, "timeLastVerifierPassed");
         CheckWindow.TimeWindowIsRelativeToType timeWindowIsRelativeTo;
-        if( "timeLastVerifierPassed".equals(v)) {
+        if ("timeLastVerifierPassed".equals(v)) {
             timeWindowIsRelativeTo = TimeWindowIsRelativeToType.LastVerifier;
         } else if ("commandRelease".equals(v)) {
             timeWindowIsRelativeTo = TimeWindowIsRelativeToType.CommandRelease;
         } else {
-            throw new XMLStreamException("Invalid value '"+v+"' for timeWindowIsRelativeTo");
+            throw new XMLStreamException("Invalid value '" + v + "' for timeWindowIsRelativeTo");
         }
-        
+
         return new CheckWindow(timeToStartChecking, timeToStopChecking, timeWindowIsRelativeTo);
-        
+
     }
-    
+
     long parseDuration(String v) {
         Duration d;
         try {
             d = DatatypeFactory.newInstance().newDuration(v);
         } catch (DatatypeConfigurationException e) {
-           throw new ConfigurationException(e);
+            throw new ConfigurationException(e);
         }
         return d.getTimeInMillis(new Date());
     }
-    
+
     private CommandContainer readCommandContainer(SpaceSystem spaceSystem, MetaCommand mc)
             throws XMLStreamException {
         log.trace(XTCE_COMMAND_CONTAINER);
@@ -3566,8 +3594,7 @@ public class XtceStaxReader {
      * 
      * @param localName
      *            Name of the element
-     * @return True if element is start element with the given name, otherwise
-     *         false
+     * @return True if element is start element with the given name, otherwise false
      */
     private boolean isStartElementWithName(String localName) {
         return (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT && xmlEvent
@@ -3575,13 +3602,12 @@ public class XtceStaxReader {
     }
 
     /**
-     * Test if the xmlEvent is of type END_ELEMENT and has particular local
-     * name. This test is used to identify the end of section.
+     * Test if the xmlEvent is of type END_ELEMENT and has particular local name. This test is used to identify the end
+     * of section.
      * 
      * @param localName
      *            Local name of the element (we neglect namespace for now)
-     * @return True if current xmlEvent is of type END_ELEMENT and has
-     *         particular local name, otherwise false
+     * @return True if current xmlEvent is of type END_ELEMENT and has particular local name, otherwise false
      */
     private boolean isEndElementWithName(String localName) {
         return (xmlEvent.getEventType() == XMLStreamConstants.END_ELEMENT && xmlEvent
@@ -3589,8 +3615,7 @@ public class XtceStaxReader {
     }
 
     /**
-     * Checks preconditions before the dedicated code for section reading will
-     * run
+     * Checks preconditions before the dedicated code for section reading will run
      * 
      * @throws IllegalStateException
      *             If the conditions are not met

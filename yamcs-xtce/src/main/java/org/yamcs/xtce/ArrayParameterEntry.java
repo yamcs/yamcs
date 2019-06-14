@@ -32,20 +32,21 @@ public class ArrayParameterEntry extends SequenceEntry {
      * sets the sizes of the extracted array. The length of the list has to match the
      * {@link ArrayParameterType#getNumberOfDimensions()}
      * 
-     * @throws IllegalArgumentException if the length of the list is not correct.
+     * @throws IllegalArgumentException
+     *             if the length of the list is not correct.
      */
     public void setSize(List<IntegerValue> list) {
-        if(list.isEmpty()) {
-            throw new IllegalArgumentException("dimensions sizes cannot be empty");
+        if (list.isEmpty()) {
+            throw new IllegalArgumentException("Dimension sizes cannot be empty");
         }
         this.dim = list;
         validateSize();
     }
 
-    public  List<IntegerValue> getSize() {
+    public List<IntegerValue> getSize() {
         return dim;
     }
-    
+
     private void validateSize() {
         if (dim != null && parameter != null) {
             ArrayParameterType ptype = (ArrayParameterType) parameter.getParameterType();
@@ -57,6 +58,7 @@ public class ArrayParameterEntry extends SequenceEntry {
         }
 
     }
+
     /**
      * 
      * @return the parameter referenced by this array entry
@@ -64,7 +66,7 @@ public class ArrayParameterEntry extends SequenceEntry {
     public Parameter getParameter() {
         return parameter;
     }
-    
+
     @Override
     public String toString() {
         return "ArrayParameterEntry position:" + getIndex() + ", container:" + container.getName() +
