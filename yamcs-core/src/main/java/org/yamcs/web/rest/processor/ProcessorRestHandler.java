@@ -201,7 +201,9 @@ public class ProcessorRestHandler extends RestHandler {
             for (ActiveAlarm<ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
                 responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
             }
-            EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
+        }
+        EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
+        if (eventAlarmServer != null) {
             for (ActiveAlarm<Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
                 responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
             }
