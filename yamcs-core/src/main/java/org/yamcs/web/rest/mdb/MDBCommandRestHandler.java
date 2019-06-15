@@ -54,7 +54,10 @@ public class MDBCommandRestHandler extends RestHandler {
         }
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
+        boolean details = req.getQueryParameterAsBoolean("details", false);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+
+        DetailLevel detailLevel = details ? DetailLevel.FULL : DetailLevel.SUMMARY;
         
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -69,13 +72,13 @@ public class MDBCommandRestHandler extends RestHandler {
                 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, detailLevel, req.getOptions()));
                 }
             }
         } else { // List all
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (matcher != null && !matcher.matches(cmd)) continue;
-                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, detailLevel, req.getOptions()));
             }
         }
         
