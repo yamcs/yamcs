@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.yamcs</groupId>
+    <artifactId>yamcs</artifactId>
+    <version>4.10.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>yamcs-web</artifactId>
+  <name>Yamcs Web</name>
+  <packaging>pom</packaging>
+
+  <!--
+    This maven module is used to publish a compiled version of the webapp during
+    release. It does not actually compile the webapp. We don't use Maven for that.
+
+    Invoke this using: mvn assembly:single
+  -->
+  <profiles>
+    <profile>
+      <id>package-webapp</id>
+      <activation>
+        <file>
+          <exists>packages/app/dist</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>webapp</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <descriptors>
+                <descriptor>yamcs-web.descriptor.xml</descriptor>
+              </descriptors>
+              <tarLongFileMode>gnu</tarLongFileMode>
+              <appendAssemblyId>false</appendAssemblyId>
+              <attach>true</attach>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
