@@ -31,9 +31,14 @@ public class SecurityStore {
 
     @SuppressWarnings("unchecked")
     private SecurityStore() {
-        YConfiguration yconf = YConfiguration.getConfiguration("security");
+        YConfiguration yconf = null;
+        if (YConfiguration.isDefined("security")) {
+            yconf = YConfiguration.getConfiguration("security");
+        } else {
+            yconf = YConfiguration.emptyConfig();
+        }
 
-        enabled = yconf.getBoolean("enabled");
+        enabled = yconf.getBoolean("enabled", false);
         if (enabled) {
             if (yconf.containsKey("authModules")) {
                 for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
@@ -49,16 +54,16 @@ public class SecurityStore {
         } else {
             log.warn("Security disabled");
             if (yconf.containsKey("unauthenticatedUser")) {
-                Map<String, Object> userProps = yconf.getMap("unauthenticatedUser");
-                String username = YConfiguration.getString(userProps, "username");
+                YConfiguration userProps = yconf.getConfig("unauthenticatedUser");
+                String username = userProps.getString("username");
                 if (username.isEmpty() || username.contains(":")) {
                     throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
                 }
 
                 unauthenticatedUser = new User(username);
-                unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
+                unauthenticatedUser.setSuperuser(userProps.getBoolean("superuser", false));
                 if (userProps.containsKey("privileges")) {
-                    Map<String, Object> privileges = YConfiguration.getMap(userProps, "privileges");
+                    Map<String, Object> privileges = userProps.getMap("privileges");
                     privileges.forEach((typeString, objects) -> {
                         if (typeString.equals("System")) {
                             for (String name : (List<String>) objects) {
