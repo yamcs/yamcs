@@ -8,47 +8,39 @@
 
   <artifactId>yamcs-web</artifactId>
   <name>Yamcs Web</name>
-  <packaging>pom</packaging>
 
   <!--
     This maven module is used to publish a compiled version of the webapp during
     release. It does not actually compile the webapp. We don't use Maven for that.
-
-    Invoke this using: mvn assembly:single
   -->
-  <profiles>
-    <profile>
-      <id>package-webapp</id>
-      <activation>
-        <file>
-          <exists>packages/app/dist</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>webapp</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-              </execution>
-            </executions>
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/target/webapp</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
             <configuration>
-              <descriptors>
-                <descriptor>yamcs-web.descriptor.xml</descriptor>
-              </descriptors>
-              <tarLongFileMode>gnu</tarLongFileMode>
-              <appendAssemblyId>false</appendAssemblyId>
-              <attach>true</attach>
+              <outputDirectory>${basedir}/target/webapp/static</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>packages/app/dist</directory>
+                </resource>
+              </resources>
             </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
