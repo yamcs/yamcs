@@ -14,15 +14,6 @@
   <packaging>jar</packaging>
   <name>Yamcs XTCE</name>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-  </build>
-
   <dependencies>
      <dependency>
       <groupId>com.google.code.gson</groupId>
