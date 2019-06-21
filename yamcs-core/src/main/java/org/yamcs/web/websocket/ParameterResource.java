@@ -29,7 +29,6 @@ import org.yamcs.protobuf.Web.SubscribedParameter;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -52,7 +51,7 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
 
     Map<NamedObjectId, Integer> numericIdMap = new HashMap<>();
     AtomicInteger numericIdGenerator = new AtomicInteger();
-    
+
     public ParameterResource(ConnectedWebSocketClient client) {
         this.client = client;
         Processor processor = client.getProcessor();
@@ -86,8 +85,9 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
                         firstSubscriptionId = subscriptionId;
                     }
                 }
-                ParameterSubscriptionResponse psr = getResponse(subscriptionId, idList, null, req.hasUseNumericIds() && req.getUseNumericIds());
-                
+                ParameterSubscriptionResponse psr = getResponse(subscriptionId, idList, null,
+                        req.hasUseNumericIds() && req.getUseNumericIds());
+
                 reply.attachData("ParameterSubscriptionResponse", psr);
             } catch (InvalidIdentification e) {
                 NamedObjectList invalidList = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
@@ -121,8 +121,9 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
                             firstSubscriptionId = subscriptionId;
                         }
                     }
-                    
-                    ParameterSubscriptionResponse psr = getResponse(subscriptionId, idList, e.getInvalidParameters(), req.hasUseNumericIds() && req.getUseNumericIds());
+
+                    ParameterSubscriptionResponse psr = getResponse(subscriptionId, idList, e.getInvalidParameters(),
+                            req.hasUseNumericIds() && req.getUseNumericIds());
                     reply.attachData(ParameterSubscriptionResponse.class.getSimpleName(), psr);
                 }
             }
@@ -147,22 +148,23 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         }
     }
 
-    private ParameterSubscriptionResponse getResponse(int subscriptionId, List<NamedObjectId> validList, List<NamedObjectId> invalidList, boolean useNumericId) {
-      ParameterSubscriptionResponse.Builder psr = ParameterSubscriptionResponse.newBuilder()
-        .setSubscriptionId(subscriptionId);
-      
-      if(invalidList!=null) {
-          psr.addAllInvalid(invalidList);
-      }
-      
-      if(useNumericId) {
-          for(NamedObjectId id: validList) {
-              int nid = numericIdGenerator.incrementAndGet();
-              numericIdMap.put(id, nid);
-              psr.addSubscribed(SubscribedParameter.newBuilder().setId(id).setNumericId(nid).build());    
-          }
-      }
-            return psr.build();
+    private ParameterSubscriptionResponse getResponse(int subscriptionId, List<NamedObjectId> validList,
+            List<NamedObjectId> invalidList, boolean useNumericId) {
+        ParameterSubscriptionResponse.Builder psr = ParameterSubscriptionResponse.newBuilder()
+                .setSubscriptionId(subscriptionId);
+
+        if (invalidList != null) {
+            psr.addAllInvalid(invalidList);
+        }
+
+        if (useNumericId) {
+            for (NamedObjectId id : validList) {
+                int nid = numericIdGenerator.incrementAndGet();
+                numericIdMap.put(id, nid);
+                psr.addSubscribed(SubscribedParameter.newBuilder().setId(id).setNumericId(nid).build());
+            }
+        }
+        return psr.build();
     }
 
     @Override
@@ -232,7 +234,7 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         for (ParameterValueWithId pvwi : paramList) {
             ParameterValue pv = pvwi.getParameterValue();
             Integer nid = numericIdMap.get(pvwi.getId());
-            if(nid!=null) {
+            if (nid != null) {
                 pd.addParameter(pv.toGpb(nid));
             } else {
                 pd.addParameter(pv.toGpb(pvwi.getId()));
@@ -243,11 +245,16 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
 
     @Override
     public void unselectProcessor() {
-        pidrm.unselectPrm();
+        if (pidrm != null) {
+            pidrm.unselectPrm();
+        }
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
+        if (pidrm == null) {
+            pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
+        }
         try {
             List<NamedObjectId> invalid = pidrm.selectPrm(processor.getParameterRequestManager(), client.getUser());
             if (!invalid.isEmpty()) {

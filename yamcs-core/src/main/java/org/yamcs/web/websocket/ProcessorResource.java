@@ -73,10 +73,10 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
 
     @Override
     public void processorAdded(ProcessorInfo processorInfo) {
-        if (!allInstances && !processorInfo.getInstance().equals(processor.getInstance())) {
+        if (!allInstances && !isCurrentInstance(processorInfo)) {
             return;
         }
-        if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
+        if (!allProcessors && !isCurrentProcessor(processorInfo)) {
             return;
         }
         client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
@@ -84,10 +84,10 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
 
     @Override
     public void processorStateChanged(ProcessorInfo processorInfo) {
-        if (!allInstances && !processorInfo.getInstance().equals(processor.getInstance())) {
+        if (!allInstances && !isCurrentInstance(processorInfo)) {
             return;
         }
-        if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
+        if (!allProcessors && !isCurrentProcessor(processorInfo)) {
             return;
         }
         client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
@@ -95,10 +95,10 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
 
     @Override
     public void processorClosed(ProcessorInfo processorInfo) {
-        if (!allInstances && !processorInfo.getInstance().equals(processor.getInstance())) {
+        if (!allInstances && !isCurrentInstance(processorInfo)) {
             return;
         }
-        if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
+        if (!allProcessors && !isCurrentProcessor(processorInfo)) {
             return;
         }
         client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
@@ -134,5 +134,16 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
 
     @Override
     public void statisticsUpdated(Processor processor, Statistics stats) {
+    }
+
+    private boolean isCurrentInstance(ProcessorInfo processorInfo) {
+        return processor != null &&
+                processorInfo.getInstance().equals(processor.getInstance());
+    }
+
+    private boolean isCurrentProcessor(ProcessorInfo processorInfo) {
+        return processor != null &&
+                processorInfo.getInstance().equals(processor.getInstance()) &&
+                processorInfo.getInstance().equals(processor.getName());
     }
 }
