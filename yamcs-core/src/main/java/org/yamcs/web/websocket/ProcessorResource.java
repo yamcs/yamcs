@@ -45,11 +45,12 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
             allInstances = req.hasAllInstances() && req.getAllInstances();
         }
         WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
-        ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
-        ProcessorSubscriptionResponse response = ProcessorSubscriptionResponse.newBuilder()
-                .setProcessor(pinfo)
-                .build();
-        reply.attachData("ProcessorSubscriptionResponse", response);
+        ProcessorSubscriptionResponse.Builder responseb = ProcessorSubscriptionResponse.newBuilder();
+        if (processor != null) {
+            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+            responseb.setProcessor(pinfo);
+        }
+        reply.attachData("ProcessorSubscriptionResponse", responseb.build());
         client.sendReply(reply);
 
         ManagementService.getInstance().addManagementListener(this);
