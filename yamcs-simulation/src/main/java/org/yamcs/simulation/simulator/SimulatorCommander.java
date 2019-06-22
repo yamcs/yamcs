@@ -25,9 +25,10 @@ public class SimulatorCommander extends ProcessRunner {
     public SimulatorCommander() {
         this(YConfiguration.emptyConfig());
     }
-    
+
     /**
      * Constructor used when the simulator is started as an instance service
+     * 
      * @param yamcsInstance
      * @param args
      */
@@ -43,7 +44,10 @@ public class SimulatorCommander extends ProcessRunner {
         SimulatorArgs defaultOptions = new SimulatorArgs();
         List<String> cmdl = new ArrayList<>();
 
-        cmdl.add("bin/simulator.sh");
+        cmdl.add(new File(System.getProperty("java.home"), "bin/java").toString());
+        cmdl.add("-cp");
+        cmdl.add(System.getProperty("java.class.path"));
+        cmdl.add(SimulatorCommander.class.getName());
         if (userArgs.containsKey("telnet")) {
             YConfiguration telnetArgs = userArgs.getConfig("telnet");
             int telnetPort = telnetArgs.getInt("port", defaultOptions.telnetPort);
@@ -56,7 +60,7 @@ public class SimulatorCommander extends ProcessRunner {
             int tmPort = yamcsArgs.getInt("tmPort", defaultOptions.tmPort);
             int losPort = yamcsArgs.getInt("losPort", defaultOptions.losPort);
             int tm2Port = yamcsArgs.getInt("tm2Port", defaultOptions.tm2Port);
-            
+
             cmdl.addAll(Arrays.asList("--tc-port", "" + tcPort,
                     "--tm-port", "" + tmPort,
                     "--los-port", "" + losPort,
@@ -74,7 +78,7 @@ public class SimulatorCommander extends ProcessRunner {
                     "--tm-frame-port", "" + tmFramePort,
                     "--tm-frame-length", "" + tmFrameSize,
                     "--tm-frame-freq", "" + tmFrameFreq));
-            
+
         }
         if (userArgs.containsKey("perfTest")) {
             YConfiguration yamcsArgs = userArgs.getConfig("perfTest");
@@ -160,9 +164,10 @@ public class SimulatorCommander extends ProcessRunner {
         TelnetServer telnetServer = new TelnetServer(simulator);
         telnetServer.setPort(runtimeOptions.telnetPort);
         services.add(telnetServer);
-        
+
         if (runtimeOptions.tmFrameLength > 0) {
-            UdpFrameLink frameLink = new UdpFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost, runtimeOptions.tmFramePort,
+            UdpFrameLink frameLink = new UdpFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
+                    runtimeOptions.tmFramePort,
                     runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq);
             services.add(frameLink);
             simulator.setFrameLink(frameLink);

@@ -1,5 +1,6 @@
 package org.yamcs.tse;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -38,7 +39,10 @@ public class TseCommander extends ProcessRunner {
         int tctmPort = yamcsArgs.getInt("port");
 
         Map<String, Object> args = new HashMap<>();
-        args.put("command", Arrays.asList("bin/tse-commander.sh",
+        args.put("command", Arrays.asList(
+                new File(System.getProperty("java.home"), "bin/java").toString(),
+                "-cp", System.getProperty("java.class.path"),
+                "org.yamcs.tse.TseCommander",
                 "--telnet-port", "" + telnetPort,
                 "--tctm-port", "" + tctmPort));
         args.put("logPrefix", "");
