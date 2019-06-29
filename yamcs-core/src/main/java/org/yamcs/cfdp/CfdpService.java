@@ -19,7 +19,6 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -71,10 +70,9 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
 
         YarchDatabaseInstance globalYdb = YarchDatabase.getInstance("_global");
         String bucketName = config.getString("incomingBucket", "cfdpDown");
-        BucketDatabase bdb = globalYdb.getBucketDatabase();
-        incomingBucket = bdb.getBucket(bucketName);
+        incomingBucket = globalYdb.getBucket(bucketName);
         if (incomingBucket == null) {
-            incomingBucket = bdb.createBucket(bucketName);
+            incomingBucket = globalYdb.createBucket(bucketName);
         }
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
     }

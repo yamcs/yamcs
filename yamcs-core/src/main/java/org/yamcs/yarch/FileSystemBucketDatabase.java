@@ -1,5 +1,6 @@
 package org.yamcs.yarch;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -11,8 +12,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -30,6 +33,9 @@ public class FileSystemBucketDatabase implements BucketDatabase {
 
     private Path root;
 
+    // Manually registered buckets (located outside of root)
+    private Map<String, FileSystemBucket> additionalBuckets = new HashMap<>();
+
     public FileSystemBucketDatabase(String yamcsInstance) throws IOException {
         this(yamcsInstance, Collections.emptyMap());
     }
@@ -46,44 +52,115 @@ public class FileSystemBucketDatabase implements BucketDatabase {
     }
 
     @Override
-    public Bucket createBucket(String bucketName) throws IOException {
+    public FileSystemBucket createBucket(String bucketName) throws IOException {
+        synchronized (additionalBuckets) {
+            if (additionalBuckets.containsKey(bucketName)) {
+                throw new IllegalArgumentException("Bucket already exists");
+            }
+        }
+
         Path path = root.resolve(bucketName);
         Files.createDirectory(path);
-        return new FileSystemBucket(path);
+        return new FileSystemBucket(bucketName, path);
+    }
+
+    /**
+     * Manually register a bucket based on a location on the file system.
+     * <p>
+     * It is not necessary to register buckets that exist in the standard location (directly under under dataDir).
+     * <p>
+     * Remark that bucket registration is transient.
+     * 
+     * @param bucketName
+     *            the name of the bucket.
+     * 
+     * @param location
+     *            the path to the bucket. This location should already exist.
+     */
+    public FileSystemBucket registerBucket(String bucketName, Path location) throws IOException {
+        if (!location.toFile().exists()) {
+            throw new FileNotFoundException("Directory '" + location + "' not found");
+        } else if (!location.toFile().isDirectory()) {
+            throw new IOException("Not a directory '" + location + "'");
+        }
+
+        synchronized (additionalBuckets) {
+            if (additionalBuckets.containsKey(bucketName)) {
+                throw new IllegalArgumentException("Bucket already exists");
+            }
+
+            FileSystemBucket bucket = new FileSystemBucket(bucketName, location);
+            additionalBuckets.put(bucketName, bucket);
+            return bucket;
+        }
     }
 
     @Override
-    public Bucket getBucket(String bucketName) throws IOException {
+    public FileSystemBucket getBucket(String bucketName) throws IOException {
+        synchronized (additionalBuckets) {
+            FileSystemBucket bucket = additionalBuckets.get(bucketName);
+            if (bucket != null) {
+                return bucket;
+            }
+        }
+
         Path path = root.resolve(bucketName);
         if (Files.isDirectory(path)) {
-            return new FileSystemBucket(path);
+            return new FileSystemBucket(bucketName, path);
         }
         return null;
     }
 
     @Override
     public List<BucketProperties> listBuckets() throws IOException {
-        try (java.util.stream.Stream<Path> stream = Files.list(root)) {
-            List<Path> files = stream.collect(Collectors.toList());
-            List<BucketProperties> props = new ArrayList<>();
-            for (Path file : files) {
+        List<BucketProperties> props = new ArrayList<>();
+
+        synchronized (additionalBuckets) {
+            for (Entry<String, FileSystemBucket> entry : additionalBuckets.entrySet()) {
+                Path file = entry.getValue().getBucketRoot();
                 BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-                if (attrs.isDirectory() && !Files.isHidden(file)) {
-                    BucketProperties.Builder b = BucketProperties.newBuilder();
-                    b.setName(file.getFileName().toString());
-                    b.setCreated(attrs.creationTime().toMillis());
-                    b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
-                    b.setMaxSize(MAX_BUCKET_SIZE);
-                    b.setSize(calculateSize(file));
-                    props.add(b.build());
+                props.add(toBucketProperties(entry.getKey(), file, attrs));
+            }
+
+            try (java.util.stream.Stream<Path> stream = Files.list(root)) {
+                List<Path> files = stream.collect(Collectors.toList());
+                for (Path file : files) {
+                    String bucketName = file.getFileName().toString();
+                    if (!additionalBuckets.containsKey(bucketName)) {
+                        BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+                        if (attrs.isDirectory() && !Files.isHidden(file)) {
+                            props.add(toBucketProperties(bucketName, file, attrs));
+                        }
+                    }
                 }
             }
-            return props;
         }
+
+        return props;
+    }
+
+    private BucketProperties toBucketProperties(String bucketName, Path location, BasicFileAttributes attrs)
+            throws IOException {
+        BucketProperties.Builder b = BucketProperties.newBuilder();
+        b.setName(bucketName);
+        b.setCreated(attrs.creationTime().toMillis());
+        b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
+        b.setMaxSize(MAX_BUCKET_SIZE);
+        b.setSize(calculateSize(location));
+        return b.build();
     }
 
     @Override
     public void deleteBucket(String bucketName) throws IOException {
+        synchronized (additionalBuckets) {
+            FileSystemBucket bucket = additionalBuckets.get(bucketName);
+            if (bucket != null) {
+                Files.delete(bucket.getBucketRoot());
+                additionalBuckets.remove(bucketName);
+                return;
+            }
+        }
+
         Path path = root.resolve(bucketName);
         Files.delete(path);
     }

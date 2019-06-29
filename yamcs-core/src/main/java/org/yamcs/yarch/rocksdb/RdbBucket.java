@@ -1,5 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
+import static org.yamcs.utils.ByteArrayUtils.encodeInt;
+import static org.yamcs.yarch.rocksdb.RdbBucketDatabase.TYPE_OBJ_DATA;
+import static org.yamcs.yarch.rocksdb.RdbBucketDatabase.TYPE_OBJ_METADATA;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,19 +29,13 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import static org.yamcs.utils.ByteArrayUtils.encodeInt;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
-import static org.yamcs.yarch.rocksdb.RdbBucketDatabase.*;
-
 public class RdbBucket implements Bucket {
     final int tbsIndex;
     BucketProperties bucketProps;
     final Tablespace tablespace;
     final String yamcsInstance;
     private static final Logger log = LoggerFactory.getLogger(RdbBucket.class);
-   
-    
-    
+
     public RdbBucket(String yamcsInstance, Tablespace tablespace, int tbsIndex, BucketProperties bucketProps)
             throws IOException {
         this.yamcsInstance = yamcsInstance;
@@ -48,13 +47,13 @@ public class RdbBucket implements Bucket {
     @Override
     public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectPropertiesOrBuilder> p)
             throws IOException {
-        
-        byte[] pb = prefix!=null?prefix.getBytes(StandardCharsets.UTF_8):ByteArrayUtils.EMPTY;
-        
-        byte[] start = new byte[TBS_INDEX_SIZE + 1+pb.length];
+
+        byte[] pb = prefix != null ? prefix.getBytes(StandardCharsets.UTF_8) : ByteArrayUtils.EMPTY;
+
+        byte[] start = new byte[TBS_INDEX_SIZE + 1 + pb.length];
         encodeInt(tbsIndex, start, 0);
         start[TBS_INDEX_SIZE] = TYPE_OBJ_METADATA;
-        System.arraycopy(pb, 0, start, TBS_INDEX_SIZE+1, pb.length);
+        System.arraycopy(pb, 0, start, TBS_INDEX_SIZE + 1, pb.length);
         List<ObjectProperties> r = new ArrayList<>();
         try (DbIterator it = tablespace.getRdb().newPrefixIterator(start)) {
             ObjectProperties.Builder opb = ObjectProperties.newBuilder();
@@ -76,9 +75,9 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
-    public synchronized void putObject(String objectName, String contentType, 
+    public synchronized void putObject(String objectName, String contentType,
             Map<String, String> metadata, byte[] objectData) throws IOException {
-        if(objectName.isEmpty()) {
+        if (objectName.isEmpty()) {
             throw new IllegalArgumentException("object name cannot be empty");
         }
         log.debug("Uploading object {} to bucket {}; contentType: {}", objectName, bucketProps.getName(), contentType);
@@ -91,20 +90,20 @@ public class RdbBucket implements Bucket {
         if (contentType != null) {
             props.setContentType(contentType);
         }
-        
+
         try (WriteBatch writeBatch = new WriteBatch();
                 WriteOptions writeOpts = new WriteOptions()) {
             ObjectProperties oldProps = findObject(objectName);
-            
+
             byte[] mk = getKey(TYPE_OBJ_METADATA, objectName);
             byte[] dk = getKey(TYPE_OBJ_DATA, objectName);
             writeBatch.put(mk, props.build().toByteArray());
             writeBatch.put(dk, objectData);
-            long bsize = bucketProps.getSize() + props.getSize() - ((oldProps==null)?0:oldProps.getSize());
+            long bsize = bucketProps.getSize() + props.getSize() - ((oldProps == null) ? 0 : oldProps.getSize());
             if (bsize > bucketProps.getMaxSize()) {
                 throw new IOException("Maximum bucket size " + bucketProps.getMaxSize() + " exceeded");
             }
-            int numobj = bucketProps.getNumObjects() + ((oldProps==null)?1:0);
+            int numobj = bucketProps.getNumObjects() + ((oldProps == null) ? 1 : 0);
             if (numobj > bucketProps.getMaxNumObjects()) {
                 throw new IOException(
                         "Maximum number of objects in the bucket " + bucketProps.getNumObjects() + " exceeded");
@@ -122,6 +121,7 @@ public class RdbBucket implements Bucket {
         }
     }
 
+    @Override
     public ObjectProperties findObject(String objectName) throws IOException {
         byte[] k = getKey(TYPE_OBJ_METADATA, objectName);
         try {
@@ -151,7 +151,7 @@ public class RdbBucket implements Bucket {
 
     @Override
     public synchronized void deleteObject(String objectName) throws IOException {
-        log.debug("deleting {} from {}", objectName, bucketProps.getName());
+        log.debug("Deleting {} from {}", objectName, bucketProps.getName());
         try {
             ObjectProperties props = findObject(objectName);
             if (props == null) {
@@ -177,6 +177,7 @@ public class RdbBucket implements Bucket {
         }
     }
 
+    @Override
     public String getName() {
         return bucketProps.getName();
     }

@@ -12,10 +12,8 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.YarchException;
 
 public class BucketHelper {
 
@@ -60,20 +58,20 @@ public class BucketHelper {
     }
 
     static Bucket verifyAndGetBucket(RestRequest req) throws HttpException {
-        BucketDatabase bdb = getBucketDb(req);
+        YarchDatabaseInstance yarch = getYarch(req);
         String bucketName = req.getRouteParam("bucketName");
         try {
-            Bucket bucket = bdb.getBucket(bucketName);
+            Bucket bucket = yarch.getBucket(bucketName);
             if (bucket == null) {
                 if (bucketName.equals(getUserBucketName(req.getUser()))) {
                     try {
-                        bucket = bdb.createBucket(bucketName);
+                        bucket = yarch.createBucket(bucketName);
                     } catch (IOException e) {
                         throw new InternalServerErrorException("Error creating user bucket", e);
                     }
                 } else if (bucketName.equals("displays")) {
                     try {
-                        bucket = bdb.createBucket(bucketName);
+                        bucket = yarch.createBucket(bucketName);
                     } catch (IOException e) {
                         throw new InternalServerErrorException("Error creating displays bucket", e);
                     }
@@ -88,18 +86,9 @@ public class BucketHelper {
         }
     }
 
-    static BucketDatabase getBucketDb(RestRequest req) throws HttpException {
+    static YarchDatabaseInstance getYarch(RestRequest req) throws HttpException {
         String yamcsInstance = RestHandler.verifyInstance(req, req.getRouteParam("instance"), true);
-        YarchDatabaseInstance ydi = YarchDatabase.getInstance(yamcsInstance);
-        try {
-            BucketDatabase bdb = ydi.getBucketDatabase();
-            if (bdb == null) {
-                throw new NotFoundException(req);
-            }
-            return bdb;
-        } catch (YarchException e) {
-            throw new InternalServerErrorException("Bucket database not available", e);
-        }
+        return YarchDatabase.getInstance(yamcsInstance);
     }
 
     static void verifyObjectName(String objName) throws BadRequestException {

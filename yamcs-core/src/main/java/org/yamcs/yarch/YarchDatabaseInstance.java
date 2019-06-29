@@ -7,11 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
@@ -46,27 +49,31 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class YarchDatabaseInstance {
-    Map<String, TableDefinition> tables;
-    transient Map<String, Stream> streams;
-    static Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
-    static YConfiguration config;
-    String tablespaceName;
-    BucketDatabase bucketDatabase;
 
+    private static final Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
+
+    static YConfiguration config;
     static {
         config = YConfiguration.getConfiguration("yamcs");
     }
 
-    final ManagementService mngService;
+    Map<String, TableDefinition> tables = new HashMap<>();
+    transient Map<String, Stream> streams = new HashMap<>();
+
+    String tablespaceName;
+
+    BucketDatabase bucketDatabase;
+    FileSystemBucketDatabase fileSystemBucketDatabase;
+
+    final ManagementService managementService;
 
     // yamcs instance name (used to be called dbname)
     private String instanceName;
 
     YarchDatabaseInstance(String instanceName) throws YarchException {
         this.instanceName = instanceName;
-        mngService = ManagementService.getInstance();
-        tables = new HashMap<>();
-        streams = new HashMap<>();
+        managementService = ManagementService.getInstance();
+
         String instConfName = "yamcs." + instanceName;
         if (YConfiguration.isDefined(instConfName)) {
             YConfiguration instConf = YConfiguration.getConfiguration(instConfName);
@@ -93,6 +100,11 @@ public class YarchDatabaseInstance {
 
         if (bucketDatabase == null) {
             bucketDatabase = YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
+        }
+        try {
+            fileSystemBucketDatabase = new FileSystemBucketDatabase(instanceName);
+        } catch (IOException e) {
+            throw new YarchException("Failed to load file-system based bucket database", e);
         }
     }
 
@@ -157,7 +169,7 @@ public class YarchDatabaseInstance {
                         }
 
                         getStorageEngine(tblDef).loadTable(this, tblDef);
-                        mngService.registerTable(instanceName, tblDef);
+                        managementService.registerTable(instanceName, tblDef);
                         tables.put(tblDef.getName(), tblDef);
                         log.debug("loaded table definition {} from {}", tblDef.getName(), f);
                     } catch (IOException e) {
@@ -284,8 +296,8 @@ public class YarchDatabaseInstance {
         tables.put(def.getName(), def);
         def.setDb(this);
         serializeTableDefinition(def);
-        if (mngService != null) {
-            mngService.registerTable(instanceName, def);
+        if (managementService != null) {
+            managementService.registerTable(instanceName, def);
         }
     }
 
@@ -303,8 +315,8 @@ public class YarchDatabaseInstance {
             throw new YarchException("A stream named '" + stream.getName() + "' already exists");
         }
         streams.put(stream.getName(), stream);
-        if (mngService != null) {
-            mngService.registerStream(instanceName, stream);
+        if (managementService != null) {
+            managementService.registerStream(instanceName, stream);
         }
     }
 
@@ -332,8 +344,8 @@ public class YarchDatabaseInstance {
         if (tbl == null) {
             throw new YarchException("There is no table named '" + tblName + "'");
         }
-        if (mngService != null) {
-            mngService.unregisterTable(instanceName, tblName);
+        if (managementService != null) {
+            managementService.unregisterTable(instanceName, tblName);
         }
         getStorageEngine(tbl).dropTable(this, tbl);
         File f = new File(getRoot() + "/" + tblName + ".def");
@@ -344,8 +356,8 @@ public class YarchDatabaseInstance {
 
     public synchronized void removeStream(String name) {
         Stream s = streams.remove(name);
-        if ((s != null) && (mngService != null)) {
-            mngService.unregisterStream(instanceName, name);
+        if ((s != null) && (managementService != null)) {
+            managementService.unregisterStream(instanceName, name);
         }
     }
 
@@ -399,7 +411,45 @@ public class YarchDatabaseInstance {
         return TimePartitionSchema.getInstance("YYYY");
     }
 
-    public BucketDatabase getBucketDatabase() throws YarchException {
-        return bucketDatabase;
+    public Bucket getBucket(String bucketName) throws IOException {
+        Bucket bucket = fileSystemBucketDatabase.getBucket(bucketName);
+        if (bucket != null) {
+            return bucket;
+        }
+
+        return bucketDatabase.getBucket(bucketName);
+    }
+
+    public Bucket createBucket(String bucketName) throws IOException {
+        return bucketDatabase.createBucket(bucketName);
+    }
+
+    public FileSystemBucket createFileSystemBucket(String bucketName) throws IOException {
+        return fileSystemBucketDatabase.createBucket(bucketName);
+    }
+
+    public FileSystemBucket createFileSystemBucket(String bucketName, Path location) throws IOException {
+        return fileSystemBucketDatabase.registerBucket(bucketName, location);
+    }
+
+    public List<BucketProperties> listBuckets() throws IOException {
+        List<BucketProperties> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
+        List<String> names = buckets.stream().map(b -> b.getName()).collect(Collectors.toList());
+
+        for (BucketProperties bucket : bucketDatabase.listBuckets()) {
+            if (!names.contains(bucket.getName())) {
+                buckets.add(bucket);
+            }
+        }
+
+        return buckets;
+    }
+
+    public void deleteBucket(String bucketName) throws IOException {
+        if (fileSystemBucketDatabase.getBucket(bucketName) != null) {
+            fileSystemBucketDatabase.deleteBucket(bucketName);
+        } else {
+            bucketDatabase.deleteBucket(bucketName);
+        }
     }
 }

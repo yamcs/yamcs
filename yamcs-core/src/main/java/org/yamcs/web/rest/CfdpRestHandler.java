@@ -29,10 +29,8 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 import com.google.protobuf.Timestamp;
@@ -88,22 +86,16 @@ public class CfdpRestHandler extends RestHandler {
 
         String objectName = request.getObjectName();
 
-        YarchDatabaseInstance ydi = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
-        BucketDatabase bdb;
-        try {
-            bdb = ydi.getBucketDatabase();
-        } catch (YarchException e) {
-            throw new InternalServerErrorException("Bucket database not available");
-        }
+        YarchDatabaseInstance yarch = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
 
         Bucket bucket;
         try {
-            bucket = bdb.getBucket(bucketName);
+            bucket = yarch.getBucket(bucketName);
         } catch (IOException e) {
             throw new InternalServerErrorException("Error while resolving bucket", e);
         }
-        if(bucket==null) {
-            throw new BadRequestException("No bucket by name '"+bucketName+"'");
+        if (bucket == null) {
+            throw new BadRequestException("No bucket by name '" + bucketName + "'");
         }
 
         try {

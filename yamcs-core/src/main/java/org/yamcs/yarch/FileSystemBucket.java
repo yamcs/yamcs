@@ -23,18 +23,19 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 
 public class FileSystemBucket implements Bucket {
 
+    private String bucketName;
     private Path root;
     private Mimetypes mimetypes;
     private boolean includeHidden = false;
 
-    public FileSystemBucket(Path root) throws IOException {
+    public FileSystemBucket(String bucketName, Path root) throws IOException {
         this.root = root;
         mimetypes = Mimetypes.getInstance();
     }
 
     @Override
     public String getName() {
-        return root.getFileName().toString();
+        return bucketName;
     }
 
     @Override

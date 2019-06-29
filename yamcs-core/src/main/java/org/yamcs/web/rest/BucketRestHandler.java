@@ -23,7 +23,7 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.ServiceUnavailableException;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.BucketDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
@@ -54,9 +54,9 @@ public class BucketRestHandler extends RestHandler {
     public void listBuckets(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
-        BucketDatabase bdb = BucketHelper.getBucketDb(req);
+        YarchDatabaseInstance yarch = BucketHelper.getYarch(req);
         try {
-            List<BucketProperties> l = bdb.listBuckets();
+            List<BucketProperties> l = yarch.listBuckets();
             ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
             for (BucketProperties bp : l) {
                 lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
@@ -74,12 +74,12 @@ public class BucketRestHandler extends RestHandler {
 
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
         BucketHelper.verifyBucketName(crb.getName());
-        BucketDatabase bdb = BucketHelper.getBucketDb(req);
+        YarchDatabaseInstance yarch = BucketHelper.getYarch(req);
         try {
-            if (bdb.getBucket(crb.getName()) != null) {
+            if (yarch.getBucket(crb.getName()) != null) {
                 throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
             }
-            bdb.createBucket(crb.getName());
+            yarch.createBucket(crb.getName());
         } catch (IOException e) {
             log.error("Error when creating bucket", e);
             throw new InternalServerErrorException("Error when creating bucket: " + e.getMessage());
@@ -91,10 +91,10 @@ public class BucketRestHandler extends RestHandler {
     public void deleteBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
-        BucketDatabase bdb = BucketHelper.getBucketDb(req);
+        YarchDatabaseInstance yarch = BucketHelper.getYarch(req);
         Bucket b = BucketHelper.verifyAndGetBucket(req);
         try {
-            bdb.deleteBucket(b.getName());
+            yarch.deleteBucket(b.getName());
         } catch (IOException e) {
             log.warn("Error when deleting bucket", e);
             throw new InternalServerErrorException("Error when deleting bucket: " + e.getMessage());
