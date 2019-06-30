@@ -57,12 +57,19 @@ public class BucketRestHandler extends RestHandler {
         YarchDatabaseInstance yarch = BucketHelper.getYarch(req);
         try {
             List<BucketProperties> l = yarch.listBuckets();
-            ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
+            ListBucketsResponse.Builder responseb = ListBucketsResponse.newBuilder();
             for (BucketProperties bp : l) {
-                lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
-                        .setNumObjects(bp.getNumObjects()).build());
+                BucketInfo.Builder bucketb = BucketInfo.newBuilder()
+                        .setName(bp.getName());
+                if (bp.hasNumObjects()) {
+                    bucketb.setNumObjects(bp.getNumObjects());
+                }
+                if (bp.hasSize()) {
+                    bucketb.setSize(bp.getSize());
+                }
+                responseb.addBucket(bucketb);
             }
-            completeOK(req, lbr.build());
+            completeOK(req, responseb.build());
         } catch (IOException e) {
             throw new InternalServerErrorException("Failed to resolve buckets", e);
         }

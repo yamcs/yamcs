@@ -146,7 +146,8 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         b.setCreated(attrs.creationTime().toMillis());
         b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
         b.setMaxSize(MAX_BUCKET_SIZE);
-        b.setSize(calculateSize(location));
+        // Commented out because it slows listings down
+        // b.setSize(calculateSize(location));
         return b.build();
     }
 
