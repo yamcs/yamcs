@@ -42,7 +42,7 @@ import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
-import org.yamcs.utils.TemplateUtil;
+import org.yamcs.utils.TemplateProcessor;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
@@ -558,7 +558,7 @@ public class YamcsServer {
                 }
             }
             String source = buf.toString();
-            String processed = TemplateUtil.process(source, templateArgs);
+            String processed = TemplateProcessor.process(source, templateArgs);
 
             String confFile = instanceDefDir + "yamcs." + name + ".yaml";
             try (FileWriter writer = new FileWriter(confFile)) {
