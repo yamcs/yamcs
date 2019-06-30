@@ -166,15 +166,21 @@ public abstract class RestHandler extends RouteHandler {
         req.getCompletableFuture().complete(null);
     }
 
-    /**
-     * Just a little shortcut because builders are dead ugly
-     */
     private static RestExceptionMessage.Builder toException(Throwable t) {
         RestExceptionMessage.Builder exceptionb = RestExceptionMessage.newBuilder();
         exceptionb.setType(t.getClass().getSimpleName());
-        if (t.getMessage() != null) {
-            exceptionb.setMsg(t.getMessage());
+
+        // Try to get a specific message. i.e. turn "Type1: Type2: Type3: Message" into "Message"
+        Throwable realCause = t;
+        while (realCause.getCause() != null) {
+            realCause = realCause.getCause();
         }
+        if (realCause.getMessage() != null) {
+            exceptionb.setMsg(realCause.getMessage());
+        } else {
+            exceptionb.setMsg(realCause.getClass().getSimpleName());
+        }
+
         return exceptionb;
     }
 

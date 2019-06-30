@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
@@ -14,6 +16,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -60,9 +63,19 @@ public class ClientRestHandler extends RestHandler {
                 newProcessor = Processor.getFirstProcessor(request.getInstance());
             }
 
-            if (newProcessor == null) {
-                throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
-                        newInstance, request.getProcessor()));
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(newInstance);
+            if (ysi == null) {
+                throw new BadRequestException(String.format("Cannot join unknown instance '" + newInstance + "'"));
+            } else if (ysi.state() == InstanceState.OFFLINE) {
+                throw new BadRequestException("Cannot join an offline instance");
+            } else if (newProcessor == null) {
+                if (request.hasProcessor()) {
+                    throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
+                            newInstance, request.getProcessor()));
+                } else {
+                    // TODO we should allow this...
+                    throw new BadRequestException(String.format("No processor for instance '" + newInstance + "'"));
+                }
             }
             verifyPermission(newProcessor, client.getId(), restReq);
 

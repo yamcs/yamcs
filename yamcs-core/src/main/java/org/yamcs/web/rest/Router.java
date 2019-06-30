@@ -32,7 +32,6 @@ import org.yamcs.security.User;
 import org.yamcs.spi.Plugin;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
@@ -370,17 +369,17 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     private void handleException(RestRequest req, Throwable t) {
-        if (t instanceof InternalServerErrorException) {
-            InternalServerErrorException e = (InternalServerErrorException) t;
-            log.error("R{}: Reporting internal server error to client", req.getRequestId(), e);
-            RestHandler.sendRestError(req, e.getStatus(), e);
-        } else if (t instanceof HttpException) {
+        if (t instanceof HttpException) {
             HttpException e = (HttpException) t;
-            log.warn("R{}: Sending nominal exception {} back to client: {}", req.getRequestId(), e.getStatus(),
-                    e.getMessage());
-            RestHandler.sendRestError(req, e.getStatus(), e);
+            if (e.isServerError()) {
+                log.error("R{}: Responding '{}': {}", req.getRequestId(), e.getStatus(), e.getMessage(), e);
+                RestHandler.sendRestError(req, e.getStatus(), e);
+            } else {
+                log.warn("R{}: Responding '{}': {}", req.getRequestId(), e.getStatus(), e.getMessage());
+                RestHandler.sendRestError(req, e.getStatus(), e);
+            }
         } else {
-            log.error("R{}: Reporting internal server error to client", req.getRequestId(), t);
+            log.error("R{}: Responding '{}'", req.getRequestId(), HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
             RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }
