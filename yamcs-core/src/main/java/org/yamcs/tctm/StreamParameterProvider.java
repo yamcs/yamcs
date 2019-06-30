@@ -48,6 +48,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     public StreamParameterProvider(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, Collections.emptyMap());
     }
+
     public StreamParameterProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
@@ -61,7 +62,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
             streamNames = StreamConfig.getInstance(yamcsInstance).getEntries(StandardStreamType.param).stream()
                     .map(sce -> sce.getName()).collect(Collectors.toList());
         }
-        
+
         log.debug("Subscribing to streams {} ", streamNames);
 
         for (String streamName : streamNames) {
@@ -115,7 +116,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
                     String fqn = pv.getParameterQualifiedNamed();
                     Parameter ppdef = xtceDb.getParameter(fqn);
                     if (ppdef == null) {
-                        if(XtceDb.isSystemParameter(fqn)) {
+                        if (XtceDb.isSystemParameter(fqn)) {
                             ppdef = xtceDb.createSystemParameter(fqn);
                         } else {
                             log.trace("Ignoring unknown parameter {}", fqn);
@@ -125,7 +126,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
                     pv.setParameter(ppdef);
                 }
             } else {
-                log.warn("Recieved data that is not parameter value but {}", o.getClass());
+                log.warn("Received data that is not parameter value but {}", o.getClass());
                 continue;
             }
 
@@ -139,7 +140,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     public void streamClosed(Stream s) {
-        notifyStopped();
+        stopAsync();
     }
 
     @Override
