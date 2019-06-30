@@ -456,6 +456,13 @@ public class YamcsServer {
         return ysi;
     }
 
+    public void removeInstance(String instanceName) {
+        stopInstance(instanceName);
+        new File(instanceDefDir + "yamcs." + instanceName + ".yaml").delete();
+        new File(instanceDefDir + "yamcs." + instanceName + ".yaml.offline").delete();
+        instances.remove(instanceName);
+    }
+
     /**
      * Start the instance. If the instance is already started, do nothing.
      * 
