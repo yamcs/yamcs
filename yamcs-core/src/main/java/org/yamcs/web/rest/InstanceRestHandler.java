@@ -40,7 +40,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public class InstanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
-    private static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
+    public static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
     @Route(path = "/api/instances", method = "GET")
     public void listInstances(RestRequest req) throws HttpException {
