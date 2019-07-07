@@ -1,4 +1,8 @@
-Version 4.10.0 released 13-Jun-2019
+Version 4.10.1 released 8-Jul-2019
+- fixed bug with TSE driver not recovering from connection reset
+- allow specific buckets to map to the file system instead of rocksdb (previously it was all or nothing)
+
+Version 4.10.0 released 14-Jun-2019
 - added a UDP TC data link
 - added pre/post processors for cFS
 - added initial CFDP support
