@@ -21,12 +21,17 @@
                   Requiring acknowledgment:<br>
                   <table yaDataTable>
                     <tr *ngFor="let alarm of alarms">
-                      <td><app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level></td>
-                      <td>
-                        <a [routerLink]="['/mdb/parameters/', alarm.parameter.qualifiedName]"
-                            [queryParams]="{instance: instance.name}">
-                          {{ alarm.parameter.qualifiedName }}
-                        </a>
+                      <td><app-alarm-level [level]="alarm.severity"></app-alarm-level></td>
+                      <td [ngSwitch]="alarm.type">
+                        <ng-container *ngSwitchCase="'PARAMETER'">
+                          <a [routerLink]="['/monitor/parameters' + alarm.id.namespace + '/' + alarm.id.name]"
+                             [queryParams]="{instance: instance.name}">
+                            {{ alarm.id.namespace }}/{{ alarm.id.name }}
+                          </a>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'EVENT'">
+                          {{ alarm.id.namespace }}/{{ alarm.id.name }}
+                        </ng-container>
                       </td>
                     </tr>
                   </table>
