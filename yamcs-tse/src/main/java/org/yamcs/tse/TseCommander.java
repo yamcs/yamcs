@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
+import org.yamcs.ProcessRunner;
 import org.yamcs.YConfiguration;
-import org.yamcs.server.ProcessRunner;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 

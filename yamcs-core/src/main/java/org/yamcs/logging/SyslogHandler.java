@@ -1,4 +1,4 @@
-package org.yamcs.server.logging;
+package org.yamcs.logging;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

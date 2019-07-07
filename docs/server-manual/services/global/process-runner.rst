@@ -7,7 +7,7 @@ Runs an external process. If this process goes down, a new process instance is s
 Class Name
 ----------
 
-:javadoc:`org.yamcs.server.ProcessRunner`
+:javadoc:`org.yamcs.ProcessRunner`
 
 
 Configuration
@@ -18,7 +18,7 @@ This is a global service defined in ``etc/yamcs.yaml``. Example from a typical d
 .. code-block:: yaml
 
     services:
-    - class: org.yamcs.server.ProcessRunner
+    - class: org.yamcs.ProcessRunner
         args:
         command: "bin/simulator.sh"
 

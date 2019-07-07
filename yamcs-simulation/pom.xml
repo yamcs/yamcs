@@ -23,8 +23,12 @@
   <dependencies>
     <dependency>
         <groupId>org.yamcs</groupId>
-        <artifactId>yamcs-server</artifactId>
+        <artifactId>yamcs-core</artifactId>
         <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
     </dependency>
     <dependency> <!-- This dependency is no longer in JDK11 -->
       <groupId>javax.xml.bind</groupId>

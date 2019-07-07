@@ -36,8 +36,12 @@
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-server</artifactId>
+      <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fazecast</groupId>
