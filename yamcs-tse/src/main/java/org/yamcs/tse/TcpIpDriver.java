@@ -83,6 +83,9 @@ public class TcpIpDriver extends InstrumentDriver {
             }
         } catch (SocketTimeoutException e) {
             // Ignore
+        } catch (SocketException e) { // For example: connection reset
+            log.warn("Socket exception: " + e.getMessage());
+            connect();
         }
 
         try {
