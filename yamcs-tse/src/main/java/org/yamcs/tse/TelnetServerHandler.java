@@ -116,7 +116,12 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
                     ctx.writeAndFlush("\r\n");
                 }
             } catch (ExecutionException e) {
-                ctx.write("error: " + e.getCause().getMessage());
+                String message = e.getCause().getMessage();
+                if (message == null) {
+                    message = e.getCause().getClass().getName();
+                }
+                log.warn(message, e.getCause());
+                ctx.write("error: " + message);
                 ctx.writeAndFlush("\r\n");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

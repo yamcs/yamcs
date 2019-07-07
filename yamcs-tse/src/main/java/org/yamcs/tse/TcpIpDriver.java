@@ -1,14 +1,13 @@
 package org.yamcs.tse;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,112 +20,133 @@ import org.yamcs.YConfiguration;
  */
 public class TcpIpDriver extends InstrumentDriver {
 
-    private static final Logger log = LoggerFactory.getLogger(TcpIpDriver.class);
+    /*
+     * One idea that is not currently implemented (awaiting business need) is support for
+     * an argument called "pingCommand" that could be used to proactively detect a non-clean
+     * remote socket disconnect. For example:
+     * 
+     * class: org.yamcs.tse.TcpIpDriver
+     * args:
+     *   ...
+     *   pingCommand: "*OPC?"
+     *   pingInterval: 5000
+     * 
+     * The pingCommand would need to return any response. If it does not within responseTimeout,
+     * then we proactively disconnect the socket.
+     * 
+     * Without pingCommand, abrupt closure of a remote socket is only very slowly discovered
+     * and may lead to multiple commands being written to the send buffer before generating any
+     * errors. Queries (that expect a response) lead to only one failed command, but even that may
+     * still be too much.
+     */
 
-    private static final int POLLING_INTERVAL = 20;
+    private static final Logger log = LoggerFactory.getLogger(TcpIpDriver.class);
 
     private String host;
     private int port;
 
-    private Socket socket;
-
-    private int lastResponseTerminationCharacter;
+    private SocketChannel socketChannel;
+    private Selector selector;
+    private SelectionKey selectionKey;
 
     public TcpIpDriver(String name, Map<String, Object> args) {
         super(name, args);
         host = YConfiguration.getString(args, "host");
         port = YConfiguration.getInt(args, "port");
-        if (responseTermination != null) {
-            lastResponseTerminationCharacter = responseTermination.charAt(responseTermination.length() - 1);
-        }
     }
 
     @Override
     public void connect() throws IOException {
-        if (socket != null) {
+        if (socketChannel != null) {
+            Socket socket = socketChannel.socket();
             if (socket.isConnected() && socket.isBound() && !socket.isClosed()) {
                 return;
             }
-            socket.close();
+            disconnect();
         }
-
-        socket = new Socket();
 
         log.info("Connecting to {}:{}", host, port);
-        socket.connect(new InetSocketAddress(host, port), responseTimeout);
-        log.info("Connected to {}:{}", host, port);
 
-        socket.setSoTimeout(POLLING_INTERVAL);
-        if (responseTimeout < POLLING_INTERVAL) {
-            socket.setSoTimeout(responseTimeout);
-        }
+        selector = Selector.open();
+        socketChannel = SocketChannel.open();
+        socketChannel.socket().setKeepAlive(true);
+        socketChannel.socket().connect(new InetSocketAddress(host, port), responseTimeout);
+
+        socketChannel.configureBlocking(false);
+        selectionKey = socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+        log.info("Connected to {}:{}", host, port);
     }
 
     @Override
     public void disconnect() throws IOException {
-        if (socket != null) {
-            socket.close();
-            socket = null;
+        if (socketChannel != null) {
+            socketChannel.close();
+            selector.close();
+
+            socketChannel = null;
         }
     }
 
     @Override
     public void write(String cmd) throws IOException {
-        // Ensure no reads are pending before we write. Has the drawback
-        // of delaying the write. Should probably revise this code to do
-        // NIO, or use another thread.
-        InputStream socketIn = socket.getInputStream();
-        try {
-            byte[] buf = new byte[4096];
-            while (socketIn.read(buf) > 0) {
-                // Discard
-            }
-        } catch (SocketTimeoutException e) {
-            // Ignore
-        } catch (SocketException e) { // For example: connection reset
-            log.warn("Socket exception: " + e.getMessage());
-            connect();
-        }
+        boolean sent = false;
+        while (!sent) {
+            selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            selector.select();
+            if (selectionKey.isReadable()) {
+                // Discard any pending reads before writing.
+                // For example: a previous query command whose response was ignored.
+                ByteBuffer buf = ByteBuffer.allocate(4096);
+                try {
+                    int n = socketChannel.read(buf);
+                    while (n > 0) {
+                        buf.clear();
+                        socketChannel.read(buf);
+                    }
 
-        try {
-            OutputStream out = socket.getOutputStream();
-            out.write((cmd + "\n").getBytes(encoding));
-            out.flush();
-        } catch (SocketException e) { // Broken pipe
-            disconnect();
-            connect();
-            OutputStream out = socket.getOutputStream();
-            out.write((cmd + "\n").getBytes(encoding));
-            out.flush();
+                    // Apparent end of stream, attempt new socket
+                    if (n < 0) {
+                        throw new IOException("end-of-stream");
+                    }
+                } catch (IOException e) { // Either n < 0, or some deeper error like 'timeout' thrown by the read()
+                    log.warn(e.getMessage());
+                    disconnect();
+                    connect();
+                }
+            } else if (selectionKey.isWritable()) {
+                try {
+                    byte[] barr = (cmd + "\n").getBytes(encoding);
+                    ByteBuffer bb = ByteBuffer.wrap(barr);
+                    socketChannel.write(bb); // TODO write remainder in case of partial write
+                    sent = true;
+                } catch (IOException e) { // Ex.: Broken pipe
+                    log.warn(e.getMessage());
+                    disconnect();
+                    connect();
+                }
+            } else {
+                log.warn("oops1");
+            }
         }
     }
 
     @Override
-    public String read() throws IOException, TimeoutException {
-        long time = System.currentTimeMillis();
-        long timeoutTime = time + responseTimeout;
+    public void readAvailable(ResponseBuffer responseBuffer, int timeout) throws IOException {
+        selectionKey.interestOps(SelectionKey.OP_READ);
 
-        ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
-        InputStream socketIn = socket.getInputStream();
-        while (System.currentTimeMillis() < timeoutTime) {
-            try {
-                int b = socketIn.read();
-                if (b > 0) {
-                    responseBuilder.append(b);
-                    if (b == lastResponseTerminationCharacter) {
-                        String response = responseBuilder.parseCompleteResponse();
-                        if (response != null) {
-                            return response;
-                        }
-                    }
-                }
-            } catch (SocketTimeoutException e) {
-                // Ignore. SoTimeout is used as polling interval
-                // This allows to read multiple buffers while respecting the actual intended timeout.
+        // Block this on a small timeout only. Otherwise we may block longer than the
+        // global timeout managed by the caller.
+        selector.select(timeout);
+        if (selectionKey.isReadable()) {
+            ByteBuffer buf = ByteBuffer.allocate(4096);
+            int n = socketChannel.read(buf);
+            if (n > 0) {
+                responseBuffer.append(buf.array(), 0, n);
+            } else if (n < 0) {
+                // Apparent end-of-stream. Nothing we can do about it in read mode.
+                disconnect();
+                throw new IOException("end-of-stream");
             }
         }
-
-        String response = responseBuilder.parsePartialResponse();
-        throw new TimeoutException(response != null ? "unterminated response: " + response : null);
     }
 }

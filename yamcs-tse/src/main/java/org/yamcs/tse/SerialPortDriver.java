@@ -2,7 +2,6 @@ package org.yamcs.tse;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import org.yamcs.YConfiguration;
 
@@ -14,8 +13,6 @@ import com.fazecast.jSerialComm.SerialPort;
  * Not thread safe.
  */
 public class SerialPortDriver extends InstrumentDriver {
-
-    private static final int POLLING_INTERVAL = 20;
 
     private static SerialPort link;
 
@@ -84,36 +81,21 @@ public class SerialPortDriver extends InstrumentDriver {
     }
 
     @Override
-    public String read() throws IOException, TimeoutException {
-        long time = System.currentTimeMillis();
-        long timeoutTime = time + responseTimeout;
-
-        ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
+    public void readAvailable(ResponseBuffer responseBuffer, int timeout) throws IOException {
         try {
-            while (System.currentTimeMillis() < timeoutTime) {
-                int n = link.bytesAvailable();
-                if (n > 0) {
-                    byte[] buf = new byte[n];
-                    link.readBytes(buf, n);
-                    responseBuilder.append(buf, 0, n);
-                    String response = responseBuilder.parseCompleteResponse();
-                    if (response != null) {
-                        return response;
-                    }
-                }
-                Thread.sleep(POLLING_INTERVAL);
+            int n = link.bytesAvailable();
+            if (n == 0) {
+                Thread.sleep(timeout);
+                n = link.bytesAvailable();
+            }
+            if (n > 0) {
+                byte[] buf = new byte[n];
+                link.readBytes(buf, n);
+                responseBuffer.append(buf, 0, n);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return null;
-        }
-
-        // Timed out. Return whatever we have.
-        String response = responseBuilder.parsePartialResponse();
-        if (getResponseTermination() == null) {
-            return response;
-        } else {
-            throw new TimeoutException(response != null ? "unterminated response: " + response : null);
+            return;
         }
     }
 
