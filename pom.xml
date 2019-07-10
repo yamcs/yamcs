@@ -138,6 +138,8 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.0.1</version>
           <configuration>
+            <author>false</author>
+            <breakiterator>true</breakiterator>
             <additionalOptions>
               <additionalOption>-Xdoclint:none</additionalOption>
               <additionalOption>-Xdoclint:html</additionalOption>
@@ -233,12 +235,6 @@
   <profiles>
     <profile>
       <id>yamcs-release</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>true</value>
-        </property>
-      </activation>
       <build>
         <plugins>
           <plugin>
@@ -254,6 +250,9 @@
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <keyname>yamcs@spaceapplications.com</keyname>
+            </configuration>
           </plugin>
           <plugin>
             <groupId>org.sonatype.plugins</groupId>

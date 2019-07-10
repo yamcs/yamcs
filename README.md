@@ -4,7 +4,7 @@
 
 Yamcs is an open source mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom java classes.
 
-If you are looking to build your own Yamcs application, we recommend using the [Yamcs Maven Plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
+To build your own Yamcs application, use the [Yamcs Maven Plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
 
 See also:
 
@@ -35,7 +35,7 @@ These commands will produce an optimized production version of the web interface
 
 ### Run Simulation
 
-For demo and development purposes we work with an all-in-one simulation environment that uses many Yamcs features. In this simulation, Yamcs receives TM from a simple simulator that emits data of a landing spacecraft. Yamcs can also send some basic TC. The simulator starts together with Yamcs as a subprocess.
+For demo and development purposes we work with an all-in-one simulation environment that uses many Yamcs features. In this simulation, Yamcs receives TM from a simple simulator of a landing spacecraft. Yamcs can also send some basic TC. The simulator starts together with Yamcs as a subprocess.
 
     ./run-simulation.sh
 
