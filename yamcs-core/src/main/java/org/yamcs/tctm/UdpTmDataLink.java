@@ -95,11 +95,6 @@ public class UdpTmDataLink extends AbstractTmDataLink {
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
-                if (datagram.getLength() < 16) {
-                    log.warn("Incomplete packet received on the multicast, discarded: {}", datagram);
-                    continue;
-                }
-
                 validDatagramCount++;
                 packet = ByteBuffer.allocate(datagram.getLength());
                 packet.put(datagram.getData(), datagram.getOffset(), datagram.getLength());
