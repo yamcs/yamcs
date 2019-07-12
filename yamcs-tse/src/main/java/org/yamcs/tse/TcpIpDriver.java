@@ -101,7 +101,7 @@ public class TcpIpDriver extends InstrumentDriver {
                     int n = socketChannel.read(buf);
                     while (n > 0) {
                         buf.clear();
-                        socketChannel.read(buf);
+                        n = socketChannel.read(buf);
                     }
 
                     // Apparent end of stream, attempt new socket
