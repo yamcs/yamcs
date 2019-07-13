@@ -44,8 +44,8 @@ import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.UnresolvedParameterReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.UnresolvedParameterReference;
 
 public class XtceDbFactory {
 
@@ -58,8 +58,8 @@ public class XtceDbFactory {
     static transient Map<String, Map<String, XtceDb>> instance2DbConfigs = new HashMap<>();
 
     /**
-     * Creates a new instance of the database in memory. configSection is the
-     * top heading under which this appears in the mdb.yaml
+     * Creates a new instance of the database in memory. configSection is the top heading under which this appears in
+     * the mdb.yaml
      *
      * @throws DatabaseLoadException
      */
@@ -84,13 +84,13 @@ public class XtceDbFactory {
      * 
      * 
      * @param treeConfig
-     *            - this should be a list of maps as it would come out of the mdb.yaml definition.
+     *            this should be a list of maps as it would come out of the mdb.yaml definition.
      * @param attemptToLoadSerialized
-     *            - if true, it will attempt to load a serialized version from the disk
-     *            instead of creating a new object by loading all elements from the tree definition.
+     *            if true, it will attempt to load a serialized version from the disk instead of creating a new object
+     *            by loading all elements from the tree definition.
      * @param saveSerialized
-     *            - if the result should be saved as a serialized file.
-     *            If the database has been loaded from a serialized file, this option will have no effect.
+     *            if the result should be saved as a serialized file. If the database has been loaded from a serialized
+     *            file, this option will have no effect.
      * @return a newly created XTCE database object.
      * @throws ConfigurationException
      */
@@ -111,14 +111,16 @@ public class XtceDbFactory {
         boolean serializedLoaded = false;
         String filename = sha1(loaderTree.getConfigName() + ".xtce");
 
+        File serializedFile = resolveSerializedFile(filename);
         if (loadSerialized) {
-            if (new File(getFullName(filename) + ".serialized").exists()) {
-                try (RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r")) {
+            if (serializedFile.exists()) {
+                File consistencyFile = resolveConsistencyFile(filename);
+                try (RandomAccessFile raf = new RandomAccessFile(consistencyFile, "r")) {
                     if (loaderTree.needsUpdate(raf)) {
                         loadSerialized = false;
                     }
                 } catch (IOException e) {
-                    if (new File(getFullName(filename) + ".serialized").exists()) {
+                    if (serializedFile.exists()) {
                         log.warn("can't check the consistency date of the serialized database", e);
                     }
                     loadSerialized = false;
@@ -131,7 +133,7 @@ public class XtceDbFactory {
         XtceDb db = null;
         if (loadSerialized) {
             try {
-                db = loadSerializedInstance(getFullName(filename) + ".serialized");
+                db = loadSerializedInstance(serializedFile);
                 serializedLoaded = true;
             } catch (Exception e) {
                 log.info("Cannot load serialized database", e);
@@ -231,7 +233,7 @@ public class XtceDbFactory {
                 throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
             boolean resolved;
-            
+
             if (nr instanceof UnresolvedParameterReference) {
                 resolved = ((UnresolvedParameterReference) nr).resolved(rr.nd, rr.aggregateMemberPath);
             } else {
@@ -277,8 +279,8 @@ public class XtceDbFactory {
     }
 
     /**
-     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference)
-     * or in the parent hierarchy if relative reference
+     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in
+     * the parent hierarchy if relative reference
      *
      * @param rootSs
      * @param nr
@@ -368,7 +370,7 @@ public class XtceDbFactory {
                 // check if it's an aggregate
                 Parameter p = ss.getParameter(path[i]);
                 if (p != null && p.getParameterType() instanceof AggregateParameterType) {
-                   
+
                     PathElement[] aggregateMemberPath = getAggregateMemberPath(
                             Arrays.copyOfRange(path, i + 1, path.length));
                     if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
@@ -414,7 +416,7 @@ public class XtceDbFactory {
     }
 
     private static ResolvedReference getSimpleReference(NameDescription nd) {
-        if(nd == null) {
+        if (nd == null) {
             return null;
         } else {
             return new ResolvedReference(nd);
@@ -450,8 +452,8 @@ public class XtceDbFactory {
     }
 
     /**
-     * looks in the SpaceSystem ss for a namedObject with the given alias.
-     * Prints a warning in case multiple references are found and returns the first one.
+     * looks in the SpaceSystem ss for a namedObject with the given alias. Prints a warning in case multiple references
+     * are found and returns the first one.
      * 
      * If none is found, returns null.
      * 
@@ -532,8 +534,7 @@ public class XtceDbFactory {
     }
 
     /**
-     * Propagates qualified name to enclosing objects including subsystems. Also
-     * registers aliases under each subsystem.
+     * Propagates qualified name to enclosing objects including subsystems. Also registers aliases under each subsystem.
      */
     private static void setQualifiedNames(SpaceSystem ss, String parentqname) {
         String ssqname;
@@ -577,35 +578,47 @@ public class XtceDbFactory {
         }
     }
 
-    private static XtceDb loadSerializedInstance(String filename) throws IOException, ClassNotFoundException {
-        log.debug("Loading serialized XTCE DB from: {}", filename);
+    private static XtceDb loadSerializedInstance(File serializedFile) throws IOException, ClassNotFoundException {
+        log.debug("Loading serialized XTCE DB from: {}", serializedFile);
 
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(serializedFile))) {
             XtceDb db = (XtceDb) in.readObject();
             log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
-                    filename, db.getSequenceContainers().size(), db.getParameterNames().size(),
+                    serializedFile, db.getSequenceContainers().size(), db.getParameterNames().size(),
                     db.getMetaCommands().size());
             return db;
         }
     }
 
-    private static String getFullName(String filename) throws ConfigurationException {
-        return new File(YConfiguration.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
+    private static File resolveCacheFile(String filename) {
+        if (System.getenv("YAMCS_DAEMON") == null) {
+            return new File(YConfiguration.userConfigDirectory, filename).getAbsoluteFile();
+        } else {
+            return new File("cache", filename).getAbsoluteFile();
+        }
+    }
+
+    private static File resolveSerializedFile(String filename) {
+        return resolveCacheFile(filename + ".serialized");
+    }
+
+    private static File resolveConsistencyFile(String filename) {
+        return resolveCacheFile(filename + ".consistency_date");
     }
 
     private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename)
             throws IOException, ConfigurationException {
-        try (OutputStream os = new FileOutputStream(getFullName(filename) + ".serialized");
+        try (OutputStream os = new FileOutputStream(resolveSerializedFile(filename));
                 ObjectOutputStream out = new ObjectOutputStream(os);
-                FileWriter fw = new FileWriter(getFullName(filename) + ".consistency_date");) {
+                FileWriter fw = new FileWriter(resolveConsistencyFile(filename))) {
             out.writeObject(db);
             loaderTree.writeConsistencyDate(fw);
         }
     }
 
     /**
-     * retrieves the XtceDb for the corresponding yamcsInstance.
-     * if yamcsInstance is null, then the first one in the mdb.yaml config file is loaded
+     * retrieves the XtceDb for the corresponding yamcsInstance. if yamcsInstance is null, then the first one in the
+     * mdb.yaml config file is loaded
      * 
      * @param yamcsInstance
      * @return
@@ -671,7 +684,7 @@ public class XtceDbFactory {
 
         void addChild(LoaderTree c) {
             if (children == null) {
-                children = new ArrayList<LoaderTree>();
+                children = new ArrayList<>();
             }
             children.add(c);
         }
@@ -770,7 +783,7 @@ public class XtceDbFactory {
         final PathElement[] aggregateMemberPath;
 
         public ResolvedReference(NameDescription nd, PathElement[] aggregateMemberPath) {
-            if(nd == null) {
+            if (nd == null) {
                 throw new NullPointerException("nd cannot be null");
             }
             this.nd = nd;
@@ -778,7 +791,7 @@ public class XtceDbFactory {
         }
 
         public ResolvedReference(NameDescription nd) {
-            if(nd == null) {
+            if (nd == null) {
                 throw new NullPointerException("nd cannot be null");
             }
             this.nd = nd;

@@ -41,7 +41,7 @@ import com.google.gson.Gson;
  */
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
-    static String userConfigDirectory; // This is used by the users to overwrite
+    public static String userConfigDirectory; // This is used by the users to overwrite
     static YConfigurationResolver resolver = new DefaultConfigurationResolver();
 
     private static Map<String, YConfiguration> configurations = new HashMap<>();
@@ -77,9 +77,9 @@ public class YConfiguration {
      * Constructs a new configuration object parsing the input stream
      * 
      * @param is
-     *            - input stream where the configuration is loaded from
+     *            input stream where the configuration is loaded from
      * @param confpath
-     *            - configuration path - it is remembered together with the configuration in case of error to indicate
+     *            configuration path - it is remembered together with the configuration in case of error to indicate
      *            where it is coming from (i.e. which file)
      */
     @SuppressWarnings("unchecked")
@@ -114,8 +114,17 @@ public class YConfiguration {
     }
 
     /**
+     * calls setup(null)
+     *
+     * @throws ConfigurationException
+     */
+    public synchronized static void setup() throws ConfigurationException {
+        setup(null);
+    }
+
+    /**
      * If configPrefix is not null, sets up the configuration to search the classpath for files like
-     * "configPrefix/xyz.properties"
+     * "configPrefix/xyz.yaml"
      *
      * Also sets up the TimeEncoding configuration
      *
@@ -147,7 +156,7 @@ public class YConfiguration {
         }
 
         if (System.getenv("YAMCS_DAEMON") == null) {
-            File logDir = new File(userConfigDirectory + File.separatorChar + "log");
+            File logDir = new File(userConfigDirectory, "log");
             if (!logDir.exists()) {
                 if (logDir.mkdirs()) {
                     System.err.println("Created directory: " + logDir);
@@ -155,23 +164,8 @@ public class YConfiguration {
                     System.err.println("Cannot create directory: " + logDir);
                 }
             }
-            System.getProperties().put("cacheDirectory", userConfigDirectory + File.separatorChar);
-        } else {
-            String yamcsDirectory = System.getProperty("user.home");
-            System.getProperties().put("cacheDirectory",
-                    yamcsDirectory + File.separatorChar + "cache" + File.separatorChar);
-
         }
         TimeEncoding.setUp();
-    }
-
-    /**
-     * calls setup(null)
-     *
-     * @throws ConfigurationException
-     */
-    public synchronized static void setup() throws ConfigurationException {
-        setup(null);
     }
 
     /**
@@ -237,10 +231,6 @@ public class YConfiguration {
         }
         Object o = m.get(key);
         return o == null;
-    }
-
-    public static String getGlobalProperty(String key) {
-        return System.getProperty(key);
     }
 
     private void checkKey(String key, Class<?> cls) throws ConfigurationException {
@@ -711,7 +701,7 @@ public class YConfiguration {
             }
 
             // see if the users has an own version of the file
-            File f = new File(userConfigDirectory + "/" + name);
+            File f = new File(userConfigDirectory, name);
             if (f.exists()) {
                 try {
                     is = new FileInputStream(f);
