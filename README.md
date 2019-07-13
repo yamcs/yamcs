@@ -4,7 +4,7 @@
 
 Yamcs is an open source mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom java classes.
 
-To build your own Yamcs application, use the [Yamcs Maven Plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
+To start developing your own Yamcs application, we recommend the [Yamcs Maven Plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
 
 See also:
 
@@ -39,8 +39,6 @@ For demo and development purposes we work with an all-in-one simulation environm
 
     ./run-simulation.sh
 
-This will run Yamcs from a directory `live` that mimics the structure of a package installation but where jars and web files are symlinks to the previously built code.
+This configuration stores data to `/storage/yamcs-data`. Ensure this folder exists and that you can write to it.
 
-By default this configuration stores data to `/storage/yamcs-data`. Ensure this folder exists and that you can write to it. You can choose a different location by changing the location in `live/etc/yamcs.yaml`.
-
-When you see `Server running... press ctrl-c to stop` your server has fully started. If you built the web files you can now also visit the built-in web interface by navigating to `http://localhost:8090`.
+When you see `Server running... press ctrl-c to stop` your server has fully started. If you built the web files you can now visit the built-in web interface by navigating to `http://localhost:8090`.
