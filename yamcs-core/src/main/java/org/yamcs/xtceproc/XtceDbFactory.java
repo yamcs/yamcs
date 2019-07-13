@@ -591,7 +591,7 @@ public class XtceDbFactory {
     }
 
     private static File resolveCacheFile(String filename) {
-        if (System.getenv("YAMCS_DAEMON") == null) {
+        if (YConfiguration.userConfigDirectory != null) {
             return new File(YConfiguration.userConfigDirectory, filename).getAbsoluteFile();
         } else {
             return new File("cache", filename).getAbsoluteFile();

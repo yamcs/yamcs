@@ -22,7 +22,7 @@ public class CheckConfig extends Command {
             + "otherwise there will be RocksDB LOCK errors if a yamcs server is running.")
     private List<String> args;
 
-    String configDir;
+    File configDir;
 
     @Parameter(names = "--no-etc", required = false, description = "Do not use any file from the default Yamcs etc directory. "
             + "If this is specified, the argument config-dir becomes mandatory.")
@@ -45,9 +45,8 @@ public class CheckConfig extends Command {
             if (args.size() != 1) {
                 throw new ParameterException("Please specify only one config-dir.");
             }
-            configDir = args.get(0);
-            File d = new File(configDir);
-            if (!d.exists()) {
+            configDir = new File(args.get(0));
+            if (!configDir.exists()) {
                 throw new ParameterException("Error: directory '" + configDir + "' does not exist");
             }
         }
@@ -55,7 +54,7 @@ public class CheckConfig extends Command {
 
     @Override
     void execute() throws Exception {
-        String etcDir = getYamcsAdminCli().getEtcDir();
+        File etcDir = getYamcsAdminCli().getEtcDir();
         if (etcDir != null) {
             if (configDir == null) {
                 YConfiguration.setResolver(new YamcsAdminCli.DirConfigurationResolver(etcDir));

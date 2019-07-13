@@ -41,7 +41,8 @@ import com.google.gson.Gson;
  */
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
-    public static String userConfigDirectory; // This is used by the users to overwrite
+
+    public static File userConfigDirectory; // This is used in client tools to overwrite
     static YConfigurationResolver resolver = new DefaultConfigurationResolver();
 
     private static Map<String, YConfiguration> configurations = new HashMap<>();
@@ -115,10 +116,8 @@ public class YConfiguration {
 
     /**
      * calls setup(null)
-     *
-     * @throws ConfigurationException
      */
-    public synchronized static void setup() throws ConfigurationException {
+    public synchronized static void setup() {
         setup(null);
     }
 
@@ -129,33 +128,21 @@ public class YConfiguration {
      * Also sets up the TimeEncoding configuration
      *
      * @param configPrefix
-     * @throws ConfigurationException
      */
-    public static synchronized void setup(String configPrefix) throws ConfigurationException {
-        String ucf;
+    public static synchronized void setup(String configPrefix) {
         if (System.getenv("YAMCS_DAEMON") == null) {
-            ucf = System.getProperty("user.home") + File.separatorChar + ".yamcs";
+            setup(configPrefix, new File(System.getProperty("user.home"), ".yamcs"));
         } else {
-            String yamcsDirectory = System.getProperty("user.home");
-            ucf = yamcsDirectory + File.separatorChar + "etc";
+            setup(configPrefix, null);
         }
-        setup(configPrefix, ucf);
     }
 
-    public static synchronized void setup(String configPrefix, String userConfigDirectory) {
+    public static synchronized void setup(String configPrefix, File userConfigDirectory) {
         prefix = configPrefix;
-        configurations.clear();// forget any known config (useful in the maven unit tests called in the same VM)
+        configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
 
         YConfiguration.userConfigDirectory = userConfigDirectory;
-        if (System.getProperty("java.util.logging.config.file") == null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
-            } catch (Exception e) {
-                // do nothing, the default java builtin logging is used
-            }
-        }
-
-        if (System.getenv("YAMCS_DAEMON") == null) {
+        if (userConfigDirectory != null) {
             File logDir = new File(userConfigDirectory, "log");
             if (!logDir.exists()) {
                 if (logDir.mkdirs()) {
@@ -165,6 +152,15 @@ public class YConfiguration {
                 }
             }
         }
+
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            try {
+                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            } catch (Exception e) {
+                // do nothing, the default java builtin logging is used
+            }
+        }
+
         TimeEncoding.setUp();
     }
 
@@ -701,18 +697,22 @@ public class YConfiguration {
             }
 
             // see if the users has an own version of the file
-            File f = new File(userConfigDirectory, name);
-            if (f.exists()) {
-                try {
-                    is = new FileInputStream(f);
-                    log.debug("Reading {}", f.getAbsolutePath());
-                    return is;
-                } catch (FileNotFoundException e) {
-                    throw new ConfigurationException("Cannot read file " + f, e);
+            if (userConfigDirectory != null) {
+                File f = new File(userConfigDirectory, name);
+                if (f.exists()) {
+                    try {
+                        is = new FileInputStream(f);
+                        log.debug("Reading {}", f.getAbsolutePath());
+                        return is;
+                    } catch (FileNotFoundException e) {
+                        throw new ConfigurationException("Cannot read file " + f, e);
+                    }
                 }
             }
-            if ((is = YConfiguration.class.getResourceAsStream(name)) == null) {
-                throw (new ConfigurationNotFoundException("Cannot find resource " + name));
+
+            is = YConfiguration.class.getResourceAsStream(name);
+            if (is == null) {
+                throw new ConfigurationNotFoundException("Cannot find resource " + name);
             }
             log.debug("Reading {}", new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
             return is;

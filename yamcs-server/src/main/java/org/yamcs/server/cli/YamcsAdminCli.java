@@ -43,7 +43,7 @@ public class YamcsAdminCli extends Command {
     @Override
     void validate() throws ParameterException {
         if (etcDir != null) {
-            YConfiguration.setResolver(new DirConfigurationResolver(etcDir));
+            YConfiguration.setResolver(new DirConfigurationResolver(new File(etcDir)));
         }
         selectedCommand.validate();
     }
@@ -66,8 +66,8 @@ public class YamcsAdminCli extends Command {
         System.exit(0);
     }
 
-    public String getEtcDir() {
-        return etcDir;
+    public File getEtcDir() {
+        return etcDir == null ? null : new File(etcDir);
     }
 
     /**
@@ -77,15 +77,15 @@ public class YamcsAdminCli extends Command {
      *
      */
     public static class DirConfigurationResolver implements YConfigurationResolver {
-        private String[] dirs;
+        private File[] dirs;
 
-        public DirConfigurationResolver(String... dirs) {
+        public DirConfigurationResolver(File... dirs) {
             this.dirs = dirs;
         }
 
         @Override
         public InputStream getConfigurationStream(String name) throws ConfigurationException {
-            for (String dir : dirs) {
+            for (File dir : dirs) {
                 // see if the users has an own version of the file
                 File f = new File(dir, name);
                 if (f.exists()) {
