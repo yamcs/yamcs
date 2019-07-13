@@ -63,10 +63,10 @@ public class AlarmResource implements WebSocketResource {
     @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (parameterAlarmServer != null) {
-            parameterAlarmServer.unsubscribeAlarm(plistener);
+            parameterAlarmServer.removeAlarmListener(plistener);
         }
         if (eventAlarmServer != null) {
-            eventAlarmServer.unsubscribeAlarm(elistener);
+            eventAlarmServer.removeAlarmListener(elistener);
         }
 
         subscribed = false;
@@ -76,21 +76,21 @@ public class AlarmResource implements WebSocketResource {
     @Override
     public void socketClosed() {
         if (parameterAlarmServer != null) {
-            parameterAlarmServer.unsubscribeAlarm(plistener);
+            parameterAlarmServer.removeAlarmListener(plistener);
         }
         if (eventAlarmServer != null) {
-            eventAlarmServer.unsubscribeAlarm(elistener);
+            eventAlarmServer.removeAlarmListener(elistener);
         }
     }
 
     @Override
     public void unselectProcessor() {
         if (parameterAlarmServer != null) {
-            parameterAlarmServer.unsubscribeAlarm(plistener);
+            parameterAlarmServer.removeAlarmListener(plistener);
             parameterAlarmServer = null;
         }
         if (eventAlarmServer != null) {
-            eventAlarmServer.unsubscribeAlarm(elistener);
+            eventAlarmServer.removeAlarmListener(elistener);
             eventAlarmServer = null;
         }
     }
@@ -110,23 +110,23 @@ public class AlarmResource implements WebSocketResource {
         // Every subscribe request may change a previous subscribe request
         // Therefore unregister past listeners, before maybe re-adding some of them.
         if (parameterAlarmServer != null) {
-            parameterAlarmServer.unsubscribeAlarm(plistener);
+            parameterAlarmServer.removeAlarmListener(plistener);
         }
         if (eventAlarmServer != null) {
-            eventAlarmServer.unsubscribeAlarm(elistener);
+            eventAlarmServer.removeAlarmListener(elistener);
         }
 
         if (parameterAlarmServer != null) {
             for (ActiveAlarm<ParameterValue> activeAlarm : parameterAlarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmNotificationType.ACTIVE, activeAlarm);
             }
-            parameterAlarmServer.subscribeAlarm(plistener);
+            parameterAlarmServer.addAlarmListener(plistener);
         }
         if (eventAlarmServer != null) {
             for (ActiveAlarm<Event> activeAlarm : eventAlarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmNotificationType.ACTIVE, activeAlarm);
             }
-            eventAlarmServer.subscribeAlarm(elistener);
+            eventAlarmServer.addAlarmListener(elistener);
         }
     }
 

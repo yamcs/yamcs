@@ -14,13 +14,17 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.alarms.EventAlarmServer;
+import org.yamcs.alarms.EventId;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
@@ -38,12 +42,16 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.ServiceHelper;
 import org.yamcs.web.rest.YamcsToGpbAssembler;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -209,6 +217,123 @@ public class ProcessorRestHandler extends RestHandler {
             }
         }
         completeOK(req, responseb.build());
+    }
+
+    @Deprecated
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT",
+            "POST" })
+    public void patchParameterAlarm(RestRequest req) throws HttpException {
+        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        patchAlarm(req);
+    }
+
+    @Deprecated
+    @Route(path = "/api/processors/:instance/:processor/events/:name*/alarms/:seqnum", method = "PATCH")
+    public void patchEventAlarm(RestRequest req) throws HttpException {
+        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        patchAlarm(req);
+    }
+
+    /**
+     * Finds the appropriate alarm server for the alarm.
+     * 
+     * FIXME why not one namespace and a single server?
+     */
+    public static ActiveAlarm<?> verifyAlarm(RestRequest req, Processor processor, String alarmName, int id)
+            throws HttpException {
+        try {
+            if (processor.hasAlarmServer()) {
+                AlarmServer<Parameter, ParameterValue> parameterAlarmServer = processor.getParameterRequestManager()
+                        .getAlarmServer();
+                XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+                Parameter parameter = mdb.getParameter(alarmName);
+                if (parameter != null) {
+                    ActiveAlarm<ParameterValue> activeAlarm = parameterAlarmServer.getActiveAlarm(parameter, id);
+                    if (activeAlarm != null) {
+                        return activeAlarm;
+                    }
+                }
+            }
+            EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
+            if (eventAlarmServer != null) {
+                try {
+                    EventId eventId = new EventId(alarmName);
+                    ActiveAlarm<Event> activeAlarm = eventAlarmServer.getActiveAlarm(eventId, id);
+                    if (activeAlarm != null) {
+                        return activeAlarm;
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Ignore
+                }
+            }
+        } catch (AlarmSequenceException e) {
+            throw new NotFoundException(req, "Subject is in state of alarm, but alarm id does not match");
+        }
+
+        throw new NotFoundException(req, "No active alarm named '" + alarmName + "'");
+    }
+
+    @Route(path = "/api/processors/:instance/:processor/alarms/:name*/:seqnum", method = "PATCH")
+    public void patchAlarm(RestRequest req) throws HttpException {
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        String alarmName = req.getRouteParam("name");
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = req.getIntegerRouteParam("seqnum");
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(req, processor, alarmName, seqNum);
+
+        String state = null;
+        String comment = null;
+        EditAlarmRequest request = req.bodyAsMessage(EditAlarmRequest.newBuilder()).build();
+        if (request.hasState()) {
+            state = request.getState();
+        }
+        if (request.hasComment()) {
+            comment = request.getComment();
+        }
+
+        // URI can override body
+        if (req.hasQueryParameter("state")) {
+            state = req.getQueryParameter("state");
+        }
+        if (req.hasQueryParameter("comment")) {
+            comment = req.getQueryParameter("comment");
+        }
+        if (state == null) {
+            throw new BadRequestException("No state specified");
+        }
+
+        // TODO permissions on AlarmServer
+        String username = req.getUser().getUsername();
+
+        switch (state.toLowerCase()) {
+        case "acknowledged":
+            try {
+                if (activeAlarm.triggerValue instanceof ParameterValue) {
+                    AlarmServer<Parameter, ParameterValue> alarmServer = verifyParameterAlarmServer(processor);
+                    @SuppressWarnings("unchecked")
+                    ActiveAlarm<ParameterValue> alarm = (ActiveAlarm<ParameterValue>) activeAlarm;
+                    alarmServer.acknowledge(alarm, username, processor.getCurrentTime(), comment);
+                    completeOK(req);
+                } else if (activeAlarm.triggerValue instanceof Event) {
+                    EventAlarmServer alarmServer = verifyEventAlarmServer(processor);
+                    @SuppressWarnings("unchecked")
+                    ActiveAlarm<Event> alarm = (ActiveAlarm<Event>) activeAlarm;
+                    alarmServer.acknowledge(alarm, username, processor.getCurrentTime(), comment);
+                    completeOK(req);
+                } else {
+                    throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+                }
+            } catch (CouldNotAcknowledgeAlarmException e) {
+                log.debug("Did not acknowledge alarm {}. {}", seqNum, e.getMessage());
+                throw new BadRequestException(e.getMessage());
+            }
+            break;
+        default:
+            throw new BadRequestException("Unsupported state '" + state + "'");
+        }
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")

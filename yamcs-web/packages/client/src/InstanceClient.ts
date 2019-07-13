@@ -310,18 +310,9 @@ export class InstanceClient {
     return await wrapper.alarm || [];
   }
 
-  async editParameterAlarm(processor: string, parameter: string, sequenceNumber: number, options: EditAlarmOptions) {
+  async editAlarm(processor: string, alarm: string, sequenceNumber: number, options: EditAlarmOptions) {
     const body = JSON.stringify(options);
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}/parameters${parameter}/alarms/${sequenceNumber}`;
-    return await this.yamcs.doFetch(url, {
-      body,
-      method: 'PATCH',
-    });
-  }
-
-  async editEventAlarm(processor: string, eventId: string, sequenceNumber: number, options: EditAlarmOptions) {
-    const body = JSON.stringify(options);
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}/events${eventId}/alarms/${sequenceNumber}`;
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}/alarms${alarm}/${sequenceNumber}`;
     return await this.yamcs.doFetch(url, {
       body,
       method: 'PATCH',

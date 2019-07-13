@@ -9,13 +9,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
-import org.yamcs.alarms.AlarmServer;
-import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -29,7 +25,6 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -47,56 +42,6 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ProcessorParameterRestHandler extends RestHandler {
-
-    private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
-
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT",
-            "POST" })
-    public void patchParameterAlarm(RestRequest req) throws HttpException {
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        AlarmServer<Parameter, org.yamcs.parameter.ParameterValue> alarmServer = verifyParameterAlarmServer(processor);
-
-        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        int seqNum = req.getIntegerRouteParam("seqnum");
-
-        String state = null;
-        String comment = null;
-        EditAlarmRequest request = req.bodyAsMessage(EditAlarmRequest.newBuilder()).build();
-        if (request.hasState()) {
-            state = request.getState();
-        }
-        if (request.hasComment()) {
-            comment = request.getComment();
-        }
-
-        // URI can override body
-        if (req.hasQueryParameter("state")) {
-            state = req.getQueryParameter("state");
-        }
-        if (req.hasQueryParameter("comment")) {
-            comment = req.getQueryParameter("comment");
-        }
-        if (state == null) {
-            throw new BadRequestException("No state specified");
-        }
-
-        switch (state.toLowerCase()) {
-        case "acknowledged":
-            try {
-                // TODO permissions on AlarmServer
-                String username = req.getUser().getUsername();
-                alarmServer.acknowledge(p, seqNum, username, processor.getCurrentTime(), comment);
-                completeOK(req);
-            } catch (CouldNotAcknowledgeAlarmException e) {
-                log.debug("Did not acknowledge alarm {}. {}", seqNum, e.getMessage());
-                throw new BadRequestException(e.getMessage());
-            }
-            break;
-        default:
-            throw new BadRequestException("Unsupported state '" + state + "'");
-        }
-    }
 
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {

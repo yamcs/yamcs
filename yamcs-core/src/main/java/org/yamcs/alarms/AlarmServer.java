@@ -30,7 +30,6 @@ public class AlarmServer<S, T> extends AbstractService {
 
     private Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
 
-    // Last value of each param (for detecting changes in value)
     final String yamcsInstance;
     static private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
 
@@ -49,12 +48,12 @@ public class AlarmServer<S, T> extends AbstractService {
      * 
      * @return the current set of active alarms
      */
-    public Map<S, ActiveAlarm<T>> subscribeAlarm(AlarmListener<T> listener) {
+    public Map<S, ActiveAlarm<T>> addAlarmListener(AlarmListener<T> listener) {
         alarmListeners.addIfAbsent(listener);
         return activeAlarms;
     }
 
-    public void unsubscribeAlarm(AlarmListener<T> listener) {
+    public void removeAlarmListener(AlarmListener<T> listener) {
         alarmListeners.remove(listener);
     }
 
@@ -63,6 +62,74 @@ public class AlarmServer<S, T> extends AbstractService {
      */
     public Map<S, ActiveAlarm<T>> getActiveAlarms() {
         return activeAlarms;
+    }
+
+    /**
+     * Returns the active alarm for the specified <tt>subject</tt> if it also matches the specified <tt>id</tt>.
+     * 
+     * @param subject
+     *            the subject to look for.
+     * @param id
+     *            the expected id of the active alarm.
+     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     * @throws AlarmSequenceException
+     *             when the specified id does not match the id of the active alarm
+     */
+    public ActiveAlarm<T> getActiveAlarm(S subject, int id) throws AlarmSequenceException {
+        ActiveAlarm<T> alarm = activeAlarms.get(subject);
+        if (alarm != null) {
+            if (alarm.id != id) {
+                throw new AlarmSequenceException(alarm.id, id);
+            }
+            return alarm;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the active alarm for the specified <tt>subject</tt>.
+     * 
+     * @param subject
+     *            the subject to look for.
+     * @return the active alarm, or <tt>null</tt> if no alarm was found
+     */
+    public ActiveAlarm<T> getActiveAlarm(S subject) {
+        return activeAlarms.get(subject);
+    }
+
+    /**
+     * Acknowledges an active alarm instance. If the alarm state is no longer applicable, the alarm is also cleared,
+     * otherwise the alarm will remain active.
+     * 
+     * @param alarm
+     *            the alarm to acknowledge
+     * @param username
+     *            the acknowledging user
+     * @param ackTime
+     *            the time associated with the acknowledgment
+     * @param message
+     *            reason message. Leave <code>null</code> when no reason is given.
+     * @return the updated alarm instance
+     * @throws CouldNotAcknowledgeAlarmException
+     */
+    public ActiveAlarm<T> acknowledge(ActiveAlarm<T> alarm, String username, long ackTime, String message)
+            throws CouldNotAcknowledgeAlarmException {
+        if (!activeAlarms.containsValue(alarm)) {
+            throw new CouldNotAcknowledgeAlarmException("Alarm is not active");
+        }
+
+        alarm.acknowledged = true;
+        alarm.usernameThatAcknowledged = username;
+        alarm.acknowledgeTime = ackTime;
+        alarm.message = message;
+        alarmListeners.forEach(l -> l.notifyAcknowledged(alarm));
+        if (isOkNoAlarm(alarm.currentValue)) {
+            S subject = getSubject(alarm.triggerValue);
+            activeAlarms.remove(subject);
+            alarmListeners.forEach(l -> l.notifyCleared(alarm));
+        }
+
+        return alarm;
     }
 
     @Override
@@ -75,7 +142,7 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     public void update(T value, int minViolations, boolean autoAck) {
-        S alarmId = getObjectId(value);
+        S alarmId = getSubject(value);
 
         ActiveAlarm<T> activeAlarm = activeAlarms.get(alarmId);
 
@@ -139,22 +206,23 @@ public class AlarmServer<S, T> extends AbstractService {
         }
     }
 
-    private S getObjectId(T value) {
+    @SuppressWarnings("unchecked")
+    private S getSubject(T value) {
         if (value instanceof ParameterValue) {
             return (S) ((ParameterValue) value).getParameter();
         } else if (value instanceof Event) {
             Event ev = (Event) value;
             return (S) new EventId(ev.getSource(), ev.getType());
         } else {
-            throw new IllegalArgumentException("Unknonw object type " + value.getClass());
+            throw new IllegalArgumentException("Unknown object type " + value.getClass());
         }
     }
 
-    static private String getName(Object objectId) {
-        if (objectId instanceof Parameter) {
-            return ((Parameter) objectId).getQualifiedName();
-        } else if (objectId instanceof EventId) {
-            EventId eid = (EventId) objectId;
+    static private String getName(Object subject) {
+        if (subject instanceof Parameter) {
+            return ((Parameter) subject).getQualifiedName();
+        } else if (subject instanceof EventId) {
+            EventId eid = (EventId) subject;
             return eid.source + "." + eid.type;
         } else {
             throw new IllegalStateException();
@@ -173,32 +241,6 @@ public class AlarmServer<S, T> extends AbstractService {
         } else {
             throw new IllegalStateException("Unknown value " + value.getClass());
         }
-
-    }
-
-    public ActiveAlarm<T> acknowledge(S objectId, int id, String username, long ackTime, String message)
-            throws CouldNotAcknowledgeAlarmException {
-        ActiveAlarm<T> aa = activeAlarms.get(objectId);
-        if (aa == null) {
-            throw new CouldNotAcknowledgeAlarmException(objectId + " is not in state of alarm");
-        }
-        if (aa.id != id) {
-            log.warn("Got acknowledge for {} but the id does not match", objectId);
-            throw new CouldNotAcknowledgeAlarmException(
-                    "Alarm Id " + id + " does not match parameter " + objectId);
-        }
-
-        aa.acknowledged = true;
-        aa.usernameThatAcknowledged = username;
-        aa.acknowledgeTime = ackTime;
-        aa.message = message;
-        alarmListeners.forEach(l -> l.notifyAcknowledged(aa));
-        if (isOkNoAlarm(aa.currentValue)) {
-            activeAlarms.remove(objectId);
-            alarmListeners.forEach(l -> l.notifyCleared(aa));
-        }
-
-        return aa;
     }
 
     protected static boolean moreSevere(Object newValue, Object oldValue) {
@@ -223,72 +265,5 @@ public class AlarmServer<S, T> extends AbstractService {
     @Override
     public void doStop() {
         notifyStopped();
-    }
-
-    /**
-     * The id of an event for an alarm is its (source,type)
-     * <p>
-     * This means if an alarm is active and an event is generated with the same (source,type) a new alarm will not be
-     * created but the old one updated
-     * 
-     * @author nm
-     *
-     */
-    public static class EventId {
-        final String source;
-        final String type;
-
-        public EventId(String source, String type) {
-            this.source = source;
-            this.type = type;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((source == null) ? 0 : source.hashCode());
-            result = prime * result + ((type == null) ? 0 : type.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            EventId other = (EventId) obj;
-
-            if (source == null) {
-                if (other.source != null) {
-                    return false;
-                }
-            } else if (!source.equals(other.source)) {
-                return false;
-            }
-            if (type == null) {
-                if (other.type != null) {
-                    return false;
-                }
-            } else if (!type.equals(other.type)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            if (source.startsWith("/")) {
-                return source + "/" + type;
-            } else {
-                return "/yamcs/event/" + source + "/" + type;
-            }
-        }
     }
 }

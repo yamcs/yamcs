@@ -1,6 +1,7 @@
 package org.yamcs.web.rest.processor;
 
 import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.EventId;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -143,7 +144,7 @@ public class ProcessorHelper {
                     .build();
         } else {
             return NamedObjectId.newBuilder()
-                    .setNamespace("/yamcs/event/" + source)
+                    .setNamespace(EventId.DEFAULT_NAMESPACE + source)
                     .setName(ev.getType())
                     .build();
         }

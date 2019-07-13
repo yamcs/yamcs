@@ -2,7 +2,6 @@ package org.yamcs.alarms;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.alarms.AlarmServer.EventId;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.Stream;
@@ -12,7 +11,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
- * Handles alarms for events. These are generated whenever an event with a severity level different than INFO is received. 
+ * Handles alarms for events. These are generated whenever an event with a severity level different than INFO is
+ * received.
  * <p>
  * The events having the same (source, type) are considered to be part of the same alarm.
  * 
@@ -23,30 +23,29 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * @author nm
  *
  */
-public class EventAlarmServer extends AlarmServer<EventId, Event>{
+public class EventAlarmServer extends AlarmServer<EventId, Event> {
     private StreamSubscriber eventStreamSubscriber;
     private int eventAlarmMinViolations;
     Stream eventStream;
     static final String EVENT_ALARMS_REALTIME_STREAM = "event_alarms_realtime";
-    
+
     public EventAlarmServer(String yamcsInstance, YConfiguration alarmConfig) {
         super(yamcsInstance);
         eventAlarmMinViolations = alarmConfig.getInt("eventAlarmMinViolations", 1);
     }
-    
+
     @Override
     public void doStart() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        
-        
+
         Stream s = ydb.getStream(EVENT_ALARMS_REALTIME_STREAM);
         if (s == null) {
-            notifyFailed(new ConfigurationException("Cannot find a stream named '" + EVENT_ALARMS_REALTIME_STREAM + "'"));
+            notifyFailed(
+                    new ConfigurationException("Cannot find a stream named '" + EVENT_ALARMS_REALTIME_STREAM + "'"));
             return;
         }
-        subscribeAlarm(new EventAlarmStreamer(s));
-        
-        
+        addAlarmListener(new EventAlarmStreamer(s));
+
         eventStream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
         eventStreamSubscriber = new StreamSubscriber() {
             @Override
@@ -60,14 +59,13 @@ public class EventAlarmServer extends AlarmServer<EventId, Event>{
             }
         };
         eventStream.addSubscriber(eventStreamSubscriber);
-       
-        
+
         notifyStarted();
     }
-    
+
     @Override
     public void doStop() {
-       eventStream.removeSubscriber(eventStreamSubscriber);
-       notifyStopped();
+        eventStream.removeSubscriber(eventStreamSubscriber);
+        notifyStopped();
     }
 }

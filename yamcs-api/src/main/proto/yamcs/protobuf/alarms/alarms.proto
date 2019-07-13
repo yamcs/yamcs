@@ -18,24 +18,24 @@ message AcknowledgeInfo {
 }
 
 enum AlarmNotificationType {
-    ACTIVE = 1;  // Initial active alarms at the moment of request
-    TRIGGERED = 2;  // Whenever a new alarm triggers
-    SEVERITY_INCREASED = 3;  // Whenever an alarm jumps severity
-    UPDATED = 4;  // Whenever a value is updated (even if that value is not a violation by itself)
-    ACKNOWLEDGED = 5;  // Whenever somebody acknowledged an alarm (it could be that it is still OOL)
-    CLEARED = 6; // When the alarm was really cleared by the server (acknowledged && not OOL)
+  ACTIVE = 1;  // Initial active alarms at the moment of request
+  TRIGGERED = 2;  // Whenever a new alarm triggers
+  SEVERITY_INCREASED = 3;  // Whenever an alarm jumps severity
+  UPDATED = 4;  // Whenever a value is updated (even if that value is not a violation by itself)
+  ACKNOWLEDGED = 5;  // Whenever somebody acknowledged an alarm (it could be that it is still OOL)
+  CLEARED = 6; // When the alarm was really cleared by the server (acknowledged && not OOL)
 }
 enum AlarmType {
-    PARAMETER = 1;
-    EVENT = 2;
+  PARAMETER = 1;
+  EVENT = 2;
 }
 
 enum AlarmSeverity {
-    WATCH = 1;
-    WARNING = 2;
-    DISTRESS = 3;
-    CRITICAL = 4;
-    SEVERE = 5;
+  WATCH = 1;
+  WARNING = 2;
+  DISTRESS = 3;
+  CRITICAL = 4;
+  SEVERE = 5;
 }
 
 //the message contains a summary of an alarm applicable for Parameter or Event (possibly other in the future) alarms.

@@ -619,7 +619,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                 notifyFailed(new ConfigurationException("Cannot find a stream named '" + REALTIME_ALARM_SERVER + "'"));
                 return;
             }
-            parameterAlarmServer.subscribeAlarm(new ParameterAlarmStreamer(s));
+            parameterAlarmServer.addAlarmListener(new ParameterAlarmStreamer(s));
             parameterAlarmServer.startAsync();
         }
 
