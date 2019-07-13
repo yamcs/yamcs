@@ -110,11 +110,11 @@ public class XtceDbFactory {
         boolean loadSerialized = attemptToLoadSerialized;
         boolean serializedLoaded = false;
         String filename = sha1(loaderTree.getConfigName() + ".xtce");
-
         File serializedFile = resolveSerializedFile(filename);
+        File consistencyFile = resolveConsistencyFile(filename);
+
         if (loadSerialized) {
             if (serializedFile.exists()) {
-                File consistencyFile = resolveConsistencyFile(filename);
                 try (RandomAccessFile raf = new RandomAccessFile(consistencyFile, "r")) {
                     if (loaderTree.needsUpdate(raf)) {
                         loadSerialized = false;
@@ -175,7 +175,7 @@ public class XtceDbFactory {
 
         if (saveSerialized && (!serializedLoaded)) {
             try {
-                saveSerializedInstance(loaderTree, db, filename);
+                saveSerializedInstance(loaderTree, db, serializedFile, consistencyFile);
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
                 log.warn("Cannot save serialized MDB", e);
@@ -390,7 +390,6 @@ public class XtceDbFactory {
         }
 
         String name = path[path.length - 1];
-        NameDescription nd = null;
         switch (nr.getType()) {
         case PARAMETER:
             return getSimpleReference(ss.getParameter(name));
@@ -591,8 +590,8 @@ public class XtceDbFactory {
     }
 
     private static File resolveCacheFile(String filename) {
-        if (YConfiguration.userConfigDirectory != null) {
-            return new File(YConfiguration.userConfigDirectory, filename).getAbsoluteFile();
+        if (YConfiguration.configDirectory != null) {
+            return new File(YConfiguration.configDirectory, filename).getAbsoluteFile();
         } else {
             return new File("cache", filename).getAbsoluteFile();
         }
@@ -606,11 +605,12 @@ public class XtceDbFactory {
         return resolveCacheFile(filename + ".consistency_date");
     }
 
-    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename)
-            throws IOException, ConfigurationException {
-        try (OutputStream os = new FileOutputStream(resolveSerializedFile(filename));
+    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, File serializedFile,
+            File consistencyFile) throws IOException {
+        serializedFile.getParentFile().mkdirs();
+        try (OutputStream os = new FileOutputStream(serializedFile);
                 ObjectOutputStream out = new ObjectOutputStream(os);
-                FileWriter fw = new FileWriter(resolveConsistencyFile(filename))) {
+                FileWriter fw = new FileWriter(consistencyFile)) {
             out.writeObject(db);
             loaderTree.writeConsistencyDate(fw);
         }

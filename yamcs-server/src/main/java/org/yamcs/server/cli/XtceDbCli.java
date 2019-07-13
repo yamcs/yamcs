@@ -20,7 +20,7 @@ import com.beust.jcommander.Parameters;
 
 @Parameters(commandDescription = "Provides information about the xtce database")
 public class XtceDbCli extends Command {
-    @Parameter(names="-f", required=false, description ="Use this file instead of default mdb.yaml")
+    @Parameter(names = "-f", required = false, description = "Use this file instead of default mdb.yaml")
     String mdbConfigFile;
 
     public XtceDbCli(Command parent) {
@@ -32,27 +32,30 @@ public class XtceDbCli extends Command {
 
     private XtceDb getXtceDb(String configSection) {
         XtceDb xtcedb;
-        if(mdbConfigFile==null) {
+        if (mdbConfigFile == null) {
             xtcedb = XtceDbFactory.createInstanceByConfig(configSection);
         } else {
-            Yaml yaml=new Yaml();
-            try (InputStream is = new FileInputStream(mdbConfigFile)){
+            Yaml yaml = new Yaml();
+            try (InputStream is = new FileInputStream(mdbConfigFile)) {
                 Object o = yaml.load(is);
-                if(o==null) {
-                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile+": file is empty!?");
-                } else if(!(o instanceof Map<?, ?>)) {
-                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile+": top level structure must be a map and not a "+o);
+                if (o == null) {
+                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile + ": file is empty!?");
+                } else if (!(o instanceof Map<?, ?>)) {
+                    throw new ConfigurationException(mdbConfigFile,
+                            mdbConfigFile + ": top level structure must be a map and not a " + o);
                 }
-                o = ((Map<String, Object>)o).get(configSection);
-                if(o==null) {
-                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile+": does not contain a mapping for "+configSection);
-                } else if(!(o instanceof List<?>)) {
-                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile+": mapping for "+configSection+" must be a list and not a "+o.getClass());
+                o = ((Map<String, Object>) o).get(configSection);
+                if (o == null) {
+                    throw new ConfigurationException(mdbConfigFile,
+                            mdbConfigFile + ": does not contain a mapping for " + configSection);
+                } else if (!(o instanceof List<?>)) {
+                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile + ": mapping for " + configSection
+                            + " must be a list and not a " + o.getClass());
                 }
                 List<Object> list = (List<Object>) o;
                 xtcedb = XtceDbFactory.createInstance(list, false, false);
-                
-            } catch (YAMLException|IOException e) {
+
+            } catch (YAMLException | IOException e) {
                 throw new ConfigurationException(mdbConfigFile, e.toString(), e);
             }
         }
@@ -61,7 +64,7 @@ public class XtceDbCli extends Command {
 
     @Parameters(commandDescription = "Print the contents of the XtceDB.")
     private class XtceDbPrint extends Command {
-        @Parameter(required=true, description ="config-name")
+        @Parameter(required = true, description = "config-name")
         private List<String> args;
 
         public XtceDbPrint() {
@@ -70,23 +73,23 @@ public class XtceDbCli extends Command {
 
         @Override
         void validate() {
-            if(args.size()> 1) {
+            if (args.size() > 1) {
                 throw new ParameterException("Please specify only one configuration.");
             }
         }
+
         @Override
         void execute() throws Exception {
-            YConfiguration.setup();
+            YConfiguration.setupTool();
             XtceDb xtcedb = getXtceDb(args.get(0));
             xtcedb.print(System.out);
         }
     }
 
-
     @Parameters(commandDescription = "Verify  that the XtceDB can be loaded.")
     private class XtceDbVerify extends Command {
-        @Parameter(required=true, description ="config-name")
-        //   @Parameter(names="--config", description="XtceDB config name from mdb.yaml", required=true)
+        @Parameter(required = true, description = "config-name")
+        // @Parameter(names="--config", description="XtceDB config name from mdb.yaml", required=true)
         private List<String> args;
 
         public XtceDbVerify() {
@@ -95,14 +98,15 @@ public class XtceDbCli extends Command {
 
         @Override
         void validate() {
-            if(args.size()> 1) {
+            if (args.size() > 1) {
                 throw new ParameterException("Please specify only one configuration.");
             }
         }
+
         @Override
         void execute() throws Exception {
-            if(mdbConfigFile==null) {
-                YConfiguration.setup();
+            if (mdbConfigFile == null) {
+                YConfiguration.setupTool();
             }
             XtceDb xtcedb = getXtceDb(args.get(0));
             console.println("The XtceDB was loaded without error; it contains ");
@@ -112,7 +116,6 @@ public class XtceDbCli extends Command {
             console.println(String.format("%10d commands", xtcedb.getMetaCommands().size()));
         }
     }
-
 
     @Parameters(commandDescription = "List the MDB configurations defined in mdb.yaml.")
     private class XtceDbListConfigs extends Command {
@@ -124,23 +127,24 @@ public class XtceDbCli extends Command {
         @Override
         void execute() throws Exception {
             Set<String> keys;
-            if(mdbConfigFile==null) {
-                YConfiguration.setup();
+            if (mdbConfigFile == null) {
+                YConfiguration.setupTool();
                 YConfiguration c = YConfiguration.getConfiguration("mdb");
                 keys = c.getKeys();
             } else {
-                Yaml yaml=new Yaml();
-                try (InputStream is = new FileInputStream(mdbConfigFile)){
+                Yaml yaml = new Yaml();
+                try (InputStream is = new FileInputStream(mdbConfigFile)) {
                     Object o = yaml.load(is);
-                    if(o==null) {
+                    if (o == null) {
                         throw new ConfigurationException(mdbConfigFile, "file is empty!?");
-                    } else if(!(o instanceof Map<?, ?>)) {
-                        throw new ConfigurationException(mdbConfigFile, "top level structure must be a map and not a "+o);
+                    } else if (!(o instanceof Map<?, ?>)) {
+                        throw new ConfigurationException(mdbConfigFile,
+                                "top level structure must be a map and not a " + o);
                     }
-                    keys = ((Map<String, Object>)o).keySet();
+                    keys = ((Map<String, Object>) o).keySet();
                 }
             }
-            for(String s: keys) {
+            for (String s : keys) {
                 console.println(s);
             }
         }

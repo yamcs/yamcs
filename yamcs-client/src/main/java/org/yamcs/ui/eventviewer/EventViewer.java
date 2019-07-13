@@ -969,7 +969,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         if (args.length > 1) {
             printUsageAndExit();
         }
-        YConfiguration.setup();
+        YConfiguration.setupTool();
         YamcsConnectionProperties ycd = null;
         if (args.length == 1) {
             if (args[0].startsWith("http")) {

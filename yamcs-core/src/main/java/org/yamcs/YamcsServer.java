@@ -771,7 +771,7 @@ public class YamcsServer {
         }
 
         try {
-            YConfiguration.setup();
+            YConfiguration.setupDaemon();
             setupYamcsServer();
         } catch (ConfigurationException e) {
             staticlog.error("Could not start Yamcs Server", e);

@@ -38,7 +38,7 @@ public class XtceAlgorithmTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup(instance);
+        YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
         AlgorithmManager am = new AlgorithmManager(instance);
         c = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);

@@ -1,14 +1,13 @@
 package org.yamcs.archive;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
-import org.yamcs.archive.CcsdsTmIndex;
-import org.yamcs.archive.Record;
 import org.yamcs.archive.CcsdsTmIndex.CcsdsIndexIterator;
 import org.yamcs.yarch.YarchTestCase;
 
@@ -16,7 +15,7 @@ public class CcsdsTmIndexTest extends YarchTestCase {
 
     @BeforeClass
     public static void oneTimeSetup() throws Exception {
-        YConfiguration.setup();
+        YConfiguration.setupTest(null);
     }
 
     private static void assertEqual(Record r, long start, long stop, int nump) {

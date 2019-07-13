@@ -26,7 +26,7 @@ public class SpreadsheetLoaderTest {
     
     @Before
     public void setupXtceDb() {
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         db = XtceDbFactory.getInstance("refmdb");
     }

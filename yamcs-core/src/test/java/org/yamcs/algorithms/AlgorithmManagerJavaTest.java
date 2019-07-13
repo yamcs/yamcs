@@ -38,7 +38,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class AlgorithmManagerJavaTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup(instance);
+        YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
     }
     static String instance = "refmdb";

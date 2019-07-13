@@ -152,7 +152,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
 
         packetPreprocessor = new IssPacketPreprocessor(null);
-        //packetPreprocessor = new CfsPacketPreprocessor(null);
+        // packetPreprocessor = new CfsPacketPreprocessor(null);
 
         packetPreprocessor.checkForSequenceDiscontinuity(false);
 
@@ -1117,7 +1117,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
 
         // Okay, launch the GUI now
-        YConfiguration.setup();
+        YConfiguration.setupTool();
         theApp = new PacketViewer(maxLines);
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("http://")) {

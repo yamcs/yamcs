@@ -1,6 +1,9 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 
@@ -21,8 +24,7 @@ public class BogusSat2Test {
 
     @BeforeClass
     public static void beforeClass() throws ConfigurationException {
-        TimeEncoding.setUp();
-        YConfiguration.setup();
+        YConfiguration.setupTest(null);
         db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
     }
 
@@ -45,7 +47,6 @@ public class BogusSat2Test {
         AggregateValue v = (AggregateValue) pushdr.getEngValue();
         assertEquals(3, v.getMemberValue("SeqCount").getUint32Value());
     }
-
 
     @Test
     public void test2() {

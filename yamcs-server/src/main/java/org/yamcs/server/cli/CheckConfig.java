@@ -65,7 +65,7 @@ public class CheckConfig extends Command {
             if (noEtc) {
                 YConfiguration.setResolver(new YamcsAdminCli.DirConfigurationResolver(configDir));
             } else if (configDir != null) {
-                YConfiguration.setup(null, configDir);
+                YConfiguration.setupTool(configDir);
             }
         }
         File tmpDir = Files.createTempDir();

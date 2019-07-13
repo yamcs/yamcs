@@ -19,7 +19,7 @@ public class XtceToGpbAssemblerTest {
     @Test
     public void toCommandInfo_float_test() throws Exception {
         // Arrange
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
@@ -38,7 +38,7 @@ public class XtceToGpbAssemblerTest {
     @Test
     public void toCommandInfo_int_test() throws Exception {
         // Arrange
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
@@ -57,7 +57,7 @@ public class XtceToGpbAssemblerTest {
     @Test
     public void toCommandInfo_calib_test() throws Exception {
         // Arrange
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");

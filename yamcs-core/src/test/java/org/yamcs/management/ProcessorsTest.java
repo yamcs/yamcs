@@ -42,7 +42,7 @@ public class ProcessorsTest {
     // static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setup() throws Exception {
-        YConfiguration.setup("ProcessorsTest");
+        YConfiguration.setupTest("ProcessorsTest");
         YamcsServer.setupYamcsServer();
     }
 

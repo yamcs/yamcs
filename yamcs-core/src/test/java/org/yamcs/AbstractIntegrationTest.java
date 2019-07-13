@@ -114,7 +114,7 @@ public abstract class AbstractIntegrationTest {
 
         FileUtils.deleteRecursively(dataDir.toPath());
 
-        YConfiguration.setup("IntegrationTest");
+        YConfiguration.setupTest("IntegrationTest");
         Map<String, Object> options = new HashMap<>();
         options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9190);

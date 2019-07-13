@@ -32,7 +32,7 @@ public class LongWebsocketFrameTest {
         // length=328927
 
         // avoid printing stack traces in the unit tests run
-        YConfiguration.setup("LongWebsocketFrameTest");
+        YConfiguration.setupTest("LongWebsocketFrameTest");
         Map<String, Object> options = new HashMap<>();
         options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9191);

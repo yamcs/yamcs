@@ -27,7 +27,7 @@ public class XlsV7LoaderTest {
     
     @Before
     public void setupXtceDb() {
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         db = XtceDbFactory.getInstanceByConfig("refmdb", "refmdb");
     }

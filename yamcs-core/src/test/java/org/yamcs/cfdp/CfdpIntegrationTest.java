@@ -60,7 +60,7 @@ public class CfdpIntegrationTest {
 
         File dataDir = new File("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursively(dataDir.toPath());
-        YConfiguration.setup("cfdp");
+        YConfiguration.setupTest("cfdp");
         YamcsServer.setupYamcsServer();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);

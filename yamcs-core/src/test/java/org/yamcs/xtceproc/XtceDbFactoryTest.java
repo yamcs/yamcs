@@ -26,7 +26,7 @@ public class XtceDbFactoryTest {
      */
     @Test
     public void testNamespaces() throws Exception {
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -131,7 +131,7 @@ public class XtceDbFactoryTest {
 
     @Test
     public void testInstantiation() throws Exception {
-        YConfiguration.setup("XtceDbFactoryTest");
+        YConfiguration.setupTest("XtceDbFactoryTest");
         XtceDbFactory.reset();
         XtceDb db1 = XtceDbFactory.getInstance("refmdb-a");
         XtceDb db2 = XtceDbFactory.getInstance("refmdb-a");

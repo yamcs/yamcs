@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class AlgorithmManagerTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         // org.yamcs.LoggingUtils.enableLogging();
     }

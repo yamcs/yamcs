@@ -907,7 +907,8 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                         r[0] = ts.getPacketName();
                         r[1] = ts.getReceivedPackets();
                         r[2] = TimeEncoding.toCombinedFormat(TimeEncoding.fromProtobufTimestamp(ts.getLastReceived()));
-                        r[3] = TimeEncoding.toCombinedFormat(TimeEncoding.fromProtobufTimestamp(ts.getLastPacketTime()));
+                        r[3] = TimeEncoding
+                                .toCombinedFormat(TimeEncoding.fromProtobufTimestamp(ts.getLastPacketTime()));
                         r[4] = ts.getSubscribedParameterCount();
                         statsTableModel.addRow(r);
                     }
@@ -1039,7 +1040,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                 printUsageAndExit();
             }
         }
-        YConfiguration.setup();
+        YConfiguration.setupTool();
         YamcsMonitor app = new YamcsMonitor();
 
         YamcsConnectionProperties ycd = (initialUrl == null) ? null : YamcsConnectionProperties.parse(initialUrl);

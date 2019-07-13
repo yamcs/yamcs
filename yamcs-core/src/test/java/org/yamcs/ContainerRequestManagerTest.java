@@ -19,7 +19,7 @@ public class ContainerRequestManagerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup("refmdb");
+        YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
         EventProducerFactory.setMockup(false);
     }

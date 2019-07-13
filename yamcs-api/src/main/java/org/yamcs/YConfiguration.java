@@ -42,7 +42,7 @@ import com.google.gson.Gson;
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
 
-    public static File userConfigDirectory; // This is used in client tools to overwrite
+    public static File configDirectory; // This is used in client tools to overwrite
     static YConfigurationResolver resolver = new DefaultConfigurationResolver();
 
     private static Map<String, YConfiguration> configurations = new HashMap<>();
@@ -115,43 +115,63 @@ public class YConfiguration {
     }
 
     /**
-     * calls setup(null)
+     * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
+     * <p>
+     * This method is intended for client tools and make store or use files from <tt>~/.yamcs</tt>.
      */
-    public synchronized static void setup() {
-        setup(null);
+    public synchronized static void setupTool() {
+        File userConfigDirectory = new File(System.getProperty("user.home"), ".yamcs");
+        setupTool(userConfigDirectory);
     }
 
     /**
-     * If configPrefix is not null, sets up the configuration to search the classpath for files like
-     * "configPrefix/xyz.yaml"
-     *
-     * Also sets up the TimeEncoding configuration
-     *
-     * @param configPrefix
+     * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
+     * <p>
+     * This method is intended for client tools that wish to customize the default config directory.
+     * 
+     * @param configDirectory
      */
-    public static synchronized void setup(String configPrefix) {
-        if (System.getenv("YAMCS_DAEMON") == null) {
-            setup(configPrefix, new File(System.getProperty("user.home"), ".yamcs"));
-        } else {
-            setup(configPrefix, null);
+    public synchronized static void setupTool(File configDirectory) {
+        doSetup();
+
+        YConfiguration.configDirectory = configDirectory;
+        File logDir = new File(configDirectory, "log");
+        if (!logDir.exists()) {
+            if (logDir.mkdirs()) {
+                System.err.println("Created directory: " + logDir);
+            } else {
+                System.err.println("Cannot create directory: " + logDir);
+            }
         }
     }
 
-    public static synchronized void setup(String configPrefix, File userConfigDirectory) {
-        prefix = configPrefix;
-        configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
+    /**
+     * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
+     * <p>
+     * This method is intended for use by daemons. It does not make use of the home directory of the running user, and
+     * instead resolves configuration based on the working directory.
+     */
+    public static synchronized void setupDaemon() {
+        doSetup();
+    }
 
-        YConfiguration.userConfigDirectory = userConfigDirectory;
-        if (userConfigDirectory != null) {
-            File logDir = new File(userConfigDirectory, "log");
-            if (!logDir.exists()) {
-                if (logDir.mkdirs()) {
-                    System.err.println("Created directory: " + logDir);
-                } else {
-                    System.err.println("Cannot create directory: " + logDir);
-                }
-            }
-        }
+    /**
+     * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
+     * <p>
+     * This method is intended for use in unit and integration tests. It allows resolving configuration files from a
+     * specific subdirectory of the classpath.
+     *
+     * @param configPrefix
+     *            the name of the subdirectory where to resolve configuration files. This is resolved from the
+     *            classpath.
+     */
+    public static synchronized void setupTest(String configPrefix) {
+        prefix = configPrefix;
+        doSetup();
+    }
+
+    private static synchronized void doSetup() {
+        configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
 
         if (System.getProperty("java.util.logging.config.file") == null) {
             try {
@@ -697,8 +717,8 @@ public class YConfiguration {
             }
 
             // see if the users has an own version of the file
-            if (userConfigDirectory != null) {
-                File f = new File(userConfigDirectory, name);
+            if (configDirectory != null) {
+                File f = new File(configDirectory, name);
                 if (f.exists()) {
                     try {
                         is = new FileInputStream(f);

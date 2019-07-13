@@ -35,7 +35,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class AlgorithmManagerPyTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        YConfiguration.setup(instance);
+        YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
        // org.yamcs.LoggingUtils.enableLogging();
     }
