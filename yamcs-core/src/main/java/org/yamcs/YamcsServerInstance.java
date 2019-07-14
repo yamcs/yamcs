@@ -50,11 +50,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     @Override
     protected void doStart() {
         for (ServiceWithConfig swc : serviceList) {
-            log.info("Starting service {}", swc.getServiceClass());
+            log.info("Starting service {}", swc.getName());
             swc.service.startAsync();
         }
         for (ServiceWithConfig swc : serviceList) {
-            log.info("Starting service {}", swc.getServiceClass());
+            log.info("Awaiting start of service {}", swc.getName());
             ServiceUtil.awaitServiceRunning(swc.service);
         }
         notifyStarted();
@@ -69,7 +69,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         for (int i = serviceList.size() - 1; i >= 0; i--) {
             ServiceWithConfig swc = serviceList.get(i);
             ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
-        }    
+        }
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         ydb.close();

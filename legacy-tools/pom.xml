@@ -21,12 +21,6 @@
       <groupId>net.sourceforge.jdatepicker</groupId>
       <artifactId>jdatepicker</artifactId>
     </dependency>
-    
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   
   <build>

@@ -106,44 +106,48 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public Router(ExecutorService executor) {
         this.offThreadExecutor = executor;
-        registerRouteHandler(null, new CfdpRestHandler());
-        registerRouteHandler(null, new ClientRestHandler());
-        registerRouteHandler(null, new InstanceRestHandler());
-        registerRouteHandler(null, new LinkRestHandler());
-        registerRouteHandler(null, new ServiceRestHandler());
-        registerRouteHandler(null, new TemplateRestHandler());
-        registerRouteHandler(null, new UserRestHandler());
+        registerRouteHandler(new CfdpRestHandler());
+        registerRouteHandler(new ClientRestHandler());
+        registerRouteHandler(new InstanceRestHandler());
+        registerRouteHandler(new LinkRestHandler());
+        registerRouteHandler(new ServiceRestHandler());
+        registerRouteHandler(new TemplateRestHandler());
+        registerRouteHandler(new UserRestHandler());
 
-        registerRouteHandler(null, new ArchiveAlarmRestHandler());
-        registerRouteHandler(null, new ArchiveCommandRestHandler());
-        registerRouteHandler(null, new ArchiveDownloadRestHandler());
-        registerRouteHandler(null, new ArchiveEventRestHandler());
-        registerRouteHandler(null, new ArchiveIndexDownloadsRestHandler());
-        registerRouteHandler(null, new ArchiveIndexRestHandler());
-        registerRouteHandler(null, new ArchivePacketRestHandler());
-        registerRouteHandler(null, new ArchiveParameterRestHandler());
-        registerRouteHandler(null, new ArchiveStreamRestHandler());
-        registerRouteHandler(null, new ArchiveSqlRestHandler());
-        registerRouteHandler(null, new ArchiveTableRestHandler());
-        registerRouteHandler(null, new ArchiveTagRestHandler());
-        registerRouteHandler(null, new BucketRestHandler());
-        registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
-        registerRouteHandler(null, new RocksDbMaintenanceRestHandler());
+        registerRouteHandler(new ArchiveAlarmRestHandler());
+        registerRouteHandler(new ArchiveCommandRestHandler());
+        registerRouteHandler(new ArchiveDownloadRestHandler());
+        registerRouteHandler(new ArchiveEventRestHandler());
+        registerRouteHandler(new ArchiveIndexDownloadsRestHandler());
+        registerRouteHandler(new ArchiveIndexRestHandler());
+        registerRouteHandler(new ArchivePacketRestHandler());
+        registerRouteHandler(new ArchiveParameterRestHandler());
+        registerRouteHandler(new ArchiveStreamRestHandler());
+        registerRouteHandler(new ArchiveSqlRestHandler());
+        registerRouteHandler(new ArchiveTableRestHandler());
+        registerRouteHandler(new ArchiveTagRestHandler());
+        registerRouteHandler(new BucketRestHandler());
+        registerRouteHandler(new ParameterArchiveMaintenanceRestHandler());
+        registerRouteHandler(new RocksDbMaintenanceRestHandler());
 
-        registerRouteHandler(null, new ProcessorRestHandler());
-        registerRouteHandler(null, new ProcessorParameterRestHandler());
-        registerRouteHandler(null, new ProcessorCommandRestHandler());
-        registerRouteHandler(null, new ProcessorCommandQueueRestHandler());
+        registerRouteHandler(new ProcessorRestHandler());
+        registerRouteHandler(new ProcessorParameterRestHandler());
+        registerRouteHandler(new ProcessorCommandRestHandler());
+        registerRouteHandler(new ProcessorCommandQueueRestHandler());
 
-        registerRouteHandler(null, new MDBRestHandler());
-        registerRouteHandler(null, new MDBSpaceSystemRestHandler());
-        registerRouteHandler(null, new MDBParameterRestHandler());
-        registerRouteHandler(null, new MDBParameterTypeRestHandler());
-        registerRouteHandler(null, new MDBContainerRestHandler());
-        registerRouteHandler(null, new MDBCommandRestHandler());
-        registerRouteHandler(null, new MDBAlgorithmRestHandler());
+        registerRouteHandler(new MDBRestHandler());
+        registerRouteHandler(new MDBSpaceSystemRestHandler());
+        registerRouteHandler(new MDBParameterRestHandler());
+        registerRouteHandler(new MDBParameterTypeRestHandler());
+        registerRouteHandler(new MDBContainerRestHandler());
+        registerRouteHandler(new MDBCommandRestHandler());
+        registerRouteHandler(new MDBAlgorithmRestHandler());
 
-        registerRouteHandler(null, new OverviewRouteHandler());
+        registerRouteHandler(new OverviewRouteHandler());
+    }
+
+    public void registerRouteHandler(RouteHandler routeHandler) {
+        registerRouteHandler(null, routeHandler);
     }
 
     // Using method handles for better invoke performance
@@ -181,8 +185,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         // 3. Actual path contents (should not matter too much)
         Collections.sort(routeConfigs);
 
-        List<RouteElement> targetRoutes;
-        targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
+        List<RouteElement> targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
 
         for (RouteConfig routeConfig : routeConfigs) {
             String routeString = routeConfig.originalPath;

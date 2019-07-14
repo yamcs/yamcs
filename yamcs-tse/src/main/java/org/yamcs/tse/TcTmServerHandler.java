@@ -2,7 +2,7 @@ package org.yamcs.tse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Tse.TseCommand;
+import org.yamcs.tse.api.TseCommand;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,7 +19,7 @@ public class TcTmServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TC/TM client connected: " + ctx.channel().remoteAddress());
+        log.info("TM/TC client connected: " + ctx.channel().remoteAddress());
     }
 
     @Override
@@ -35,6 +35,6 @@ public class TcTmServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TC/TM client disconnected: " + ctx.channel().remoteAddress());
+        log.info("TM/TC client disconnected: " + ctx.channel().remoteAddress());
     }
 }

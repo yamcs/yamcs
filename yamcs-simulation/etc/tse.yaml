@@ -1,3 +1,9 @@
+tctm:
+  port: 8135
+
+telnet:
+  port: 8023
+
 instruments:
   - name: tenma
     class: org.yamcs.tse.SerialPortDriver

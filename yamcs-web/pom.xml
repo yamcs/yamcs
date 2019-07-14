@@ -7,14 +7,27 @@
   </parent>
 
   <artifactId>yamcs-web</artifactId>
+  <packaging>jar</packaging>
   <name>Yamcs :: Web Interface</name>
 
   <!--
     This maven module is used to publish a compiled version of the webapp during
     release. It does not actually compile the webapp. We don't use Maven for that.
   -->
+
+  <dependencies>
+    <dependency>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+      </resource>
       <resource>
         <directory>${basedir}/target/webapp</directory>
       </resource>

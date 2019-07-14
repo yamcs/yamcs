@@ -1,8 +1,10 @@
 syntax="proto2";
 
-option java_package = "org.yamcs.protobuf";
-
 package yamcs.protobuf.tse;
+
+option java_package = "org.yamcs.tse.api";
+option java_outer_classname = "TseProto";
+option java_multiple_files = true;
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/commanding/commanding.proto";

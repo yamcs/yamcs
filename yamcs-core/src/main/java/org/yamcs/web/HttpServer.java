@@ -243,7 +243,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         // of worker threads to 2*number of CPU cores
         EventLoopGroup workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
-        
+
         if (port != -1) {
             createAndBindBootstrap(workerGroup, null, port);
         }
@@ -269,7 +269,8 @@ public class HttpServer extends AbstractService implements YamcsService {
         }
     }
 
-    private void createAndBindBootstrap(EventLoopGroup workerGroup, SslContext sslCtx, int port) throws InterruptedException {
+    private void createAndBindBootstrap(EventLoopGroup workerGroup, SslContext sslCtx, int port)
+            throws InterruptedException {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -284,6 +285,10 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     public Future<?> stopServer() {
         return bossGroup.shutdownGracefully();
+    }
+
+    public void registerRouteHandler(RouteHandler routeHandler) {
+        apiRouter.registerRouteHandler(routeHandler);
     }
 
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {

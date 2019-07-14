@@ -813,6 +813,10 @@ public class YConfiguration {
         return new Gson().toJson(root);
     }
 
+    public Map<String, Object> toMap() {
+        return getRoot();
+    }
+
     public String getPath() {
         if (parent == null) {
             return rootLocation;
@@ -852,4 +856,8 @@ public class YConfiguration {
         }
     }
 
+    @Override
+    public String toString() {
+        return root.toString();
+    }
 }

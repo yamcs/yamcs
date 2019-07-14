@@ -7,13 +7,6 @@ services:
       website:
         tag: DEMO
   
-  - class: org.yamcs.tse.TseCommander
-    args:
-      tctm:
-        port: 8135
-      telnet:
-        port: 8023
-
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
 instances:

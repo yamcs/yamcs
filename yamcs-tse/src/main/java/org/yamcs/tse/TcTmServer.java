@@ -14,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Tse.TseCommand;
-import org.yamcs.protobuf.Tse.TseCommandResponse;
-import org.yamcs.protobuf.Tse.TseCommanderMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.tse.api.TseCommand;
+import org.yamcs.tse.api.TseCommandResponse;
+import org.yamcs.tse.api.TseCommanderMessage;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
@@ -83,7 +83,7 @@ public class TcTmServer extends AbstractService {
 
         try {
             b.bind(port).sync();
-            log.info("TC/TM Server listening for clients on port " + port);
+            log.info("TM/TC Server listening for clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

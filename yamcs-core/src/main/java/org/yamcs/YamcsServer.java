@@ -71,7 +71,7 @@ public class YamcsServer {
     Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
 
     // global services
-    List<ServiceWithConfig> globalServiceList = null;
+    List<ServiceWithConfig> globalServiceList;
 
     static Logger staticlog = LoggerFactory.getLogger(YamcsServer.class);
 
@@ -140,7 +140,7 @@ public class YamcsServer {
             }
             name = candidateName;
 
-            staticlog.info("Loading {} service {}", (instance == null) ? "global" : instance, servclass);
+            staticlog.info("Loading {} service {} ({})", (instance == null) ? "global" : instance, name, servclass);
             ServiceWithConfig swc;
             try {
                 swc = createService(instance, servclass, name, args);
@@ -160,7 +160,24 @@ public class YamcsServer {
         }
 
         return serviceList;
+    }
 
+    public <T extends YamcsService> void addGlobalService(
+            String name, Class<T> serviceClass, YConfiguration args) throws IOException {
+
+        for (ServiceWithConfig otherService : server.globalServiceList) {
+            if (otherService.getName().equals(name)) {
+                throw new ConfigurationException(String.format(
+                        "A service named '%s' already exists", name));
+            }
+        }
+
+        staticlog.info("Loading global service {} ({})", name, serviceClass.getName());
+        ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args);
+        server.globalServiceList.add(swc);
+
+        ManagementService managementService = ManagementService.getInstance();
+        managementService.registerService(null, name, swc.service);
     }
 
     /**
@@ -209,13 +226,6 @@ public class YamcsServer {
 
     public static byte[] getSecretKey() {
         return secretKey;
-    }
-
-    private void discoverPlugins() {
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-            staticlog.info("{} {}", plugin.getName(), plugin.getVersion());
-            plugins.add(plugin);
-        }
     }
 
     private void discoverTemplates() throws IOException {
@@ -340,6 +350,29 @@ public class YamcsServer {
         }
     }
 
+    private void loadPlugins() {
+        List<String> disabledPlugins;
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        if (yconf.containsKey("disabledPlugins")) {
+            disabledPlugins = yconf.getList("disabledPlugins");
+        } else {
+            disabledPlugins = Collections.emptyList();
+        }
+
+        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+            if (disabledPlugins.contains(plugin.getName())) {
+                staticlog.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
+            } else {
+                plugins.add(plugin);
+            }
+        }
+
+        for (Plugin plugin : plugins) {
+            staticlog.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
+            plugin.onLoad();
+        }
+    }
+
     private int getNumOnlineInstances() {
         return (int) instances.values().stream().filter(ysi -> ysi.state() != InstanceState.OFFLINE).count();
     }
@@ -359,9 +392,9 @@ public class YamcsServer {
     public static void setupYamcsServer() throws Exception {
         staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
 
-        server.discoverPlugins();
         server.discoverTemplates();
         server.createGlobalServicesAndInstances();
+        server.loadPlugins();
         server.startServices();
 
         Thread.setDefaultUncaughtExceptionHandler((t, thrown) -> {
