@@ -10,20 +10,16 @@ set -e
 # Official releases should be done from a Debian-based machine because of use
 # of dpkg-deb.
 
-buildweb=1
 builddeb=1
 GPG_KEY=yamcs@spaceapplications.com
 
 for arg in "$@"; do
     case "$arg" in
-    --no-web)
-        buildweb=0
-        ;;
     --no-deb)
         builddeb=0
         ;;
     *)
-        echo "Usage: $0 [--no-web] [--no-deb]"
+        echo "Usage: $0 [--no-deb]"
         exit 1;
         ;;
     esac
@@ -73,13 +69,11 @@ rm -rf $clonedir/.git
 
 cd $clonedir
 
-if [ $buildweb -eq 1 ]; then
-    cd yamcs-web
-    yarn install --network-timeout 100000
-    yarn build
-    rm -rf `find . -maxdepth 3 -name node_modules`
-    cd ..
-fi
+cd yamcs-web
+yarn install --network-timeout 100000
+yarn build
+rm -rf `find . -maxdepth 3 -name node_modules`
+cd ..
 
 mvn package -P yamcs-release -DskipTests
 
