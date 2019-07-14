@@ -6,20 +6,17 @@ set -e
 # 2. Emit artifacts in various formats.
 #
 # By design (2) does not require any sort of compilation.
-#
-# Official releases should be done from a Debian-based machine because of use
-# of dpkg-deb.
 
-builddeb=1
+builddeb=0
 GPG_KEY=yamcs@spaceapplications.com
 
 for arg in "$@"; do
     case "$arg" in
-    --no-deb)
-        builddeb=0
+    --with-deb)
+        builddeb=1
         ;;
     *)
-        echo "Usage: $0 [--no-deb]"
+        echo "Usage: $0 [--with-deb]"
         exit 1;
         ;;
     esac
