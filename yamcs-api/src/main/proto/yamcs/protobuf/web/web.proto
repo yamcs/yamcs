@@ -209,12 +209,6 @@ message TokenResponse {
 }
 
 message WebsiteConfig {
-  enum BucketScope {
-    GLOBAL = 1;
-    INSTANCE = 2;
-  }
   optional AuthInfo auth = 1;
-  optional BucketScope displayScope = 2;
-  optional BucketScope stackScope = 3;
-  optional string tag = 4;
+  optional string tag = 2;
 }

@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { Instance, StorageClient } from '@yamcs/client';
+import { StorageClient } from '@yamcs/client';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
-import { ConfigService } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
@@ -31,22 +30,18 @@ export class ScriptViewer implements Viewer, OnDestroy {
 
   private darkModeSubscription: Subscription;
 
-  private instance: Instance;
   private storageClient: StorageClient;
 
   constructor(
     yamcs: YamcsService,
-    private configService: ConfigService,
     private preferenceStore: PreferenceStore,
     private changeDetector: ChangeDetectorRef,
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
   }
 
   public init(objectName: string) {
-    const bucketInstance = this.configService.getDisplayBucketInstance();
-    this.storageClient.getObject(bucketInstance, 'displays', objectName).then(response => {
+    this.storageClient.getObject('_global', 'displays', objectName).then(response => {
       response.text().then(text => {
         this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);

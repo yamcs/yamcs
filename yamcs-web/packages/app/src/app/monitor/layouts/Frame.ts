@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, ComponentFactoryResolver, ElementRef, Typ
 import { Router } from '@angular/router';
 import { Display, DisplayCommunicator, NavigationHandler, OpenDisplayCommandOptions } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
-import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { OpiDisplayViewer } from '../displays/OpiDisplayViewer';
@@ -64,10 +63,9 @@ export class Frame implements NavigationHandler {
     private componentFactoryResolver: ComponentFactoryResolver,
     private changeDetector: ChangeDetectorRef,
     yamcs: YamcsService,
-    configService: ConfigService,
     router: Router,
   ) {
-    this.displayCommunicator = new MyDisplayCommunicator(yamcs, configService, router);
+    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
   public init(id: string, layout: Layout, coordinates: Coordinates) {

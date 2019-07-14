@@ -8,7 +8,6 @@ import { Instance, ListObjectsOptions, ListObjectsResponse, StorageClient } from
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
@@ -26,7 +25,6 @@ export class DisplayFolderPage implements OnDestroy {
   dropArea: ElementRef;
 
   instance: Instance;
-  bucketInstance: string;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
@@ -45,13 +43,10 @@ export class DisplayFolderPage implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private configService: ConfigService,
   ) {
     title.setTitle('Displays');
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
-
-    this.bucketInstance = configService.getDisplayBucketInstance();
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -70,7 +65,7 @@ export class DisplayFolderPage implements OnDestroy {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
 
-    this.storageClient.listObjects(this.bucketInstance, 'displays', options).then(dir => {
+    this.storageClient.listObjects('_global', 'displays', options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -90,7 +85,7 @@ export class DisplayFolderPage implements OnDestroy {
         folder: false,
         name: object.name,
         modified: object.created,
-        objectUrl: this.storageClient.getObjectURL(this.bucketInstance, 'displays', object.name),
+        objectUrl: this.storageClient.getObjectURL('_global', 'displays', object.name),
       });
     }
     this.dataSource.data = items;
@@ -156,7 +151,7 @@ export class DisplayFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects(this.bucketInstance, 'displays', {
+        findObjectPromises.push(this.storageClient.listObjects('_global', 'displays', {
           prefix: item.name,
         }).then(response => {
           const objects = response.object || [];
@@ -171,7 +166,7 @@ export class DisplayFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject(this.bucketInstance, 'displays', object));
+          deletePromises.push(this.storageClient.deleteObject('_global', 'displays', object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -197,7 +192,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-      this.storageClient.deleteObject(this.bucketInstance, 'displays', item.name).then(() => {
+      this.storageClient.deleteObject('_global', 'displays', item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
@@ -231,13 +226,11 @@ export class DisplayFolderPage implements OnDestroy {
         objectPrefix += '/';
       }
 
-      const bucketInstance = this.configService.getDisplayBucketInstance();
-
       dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
         const uploadPromises: any[] = [];
         for (const droppedFile of droppedFiles) {
           const objectPath = objectPrefix + droppedFile._fullPath;
-          const promise = this.storageClient.uploadObject(bucketInstance, 'displays', objectPath, droppedFile);
+          const promise = this.storageClient.uploadObject('_global', 'displays', objectPath, droppedFile);
           uploadPromises.push(promise);
         }
         Promise.all(uploadPromises).finally(() => {

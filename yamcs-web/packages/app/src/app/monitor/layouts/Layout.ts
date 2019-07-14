@@ -8,7 +8,6 @@ import { Coordinates, Frame } from './Frame';
 import { FrameHost } from './FrameHost';
 import { FrameState, LayoutState } from './LayoutState';
 
-
 @Component({
   selector: 'app-layout',
   templateUrl: './Layout.html',
@@ -38,7 +37,6 @@ export class Layout implements OnInit, OnDestroy {
   showNavigator$: BehaviorSubject<boolean>;
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
-  private bucketInstance: string;
   private storageClient: StorageClient;
 
   private componentsById = new Map<string, ComponentRef<Frame>>();
@@ -56,12 +54,11 @@ export class Layout implements OnInit, OnDestroy {
     configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucketInstance = configService.getDisplayBucketInstance();
   }
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
-    this.storageClient.listObjects(this.bucketInstance, 'displays', {
+    this.storageClient.listObjects('_global', 'displays', {
       delimiter: '/',
     }).then(response => {
       this.currentFolder$.next({
@@ -107,7 +104,7 @@ export class Layout implements OnInit, OnDestroy {
     if (path) {
       options.prefix = path;
     }
-    this.storageClient.listObjects(this.bucketInstance, 'displays', options).then(response => {
+    this.storageClient.listObjects('_global', 'displays', options).then(response => {
       this.currentFolder$.next({
         location: path,
         prefixes: response.prefix || [],

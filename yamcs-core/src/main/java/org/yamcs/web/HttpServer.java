@@ -23,7 +23,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
 import org.yamcs.protobuf.Web.WebsiteConfig;
-import org.yamcs.protobuf.Web.WebsiteConfig.BucketScope;
 import org.yamcs.web.rest.Router;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -86,12 +85,6 @@ public class HttpServer extends AbstractService implements YamcsService {
     }
 
     public HttpServer(YConfiguration args) {
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        if (yconf.containsKey("webConfig")) {
-            log.warn("Deprecation: Define webConfig properties as args on the HttpServer");
-            args = yconf.getConfig("webConfig");
-        }
-
         port = args.getInt("port", -1);
         tlsPort = args.getInt("tlsPort", -1);
 
@@ -166,31 +159,9 @@ public class HttpServer extends AbstractService implements YamcsService {
             corsConfig = corsb.build();
         }
 
-        WebsiteConfig.Builder configb = WebsiteConfig.newBuilder()
-                .setDisplayScope(BucketScope.GLOBAL)
-                .setStackScope(BucketScope.GLOBAL);
+        WebsiteConfig.Builder configb = WebsiteConfig.newBuilder();
         if (args.containsKey("website")) {
             YConfiguration ywebsite = args.getConfig("website");
-            if (ywebsite.containsKey("displayScope")) {
-                switch (ywebsite.getString("displayScope")) {
-                case "INSTANCE":
-                    configb.setDisplayScope(BucketScope.INSTANCE);
-                    break;
-                case "GLOBAL":
-                    configb.setDisplayScope(BucketScope.GLOBAL);
-                    break;
-                }
-            }
-            if (ywebsite.containsKey("stackScope")) {
-                switch (ywebsite.getString("stackScope")) {
-                case "INSTANCE":
-                    configb.setStackScope(BucketScope.INSTANCE);
-                    break;
-                case "GLOBAL":
-                    configb.setStackScope(BucketScope.GLOBAL);
-                    break;
-                }
-            }
             if (ywebsite.containsKey("tag")) {
                 configb.setTag(ywebsite.getString("tag"));
             }

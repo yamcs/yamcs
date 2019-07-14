@@ -14,7 +14,6 @@ export class RenameDisplayDialog {
 
   filenameForm: FormGroup;
 
-  private bucketInstance: string;
   private storageClient: StorageClient;
 
   constructor(
@@ -26,7 +25,6 @@ export class RenameDisplayDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this. bucketInstance = configService.getDisplayBucketInstance();
 
     const filename = filenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({
@@ -41,12 +39,12 @@ export class RenameDisplayDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject(this.bucketInstance, 'displays', this.data.name);
+    const response = await this.storageClient.getObject('_global', 'displays', this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;
-    await this.storageClient.uploadObject(this.bucketInstance, 'displays', newObjectName, blob);
-    await this.storageClient.deleteObject(this.bucketInstance, 'displays', this.data.name);
+    await this.storageClient.uploadObject('_global', 'displays', newObjectName, blob);
+    await this.storageClient.deleteObject('_global', 'displays', this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

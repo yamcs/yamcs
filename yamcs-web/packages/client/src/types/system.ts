@@ -3,12 +3,8 @@ import { CommandQueueEntry, Value } from './monitoring';
 
 export interface WebsiteConfig {
   auth: AuthInfo;
-  displayScope: BucketScope;
-  stackScope: BucketScope;
   tag: string;
 }
-
-export type BucketScope = 'GLOBAL' | 'INSTANCE';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -31,7 +27,6 @@ export interface GeneralInfo {
   yamcsVersion: string;
   revision: string;
   serverId: string;
-  defaultYamcsInstance: string;
   plugin: PluginInfo[];
 }
 

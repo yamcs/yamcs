@@ -38,7 +38,7 @@ This is a global service defined in ``etc/yamcs.yaml``. Example from a typical d
             allowOrigin: "*"
             allowCredentials: false
           website:
-            displayScope: GLOBAL
+            tag: DEMO
 
 
 Configuration Options
@@ -95,5 +95,5 @@ allowCredentials (boolean)
 Website sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-displayScope (string)
-    Where to locate displays and layouts. One of ``INSTANCE`` or ``GLOBAL``. Setting this to ``GLOBAL`` means that displays are shared between all instances. Setting this to ``INSTANCE``, means that each instance uses its own displays. Default: ``GLOBAL``
+tag (string)
+    Tag to show in the top right of the application bar. This allows quickly identifying a particular deployment of Yamcs.

@@ -1,9 +1,8 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Instance, StorageClient } from '@yamcs/client';
+import { StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
-import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -19,17 +18,14 @@ export class UploadFilesDialog {
 
   uploading$ = new BehaviorSubject<boolean>(false);
 
-  private instance: Instance;
   private storageClient: StorageClient;
 
   constructor(
     private dialogRef: MatDialogRef<UploadFilesDialog>,
     formBuilder: FormBuilder,
     yamcs: YamcsService,
-    private configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
     this.formGroup = formBuilder.group({
       path: [data.path, Validators.required],
@@ -57,8 +53,7 @@ export class UploadFilesDialog {
         const file = files[key];
         const fullPath = path ? path + '/' + file.name : file.name;
 
-        const bucketInstance = this.configService.getDisplayBucketInstance();
-        const promise = this.storageClient.uploadObject(bucketInstance, 'displays', fullPath, file);
+        const promise = this.storageClient.uploadObject('_global', 'displays', fullPath, file);
         uploadPromises.push(promise);
       }
     }

@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@an
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Instance, StorageClient } from '@yamcs/client';
-import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -31,7 +30,6 @@ export class CreateDisplayDialog {
     yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
-    private configService: ConfigService,
   ) {
     this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
@@ -75,8 +73,7 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
-    const bucketInstance = this.configService.getDisplayBucketInstance();
-    this.storageClient.uploadObject(bucketInstance, 'displays', fullPath, b).then(() => {
+    this.storageClient.uploadObject('_global', 'displays', fullPath, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

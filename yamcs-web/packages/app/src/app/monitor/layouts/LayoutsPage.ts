@@ -5,7 +5,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Instance, ObjectInfo, StorageClient } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateLayoutDialog } from './CreateLayoutDialog';
 import { RenameLayoutDialog } from './RenameLayoutDialog';
@@ -18,7 +17,6 @@ import { RenameLayoutDialog } from './RenameLayoutDialog';
 export class LayoutsPage {
 
   instance: Instance;
-  bucketInstance: string;
 
   displayedColumns = ['select', 'name', 'visibility', 'modified', 'actions'];
   dataSource = new MatTableDataSource<ObjectInfo>([]);
@@ -31,18 +29,16 @@ export class LayoutsPage {
     yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
-    configService: ConfigService,
   ) {
     title.setTitle('Layouts');
     this.instance = yamcs.getInstance();
-    this.bucketInstance = configService.getDisplayBucketInstance();
     this.storageClient = yamcs.createStorageClient();
     this.loadLayouts();
   }
 
   private loadLayouts() {
     const username = this.authService.getUser()!.getUsername();
-    this.storageClient.listObjects(this.bucketInstance, `user.${username}`, {
+    this.storageClient.listObjects('_global', `user.${username}`, {
       prefix: 'layouts',
     }).then(response => {
       this.dataSource.data = response.object || [];
@@ -80,7 +76,7 @@ export class LayoutsPage {
     if (confirm('Are you sure you want to delete the selected layouts?')) {
       const deletePromises = [];
       for (const object of this.selection.selected) {
-        const promise = this.storageClient.deleteObject(this.bucketInstance, bucket, object.name);
+        const promise = this.storageClient.deleteObject('_global', bucket, object.name);
         deletePromises.push(promise);
       }
 

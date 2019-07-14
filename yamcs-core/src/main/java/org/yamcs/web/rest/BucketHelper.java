@@ -69,12 +69,6 @@ public class BucketHelper {
                     } catch (IOException e) {
                         throw new InternalServerErrorException("Error creating user bucket", e);
                     }
-                } else if (bucketName.equals("displays")) {
-                    try {
-                        bucket = yarch.createBucket(bucketName);
-                    } catch (IOException e) {
-                        throw new InternalServerErrorException("Error creating displays bucket", e);
-                    }
                 } else {
                     throw new NotFoundException(req);
                 }
