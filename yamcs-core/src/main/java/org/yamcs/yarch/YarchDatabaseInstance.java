@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,22 +76,23 @@ public class YarchDatabaseInstance {
         managementService = ManagementService.getInstance();
 
         String instConfName = "yamcs." + instanceName;
+        YConfiguration yconf;
         if (YConfiguration.isDefined(instConfName)) {
-            YConfiguration instConf = YConfiguration.getConfiguration(instConfName);
-            if (instConf.containsKey("tablespace")) {
-                tablespaceName = instConf.getString("tablespace");
+            yconf = YConfiguration.getConfiguration(instConfName);
+            if (yconf.containsKey("tablespace")) {
+                tablespaceName = yconf.getString("tablespace");
             } else {
                 tablespaceName = instanceName;
             }
 
-            if (instConf.containsKey("bucketDatabase")) {
-                YConfiguration dbConfig = instConf.getConfig("bucketDatabase");
+            if (yconf.containsKey("bucketDatabase")) {
+                YConfiguration dbConfig = yconf.getConfig("bucketDatabase");
                 loadBucketDatabase(dbConfig);
             }
         } else {
+            yconf = YConfiguration.getConfiguration("yamcs");
             tablespaceName = instanceName;
 
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
             if (yconf.containsKey("bucketDatabase")) {
                 YConfiguration dbConfig = yconf.getConfig("bucketDatabase");
                 loadBucketDatabase(dbConfig);
@@ -105,6 +107,11 @@ public class YarchDatabaseInstance {
             fileSystemBucketDatabase = new FileSystemBucketDatabase(instanceName);
         } catch (IOException e) {
             throw new YarchException("Failed to load file-system based bucket database", e);
+        }
+
+        if (yconf.containsKey("buckets")) {
+            List<YConfiguration> bucketsConfig = yconf.getConfigList("buckets");
+            loadBuckets(bucketsConfig);
         }
     }
 
@@ -121,6 +128,31 @@ public class YarchDatabaseInstance {
             throw new ConfigurationException("Failed to load bucket database: " + e.getMessage(), e);
         }
         return bucketDatabase;
+    }
+
+    /**
+     * Loads pre-defined buckets. The buckets will be created if they do not exist yet. By using the <code>path</code>
+     * argument, it is possible to map a bucket to a random file system location instead of the default bucket storage
+     * engine of this Yarch instance.
+     */
+    private void loadBuckets(List<YConfiguration> configs) {
+        try {
+            for (YConfiguration config : configs) {
+                String name = config.getString("name");
+                if (config.containsKey("path")) {
+                    Path path = Paths.get(config.getString("path"));
+                    addFileSystemBucket(name, path);
+                } else {
+                    Bucket bucket = getBucket(name);
+                    if (bucket == null) {
+                        log.info("Creating bucket {}", name);
+                        createBucket(name);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new ConfigurationException("Failed to load buckets: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -424,11 +456,55 @@ public class YarchDatabaseInstance {
         return bucketDatabase.createBucket(bucketName);
     }
 
+    /**
+     * Creates a bucket that maps to the file system. This bucket will be located in a default folder.
+     * 
+     * @param bucketName
+     *            the name of the bucket
+     * @return the created bucket
+     * @throws IOException
+     *             on I/O issues
+     * @deprecated Use {@link #addFileSystemBucket(String, Path)}
+     */
+    @Deprecated
     public FileSystemBucket createFileSystemBucket(String bucketName) throws IOException {
-        return fileSystemBucketDatabase.createBucket(bucketName);
+        FileSystemBucket bucket = fileSystemBucketDatabase.getBucket(bucketName);
+        if (bucket == null) {
+            bucket = fileSystemBucketDatabase.createBucket(bucketName);
+        }
+        return bucket;
     }
 
+    /**
+     * Creates a bucket that maps to the file system.
+     * 
+     * @param bucketName
+     *            the name of the bucket
+     * @param location
+     *            the path to the bucket contents
+     * @return the created bucket
+     * @throws IOException
+     *             on I/O issues
+     * @deprecated Use {@link #addFileSystemBucket(String, Path)}
+     */
+    @Deprecated
     public FileSystemBucket createFileSystemBucket(String bucketName, Path location) throws IOException {
+        return addFileSystemBucket(bucketName, location);
+    }
+
+    /**
+     * Adds a bucket that maps to the file system. This is a transient operation that has to be done on each server
+     * restart.
+     * 
+     * @param bucketName
+     *            the name of the bucket
+     * @param location
+     *            the path to the bucket contents
+     * @return the created bucket
+     * @throws IOException
+     *             on I/O issues
+     */
+    public FileSystemBucket addFileSystemBucket(String bucketName, Path location) throws IOException {
         return fileSystemBucketDatabase.registerBucket(bucketName, location);
     }
 
