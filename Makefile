@@ -28,10 +28,6 @@ package: build
 test:
 	@mvn test javadoc:javadoc
 
-.PHONY: live
-live:
-	@./make-live-devel.sh --yss
-
 .PHONY: install
 install:
 	@install -d $(DESTDIR)$(PREFIX)/yamcs || exit

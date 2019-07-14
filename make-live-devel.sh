@@ -64,8 +64,11 @@ ln -fs $YAMCS_HOME/yamcs-client/target/dependency/jdatepicker*.jar $TARGET/lib
 
 # Sets up a development environment for an example Yamcs configuration
 if [ $YSS_CONFIGURATION -eq "1" ]; then
-    YAMCS_DATA=/storage/yamcs-data
-
+    echo "-----------------------------------------------------"
+    echo "Yamcs is moving away from the 'live' dev config."
+    echo "The new way to run the simulation is:"
+    echo "   ./run-simulation.sh"
+    echo "-----------------------------------------------------"
     cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
 
     ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
@@ -89,4 +92,5 @@ for f in $YAMCS_HOME/yamcs-core/etc/* ; do
             ;;
     esac
 done
+
 
