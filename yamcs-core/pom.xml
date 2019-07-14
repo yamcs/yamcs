@@ -4,7 +4,6 @@
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
     <version>4.10.3-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -13,32 +12,39 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.yamcs</groupId>
       <artifactId>yamcs-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.yamcs</groupId>
       <artifactId>yamcs-xtce</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython-standalone</artifactId>
-      <version>2.7.1</version>
-      <scope>test</scope>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
-      <version>${nettyVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.jexcelapi</groupId>
+      <artifactId>jxl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.rocksdb</groupId>
+      <artifactId>rocksdbjni</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -53,40 +59,19 @@
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.janino</groupId>
-      <artifactId>janino</artifactId>
-      <version>2.7.6</version>
-    </dependency>
-    <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.24</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>net.sourceforge.jexcelapi</groupId>
-      <artifactId>jxl</artifactId>
-      <version>2.6.12</version>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>19.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.rocksdb</groupId>
-      <artifactId>rocksdbjni</artifactId>
-      <version>5.7.3</version>
-    </dependency>
-    <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-core</artifactId>
-      <version>4.0.3</version>
+      <groupId>org.python</groupId>
+      <artifactId>jython-standalone</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -107,7 +92,7 @@
         <directory>${basedir}/etc</directory>
       </testResource>
     </testResources>
-    <finalName>${project.artifactId}-${project.version}</finalName>
+
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -115,6 +100,9 @@
           <execution>
             <id>generate-version</id>
             <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
             <configuration>
               <tasks>
                 <exec executable="git" outputproperty="revision">
@@ -128,9 +116,6 @@
                 </echo>
               </tasks>
             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

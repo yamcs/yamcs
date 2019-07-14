@@ -6,7 +6,6 @@
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
     <version>4.10.3-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>yamcs-simulation</artifactId>
@@ -24,6 +23,7 @@
       <artifactId>yamcs-tse</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
@@ -48,6 +48,7 @@
       <artifactId>activation</artifactId>
       <version>1.1.1</version>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

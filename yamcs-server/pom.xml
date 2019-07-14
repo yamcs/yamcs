@@ -12,14 +12,16 @@
   
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
