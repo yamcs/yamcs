@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>yamcs-artemis</artifactId>
-  <name>Yamcs Artemis</name>
+  <name>Yamcs :: Artemis</name>
   <description>Yamcs Artemis senders/receivers</description>
 
   <dependencies>

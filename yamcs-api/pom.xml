@@ -9,7 +9,7 @@
 
   <artifactId>yamcs-api</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs API</name>
+  <name>Yamcs :: API</name>
   <description>Used by external clients to communicate with Yamcs</description>
 
   <dependencies>

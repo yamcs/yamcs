@@ -8,17 +8,22 @@
   
   <artifactId>distribution</artifactId>
   <packaging>pom</packaging>
-  <name>Distribution</name>
+  <name>Yamcs :: Distribution</name>
   
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-artemis</artifactId>
+      <artifactId>legacy-tools</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-client</artifactId>
+      <artifactId>packet-viewer</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-artemis</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -50,6 +55,19 @@
                 <descriptor>yamcs.descriptor.xml</descriptor>
               </descriptors>
               <finalName>yamcs-${project.version}</finalName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>packet-viewer-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>packet-viewer.descriptor.xml</descriptor>
+              </descriptors>
+              <finalName>packet-viewer-${project.version}</finalName>
             </configuration>
           </execution>
           <execution>

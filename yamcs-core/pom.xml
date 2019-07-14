@@ -8,7 +8,7 @@
 
   <artifactId>yamcs-core</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs Core</name>
+  <name>Yamcs :: Core</name>
 
   <dependencies>
     <dependency>

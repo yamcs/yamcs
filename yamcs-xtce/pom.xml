@@ -10,7 +10,7 @@
 
   <artifactId>yamcs-xtce</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs XTCE</name>
+  <name>Yamcs :: XTCE</name>
 
   <dependencies>
     <dependency>

@@ -1,20 +1,20 @@
-Name: yamcs-client
+Name: packet-viewer
 Version: @@VERSION@@
 Release: @@RELEASE@@
 
 Group: MCS
-Summary: Yamcs Legacy Tools
+Summary: Yamcs Packet Viewer
 
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: AGPL (client) + LGPL (API)
 URL: https://www.yamcs.org
-Prefix: /opt/yamcs-client
+Prefix: /opt/packet-viewer
 BuildArch: noarch
 
 
 %description
-Legacy client tools for Yamcs.
+Packet Viewer for Yamcs.
 
 
 %install

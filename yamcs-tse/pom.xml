@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>yamcs-tse</artifactId>
-  <name>Yamcs TSE</name>
+  <name>Yamcs :: TSE</name>
   <description>Yamcs for Test Support Equipment</description>
 
   <build>

@@ -191,6 +191,20 @@
     </pluginManagement>
   </build>
 
+  <modules>
+    <module>legacy-tools</module>
+    <module>packet-viewer</module>
+    <module>yamcs-api</module>
+    <module>yamcs-artemis</module>
+    <module>yamcs-core</module>
+    <module>yamcs-server</module>
+    <module>yamcs-simulation</module>
+    <module>yamcs-tse</module>
+    <module>yamcs-web</module>
+    <module>yamcs-xtce</module>
+    <module>distribution</module>
+  </modules>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -312,19 +326,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <modules>
-    <module>yamcs-api</module>
-    <module>yamcs-artemis</module>
-    <module>yamcs-client</module>
-    <module>yamcs-core</module>
-    <module>yamcs-server</module>
-    <module>yamcs-simulation</module>
-    <module>yamcs-tse</module>
-    <module>yamcs-web</module>
-    <module>yamcs-xtce</module>
-    <module>distribution</module>
-  </modules>
 
   <distributionManagement>
     <snapshotRepository>

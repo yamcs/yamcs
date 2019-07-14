@@ -3,7 +3,7 @@ set -e
 
 # This script generates releases in two steps:
 # 1. Compile a fresh clone of the development tree
-# 2. Emit artifacts (yamcs, yamcs-simulation, yamcs-client) in various formats.
+# 2. Emit artifacts in various formats.
 #
 # By design (2) does not require any sort of compilation.
 #
@@ -101,6 +101,14 @@ rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
 cp -r $clonedir "$rpmtopdir/BUILD/yamcs-simulation-$version-$release"
 cat distribution/rpm/yamcs-simulation.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs-simulation.spec
 rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs-simulation.spec"
+
+# Packet Viewer RPM
+cp distribution/target/packet-viewer-$pomversion.tar.gz $yamcshome/distribution/target
+rpmbuilddir="$rpmtopdir/BUILD/packet-viewer-$version-$release"
+mkdir -p "$rpmbuilddir/opt/packet-viewer"
+tar -xzf distribution/target/packet-viewer-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/packet-viewer"
+cat distribution/rpm/packet-viewer.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/packet-viewer.spec
+rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/packet-viewer.spec"
 
 # Legacy Yamcs Client RPM
 cp distribution/target/yamcs-client-$pomversion.tar.gz $yamcshome/distribution/target

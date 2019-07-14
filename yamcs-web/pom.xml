@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>yamcs-web</artifactId>
-  <name>Yamcs Web</name>
+  <name>Yamcs :: Web Interface</name>
 
   <!--
     This maven module is used to publish a compiled version of the webapp during

@@ -1,7 +1,7 @@
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>yamcs-client</id>
+  <id>packet-viewer</id>
 
   <formats>
     <format>tar.gz</format>
@@ -14,7 +14,7 @@
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <includes>
-        <include>org.yamcs:legacy-tools</include>
+        <include>org.yamcs:packet-viewer</include>
         <include>org.yamcs:yamcs-core</include>
       </includes>
       <excludes>
@@ -25,12 +25,21 @@
 
   <fileSets>
     <fileSet>
-      <directory>../legacy-tools/bin</directory>
+      <directory>../packet-viewer/bin</directory>
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>../legacy-tools/etc</directory>
+      <directory>../packet-viewer/etc</directory>
       <outputDirectory>etc</outputDirectory>
+    </fileSet>
+
+    <!-- Trick to add empty directories... -->
+    <fileSet>
+      <directory>.</directory>
+      <outputDirectory>mdb</outputDirectory>
+      <excludes>
+        <exclude>*/**</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
 </assembly>

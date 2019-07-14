@@ -10,7 +10,7 @@
 
   <artifactId>yamcs-simulation</artifactId>
   <packaging>jar</packaging>
-  <name>Yamcs Simulation</name>
+  <name>Yamcs :: Example Simulation</name>
 
   <dependencies>
     <dependency>
