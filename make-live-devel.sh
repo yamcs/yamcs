@@ -46,7 +46,6 @@ rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
 
 cp -an $YAMCS_HOME/yamcs-server/bin/* $TARGET/bin
-cp -an $YAMCS_HOME/yamcs-tse/bin/* $TARGET/bin
 
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 
@@ -67,8 +66,6 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     echo "The new way to run the simulation is:"
     echo "   ./run-simulation.sh"
     echo "-----------------------------------------------------"
-    cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
-
     ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
     cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb

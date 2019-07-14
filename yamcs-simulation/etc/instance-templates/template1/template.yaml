@@ -14,12 +14,13 @@ services:
   - class: org.yamcs.simulation.simulator.SimulatorCommander
     args:
       telnet:
-        port: {{telnetPort}}
+        port: {{ telnetPort }}
       tctm:
-          tmPort: {{tmPort}}
-          tcPort: {{tcPort}}
-          losPort: {{losPort}}
-          tm2Port: {{tm2Port}}
+          tmPort: {{ tmPort }}
+          tcPort: {{ tcPort }}
+          losPort: {{ losPort }}
+          tm2Port: {{ tm2Port }}
+
 dataLinks:
   - name: tm_realtime
     enabledAtStartup: false
@@ -27,8 +28,7 @@ dataLinks:
     args:
       stream: tm_realtime
       host: localhost
-      port: {{tmPort}}
-
+      port: {{ tmPort }}
 
 mdb:
   # Configuration of the active loaders
@@ -44,7 +44,7 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/tse/simulator.xls"
-  
+
 streamConfig:
   tm: ["tm_realtime", "tm_dump", "tm2_realtime"]
   cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]

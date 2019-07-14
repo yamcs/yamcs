@@ -27,10 +27,10 @@ services:
       telnet:
         port: 10023
       tctm:
-          tmPort: 10015
-          tcPort: 10025
-          losPort: 10115
-          tm2Port: 10016
+        tmPort: 10015
+        tcPort: 10025
+        losPort: 10115
+        tm2Port: 10016
       # Simulator can send some packets to test the performance of Yamcs. 
       # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
       # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
@@ -39,24 +39,20 @@ services:
         packetSize: 1476 #length of the performance testing packets
         interval: 10 
       frame: #send TM UDP frames 
-          tmPort: 10017
-          tmHost: "localhost"
-          type: AOS # AOS, TM or USLP
-          tmFrameLength: 512
-          tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+        tmPort: 10017
+        tmHost: "localhost"
+        type: AOS # AOS, TM or USLP
+        tmFrameLength: 512
+        tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
   - class: org.yamcs.cfdp.CfdpService
     args:
-       sourceId: 5
-       destinationId: 24
-       sequenceNrLength: 4
-       maxPduSize: 512
-       incomingBucket: "cfdpDown"
-       eofAckTimeoutMs: 3000
-       maxEofResendAttempts: 5
-
-
-#name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
-#tmIndexer: 
+     sourceId: 5
+     destinationId: 24
+     sequenceNrLength: 4
+     maxPduSize: 512
+     incomingBucket: "cfdpDown"
+     eofAckTimeoutMs: 3000
+     maxEofResendAttempts: 5 
 
 dataLinks:
   - name: tm_realtime
@@ -82,8 +78,8 @@ dataLinks:
         maxPacketLength: 1000  #max size of the packet 
         lengthFieldOffset: 0   # where to read the length from 
         lengthFieldLength: 2   # the number of the bytes that contain the packet length
-          # adjust the length read from the offset defined above by this number of bytes. 
-          # we use 2 here because the simulator sets the length of the packet without the lenght itself
+        # adjust the length read from the offset defined above by this number of bytes. 
+        # we use 2 here because the simulator sets the length of the packet without the lenght itself
         lengthAdjustment: 2
         initialBytesToStrip: 0 # number of bytes to remove from the beginning
 
@@ -96,7 +92,7 @@ dataLinks:
         timestampOffset: 2 #where to read the 8 bytes timestamp offset from
         seqCountOffset: 10 #where to read the 4 bytes sequence count from
         errorDetection: #last two bytes are used for the error detection
-                type: "CRC-16-CCIIT" 
+          type: "CRC-16-CCIIT" 
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
     args:
@@ -148,10 +144,10 @@ dataLinks:
             stripEncapsulationHeader: true # drop the header before passing the packet to the preprocessor
             packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
             packetPreprocessorArgs:
-                timestampOffset: 2 #where to read the 8 bytes timestamp offset from
-                seqCountOffset: 10 #where to read the 4 bytes sequence count from
-                errorDetection: #last two bytes are used for the error detection
-                   type: "CRC-16-CCIIT" 
+              timestampOffset: 2 #where to read the 8 bytes timestamp offset from
+              seqCountOffset: 10 #where to read the 4 bytes sequence count from
+              errorDetection: #last two bytes are used for the error detection
+                type: "CRC-16-CCIIT" 
             stream: "tm2_realtime"
           - vcId: 2
             ocfPresent: true
@@ -169,8 +165,6 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
-      - type: "sheet"
-        spec: "mdb/GS-tmtc.xls"
   - type: "org.yamcs.xtce.TseLoader"
     subLoaders:
       - type: "sheet"
