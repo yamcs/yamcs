@@ -25,7 +25,7 @@ for arg in "$@"; do
     esac
 done
 
-cd `dirname $0`
+cd `dirname $0`/..
 yamcshome=`pwd`
 
 if [[ -n $(git status -s) ]]; then
