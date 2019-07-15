@@ -74,10 +74,14 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         req = decoder.decodeMessageData(ctx, ParameterSubscriptionRequest.newBuilder()).build();
         int subscriptionId = getSubscriptionId(req);
         List<NamedObjectId> idList = req.getIdList();
+
         try {
             WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
             try {
-                if (subscriptionId != -1) {
+                if (pidrm == null) {
+                    throw new WebSocketException(ctx.getRequestId(),
+                            "Cannot subscribe without a parameter request manager");
+                } else if (subscriptionId != -1) {
                     pidrm.addItemsToRequest(subscriptionId, idList, client.getUser());
                 } else {
                     subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), client.getUser());
@@ -174,7 +178,10 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         int subscriptionId = getSubscriptionId(req);
 
         List<NamedObjectId> paraList = req.getIdList();
-        if (subscriptionId != -1) {
+        if (pidrm == null) {
+            throw new WebSocketException(ctx.getRequestId(),
+                    "Cannot unsubscribe without a parameter request manager");
+        } else if (subscriptionId != -1) {
             try {
                 pidrm.removeItemsFromRequest(subscriptionId, paraList, client.getUser());
             } catch (NoPermissionException e) {
