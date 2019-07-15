@@ -5,7 +5,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 
 /**
- * Yamcs Exception
+ * Base class for all checked Yamcs exceptions (some day)
  * 
  * @author nm
  */
