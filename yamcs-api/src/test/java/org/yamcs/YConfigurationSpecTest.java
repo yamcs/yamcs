@@ -2,6 +2,8 @@ package org.yamcs;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -118,6 +120,38 @@ public class YConfigurationSpecTest {
                 .withSpec(blaSpec);
 
         spec.validate(of("bla", asList(of("wrong", 123))));
+    }
+
+    @Test
+    public void testDefaultValue() throws ValidationException {
+        YConfigurationSpec spec = new YConfigurationSpec();
+        spec.addOption("bla1", OptionType.INTEGER);
+        spec.addOption("bla2", OptionType.INTEGER).withDefault(123);
+
+        Map<String, Object> result = spec.validate(of());
+        assertEquals(null, result.get("bla1"));
+        assertEquals(123, result.get("bla2"));
+
+        result = spec.validate(of("bla1", 456, "bla2", 456));
+        assertEquals(456, result.get("bla1"));
+        assertEquals(456, result.get("bla2"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testApplyDefaults() throws ValidationException {
+        YConfigurationSpec subSpec = new YConfigurationSpec();
+        subSpec.addOption("subkey", OptionType.INTEGER).withDefault(123);
+
+        YConfigurationSpec spec = new YConfigurationSpec();
+        spec.addOption("bla", OptionType.MAP)
+                .withSpec(subSpec)
+                .withApplySpecDefaults(true);
+
+        Map<String, Object> result = spec.validate(of());
+        assertTrue(result.containsKey("bla"));
+        Map<String, Object> blaArg = (Map<String, Object>) result.get("bla");
+        assertEquals(123, blaArg.get("subkey"));
     }
 
     @Test

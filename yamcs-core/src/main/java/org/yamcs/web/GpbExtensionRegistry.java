@@ -43,7 +43,7 @@ public class GpbExtensionRegistry {
             extensionsByMessage.put(extendedMessage, fieldExtensions);
         }
 
-        ExtensionInfo extensionInfo = extensionRegistry.findExtensionByName(extensionField.getFullName());
+        ExtensionInfo extensionInfo = extensionRegistry.findImmutableExtensionByName(extensionField.getFullName());
         fieldExtensions.add(extensionInfo);
     }
 

@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.WebsiteConfig;
@@ -31,6 +32,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
@@ -102,9 +104,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    WebSocketConfig wsConfig;
+    YConfiguration wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, WebSocketConfig wsConfig, WebsiteConfig websiteConfig) {
+    public HttpRequestHandler(Router apiRouter, YConfiguration wsConfig, WebsiteConfig websiteConfig) {
         this.apiRouter = apiRouter;
         this.wsConfig = wsConfig;
         websiteConfigHandler = new WebsiteConfigHandler(websiteConfig);
@@ -240,18 +242,22 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
+        int maxFrameLength = wsConfig.getInt("maxFrameLength");
+        int maxDropped = wsConfig.getInt("connectionCloseNumDroppedMsg");
+        int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
+        int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
+        WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
+
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
-        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false,
-                wsConfig.getMaxFrameLength()));
+        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setProcessor(processor);
         originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
-        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo,
-                wsConfig.getConnectionCloseNumDroppedMsg(), wsConfig.getWriteBufferWaterMark()));
+        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);
@@ -259,7 +265,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if(cause instanceof NotSslRecordException) {
+        if (cause instanceof NotSslRecordException) {
             log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing the channel");
         } else {
             log.error("Will close channel due to exception", cause);

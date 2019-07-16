@@ -179,11 +179,16 @@ public class YConfigurationSpec {
         }
 
         for (Option option : options.values()) {
-            if (option.required && !args.containsKey(option.name)) {
-                String path = "".equals(parent) ? option.name : parent + "->" + option.name;
-                throw new ValidationException("Missing required argument " + path);
-            } else if (option.defaultValue != null) {
-                result.put(option.name, option.defaultValue);
+            if (!args.containsKey(option.name)) {
+                if (option.required) {
+                    String path = "".equals(parent) ? option.name : parent + "->" + option.name;
+                    throw new ValidationException("Missing required argument " + path);
+                }
+
+                Object defaultValue = option.getDefaultValue();
+                if (defaultValue != null) {
+                    result.put(option.name, defaultValue);
+                }
             }
         }
 
@@ -199,13 +204,9 @@ public class YConfigurationSpec {
     }
 
     private int count(Map<String, Object> args, List<String> check) {
-        int matched = 0;
-        for (String key : check) {
-            if (args.containsKey(key)) {
-                matched++;
-            }
-        }
-        return matched;
+        return (int) check.stream()
+                .filter(args::containsKey)
+                .count();
     }
 
     public static enum OptionType {
@@ -268,6 +269,7 @@ public class YConfigurationSpec {
         private String deprecationMessage;
         private List<Object> choices;
         private YConfigurationSpec spec;
+        private boolean applySpecDefaults;
 
         public Option(String name, OptionType type) {
             this.name = name;
@@ -324,6 +326,17 @@ public class YConfigurationSpec {
             return this;
         }
 
+        /**
+         * In case the {@link #type} is set to {@link OptionType#MAP}, setting this property to <tt>true</tt> will cause
+         * defaults within elements of that type to be applied even if the option itself is not defined.
+         * <p>
+         * Note that this is not a recursive property. You need to specify at every level if so required.
+         */
+        public Option withApplySpecDefaults(boolean applySpecDefaults) {
+            this.applySpecDefaults = applySpecDefaults;
+            return this;
+        }
+
         @SuppressWarnings("unchecked")
         private Object validate(Object arg, String path) throws ValidationException {
             if (deprecationMessage != null) {
@@ -371,6 +384,23 @@ public class YConfigurationSpec {
             } else {
                 return arg;
             }
+        }
+
+        private Object getDefaultValue() {
+            if (defaultValue != null) {
+                return defaultValue;
+            }
+            if (applySpecDefaults) {
+                Map<String, Object> result = new HashMap<>();
+                for (Option option : spec.options.values()) {
+                    Object subDefaultValue = option.getDefaultValue();
+                    if (subDefaultValue != null) {
+                        result.put(option.name, subDefaultValue);
+                    }
+                }
+                return result;
+            }
+            return null;
         }
     }
 }

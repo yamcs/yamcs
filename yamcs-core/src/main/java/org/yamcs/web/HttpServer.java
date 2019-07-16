@@ -18,7 +18,6 @@ import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YConfigurationSpec;
@@ -34,7 +33,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -76,7 +74,7 @@ public class HttpServer extends AbstractService implements YamcsService {
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
 
-    private WebSocketConfig wsConfig;
+    private YConfiguration wsConfig;
 
     private WebsiteConfig websiteConfig;
 
@@ -96,13 +94,13 @@ public class HttpServer extends AbstractService implements YamcsService {
         websiteSpec.addOption("tag", OptionType.STRING);
 
         YConfigurationSpec lohiSpec = new YConfigurationSpec();
-        lohiSpec.addOption("low", OptionType.INTEGER).withRequired(true);
-        lohiSpec.addOption("high", OptionType.INTEGER).withRequired(true);
+        lohiSpec.addOption("low", OptionType.INTEGER).withDefault(32 * 1024);
+        lohiSpec.addOption("high", OptionType.INTEGER).withDefault(64 * 1024);
 
         YConfigurationSpec websocketSpec = new YConfigurationSpec();
-        websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec);
-        websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER);
-        websocketSpec.addOption("maxFrameLength", OptionType.INTEGER);
+        websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
+        websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER).withDefault(5);
+        websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65535);
 
         YConfigurationSpec spec = new YConfigurationSpec();
         spec.addOption("port", OptionType.INTEGER);
@@ -114,7 +112,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("website", OptionType.MAP).withSpec(websiteSpec);
-        spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec);
+        spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
 
         spec.requireOneOf("port", "tlsPort");
         spec.requireTogether("tlsPort", "tlsCert", "tlsKey");
@@ -200,30 +198,7 @@ public class HttpServer extends AbstractService implements YamcsService {
             }
         }
         websiteConfig = configb.build();
-
-        wsConfig = new WebSocketConfig();
-        if (args.containsKey("webSocket")) {
-            YConfiguration wsArgs = args.getConfig("webSocket");
-            if (wsArgs.containsKey("writeBufferWaterMark")) {
-                YConfiguration watermarkArgs = wsArgs.getConfig("writeBufferWaterMark");
-                int low = watermarkArgs.getInt("low");
-                int high = watermarkArgs.getInt("high");
-                wsConfig.setWriteBufferWaterMark(new WriteBufferWaterMark(low, high));
-            }
-            if (wsArgs.containsKey("connectionCloseNumDroppedMsg")) {
-                int connectionCloseNumDroppedMsg = wsArgs.getInt("connectionCloseNumDroppedMsg");
-                if (connectionCloseNumDroppedMsg < 1) {
-                    throw new ConfigurationException(
-                            "connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "
-                                    + connectionCloseNumDroppedMsg);
-                }
-                wsConfig.setConnectionCloseNumDroppedMsg(connectionCloseNumDroppedMsg);
-            }
-            if (wsArgs.containsKey("maxFrameLength")) {
-                int maxFrameLength = wsArgs.getInt("maxFrameLength");
-                wsConfig.setMaxFrameLength(maxFrameLength);
-            }
-        }
+        wsConfig = args.getConfig("webSocket");
     }
 
     @Override

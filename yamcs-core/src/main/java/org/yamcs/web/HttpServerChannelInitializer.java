@@ -1,5 +1,6 @@
 package org.yamcs.web;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.web.rest.Router;
 
@@ -15,12 +16,12 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
 
     private Router apiRouter;
     private CorsConfig corsConfig;
-    private WebSocketConfig wsConfig;
+    private YConfiguration wsConfig;
     private final WebsiteConfig websiteConfig;
     private final SslContext sslCtx;
-    
-    public HttpServerChannelInitializer(SslContext sslCtx, Router apiRouter, CorsConfig corsConfig, WebSocketConfig wsConfig,
-            WebsiteConfig websiteConfig) {
+
+    public HttpServerChannelInitializer(SslContext sslCtx, Router apiRouter, CorsConfig corsConfig,
+            YConfiguration wsConfig, WebsiteConfig websiteConfig) {
         this.apiRouter = apiRouter;
         this.corsConfig = corsConfig;
         this.wsConfig = wsConfig;
@@ -31,7 +32,7 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
-        if(sslCtx!=null) {
+        if (sslCtx != null) {
             pipeline.addLast(sslCtx.newHandler(ch.alloc()));
         }
 

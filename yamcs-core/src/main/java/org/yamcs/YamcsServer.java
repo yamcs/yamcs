@@ -782,6 +782,7 @@ public class YamcsServer {
                 if (spec != null) {
                     args = spec.validate((YConfiguration) args);
                 }
+                staticlog.debug("Intializing {} with resolved args: {}", serviceName, args);
                 service.init(instance, (YConfiguration) args);
             } catch (InitException e) { // TODO should add this to throws instead
                 throw new ConfigurationException(e);
