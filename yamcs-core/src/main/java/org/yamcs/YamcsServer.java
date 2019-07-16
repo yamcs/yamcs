@@ -149,9 +149,12 @@ public class YamcsServer {
                 staticlog.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args,
                         e.getMessage());
                 throw e;
-            } catch (Exception t) {
-                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, t.getMessage());
-                throw t;
+            } catch (ValidationException e) {
+                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                throw new ConfigurationException("Invalid configuration");
+            } catch (Exception e) {
+                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                throw e;
             }
             if (managementService != null) {
                 managementService.registerService(instance, name, swc.service);
@@ -163,7 +166,7 @@ public class YamcsServer {
     }
 
     public <T extends YamcsService> void addGlobalService(
-            String name, Class<T> serviceClass, YConfiguration args) throws IOException {
+            String name, Class<T> serviceClass, YConfiguration args) throws ValidationException, IOException {
 
         for (ServiceWithConfig otherService : server.globalServiceList) {
             if (otherService.getName().equals(name)) {
@@ -744,54 +747,52 @@ public class YamcsServer {
     }
 
     static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args)
-            throws ConfigurationException, IOException {
-        YamcsService serv = null;
+            throws ConfigurationException, ValidationException, IOException {
+        YamcsService service = null;
 
         // Try first to find just a no-arg constructor. This will become
         // the common case when all services are using the init method.
         if (args instanceof YConfiguration) {
             try {
-                serv = YObjectLoader.loadObject(serviceClass);
+                service = YObjectLoader.loadObject(serviceClass);
             } catch (ConfigurationException e) {
-                serv = null;
+                // Ignore for now. Fallback to constructor initialization.
             }
         }
 
-        if (serv == null) { // "Legacy" fallback
+        if (service == null) { // "Legacy" fallback
             if (instance != null) {
                 if (args == null) {
-                    serv = YObjectLoader.loadObject(serviceClass, instance);
+                    service = YObjectLoader.loadObject(serviceClass, instance);
                 } else {
-                    serv = YObjectLoader.loadObject(serviceClass, instance, args);
+                    service = YObjectLoader.loadObject(serviceClass, instance, args);
                 }
             } else {
                 if (args == null) {
-                    serv = YObjectLoader.loadObject(serviceClass);
+                    service = YObjectLoader.loadObject(serviceClass);
                 } else {
-                    serv = YObjectLoader.loadObject(serviceClass, args);
+                    service = YObjectLoader.loadObject(serviceClass, args);
                 }
             }
         }
 
         if (args instanceof YConfiguration) {
             try {
-                YConfigurationSpec spec = serv.specifyArgs();
+                YConfigurationSpec spec = service.specifyArgs();
                 if (spec != null) {
                     args = spec.validate((YConfiguration) args);
                 }
-                serv.init(instance, (YConfiguration) args);
-            } catch (ValidationException e) {
-                throw new ConfigurationException(e.getMessage());
+                service.init(instance, (YConfiguration) args);
             } catch (InitException e) { // TODO should add this to throws instead
                 throw new ConfigurationException(e);
             }
         }
-        return new ServiceWithConfig(serv, serviceClass, serviceName, args);
+        return new ServiceWithConfig(service, serviceClass, serviceName, args);
     }
 
     // starts a service that has stopped or not yet started
     static YamcsService startService(String instance, String serviceName, List<ServiceWithConfig> serviceList)
-            throws ConfigurationException, IOException {
+            throws ConfigurationException, ValidationException, IOException {
         for (int i = 0; i < serviceList.size(); i++) {
             ServiceWithConfig swc = serviceList.get(i);
             if (swc.name.equals(serviceName)) {
@@ -818,7 +819,7 @@ public class YamcsServer {
         return null;
     }
 
-    public void startGlobalService(String serviceName) throws ConfigurationException, IOException {
+    public void startGlobalService(String serviceName) throws ConfigurationException, ValidationException, IOException {
         startService(null, serviceName, globalServiceList);
     }
 
@@ -835,7 +836,6 @@ public class YamcsServer {
             setupYamcsServer();
         } catch (ConfigurationException e) {
             staticlog.error("Could not start Yamcs Server", e);
-            System.err.println(e.toString());
             System.exit(-1);
         } catch (Exception e) {
             staticlog.error("Could not start Yamcs Server", e);

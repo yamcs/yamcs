@@ -186,7 +186,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         return new ArrayList<>(serviceList);
     }
 
-    public void startService(String serviceName) throws ConfigurationException, IOException {
+    public void startService(String serviceName) throws ConfigurationException, ValidationException, IOException {
         YamcsServer.startService(instanceName, serviceName, serviceList);
     }
 

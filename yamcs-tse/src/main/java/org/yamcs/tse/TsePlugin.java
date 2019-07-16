@@ -3,6 +3,8 @@ package org.yamcs.tse;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.spi.Plugin;
@@ -61,6 +63,8 @@ public class TsePlugin implements Plugin {
 
         try {
             yamcs.addGlobalService("TSE Commander", TseCommander.class, yconf);
+        } catch (ValidationException e) {
+            throw new ConfigurationException(e);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

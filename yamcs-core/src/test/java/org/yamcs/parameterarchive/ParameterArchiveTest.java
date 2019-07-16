@@ -321,7 +321,7 @@ public class ParameterArchiveTest {
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id ));
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id));
         int pg2id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
 
         // ascending on empty db
