@@ -745,18 +745,45 @@ public class YamcsServer {
 
     static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args)
             throws ConfigurationException, IOException {
-        YamcsService serv;
-        if (instance != null) {
-            if (args == null) {
-                serv = YObjectLoader.loadObject(serviceClass, instance);
-            } else {
-                serv = YObjectLoader.loadObject(serviceClass, instance, args);
-            }
-        } else {
-            if (args == null) {
+        YamcsService serv = null;
+
+        // Try first to find just a no-arg constructor. This will become
+        // the common case when all services are using the init method.
+        if (args instanceof YConfiguration) {
+            try {
                 serv = YObjectLoader.loadObject(serviceClass);
+            } catch (ConfigurationException e) {
+                serv = null;
+            }
+        }
+
+        if (serv == null) { // "Legacy" fallback
+            if (instance != null) {
+                if (args == null) {
+                    serv = YObjectLoader.loadObject(serviceClass, instance);
+                } else {
+                    serv = YObjectLoader.loadObject(serviceClass, instance, args);
+                }
             } else {
-                serv = YObjectLoader.loadObject(serviceClass, args);
+                if (args == null) {
+                    serv = YObjectLoader.loadObject(serviceClass);
+                } else {
+                    serv = YObjectLoader.loadObject(serviceClass, args);
+                }
+            }
+        }
+
+        if (args instanceof YConfiguration) {
+            try {
+                YConfigurationSpec spec = serv.specifyArgs();
+                if (spec != null) {
+                    args = spec.validate((YConfiguration) args);
+                }
+                serv.init(instance, (YConfiguration) args);
+            } catch (ValidationException e) {
+                throw new ConfigurationException(e.getMessage());
+            } catch (InitException e) { // TODO should add this to throws instead
+                throw new ConfigurationException(e);
             }
         }
         return new ServiceWithConfig(serv, serviceClass, serviceName, args);

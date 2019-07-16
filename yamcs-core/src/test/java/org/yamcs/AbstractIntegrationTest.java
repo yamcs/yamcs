@@ -118,7 +118,9 @@ public abstract class AbstractIntegrationTest {
         Map<String, Object> options = new HashMap<>();
         options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9190);
-        new HttpServer(YConfiguration.wrap(options)).startServer();
+        HttpServer httpServer = new HttpServer();
+        httpServer.init(null, YConfiguration.wrap(options));
+        httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();

@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,7 +19,10 @@ import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YConfigurationSpec;
+import org.yamcs.YConfigurationSpec.OptionType;
 import org.yamcs.YamcsService;
 import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.web.rest.Router;
@@ -80,24 +82,55 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
-    public HttpServer() {
-        this(YConfiguration.wrap(Collections.emptyMap()));
+    @Override
+    public YConfigurationSpec specifyArgs() {
+        YConfigurationSpec gpbSpec = new YConfigurationSpec();
+        gpbSpec.addOption("class", OptionType.STRING).withRequired(true);
+        gpbSpec.addOption("field", OptionType.STRING).withRequired(true);
+
+        YConfigurationSpec corsSpec = new YConfigurationSpec();
+        corsSpec.addOption("allowOrigin", OptionType.STRING).withRequired(true);
+        corsSpec.addOption("allowCredentials", OptionType.BOOLEAN).withRequired(true);
+
+        YConfigurationSpec websiteSpec = new YConfigurationSpec();
+        websiteSpec.addOption("tag", OptionType.STRING);
+
+        YConfigurationSpec lohiSpec = new YConfigurationSpec();
+        lohiSpec.addOption("low", OptionType.INTEGER).withRequired(true);
+        lohiSpec.addOption("high", OptionType.INTEGER).withRequired(true);
+
+        YConfigurationSpec websocketSpec = new YConfigurationSpec();
+        websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec);
+        websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER);
+        websocketSpec.addOption("maxFrameLength", OptionType.INTEGER);
+
+        YConfigurationSpec spec = new YConfigurationSpec();
+        spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("tlsPort", OptionType.INTEGER);
+        spec.addOption("tlsCert", OptionType.STRING);
+        spec.addOption("tlsKey", OptionType.STRING);
+        spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("webRoot", OptionType.STRING);
+        spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
+        spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
+        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec);
+        spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec);
+
+        spec.requireOneOf("port", "tlsPort");
+        spec.requireTogether("tlsPort", "tlsCert", "tlsKey");
+        return spec;
     }
 
-    public HttpServer(YConfiguration args) {
+    @Override
+    public void init(String yamcsInstance, YConfiguration args) throws InitException {
         port = args.getInt("port", -1);
         tlsPort = args.getInt("tlsPort", -1);
-
-        if (port == -1 && tlsPort == -1) {
-            throw new ConfigurationException(
-                    "No port (non-TLS) or tlsPort specified for the http server configuration");
-        }
 
         if (tlsPort != -1) {
             tlsCert = args.getString("tlsCert");
             tlsKey = args.getString("tlsKey");
         }
-        zeroCopyEnabled = args.getBoolean("zeroCopyEnabled", true);
+        zeroCopyEnabled = args.getBoolean("zeroCopyEnabled");
 
         if (args.containsKey("webRoot")) {
             if (args.isList("webRoot")) {
@@ -141,12 +174,12 @@ public class HttpServer extends AbstractService implements YamcsService {
 
         if (args.containsKey("cors")) {
             YConfiguration ycors = args.getConfig("cors");
+            String[] origins = ycors.getString("allowOrigin").split(",");
             CorsConfigBuilder corsb = null;
-            if (ycors.isList("allowOrigin")) {
-                List<String> originConf = ycors.getList("allowOrigin");
-                corsb = CorsConfigBuilder.forOrigins(originConf.toArray(new String[originConf.size()]));
+            if (origins.length == 1) {
+                corsb = CorsConfigBuilder.forOrigin(origins[0]);
             } else {
-                corsb = CorsConfigBuilder.forOrigin(ycors.getString("allowOrigin"));
+                corsb = CorsConfigBuilder.forOrigins(origins);
             }
             if (ycors.getBoolean("allowCredentials")) {
                 corsb.allowCredentials();
