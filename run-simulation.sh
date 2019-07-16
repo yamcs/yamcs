@@ -11,6 +11,7 @@
 
 JAVA_OPTS="-Djava.util.logging.config.file=etc/logging.properties"
 mvn -f yamcs-simulation/pom.xml exec:exec \
+    --quiet \
     -Dexec.executable="java" \
     -Dexec.args="-classpath %classpath:etc $JAVA_OPTS org.yamcs.YamcsServer"
 
