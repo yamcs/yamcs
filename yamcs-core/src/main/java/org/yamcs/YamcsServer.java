@@ -678,12 +678,6 @@ public class YamcsServer {
         return instanceTemplates.get(name);
     }
 
-    private static void printOptionsAndExit() {
-        System.err.println("Usage: yamcsd");
-        System.err.println("\t All options are read from yamcs.yaml");
-        System.exit(-1);
-    }
-
     public static TimeService getTimeService(String yamcsInstance) {
         if (server.instances.containsKey(yamcsInstance)) {
             return server.instances.get(yamcsInstance).getTimeService();
@@ -824,16 +818,20 @@ public class YamcsServer {
         startService(null, serviceName, globalServiceList);
     }
 
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
-        if (args.length > 0) {
-            printOptionsAndExit();
+        boolean verbose = false;
+        for (String arg : args) {
+            if ("-v".equals(arg) || "--verbose".equals(arg)) {
+                verbose = true;
+            } else {
+                System.err.println("Usage: yamcsd [-v]");
+                System.err.println(" -v, --verbose    Increase console log output");
+                System.exit(-1);
+            }
         }
 
         try {
-            YConfiguration.setupDaemon();
+            YConfiguration.setupDaemon(verbose);
             setupYamcsServer();
         } catch (ConfigurationException e) {
             staticlog.error("Could not start Yamcs Server", e);

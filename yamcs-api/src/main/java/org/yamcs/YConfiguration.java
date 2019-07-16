@@ -132,7 +132,15 @@ public class YConfiguration {
      * @param configDirectory
      */
     public synchronized static void setupTool(File configDirectory) {
-        doSetup();
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            try {
+                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            } catch (Exception e) {
+                // do nothing, the default java builtin logging is used
+            }
+        }
+
+        TimeEncoding.setUp();
 
         YConfiguration.configDirectory = configDirectory;
         File logDir = new File(configDirectory, "log");
@@ -151,8 +159,23 @@ public class YConfiguration {
      * This method is intended for use by daemons. It does not make use of the home directory of the running user, and
      * instead resolves configuration based on the working directory.
      */
-    public static synchronized void setupDaemon() {
-        doSetup();
+    public static synchronized void setupDaemon(boolean verbose) {
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            String configFile;
+            if (verbose) {
+                configFile = "/default-logging/console-all.properties";
+            } else {
+                configFile = "/default-logging/console-info.properties";
+            }
+
+            try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
+                LogManager.getLogManager().readConfiguration(in);
+            } catch (Exception e) {
+                // do nothing, the default java builtin logging is used
+            }
+        }
+
+        TimeEncoding.setUp();
     }
 
     /**
@@ -167,10 +190,6 @@ public class YConfiguration {
      */
     public static synchronized void setupTest(String configPrefix) {
         prefix = configPrefix;
-        doSetup();
-    }
-
-    private static synchronized void doSetup() {
         configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
 
         if (System.getProperty("java.util.logging.config.file") == null) {
