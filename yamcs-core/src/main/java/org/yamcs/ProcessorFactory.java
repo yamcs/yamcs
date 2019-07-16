@@ -4,19 +4,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Used to create processors as defined in yprocessor.yaml
+ * Used to create processors as defined in processor.yaml
  *
  * @author mache
  *
  */
 public class ProcessorFactory {
-    private static Logger log = LoggerFactory.getLogger(ProcessorFactory.class.getName());
 
     /**
      * Returns the processor types as defined in <tt>processor.yaml</tt>
@@ -50,35 +45,14 @@ public class ProcessorFactory {
         YConfiguration processorConfig = null;
         YConfiguration conf = YConfiguration.getConfiguration("processor");
 
-        List<ServiceWithConfig> serviceList = new ArrayList<>();
+        List<ServiceWithConfig> serviceList;
         try {
             if (!conf.containsKey(type)) {
                 throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getPath());
             }
             conf = conf.getConfig(type);
-            
-            if (conf.containsKey("services")) {
-                serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"));
-            } else {
-                log.warn("Deprecated configuration in {}. Please use services", conf.getPath());
-                if (conf.containsKey(type, "telemetryProvider")) {
-                    Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "telemetryProvider");
-                    String tmClass = YConfiguration.getString(m, "class");
-                    Object tmArgs = m.get("args");
-                    serviceList.add(YamcsServer.createService(yamcsInstance, tmClass, tmClass, tmArgs));
-                }
+            serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"));
 
-                if (conf.containsKey("parameterProviders")) {
-                    serviceList.addAll(
-                            YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("parameterProviders")));
-                }
-                if (conf.containsKey(type, "commandReleaser")) {
-                    Map<String, Object> m = (Map<String, Object>) conf.getSubMap(type, "commandReleaser");
-                    String commandClass = YConfiguration.getString(m, "class");
-                    Object commandArgs = m.get("args");
-                    serviceList.add(YamcsServer.createService(yamcsInstance, commandClass, commandClass, commandArgs));
-                }
-            }
             if (conf.containsKey("config")) {
                 processorConfig = conf.getConfig("config");
             }
