@@ -1,5 +1,7 @@
 package org.yamcs.web.websocket;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
@@ -21,22 +23,23 @@ public class EventResource implements WebSocketResource {
 
     private ConnectedWebSocketClient client;
 
+    private Processor processor;
+
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
+    private AtomicBoolean subscribed = new AtomicBoolean(false);
+
     public EventResource(ConnectedWebSocketClient client) {
         this.client = client;
-        Processor processor = client.getProcessor();
-        if (processor != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-        }
+        processor = client.getProcessor();
     }
 
     @Override
     public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        doUnsubscribe(); // Only one subscription at a time
-        doSubscribe();
+        if (!subscribed.getAndSet(true)) {
+            doSubscribe();
+        }
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
@@ -48,42 +51,45 @@ public class EventResource implements WebSocketResource {
 
     @Override
     public void unselectProcessor() {
+        processor = null;
         doUnsubscribe();
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
-        if (streamSubscriber != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        this.processor = processor;
+        if (subscribed.get()) {
             doSubscribe();
         }
     }
 
-    @Override
-    public void socketClosed() {
-        doUnsubscribe();
-    }
-
     private void doSubscribe() {
-        if (stream != null) {
-            streamSubscriber = new StreamSubscriber() {
-                @Override
-                public void onTuple(Stream stream, Tuple tuple) {
-                    Event event = (Event) tuple.getColumn("body");
-                    event = Event.newBuilder(event)
-                            .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
-                            .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
-                            .build();
-                    client.sendData(ProtoDataType.EVENT, event);
-                }
-
-                @Override
-                public void streamClosed(Stream stream) {
-                }
-            };
-            stream.addSubscriber(streamSubscriber);
+        if (processor == null) {
+            return;
         }
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+        stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        if (stream == null) {
+            return;
+        }
+
+        streamSubscriber = new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                Event event = (Event) tuple.getColumn("body");
+                event = Event.newBuilder(event)
+                        .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
+                        .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
+                        .build();
+                client.sendData(ProtoDataType.EVENT, event);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+            }
+        };
+        stream.addSubscriber(streamSubscriber);
     }
 
     private void doUnsubscribe() {
@@ -91,5 +97,12 @@ public class EventResource implements WebSocketResource {
             stream.removeSubscriber(streamSubscriber);
         }
         streamSubscriber = null;
+        stream = null;
+        subscribed.set(false);
+    }
+
+    @Override
+    public void socketClosed() {
+        doUnsubscribe();
     }
 }
