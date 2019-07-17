@@ -27,8 +27,7 @@ public class GpbExtensionRegistry {
 
     private Map<Descriptor, List<ExtensionInfo>> extensionsByMessage = new HashMap<>();
 
-    public void installExtension(Class<?> extensionClass, Field field)
-            throws IllegalArgumentException, IllegalAccessException {
+    public void installExtension(Class<?> extensionClass, Field field) throws IllegalAccessException {
         @SuppressWarnings("unchecked")
         GeneratedExtension<?, Type> genExtension = (GeneratedExtension<?, Type>) field.get(null);
         extensionRegistry.add(genExtension);

@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.web.rest.Router;
@@ -106,7 +105,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     YConfiguration wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, YConfiguration wsConfig, WebsiteConfig websiteConfig) {
+    public HttpRequestHandler(Router apiRouter, YConfiguration wsConfig, YConfiguration websiteConfig) {
         this.apiRouter = apiRouter;
         this.wsConfig = wsConfig;
         websiteConfigHandler = new WebsiteConfigHandler(websiteConfig);

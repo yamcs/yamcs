@@ -15,6 +15,6 @@ public interface Plugin {
      * <p>
      * This is executed after Yamcs has created all configured services, but before actually starting them.
      */
-    public default void onLoad() {
+    public default void onLoad() throws PluginException {
     }
 }

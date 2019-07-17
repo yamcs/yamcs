@@ -39,6 +39,7 @@ import org.yamcs.protobuf.YamcsManagement.TemplateVariable;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
+import org.yamcs.spi.PluginException;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
@@ -353,7 +354,7 @@ public class YamcsServer {
         }
     }
 
-    private void loadPlugins() {
+    private void loadPlugins() throws PluginException {
         List<String> disabledPlugins;
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey("disabledPlugins")) {
@@ -372,7 +373,12 @@ public class YamcsServer {
 
         for (Plugin plugin : plugins) {
             staticlog.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
-            plugin.onLoad();
+            try {
+                plugin.onLoad();
+            } catch (PluginException e) {
+                staticlog.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
+                throw e;
+            }
         }
     }
 
@@ -380,7 +386,7 @@ public class YamcsServer {
         return (int) instances.values().stream().filter(ysi -> ysi.state() != InstanceState.OFFLINE).count();
     }
 
-    private void startServices() throws Exception {
+    private void startServices() {
         if (globalServiceList != null) {
             startServices(globalServiceList);
         }
@@ -392,7 +398,7 @@ public class YamcsServer {
         }
     }
 
-    public static void setupYamcsServer() throws Exception {
+    public static void setupYamcsServer() throws IOException, PluginException {
         staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
 
         server.discoverTemplates();

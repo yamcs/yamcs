@@ -1,7 +1,6 @@
 package org.yamcs.web;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.web.rest.Router;
 
 import io.netty.channel.ChannelInitializer;
@@ -17,11 +16,11 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
     private Router apiRouter;
     private CorsConfig corsConfig;
     private YConfiguration wsConfig;
-    private final WebsiteConfig websiteConfig;
+    private final YConfiguration websiteConfig;
     private final SslContext sslCtx;
 
     public HttpServerChannelInitializer(SslContext sslCtx, Router apiRouter, CorsConfig corsConfig,
-            YConfiguration wsConfig, WebsiteConfig websiteConfig) {
+            YConfiguration wsConfig, YConfiguration websiteConfig) {
         this.apiRouter = apiRouter;
         this.corsConfig = corsConfig;
         this.wsConfig = wsConfig;

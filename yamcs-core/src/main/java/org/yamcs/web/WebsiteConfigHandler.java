@@ -3,6 +3,7 @@ package org.yamcs.web;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Web.WebsiteConfig;
 
 import io.netty.channel.ChannelHandler.Sharable;
@@ -16,9 +17,9 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 @Sharable
 public class WebsiteConfigHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private WebsiteConfig websiteConfig;
+    private YConfiguration websiteConfig;
 
-    public WebsiteConfigHandler(WebsiteConfig websiteConfig) {
+    public WebsiteConfigHandler(YConfiguration websiteConfig) {
         this.websiteConfig = websiteConfig;
     }
 
@@ -35,9 +36,13 @@ public class WebsiteConfigHandler extends SimpleChannelInboundHandler<FullHttpRe
 
     private void handleWebsiteConfigRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         if (req.method() == HttpMethod.GET) {
+            WebsiteConfig.Builder configb = WebsiteConfig.newBuilder()
+                    .setAuth(AuthHandler.createAuthInfo());
 
-            WebsiteConfig.Builder configb = WebsiteConfig.newBuilder(websiteConfig);
-            configb.setAuth(AuthHandler.createAuthInfo());
+            if (websiteConfig.containsKey("tag")) {
+                configb.setTag(websiteConfig.getString("tag"));
+            }
+
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, configb.build(), true);
         } else {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);

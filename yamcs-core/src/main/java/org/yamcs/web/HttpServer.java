@@ -23,7 +23,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YConfigurationSpec;
 import org.yamcs.YConfigurationSpec.OptionType;
 import org.yamcs.YamcsService;
-import org.yamcs.protobuf.Web.WebsiteConfig;
 import org.yamcs.web.rest.Router;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -75,8 +74,7 @@ public class HttpServer extends AbstractService implements YamcsService {
     private CorsConfig corsConfig;
 
     private YConfiguration wsConfig;
-
-    private WebsiteConfig websiteConfig;
+    private YConfiguration websiteConfig;
 
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
@@ -147,26 +145,16 @@ public class HttpServer extends AbstractService implements YamcsService {
 
         if (args.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = args.getList("gpbExtensions");
-            for (Map<String, Object> conf : extensionsConf) {
-                String className = YConfiguration.getString(conf, "class");
-                String fieldName = YConfiguration.getString(conf, "field");
-                try {
+            try {
+                for (Map<String, Object> conf : extensionsConf) {
+                    String className = YConfiguration.getString(conf, "class");
+                    String fieldName = YConfiguration.getString(conf, "field");
                     Class<?> extensionClass = Class.forName(className);
                     Field field = extensionClass.getField(fieldName);
                     gpbExtensionRegistry.installExtension(extensionClass, field);
-                } catch (IllegalAccessException e) {
-                    log.error("Could not load extension class", e);
-                    continue;
-                } catch (ClassNotFoundException e) {
-                    log.error("Could not load extension class", e);
-                    continue;
-                } catch (SecurityException e) {
-                    log.error("Could not load extension class", e);
-                    continue;
-                } catch (NoSuchFieldException e) {
-                    log.error("Could not load extension class", e);
-                    continue;
                 }
+            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+                throw new InitException("Could not load GPB extensions", e);
             }
         }
 
@@ -190,14 +178,7 @@ public class HttpServer extends AbstractService implements YamcsService {
             corsConfig = corsb.build();
         }
 
-        WebsiteConfig.Builder configb = WebsiteConfig.newBuilder();
-        if (args.containsKey("website")) {
-            YConfiguration ywebsite = args.getConfig("website");
-            if (ywebsite.containsKey("tag")) {
-                configb.setTag(ywebsite.getString("tag"));
-            }
-        }
-        websiteConfig = configb.build();
+        websiteConfig = args.containsKey("website") ? args.getConfig("website") : YConfiguration.emptyConfig();
         wsConfig = args.getConfig("webSocket");
     }
 
