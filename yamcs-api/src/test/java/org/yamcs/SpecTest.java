@@ -10,47 +10,47 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.yamcs.YConfigurationSpec.OptionType;
+import org.yamcs.Spec.OptionType;
 
-public class YConfigurationSpecTest {
+public class SpecTest {
 
     @Test
     public void testOptional() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING).withRequired(false);
         spec.validate(of(/* no value */));
     }
 
     @Test
     public void testRequired() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING).withRequired(true);
         spec.validate(of("bla", "a value"));
     }
 
     @Test(expected = ValidationException.class)
     public void testRequiredButMissing() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING).withRequired(true);
         spec.validate(of());
     }
 
     @Test(expected = ValidationException.class)
     public void testUnknownOption() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.validate(of("bla", "a value"));
     }
 
     @Test(expected = ValidationException.class)
     public void testWrongType() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING);
         spec.validate(of("bla", 123));
     }
 
     @Test
     public void testChoices() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING)
                 .withChoices("valid", "other");
         spec.validate(of("bla", "valid"));
@@ -58,7 +58,7 @@ public class YConfigurationSpecTest {
 
     @Test(expected = ValidationException.class)
     public void testInvalidChoice() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.STRING)
                 .withChoices("valid", "other");
         spec.validate(of("bla", "this is wrong"));
@@ -66,44 +66,44 @@ public class YConfigurationSpecTest {
 
     @Test
     public void testElementType() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST).withElementType(OptionType.INTEGER);
         spec.validate(of("bla", asList(123, 456)));
     }
 
     @Test(expected = ValidationException.class)
     public void testWrongElementType() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST).withElementType(OptionType.INTEGER);
         spec.validate(of("bla", asList("str1", "str2")));
     }
 
     @Test
     public void testMap() throws ValidationException {
-        YConfigurationSpec blaSpec = new YConfigurationSpec();
+        Spec blaSpec = new Spec();
         blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.MAP).withSpec(blaSpec);
         spec.validate(of("bla", of("subkey", 123)));
     }
 
     @Test(expected = ValidationException.class)
     public void testSubMapValidation() throws ValidationException {
-        YConfigurationSpec blaSpec = new YConfigurationSpec();
+        Spec blaSpec = new Spec();
         blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.MAP).withSpec(blaSpec);
         spec.validate(of("bla", of("wrongKey", 123)));
     }
 
     @Test
     public void testListOfMap() throws ValidationException {
-        YConfigurationSpec blaSpec = new YConfigurationSpec();
+        Spec blaSpec = new Spec();
         blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(blaSpec);
@@ -113,10 +113,10 @@ public class YConfigurationSpecTest {
 
     @Test(expected = ValidationException.class)
     public void testListofMapValidation() throws ValidationException {
-        YConfigurationSpec blaSpec = new YConfigurationSpec();
+        Spec blaSpec = new Spec();
         blaSpec.addOption("subkey", OptionType.INTEGER);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(blaSpec);
@@ -126,7 +126,7 @@ public class YConfigurationSpecTest {
 
     @Test
     public void testDefaultValue() throws ValidationException {
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla1", OptionType.INTEGER);
         spec.addOption("bla2", OptionType.INTEGER).withDefault(123);
 
@@ -142,10 +142,10 @@ public class YConfigurationSpecTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testApplyDefaults() throws ValidationException {
-        YConfigurationSpec subSpec = new YConfigurationSpec();
+        Spec subSpec = new Spec();
         subSpec.addOption("subkey", OptionType.INTEGER).withDefault(123);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.MAP)
                 .withSpec(subSpec)
                 .withApplySpecDefaults(true);
@@ -159,11 +159,11 @@ public class YConfigurationSpecTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testSecret() throws ValidationException {
-        YConfigurationSpec subSpec = new YConfigurationSpec();
+        Spec subSpec = new Spec();
         subSpec.addOption("subkey1", OptionType.INTEGER);
         subSpec.addOption("subkey2", OptionType.INTEGER).withSecret(true);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla1", OptionType.STRING);
         spec.addOption("bla2", OptionType.STRING).withSecret(true);
         spec.addOption("bloe", OptionType.MAP)
@@ -194,11 +194,11 @@ public class YConfigurationSpecTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testListOfMapSecrets() throws ValidationException {
-        YConfigurationSpec subSpec = new YConfigurationSpec();
+        Spec subSpec = new Spec();
         subSpec.addOption("subkey1", OptionType.INTEGER);
         subSpec.addOption("subkey2", OptionType.INTEGER).withSecret(true);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(subSpec);
@@ -224,11 +224,11 @@ public class YConfigurationSpecTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMaskListOfMapSecrets() throws ValidationException {
-        YConfigurationSpec subSpec = new YConfigurationSpec();
+        Spec subSpec = new Spec();
         subSpec.addOption("subkey1", OptionType.INTEGER);
         subSpec.addOption("subkey2", OptionType.INTEGER).withSecret(true);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(subSpec);

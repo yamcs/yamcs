@@ -13,7 +13,7 @@ public interface YamcsService extends Service {
      * 
      * @return the argument specification, or <tt>null</tt> if the args should not be validated.
      */
-    public default YConfigurationSpec specifyArgs() {
+    public default Spec getSpec() {
         return null;
     }
 
@@ -23,7 +23,7 @@ public interface YamcsService extends Service {
      * @param yamcsInstance
      *            The yamcs instance, or <tt>null</tt> if this is a global service.
      * @param args
-     *            The configured arguments for this service. If {@link #specifyArgs()} is implemented then this contains
+     *            The configured arguments for this service. If {@link #getSpec()} is implemented then this contains
      *            the arguments after being validated (including any defaults).
      * @throws InitException
      *             When something goes wrong during the execution of this method.

@@ -119,6 +119,7 @@ public abstract class AbstractIntegrationTest {
         options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9190);
         HttpServer httpServer = new HttpServer();
+        options = httpServer.getSpec().validate(options);
         httpServer.init(null, YConfiguration.wrap(options));
         httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();

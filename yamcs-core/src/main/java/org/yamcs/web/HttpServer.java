@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YConfigurationSpec;
-import org.yamcs.YConfigurationSpec.OptionType;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YamcsService;
 import org.yamcs.web.rest.Router;
 
@@ -79,28 +79,28 @@ public class HttpServer extends AbstractService implements YamcsService {
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
     @Override
-    public YConfigurationSpec specifyArgs() {
-        YConfigurationSpec gpbSpec = new YConfigurationSpec();
+    public Spec getSpec() {
+        Spec gpbSpec = new Spec();
         gpbSpec.addOption("class", OptionType.STRING).withRequired(true);
         gpbSpec.addOption("field", OptionType.STRING).withRequired(true);
 
-        YConfigurationSpec corsSpec = new YConfigurationSpec();
+        Spec corsSpec = new Spec();
         corsSpec.addOption("allowOrigin", OptionType.STRING).withRequired(true);
         corsSpec.addOption("allowCredentials", OptionType.BOOLEAN).withRequired(true);
 
-        YConfigurationSpec websiteSpec = new YConfigurationSpec();
+        Spec websiteSpec = new Spec();
         websiteSpec.addOption("tag", OptionType.STRING);
 
-        YConfigurationSpec lohiSpec = new YConfigurationSpec();
+        Spec lohiSpec = new Spec();
         lohiSpec.addOption("low", OptionType.INTEGER).withDefault(32 * 1024);
         lohiSpec.addOption("high", OptionType.INTEGER).withDefault(64 * 1024);
 
-        YConfigurationSpec websocketSpec = new YConfigurationSpec();
+        Spec websocketSpec = new Spec();
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
         websocketSpec.addOption("connectionCloseNumDroppedMsg", OptionType.INTEGER).withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65535);
 
-        YConfigurationSpec spec = new YConfigurationSpec();
+        Spec spec = new Spec();
         spec.addOption("port", OptionType.INTEGER);
         spec.addOption("tlsPort", OptionType.INTEGER);
         spec.addOption("tlsCert", OptionType.STRING);

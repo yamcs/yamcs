@@ -778,7 +778,7 @@ public class YamcsServer {
 
         if (args instanceof YConfiguration) {
             try {
-                YConfigurationSpec spec = service.specifyArgs();
+                Spec spec = service.getSpec();
                 if (spec != null) {
                     if (staticlog.isDebugEnabled()) {
                         Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();

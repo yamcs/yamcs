@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  * Specifies the valid structure of a {@link YConfiguration} instance. While not strictly 'validation', the spec also
  * allows defining additional metadata like the 'default' keyword which is used in the merged result of a validation.
  */
-public class YConfigurationSpec {
+public class Spec {
 
-    private static final Logger log = LoggerFactory.getLogger(YConfigurationSpec.class);
+    private static final Logger log = LoggerFactory.getLogger(Spec.class);
 
     private Map<String, Option> options = new HashMap<>();
 
@@ -298,12 +298,12 @@ public class YConfigurationSpec {
 
     public static final class WhenCondition {
 
-        private YConfigurationSpec spec;
+        private Spec spec;
         private String key;
         private Object value;
         private List<String> requiredKeys = new ArrayList<>();
 
-        public WhenCondition(YConfigurationSpec spec, String key, Object value) {
+        public WhenCondition(Spec spec, String key, Object value) {
             this.spec = spec;
             this.key = key;
             this.value = value;
@@ -328,7 +328,7 @@ public class YConfigurationSpec {
         private OptionType elementType;
         private String deprecationMessage;
         private List<Object> choices;
-        private YConfigurationSpec spec;
+        private Spec spec;
         private boolean applySpecDefaults;
 
         public Option(String name, OptionType type) {
@@ -391,7 +391,7 @@ public class YConfigurationSpec {
          * In case the {@link #type} or the {@link #elementType} is set to {@link OptionType#MAP} this specifies the
          * options within that map.
          */
-        public Option withSpec(YConfigurationSpec spec) {
+        public Option withSpec(Spec spec) {
             this.spec = spec;
             return this;
         }

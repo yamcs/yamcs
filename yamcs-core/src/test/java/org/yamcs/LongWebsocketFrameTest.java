@@ -40,6 +40,7 @@ public class LongWebsocketFrameTest {
         wsOptions.put("maxFrameLength", 1048576);
         options.put("webSocket", wsOptions);
         HttpServer httpServer = new HttpServer();
+        options = httpServer.getSpec().validate(options);
         httpServer.init(null, YConfiguration.wrap(options));
         httpServer.startServer();
         YamcsServer.setupYamcsServer();
