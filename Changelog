@@ -1,3 +1,6 @@
+Version 4.10.2 release 17-Jul-2019
+- various bugfixes 
+
 Version 4.10.1 released 8-Jul-2019
 - fixed bug with TSE driver not recovering from connection reset
 - allow specific buckets to map to the file system instead of rocksdb (previously it was all or nothing)
