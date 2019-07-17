@@ -780,9 +780,20 @@ public class YamcsServer {
             try {
                 YConfigurationSpec spec = service.specifyArgs();
                 if (spec != null) {
+                    if (staticlog.isDebugEnabled()) {
+                        Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
+                        Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                        staticlog.debug("Raw args for {}: {}", serviceName, safeArgs);
+                    }
+
                     args = spec.validate((YConfiguration) args);
+
+                    if (staticlog.isDebugEnabled()) {
+                        Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
+                        Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                        staticlog.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
+                    }
                 }
-                staticlog.debug("Intializing {} with resolved args: {}", serviceName, args);
                 service.init(instance, (YConfiguration) args);
             } catch (InitException e) { // TODO should add this to throws instead
                 throw new ConfigurationException(e);

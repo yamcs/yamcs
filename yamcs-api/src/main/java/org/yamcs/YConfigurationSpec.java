@@ -30,7 +30,7 @@ public class YConfigurationSpec {
     /**
      * Add an {@link Option} to this spec.
      * 
-     * @throws ConfigurationException
+     * @throws IllegalArgumentException
      *             if an option with this name is already defined.
      */
     public Option addOption(String name, OptionType type) {
@@ -195,10 +195,69 @@ public class YConfigurationSpec {
         return result;
     }
 
+    /**
+     * Returns a copy of the given arguments but with all secret arguments recursively removed.
+     * <p>
+     * This method does not validate the arguments, however it will throw random exceptions if the input does not match
+     * the expected structure. It is therefore best to validate the arguments before passing them.
+     */
+    public Map<String, Object> removeSecrets(Map<String, Object> unsafeArgs) {
+        return makeSafe(unsafeArgs, false);
+    }
+
+    /**
+     * Returns a copy of the given arguments but with all secret arguments masked as <tt>*****</tt>.
+     * <p>
+     * This method does not validate the arguments, however it will throw random exceptions if the input does not match
+     * the expected structure. It is therefore best to validate the arguments before passing them.
+     */
+    public Map<String, Object> maskSecrets(Map<String, Object> unsafeArgs) {
+        return makeSafe(unsafeArgs, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> makeSafe(Map<String, Object> unsafeArgs, boolean mask) {
+        Map<String, Object> safeArgs = new HashMap<>();
+        for (Entry<String, Object> arg : unsafeArgs.entrySet()) {
+            Option option = options.get(arg.getKey());
+            if (option == null) {
+                throw new IllegalArgumentException("Unknown argument " + arg.getKey());
+            }
+
+            if (option.secret) {
+                if (mask) {
+                    safeArgs.put(option.name, "*****");
+                }
+            } else if (option.type == OptionType.MAP) {
+                Map<String, Object> map = (Map<String, Object>) arg.getValue();
+                Map<String, Object> safeMap = option.spec.makeSafe(map, mask);
+                safeArgs.put(option.name, safeMap);
+            } else if (option.type == OptionType.LIST) {
+                List<Object> list = (List<Object>) arg.getValue();
+                List<Object> safeList = new ArrayList<>();
+                for (Object element : list) {
+                    if (option.elementType == OptionType.MAP) {
+                        Map<String, Object> mapElement = (Map<String, Object>) element;
+                        Map<String, Object> safeMapElement = option.spec.makeSafe(mapElement, mask);
+                        if (!safeMapElement.isEmpty()) {
+                            safeList.add(safeMapElement);
+                        }
+                    } else {
+                        safeList.add(element);
+                    }
+                }
+                safeArgs.put(option.name, safeList);
+            } else {
+                safeArgs.put(option.name, arg.getValue());
+            }
+        }
+        return safeArgs;
+    }
+
     private void verifyKeys(String... keys) {
         for (String key : keys) {
             if (!options.containsKey(key)) {
-                throw new IllegalArgumentException("Missing argument " + key);
+                throw new IllegalArgumentException("Unknown option " + key);
             }
         }
     }
@@ -264,6 +323,7 @@ public class YConfigurationSpec {
         private final String name;
         private final OptionType type;
         private boolean required;
+        private boolean secret;
         private Object defaultValue;
         private OptionType elementType;
         private String deprecationMessage;
@@ -281,6 +341,16 @@ public class YConfigurationSpec {
          */
         public Option withRequired(boolean required) {
             this.required = required;
+            return this;
+        }
+
+        /**
+         * Set whether this option is secret.
+         * 
+         * Secret options are not printed in log files.
+         */
+        public Option withSecret(boolean secret) {
+            this.secret = secret;
             return this;
         }
 
