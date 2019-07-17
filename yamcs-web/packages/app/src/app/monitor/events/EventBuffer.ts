@@ -55,7 +55,10 @@ export class EventBuffer {
 
     const splicedEvents = this.archiveEvents
       .concat(realtimeEvents)
-      .sort((e1, e2) => -e1.generationTimeUTC.localeCompare(e2.generationTimeUTC));
+      .sort((e1, e2) => {
+        const res = -e1.generationTimeUTC.localeCompare(e2.generationTimeUTC);
+        return res !== 0 ? res : (e1.seqNumber - e2.seqNumber);
+      });
     return splicedEvents;
   }
 
