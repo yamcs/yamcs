@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
