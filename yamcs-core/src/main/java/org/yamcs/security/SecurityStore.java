@@ -1,16 +1,27 @@
 package org.yamcs.security;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.YObjectLoader;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Manages the security layer. It allows logging in users with a pluggable variety of extensions. The Security Store
@@ -19,6 +30,8 @@ import org.yamcs.utils.YObjectLoader;
  */
 public class SecurityStore {
 
+    private Path storageDir;
+
     private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
     private static SecurityStore instance;
 
@@ -26,12 +39,20 @@ public class SecurityStore {
 
     private List<AuthModule> authModules = new ArrayList<>();
 
+    private Map<String, User> users = new HashMap<>();
     private User systemUser;
     private User unauthenticatedUser;
 
+    private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+    private AtomicBoolean dirty = new AtomicBoolean();
+
     @SuppressWarnings("unchecked")
-    private SecurityStore() {
-        YConfiguration yconf = null;
+    public SecurityStore() {
+        YConfiguration yamcsConf = YConfiguration.getConfiguration("yamcs");
+        String dataDir = yamcsConf.getString("dataDir");
+        storageDir = Paths.get(dataDir).resolve("_global");
+
+        YConfiguration yconf;
         if (YConfiguration.isDefined("security")) {
             yconf = YConfiguration.getConfiguration("security");
         } else {
@@ -85,13 +106,33 @@ public class SecurityStore {
 
         systemUser = new User("System");
         systemUser.setSuperuser(true);
+
+        exec.scheduleWithFixedDelay(() -> {
+            if (dirty.getAndSet(false)) {
+                List<Map<String, Object>> allUsers = new ArrayList<>();
+                for (Entry<String, User> entry : users.entrySet()) {
+                    allUsers.add(entry.getValue().serialize());
+                }
+
+                String dump = new Yaml().dump(allUsers);
+                Path usersFile = storageDir.resolve("users.yaml");
+                try {
+                    FileUtils.writeAtomic(usersFile, dump.getBytes());
+                } catch (IOException e) {
+                    log.warn("Failed to persist user db", e);
+                    dirty.set(true);
+                    throw new UncheckedIOException(e);
+                }
+            }
+        }, 5000L, 5000L, TimeUnit.MILLISECONDS);
     }
 
-    public static synchronized SecurityStore getInstance() {
-        if (instance == null) {
-            instance = new SecurityStore();
-        }
-        return instance;
+    public User getUser(String username) {
+        return users.get(username);
+    }
+
+    public List<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
     public List<AuthModule> getAuthModules() {
@@ -184,6 +225,9 @@ public class SecurityStore {
         }
 
         log.info("Successfully logged in user {}", user);
+        users.put(user.getUsername(), user);
+        dirty.set(true);
+
         f.complete(user);
         return f;
     }

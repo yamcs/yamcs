@@ -86,10 +86,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
-    private Router apiRouter;
-    private AuthHandler authHandler = new AuthHandler();
-    private WebsiteConfigHandler websiteConfigHandler;
-    private boolean contentExpected = false;
 
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
@@ -102,6 +98,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
+
+    private Router apiRouter;
+    private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+    private AuthHandler authHandler = new AuthHandler();
+    private WebsiteConfigHandler websiteConfigHandler;
+    private boolean contentExpected = false;
 
     YConfiguration wsConfig;
 
@@ -164,12 +166,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
             throws HttpException {
-        SecurityStore security = SecurityStore.getInstance();
-        if (security.isEnabled()) {
+        if (securityStore.isEnabled()) {
             User user = authChecker.verifyAuth(ctx, req);
             ctx.channel().attr(CTX_USER).set(user);
         } else {
-            User user = security.getUnauthenticatedUser();
+            User user = securityStore.getUnauthenticatedUser();
             ctx.channel().attr(CTX_USER).set(user);
         }
     }

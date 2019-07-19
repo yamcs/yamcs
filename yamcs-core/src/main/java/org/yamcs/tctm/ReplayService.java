@@ -87,12 +87,15 @@ public class ReplayService extends AbstractService
     ReplayRequest.Builder rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
+    private SecurityStore securityStore;
+
     // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
     List<String> excludeParameterGroups = null;
 
-    public ReplayService(String instance) throws ConfigurationException {
-        this.yamcsInstance = instance;
-        xtceDb = XtceDbFactory.getInstance(instance);
+    public ReplayService(String yamcsInstance) throws ConfigurationException {
+        this.yamcsInstance = yamcsInstance;
+        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+        securityStore = YamcsServer.getServer().getSecurityStore();
     }
 
     /**
@@ -105,6 +108,7 @@ public class ReplayService extends AbstractService
     public ReplayService(String instance, YConfiguration args) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
+        securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
             excludeParameterGroups = args.getList("excludeParameterGroups");
         }
@@ -287,7 +291,7 @@ public class ReplayService extends AbstractService
                 });
         int subscriptionId;
         try {
-            subscriptionId = pidrm.addRequest(plist, SecurityStore.getInstance().getSystemUser());
+            subscriptionId = pidrm.addRequest(plist, securityStore.getSystemUser());
         } catch (InvalidIdentification e) {
             NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);

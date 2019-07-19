@@ -36,6 +36,7 @@ public class HttpAuthorizationChecker {
     private static final String AUTH_TYPE_BEARER = "Bearer ";
     private static final Logger log = LoggerFactory.getLogger(HttpAuthorizationChecker.class);
 
+    private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
     private final ConcurrentHashMap<String, User> jwtTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
 
@@ -84,7 +85,7 @@ public class HttpAuthorizationChecker {
 
         try {
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
-            return SecurityStore.getInstance().login(token).get();
+            return securityStore.login(token).get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
@@ -136,7 +137,7 @@ public class HttpAuthorizationChecker {
                 throw new UnauthorizedException("Invalid JWT token");
             }
 
-            if (!SecurityStore.getInstance().verifyValidity(cachedUser)) {
+            if (!securityStore.verifyValidity(cachedUser)) {
                 jwtTokens.remove(jwt);
                 throw new UnauthorizedException("Could not verify token");
             }

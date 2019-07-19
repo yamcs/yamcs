@@ -23,6 +23,7 @@ import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.ObjectPrivilegeType;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.web.BadRequestException;
@@ -70,6 +71,7 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
 
     protected final YamcsServer yamcsServer = YamcsServer.getServer();
+    protected final SecurityStore securityStore = yamcsServer.getSecurityStore();
 
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);

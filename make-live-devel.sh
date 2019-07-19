@@ -69,6 +69,17 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
     cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
+else
+    echo "-----------------------------------------------------"
+    echo "Yamcs is moving away from the 'live' dev config."
+    echo "Consider migrating to the yamcs-maven-plugin and"
+    echo "let us know if you run into issues."
+    echo
+    echo "https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin"
+    echo
+    echo "If you're looking to run the simulation run:"
+    echo "   ./run-simulation.sh"
+    echo "-----------------------------------------------------"
 fi
 
 if [ -f make-live-devel-local.sh ]; then

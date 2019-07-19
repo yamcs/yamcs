@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.yamcs.ConnectedClient;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Rest.ListUsersResponse;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
@@ -22,14 +23,27 @@ import org.yamcs.web.HttpException;
  */
 public class UserRestHandler extends RestHandler {
 
+    @Route(path = "/api/users", method = "GET")
+    public void listUsers(RestRequest req) throws HttpException {
+        List<User> users = securityStore.getUsers();
+        Collections.sort(users, (u1, u2) -> u1.getUsername().compareToIgnoreCase(u2.getUsername()));
+
+        ListUsersResponse.Builder responseb = ListUsersResponse.newBuilder();
+        for (User user : users) {
+            UserInfo userInfo = toUserInfo(user);
+            responseb.addUsers(userInfo);
+        }
+        completeOK(req, responseb.build());
+    }
+
     @Route(path = "/api/user", method = "GET")
     public void getUser(RestRequest req) throws HttpException {
         User user = req.getUser();
-        UserInfo userInfo = toUserInfo(user, true);
+        UserInfo userInfo = toUserInfo(user);
         completeOK(req, userInfo);
     }
 
-    public static UserInfo toUserInfo(User user, boolean addClientInfo) {
+    public static UserInfo toUserInfo(User user) {
         UserInfo.Builder userInfob;
         userInfob = UserInfo.newBuilder();
         userInfob.setLogin(user.getUsername());

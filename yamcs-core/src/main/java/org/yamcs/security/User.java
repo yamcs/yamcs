@@ -1,5 +1,6 @@
 package org.yamcs.security;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,6 +106,29 @@ public class User {
         }
 
         return false;
+    }
+
+    public Map<String, Object> serialize() {
+        Map<String, Object> props = new HashMap<>();
+        props.put("username", username);
+        // props.put("hash", password);
+        props.put("superuser", superuser);
+        props.put("roles", new ArrayList<>());
+        return props;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof User)) {
+            return false;
+        }
+        User other = (User) obj;
+        return username.equals(other.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
     }
 
     @Override

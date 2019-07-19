@@ -11,6 +11,7 @@ import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ServicesPage } from './services/ServicesPage';
+import { UsersPage } from './users/UsersPage';
 
 const routes: Routes = [
   {
@@ -55,6 +56,11 @@ const routes: Routes = [
       {
         path: 'rocksdb',
         loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
+      },
+      {
+        path: 'users',
+        component: UsersPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       }
     ]
   }
@@ -74,4 +80,5 @@ export const routingComponents = [
   BucketPlaceholderPage,
   PluginsPage,
   ServicesPage,
+  UsersPage,
 ];

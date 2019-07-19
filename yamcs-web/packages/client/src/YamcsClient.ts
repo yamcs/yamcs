@@ -3,7 +3,7 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper } from './types/internal';
+import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
 import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo, WebsiteConfig } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
@@ -191,6 +191,13 @@ export default class YamcsClient implements HttpHandler {
       body,
       method: 'PATCH',
     });
+  }
+
+  async getUsers() {
+    const url = `${this.apiUrl}/users`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as UsersWrapper;
+    return wrapper.users || [];
   }
 
   async getClients() {

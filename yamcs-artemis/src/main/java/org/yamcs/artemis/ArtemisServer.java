@@ -9,6 +9,7 @@ import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.YObjectLoader;
@@ -68,11 +69,12 @@ public class ArtemisServer extends AbstractService implements YamcsService {
             throw new UnsupportedOperationException("This service cannot be instantiated more than once");
         }
 
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
 
         if (securityManager != null) {
             artemisServer.setSecurityManager(securityManager);
-        } else if (SecurityStore.getInstance().isEnabled()) {
+        } else if (securityStore.isEnabled()) {
             log.warn("Artemis security is unconfigured. All connections are given full permissions");
         } else {
             log.debug("Artemis security is unconfigured. All connections are given full permissions");

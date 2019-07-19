@@ -38,6 +38,7 @@ import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 import org.yamcs.protobuf.YamcsManagement.TemplateVariable;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.spi.Plugin;
 import org.yamcs.spi.PluginException;
 import org.yamcs.time.RealtimeTimeService;
@@ -87,6 +88,7 @@ public class YamcsServer {
     private static String serverId;
     private static byte[] secretKey;
 
+    private SecurityStore securityStore;
     static CrashHandler globalCrashHandler = new LogCrashHandler();
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
@@ -297,12 +299,20 @@ public class YamcsServer {
             }
         }
 
+        File globalDir = new File(dataDir, "_global");
+        if (!globalDir.exists()) {
+            if (!globalDir.mkdirs()) {
+                throw new ConfigurationException("Failed to create directory " + globalDir);
+            }
+        }
         File dir = new File(instanceDefDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 throw new ConfigurationException("Failed to create directory " + dir);
             }
         }
+
+        securityStore = new SecurityStore();
 
         for (File f : dir.listFiles()) {
             boolean online;
@@ -694,7 +704,10 @@ public class YamcsServer {
                 return realtimeTimeService; // happens from unit tests
             }
         }
+    }
 
+    public SecurityStore getSecurityStore() {
+        return securityStore;
     }
 
     public List<ServiceWithConfig> getGlobalServices() {

@@ -29,7 +29,6 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.CriteriaEvaluator;
@@ -97,9 +96,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.timer = yproc.getTimer();
         this.lastValueCache = yproc.getLastValueCache();
 
-        SecurityStore security = SecurityStore.getInstance();
-        QueueState initialState = security.isEnabled() ? QueueState.BLOCKED : QueueState.ENABLED;
-        CommandQueue cq = new CommandQueue(yproc, "default", initialState);
+        CommandQueue cq = new CommandQueue(yproc, "default", QueueState.BLOCKED);
         queues.put("default", cq);
 
         if (YConfiguration.isDefined("command-queue")) {
@@ -111,7 +108,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     continue;
                 }
                 if (!queues.containsKey(queueName)) {
-                    queues.put(queueName, new CommandQueue(yproc, queueName, initialState));
+                    queues.put(queueName, new CommandQueue(yproc, queueName, QueueState.BLOCKED));
                 }
                 CommandQueue q = queues.get(queueName);
                 String state = config.getSubString(queueName, "state");

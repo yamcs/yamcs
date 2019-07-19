@@ -74,6 +74,10 @@ message EditCommandQueueRequest {
   optional string state = 1;
 }
 
+message ListUsersResponse {
+  repeated yamcsManagement.UserInfo users = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }

@@ -48,7 +48,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
@@ -88,7 +87,7 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws InterruptedException, SSLException, GeneralSecurityException {
-        if (SecurityStore.getInstance().isEnabled()) {
+        if (YamcsServer.getServer().getSecurityStore().isEnabled()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
         parameterProvider = ParameterProvider.instance;
