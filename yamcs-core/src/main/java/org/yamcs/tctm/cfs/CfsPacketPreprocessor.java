@@ -23,7 +23,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     ErrorDetectionWordCalculator errorDetectionCalculator;
-    private Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
+    private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(CfsPacketPreprocessor.class);
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
@@ -75,6 +75,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         return checkForSequenceDiscontinuity;
     }
 
+    @Override
     public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
         this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
     }

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;

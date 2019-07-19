@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.yamcs.AbstractIntegrationTest;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.client.HttpClient;
 
 import io.netty.handler.codec.http.HttpMethod;
 

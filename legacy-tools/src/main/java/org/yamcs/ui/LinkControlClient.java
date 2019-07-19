@@ -4,12 +4,12 @@ import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.api.rest.RestClient;
-import org.yamcs.api.ws.ConnectionListener;
-import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.client.ConnectionListener;
+import org.yamcs.client.RestClient;
+import org.yamcs.client.WebSocketClientCallback;
+import org.yamcs.client.WebSocketRequest;
+import org.yamcs.client.WebSocketResponseHandler;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;

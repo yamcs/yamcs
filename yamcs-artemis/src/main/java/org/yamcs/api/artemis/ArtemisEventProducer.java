@@ -10,57 +10,53 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
-import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.events.AbstractEventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 
-
 /**
- * An EventProducer that publishes events over HornetQ
+ * An EventProducer that publishes events over Artemis
  * <p>
- * By default, repeated message are detected and reduced, resulting in pseudo
- * events with a message like 'last event repeated X times'. This behaviour can
- * be turned off.
+ * By default, repeated message are detected and reduced, resulting in pseudo events with a message like 'last event
+ * repeated X times'. This behaviour can be turned off.
  */
 public class ArtemisEventProducer extends AbstractEventProducer implements ConnectionListener {
     static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
-    
+
     YamcsConnector yconnector;
     SimpleString address;
     YamcsClient yclient;
-    static Logger logger=LoggerFactory.getLogger(ArtemisEventProducer.class);
-    
+    static Logger logger = LoggerFactory.getLogger(ArtemisEventProducer.class);
+
     static final int MAX_QUEUE_SIZE = 1000;
-    ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
-    
+    ArrayBlockingQueue<Event> queue = new ArrayBlockingQueue<>(MAX_QUEUE_SIZE);
+
     public ArtemisEventProducer(YamcsConnectionProperties ycd) {
-        if(ycd.getInstance()==null) {
+        if (ycd.getInstance() == null) {
             throw new IllegalArgumentException("Please provide the yamcs instance to connect to");
         }
         yconnector = new YamcsConnector();
         yconnector.setMaxAttempts(Integer.MAX_VALUE);
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
-        
+
         address = Protocol.getEventRealtimeAddress(ycd.getInstance());
-        
+
         InputStream is = ArtemisEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
-        if(is!=null) {
+        if (is != null) {
             Object o = new Yaml().load(is);
-            if(!(o instanceof Map<?,?>)) {
-                throw new ConfigurationException("event-producer.yaml does not contain a map but a "+o.getClass());
+            if (!(o instanceof Map<?, ?>)) {
+                throw new ConfigurationException("event-producer.yaml does not contain a map but a " + o.getClass());
             }
-    
+
             @SuppressWarnings("unchecked")
-            Map<String,Object> m = (Map<String, Object>) o;
-    
+            Map<String, Object> m = (Map<String, Object>) o;
+
             if (m.containsKey(CONF_REPEATED_EVENT_REDUCTION)) {
                 repeatedEventReduction = (Boolean) m.get(CONF_REPEATED_EVENT_REDUCTION);
             }
@@ -69,16 +65,16 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
             setRepeatedEventReduction(true, 60000);
         }
     }
-    
-    
+
     @Override
-    public void connecting(String url) { }
+    public void connecting(String url) {
+    }
 
     @Override
     public void connected(String url) {
         try {
             yclient = yconnector.getSession().newClientBuilder().setDataProducer(true).build();
-            while(!queue.isEmpty()) {
+            while (!queue.isEmpty()) {
                 yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
             }
         } catch (YamcsApiException e) {
@@ -88,7 +84,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
-        logger.warn("Failed to connect to "+url+": "+exception.getMessage());
+        logger.warn("Failed to connect to " + url + ": " + exception.getMessage());
     }
 
     @Override
@@ -107,29 +103,31 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
             e.printStackTrace();
         }
     }
+
     /* (non-Javadoc)
      * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
      */
     @Override
     public synchronized void sendEvent(Event event) {
         logger.debug("Sending Event: {}", event.getMessage());
-        if(yconnector.isConnected()) {
+        if (yconnector.isConnected()) {
             try {
                 yclient.sendData(address, ProtoDataType.EVENT, event);
             } catch (YamcsApiException e) {
-                logger.error("Failed to send event ",e);
+                logger.error("Failed to send event ", e);
             }
         } else {
             queue.offer(event);
         }
     }
-    
+
     @Override
     public String toString() {
-        return ArtemisEventProducer.class.getName()+" connected to "+yconnector.getUrl();
+        return ArtemisEventProducer.class.getName() + " connected to " + yconnector.getUrl();
     }
+
     @Override
-    public long getMissionTime() {       
+    public long getMissionTime() {
         return TimeEncoding.currentInstant();
     }
 }

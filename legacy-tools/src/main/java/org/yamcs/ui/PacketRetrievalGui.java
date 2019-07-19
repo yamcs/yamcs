@@ -30,7 +30,7 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.PacketFormatter;

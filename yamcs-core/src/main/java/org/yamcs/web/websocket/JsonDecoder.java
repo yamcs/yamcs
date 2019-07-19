@@ -5,7 +5,6 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.ws.WSConstants;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

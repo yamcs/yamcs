@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;

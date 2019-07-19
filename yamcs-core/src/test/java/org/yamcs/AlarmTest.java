@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.alarms.AlarmReporter;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;

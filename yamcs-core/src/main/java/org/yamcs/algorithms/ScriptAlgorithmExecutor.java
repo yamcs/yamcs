@@ -29,22 +29,21 @@ import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.ParameterTypeUtils;
 
-
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
  * its InputParameters.
  * <p>
  * This class will create and compile on-the-fly ValueBinding implementations for every unique combination of raw and
- * eng types. 
+ * eng types.
  */
 public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutor.class);
 
     final Invocable invocable;
-    //stores both the function inputs and outputs
-    //the position of the inputs corresponds to the position of AlgorithmDef input respectively output List   
+    // stores both the function inputs and outputs
+    // the position of the inputs corresponds to the position of AlgorithmDef input respectively output List
     final Object[] functionArgs;
-  
+
     final int numInputs;
     final int numOutputs;
 
@@ -54,29 +53,32 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     ParameterTypeProcessor parameterTypeProcessor;
     final String functionName;
     final EventProducer eventProducer;
-    
-    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx) {
+
+    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable, String functionName,
+            AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
         this.eventProducer = execCtx.getProcessorData().getEventProducer();
-        
+
         numInputs = algorithmDef.getInputList().size();
         List<OutputParameter> outputList = algorithmDef.getOutputList();
         numOutputs = outputList.size();
-        functionArgs = new Object[numInputs+numOutputs];
+        functionArgs = new Object[numInputs + numOutputs];
 
         // Set empty output bindings so that algorithms can write their attributes
-        for (int k = 0; k<numOutputs; k++) {
-            functionArgs[numInputs+k] = new OutputValueBinding();;
+        for (int k = 0; k < numOutputs; k++) {
+            functionArgs[numInputs + k] = new OutputValueBinding();
+            ;
         }
     }
 
     @Override
     protected void updateInput(int position, InputParameter inputParameter, ParameterValue newValue) {
-        if(log.isTraceEnabled()) {
-            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmExecutorFactory.getArgName(inputParameter), newValue);
+        if (log.isTraceEnabled()) {
+            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(),
+                    ScriptAlgorithmExecutorFactory.getArgName(inputParameter), newValue);
         }
         ValueBinding valueBinding = (ValueBinding) functionArgs[position];
         // First time for an inputParameter, it will create a ValueBinding object.
@@ -95,16 +97,16 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
      */
     @Override
     public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
-        if(log.isTraceEnabled()) {
+        if (log.isTraceEnabled()) {
             log.trace(getRunningTraceString());
         }
         try {
             Object returnValue = invocable.invokeFunction(functionName, functionArgs);
             List<ParameterValue> outputValues = new ArrayList<>();
             List<OutputParameter> outputList = algorithmDef.getOutputList();
-            for (int k = 0; k<numOutputs; k++) {
+            for (int k = 0; k < numOutputs; k++) {
                 OutputParameter outputParameter = outputList.get(k);
-                OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs+k];
+                OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs + k];
                 if (res.updated && res.value != null) {
                     ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
@@ -113,46 +115,45 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 }
             }
             propagateToListeners(returnValue, outputValues);
-            
+
             return outputValues;
         } catch (ScriptException | NoSuchMethodException e) {
             log.warn("Error while executing algorithm: " + e.getMessage(), e);
-            eventProducer.sendWarning("Error while executing algorithm: "+e.getMessage());
+            eventProducer.sendWarning("Error while executing algorithm: " + e.getMessage());
             return Collections.emptyList();
         }
     }
 
-    
     private String getRunningTraceString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Running algorithm ").append(algorithmDef.getName())
-        .append("( ");
+                .append("( ");
         int pos = 0;
-        for(InputParameter p: algorithmDef.getInputList()) {
-            if(pos!=0) {
+        for (InputParameter p : algorithmDef.getInputList()) {
+            if (pos != 0) {
                 sb.append(", ");
             }
             sb.append(ScriptAlgorithmExecutorFactory.getArgName(p)).append(": ")
-            .append(String.valueOf(functionArgs[pos]));
+                    .append(String.valueOf(functionArgs[pos]));
             pos++;
         }
         sb.append(")");
         return sb.toString();
     }
-    
+
     private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();
-        DataEncoding de = null; 
+        DataEncoding de = null;
 
-        if(ptype instanceof BaseDataType) {
+        if (ptype instanceof BaseDataType) {
             de = ((BaseDataType) ptype).getEncoding();
         }
         if (de != null) {
             Value v = DataEncodingDecoder.getRawValue(de, binding.value);
-            if(v==null) {
+            if (v == null) {
                 eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
-                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+de);
+                        + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + de);
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             } else {
                 pval.setRawValue(v);
@@ -160,9 +161,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             }
         } else {
             Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
-            if(v==null) {
+            if (v == null) {
                 eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
-                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+ptype);
+                        + "'" + binding.value + "' of type " + binding.value.getClass() + " into " + ptype);
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             } else {
                 pval.setEngineeringValue(v);
@@ -171,8 +172,6 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return pval;
     }
 
-
-  
     private static ValueBinding toValueBinding(ParameterValue pval) {
         try {
             Class<ValueBinding> clazz = getOrCreateValueBindingClass(pval);
@@ -208,15 +207,15 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             updateValueSource.append("  }\n");
 
             source.append(updateValueSource.toString());
-            
+
             source.append("  public String toString() {\n")
                     .append("    return \"[");
             if (pval.getRawValue() != null) {
                 source.append("r: \"+rawValue+\", ");
             }
             source.append("v: \"+value+\"]\";\n")
-                    .append("  }\n"); 
-            
+                    .append("  }\n");
+
             source.append("}");
             try {
                 SimpleCompiler compiler = new SimpleCompiler();
@@ -231,7 +230,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 valueBindingClasses.put(key, clazz);
                 return clazz;
             } catch (Exception e) {
-                throw new IllegalStateException("Could not compile custom class: "+source.toString(), e);
+                throw new IllegalStateException("Could not compile custom class: " + source.toString(), e);
             }
         }
     }
@@ -321,7 +320,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
     @Override
     public String toString() {
-        return algorithmDef.getName() +" executor "+invocable;
+        return algorithmDef.getName() + " executor " + invocable;
     }
 
 }

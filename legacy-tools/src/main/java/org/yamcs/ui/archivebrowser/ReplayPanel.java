@@ -13,7 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.yamcs.api.ProcessorControlClient;
+import org.yamcs.client.ProcessorControlClient;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
@@ -42,7 +42,7 @@ public class ReplayPanel extends JPanel {
     static final int PLAY = 1;
     DataViewer dataViewer;
 
-    ProcessorControlClient channelControl;
+    ProcessorControlClient processorControl;
     long currentInstant;
 
     public ReplayPanel() {
@@ -188,7 +188,7 @@ public class ReplayPanel extends JPanel {
     }
 
     public void setProcessorControlClient(ProcessorControlClient cc) {
-        this.channelControl = cc;
+        this.processorControl = cc;
     }
 
     void playOrStopPressed() {
@@ -330,7 +330,7 @@ public class ReplayPanel extends JPanel {
 
     void pauseReplay() {
         try {
-            channelControl.pauseArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
+            processorControl.pauseArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
         } catch (Exception e) {
             debugLog(
                     "exception when stopping replay for channel " + currentYProcInfo.getName() + " :" + e.getMessage());
@@ -344,7 +344,7 @@ public class ReplayPanel extends JPanel {
             debugLog("start replay from " + TimeEncoding.toString(currentInstant));
         }
         try {
-            channelControl.resumeArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
+            processorControl.resumeArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName());
         } catch (Exception e) {
             debugLog("exception when starting replay for channel " + currentYProcInfo.getInstance() + "."
                     + currentYProcInfo.getName() + " :" + e.getMessage());
@@ -354,7 +354,7 @@ public class ReplayPanel extends JPanel {
     void seekReplay(long newPosition) {
         debugLog("seeking replay to " + TimeEncoding.toString(newPosition));
         try {
-            channelControl.seekArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName(), newPosition);
+            processorControl.seekArchiveReplay(currentYProcInfo.getInstance(), currentYProcInfo.getName(), newPosition);
         } catch (Exception e) {
             debugLog("exception when starting replay for channel " + currentYProcInfo.getInstance() + "."
                     + currentYProcInfo.getName() + " :" + e.getMessage());

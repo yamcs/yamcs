@@ -1,8 +1,30 @@
 package org.yamcs.algorithms;
 
-import org.junit.*;
-import org.yamcs.*;
-import org.yamcs.api.EventProducerFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.yamcs.ConfigurationException;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.RefMdbPacketGenerator;
+import org.yamcs.YConfiguration;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -13,10 +35,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import java.util.*;
-
-import static org.junit.Assert.*;
 
 public class AlgorithmManagerTest {
     @BeforeClass
@@ -42,8 +60,8 @@ public class AlgorithmManagerTest {
 
         tmGenerator = new RefMdbPacketGenerator();
         tmGenerator = new RefMdbPacketGenerator();
-        Map<String, Object> jslib = new HashMap<String, Object>();
-        Map<String, Object> config = new HashMap<String, Object>();
+        Map<String, Object> jslib = new HashMap<>();
+        Map<String, Object> config = new HashMap<>();
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
@@ -66,13 +84,9 @@ public class AlgorithmManagerTest {
         Parameter floatAddition = prm
                 .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatAddition").build());
 
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(Arrays.asList(floatPara, floatAddition), new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(Arrays.asList(floatPara, floatAddition),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_1();
@@ -93,17 +107,12 @@ public class AlgorithmManagerTest {
     // this can be used to see that the performance of javascript is much worse in some later versions of Java 6
     // OpenJDK 7 is very fast.
     public void testJavascriptPerformanceFloatAdd() throws InvalidIdentification {
-        List<Parameter> paraList = new ArrayList<Parameter>();
+        List<Parameter> paraList = new ArrayList<>();
         paraList.add(prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoYprFloat").build()));
         paraList.add(prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_1_2").build()));
 
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(paraList, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(paraList, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         long t0 = System.currentTimeMillis();
@@ -118,13 +127,8 @@ public class AlgorithmManagerTest {
     @Test
     public void testSlidingWindow() throws InvalidIdentification, InterruptedException {
         Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoWindowResult").build());
-        final List<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(p, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final List<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         long startTime = TimeEncoding.getWallclockTime();
@@ -200,14 +204,9 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatDivision").build());
-        prm.addRequest(p, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_1();
@@ -217,15 +216,10 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testAlgorithmChaining() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         Parameter p = prm
                 .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/AlgoFloatMultiplication").build());
-        int subscriptionId = prm.addRequest(p, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        int subscriptionId = prm.addRequest(p, (ParameterConsumer) (subscriptionId1, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_1();
@@ -248,15 +242,11 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testAlgorithmChainingWithWindowing() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         int subscriptionId = prm.addRequest(Arrays.asList(
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAverage"),
-                prm.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1_1")), new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                prm.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1_1")),
+                (ParameterConsumer) (subscriptionId1, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_1();
@@ -294,13 +284,9 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testEnumCalibration() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationEnum"), new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationEnum"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_6(1, 1);
@@ -311,15 +297,11 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testBooleanAlgorithms() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoBooleanTrueOutcome"),
-                prm.getParameter("/REFMDB/SUBSYS1/AlgoBooleanFalseOutcome")), new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoBooleanFalseOutcome")),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_9();
@@ -330,13 +312,9 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testFloatCalibration() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationFloat"), new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoCalibrationFloat"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_6(1, 1);
@@ -347,13 +325,9 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testSeparateUpdate() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoSeparateUpdateOutcome"), new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoSeparateUpdateOutcome"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         tmGenerator.generate_PKT1_1();
@@ -373,15 +347,11 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testMarkedNotUpdated() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoUpdatedOut"),
-                prm.getParameter("/REFMDB/SUBSYS1/AlgoUnupdatedOut")), new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoUnupdatedOut")),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         int pIntegerPara16_1 = 5;
@@ -393,14 +363,9 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testSelectiveRun() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoSelectiveOut"),
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         int pIntegerPara16_1 = 5;
@@ -420,42 +385,32 @@ public class AlgorithmManagerTest {
 
     @Test
     public void testOnPeriodicRate() throws InvalidIdentification, InterruptedException {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/OnPeriodicRateOut"),
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
         Thread.sleep(10000);
     }
-    
+
     @Test
     public void testBinaryInput() throws InvalidIdentification, InterruptedException {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(
                 prm.getParameter("/REFMDB/SUBSYS1/PrependedSizeBinary1"),
                 prm.getParameter("/REFMDB/SUBSYS1/PrependedSizeBinary1_length")),
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         proc.start();
-      
+
         tmGenerator.generate_PKT5();
-        
+
         assertEquals(2, params.size());
-        ParameterValue pv0 = params.get(0); 
+        ParameterValue pv0 = params.get(0);
         ParameterValue pv1 = params.get(1);
-        
+
         assertEquals("/REFMDB/SUBSYS1/PrependedSizeBinary1_length", pv1.getParameter().getQualifiedName());
         assertEquals(pv0.getEngValue().getBinaryValue().length, pv1.getEngValue().getUint32Value());
-        
+
     }
 }

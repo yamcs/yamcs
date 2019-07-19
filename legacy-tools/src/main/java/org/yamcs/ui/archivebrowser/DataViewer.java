@@ -26,7 +26,7 @@ import javax.swing.border.Border;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.ui.CommandHistoryRetrievalGui;
 import org.yamcs.ui.PacketRetrievalGui;

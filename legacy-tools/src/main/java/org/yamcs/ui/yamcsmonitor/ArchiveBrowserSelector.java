@@ -15,8 +15,8 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.ProcessorControlClient;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.client.ProcessorControlClient;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;

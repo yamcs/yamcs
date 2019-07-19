@@ -28,7 +28,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
 /**

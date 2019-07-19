@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
 public class RestClientTest extends AbstractIntegrationTest {

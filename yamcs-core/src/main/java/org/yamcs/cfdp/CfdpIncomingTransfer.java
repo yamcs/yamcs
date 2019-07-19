@@ -238,7 +238,6 @@ public class CfdpIncomingTransfer extends CfdpTransaction {
         return false;
     }
 
-    
     @Override
     public void run() {
         // TODO - we should setup some timers to check the incoming file is delivered ok

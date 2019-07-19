@@ -3,9 +3,9 @@ package org.yamcs.ui;
 import java.util.concurrent.Future;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.api.rest.BulkRestDataReceiver;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.BulkRestDataReceiver;
+import org.yamcs.client.RestClient;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Rest.CreateTagRequest;
 import org.yamcs.protobuf.Rest.EditTagRequest;
 import org.yamcs.protobuf.Rest.ListTagsResponse;

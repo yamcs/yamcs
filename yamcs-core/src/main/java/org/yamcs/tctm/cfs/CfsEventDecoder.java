@@ -1,5 +1,7 @@
 package org.yamcs.tctm.cfs;
 
+import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +15,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.time.TimeService;
@@ -26,8 +28,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
-
-import static org.yamcs.StandardTupleDefinitions.*;
 
 /**
  * Generate Yamcs events out of cFS event packets

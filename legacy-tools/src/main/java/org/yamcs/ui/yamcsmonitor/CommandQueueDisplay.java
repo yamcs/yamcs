@@ -40,7 +40,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
@@ -486,8 +486,9 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
                     ArrayList<CommandQueueEntry> cmds = commands.get(q.getName());
                     if (cmds != null) {
                         for (CommandQueueEntry cqe : cmds) {
-                            if (System.currentTimeMillis() - Timestamps.toMillis(cqe.getGenerationTime()) > oldCommandWarningTime
-                                    * 1000L) {
+                            if (System.currentTimeMillis()
+                                    - Timestamps.toMillis(cqe.getGenerationTime()) > oldCommandWarningTime
+                                            * 1000L) {
                                 oldcommandsfound = true;
                                 break;
                             }

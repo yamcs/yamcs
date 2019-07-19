@@ -3,7 +3,6 @@ package org.yamcs.web.websocket;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketClientMessage;
 
 import com.google.protobuf.ByteString;

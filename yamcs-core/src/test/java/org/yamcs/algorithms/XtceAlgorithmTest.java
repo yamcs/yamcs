@@ -1,21 +1,16 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
@@ -23,7 +18,6 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -50,15 +44,9 @@ public class XtceAlgorithmTest {
     public void test1() {
         Parameter bv = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
         Parameter bsoc = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge");
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
 
-        prm.addRequest(bsoc, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-
-            }
-        });
+        prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
         prm.update(Arrays.asList(pv));
@@ -72,15 +60,9 @@ public class XtceAlgorithmTest {
     public void test2() {
         Parameter bv = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
         Parameter bscc = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge_Custom");
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
 
-        prm.addRequest(bscc, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-
-            }
-        });
+        prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngineeringValue(ValueUtility.getFloatValue(12.6f));
         prm.update(Arrays.asList(pv));

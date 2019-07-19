@@ -16,12 +16,14 @@ public abstract class CfdpTransaction implements Runnable {
     final protected ScheduledThreadPoolExecutor executor;
     final protected EventProducer eventProducer;
     protected boolean acknowledged = false;
-    
-    public CfdpTransaction(ScheduledThreadPoolExecutor executor, long initiatorEntity, Stream cfdpOut, EventProducer eventProducer) {
+
+    public CfdpTransaction(ScheduledThreadPoolExecutor executor, long initiatorEntity, Stream cfdpOut,
+            EventProducer eventProducer) {
         this(executor, new CfdpTransactionId(initiatorEntity), cfdpOut, eventProducer);
     }
 
-    public CfdpTransaction(ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut, EventProducer eventProducer) {
+    public CfdpTransaction(ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut,
+            EventProducer eventProducer) {
         this.myId = id;
         this.cfdpOut = cfdpOut;
         this.state = TransferState.RUNNING;
@@ -83,8 +85,8 @@ public abstract class CfdpTransaction implements Runnable {
     public CfdpTransactionId getId() {
         return myId;
     }
-    
+
     public boolean isReliable() {
-        return acknowledged; 
+        return acknowledged;
     }
 }

@@ -6,14 +6,15 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.time.TimeService;
 
 public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
+
     static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
-    
+
     // which error detection algorithm to use (null = no checksum)
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
     protected EventProducer eventProducer;
@@ -24,6 +25,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
+
     static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(Map<String, Object> config) {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             return null;

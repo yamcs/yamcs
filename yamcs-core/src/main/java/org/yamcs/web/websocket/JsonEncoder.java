@@ -3,7 +3,6 @@ package org.yamcs.web.websocket;
 import java.io.IOException;
 import java.io.StringWriter;
 
-import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import com.google.gson.stream.JsonWriter;
@@ -23,7 +22,7 @@ public class JsonEncoder implements WebSocketEncoder {
             writer.value(WSConstants.PROTOCOL_VERSION);
             writer.value(WSConstants.MESSAGE_TYPE_REPLY);
             writer.value(reply.getRequestId());
-            if(reply.hasData()) {
+            if (reply.hasData()) {
                 writer.beginObject();
                 writer.name("type").value(reply.getDataType());
                 writer.name("data");

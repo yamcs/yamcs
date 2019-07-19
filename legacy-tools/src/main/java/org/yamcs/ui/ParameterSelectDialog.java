@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
+import org.yamcs.client.RestClient;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
@@ -159,13 +159,13 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
             restClient.setAcceptMediaType(MediaType.JAVA_SERIALIZED_OBJECT);
             restClient.setMaxResponseLength(10 * 1024 * 1024);// TODO make this configurable
             byte[] serializedMdb = restClient.doRequest("/mdb/" + connectData.getInstance(), HttpMethod.GET).get();
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
-            Object o = ois.readObject();
-            xtcedb = (XtceDb) o;
-            ois.close();
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb))) {
+                Object o = ois.readObject();
+                xtcedb = (XtceDb) o;
+            }
             setLoadSuccess();
         } catch (Exception e) {
-            System.out.println("Exception whilst getting mission database: " + e.getMessage());
+            System.out.println("Exception while getting mission database: " + e.getMessage());
             setLoadFail(e.getMessage());
         }
     }

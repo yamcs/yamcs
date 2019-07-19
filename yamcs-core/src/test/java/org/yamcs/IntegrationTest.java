@@ -23,11 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.api.RestEventProducer;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.rest.HttpClient;
-import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.client.HttpClient;
+import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.events.RestEventProducer;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;

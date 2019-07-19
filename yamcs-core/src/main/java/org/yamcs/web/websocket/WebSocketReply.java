@@ -2,7 +2,6 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 
 import com.google.protobuf.ByteString;
@@ -65,7 +64,7 @@ public class WebSocketReply {
     }
 
     public boolean hasData() {
-        return data!=null;
+        return data != null;
     }
 
     public static WebSocketReply ack(int requestId) {

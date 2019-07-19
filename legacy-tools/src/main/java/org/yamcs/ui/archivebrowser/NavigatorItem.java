@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Yamcs;
 
 /**

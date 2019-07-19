@@ -1,31 +1,25 @@
 package org.yamcs;
 
-import org.junit.Test;
-import org.yamcs.api.EventProducerFactory;
-import org.yamcs.protobuf.Yamcs;
-import org.yamcs.utils.TimeEncoding;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Queue;
 
-/**
- * Created by msc on 28/11/16.
- */
+import org.junit.Test;
+import org.yamcs.events.EventProducerFactory;
+import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.utils.TimeEncoding;
+
 public class EventCrashHandlerTest {
+
     @Test
     public void sendErrorEventOk() {
-
-        // Arrange
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(true);
-        Queue<Yamcs.Event> eventQueue = EventProducerFactory.getMockupQueue();
-        EventCrashHandler target = new EventCrashHandler("unitTestInstance");
+        Queue<Event> eventQueue = EventProducerFactory.getMockupQueue();
+        EventCrashHandler crashHandler = new EventCrashHandler("unitTestInstance");
+        crashHandler.handleCrash("m1", "err1");
+        crashHandler.handleCrash("m1", "err2");
 
-        // Act
-        target.handleCrash("m1", "err1");
-        target.handleCrash("m1", "err2");
-
-        // Assert
-        assert (eventQueue.size() == 2);
-
+        assertEquals(2, eventQueue.size());
     }
 }

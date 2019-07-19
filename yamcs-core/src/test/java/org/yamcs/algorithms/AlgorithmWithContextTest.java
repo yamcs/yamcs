@@ -1,11 +1,12 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -14,14 +15,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
-import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -49,13 +50,14 @@ public class AlgorithmWithContextTest {
 
         tmGenerator = new RefMdbPacketGenerator();
         tmGenerator = new RefMdbPacketGenerator();
-        Map<String, Object> jslib = new HashMap<String, Object>();
-        Map<String, Object> config = new HashMap<String, Object>();
+        Map<String, Object> jslib = new HashMap<>();
+        Map<String, Object> config = new HashMap<>();
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
 
-        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, new AlgorithmManager("refmdb", YConfiguration.wrap(config)));
+        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator,
+                new AlgorithmManager("refmdb", YConfiguration.wrap(config)));
         prm = c.getParameterRequestManager();
     }
 
@@ -66,18 +68,13 @@ public class AlgorithmWithContextTest {
 
     @Test
     public void testIt() throws InvalidIdentification {
-        final ArrayList<Object> params = new ArrayList<Object>();
+        final ArrayList<Object> params = new ArrayList<>();
         c.start();
 
         AlgorithmManager algm = prm.getParameterProvider(AlgorithmManager.class);
         AlgorithmExecutionContext ctx = algm.createContext("test");
         Algorithm alg = db.getAlgorithm("/REFMDB/SUBSYS1/ctx_param_test");
-        algm.activateAlgorithm(alg, ctx, new AlgorithmExecListener() {
-            @Override
-            public void algorithmRun(Object returnValue, List<ParameterValue> outputValues) {
-                params.add(returnValue);
-            }
-        });
+        algm.activateAlgorithm(alg, ctx, (returnValue, outputValues) -> params.add(returnValue));
 
         tmGenerator.generate_PKT1_1();
         Parameter p = db.getParameter("/yamcs/cmd/para1");

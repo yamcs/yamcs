@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;

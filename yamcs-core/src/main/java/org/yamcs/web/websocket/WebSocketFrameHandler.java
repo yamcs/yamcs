@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
-import org.yamcs.api.ws.WSConstants;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.User;

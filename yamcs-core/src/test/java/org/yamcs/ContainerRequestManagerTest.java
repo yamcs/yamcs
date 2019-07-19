@@ -8,9 +8,9 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -71,7 +71,7 @@ public class ContainerRequestManagerTest {
         assertEquals(0, consumer2.received.size());
 
         // Now subscribe 2nd consumer to PKT13 only
-        
+
         rm.subscribe(consumer2, xtceDb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_3"));
 
         packetGenerator.generate_PKT1_1();
@@ -90,11 +90,12 @@ public class ContainerRequestManagerTest {
 
         assertEquals(6, consumer2.received.size());
     }
+
     /**
      * PacketConsumer that stores whatever it consumes for later retrieval
      */
     private static class RecordingPacketConsumer implements ContainerConsumer {
-        List<SequenceContainer> received = new ArrayList<SequenceContainer>();
+        List<SequenceContainer> received = new ArrayList<>();
 
         @Override
         public void processContainer(ContainerExtractionResult cer) {

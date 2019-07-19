@@ -62,7 +62,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     @SuppressWarnings("unused")
     private final boolean unbounded = false; // only known file length transfers
     private final boolean withCrc = false; // no CRCs are used
-  
+
     private final boolean withSegmentation = false; // segmentation not supported
     private int entityIdLength;
     private int seqNrSize;
@@ -138,7 +138,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
 
     @Override
     public void step() {
-     
+
         switch (currentState) {
         case START:
             sendPacket(getMetadataPacket());
@@ -360,11 +360,12 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     public long getTransferredBytes() {
         return transferred;
     }
+
     @Override
     public void processPacket(CfdpPacket packet) {
         executor.submit(() -> doProcessPacket(packet));
     }
-    
+
     private void doProcessPacket(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
@@ -418,5 +419,5 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     public boolean pausable() {
         return true;
     }
-    
+
 }

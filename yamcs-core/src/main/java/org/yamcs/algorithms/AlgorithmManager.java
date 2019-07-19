@@ -128,14 +128,14 @@ public class AlgorithmManager extends AbstractService
     }
 
     @Override
-    public void init(Processor yproc) {
-        this.processor = yproc;
-        this.eventProducer = yproc.getProcessorData().getEventProducer();
-        this.parameterRequestManager = yproc.getParameterRequestManager();
+    public void init(Processor processor) {
+        this.processor = processor;
+        this.eventProducer = processor.getProcessorData().getEventProducer();
+        this.parameterRequestManager = processor.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
-        xtcedb = yproc.getXtceDb();
+        xtcedb = processor.getXtceDb();
 
-        globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
+        globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData());
         subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {

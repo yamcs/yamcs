@@ -13,7 +13,7 @@
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-api</artifactId>
+      <artifactId>yamcs-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

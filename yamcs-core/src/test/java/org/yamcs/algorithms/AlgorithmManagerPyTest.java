@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -15,12 +14,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
+import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
-import org.yamcs.Processor;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -37,7 +36,7 @@ public class AlgorithmManagerPyTest {
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         XtceDbFactory.reset();
-       // org.yamcs.LoggingUtils.enableLogging();
+        // org.yamcs.LoggingUtils.enableLogging();
     }
 
     static String instance = "refmdb";
@@ -55,8 +54,8 @@ public class AlgorithmManagerPyTest {
 
         tmGenerator = new RefMdbPacketGenerator();
 
-        Map<String, Object> jslib = new HashMap<String, Object>();
-        Map<String, Object> config = new HashMap<String, Object>();
+        Map<String, Object> jslib = new HashMap<>();
+        Map<String, Object> config = new HashMap<>();
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
 
@@ -74,14 +73,9 @@ public class AlgorithmManagerPyTest {
 
     @Test
     public void testFloats() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         Parameter p = prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatAdditionPy");
-        prm.addRequest(p, new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         processor.start();
         tmGenerator.generate_PKT1_1();
@@ -91,17 +85,13 @@ public class AlgorithmManagerPyTest {
 
     @Test
     public void testSignedIntegers() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome1"),
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome2"),
                 prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome3"),
-                prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome4")), new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoNegativeOutcome4")),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         processor.start();
         tmGenerator.generate_PKT1_8(2, -2);
@@ -114,13 +104,9 @@ public class AlgorithmManagerPyTest {
 
     @Test
     public void testExternalLibrary() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
-        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivisionPy"), new ParameterConsumer() {
-            @Override
-            public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                params.addAll(items);
-            }
-        });
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(prm.getParameter("/REFMDB/SUBSYS1/AlgoFloatDivisionPy"),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         processor.start();
         tmGenerator.generate_PKT1_1();
