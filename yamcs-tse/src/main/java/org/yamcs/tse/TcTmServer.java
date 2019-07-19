@@ -151,7 +151,7 @@ public class TcTmServer extends AbstractService {
             String r = m.group(3);
             buf.append(l);
             Value v = command.getArgumentMappingMap().get(arg);
-            buf.append(StringConverter.toString(v, false));
+            buf.append(StringConverter.toString(v));
             buf.append(r);
         }
 

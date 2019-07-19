@@ -12,38 +12,10 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 
 public class StringConverter {
-    static final BigInteger B64 = BigInteger.ZERO.setBit(64);
+
+    private static final BigInteger B64 = BigInteger.ZERO.setBit(64);
 
     public static String toString(Value rv) {
-        switch (rv.getType()) {
-        case BINARY:
-            return "(BINARY)" + byteBufferToHexString(rv.getBinaryValue().asReadOnlyByteBuffer());
-        case DOUBLE:
-            return "(DOUBLE)" + rv.getDoubleValue();
-        case FLOAT:
-            return "(FLOAT)" + rv.getFloatValue();
-        case SINT32:
-            return "(SIGNED_INTEGER)" + rv.getSint32Value();
-        case UINT32:
-            return "(UNSIGNED_INTEGER)" + Long.toString(rv.getUint32Value() & 0xFFFFFFFFL);
-        case SINT64:
-            return "(SIGNED_INTEGER)" + rv.getSint64Value();
-        case UINT64:
-            return "(UNSIGNED_INTEGER)" + rv.getUint64Value();
-        case STRING:
-            return "(STRING)" + rv.getStringValue();
-        case BOOLEAN:
-            return "(BOOLEAN)" + rv.getBooleanValue();
-        case TIMESTAMP:
-            return "(TIMESTAMP)" + TimeEncoding.toOrdinalDateTime(rv.getTimestampValue());
-        }
-        return null;
-    }
-
-    public static String toString(Value rv, boolean withType) {
-        if (withType) {
-            return toString(rv);
-        }
         switch (rv.getType()) {
         case BINARY:
             return byteBufferToHexString(rv.getBinaryValue().asReadOnlyByteBuffer());
@@ -69,17 +41,27 @@ public class StringConverter {
             return Boolean.toString(rv.getBooleanValue());
         case TIMESTAMP:
             return TimeEncoding.toOrdinalDateTime(rv.getTimestampValue());
+        case ENUMERATED:
+            return rv.getStringValue();
         case ARRAY:
             return "[" + rv.getArrayValueList().stream()
-                    .map(value -> toString(value, false))
+                    .map(value -> toString(value))
                     .collect(Collectors.joining(", ")) + "]";
         case AGGREGATE:
             AggregateValue agg = rv.getAggregateValue();
             return "{" + IntStream.range(0, agg.getNameCount())
-                    .mapToObj(i -> agg.getName(i) + ": " + toString(agg.getValue(i), false))
+                    .mapToObj(i -> agg.getName(i) + ": " + toString(agg.getValue(i)))
                     .collect(Collectors.joining(", ")) + "}";
         }
         return null;
+    }
+
+    /**
+     * Use {@link #toString()} instead.
+     */
+    @Deprecated
+    public static String toString(Value rv, boolean withType) {
+        return toString(rv);
     }
 
     public static String arrayToHexString(byte[] b) {
