@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import org.yamcs.api.YamcsService;
+
 /**
  * This interface has to be implemented by all services that run as part of a processor.
  * 
@@ -12,12 +14,13 @@ package org.yamcs;
  * Additional config may be passed by the user when the processor is created using the spec parameter in the init method
  */
 public interface ProcessorService extends YamcsService {
+
     public void init(Processor proc);
 
     /**
      * @param proc
      * @param spec
-     *            - passed by the user when creating the processor (for instance via the REST API)
+     *            passed by the user when creating the processor (for instance via the REST API)
      */
     default void init(Processor proc, Object spec) {
         init(proc);

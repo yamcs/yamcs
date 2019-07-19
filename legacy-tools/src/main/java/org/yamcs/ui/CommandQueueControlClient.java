@@ -18,7 +18,6 @@ import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
-import org.yamcs.web.websocket.CommandQueueResource;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -46,7 +45,7 @@ public class CommandQueueControlClient
 
     @Override
     public void connected(String url) {
-        WebSocketRequest wsr = new WebSocketRequest(CommandQueueResource.RESOURCE_NAME, "subscribe");
+        WebSocketRequest wsr = new WebSocketRequest("cqueues", "subscribe");
         yconnector.performSubscription(wsr, this, this);
     }
 

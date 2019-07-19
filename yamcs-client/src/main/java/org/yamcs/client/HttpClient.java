@@ -25,7 +25,6 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
-import org.yamcs.utils.CertUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -301,11 +300,11 @@ public class HttpClient {
             return SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
         }
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        
-        if(caKeyStore!=null) {
+
+        if (caKeyStore != null) {
             tmf.init(caKeyStore);
-        } //else the default trustStore configured with -Djavax.net.ssl.trustStore is used
-        
+        } // else the default trustStore configured with -Djavax.net.ssl.trustStore is used
+
         return SslContextBuilder.forClient().trustManager(tmf).build();
     }
 

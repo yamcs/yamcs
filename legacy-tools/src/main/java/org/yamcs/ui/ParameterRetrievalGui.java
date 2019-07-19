@@ -49,7 +49,6 @@ import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -58,6 +57,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 @SuppressWarnings("serial")
 public class ParameterRetrievalGui extends JFrame implements ParameterSelectDialogListener {
+
+    @Deprecated
+    private static final String MDB_OPSNAME = "MDB:OPS Name";
 
     JCheckBox printTime, printRaw, printUnique, keepValues, ignoreInvalidParameters, printFullLines, timeWindow;
     JTextField timeWindowSize;
@@ -348,7 +350,7 @@ public class ParameterRetrievalGui extends JFrame implements ParameterSelectDial
             paramText.setText("");
             List<NamedObjectId> paraList = loadParameters(new BufferedReader(new FileReader(f)));
             for (NamedObjectId id : paraList) {
-                if (MdbMappings.MDB_OPSNAME.equals(id.getNamespace())) {
+                if (MDB_OPSNAME.equals(id.getNamespace())) {
                     paramText.append(id.getName());
                 } else {
                     paramText.append(id.getNamespace() + ":" + id.getName());
@@ -378,7 +380,7 @@ public class ParameterRetrievalGui extends JFrame implements ParameterSelectDial
                 Matcher m1 = p1.matcher(line);
                 if (m1.matches()) {
                     paramList.add(NamedObjectId.newBuilder()
-                            .setNamespace(MdbMappings.MDB_OPSNAME)
+                            .setNamespace(MDB_OPSNAME)
                             .setName(m1.group(1)).build());
                 } else {
                     Matcher m2 = p2.matcher(line);
@@ -390,7 +392,7 @@ public class ParameterRetrievalGui extends JFrame implements ParameterSelectDial
                         Matcher m3 = p3.matcher(line);
                         if (m3.matches()) {
                             paramList.add(NamedObjectId.newBuilder()
-                                    .setNamespace(MdbMappings.MDB_OPSNAME)
+                                    .setNamespace(MDB_OPSNAME)
                                     .setName(m3.group(1)).build());
                         }
                     }
@@ -404,7 +406,7 @@ public class ParameterRetrievalGui extends JFrame implements ParameterSelectDial
                 for (String p : params) {
                     if (p.length() > 0) {
                         paramList.add(NamedObjectId.newBuilder()
-                                .setNamespace(MdbMappings.MDB_OPSNAME)
+                                .setNamespace(MDB_OPSNAME)
                                 .setName(line).build());
                     }
                 }

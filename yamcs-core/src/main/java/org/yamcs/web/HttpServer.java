@@ -18,11 +18,11 @@ import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
-import org.yamcs.Spec;
-import org.yamcs.Spec.OptionType;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.web.rest.Router;
 
 import com.google.common.util.concurrent.AbstractService;

@@ -59,7 +59,6 @@ import javax.swing.table.TableRowSorter;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsVersion;
 import org.yamcs.api.ProcessorListener;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
@@ -77,12 +76,12 @@ import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.ui.CommandQueueControlClient;
 import org.yamcs.ui.LinkControlClient;
 import org.yamcs.ui.LinkListener;
+import org.yamcs.ui.YObjectLoader;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.YamcsConnectDialog;
 import org.yamcs.ui.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.YObjectLoader;
 
 @SuppressWarnings("serial")
 public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener, ConnectionListener, ActionListener,
@@ -781,7 +780,6 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         pane.setText("<center>" +
                 "<h2>Yamcs Monitor</h2>" +
                 "<h3>&copy; Space Applications Services</h3>" +
-                "<h3>Version " + YamcsVersion.VERSION + "</h3>" +
                 "<p>This program is used to manage processors in a Yamcs server " +
                 "and clients connected to it." +
                 "</center>");

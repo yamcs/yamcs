@@ -33,8 +33,12 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.InitException;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.ValidationException;
+import org.yamcs.api.YamcsService;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 import org.yamcs.protobuf.YamcsManagement.TemplateVariable;

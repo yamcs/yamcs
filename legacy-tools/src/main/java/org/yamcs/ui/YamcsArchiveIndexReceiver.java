@@ -14,7 +14,6 @@ import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

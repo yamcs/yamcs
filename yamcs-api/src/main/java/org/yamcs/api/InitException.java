@@ -1,4 +1,6 @@
-package org.yamcs;
+package org.yamcs.api;
+
+import org.yamcs.YamcsException;
 
 @SuppressWarnings("serial")
 public class InitException extends YamcsException {

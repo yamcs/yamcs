@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.xtceproc.XtceDbFactory;
 

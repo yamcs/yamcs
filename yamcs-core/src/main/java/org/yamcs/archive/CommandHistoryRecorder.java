@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;

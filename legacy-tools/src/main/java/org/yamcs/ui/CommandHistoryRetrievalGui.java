@@ -27,7 +27,6 @@ import javax.swing.SwingUtilities;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.utils.CommandHistoryFormatter;
 import org.yamcs.utils.TimeEncoding;
 
 /**

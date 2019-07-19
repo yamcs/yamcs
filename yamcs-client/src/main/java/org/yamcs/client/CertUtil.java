@@ -1,4 +1,4 @@
-package org.yamcs.utils;
+package org.yamcs.client;
 
 import java.io.FileInputStream;
 import java.io.IOException;

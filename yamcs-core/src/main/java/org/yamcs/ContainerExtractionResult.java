@@ -1,12 +1,9 @@
 package org.yamcs;
 
-import java.nio.ByteBuffer;
-
 import org.yamcs.xtce.SequenceContainer;
 
 /**
- * Holds the definition of a container, the content of its slice and some positioning
- * information inside that slice
+ * Holds the definition of a container, the content of its slice and some positioning information inside that slice
  */
 public class ContainerExtractionResult {
 
@@ -27,7 +24,6 @@ public class ContainerExtractionResult {
         this.locationInContainerInBits = locationInContainerInBits;
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
-
     }
 
     public SequenceContainer getContainer() {

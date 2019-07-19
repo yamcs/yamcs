@@ -33,7 +33,6 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.PacketFormatter;
 import org.yamcs.utils.TimeEncoding;
 
 /**

@@ -27,12 +27,12 @@ import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsConnector;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.ui.TimeInterval;
+import org.yamcs.ui.YObjectLoader;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.YamcsConnectDialog;
 import org.yamcs.ui.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
-import org.yamcs.utils.YObjectLoader;
 
 /**
  * Standalone Archive Browser (useful for browsing the index, retrieving telemetry packets and parameters).

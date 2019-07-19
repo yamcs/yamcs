@@ -32,8 +32,8 @@ import javax.swing.border.Border;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.ui.TimeInterval;
 import org.yamcs.ui.UiColors;
-import org.yamcs.utils.TimeInterval;
 
 /**
  * Main panel of the ArchiveBrowser

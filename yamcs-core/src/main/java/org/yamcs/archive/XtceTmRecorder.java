@@ -16,7 +16,7 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;

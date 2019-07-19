@@ -1,10 +1,9 @@
 package org.yamcs;
 
-import org.yamcs.YamcsException;
-
+@SuppressWarnings("serial")
 public class NoPermissionException extends YamcsException {
+
     public NoPermissionException(String message) {
         super(message);
     }
-
 }

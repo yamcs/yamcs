@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 
 import com.google.common.util.concurrent.AbstractService;
 

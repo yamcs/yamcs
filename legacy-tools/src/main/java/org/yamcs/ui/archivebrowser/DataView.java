@@ -25,8 +25,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.ui.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
 
 /**
  * Shows a number of IndexBoxes together. A timeline and a tag bar is shared among all included IndexBoxes. Range

@@ -20,7 +20,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;

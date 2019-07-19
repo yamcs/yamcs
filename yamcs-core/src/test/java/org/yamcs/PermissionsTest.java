@@ -22,9 +22,9 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.ValueHelper;
 
 import io.netty.handler.codec.http.HttpMethod;
 

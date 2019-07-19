@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import org.yamcs.api.YamcsService;
+
 /**
  * Holder for a service together with its name and config. Services are used at three levels:
  * <ul>

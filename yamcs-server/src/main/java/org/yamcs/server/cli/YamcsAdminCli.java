@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YConfiguration.ConfigurationNotFoundException;
-import org.yamcs.YConfigurationResolver;
+import org.yamcs.api.YConfigurationResolver;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;

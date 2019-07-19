@@ -1,4 +1,4 @@
-package org.yamcs.protobuf;
+package org.yamcs.utils;
 
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Value;

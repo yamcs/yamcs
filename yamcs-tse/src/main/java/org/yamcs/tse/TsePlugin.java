@@ -2,11 +2,11 @@ package org.yamcs.tse;
 
 import java.io.IOException;
 
-import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
+import org.yamcs.api.ValidationException;
 
 public class TsePlugin implements Plugin {
 

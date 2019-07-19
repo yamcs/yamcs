@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.api;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.asList;
@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.yamcs.Spec.OptionType;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.api.ValidationException;
 
 public class SpecTest {
 

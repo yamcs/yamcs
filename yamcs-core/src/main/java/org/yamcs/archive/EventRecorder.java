@@ -4,7 +4,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.YamcsService;
+import org.yamcs.api.YamcsService;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.utils.parser.ParseException;

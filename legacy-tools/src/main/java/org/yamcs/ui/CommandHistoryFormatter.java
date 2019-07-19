@@ -1,4 +1,4 @@
-package org.yamcs.utils;
+package org.yamcs.ui;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.utils.StringConverter;
 
 import com.csvreader.CsvWriter;
 

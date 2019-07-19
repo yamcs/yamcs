@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 
 /**
  * Specifies the valid structure of a {@link YConfiguration} instance. While not strictly 'validation', the spec also

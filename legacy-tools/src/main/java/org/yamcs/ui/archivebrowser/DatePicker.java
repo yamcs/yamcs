@@ -1,4 +1,4 @@
-package org.yamcs.ui.datepicker;
+package org.yamcs.ui.archivebrowser;
 
 import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MILLISECOND;
@@ -16,8 +16,8 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.yamcs.ui.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
 
 import net.sourceforge.jdatepicker.JDateComponentFactory;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;

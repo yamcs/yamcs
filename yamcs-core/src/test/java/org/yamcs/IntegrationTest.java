@@ -62,7 +62,6 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueReq
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
@@ -78,6 +77,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueHelper;
 import org.yamcs.web.RouteHandler;
 
 import com.google.gson.JsonStreamParser;

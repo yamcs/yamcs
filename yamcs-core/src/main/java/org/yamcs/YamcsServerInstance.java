@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.yamcs.api.ValidationException;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;

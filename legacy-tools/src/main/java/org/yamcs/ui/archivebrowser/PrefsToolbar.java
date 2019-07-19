@@ -12,9 +12,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-import org.yamcs.ui.datepicker.DatePicker;
+import org.yamcs.ui.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
 
 /*
  * Also used by CcsdsCompletessGui

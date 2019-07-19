@@ -2,6 +2,7 @@ package org.yamcs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.YamcsService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -54,7 +55,8 @@ public class ProcessorCreatorService extends AbstractService implements YamcsSer
             processor.start();
             notifyStarted();
         } catch (Exception e) {
-            log.error("Starting a new processor {}.{} failed: {}. Cause: {}", yamcsInstance, processorName, e.getMessage(), e.getCause());
+            log.error("Starting a new processor {}.{} failed: {}. Cause: {}", yamcsInstance, processorName,
+                    e.getMessage(), e.getCause());
             notifyFailed(e);
         }
     }
@@ -64,5 +66,4 @@ public class ProcessorCreatorService extends AbstractService implements YamcsSer
         processor.quit();
         notifyStopped();
     }
-
 }

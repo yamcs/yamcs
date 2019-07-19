@@ -1,4 +1,6 @@
-package org.yamcs;
+package org.yamcs.api;
+
+import org.yamcs.YamcsException;
 
 /**
  * This exception indicates that an error has occurred while performing a validate operation.

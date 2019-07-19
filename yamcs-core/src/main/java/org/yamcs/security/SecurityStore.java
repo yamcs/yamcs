@@ -33,7 +33,6 @@ public class SecurityStore {
     private Path storageDir;
 
     private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
-    private static SecurityStore instance;
 
     private boolean enabled = false;
 
