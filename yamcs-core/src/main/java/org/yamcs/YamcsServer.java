@@ -33,14 +33,14 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.Plugin;
+import org.yamcs.api.PluginException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 import org.yamcs.protobuf.YamcsManagement.TemplateVariable;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
-import org.yamcs.spi.Plugin;
-import org.yamcs.spi.PluginException;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;

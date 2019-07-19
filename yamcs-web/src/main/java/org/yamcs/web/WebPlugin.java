@@ -2,8 +2,8 @@ package org.yamcs.web;
 
 import java.io.IOException;
 
-import org.yamcs.spi.Plugin;
-import org.yamcs.spi.PluginException;
+import org.yamcs.api.Plugin;
+import org.yamcs.api.PluginException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;

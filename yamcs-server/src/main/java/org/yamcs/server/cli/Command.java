@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.yamcs.YamcsVersion;
-import org.yamcs.spi.Plugin;
+import org.yamcs.api.Plugin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;

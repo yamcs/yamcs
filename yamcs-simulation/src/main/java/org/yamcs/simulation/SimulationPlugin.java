@@ -1,6 +1,6 @@
 package org.yamcs.simulation;
 
-import org.yamcs.spi.Plugin;
+import org.yamcs.api.Plugin;
 
 public class SimulationPlugin implements Plugin {
 

@@ -1,4 +1,4 @@
-package org.yamcs.spi;
+package org.yamcs.api;
 
 import org.yamcs.YamcsException;
 

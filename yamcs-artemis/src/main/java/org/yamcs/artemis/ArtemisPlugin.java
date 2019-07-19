@@ -1,6 +1,6 @@
 package org.yamcs.artemis;
 
-import org.yamcs.spi.Plugin;
+import org.yamcs.api.Plugin;
 
 public class ArtemisPlugin implements Plugin {
 
