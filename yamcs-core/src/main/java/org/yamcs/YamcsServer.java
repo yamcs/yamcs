@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public class YamcsServer {
     private static final String SERVER_ID_KEY = "serverId";
     private static final String SECRET_KEY = "secretKey";
 
-    Set<Plugin> plugins = new HashSet<>();
+    Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
 
     Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
 
@@ -96,8 +97,9 @@ public class YamcsServer {
     static CrashHandler globalCrashHandler = new LogCrashHandler();
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
-    String dataDir;
-    String instanceDefDir;
+    Path dataDir;
+    Path cacheDir;
+    Path instanceDefDir;
 
     static final Pattern ONLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml");
     static final Pattern OFFLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml.offline");
@@ -284,8 +286,14 @@ public class YamcsServer {
         if (c.containsKey("crashHandler")) {
             globalCrashHandler = loadCrashHandler(c);
         }
-        dataDir = c.getString("dataDir");
-        instanceDefDir = dataDir + "/instance-def/";
+        dataDir = Paths.get(c.getString("dataDir"));
+        instanceDefDir = dataDir.resolve("instance-def");
+
+        if (YConfiguration.configDirectory != null) {
+            cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
+        } else {
+            cacheDir = Paths.get("cache").toAbsolutePath();
+        }
 
         if (c.containsKey("services")) {
             List<YConfiguration> services = c.getServiceConfigList("services");
@@ -303,22 +311,13 @@ public class YamcsServer {
             }
         }
 
-        File globalDir = new File(dataDir, "_global");
-        if (!globalDir.exists()) {
-            if (!globalDir.mkdirs()) {
-                throw new ConfigurationException("Failed to create directory " + globalDir);
-            }
-        }
-        File dir = new File(instanceDefDir);
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new ConfigurationException("Failed to create directory " + dir);
-            }
-        }
+        Path globalDir = dataDir.resolve("_global");
+        Files.createDirectories(globalDir);
+        Files.createDirectories(instanceDefDir);
 
         securityStore = new SecurityStore();
 
-        for (File f : dir.listFiles()) {
+        for (File f : instanceDefDir.toFile().listFiles()) {
             boolean online;
             String name;
             Matcher m = ONLINE_INST_PATTERN.matcher(f.getName());
@@ -381,11 +380,11 @@ public class YamcsServer {
             if (disabledPlugins.contains(plugin.getName())) {
                 staticlog.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
             } else {
-                plugins.add(plugin);
+                plugins.put(plugin.getClass(), plugin);
             }
         }
 
-        for (Plugin plugin : plugins) {
+        for (Plugin plugin : plugins.values()) {
             staticlog.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
             try {
                 plugin.onLoad();
@@ -394,6 +393,11 @@ public class YamcsServer {
                 throw e;
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Plugin> T getPlugin(Class<T> clazz) {
+        return (T) plugins.get(clazz);
     }
 
     private int getNumOnlineInstances() {
@@ -559,8 +563,8 @@ public class YamcsServer {
         return ysi;
     }
 
-    public Set<Plugin> getPlugins() {
-        return plugins;
+    public Collection<Plugin> getPlugins() {
+        return plugins.values();
     }
 
     /**
@@ -852,6 +856,35 @@ public class YamcsServer {
         startService(null, serviceName, globalServiceList);
     }
 
+    public CrashHandler getCrashHandler(String yamcsInstance) {
+        YamcsServerInstance ys = getInstance(yamcsInstance);
+        if (ys != null) {
+            return ys.getCrashHandler();
+        } else {
+            return globalCrashHandler; // may happen if the instance name is not valid (in unit tests)
+        }
+    }
+
+    public static CrashHandler getGlobalCrashHandler() {
+        return globalCrashHandler;
+    }
+
+    public Path getDataDirectory() {
+        return dataDir;
+    }
+
+    public Path getCacheDirectory() {
+        return cacheDir;
+    }
+
+    /**
+     * 
+     * @return the (singleton) server
+     */
+    public static YamcsServer getServer() {
+        return server;
+    }
+
     public static void main(String[] args) {
         boolean verbose = false;
         for (String arg : args) {
@@ -875,26 +908,4 @@ public class YamcsServer {
             System.exit(-1);
         }
     }
-
-    public CrashHandler getCrashHandler(String yamcsInstance) {
-        YamcsServerInstance ys = getInstance(yamcsInstance);
-        if (ys != null) {
-            return ys.getCrashHandler();
-        } else {
-            return globalCrashHandler; // may happen if the instance name is not valid (in unit tests)
-        }
-    }
-
-    public static CrashHandler getGlobalCrashHandler() {
-        return globalCrashHandler;
-    }
-
-    /**
-     * 
-     * @return the (singleton) server
-     */
-    public static YamcsServer getServer() {
-        return server;
-    }
-
 }

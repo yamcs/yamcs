@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.AggregateParameterType;
@@ -589,20 +591,14 @@ public class XtceDbFactory {
         }
     }
 
-    private static File resolveCacheFile(String filename) {
-        if (YConfiguration.configDirectory != null) {
-            return new File(YConfiguration.configDirectory, filename).getAbsoluteFile();
-        } else {
-            return new File("cache", filename).getAbsoluteFile();
-        }
-    }
-
     private static File resolveSerializedFile(String filename) {
-        return resolveCacheFile(filename + ".serialized");
+        Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        return cacheDir.resolve(filename + ".serialized").toFile();
     }
 
     private static File resolveConsistencyFile(String filename) {
-        return resolveCacheFile(filename + ".consistency_date");
+        Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        return cacheDir.resolve(filename + ".consistency_date").toFile();
     }
 
     private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, File serializedFile,
