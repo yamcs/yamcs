@@ -14,6 +14,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.rest.Router.RouteMatch;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -315,10 +316,10 @@ public class RestRequest {
     }
 
     /**
-     * @return see {@link MediaType#getContentType(HttpRequest)}
+     * @return see {@link HttpRequestHandler#getContentType(HttpRequest)}
      */
     public MediaType deriveSourceContentType() {
-        return MediaType.getContentType(httpRequest);
+        return HttpRequestHandler.getContentType(httpRequest);
     }
 
     /**

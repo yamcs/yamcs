@@ -52,7 +52,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         this.yamcsInstance = yamcsInstance;
         YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
         ydb = YarchDatabase.getInstance(yamcsInstance);
-      
+
         if (c.containsKey("dataLinks")) {
             List<YConfiguration> links = c.getConfigList("dataLinks");
             for (YConfiguration linkConfig : links) {
@@ -178,7 +178,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         }
 
         linksByName.put(link.getName(), link);
-        String json = linkArgs.toJson();
+        String json = new Gson().toJson(linkArgs.toMap());
         ManagementService.getInstance().registerLink(yamcsInstance, link.getName(), json, link);
     }
 
@@ -392,7 +392,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         });
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
-               ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
+                ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });
         notifyStopped();

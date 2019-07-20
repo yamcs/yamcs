@@ -150,7 +150,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         if (!user.hasSystemPrivilege(SystemPrivilege.WriteTables)) {
             throw new ForbiddenException("Insufficient privileges");
         }
-        MediaType contentType = MediaType.getContentType(req);
+        MediaType contentType = HttpRequestHandler.getContentType(req);
         if (contentType != MediaType.PROTOBUF) {
             throw new BadRequestException(
                     "Invalid Content-Type " + contentType + " for table load; please use " + MediaType.PROTOBUF);

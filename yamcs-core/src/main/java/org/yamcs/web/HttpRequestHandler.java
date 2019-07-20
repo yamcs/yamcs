@@ -289,7 +289,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
             HttpResponseStatus status, T responseMsg, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
-        MediaType contentType = MediaType.getAcceptType(req);
+        MediaType contentType = getAcceptType(req);
 
         try {
             if (contentType == MediaType.PROTOBUF) {
@@ -359,6 +359,35 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         while (pipeline.last() != this) {
             pipeline.removeLast();
         }
+    }
+
+    /**
+     * Returns the Accept header if present and not set to ANY or Content-Type header if present or JSON if none of the
+     * headers is present or the Accept is present and set to ANY.
+     */
+    private static MediaType getAcceptType(HttpRequest req) {
+        String acceptType = req.headers().get(HttpHeaderNames.ACCEPT);
+        if (acceptType != null) {
+            MediaType r = MediaType.from(acceptType);
+            if (r == MediaType.ANY) {
+                return getContentType(req);
+            } else {
+                return r;
+            }
+        } else {
+            return getContentType(req);
+        }
+    }
+
+    /**
+     * @return The Content-Type header if present or else defaults to JSON.
+     */
+    public static MediaType getContentType(HttpRequest req) {
+        String declaredContentType = req.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        if (declaredContentType != null) {
+            return MediaType.from(declaredContentType);
+        }
+        return MediaType.JSON;
     }
 
     /**

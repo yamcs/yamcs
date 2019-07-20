@@ -22,8 +22,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
-import com.google.gson.Gson;
-
 /**
  * A configuration object is a wrapper around a Map&ltString, Object&gt which keeps track to a parent and its original
  * file (if any).
@@ -823,14 +821,6 @@ public class YConfiguration {
 
     public static YConfiguration emptyConfig() {
         return EMPTY_CONFIG;
-    }
-
-    /**
-     * 
-     * @return json representation of the cconfiguration
-     */
-    public String toJson() {
-        return new Gson().toJson(root);
     }
 
     public Map<String, Object> toMap() {
