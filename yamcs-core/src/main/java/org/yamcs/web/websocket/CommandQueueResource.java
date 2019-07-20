@@ -20,8 +20,6 @@ import org.yamcs.security.SystemPrivilege;
  */
 public class CommandQueueResource implements WebSocketResource, CommandQueueListener {
 
-    public static final String RESOURCE_NAME = "cqueues";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed = false;
@@ -35,6 +33,11 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
             ManagementService mservice = ManagementService.getInstance();
             commandQueueManager = mservice.getCommandQueueManager(processor);
         }
+    }
+
+    @Override
+    public String getName() {
+        return "cqueues";
     }
 
     @Override

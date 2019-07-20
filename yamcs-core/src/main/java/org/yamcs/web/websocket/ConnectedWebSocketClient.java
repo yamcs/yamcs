@@ -1,7 +1,6 @@
 package org.yamcs.web.websocket;
 
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -21,6 +20,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
+import org.yamcs.web.HttpServer;
 
 import com.google.protobuf.Message;
 
@@ -40,26 +40,25 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         super(user, applicationName, address, processor);
         this.wsHandler = wsHandler;
 
-        // Built-in resources, we could consider moving this to services so that
-        // they register their endpoint themselves.
-        registerResource(AlarmResource.RESOURCE_NAME, new AlarmResource(this));
-        registerResource(CommandHistoryResource.RESOURCE_NAME, new CommandHistoryResource(this));
-        registerResource(CommandQueueResource.RESOURCE_NAME, new CommandQueueResource(this));
-        registerResource(EventResource.RESOURCE_NAME, new EventResource(this));
-        registerResource(InstanceResource.RESOURCE_NAME, new InstanceResource(this));
-        registerResource(LinkResource.RESOURCE_NAME, new LinkResource(this));
-        registerResource(ManagementResource.RESOURCE_NAME, new ManagementResource(this));
-        registerResource(PacketResource.RESOURCE_NAME, new PacketResource(this));
-        registerResource(ParameterResource.RESOURCE_NAME, new ParameterResource(this));
-        registerResource(ProcessorResource.RESOURCE_NAME, new ProcessorResource(this));
-        registerResource(StreamResource.RESOURCE_NAME, new StreamResource(this));
-        registerResource(StreamsResource.RESOURCE_NAME, new StreamsResource(this));
-        registerResource(TimeResource.RESOURCE_NAME, new TimeResource(this));
+        addResource(new AlarmResource(this));
+        addResource(new CommandHistoryResource(this));
+        addResource(new CommandQueueResource(this));
+        addResource(new EventResource(this));
+        addResource(new InstanceResource(this));
+        addResource(new LinkResource(this));
+        addResource(new ManagementResource(this));
+        addResource(new PacketResource(this));
+        addResource(new ParameterResource(this));
+        addResource(new ProcessorResource(this));
+        addResource(new StreamResource(this));
+        addResource(new StreamsResource(this));
+        addResource(new TimeResource(this));
 
-        for (WebSocketResourceProvider provider : ServiceLoader.load(WebSocketResourceProvider.class)) {
-            WebSocketResource resource = provider.createForClient(this);
-            registerResource(provider.getRoute(), resource);
-        }
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        httpServer.getWebSocketExtensions().forEach(supplier -> {
+            WebSocketResource resource = supplier.apply(this);
+            addResource(resource);
+        });
     }
 
     @Override
@@ -79,8 +78,8 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         sendConnectionInfo();
     }
 
-    private void registerResource(String route, WebSocketResource resource) {
-        wsHandler.addResource(route, resource);
+    private void addResource(WebSocketResource resource) {
+        wsHandler.addResource(resource.getName(), resource);
         resources.add(resource);
     }
 

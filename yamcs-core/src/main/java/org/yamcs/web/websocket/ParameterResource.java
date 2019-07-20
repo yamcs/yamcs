@@ -40,7 +40,6 @@ import org.yamcs.utils.StringConverter;
 public class ParameterResource implements WebSocketResource, ParameterWithIdConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
-    public static final String RESOURCE_NAME = "parameter";
 
     private ConnectedWebSocketClient client;
 
@@ -58,6 +57,11 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
         if (processor != null) {
             pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
         }
+    }
+
+    @Override
+    public String getName() {
+        return "parameter";
     }
 
     private int getSubscriptionId(ParameterSubscriptionRequest req) {

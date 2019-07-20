@@ -14,8 +14,6 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
  */
 public class LinkResource implements WebSocketResource, LinkListener {
 
-    public static final String RESOURCE_NAME = "links";
-
     private ConnectedWebSocketClient client;
 
     // Instance requested by the user. This should not update when the processor changes.
@@ -23,6 +21,11 @@ public class LinkResource implements WebSocketResource, LinkListener {
 
     public LinkResource(ConnectedWebSocketClient client) {
         this.client = client;
+    }
+
+    @Override
+    public String getName() {
+        return "links";
     }
 
     @Override

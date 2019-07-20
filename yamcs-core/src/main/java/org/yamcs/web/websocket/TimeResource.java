@@ -14,7 +14,6 @@ import org.yamcs.utils.TimeEncoding;
 
 public class TimeResource implements WebSocketResource {
 
-    public static final String RESOURCE_NAME = "time";
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     private ConnectedWebSocketClient client;
@@ -28,6 +27,11 @@ public class TimeResource implements WebSocketResource {
     public TimeResource(ConnectedWebSocketClient client) {
         this.client = client;
         processor = client.getProcessor();
+    }
+
+    @Override
+    public String getName() {
+        return "time";
     }
 
     @Override

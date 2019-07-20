@@ -19,8 +19,6 @@ import com.google.protobuf.ByteString;
  */
 public class PacketResource implements WebSocketResource {
 
-    public static final String RESOURCE_NAME = "packets";
-
     private String streamName;
     private Stream stream;
     private StreamSubscriber streamSubscriber;
@@ -35,6 +33,11 @@ public class PacketResource implements WebSocketResource {
         if (processor != null) {
             yamcsInstance = processor.getInstance();
         }
+    }
+
+    @Override
+    public String getName() {
+        return "packets";
     }
 
     @Override

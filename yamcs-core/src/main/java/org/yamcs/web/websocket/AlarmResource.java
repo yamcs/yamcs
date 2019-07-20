@@ -20,8 +20,6 @@ import org.yamcs.xtce.Parameter;
  */
 public class AlarmResource implements WebSocketResource {
 
-    public static final String RESOURCE_NAME = "alarms";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed = false;
@@ -40,6 +38,11 @@ public class AlarmResource implements WebSocketResource {
             parameterAlarmServer = processor.getParameterRequestManager().getAlarmServer();
             eventAlarmServer = processor.getEventAlarmServer();
         }
+    }
+
+    @Override
+    public String getName() {
+        return "alarms";
     }
 
     @Override

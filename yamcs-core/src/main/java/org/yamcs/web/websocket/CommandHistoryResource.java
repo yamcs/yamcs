@@ -24,8 +24,6 @@ import org.yamcs.utils.ValueUtility;
  */
 public class CommandHistoryResource implements WebSocketResource, CommandHistoryConsumer {
 
-    public static final String RESOURCE_NAME = "cmdhistory";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed = false;
@@ -39,6 +37,11 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
         if (processor != null && processor.hasCommanding()) {
             requestManager = processor.getCommandHistoryManager();
         }
+    }
+
+    @Override
+    public String getName() {
+        return "cmdhistory";
     }
 
     @Override

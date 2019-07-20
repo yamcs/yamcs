@@ -8,6 +8,8 @@ import org.yamcs.ProcessorException;
  */
 public interface WebSocketResource {
 
+    public String getName();
+
     /**
      * Process a request and return a reply. The reply can be null if the implementor of the resource takes care itself
      * of sending the reply - this has been added because the parameterClient wants to send some date data immediately

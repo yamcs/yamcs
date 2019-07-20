@@ -13,14 +13,17 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
  */
 public class InstanceResource implements WebSocketResource, ManagementListener {
 
-    public static final String RESOURCE_NAME = "instance";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed;
 
     public InstanceResource(ConnectedWebSocketClient client) {
         this.client = client;
+    }
+
+    @Override
+    public String getName() {
+        return "instance";
     }
 
     /**

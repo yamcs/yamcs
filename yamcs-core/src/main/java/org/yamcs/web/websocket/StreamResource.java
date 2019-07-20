@@ -20,8 +20,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class StreamResource implements StreamSubscriber, WebSocketResource {
 
-    public static final String RESOURCE_NAME = "stream";
-
     private ConnectedWebSocketClient client;
 
     private Set<Stream> subscribedStreams = new HashSet<>();
@@ -34,6 +32,11 @@ public class StreamResource implements StreamSubscriber, WebSocketResource {
         if (processor != null) {
             yamcsInstance = processor.getInstance();
         }
+    }
+
+    @Override
+    public String getName() {
+        return "stream";
     }
 
     @Override

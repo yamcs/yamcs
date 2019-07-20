@@ -20,8 +20,6 @@ import org.yamcs.web.rest.YamcsToGpbAssembler;
  */
 public class ManagementResource implements WebSocketResource, ManagementListener {
 
-    public static final String RESOURCE_NAME = "management";
-
     private ConnectedWebSocketClient client;
 
     private boolean emitClientInfo;
@@ -29,6 +27,11 @@ public class ManagementResource implements WebSocketResource, ManagementListener
 
     public ManagementResource(ConnectedWebSocketClient client) {
         this.client = client;
+    }
+
+    @Override
+    public String getName() {
+        return "management";
     }
 
     /**

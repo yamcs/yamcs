@@ -17,8 +17,6 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
  */
 public class ProcessorResource implements WebSocketResource, ManagementListener {
 
-    public static final String RESOURCE_NAME = "processor";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed;
@@ -30,6 +28,11 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
     public ProcessorResource(ConnectedWebSocketClient client) {
         this.client = client;
         processor = client.getProcessor();
+    }
+
+    @Override
+    public String getName() {
+        return "processor";
     }
 
     /**

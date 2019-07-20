@@ -7,23 +7,28 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsService;
 import org.yamcs.api.InitException;
 import org.yamcs.api.Spec;
 import org.yamcs.api.Spec.OptionType;
+import org.yamcs.api.YamcsService;
 import org.yamcs.web.rest.Router;
+import org.yamcs.web.websocket.ConnectedWebSocketClient;
+import org.yamcs.web.websocket.WebSocketResource;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -76,6 +81,7 @@ public class HttpServer extends AbstractService implements YamcsService {
     private YConfiguration wsConfig;
     private YConfiguration websiteConfig;
 
+    private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
     @Override
@@ -247,12 +253,20 @@ public class HttpServer extends AbstractService implements YamcsService {
         return bossGroup.shutdownGracefully();
     }
 
-    public void registerRouteHandler(RouteHandler routeHandler) {
+    public void addRouteHandler(RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(routeHandler);
     }
 
-    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
+    public void addRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    }
+
+    public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {
+        webSocketExtensions.add(extension);
+    }
+
+    public Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> getWebSocketExtensions() {
+        return webSocketExtensions;
     }
 
     public GpbExtensionRegistry getGpbExtensionRegistry() {

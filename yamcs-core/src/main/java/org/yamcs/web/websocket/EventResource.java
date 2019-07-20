@@ -19,8 +19,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class EventResource implements WebSocketResource {
 
-    public static final String RESOURCE_NAME = "events";
-
     private ConnectedWebSocketClient client;
 
     private Processor processor;
@@ -33,6 +31,11 @@ public class EventResource implements WebSocketResource {
     public EventResource(ConnectedWebSocketClient client) {
         this.client = client;
         processor = client.getProcessor();
+    }
+
+    @Override
+    public String getName() {
+        return "events";
     }
 
     @Override

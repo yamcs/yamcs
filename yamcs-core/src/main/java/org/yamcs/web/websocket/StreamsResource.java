@@ -18,8 +18,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class StreamsResource implements WebSocketResource, TableStreamListener {
 
-    public static final String RESOURCE_NAME = "streams";
-
     private ConnectedWebSocketClient client;
 
     // Instance requested by the user. This should not update when the processor changes.
@@ -27,6 +25,11 @@ public class StreamsResource implements WebSocketResource, TableStreamListener {
 
     public StreamsResource(ConnectedWebSocketClient client) {
         this.client = client;
+    }
+
+    @Override
+    public String getName() {
+        return "streams";
     }
 
     @Override

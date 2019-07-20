@@ -36,8 +36,8 @@ public class SimulationTimeService implements TimeService {
         simElapsedTime = 0;
         speed = 1;
 
-        HttpServer httpServer = (HttpServer) YamcsServer.getServer().getGlobalService(HttpServer.class.getName());
-        httpServer.registerRouteHandler(yamcsInstance, new SimTimeRestHandler());
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        httpServer.addRouteHandler(yamcsInstance, new SimTimeRestHandler());
     }
 
     @Override
