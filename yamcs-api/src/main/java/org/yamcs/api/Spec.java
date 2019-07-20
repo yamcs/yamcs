@@ -270,6 +270,7 @@ public class Spec {
     }
 
     public static enum OptionType {
+        ANY,
         BOOLEAN,
         INTEGER,
         FLOAT,
@@ -415,7 +416,7 @@ public class Spec {
             }
 
             OptionType argType = OptionType.forArgument(arg);
-            if (argType != type) {
+            if (argType != type && type != OptionType.ANY) {
                 throw new ValidationException(String.format(
                         "%s is of type %s, but should be %s instead",
                         path, argType, type));

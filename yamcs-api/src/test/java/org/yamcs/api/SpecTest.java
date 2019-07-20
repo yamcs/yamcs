@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.yamcs.api.Spec;
 import org.yamcs.api.Spec.OptionType;
-import org.yamcs.api.ValidationException;
 
 public class SpecTest {
 
@@ -41,6 +39,18 @@ public class SpecTest {
     public void testUnknownOption() throws ValidationException {
         Spec spec = new Spec();
         spec.validate(of("bla", "a value"));
+    }
+
+    @Test
+    public void testAny() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("whatever", OptionType.ANY);
+
+        Map<String, Object> result = spec.validate(of("whatever", "a string"));
+        assertEquals("a string", result.get("whatever"));
+
+        result = spec.validate(of("whatever", 123));
+        assertEquals(123, result.get("whatever"));
     }
 
     @Test(expected = ValidationException.class)
