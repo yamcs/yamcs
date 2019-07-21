@@ -1,16 +1,12 @@
 package org.yamcs.archive;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Yarch replay server
@@ -21,21 +17,11 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ReplayServer extends AbstractService implements YamcsService {
-    static Logger log = LoggerFactory.getLogger(ReplayServer.class);
+public class ReplayServer extends AbstractYamcsService {
 
     final int MAX_REPLAYS = 200;
-    final String instance;
 
     AtomicInteger replayCount = new AtomicInteger();
-
-    public ReplayServer(String instance) {
-        this.instance = instance;
-    }
-
-    public ReplayServer(String instance, Map<String, Object> config) {
-        this.instance = instance;
-    }
 
     /**
      * create a new packet replay object
@@ -49,7 +35,8 @@ public class ReplayServer extends AbstractService implements YamcsService {
         }
 
         try {
-            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance));
+            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, xtcedb);
             replayCount.incrementAndGet();
             return yr;
         } catch (YamcsException e) {
@@ -73,9 +60,5 @@ public class ReplayServer extends AbstractService implements YamcsService {
     @Override
     public void doStop() {
         notifyStopped();
-    }
-
-    public String getInstance() {
-        return instance;
     }
 }

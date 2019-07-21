@@ -8,56 +8,71 @@ import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.events.EventProducerFactory;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.YarchException;
 
-import com.google.common.util.concurrent.AbstractService;
+public class CfdpService extends AbstractYamcsService implements StreamSubscriber {
 
-public class CfdpService extends AbstractService implements StreamSubscriber, YamcsService {
-    static Logger log = LoggerFactory.getLogger(CfdpService.class.getName());
+    static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
+    static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
+    static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
+    static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
 
     Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<>();
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
-    private String yamcsInstance;
+    Stream cfdpIn;
+    Stream cfdpOut;
+    Bucket incomingBucket;
+    long mySourceId;
+    long destinationId;
 
-    private Stream cfdpIn, cfdpOut;
-    private Bucket incomingBucket;
-    private long mySourceId;
-    private long destinationId;
-    final YConfiguration config;
-    final static String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
-    final static String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
-    final static String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
-    final static String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
+    EventProducer eventProducer;
 
-    private EventProducer eventProducer;
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
+        spec.addOption("outStream", OptionType.STRING).withDefault("cfdp_out");
+        spec.addOption("sourceId", OptionType.INTEGER).withRequired(true);
+        spec.addOption("destinationId", OptionType.INTEGER).withRequired(true);
+        spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
+        spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
+        spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
+        spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
+        spec.addOption("eofAckTimeoutMs", OptionType.INTEGER).withDefault(3000);
+        spec.addOption("maxEofResendAttempts", OptionType.INTEGER).withDefault(5);
+        spec.addOption("sleepBetweenPdusMs", OptionType.INTEGER).withDefault(500);
+        return spec;
+    }
 
-    public CfdpService(String yamcsInstance, YConfiguration config) throws YarchException, IOException {
-        this.config = config;
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        String inStream = config.getString("inStream", "cfdp_in");
-        String outStream = config.getString("outStream", "cfdp_out");
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
+        String inStream = config.getString("inStream");
+        String outStream = config.getString("outStream");
 
         mySourceId = config.getLong("sourceId");
         destinationId = config.getLong("destinationId");
 
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         cfdpIn = ydb.getStream(inStream);
         if (cfdpIn == null) {
             throw new ConfigurationException("cannot find stream " + inStream);
@@ -67,23 +82,19 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
             throw new ConfigurationException("cannot find stream " + outStream);
         }
 
-        this.cfdpIn.addSubscriber(this);
+        cfdpIn.addSubscriber(this);
 
+        String bucketName = config.getString("incomingBucket");
         YarchDatabaseInstance globalYdb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-        String bucketName = config.getString("incomingBucket", "cfdpDown");
-        incomingBucket = globalYdb.getBucket(bucketName);
-        if (incomingBucket == null) {
-            incomingBucket = globalYdb.createBucket(bucketName);
+        try {
+            incomingBucket = globalYdb.getBucket(bucketName);
+            if (incomingBucket == null) {
+                incomingBucket = globalYdb.createBucket(bucketName);
+            }
+        } catch (IOException e) {
+            throw new InitException(e);
         }
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
-    }
-
-    public String getName() {
-        return yamcsInstance;
-    }
-
-    public String getYamcsInstance() {
-        return yamcsInstance;
     }
 
     public CfdpTransaction getCfdpTransfer(CfdpTransactionId transferId) {
@@ -127,7 +138,7 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                 "Starting new CFDP upload " + request.getObjectName() + " -> " + request.getTargetPath());
 
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, this.cfdpOut, config,
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, cfdpOut, config,
                 eventProducer);
         transfers.put(transfer.getTransactionId(), transfer);
         transfer.start();
@@ -194,6 +205,7 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
 
     @Override
     protected void doStop() {
+        executor.shutdown();
         notifyStopped();
     }
 

@@ -4,14 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.yamcs.archive.TagReceiver;
@@ -28,9 +26,9 @@ public class TagsTest extends YarchTestCase {
     @Test
     public void testTags() throws Exception {
         final int n = 4;
-        tags = new ArrayList<ArchiveTag>(n + 4);
+        tags = new ArrayList<>(n + 4);
         String path = "/tmp/test_rdbtags";
-        FileUtils.deleteRecursively(new File(path).toPath());
+        FileUtils.deleteRecursivelyIfExists(Paths.get(path));
         Tablespace tablespace = new Tablespace("tagstest");
         tablespace.setCustomDataDir(path);
         tablespace.loadDb(false);
@@ -95,7 +93,7 @@ public class TagsTest extends YarchTestCase {
         checkRetrieval(-1, m / 3);
         checkRetrieval(m / 3, -1);
         checkRetrieval(m / 4, 2 * m / 4);
-        
+
         tablespace.close();
         tablespace.loadDb(false);
         tagDb = new RdbTagDb("tagstest", tablespace);
@@ -127,7 +125,7 @@ public class TagsTest extends YarchTestCase {
         if (k1 != -1) {
             start = tags.get(k1).getStart();
             intv.setStart(tags.get(k1).getStart());
-        } 
+        }
 
         if (k2 != -1) {
             stop = tags.get(k2).getStop();
@@ -139,6 +137,7 @@ public class TagsTest extends YarchTestCase {
         List<ArchiveTag> actual = new ArrayList<>();
         tagDb.getTags(intv, new TagReceiver() {
             int i = 0;
+
             @Override
             public void onTag(ArchiveTag tag) {
                 actual.add(tag);
@@ -149,8 +148,8 @@ public class TagsTest extends YarchTestCase {
             }
         });
         List<ArchiveTag> expected = new ArrayList<>();
-        
-        for(int i=0; i<tags.size(); i++) {
+
+        for (int i = 0; i < tags.size(); i++) {
             ArchiveTag tag = tags.get(i);
             if (tag.hasStop() && tag.getStop() < lo) {
                 continue;
@@ -160,7 +159,7 @@ public class TagsTest extends YarchTestCase {
             }
             expected.add(tag);
         }
-       
+
         assertEquals(expected.size(), actual.size());
     }
 
@@ -178,10 +177,12 @@ public class TagsTest extends YarchTestCase {
             assertFalse(rtag.hasStop());
         }
         assertEquals(tag.getName(), rtag.getName());
-        if (tag.hasDescription())
+        if (tag.hasDescription()) {
             assertEquals(tag.getDescription(), rtag.getDescription());
-        if (tag.hasColor())
+        }
+        if (tag.hasColor()) {
             assertEquals(tag.getColor(), rtag.getColor());
+        }
     }
 
     static class ArchiveTagComparator implements Comparator<ArchiveTag> {
@@ -190,10 +191,11 @@ public class TagsTest extends YarchTestCase {
         public int compare(ArchiveTag t1, ArchiveTag t2) {
             if (t1.hasStart()) {
                 if (t2.hasStart()) {
-                    if (t1.getStart() == t2.getStart())
+                    if (t1.getStart() == t2.getStart()) {
                         return Integer.valueOf(t1.getId()).compareTo(t2.getId());
-                    else
+                    } else {
                         return Long.valueOf(t1.getStart()).compareTo(t2.getStart());
+                    }
                 } else {
                     return 1;
                 }

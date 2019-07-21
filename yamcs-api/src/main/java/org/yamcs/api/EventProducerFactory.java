@@ -1,4 +1,4 @@
-package org.yamcs.events;
+package org.yamcs.api;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -10,13 +10,16 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yaml.snakeyaml.Yaml;
 
 public class EventProducerFactory {
+
+    private static final String REST_EVENT_PRODUCER_CLASSNAME = "org.yamcs.client.RestEventProducer";
+    private static final String STREAM_EVENT_PRODUCER_CLASSNAME = "org.yamcs.events.StreamEventProducer";
+    private static final String ARTEMIS_EVENT_PRODUCER_CLASSNAME = "org.yamcs.api.artemis.ArtemisEventProducer";
+
     /**
      * set to true from the unit tests
      */
@@ -63,12 +66,11 @@ public class EventProducerFactory {
      * outside yamcs or a StreamEventProducer when called inside.
      * 
      * @param instance
-     *            - instance for which the producer is to be returned
+     *            instance for which the producer is to be returned
      * 
      * @return an EventProducer
-     * @throws RuntimeException
      */
-    public static EventProducer getEventProducer(String instance) throws RuntimeException {
+    public static EventProducer getEventProducer(String instance) {
         if (mockup) {
             log.debug("Creating a ConsoleEventProducer with mockupQueue: " + mockupQueue);
             return new MockupEventProducer(mockupQueue);
@@ -80,7 +82,7 @@ public class EventProducerFactory {
             if (instance == null) {
                 return new Slf4jEventProducer();
             } else {
-                EventProducer producer = getStreamEventProducer(instance);
+                EventProducer producer = loadEventProducer(STREAM_EVENT_PRODUCER_CLASSNAME, instance);
                 if (producer != null) {
                     return producer;
                 }
@@ -122,31 +124,24 @@ public class EventProducerFactory {
         EventProducer producer;
         if (ycd.getProtocol() == Protocol.artemis) {
             log.debug("Creating an Artemis Yamcs event producer connected to {}", ycd.getUrl());
-            try {
-                @SuppressWarnings("unchecked")
-                Class<EventProducer> c = (Class<EventProducer>) Class
-                        .forName("org.yamcs.api.artemis.ArtemisEventProducer");
-                Constructor<EventProducer> constr = c.getConstructor(ycd.getClass());
-                producer = constr.newInstance(ycd);
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot instantiate an artemis event producer", e);
-            }
+            producer = loadEventProducer(ARTEMIS_EVENT_PRODUCER_CLASSNAME, ycd);
         } else {
             log.debug("Creating a REST Yamcs event producer connected to {}", ycd.getUrl());
-            producer = new RestEventProducer(ycd);
+            producer = loadEventProducer(REST_EVENT_PRODUCER_CLASSNAME, ycd);
         }
 
         return producer;
     }
 
-    private static EventProducer getStreamEventProducer(String instance) {
+    /**
+     * Loads an EventProducer from the classpath.
+     */
+    private static EventProducer loadEventProducer(String className, Object arg) {
         try {
-            // try to load the stream event producer from yamcs core because probably we are running inside the yamcs
-            // server
             @SuppressWarnings("unchecked")
-            Class<EventProducer> ic = (Class<EventProducer>) Class.forName("org.yamcs.StreamEventProducer");
-            Constructor<EventProducer> constructor = ic.getConstructor(String.class);
-            return constructor.newInstance(instance);
+            Class<EventProducer> ic = (Class<EventProducer>) Class.forName(className);
+            Constructor<EventProducer> constructor = ic.getConstructor(arg.getClass());
+            return constructor.newInstance(arg);
         } catch (Exception e) {
             return null;
         }
@@ -156,9 +151,9 @@ public class EventProducerFactory {
      *
      * @param yamcsInstance
      * @param source
-     *            - source for the events
+     *            source for the events
      * @param repeatedEventTimeoutMillisec
-     *            - suppress events that repeat in this interval
+     *            suppress events that repeat in this interval
      * @return an event producer for the given instance, source and with the repeated event reduction turned on.
      */
     public static EventProducer getEventProducer(String yamcsInstance, String source,

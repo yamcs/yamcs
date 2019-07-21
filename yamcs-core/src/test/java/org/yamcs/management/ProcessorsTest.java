@@ -181,14 +181,11 @@ public class ProcessorsTest {
 
         @Override
         public void log(String text) {
-            System.out.println("log: " + text);
-
+            // System.out.println("log: " + text);
         }
 
         @Override
         public void popup(String text) {
-            // TODO Auto-generated method stub
-
         }
 
         @Override
@@ -234,7 +231,7 @@ public class ProcessorsTest {
     public static class DummyTmProvider extends AbstractService implements TmPacketProvider {
         private TmProcessor tmProcessor;
 
-        public DummyTmProvider(String instance) {
+        public DummyTmProvider(String instance, YConfiguration config) {
         }
 
         @Override

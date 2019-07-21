@@ -12,10 +12,12 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.Log;
-import org.yamcs.api.YamcsService;
-import org.yamcs.events.EventProducerFactory;
+import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.time.TimeService;
@@ -26,8 +28,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Generate Yamcs events out of cFS event packets
  * <p>
@@ -37,18 +37,25 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class CfsEventDecoder extends AbstractService implements YamcsService, StreamSubscriber {
+public class CfsEventDecoder extends AbstractYamcsService implements StreamSubscriber {
+
     List<Stream> streams = new ArrayList<>();
     List<String> streamNames = new ArrayList<>();
-    private final String yamcsInstance;
-    final Log log;
     Set<Integer> msgIds = new HashSet<>();
     EventProducer eventProducer;
     TimeService timeService;
 
-    public CfsEventDecoder(String yamcsInstance, YConfiguration config) {
-        log = new Log(this.getClass(), yamcsInstance);
-        this.yamcsInstance = yamcsInstance;
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("msgIds", OptionType.LIST).withElementType(OptionType.INTEGER);
+        return spec;
+    }
+
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
 
         if (config.containsKey("streams")) {
             streamNames = config.getList("streams");

@@ -1,20 +1,17 @@
 package org.yamcs.artemis;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.YObjectLoader;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Server wide service that initialises and starts the artemis/hornetq server
@@ -23,25 +20,30 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisServer extends AbstractService implements YamcsService {
-
-    private static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
+public class ArtemisServer extends AbstractYamcsService {
 
     private static EmbeddedActiveMQ broker;
 
     private String configFile; // Must be on classpath (note that etc folder is usually added to Yamcs classpath)
     private ActiveMQSecurityManager securityManager;
 
-    public ArtemisServer() throws IOException {
-        this(Collections.emptyMap());
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("configFile", OptionType.STRING).withDefault("artemis.xml");
+        spec.addOption("securityManager", OptionType.ANY);
+        return spec;
     }
 
-    public ArtemisServer(Map<String, Object> args) throws IOException {
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
         // Divert artemis logging
         System.setProperty("org.jboss.logging.provider", "slf4j");
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
 
-        configFile = YConfiguration.getString(args, "configFile", "artemis.xml");
+        configFile = config.getString("configFile");
 
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey("artemisConfigFile")) {
@@ -49,8 +51,12 @@ public class ArtemisServer extends AbstractService implements YamcsService {
             configFile = yconf.getString("artemisConfigFile");
         }
 
-        if (args.containsKey("securityManager")) {
-            securityManager = YObjectLoader.loadObject(YConfiguration.getMap(args, "securityManager"));
+        if (config.containsKey("securityManager")) {
+            try {
+                securityManager = YObjectLoader.loadObject(config.getMap("securityManager"));
+            } catch (IOException e) {
+                throw new InitException(e);
+            }
         }
     }
 
@@ -74,7 +80,7 @@ public class ArtemisServer extends AbstractService implements YamcsService {
 
         if (securityManager != null) {
             artemisServer.setSecurityManager(securityManager);
-        } else if (securityStore.isEnabled()) {
+        } else if (securityStore.isAuthenticationEnabled()) {
             log.warn("Artemis security is unconfigured. All connections are given full permissions");
         } else {
             log.debug("Artemis security is unconfigured. All connections are given full permissions");

@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SpeedLimitStream;
 import org.yamcs.yarch.SpeedSpec;
@@ -26,7 +27,6 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
@@ -65,7 +65,7 @@ public class YarchReplay implements StreamSubscriber {
         this.listener = listener;
         this.replayServer = replayServer;
         this.xtceDb = xtceDb;
-        this.instance = replayServer.instance;
+        this.instance = replayServer.getYamcsInstance();
         setRequest(rr);
     }
 

@@ -274,6 +274,8 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.0.1</version>
           <configuration>
+            <!-- Adding the source fixes a javadoc but in JDK11 -->
+            <source>1.8</source>
             <author>false</author>
             <breakiterator>true</breakiterator>
             <additionalOptions>

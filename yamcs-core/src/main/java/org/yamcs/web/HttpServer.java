@@ -19,18 +19,15 @@ import java.util.function.Function;
 
 import javax.net.ssl.SSLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.api.InitException;
 import org.yamcs.api.Spec;
 import org.yamcs.api.Spec.OptionType;
-import org.yamcs.api.YamcsService;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.ConnectedWebSocketClient;
 import org.yamcs.web.websocket.WebSocketResource;
 
-import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -60,9 +57,7 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
  * <li>Static file serving
  * </ul>
  */
-public class HttpServer extends AbstractService implements YamcsService {
-
-    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
+public class HttpServer extends AbstractYamcsService {
 
     private EventLoopGroup bossGroup;
     private Router apiRouter;
@@ -124,22 +119,24 @@ public class HttpServer extends AbstractService implements YamcsService {
     }
 
     @Override
-    public void init(String yamcsInstance, YConfiguration args) throws InitException {
-        port = args.getInt("port", -1);
-        tlsPort = args.getInt("tlsPort", -1);
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
+        port = config.getInt("port", -1);
+        tlsPort = config.getInt("tlsPort", -1);
 
         if (tlsPort != -1) {
-            tlsCert = args.getString("tlsCert");
-            tlsKey = args.getString("tlsKey");
+            tlsCert = config.getString("tlsCert");
+            tlsKey = config.getString("tlsKey");
         }
-        zeroCopyEnabled = args.getBoolean("zeroCopyEnabled");
+        zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
 
-        if (args.containsKey("webRoot")) {
-            if (args.isList("webRoot")) {
-                List<String> rootConf = args.getList("webRoot");
+        if (config.containsKey("webRoot")) {
+            if (config.isList("webRoot")) {
+                List<String> rootConf = config.getList("webRoot");
                 webRoots.addAll(rootConf);
             } else {
-                webRoots.add(args.getString("webRoot"));
+                webRoots.add(config.getString("webRoot"));
             }
         }
 
@@ -149,8 +146,8 @@ public class HttpServer extends AbstractService implements YamcsService {
                 new LinkedBlockingQueue<Runnable>(), tf);
         apiRouter = new Router(executor);
 
-        if (args.containsKey("gpbExtensions")) {
-            List<Map<String, Object>> extensionsConf = args.getList("gpbExtensions");
+        if (config.containsKey("gpbExtensions")) {
+            List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
             try {
                 for (Map<String, Object> conf : extensionsConf) {
                     String className = YConfiguration.getString(conf, "class");
@@ -164,8 +161,8 @@ public class HttpServer extends AbstractService implements YamcsService {
             }
         }
 
-        if (args.containsKey("cors")) {
-            YConfiguration ycors = args.getConfig("cors");
+        if (config.containsKey("cors")) {
+            YConfiguration ycors = config.getConfig("cors");
             String[] origins = ycors.getString("allowOrigin").split(",");
             CorsConfigBuilder corsb = null;
             if (origins.length == 1) {
@@ -184,8 +181,8 @@ public class HttpServer extends AbstractService implements YamcsService {
             corsConfig = corsb.build();
         }
 
-        websiteConfig = args.containsKey("website") ? args.getConfig("website") : YConfiguration.emptyConfig();
-        wsConfig = args.getConfig("webSocket");
+        websiteConfig = config.containsKey("website") ? config.getConfig("website") : YConfiguration.emptyConfig();
+        wsConfig = config.getConfig("webSocket");
     }
 
     @Override

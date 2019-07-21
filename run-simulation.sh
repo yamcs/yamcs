@@ -9,7 +9,9 @@
 # The only reason we are not using it here, is to avoid a cyclic
 # dependency between both projects.
 
-mvn -q -f yamcs-simulation/pom.xml exec:exec \
+YAMCS_OPTS="$@"
+
+mvn -q -f simulation/pom.xml exec:exec \
     -Dexec.executable="java" \
-    -Dexec.args="-classpath %classpath:etc org.yamcs.YamcsServer $@"
+    -Dexec.args="-classpath %classpath:etc org.yamcs.YamcsServer $YAMCS_OPTS"
 

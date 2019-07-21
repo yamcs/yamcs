@@ -14,16 +14,18 @@ maxBinaryLength: 1048576
 storageEngines: [rocksdb2]
 
 rdbConfig:
-     tableConfig:
-        - tableNamePattern: .*
-          maxOpenFiles: 100
-          columnFamilyOptions: 
-              targetFileSizeBase: 10240 #in KB
-              targetFileSizeMultiplier: 10
-              maxBytesForLevelBase: 102400  #in KB
-              maxBytesForLevelMultiplier: 10
-              writeBufferSize: 50240        #in KB
-              maxWriteBufferNumber: 2
-          tableFormatConfig:
-              blockSize: 256 #KB
-              blockCacheSize: 50000 #KB
+  tableConfig:
+    - tableNamePattern: .*
+      maxOpenFiles: 100
+      columnFamilyOptions: 
+        targetFileSizeBase: 10240 #in KB
+        targetFileSizeMultiplier: 10
+        maxBytesForLevelBase: 102400  #in KB
+        maxBytesForLevelMultiplier: 10
+        writeBufferSize: 50240        #in KB
+        maxWriteBufferNumber: 2
+      tableFormatConfig:
+        blockSize: 256 #KB
+        blockCacheSize: 50000 #KB
+
+secretKey: testtest

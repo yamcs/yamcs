@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -30,7 +31,8 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         final int n = 100;
         ydb.execute("create stream " + StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME
                 + StandardTupleDefinitions.TC.getStringDefinition());
-        CommandHistoryRecorder cmdHistRecorder = new CommandHistoryRecorder(ydb.getName());
+        CommandHistoryRecorder cmdHistRecorder = new CommandHistoryRecorder();
+        cmdHistRecorder.init(ydb.getName(), YConfiguration.emptyConfig());
         cmdHistRecorder.startAsync();
 
         Stream rtstream = ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);

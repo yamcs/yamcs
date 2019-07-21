@@ -2,7 +2,6 @@ package org.yamcs.utils;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -12,14 +11,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileUtils {
-
-    public static void deleteRecursively(String path) throws IOException {
-        deleteRecursively(new File(path).toPath());
-    }
-
-    public static void deleteRecursively(File f) throws IOException {
-        deleteRecursively(f.toPath());
-    }
 
     public static void deleteRecursively(Path dirToRemove) throws IOException {
         Files.walkFileTree(dirToRemove, new SimpleFileVisitor<Path>() {
@@ -35,6 +26,12 @@ public class FileUtils {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    public static void deleteRecursivelyIfExists(Path path) throws IOException {
+        if (Files.exists(path)) {
+            deleteRecursively(path);
+        }
     }
 
     public static void deleteContents(Path directory) throws IOException {

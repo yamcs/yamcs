@@ -4,8 +4,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Future;
@@ -56,9 +57,8 @@ public class CfdpIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-
-        File dataDir = new File("/tmp/yamcs-cfdp-data");
-        FileUtils.deleteRecursively(dataDir.toPath());
+        Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
+        FileUtils.deleteRecursivelyIfExists(dataDir);
         YConfiguration.setupTest("cfdp");
         YamcsServer.setupYamcsServer();
 

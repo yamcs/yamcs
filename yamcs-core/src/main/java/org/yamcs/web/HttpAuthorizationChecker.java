@@ -126,7 +126,7 @@ public class HttpAuthorizationChecker {
     private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String jwt)
             throws UnauthorizedException {
         try {
-            JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getSecretKey());
+            JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getServer().getSecretKey());
             if (jwtToken.isExpired()) {
                 jwtTokens.remove(jwt);
                 throw new UnauthorizedException("Token expired");
@@ -151,7 +151,7 @@ public class HttpAuthorizationChecker {
     private void cleanupCache() {
         for (String jwt : jwtTokens.keySet()) {
             try {
-                JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getSecretKey());
+                JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getServer().getSecretKey());
                 if (jwtToken.isExpired()) {
                     jwtTokens.remove(jwt);
                 }

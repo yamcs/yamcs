@@ -1,7 +1,9 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,29 +30,29 @@ public class ArrayAndAggregatesTest {
     static MockupTimeService timeService;
     static Parameter p1, p2, p3, p4, p5;
     MyFiller filler;
-    
+
     @Before
     public void openDb() throws Exception {
         String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursively(dbroot);
-        FileUtils.deleteRecursively(dbroot + ".rdb");
-        FileUtils.deleteRecursively(dbroot + ".tbs");
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);
         }
         rse.createTablespace(instance);
 
-      
-        parchive = new ParameterArchive(instance, YConfiguration.emptyConfig());
+        parchive = new ParameterArchive();
+        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+        parchive.init(instance, config);
         pidDb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidDb);
         assertNotNull(pgidMap);
         filler = new MyFiller(parchive);
     }
-    
-    
+
     @BeforeClass
     public static void beforeClass() {
         p1 = new Parameter("p1");
@@ -69,13 +71,12 @@ public class ArrayAndAggregatesTest {
         YamcsServer.setMockupTimeService(timeService);
         // org.yamcs.LoggingUtils.enableLogging();
     }
-    
+
     @After
     public void closeDb() throws Exception {
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         rse.dropTablespace(instance);
     }
-    
 
     @Test
     public void testArray() throws Exception {
@@ -85,29 +86,26 @@ public class ArrayAndAggregatesTest {
         assertEquals(1, pids.length);
         assertEquals(Type.FLOAT, pids[0].engType);
     }
-    
-    
-    
+
     private ParameterValue getArrayPv(Parameter p, long t) {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(t);
         pv.setAcquisitionTime(t);
-        
-        ArrayValue av = new ArrayValue(new int[] {3}, Type.FLOAT);
+
+        ArrayValue av = new ArrayValue(new int[] { 3 }, Type.FLOAT);
         av.setElementValue(0, ValueUtility.getFloatValue(0));
         av.setElementValue(1, ValueUtility.getFloatValue(1));
         av.setElementValue(2, ValueUtility.getFloatValue(2));
-        
+
         pv.setEngValue(av);
         pv.setRawValue(av);
-        
+
         return pv;
     }
 
-
-
-    static class MyFiller extends  ArchiveFillerTask {
+    static class MyFiller extends ArchiveFillerTask {
         List<ParameterValue> pvlist = new ArrayList<>();
+
         public MyFiller(ParameterArchive parameterArchive) {
             super(parameterArchive, ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
         }
@@ -116,11 +114,12 @@ public class ArrayAndAggregatesTest {
             pvlist.add(pv);
             return this;
         }
-        
+
+        @Override
         public void flush() {
             processParameters(pvlist);
             super.flush();
         }
-        
+
     }
 }

@@ -78,7 +78,7 @@ public class TokenStore {
         private byte[] hmac;
 
         Hmac(String refreshToken) {
-            hmac = CryptoUtils.calculateHmac(refreshToken, YamcsServer.getSecretKey());
+            hmac = CryptoUtils.calculateHmac(refreshToken, YamcsServer.getServer().getSecretKey());
         }
 
         @Override

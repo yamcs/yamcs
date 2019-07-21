@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.utils.AggregateUtil;
@@ -38,6 +39,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class LocalParameterManager extends AbstractService implements SoftwareParameterManager, ParameterProvider {
+
     ExecutorService executor = Executors.newFixedThreadPool(1);
     private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
@@ -49,7 +51,7 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
 
-    public LocalParameterManager(String yamcsInstance) {
+    public LocalParameterManager(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
     }
 
@@ -62,8 +64,8 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
         ParameterRequestManager prm = proc.getParameterRequestManager();
         prm.addParameterProvider(this);
         prm.addSoftwareParameterManager(DataSource.LOCAL, this);
-        
-        if(proc.recordLocalValues()) {
+
+        if (proc.recordLocalValues()) {
             streamParameterSender = proc.getStreamParameterSender();
         }
     }
@@ -120,6 +122,7 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
     /**
      * update the list of parameters. - resolves NamedObjectId -&gt; Parameter - sends the result to PRM
      */
+    @Override
     public void updateParameters(final List<ParameterValue> pvList) {
         // replace partials (i.e. aggregates/arrays that have only values of certain members set)
         boolean hasPartial = pvList.stream().anyMatch(pv -> pv instanceof PartialParameterValue);
@@ -172,6 +175,7 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
     /**
      * Updates a parameter just with the engineering value
      */
+    @Override
     public void updateParameter(final Parameter p, final Value engValue) {
         checkAssignment(p, engValue);
         executor.submit(() -> {

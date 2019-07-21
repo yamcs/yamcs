@@ -1,10 +1,8 @@
 package org.yamcs.archive;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.yamcs.ConfigurationException;
@@ -15,9 +13,10 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
@@ -34,8 +33,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Records XTCE TM sequence containers.
  * 
@@ -44,21 +41,12 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class XtceTmRecorder extends AbstractService implements YamcsService {
-    private long totalNumPackets;
-    protected Log log;
-
-    String yamcsInstance;
-    final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null });
+public class XtceTmRecorder extends AbstractYamcsService {
 
     static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
     static public String DUMP_TM_STREAM_NAME = "tm_dump";
     static public final String TABLE_NAME = "tm";
     static public final String PNAME_COLUMN = "pname";
-    XtceDb xtceDb;
-
-    private final List<StreamRecorder> recorders = new ArrayList<>();
 
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION = new TupleDefinition();
     static {
@@ -69,50 +57,52 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
     }
 
-    public XtceTmRecorder(String yamcsInstance)
-            throws IOException, StreamSqlException, ParseException, YamcsApiException {
-        this(yamcsInstance, null);
+    private long totalNumPackets;
+
+    final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
+            new Object[] { null, null, null, null });
+
+    XtceDb xtceDb;
+
+    private final List<StreamRecorder> recorders = new ArrayList<>();
+
+    TimeService timeService;
+
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        return spec;
     }
 
-    final TimeService timeService;
-
-    /**
-     * old constructor for compatibility with older configuration files
-     * 
-     * @param yamcsInstance
-     * @throws IOException
-     * @throws ConfigurationException
-     * @throws StreamSqlException
-     * @throws ParseException
-     * @throws YamcsApiException
-     */
-    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config)
-            throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
-
-        this.yamcsInstance = yamcsInstance;
-        log = new Log(this.getClass(), yamcsInstance);
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        try {
+            if (ydb.getTable(TABLE_NAME) == null) {
+                String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
+                        + ", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"
+                        + getTimePartitioningSchemaSql() + ", pname) table_format=compressed";
 
-        if (ydb.getTable(TABLE_NAME) == null) {
-            String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                    + ", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"
-                    + getTimePartitioningSchemaSql() + ", pname) table_format=compressed";
-
-            ydb.execute(query);
+                ydb.execute(query);
+            }
+            ydb.execute("create stream tm_is" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
+            ydb.execute("insert into " + TABLE_NAME + " select * from tm_is");
+        } catch (ParseException | StreamSqlException e) {
+            throw new InitException(e);
         }
-        ydb.execute("create stream tm_is" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
-        ydb.execute("insert into " + TABLE_NAME + " select * from tm_is");
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-        if (config == null || !config.containsKey("streams")) {
+        if (!config.containsKey("streams")) {
             List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
             for (StreamConfigEntry sce : sceList) {
                 createRecorder(sce);
             }
         } else if (config.containsKey("streams")) {
-            List<String> streamNames = YConfiguration.getList(config, "streams");
+            List<String> streamNames = config.getList("streams");
             for (String sn : streamNames) {
                 StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
                 if (sce == null) {

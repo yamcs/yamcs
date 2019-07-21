@@ -4,25 +4,23 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Global service that launches and supervises a configured program or script. The primary purpose is to run non-java
  * code, or to decouple java code that uses a fragile or untested JNI layer.
  */
-public class ProcessRunner extends AbstractService implements YamcsService {
-
-    protected Logger log;
+public class ProcessRunner extends AbstractYamcsService {
 
     private ProcessBuilder pb;
     private String logLevel;
@@ -31,26 +29,33 @@ public class ProcessRunner extends AbstractService implements YamcsService {
     private Process process;
     private ScheduledExecutorService watchdog;
 
-    public ProcessRunner(Map<String, Object> args) {
-        log = LoggerFactory.getLogger(getClass());
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("command", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING)
+                .withRequired(true);
+        spec.addOption("directory", OptionType.STRING);
+        spec.addOption("logLevel", OptionType.STRING).withDefault("INFO");
+        spec.addOption("logPrefix", OptionType.STRING);
+        return spec;
+    }
 
-        if (YConfiguration.isList(args, "command")) {
-            String[] command = YConfiguration.getList(args, "command").toArray(new String[0]);
-            pb = new ProcessBuilder(command);
-        } else {
-            String command = YConfiguration.getString(args, "command");
-            pb = new ProcessBuilder(command);
-        }
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
+        List<String> command = config.getList("command");
+        pb = new ProcessBuilder(command);
 
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
 
-        if (args.containsKey("directory")) {
-            pb.directory(new File(YConfiguration.getString(args, "directory")));
+        if (config.containsKey("directory")) {
+            pb.directory(new File(config.getString("directory")));
         }
 
-        logLevel = YConfiguration.getString(args, "logLevel", "INFO");
-        logPrefix = YConfiguration.getString(args, "logPrefix", "[" + pb.command().get(0) + "] ");
+        logLevel = config.getString("logLevel");
+        logPrefix = config.getString("logPrefix", "[" + pb.command().get(0) + "] ");
     }
 
     @Override

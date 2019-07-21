@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
-import org.yamcs.events.EventProducerFactory;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.tctm.ccsds.MasterChannelFrameHandler;
 import org.yamcs.tctm.ccsds.VirtualChannelHandler;
 

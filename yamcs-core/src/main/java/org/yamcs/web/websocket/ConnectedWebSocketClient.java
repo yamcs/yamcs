@@ -54,11 +54,12 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         addResource(new StreamsResource(this));
         addResource(new TimeResource(this));
 
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
-        httpServer.getWebSocketExtensions().forEach(supplier -> {
-            WebSocketResource resource = supplier.apply(this);
-            addResource(resource);
-        });
+        for (HttpServer httpServer : YamcsServer.getServer().getGlobalServices(HttpServer.class)) {
+            httpServer.getWebSocketExtensions().forEach(supplier -> {
+                WebSocketResource resource = supplier.apply(this);
+                addResource(resource);
+            });
+        }
     }
 
     @Override

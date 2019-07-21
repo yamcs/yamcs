@@ -6,7 +6,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
-import org.yamcs.events.EventProducerFactory;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.time.TimeService;
 

@@ -1,4 +1,4 @@
-package org.yamcs.events;
+package org.yamcs.api;
 
 import java.util.Timer;
 import java.util.TimerTask;

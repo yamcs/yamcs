@@ -2,9 +2,7 @@ package org.yamcs.tctm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -46,18 +44,18 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     ParameterTypeProcessor ptypeProcessor;
 
     public StreamParameterProvider(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, Collections.emptyMap());
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
-    public StreamParameterProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
+    public StreamParameterProvider(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
         List<String> streamNames;
         if (config.containsKey("stream")) {
-            streamNames = Arrays.asList(YConfiguration.getString(config, "stream"));
+            streamNames = Arrays.asList(config.getString("stream"));
         } else if (config.containsKey("streams")) {
-            streamNames = YConfiguration.getList(config, "streams");
+            streamNames = config.getList("streams");
         } else {
             streamNames = StreamConfig.getInstance(yamcsInstance).getEntries(StandardStreamType.param).stream()
                     .map(sce -> sce.getName()).collect(Collectors.toList());

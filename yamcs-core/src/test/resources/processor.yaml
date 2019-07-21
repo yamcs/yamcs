@@ -26,8 +26,8 @@ realtime:
         subscribeAll: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
-            check: true
-            server: enabled
+            parameterCheck: true
+            parameterServer: enabled
         parameterCache:
             enabled: true
             cacheAll: true

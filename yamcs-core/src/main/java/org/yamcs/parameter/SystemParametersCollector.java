@@ -17,8 +17,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.NameDescription;
@@ -30,8 +32,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
  *
@@ -39,7 +39,8 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class SystemParametersCollector extends AbstractService implements YamcsService, Runnable {
+public class SystemParametersCollector extends AbstractYamcsService implements Runnable {
+
     static Map<String, SystemParametersCollector> instances = new HashMap<>();
     static long frequencyMillisec = 1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<>();
@@ -61,46 +62,49 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
     static final List<String> FILE_SYSTEM_TYPES = Arrays.asList("ext4", "ext3", "xfs");
 
     ScheduledThreadPoolExecutor timer;
-    final Stream stream;
+    Stream stream;
 
     int seqCount = 0;
-    private final Log log;
 
-    private final String namespace;
-    private final String serverId;
+    private String namespace;
+    private String serverId;
 
-    final String instance;
     TimeService timeService;
     List<FileStore> fileStores;
 
-    public SystemParametersCollector(String instance) throws ConfigurationException {
-        this(instance, null);
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false);
+        return spec;
     }
 
-    public SystemParametersCollector(String instance, YConfiguration args) throws ConfigurationException {
-        this.instance = instance;
-        log = new Log(this.getClass(), instance);
-        processArgs(args);
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
 
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Stream s = ydb.getStream(STREAM_NAME);
-        if (s == null) {
+        provideJvmVariables = config.getBoolean("provideJvmVariables");
+        provideFsVariables = config.getBoolean("provideFsVariables");
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        stream = ydb.getStream(STREAM_NAME);
+        if (stream == null) {
             throw new ConfigurationException("Stream '" + STREAM_NAME + "' does not exist");
         }
-        stream = s;
 
-        serverId = YamcsServer.getServerId();
+        serverId = YamcsServer.getServer().getServerId();
         namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         if (provideJvmVariables) {
             spJvmTotalMemory = namespace + "/jvmTotalMemory";
-            log.debug("publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
+            log.debug("Publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
             spJvmMemoryUsed = namespace + "/jvmMemoryUsed";
-            log.debug("publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
+            log.debug("Publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
             spJvmTheadCount = namespace + "/jvmThreadCount";
-            log.debug("publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
+            log.debug("Publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
         }
 
         if (provideFsVariables) {
@@ -118,7 +122,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
             }
         }
         synchronized (instances) {
-            instances.put(instance, this);
+            instances.put(yamcsInstance, this);
         }
     }
 
@@ -128,17 +132,9 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
         }
     }
 
-    private void processArgs(YConfiguration args) {
-        if (args == null) {
-            return;
-        }
-        provideJvmVariables = args.getBoolean("provideJvmVariables", false);
-        provideFsVariables = args.getBoolean("provideFsVariables", false);
-    }
-
     @Override
     public void doStart() {
-        timeService = YamcsServer.getServer().getInstance(instance).getTimeService();
+        timeService = YamcsServer.getServer().getInstance(yamcsInstance).getTimeService();
         timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
         notifyStarted();
@@ -148,7 +144,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
     public void doStop() {
         timer.shutdown();
         synchronized (instances) {
-            instances.remove(instance);
+            instances.remove(yamcsInstance);
         }
         notifyStopped();
     }

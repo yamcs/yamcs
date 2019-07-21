@@ -6,13 +6,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
@@ -20,54 +17,52 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Handles index retrievals and tags
  *
  */
-public class IndexServer extends AbstractService implements YamcsService {
-    static Logger log = LoggerFactory.getLogger(IndexServer.class.getName());
+public class IndexServer extends AbstractYamcsService {
 
     TmIndex tmIndexer;
 
-    final String yamcsInstance;
-
     ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10));
 
-    final TagDb tagDb;
+    TagDb tagDb;
     boolean readonly = false;
-    /**
-     * Maps instance names to archive directories
-     */
+
+    // Maps instance names to archive directories
     final HashSet<String> instances = new HashSet<>();
-    final Map<String, Object> config;
 
-    public IndexServer(String instance) throws IOException, YarchException {
-        this(instance, null);
-    }
-
-    public IndexServer(String yamcsInstance, Map<String, Object> config) throws YarchException, IOException {
-        this.yamcsInstance = yamcsInstance;
-        this.config = config;
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
 
         YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
-
-        if (c.containsKey("tmIndexer")) {
-            String icn = c.getString("tmIndexer");
-            tmIndexer = loadIndexerFromClass(icn, yamcsInstance, readonly);
-        } else {
-            tmIndexer = new CcsdsTmIndex(yamcsInstance, readonly);
+        try {
+            if (c.containsKey("tmIndexer")) {
+                String icn = c.getString("tmIndexer");
+                tmIndexer = loadIndexerFromClass(icn, yamcsInstance, readonly);
+            } else {
+                tmIndexer = new CcsdsTmIndex(yamcsInstance, readonly);
+            }
+        } catch (IOException e) {
+            throw new InitException(e);
         }
 
-        tagDb = YarchDatabase.getInstance(yamcsInstance).getTagDb();
+        try {
+            tagDb = YarchDatabase.getInstance(yamcsInstance).getTagDb();
+        } catch (YarchException e) {
+            throw new InitException(e);
+        }
+
         executor.allowCoreThreadTimeOut(true);
     }
 
@@ -83,13 +78,13 @@ public class IndexServer extends AbstractService implements YamcsService {
         List<StreamConfigEntry> r = new ArrayList<>();
         if (!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-            if (config == null) {
+            if (!config.containsKey("streams")) {
                 List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
                 for (StreamConfigEntry sce : sceList) {
                     r.add(sce);
                 }
             } else {
-                List<String> streamNames = YConfiguration.getList(config, "streams");
+                List<String> streamNames = config.getList("streams");
                 for (String sn : streamNames) {
                     StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
                     if (sce == null) {
@@ -115,10 +110,6 @@ public class IndexServer extends AbstractService implements YamcsService {
             log.error("failed to stop the indexer", e);
             notifyFailed(e);
         }
-    }
-
-    public String getInstance() {
-        return yamcsInstance;
     }
 
     /**

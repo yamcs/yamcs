@@ -262,4 +262,16 @@ public class SpecTest {
         assertEquals(456, unsafeEl.get("subkey2"));
         assertEquals("*****", safeEl.get("subkey2"));
     }
+
+    @Test
+    public void testListOrElement() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("command", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.INTEGER);
+
+        Map<String, Object> result1 = spec.validate(of("command", asList(123)));
+        Map<String, Object> result2 = spec.validate(of("command", 123));
+        assertEquals(result1, result2);
+        assertEquals(1, result1.size());
+        assertEquals(123, ((List<?>) result1.get("command")).get(0));
+    }
 }

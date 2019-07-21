@@ -22,7 +22,7 @@ Configures Yamcs for simulation
 cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}/%{prefix}/lib
-cp simulation/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib
 
 cp -r simulation/bin %{buildroot}/%{prefix}
 cp -r simulation/mdb %{buildroot}/%{prefix}
@@ -35,7 +35,7 @@ mkdir -p %{buildroot}/storage/yamcs-incoming
 
 # Clean-up
 rm %{buildroot}/%{prefix}/bin/*.bat
-rm %{buildroot}/%{prefix}/lib/yamcs-*-sources.jar
+rm %{buildroot}/%{prefix}/lib/*-sources.jar
 rm %{buildroot}/%{prefix}/etc/users.yaml
 rm %{buildroot}/%{prefix}/etc/roles.yaml
 

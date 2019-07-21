@@ -506,7 +506,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.VERSION);
             responseb.setRevision(YamcsVersion.REVISION);
-            responseb.setServerId(YamcsServer.getServerId());
+            responseb.setServerId(YamcsServer.getServer().getServerId());
 
             List<Plugin> plugins = new ArrayList<>(YamcsServer.getServer().getPlugins());
             plugins.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));

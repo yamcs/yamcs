@@ -1,4 +1,4 @@
-package org.yamcs.events;
+package org.yamcs.client;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -7,8 +7,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.Rest.CreateEventRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;

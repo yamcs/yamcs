@@ -70,7 +70,6 @@ public class YamcsConnector implements WebSocketClientCallback {
     }
 
     public Future<YamcsConnectionProperties> connect(YamcsConnectionProperties cp) {
-        System.out.println("connecting to yamcs");
         this.connectionParams = cp;
         return doConnect();
     }

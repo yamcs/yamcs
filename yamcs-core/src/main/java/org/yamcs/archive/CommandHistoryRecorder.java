@@ -3,15 +3,12 @@ package org.yamcs.archive;
 import java.util.Arrays;
 
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.api.Log;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Records command history the key is formed by generation time, origin and sequence number the value is formed by a
@@ -21,20 +18,15 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class CommandHistoryRecorder extends AbstractService implements YamcsService {
-    final String instance;
-    static TupleDefinition eventTpdef;
-    final Log log;
-    final public static String TABLE_NAME = "cmdhist";
+public class CommandHistoryRecorder extends AbstractYamcsService {
 
-    public CommandHistoryRecorder(String instance) {
-        this.instance = instance;
-        log = new Log(this.getClass(), instance);
-    }
+    public static final String TABLE_NAME = "cmdhist";
+
+    static TupleDefinition eventTpdef;
 
     @Override
     protected void doStart() {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         String keycols = StandardTupleDefinitions.TC.getStringDefinition1();
         try {
@@ -76,7 +68,7 @@ public class CommandHistoryRecorder extends AbstractService implements YamcsServ
 
     @Override
     protected void doStop() {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Utils.closeTableWriters(ydb, Arrays.asList(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME,
                 StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME));
         notifyStopped();

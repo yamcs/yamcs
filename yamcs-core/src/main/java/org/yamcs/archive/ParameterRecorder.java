@@ -5,19 +5,21 @@ import static org.yamcs.StandardTupleDefinitions.PARAMETER_COL_GROUP;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.common.util.concurrent.AbstractService;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * ParameterRecorder Records (processed) Parameters
@@ -33,20 +35,26 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ParameterRecorder extends AbstractService implements YamcsService {
+public class ParameterRecorder extends AbstractYamcsService {
 
-    String yamcsInstance;
-    Stream realtimeStream, dumpStream;
+    public static final String TABLE_NAME = "pp";
 
-    static public final String TABLE_NAME = "pp";
+    Stream realtimeStream;
+    Stream dumpStream;
+
     List<String> streams = new ArrayList<>();
 
-    public ParameterRecorder(String yamcsInstance) {
-        this(yamcsInstance, null);
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        return spec;
     }
 
-    public ParameterRecorder(String yamcsInstance, Map<String, Object> config) {
-        this.yamcsInstance = yamcsInstance;
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             String cols = PARAMETER.getStringDefinition1();
@@ -58,14 +66,14 @@ public class ParameterRecorder extends AbstractService implements YamcsService {
             }
 
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-            if (config == null || !config.containsKey("streams")) {
+            if (!config.containsKey("streams")) {
                 List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.param);
                 for (StreamConfigEntry sce : sceList) {
                     streams.add(sce.getName());
                     ydb.execute("insert_append into " + TABLE_NAME + " select * from " + sce.getName());
                 }
             } else if (config.containsKey("streams")) {
-                List<String> streamNames = YConfiguration.getList(config, "streams");
+                List<String> streamNames = config.getList("streams");
                 for (String sn : streamNames) {
                     StreamConfigEntry sce = sc.getEntry(StandardStreamType.param, sn);
                     if (sce == null) {
@@ -75,8 +83,8 @@ public class ParameterRecorder extends AbstractService implements YamcsService {
                     ydb.execute("insert_append into " + TABLE_NAME + " select * from " + sce.getName());
                 }
             }
-        } catch (Exception e) {
-            throw new ConfigurationException("exception when creating parameter input stream", e);
+        } catch (ParseException | StreamSqlException e) {
+            throw new InitException("Exception when creating parameter input stream", e);
         }
     }
 

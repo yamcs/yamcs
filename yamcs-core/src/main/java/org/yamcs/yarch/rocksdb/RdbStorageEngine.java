@@ -199,7 +199,7 @@ public class RdbStorageEngine implements StorageEngine {
             t.loadDb(false);
         } catch (IOException e) {
             log.error("Got exception when creating or loading tablespapce ", e);
-            YamcsServer.getGlobalCrashHandler().handleCrash("RdbStorageEngine",
+            YamcsServer.getServer().getGlobalCrashHandler().handleCrash("RdbStorageEngine",
                     "Error creating or loading tablespace:" + e);
             throw new UncheckedIOException(e);
         }

@@ -4,8 +4,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,7 +88,7 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws InterruptedException, SSLException, GeneralSecurityException {
-        if (YamcsServer.getServer().getSecurityStore().isEnabled()) {
+        if (YamcsServer.getServer().getSecurityStore().isAuthenticationEnabled()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
         parameterProvider = ParameterProvider.instance;
@@ -109,9 +110,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     private static void setupYamcs() throws Exception {
-        File dataDir = new File("/tmp/yamcs-IntegrationTest-data");
-
-        FileUtils.deleteRecursively(dataDir.toPath());
+        Path dataDir = Paths.get("/tmp/yamcs-IntegrationTest-data");
+        FileUtils.deleteRecursivelyIfExists(dataDir);
 
         YConfiguration.setupTest("IntegrationTest");
         Map<String, Object> options = new HashMap<>();

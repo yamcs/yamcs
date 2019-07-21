@@ -97,7 +97,11 @@ public class InstanceRestHandler extends RestHandler {
                 throw new BadRequestException("No instance named '" + instance + "'");
             }
             cf = CompletableFuture.supplyAsync(() -> {
-                return yamcsServer.stopInstance(instance);
+                try {
+                    return yamcsServer.stopInstance(instance);
+                } catch (IOException e) {
+                    throw new UncheckedExecutionException(e);
+                }
             });
             break;
         case "restarted":
@@ -165,9 +169,11 @@ public class InstanceRestHandler extends RestHandler {
         });
 
         cf.whenComplete((v, error) -> {
+            System.out.println("complete... ");
             if (error == null) {
                 YamcsInstance instanceInfo = v.getInstanceInfo();
                 YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, instanceInfo);
+                System.out.println(enriched);
                 completeOK(req, enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);

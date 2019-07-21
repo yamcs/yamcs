@@ -14,6 +14,10 @@ import java.util.logging.LogManager;
 
 import org.yamcs.ProcessRunner;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.api.ValidationException;
 import org.yamcs.utils.TimeEncoding;
 
 import com.beust.jcommander.JCommander;
@@ -22,25 +26,39 @@ import com.google.common.util.concurrent.ServiceManager;
 
 public class SimulatorCommander extends ProcessRunner {
 
-    public SimulatorCommander() {
-        this(YConfiguration.emptyConfig());
+    @Override
+    public Spec getSpec() {
+        Spec telnetSpec = new Spec();
+        telnetSpec.addOption("port", OptionType.INTEGER);
+
+        Spec tmtcSpec = new Spec();
+        tmtcSpec.addOption("tcPort", OptionType.INTEGER);
+        tmtcSpec.addOption("tmPort", OptionType.INTEGER);
+        tmtcSpec.addOption("losPort", OptionType.INTEGER);
+        tmtcSpec.addOption("tm2Port", OptionType.INTEGER);
+
+        Spec frameSpec = new Spec();
+        frameSpec.addOption("type", OptionType.STRING);
+        frameSpec.addOption("tmPort", OptionType.INTEGER);
+        frameSpec.addOption("tmHost", OptionType.STRING);
+        frameSpec.addOption("tmFrameLength", OptionType.INTEGER);
+        frameSpec.addOption("tmFrameFreq", OptionType.FLOAT);
+
+        Spec perfTestSpec = new Spec();
+        perfTestSpec.addOption("numPackets", OptionType.INTEGER);
+        perfTestSpec.addOption("packetSize", OptionType.INTEGER);
+        perfTestSpec.addOption("interval", OptionType.INTEGER);
+
+        Spec spec = new Spec();
+        spec.addOption("telnet", OptionType.MAP).withSpec(telnetSpec);
+        spec.addOption("tctm", OptionType.MAP).withSpec(tmtcSpec);
+        spec.addOption("frame", OptionType.MAP).withSpec(frameSpec);
+        spec.addOption("perfTest", OptionType.MAP).withSpec(perfTestSpec);
+        return spec;
     }
 
-    /**
-     * Constructor used when the simulator is started as an instance service
-     * 
-     * @param yamcsInstance
-     * @param args
-     */
-    public SimulatorCommander(String yamcsInstance, YConfiguration args) {
-        super(superArgs(args));
-    }
-
-    public SimulatorCommander(YConfiguration args) {
-        super(superArgs(args));
-    }
-
-    private static Map<String, Object> superArgs(YConfiguration userArgs) {
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
         SimulatorArgs defaultOptions = new SimulatorArgs();
         List<String> cmdl = new ArrayList<>();
 
@@ -48,14 +66,14 @@ public class SimulatorCommander extends ProcessRunner {
         cmdl.add("-cp");
         cmdl.add(System.getProperty("java.class.path"));
         cmdl.add(SimulatorCommander.class.getName());
-        if (userArgs.containsKey("telnet")) {
-            YConfiguration telnetArgs = userArgs.getConfig("telnet");
+        if (config.containsKey("telnet")) {
+            YConfiguration telnetArgs = config.getConfig("telnet");
             int telnetPort = telnetArgs.getInt("port", defaultOptions.telnetPort);
             cmdl.add("--telnet-port");
             cmdl.add(Integer.toString(telnetPort));
         }
-        if (userArgs.containsKey("tctm")) {
-            YConfiguration yamcsArgs = userArgs.getConfig("tctm");
+        if (config.containsKey("tctm")) {
+            YConfiguration yamcsArgs = config.getConfig("tctm");
             int tcPort = yamcsArgs.getInt("tcPort", defaultOptions.tcPort);
             int tmPort = yamcsArgs.getInt("tmPort", defaultOptions.tmPort);
             int losPort = yamcsArgs.getInt("losPort", defaultOptions.losPort);
@@ -66,8 +84,8 @@ public class SimulatorCommander extends ProcessRunner {
                     "--los-port", "" + losPort,
                     "--tm2-port", "" + tm2Port));
         }
-        if (userArgs.containsKey("frame")) {
-            YConfiguration frameArgs = userArgs.getConfig("frame");
+        if (config.containsKey("frame")) {
+            YConfiguration frameArgs = config.getConfig("frame");
             String tmFrameType = frameArgs.getString("type", defaultOptions.tmFrameType);
             int tmFramePort = frameArgs.getInt("tmPort", defaultOptions.tmFramePort);
             String tmFrameHost = frameArgs.getString("tmHost", defaultOptions.tmFrameHost);
@@ -80,8 +98,8 @@ public class SimulatorCommander extends ProcessRunner {
                     "--tm-frame-freq", "" + tmFrameFreq));
 
         }
-        if (userArgs.containsKey("perfTest")) {
-            YConfiguration yamcsArgs = userArgs.getConfig("perfTest");
+        if (config.containsKey("perfTest")) {
+            YConfiguration yamcsArgs = config.getConfig("perfTest");
             int numPackets = yamcsArgs.getInt("numPackets", defaultOptions.perfNp);
             if (numPackets > 0) {
                 int packetSize = yamcsArgs.getInt("packetSize", defaultOptions.perfPs);
@@ -92,10 +110,15 @@ public class SimulatorCommander extends ProcessRunner {
             }
         }
 
-        Map<String, Object> args = new HashMap<>();
-        args.put("command", cmdl);
-        args.put("logPrefix", "");
-        return args;
+        try {
+            Map<String, Object> processRunnerConfig = new HashMap<>();
+            processRunnerConfig.put("command", cmdl);
+            processRunnerConfig.put("logPrefix", "");
+            processRunnerConfig = super.getSpec().validate(processRunnerConfig);
+            super.init(yamcsInstance, YConfiguration.wrap(processRunnerConfig));
+        } catch (ValidationException e) {
+            throw new InitException(e.getMessage());
+        }
     }
 
     public static void main(String[] args) {

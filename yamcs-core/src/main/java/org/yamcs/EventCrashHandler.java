@@ -1,7 +1,7 @@
 package org.yamcs;
 
 import org.yamcs.api.EventProducer;
-import org.yamcs.events.EventProducerFactory;
+import org.yamcs.api.EventProducerFactory;
 
 /**
  * Crash handler that reports events via an event producer

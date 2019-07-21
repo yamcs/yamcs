@@ -95,7 +95,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public static AuthInfo createAuthInfo() {
         AuthInfo.Builder infob = AuthInfo.newBuilder();
-        infob.setRequireAuthentication(securityStore.isEnabled());
+        infob.setRequireAuthentication(securityStore.isAuthenticationEnabled());
         for (AuthModule authModule : securityStore.getAuthModules()) {
             if (authModule instanceof SpnegoAuthModule) {
                 infob.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
@@ -234,7 +234,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private TokenResponse generateTokenResponse(User user, String refreshToken)
             throws InvalidKeyException, NoSuchAlgorithmException {
         int ttl = 500; // in seconds
-        String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
+        String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getServer().getSecretKey(), ttl);
 
         TokenResponse.Builder responseb = TokenResponse.newBuilder();
         responseb.setTokenType("bearer");

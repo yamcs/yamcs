@@ -222,19 +222,29 @@ public class Spec {
         for (Entry<String, Object> arg : unsafeArgs.entrySet()) {
             Option option = options.get(arg.getKey());
             if (option == null) {
-                throw new IllegalArgumentException("Unknown argument " + arg.getKey());
+                // No exception. Often this method is called while we are already
+                // handling another exception.
+                safeArgs.put(arg.getKey(), arg.getValue());
+                continue;
+            }
+
+            OptionType type = option.type;
+            Object argValue = arg.getValue();
+            if (type == OptionType.LIST_OR_ELEMENT && !(argValue instanceof List)) {
+                type = OptionType.LIST;
+                argValue = Arrays.asList(argValue);
             }
 
             if (option.secret) {
                 if (mask) {
                     safeArgs.put(option.name, "*****");
                 }
-            } else if (option.type == OptionType.MAP) {
-                Map<String, Object> map = (Map<String, Object>) arg.getValue();
+            } else if (type == OptionType.MAP) {
+                Map<String, Object> map = (Map<String, Object>) argValue;
                 Map<String, Object> safeMap = option.spec.makeSafe(map, mask);
                 safeArgs.put(option.name, safeMap);
-            } else if (option.type == OptionType.LIST) {
-                List<Object> list = (List<Object>) arg.getValue();
+            } else if (type == OptionType.LIST) {
+                List<Object> list = (List<Object>) argValue;
                 List<Object> safeList = new ArrayList<>();
                 for (Object element : list) {
                     if (option.elementType == OptionType.MAP) {
@@ -249,7 +259,7 @@ public class Spec {
                 }
                 safeArgs.put(option.name, safeList);
             } else {
-                safeArgs.put(option.name, arg.getValue());
+                safeArgs.put(option.name, argValue);
             }
         }
         return safeArgs;
@@ -270,13 +280,51 @@ public class Spec {
     }
 
     public static enum OptionType {
+
+        /**
+         * Arguments for an ANY option are unvalidated.
+         */
         ANY,
+
         BOOLEAN,
         INTEGER,
         FLOAT,
         LIST,
+
+        /**
+         * This option converts arguments automatically to a list if the argument is not a list.
+         */
+        LIST_OR_ELEMENT,
+
         MAP,
         STRING;
+
+        Object convertArgument(String path, Object arg, OptionType elementType) throws ValidationException {
+            if (this == ANY) {
+                return arg;
+            }
+
+            OptionType argType = forArgument(arg);
+            if (this == argType) {
+                return arg;
+            } else if (this == LIST_OR_ELEMENT) {
+                if (argType == LIST) {
+                    return arg;
+                } else {
+                    Object elementArg = elementType.convertArgument(path, arg, null);
+                    return Arrays.asList(elementArg);
+                }
+            } else if (this == FLOAT) {
+                if (arg instanceof Integer) {
+                    return new Double((Integer) arg);
+                } else if (arg instanceof Long) {
+                    return new Double((Long) arg);
+                }
+            }
+            throw new ValidationException(String.format(
+                    "%s is of type %s, but should be %s instead",
+                    path, argType, this));
+        }
 
         static OptionType forArgument(Object arg) {
             if (arg instanceof String) {
@@ -365,8 +413,8 @@ public class Spec {
         }
 
         /**
-         * In case the {@link #type} is set to {@link OptionType#LIST} the element type indicates the type of each
-         * element of that list.
+         * In case the {@link #type} is set to {@link OptionType#LIST} or {@link OptionType#LIST_OR_ELEMENT} the element
+         * type indicates the type of each element of that list.
          */
         public Option withElementType(OptionType elementType) {
             this.elementType = elementType;
@@ -414,31 +462,20 @@ public class Spec {
             if (deprecationMessage != null) {
                 log.warn("Argument {} has been deprecated: {}", path, deprecationMessage);
             }
-
-            OptionType argType = OptionType.forArgument(arg);
-            if (argType != type && type != OptionType.ANY) {
-                throw new ValidationException(String.format(
-                        "%s is of type %s, but should be %s instead",
-                        path, argType, type));
-            }
+            arg = type.convertArgument(path, arg, elementType);
 
             if (choices != null && !choices.contains(arg)) {
                 throw new ValidationException(String.format(
                         "%s should be one of %s", name, choices));
             }
 
-            if (type == OptionType.LIST) {
+            if (type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) {
                 List<Object> resultList = new ArrayList<>();
                 ListIterator<Object> it = ((List<Object>) arg).listIterator();
                 while (it.hasNext()) {
                     String elPath = path + "[" + it.nextIndex() + "]";
                     Object argElement = it.next();
-
-                    OptionType argElementType = OptionType.forArgument(argElement);
-                    if (argElementType != elementType) {
-                        throw new ValidationException(String.format(
-                                "%s should be of type %s", elPath, elementType));
-                    }
+                    argElement = elementType.convertArgument(elPath, argElement, null);
 
                     if (elementType == OptionType.LIST) {
                         throw new UnsupportedOperationException("List of lists cannot be validated");

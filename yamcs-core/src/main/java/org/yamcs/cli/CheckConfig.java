@@ -73,7 +73,7 @@ public class CheckConfig extends Command {
         YarchDatabase.setHome(tmpDir.getAbsolutePath());
 
         new YamcsServer().createGlobalServicesAndInstances();
-        FileUtils.deleteRecursively(tmpDir);
+        FileUtils.deleteRecursively(tmpDir.toPath());
         console.println("The configuration appears to be valid.");
     }
 }

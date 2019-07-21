@@ -1,12 +1,10 @@
 package org.yamcs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsService;
-import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-
-import com.google.common.util.concurrent.AbstractService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.security.SecurityStore;
 
 /**
  * Used in yamcs.instance.yaml to create processors at yamcs startup
@@ -14,28 +12,31 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ProcessorCreatorService extends AbstractService implements YamcsService {
+public class ProcessorCreatorService extends AbstractYamcsService {
     String processorName;
     String processorType;
     String processorConfig;
 
     Processor processor;
-    String yamcsInstance;
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessorCreatorService.class);
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("type", OptionType.STRING).withRequired(true);
+        spec.addOption("name", OptionType.STRING).withRequired(true);
+        spec.addOption("config", OptionType.STRING);
+        spec.addOption("spec", OptionType.STRING);
 
-    public ProcessorCreatorService(String yamcsInstance, YConfiguration config)
-            throws ConfigurationException, StreamSqlException, ProcessorException, ParseException {
-        this.yamcsInstance = yamcsInstance;
+        spec.mutuallyExclusive("config", "spec");
+        return spec;
+    }
 
-        if (!config.containsKey("type")) {
-            throw new ConfigurationException("Did not specify the processor type");
-        }
-        this.processorType = config.getString("type");
-        if (!config.containsKey("name")) {
-            throw new ConfigurationException("Did not specify the processor name");
-        }
-        this.processorName = config.getString("name");
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
+        processorType = config.getString("type");
+        processorName = config.getString("name");
 
         if (config.containsKey("config")) {
             processorConfig = config.getString("config");
@@ -44,7 +45,14 @@ public class ProcessorCreatorService extends AbstractService implements YamcsSer
         }
         log.debug("Creating a new processor instance: {}, procName: {}, procType: {}", yamcsInstance, processorName,
                 processorType);
-        processor = ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", processorConfig);
+        try {
+            SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+            String systemUser = securityStore.getSystemUser().getUsername();
+            processor = ProcessorFactory.create(yamcsInstance, processorName, processorType, systemUser,
+                    processorConfig);
+        } catch (ProcessorException e) {
+            throw new InitException(e);
+        }
         processor.setPersistent(true);
     }
 

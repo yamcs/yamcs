@@ -58,7 +58,7 @@ public class TsePlugin implements Plugin {
         try {
             yamcs.addGlobalService("TSE Commander", TseCommander.class, yconf);
         } catch (ValidationException e) {
-            throw new PluginException("Invalid configuration", e);
+            throw new PluginException("Invalid configuration: " + e.getMessage());
         } catch (IOException e) {
             throw new PluginException("Could not start TSE Commander", e);
         }

@@ -2,8 +2,9 @@ package org.yamcs.yarch;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +46,7 @@ public abstract class YarchTestCase {
     @Before
     public void setUp() throws Exception {
         YConfiguration config = YConfiguration.getConfiguration("yamcs");
-        String dir = config.getString("dataDir");
+        Path dir = Paths.get(config.getString("dataDir"));
         instance = "yarchtest_" + this.getClass().getSimpleName();
         context = new ExecutionContext(instance);
 
@@ -57,13 +58,13 @@ public abstract class YarchTestCase {
             }
         }
 
-        File ytdir = new File(dir + "/" + instance);
-        File rdbdir = new File(dir + "/" + instance + ".rdb");
+        Path ytdir = dir.resolve(instance);
+        Path rdbdir = dir.resolve(instance + ".rdb");
 
-        FileUtils.deleteRecursively(ytdir.toPath());
-        FileUtils.deleteRecursively(rdbdir.toPath());
+        FileUtils.deleteRecursivelyIfExists(ytdir);
+        FileUtils.deleteRecursivelyIfExists(rdbdir);
 
-        if (!ytdir.mkdirs()) {
+        if (!ytdir.toFile().mkdirs()) {
             throw new IOException("Cannot create directory " + ytdir);
         }
 

@@ -166,7 +166,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
             throws HttpException {
-        if (securityStore.isEnabled()) {
+        if (securityStore.isAuthenticationEnabled()) {
             User user = authChecker.verifyAuth(ctx, req);
             ctx.channel().attr(CTX_USER).set(user);
         } else {

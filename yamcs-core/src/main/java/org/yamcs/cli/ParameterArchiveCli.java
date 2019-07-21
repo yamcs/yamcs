@@ -1,6 +1,5 @@
 package org.yamcs.cli;
 
-
 import org.rocksdb.RocksDB;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -41,7 +40,9 @@ public class ParameterArchiveCli extends Command {
         @Override
         public void execute() throws Exception {
             RocksDB.loadLibrary();
-            ParameterArchive parchive = new ParameterArchive(yamcsInstance, YConfiguration.emptyConfig());
+            ParameterArchive parchive = new ParameterArchive();
+            YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+            parchive.init(yamcsInstance, config);
             ParameterIdDb pid = parchive.getParameterIdDb();
             pid.print(System.out);
         }
@@ -59,7 +60,9 @@ public class ParameterArchiveCli extends Command {
         @Override
         public void execute() throws Exception {
             RocksDB.loadLibrary();
-            ParameterArchive parchive = new ParameterArchive(yamcsInstance, YConfiguration.emptyConfig());
+            ParameterArchive parchive = new ParameterArchive();
+            YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+            parchive.init(yamcsInstance, config);
             ParameterIdDb pid = parchive.getParameterIdDb();
             ParameterGroupIdDb pgid = parchive.getParameterGroupIdDb();
             ParameterId[] pids = pid.get(name);

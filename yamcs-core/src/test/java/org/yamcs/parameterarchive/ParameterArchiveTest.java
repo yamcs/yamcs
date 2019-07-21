@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -81,9 +82,9 @@ public class ParameterArchiveTest {
     @Before
     public void openDb() throws Exception {
         String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursively(dbroot);
-        FileUtils.deleteRecursively(dbroot + ".rdb");
-        FileUtils.deleteRecursively(dbroot + ".tbs");
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);
@@ -94,7 +95,9 @@ public class ParameterArchiveTest {
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
-        parchive = new ParameterArchive(instance, YConfiguration.wrap(conf));
+        parchive = new ParameterArchive();
+        YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));
+        parchive.init(instance, config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -114,7 +117,9 @@ public class ParameterArchiveTest {
 
         // close and reopen the archive to check that the parameter is still there
 
-        parchive = new ParameterArchive(instance);
+        parchive = new ParameterArchive();
+        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+        parchive.init(instance, config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);

@@ -92,21 +92,22 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     private ScheduledFuture<?> scheduledFuture;
 
     public CfdpOutgoingTransfer(ScheduledThreadPoolExecutor executor, PutRequest request, Stream cfdpOut,
-            YConfiguration conf, EventProducer eventProducer) {
+            YConfiguration config, EventProducer eventProducer) {
         super(executor, request.getSourceId(), cfdpOut, eventProducer);
-        this.entityIdLength = conf.getInt("entityIdLength", 2);
-        this.seqNrSize = conf.getInt("sequenceNrLength", 4);
-        int maxPduSize = conf.getInt("maxPduSize", 512);
-        this.maxDataSize = maxPduSize - 4 - 2 * this.entityIdLength - this.seqNrSize - 4;
-        this.eofAckTimeoutMs = conf.getInt("eofAckTimeoutMs", 3000);
-        this.maxEofResendAttempts = conf.getInt("maxEofResendAttempts", 5);
-        this.sleepBetweenPdusMs = conf.getInt("sleepBetweenPdusMs", 500);
-
-        this.acknowledged = request.isAcknowledged();
-
         this.request = request;
-        this.currentState = CfdpTransferState.START;
-        this.state = Cfdp.TransferState.RUNNING;
+
+        entityIdLength = config.getInt("entityIdLength");
+        seqNrSize = config.getInt("sequenceNrLength");
+        int maxPduSize = config.getInt("maxPduSize", 512);
+        maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
+        eofAckTimeoutMs = config.getInt("eofAckTimeoutMs");
+        maxEofResendAttempts = config.getInt("maxEofResendAttempts");
+        sleepBetweenPdusMs = config.getInt("sleepBetweenPdusMs");
+
+        acknowledged = request.isAcknowledged();
+
+        currentState = CfdpTransferState.START;
+        state = Cfdp.TransferState.RUNNING;
     }
 
     @Override
@@ -419,5 +420,4 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
     public boolean pausable() {
         return true;
     }
-
 }

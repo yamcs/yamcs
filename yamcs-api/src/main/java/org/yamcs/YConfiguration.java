@@ -332,8 +332,6 @@ public class YConfiguration {
         return new YConfiguration(this, key, m);
     }
 
-    /****************************** Map configs */
-
     @SuppressWarnings("unchecked")
     static public Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
@@ -365,8 +363,6 @@ public class YConfiguration {
         Map<String, Object> m = getMap(key);
         return getMap(m, key1);
     }
-
-    /*************************** String configs */
 
     /**
      * Returns m.get(key) if it exists and is of type string, otherwise throws an exception
@@ -413,7 +409,6 @@ public class YConfiguration {
         return getString(m, subkey);
     }
 
-    /***************** List configs */
     /*
      * The key has to point to a list
      */
@@ -498,7 +493,6 @@ public class YConfiguration {
         return getList(m, key1);
     }
 
-    /********************** Boolean configs */
     /**
      * Returns m.get(key) if it exists and is of type boolean, if m.get(key) exists and is not boolean, throw an
      * exception. if m.get(key) does not exist, return the default value.
@@ -550,7 +544,6 @@ public class YConfiguration {
         return getBoolean(root, key, defaultValue);
     }
 
-    /********************** int configs */
     public int getInt(String key) throws ConfigurationException {
         checkKey(key, Integer.class);
         return (Integer) root.get(key);
@@ -615,7 +608,6 @@ public class YConfiguration {
         }
     }
 
-    /********************** long configs */
     public long getLong(String key) {
         return getLong(root, key);
     }

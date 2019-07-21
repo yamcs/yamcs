@@ -14,12 +14,13 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.AbstractYamcsService;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -39,46 +40,41 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * 
- * The parameter archive stores data in partitions -> intervals -> segments.
- * A partition covers one year and each partition has its own RocksDB database
+ * The parameter archive stores data in partitions -> intervals -> segments. A partition covers one year and each
+ * partition has its own RocksDB database
  * 
  * An interval covers 2^23 millisec =~ 139 minutes
  * 
  * An segment covers at most maxSegmentSize values for one parameter
  * 
- *  
+ * 
  * 
  * @author nm
  *
  */
-public class ParameterArchive extends AbstractService implements YamcsService {
+public class ParameterArchive extends AbstractYamcsService {
+
     public static final boolean STORE_RAW_VALUES = true;
 
     public static final int NUMBITS_MASK = 23; // 2^23 millisecons =~ 139 minutes per interval
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
 
-    
-    private final Logger log = LoggerFactory.getLogger(ParameterArchive.class);
     private ParameterIdDb parameterIdMap;
     private ParameterGroupIdDb parameterGroupIdMap;
     private Tablespace tablespace;
 
-    TimePartitionSchema partitioningSchema = TimePartitionSchema.getInstance("YYYY");
+    TimePartitionSchema partitioningSchema;
 
     // the tbsIndex used to encode partition information
     int partitionTbsIndex;
 
-    private final String yamcsInstance;
-
     private PartitionedTimeInterval<Partition> partitions = new PartitionedTimeInterval<>();
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
 
-    final TimeService timeService;
+    TimeService timeService;
     private BackFiller backFiller;
     private RealtimeArchiveFiller realtimeFiller;
     YConfiguration realtimeFillerConfig;
@@ -86,46 +82,72 @@ public class ParameterArchive extends AbstractService implements YamcsService {
     boolean realtimeFillerEnabled;
     boolean backFillerEnabled;
 
-    public ParameterArchive(String instance, YConfiguration args) throws IOException, RocksDBException {
-        this.yamcsInstance = instance;
-        this.timeService = YamcsServer.getTimeService(instance);
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
-        partitioningSchema = ydb.getDefaultPartitioningSchema();
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("backFiller", OptionType.ANY);
+        spec.addOption("realtimeFiller", OptionType.ANY);
+        spec.addOption("partitioningSchema", OptionType.STRING).withDefault("YYYY")
+                .withChoices("YYYY/DOY", "YYYY/MM", "YYYY", "none");
 
-        if (args != null) {
-            processConfig(args);
-        } else {
+        return spec;
+    }
+
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+
+        timeService = YamcsServer.getTimeService(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
+
+        if (config.containsKey("backFiller")) {
+            backFillerConfig = config.getConfig("backFiller");
+            log.debug("backFillerConfig: {}", backFillerConfig);
+            backFillerEnabled = backFillerConfig.getBoolean("enabled", true);
+        }
+        if (config.containsKey("realtimeFiller")) {
+            realtimeFillerConfig = config.getConfig("realtimeFiller");
+            realtimeFillerEnabled = realtimeFillerConfig.getBoolean("enabled", false);
+            log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
+        }
+
+        String schema = config.getString("partitioningSchema");
+        if (!"none".equalsIgnoreCase(schema)) {
+            partitioningSchema = TimePartitionSchema.getInstance(schema);
+        }
+
+        if (!config.containsKey("backFiller") && !config.containsKey("realtimeFiller")) {
             backFiller = new BackFiller(this, null);
         }
 
-        TablespaceRecord.Type trType = TablespaceRecord.Type.PARCHIVE_PINFO;
-        List<TablespaceRecord> trl = tablespace.filter(trType, yamcsInstance, trb -> true);
-        if (trl.size() > 1) {
-            throw new DatabaseCorruptionException(
-                    "More than one tablespace record of type " + trType.name() + " for instance " + instance);
-        }
-        parameterIdMap = new ParameterIdDb(yamcsInstance, tablespace);
-        parameterGroupIdMap = new ParameterGroupIdDb(yamcsInstance, tablespace);
-
-        TablespaceRecord tr;
-        if (trl.isEmpty()) { // new database
-            initializeDb();
-        } else {// existing database
-            tr = trl.get(0);
-            partitionTbsIndex = tr.getTbsIndex();
-            if (tr.hasPartitioningSchema()) {
-                partitioningSchema = TimePartitionSchema.getInstance(tr.getPartitioningSchema());
+        try {
+            TablespaceRecord.Type trType = TablespaceRecord.Type.PARCHIVE_PINFO;
+            List<TablespaceRecord> trl = tablespace.filter(trType, yamcsInstance, trb -> true);
+            if (trl.size() > 1) {
+                throw new DatabaseCorruptionException(
+                        "More than one tablespace record of type " + trType.name() + " for instance " + yamcsInstance);
             }
-            readPartitions();
-        }
-        if (partitioningSchema == null) {
-            partitions.insert(new Partition());
-        }
-    }
+            parameterIdMap = new ParameterIdDb(yamcsInstance, tablespace);
+            parameterGroupIdMap = new ParameterGroupIdDb(yamcsInstance, tablespace);
 
-    public ParameterArchive(String instance) throws RocksDBException, IOException {
-        this(instance, null);
+            TablespaceRecord tr;
+            if (trl.isEmpty()) { // new database
+                initializeDb();
+            } else {// existing database
+                tr = trl.get(0);
+                partitionTbsIndex = tr.getTbsIndex();
+                if (tr.hasPartitioningSchema()) {
+                    partitioningSchema = TimePartitionSchema.getInstance(tr.getPartitioningSchema());
+                }
+                readPartitions();
+            }
+            if (partitioningSchema == null) {
+                partitions.insert(new Partition());
+            }
+        } catch (RocksDBException | IOException e) {
+            throw new InitException(e);
+        }
     }
 
     private void initializeDb() throws RocksDBException {
@@ -142,31 +164,6 @@ public class ParameterArchive extends AbstractService implements YamcsService {
 
     public TimePartitionSchema getPartitioningSchema() {
         return partitioningSchema;
-    }
-
-    private void processConfig(YConfiguration args) {
-        for (String s : args.getRoot().keySet()) {
-            if ("backFiller".equals(s)) {
-                backFillerConfig = args.getConfig(s);
-                log.debug("backFillerConfig: {}", backFillerConfig);
-                backFillerEnabled = backFillerConfig.getBoolean("enabled", true);
-            } else if ("realtimeFiller".equals(s)) {
-                realtimeFillerConfig = args.getConfig(s);
-                realtimeFillerEnabled = realtimeFillerConfig.getBoolean("enabled", false);
-                log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
-
-            } else if ("partitioningSchema".equals(s)) {
-                String schema = args.getString(s);
-                if ("none".equalsIgnoreCase(schema)) {
-                    partitioningSchema = null;
-                } else {
-                    partitioningSchema = TimePartitionSchema.getInstance(args.getString(s));
-                }
-            } else {
-                throw new ConfigurationException(
-                        "Unkwnon keyword '" + s + "' in parameter archive configuration: " + args);
-            }
-        }
     }
 
     private void readPartitions() throws IOException, RocksDBException {
@@ -201,10 +198,6 @@ public class ParameterArchive extends AbstractService implements YamcsService {
 
     public ParameterGroupIdDb getParameterGroupIdDb() {
         return parameterGroupIdMap;
-    }
-
-    public String getYamcsInstance() {
-        return yamcsInstance;
     }
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {

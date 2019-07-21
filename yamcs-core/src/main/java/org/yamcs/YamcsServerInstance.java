@@ -95,7 +95,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             if (conf.containsKey("crashHandler")) {
                 crashHandler = YamcsServer.loadCrashHandler(conf);
             } else {
-                crashHandler = YamcsServer.globalCrashHandler;
+                crashHandler = YamcsServer.getServer().getGlobalCrashHandler();
             }
 
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)

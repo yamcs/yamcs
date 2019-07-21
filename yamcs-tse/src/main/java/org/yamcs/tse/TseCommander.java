@@ -14,6 +14,10 @@ import java.util.logging.LogManager;
 
 import org.yamcs.ProcessRunner;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.api.ValidationException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -23,30 +27,44 @@ import com.google.common.util.concurrent.ServiceManager;
 
 public class TseCommander extends ProcessRunner {
 
-    public TseCommander() {
-        this(YConfiguration.emptyConfig());
+    @Override
+    public Spec getSpec() {
+        Spec telnetSpec = new Spec();
+        telnetSpec.addOption("port", OptionType.INTEGER);
+
+        Spec tmtcSpec = new Spec();
+        tmtcSpec.addOption("port", OptionType.INTEGER);
+
+        Spec spec = new Spec();
+        spec.addOption("telnet", OptionType.MAP).withSpec(telnetSpec);
+        spec.addOption("tctm", OptionType.MAP).withSpec(tmtcSpec);
+        spec.addOption("instruments", OptionType.LIST).withElementType(OptionType.ANY);
+
+        return spec;
     }
 
-    public TseCommander(YConfiguration args) {
-        super(superArgs(args));
-    }
-
-    private static Map<String, Object> superArgs(YConfiguration userArgs) {
-        YConfiguration telnetArgs = userArgs.getConfig("telnet");
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        YConfiguration telnetArgs = config.getConfig("telnet");
         int telnetPort = telnetArgs.getInt("port");
 
-        YConfiguration yamcsArgs = userArgs.getConfig("tctm");
+        YConfiguration yamcsArgs = config.getConfig("tctm");
         int tctmPort = yamcsArgs.getInt("port");
 
-        Map<String, Object> args = new HashMap<>();
-        args.put("command", Arrays.asList(
-                new File(System.getProperty("java.home"), "bin/java").toString(),
-                "-cp", System.getProperty("java.class.path"),
-                TseCommander.class.getName(),
-                "--telnet-port", "" + telnetPort,
-                "--tctm-port", "" + tctmPort));
-        args.put("logPrefix", "");
-        return args;
+        try {
+            Map<String, Object> processRunnerConfig = new HashMap<>();
+            processRunnerConfig.put("command", Arrays.asList(
+                    new File(System.getProperty("java.home"), "bin/java").toString(),
+                    "-cp", System.getProperty("java.class.path"),
+                    TseCommander.class.getName(),
+                    "--telnet-port", "" + telnetPort,
+                    "--tctm-port", "" + tctmPort));
+            processRunnerConfig.put("logPrefix", "");
+            processRunnerConfig = super.getSpec().validate(processRunnerConfig);
+            super.init(yamcsInstance, YConfiguration.wrap(processRunnerConfig));
+        } catch (ValidationException e) {
+            throw new InitException(e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
@@ -99,12 +117,10 @@ public class TseCommander extends ProcessRunner {
 
         InstrumentController instrumentController = new InstrumentController();
         if (yconf.containsKey("instruments")) {
-            for (Object entry : yconf.getList("instruments")) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> m = ((Map<String, Object>) entry);
-                String name = YConfiguration.getString(m, "name");
+            for (YConfiguration instrumentConfig : yconf.getConfigList("instruments")) {
+                String name = instrumentConfig.getString("name");
                 try {
-                    InstrumentDriver instrument = YObjectLoader.loadObject(m, name);
+                    InstrumentDriver instrument = YObjectLoader.loadObject(instrumentConfig.toMap(), name);
                     instrumentController.addInstrument(instrument);
                 } catch (IOException e) {
                     throw new Error(e);

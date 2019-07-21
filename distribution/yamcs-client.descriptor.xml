@@ -32,5 +32,14 @@
       <directory>../legacy-tools/etc</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>
+
+    <!-- Tricks to add empty directories... -->
+    <fileSet>
+      <directory>.</directory>
+      <outputDirectory>mdb</outputDirectory>
+      <excludes>
+        <exclude>*/**</exclude>
+      </excludes>
+    </fileSet>
   </fileSets>
 </assembly>

@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -593,11 +594,17 @@ public class XtceDbFactory {
 
     private static File resolveSerializedFile(String filename) {
         Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        if (cacheDir == null) { // During unit tests
+            cacheDir = Paths.get("cache").toAbsolutePath();
+        }
         return cacheDir.resolve(filename + ".serialized").toFile();
     }
 
     private static File resolveConsistencyFile(String filename) {
         Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        if (cacheDir == null) { // During unit tests
+            cacheDir = Paths.get("cache").toAbsolutePath();
+        }
         return cacheDir.resolve(filename + ".consistency_date").toFile();
     }
 

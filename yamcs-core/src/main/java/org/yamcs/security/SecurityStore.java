@@ -38,7 +38,7 @@ public class SecurityStore {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
 
-    private boolean enabled = false;
+    private boolean authenticationEnabled = false;
 
     private List<AuthModule> authModules = new ArrayList<>();
 
@@ -55,19 +55,21 @@ public class SecurityStore {
 
         YConfiguration config = readConfig();
 
-        enabled = config.getBoolean("enabled");
-        if (enabled) {
+        authenticationEnabled = config.getBoolean("enabled");
+        if (authenticationEnabled) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
                 authModules.add(authModule);
             }
         } else {
-            log.warn("Security disabled");
             YConfiguration userProps = config.getConfig("unauthenticatedUser");
             String username = userProps.getString("username");
             if (username.isEmpty() || username.contains(":")) {
                 throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
             }
+
+            log.warn("Authentication disabled. All connections use the"
+                    + " permissions of user '{}'", username);
 
             unauthenticatedUser = new User(username);
             unauthenticatedUser.setSuperuser(userProps.getBoolean("superuser"));
@@ -151,7 +153,7 @@ public class SecurityStore {
 
         Spec unauthenticatedUserSpec = new Spec();
         unauthenticatedUserSpec.addOption("username", OptionType.STRING).withDefault("admin");
-        unauthenticatedUserSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(false);
+        unauthenticatedUserSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(true);
         unauthenticatedUserSpec.addOption("privileges", OptionType.ANY);
 
         Spec spec = new Spec();
@@ -205,21 +207,21 @@ public class SecurityStore {
     }
 
     /**
-     * Returns the unauthenticated user. This is always null if security is enabled.
+     * Returns the unauthenticated user. This is always null if authentication is not enabled
      */
     public User getUnauthenticatedUser() {
         return unauthenticatedUser;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public boolean isAuthenticationEnabled() {
+        return authenticationEnabled;
     }
 
     /**
      * Attempts to authenticate a user with the given token and adds authorization information.
      */
     public CompletableFuture<User> login(AuthenticationToken token) {
-        if (!enabled) {
+        if (!authenticationEnabled) {
             return CompletableFuture.completedFuture(unauthenticatedUser);
         }
 
