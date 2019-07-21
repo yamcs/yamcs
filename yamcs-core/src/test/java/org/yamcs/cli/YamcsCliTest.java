@@ -1,4 +1,4 @@
-package org.yamcs.server.cli;
+package org.yamcs.cli;
 
 import static org.junit.Assert.assertTrue;
 
@@ -7,6 +7,7 @@ import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.yamcs.cli.YamcsAdminCli;
 
 public class YamcsCliTest {
     ByteArrayOutputStream outStream;

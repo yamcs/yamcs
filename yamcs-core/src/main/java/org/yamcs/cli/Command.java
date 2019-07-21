@@ -1,4 +1,4 @@
-package org.yamcs.server.cli;
+package org.yamcs.cli;
 
 import java.util.ArrayList;
 import java.util.Arrays;

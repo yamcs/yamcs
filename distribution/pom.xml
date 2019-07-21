@@ -28,7 +28,7 @@
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-server</artifactId>
+      <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

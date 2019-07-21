@@ -10,7 +10,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>bin</directory>
+      <directory>wrappers</directory>
       <outputDirectory></outputDirectory>
     </fileSet>
   </fileSets>

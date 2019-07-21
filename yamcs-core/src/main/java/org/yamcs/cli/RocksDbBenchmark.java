@@ -1,4 +1,4 @@
-package org.yamcs.server.cli;
+package org.yamcs.cli;
 
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;

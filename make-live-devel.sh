@@ -50,12 +50,11 @@ cp -an $YAMCS_HOME/yamcs-server/bin/* $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-core/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/dependency/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-server/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-server/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 

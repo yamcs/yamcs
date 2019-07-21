@@ -1,4 +1,4 @@
-package org.yamcs.server.cli;
+package org.yamcs.cli;
 
 import java.io.Console;
 import java.util.Arrays;
