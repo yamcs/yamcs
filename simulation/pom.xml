@@ -8,7 +8,7 @@
     <version>4.10.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>yamcs-simulation</artifactId>
+  <artifactId>simulation</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs :: Example Simulation</name>
 

@@ -15,7 +15,7 @@ public class SimulationPlugin implements Plugin {
 
     @Override
     public String getName() {
-        return "yamcs-simulation";
+        return "Simulation";
     }
 
     @Override

@@ -65,11 +65,11 @@
     <module>distribution</module>
     <module>legacy-tools</module>
     <module>packet-viewer</module>
+    <module>simulation</module>
     <module>yamcs-api</module>
     <module>yamcs-artemis</module>
     <module>yamcs-client</module>
     <module>yamcs-core</module>
-    <module>yamcs-simulation</module>
     <module>yamcs-tse</module>
     <module>yamcs-web</module>
     <module>yamcs-xtce</module>

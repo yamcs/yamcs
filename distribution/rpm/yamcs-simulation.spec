@@ -22,12 +22,12 @@ Configures Yamcs for simulation
 cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}/%{prefix}/lib
-cp yamcs-simulation/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+cp simulation/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 
-cp -r yamcs-simulation/bin %{buildroot}/%{prefix}
-cp -r yamcs-simulation/mdb %{buildroot}/%{prefix}
+cp -r simulation/bin %{buildroot}/%{prefix}
+cp -r simulation/mdb %{buildroot}/%{prefix}
 
-cp -r yamcs-simulation/etc %{buildroot}/%{prefix}
+cp -r simulation/etc %{buildroot}/%{prefix}
 mv %{buildroot}/%{prefix}/etc/logging.properties.rpm %{buildroot}/%{prefix}/etc/logging.properties
 
 mkdir -p %{buildroot}/storage/yamcs-data

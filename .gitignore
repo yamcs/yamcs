@@ -13,7 +13,4 @@ target/
 server.lock
 make-live-devel-local.sh
 testDispose/
-*.consistency_date
-*.serialized
 *.log
-.DS_store

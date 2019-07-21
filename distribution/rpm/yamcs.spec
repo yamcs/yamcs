@@ -14,7 +14,7 @@ BuildArch: noarch
 
 
 %description
-Yet another mission control system
+Yamcs Mission Control
 
 
 %install
