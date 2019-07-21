@@ -9,12 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.Processor;
+import org.yamcs.api.Log;
 import org.yamcs.parameter.ParameterConsumer;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -25,7 +24,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 class ArchiveFillerTask implements ParameterConsumer {
     final ParameterArchive parameterArchive;
-    final private Logger log;
+    final private Log log;
 
     long numParams = 0;
     static int DEFAULT_MAX_SEGMENT_SIZE = 5000;
@@ -47,7 +46,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
-        log = LoggingUtils.getLogger(this.getClass(), parameterArchive.getYamcsInstance());
+        log = new Log(this.getClass(), parameterArchive.getYamcsInstance());
         this.maxSegmentSize = maxSegmentSize;
         log.debug("Archive filler task maxSegmentSize: {} ", maxSegmentSize);
     }
@@ -72,16 +71,16 @@ class ArchiveFillerTask implements ParameterConsumer {
             if (t < collectionSegmentStart) {
                 continue;
             }
-            
+
             if (pv.getParameterQualifiedNamed() == null) {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
             Value engValue = pv.getEngValue();
-            if(engValue == null) {
+            if (engValue == null) {
                 log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
             }
-            BasicParameterList l = m.computeIfAbsent(t, x ->new BasicParameterList(parameterIdMap));
+            BasicParameterList l = m.computeIfAbsent(t, x -> new BasicParameterList(parameterIdMap));
             l.add(pv);
         }
         boolean needsFlush = false;
@@ -124,7 +123,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     void flush() {
-        if(pgSegments!=null) {
+        if (pgSegments != null) {
             writeToArchive(collectionSegmentStart);
         }
     }
@@ -148,7 +147,7 @@ class ArchiveFillerTask implements ParameterConsumer {
 
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
-        if(oomImminent()) {
+        if (oomImminent()) {
             return;
         }
 
@@ -169,12 +168,12 @@ class ArchiveFillerTask implements ParameterConsumer {
         return numParams;
     }
 
-   
     private boolean oomImminent() {
         if (memoryBean != null && memoryBean.isCollectionUsageThresholdExceeded()) {
             aborted = true;
-            
-            String msg = "Aborting parameter archive filling due to imminent out of memory. Consider decreasing the maxSegmentSize (current value is "+maxSegmentSize+").";
+
+            String msg = "Aborting parameter archive filling due to imminent out of memory. Consider decreasing the maxSegmentSize (current value is "
+                    + maxSegmentSize + ").";
             log.error(msg);
             pgSegments = null;
             processor.stopAsync();
@@ -186,7 +185,8 @@ class ArchiveFillerTask implements ParameterConsumer {
 
     static MemoryPoolMXBean getMemoryBean() {
         for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported() && pool.getName().toLowerCase().contains("old")) {
+            if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported()
+                    && pool.getName().toLowerCase().contains("old")) {
                 long threshold = (long) Math.floor(pool.getUsage().getMax() * 0.90);
                 pool.setCollectionUsageThreshold(threshold);
                 return pool;
@@ -198,9 +198,9 @@ class ArchiveFillerTask implements ParameterConsumer {
     public void setProcessor(Processor proc) {
         this.processor = proc;
     }
-    
+
     /**
-     * If the archive filling has been aborted (due to imminent OOM) this returns true 
+     * If the archive filling has been aborted (due to imminent OOM) this returns true
      */
     boolean isAborted() {
         return aborted;

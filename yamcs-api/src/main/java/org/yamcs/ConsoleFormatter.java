@@ -6,6 +6,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.yamcs.api.YamcsLogRecord;
+
 /**
  * Specifically intended for short-term console output. It contains the bare minimum of information. Memory optimization
  * is 'good enough' for console output.
@@ -13,7 +15,6 @@ import java.util.logging.LogRecord;
  * Features:
  * <ul>
  * <li>Hides the day, only the hour is shown
- * <li>Hides the logger names for central classes
  * <li>Hides severities, except for 'WARNING' and 'ERROR'
  * <li>Hides the method name
  * <li>Supports minimal colors
@@ -39,37 +40,43 @@ public class ConsoleFormatter extends Formatter {
 
     @Override
     public String format(LogRecord r) {
-        d.setTime(r.getMillis());
         StringBuilder sb = new StringBuilder();
+
+        d.setTime(r.getMillis());
+        sb.append(sdf.format(d)).append(" ");
+
+        String yamcsInstance = "_global";
+        if (r instanceof YamcsLogRecord) {
+            YamcsLogRecord yRec = (YamcsLogRecord) r;
+            if (yRec.getYamcsInstance() != null) {
+                yamcsInstance = yRec.getYamcsInstance();
+            }
+        }
+        sb.append(yamcsInstance).append(" ");
+
         String name = r.getLoggerName();
-
-        String decoration;
-        sb.append(sdf.format(d));
-        sb.append(" [").append(r.getThreadID()).append("] ");
-
         if (name.lastIndexOf('.') != -1) {
             name = name.substring(name.lastIndexOf('.') + 1);
         }
-        if (name.lastIndexOf('[') != -1) {
-            decoration = name.substring(name.lastIndexOf('[') + 1, name.length() - 1);
-            name = name.substring(0, name.lastIndexOf('['));
-        } else {
-            decoration = null;
-        }
+
         if (enableAnsiColors) {
             colorize(sb, name, 0, 36);
         } else {
             sb.append(name);
         }
-        sb.append(" ");
 
-        if (decoration != null) {
-            if (enableAnsiColors) {
-                colorize(sb, decoration, 0, 35);
-            } else {
-                sb.append(decoration);
+        sb.append(" [").append(r.getThreadID()).append("] ");
+
+        if (r instanceof YamcsLogRecord) {
+            YamcsLogRecord yRec = (YamcsLogRecord) r;
+            if (yRec.getContext() != null) {
+                if (enableAnsiColors) {
+                    colorize(sb, yRec.getContext(), 0, 35);
+                } else {
+                    sb.append(yRec.getContext());
+                }
+                sb.append(" ");
             }
-            sb.append(" ");
         }
 
         if (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE) {
@@ -81,12 +88,7 @@ public class ConsoleFormatter extends Formatter {
             sb.append(" ");
         }
         sb.append(r.getMessage());
-        Object[] params = r.getParameters();
-        if (params != null) {
-            for (Object p : params) {
-                sb.append(p.toString());
-            }
-        }
+
         Throwable t = r.getThrown();
         if (t != null) {
             sb.append(": ").append(t.toString()).append("\n");

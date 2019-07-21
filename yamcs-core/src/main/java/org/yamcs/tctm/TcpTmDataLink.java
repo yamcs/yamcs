@@ -9,12 +9,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 
 public class TcpTmDataLink extends AbstractTmDataLink {
@@ -24,7 +23,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     protected int port = 10031;
     protected volatile boolean disabled = false;
 
-    protected final Logger log;
+    protected final Log log;
     private TmSink tmSink;
 
     ParameterValue svConnectionStatus;
@@ -41,7 +40,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
-        log = LoggingUtils.getLogger(this.getClass(), instance);
+        log = new Log(this.getClass(), instance);
         if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
             host = config.getString("tmHost");
             port = config.getInt("tmPort");

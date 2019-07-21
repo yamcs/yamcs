@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+import org.yamcs.api.YamcsLogRecord;
+
 public class CompactFormatter extends Formatter {
 
     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss.SSS");
@@ -12,18 +14,37 @@ public class CompactFormatter extends Formatter {
 
     @Override
     public String format(LogRecord r) {
-        d.setTime(r.getMillis());
         StringBuffer sb = new StringBuffer();
-        String name;
-        name = r.getLoggerName();
-        sb.append(sdf.format(d)).append(" [").append(r.getThreadID()).append("] ").append(name).append(" ")
-                .append(r.getSourceMethodName()).append(" ").append(r.getLevel()).append(":").append(r.getMessage());
-        Object[] params = r.getParameters();
-        if (params != null) {
-            for (Object p : params) {
-                sb.append(p.toString());
+
+        // Instance must be first column because would like to make it
+        // easy to filter logs based on instance. Perhaps even adding a
+        // "logs" subcommand to yamcsadmin, although that will require
+        // that we know where the logs are actually located (not the case
+        // as long as we expose JUL logging to our users).
+        String yamcsInstance = "_global";
+        if (r instanceof YamcsLogRecord) {
+            YamcsLogRecord yRec = (YamcsLogRecord) r;
+            if (yRec.getYamcsInstance() != null) {
+                yamcsInstance = yRec.getYamcsInstance();
             }
         }
+        sb.append(yamcsInstance).append(" ");
+
+        d.setTime(r.getMillis());
+        sb.append(sdf.format(d)).append(" ");
+
+        String name = r.getLoggerName();
+        sb.append(name).append(" [").append(r.getThreadID()).append("] ");
+
+        if (r instanceof YamcsLogRecord) {
+            YamcsLogRecord yRec = (YamcsLogRecord) r;
+            if (yRec.getContext() != null) {
+                sb.append(yRec.getContext()).append(" ");
+            }
+        }
+
+        sb.append("[").append(r.getLevel()).append("] ").append(r.getMessage());
+
         Throwable t = r.getThrown();
         if (t != null) {
             sb.append(": ").append(t.toString()).append("\n");

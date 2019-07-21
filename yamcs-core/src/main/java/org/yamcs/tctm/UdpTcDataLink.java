@@ -12,17 +12,16 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -54,7 +53,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
     private String sv_linkStatus_id, sp_dataCount_id;
 
     private SystemParametersCollector sysParamCollector;
-    protected final Logger log;
+    protected final Log log;
     private final String yamcsInstance;
     private final String name;
     TimeService timeService;
@@ -65,7 +64,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
     final YConfiguration config;
 
     public UdpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
         this.config = config;

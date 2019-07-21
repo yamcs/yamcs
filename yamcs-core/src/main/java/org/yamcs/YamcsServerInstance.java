@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
+import org.yamcs.api.Log;
 import org.yamcs.api.ValidationException;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
@@ -33,7 +32,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public class YamcsServerInstance extends YamcsInstanceService {
     private String instanceName;
-    Logger log;
+    Log log;
     TimeService timeService;
     private CrashHandler crashHandler;
     // instance specific services
@@ -45,7 +44,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     YamcsServerInstance(String name) {
         this.instanceName = name;
-        log = LoggingUtils.getLogger(YamcsServerInstance.class, name);
+        log = new Log(YamcsServerInstance.class, name);
     }
 
     @Override

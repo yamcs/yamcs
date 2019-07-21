@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.InitException;
+import org.yamcs.api.Log;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
 import org.yamcs.api.Spec;
@@ -50,6 +50,7 @@ import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TemplateProcessor;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
@@ -68,10 +69,13 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServer {
-    Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
 
     private static final String SERVER_ID_KEY = "serverId";
     private static final String SECRET_KEY = "secretKey";
+    public static final String GLOBAL_INSTANCE = "_global";
+    private static final Log LOG = new Log(YamcsServer.class);
+
+    Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
 
     Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
 
@@ -79,8 +83,6 @@ public class YamcsServer {
 
     // global services
     List<ServiceWithConfig> globalServiceList;
-
-    static Logger staticlog = LoggerFactory.getLogger(YamcsServer.class);
 
     /** in the shutdown, allow services this number of seconds for stopping */
     public static int SERVICE_STOP_GRACE_TIME = 10;
@@ -149,20 +151,20 @@ public class YamcsServer {
             }
             name = candidateName;
 
-            staticlog.info("Loading {} service {} ({})", (instance == null) ? "global" : instance, name, servclass);
+            LOG.info("Loading {} service {} ({})", (instance == null) ? "global" : instance, name, servclass);
             ServiceWithConfig swc;
             try {
                 swc = createService(instance, servclass, name, args);
                 serviceList.add(swc);
             } catch (NoClassDefFoundError e) {
-                staticlog.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args,
+                LOG.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args,
                         e.getMessage());
                 throw e;
             } catch (ValidationException e) {
-                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                LOG.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
                 throw new ConfigurationException("Invalid configuration");
             } catch (Exception e) {
-                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                LOG.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
                 throw e;
             }
             if (managementService != null) {
@@ -184,7 +186,7 @@ public class YamcsServer {
             }
         }
 
-        staticlog.info("Loading global service {} ({})", name, serviceClass.getName());
+        LOG.info("Loading global service {} ({})", name, serviceClass.getName());
         ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args);
         server.globalServiceList.add(swc);
 
@@ -201,7 +203,7 @@ public class YamcsServer {
      */
     public static void startServices(List<ServiceWithConfig> serviceList) throws ConfigurationException {
         for (ServiceWithConfig swc : serviceList) {
-            staticlog.debug("Starting service {}", swc.getName());
+            LOG.debug("Starting service {}", swc.getName());
             swc.service.startAsync();
             try {
                 swc.service.awaitRunning();
@@ -311,7 +313,7 @@ public class YamcsServer {
             }
         }
 
-        Path globalDir = dataDir.resolve("_global");
+        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);
         Files.createDirectories(instanceDefDir);
 
@@ -339,7 +341,7 @@ public class YamcsServer {
                     online = false;
                     name = m.group(1);
                     if (instances.size() > maxNumInstances) {
-                        staticlog.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
+                        LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
                                 maxNumInstances, name);
                         continue;
                     }
@@ -359,11 +361,11 @@ public class YamcsServer {
                         if (labels instanceof Map<?, ?>) {
                             ysi.setLabels((Map<String, String>) labels);
                         } else {
-                            staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
+                            LOG.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
                                     metadataFile.getAbsolutePath());
                         }
                     } else {
-                        staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
+                        LOG.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
                                 metadataFile.getAbsolutePath());
                     }
                 }
@@ -382,18 +384,18 @@ public class YamcsServer {
 
         for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
             if (disabledPlugins.contains(plugin.getName())) {
-                staticlog.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
+                LOG.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
             } else {
                 plugins.put(plugin.getClass(), plugin);
             }
         }
 
         for (Plugin plugin : plugins.values()) {
-            staticlog.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
+            LOG.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
             try {
                 plugin.onLoad();
             } catch (PluginException e) {
-                staticlog.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
+                LOG.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
                 throw e;
             }
         }
@@ -420,29 +422,6 @@ public class YamcsServer {
         }
     }
 
-    public static void setupYamcsServer() throws IOException, PluginException {
-        staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
-
-        server.discoverTemplates();
-        server.createGlobalServicesAndInstances();
-        server.loadPlugins();
-        server.startServices();
-
-        Thread.setDefaultUncaughtExceptionHandler((t, thrown) -> {
-            String msg = "Uncaught exception '" + thrown + "' in thread " + t + ": "
-                    + Arrays.toString(thrown.getStackTrace());
-            staticlog.error(msg);
-            globalCrashHandler.handleCrash("UncaughtException", msg);
-        });
-
-        if (System.getenv("YAMCS_DAEMON") == null) {
-            staticlog.info("Server running... press ctrl-c to stop");
-        } else {// the init.d/yamcs-server depends on this line on the standard output, do not change it (without
-            // changing the script also)!
-            System.out.println("yamcsstartup success");
-        }
-    }
-
     /**
      * Restarts a yamcs instance.
      * 
@@ -459,12 +438,12 @@ public class YamcsServer {
             try {
                 ysi.stop();
             } catch (IllegalStateException e) {
-                staticlog.warn("Instance did not terminate normally", e);
+                LOG.warn("Instance did not terminate normally", e);
             }
         }
         YarchDatabase.removeInstance(instanceName);
         XtceDbFactory.remove(instanceName);
-        staticlog.info("Re-loading instance '{}'", instanceName);
+        LOG.info("Re-loading instance '{}'", instanceName);
 
         ysi.init(getConf(instanceName));
         ysi.startAsync();
@@ -472,7 +451,7 @@ public class YamcsServer {
             ysi.awaitRunning();
         } catch (IllegalStateException e) {
             Throwable t = ExceptionUtil.unwind(e.getCause());
-            staticlog.warn("Failed to start instance", t);
+            LOG.warn("Failed to start instance", t);
             throw new UncheckedExecutionException(t);
         }
         return ysi;
@@ -506,14 +485,14 @@ public class YamcsServer {
             try {
                 ysi.stop();
             } catch (IllegalStateException e) {
-                staticlog.error("Instance did not terminate normally", e);
+                LOG.error("Instance did not terminate normally", e);
             }
         }
         YarchDatabase.removeInstance(instanceName);
         XtceDbFactory.remove(instanceName);
         File f = new File(instanceDefDir + "yamcs." + instanceName + ".yaml");
         if (f.exists()) {
-            staticlog.debug("Renaming {} to {}.offline", f.getAbsolutePath(), f.getName());
+            LOG.debug("Renaming {} to {}.offline", f.getAbsolutePath(), f.getName());
             f.renameTo(new File(instanceDefDir + "yamcs." + instanceName + ".yaml.offline"));
         }
 
@@ -590,9 +569,9 @@ public class YamcsServer {
         }
 
         if (conf != null) {
-            staticlog.info("Loading online instance '{}'", name);
+            LOG.info("Loading online instance '{}'", name);
         } else {
-            staticlog.debug("Loading offline instance '{}'", name);
+            LOG.debug("Loading offline instance '{}'", name);
         }
         YamcsServerInstance ysi = new YamcsServerInstance(name);
         instances.put(name, ysi);
@@ -666,13 +645,13 @@ public class YamcsServer {
                 id = InetAddress.getLocalHost().getHostName();
             }
             serverId = id;
-            staticlog.debug("Using serverId {}", serverId);
+            LOG.debug("Using serverId {}", serverId);
             return serverId;
         } catch (ConfigurationException e) {
             throw e;
         } catch (UnknownHostException e) {
             String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or alternatively add 'serverId: <name>' to yamcs.yaml";
-            staticlog.warn(msg);
+            LOG.warn(msg);
             throw new ConfigurationException(msg, e);
         }
     }
@@ -683,7 +662,7 @@ public class YamcsServer {
             // Should maybe only allow base64 encoded secret keys
             secretKey = yconf.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
         } else {
-            staticlog.warn("Generating random non-persisted secret key."
+            LOG.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
                     + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
             secretKey = CryptoUtils.generateRandomSecretKey();
@@ -805,18 +784,18 @@ public class YamcsServer {
             try {
                 Spec spec = service.getSpec();
                 if (spec != null) {
-                    if (staticlog.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
                         Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
-                        staticlog.debug("Raw args for {}: {}", serviceName, safeArgs);
+                        LOG.debug("Raw args for {}: {}", serviceName, safeArgs);
                     }
 
                     args = spec.validate((YConfiguration) args);
 
-                    if (staticlog.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         Map<String, Object> unsafeArgs = ((YConfiguration) args).getRoot();
                         Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
-                        staticlog.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
+                        LOG.debug("Initializing {} with resolved args: {}", serviceName, safeArgs);
                     }
                 }
                 service.init(instance, (YConfiguration) args);
@@ -902,14 +881,54 @@ public class YamcsServer {
         }
 
         try {
-            YConfiguration.setupDaemon(verbose);
+            setupLogging(verbose);
+            TimeEncoding.setUp();
             setupYamcsServer();
         } catch (ConfigurationException e) {
-            staticlog.error("Could not start Yamcs Server", e);
+            LOG.error("Could not start Yamcs Server", e);
             System.exit(-1);
         } catch (Exception e) {
-            staticlog.error("Could not start Yamcs Server", e);
+            LOG.error("Could not start Yamcs Server", e);
             System.exit(-1);
+        }
+    }
+
+    private static void setupLogging(boolean verbose) throws SecurityException, IOException {
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            String configFile;
+            if (verbose) {
+                configFile = "/default-logging/console-all.properties";
+            } else {
+                configFile = "/default-logging/console-info.properties";
+            }
+
+            try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
+                LogManager.getLogManager().readConfiguration(in);
+            }
+        }
+    }
+
+    public static void setupYamcsServer() throws IOException, PluginException {
+        LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
+
+        server.discoverTemplates();
+        server.createGlobalServicesAndInstances();
+        server.loadPlugins();
+        server.startServices();
+
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            String msg = String.format("Uncaught exception '%s' in thread %s: %s", e, t,
+                    Arrays.toString(e.getStackTrace()));
+            LOG.error(msg);
+            globalCrashHandler.handleCrash("UncaughtException", msg);
+        });
+
+        if (System.getenv("YAMCS_DAEMON") == null) {
+            LOG.info("Server running... press ctrl-c to stop");
+        } else {
+            // the init.d/yamcs-server depends on this line on the standard output, do not change it (without
+            // changing the script also)!
+            System.out.println("yamcsstartup success");
         }
     }
 }

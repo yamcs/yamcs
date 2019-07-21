@@ -6,10 +6,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
@@ -17,7 +17,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommand;
 import org.yamcs.tse.api.TseCommanderMessage;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
@@ -55,7 +54,7 @@ public class TseDataLink extends AbstractService implements Link {
     // the angle brackets which are used for argument substitution)
     private static final Pattern PARAMETER_REFERENCE = Pattern.compile("`(.*?)`");
 
-    private final Logger log;
+    private final Log log;
 
     private volatile boolean disabled = false;
     private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
@@ -89,7 +88,7 @@ public class TseDataLink extends AbstractService implements Link {
         timeService = YamcsServer.getTimeService(yamcsInstance);
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
 
-        log = LoggingUtils.getLogger(getClass(), yamcsInstance);
+        log = new Log(getClass(), yamcsInstance);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);

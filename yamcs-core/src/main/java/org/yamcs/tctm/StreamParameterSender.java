@@ -8,19 +8,19 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * Sends collection of parameters to stream by 
+ * Sends collection of parameters to stream by
+ * 
  * @author nm
  *
  */
@@ -28,13 +28,13 @@ public class StreamParameterSender {
     final Stream stream;
     final DataType paraDataType = DataType.PARAMETER_VALUE;
     TimeService timeService;
-    protected final Logger log;
+    protected final Log log;
     Map<String, AtomicInteger> groupSeq = new HashMap<>();
 
     public StreamParameterSender(String yamcsInstance, Stream stream) {
         this.stream = stream;
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
     }
 
     /**
@@ -47,14 +47,14 @@ public class StreamParameterSender {
                 .forEach((t, l) -> sendParameters(t, l));
     }
 
-    //Send the parameters to the stream grouping by group
+    // Send the parameters to the stream grouping by group
     private void sendParameters(long genTime, Collection<ParameterValue> params) {
-        params.stream().collect(Collectors.groupingBy(pv-> pv.getParameter().getRecordingGroup()))
-        .forEach((g, l) -> sendParameters(genTime, g, l));
+        params.stream().collect(Collectors.groupingBy(pv -> pv.getParameter().getRecordingGroup()))
+                .forEach((g, l) -> sendParameters(genTime, g, l));
     }
 
     private void sendParameters(long genTime, String group, Collection<ParameterValue> params) {
-        int seqNum = groupSeq.computeIfAbsent(group, g->new AtomicInteger()).getAndIncrement();
+        int seqNum = groupSeq.computeIfAbsent(group, g -> new AtomicInteger()).getAndIncrement();
         updateParameters(genTime, group, seqNum, params);
     }
 
@@ -80,5 +80,4 @@ public class StreamParameterSender {
         stream.emitTuple(t);
     }
 
-   
 }

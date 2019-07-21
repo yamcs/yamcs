@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
 import org.yamcs.alarms.EventAlarmServer;
+import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -36,7 +36,6 @@ import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -103,7 +102,7 @@ public class Processor extends AbstractService {
 
     ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0, 0);
 
-    final Logger log;
+    final Log log;
     static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
     // processors to this
 
@@ -139,9 +138,9 @@ public class Processor extends AbstractService {
         this.name = name;
         this.creator = creator;
         this.type = type;
-        log = LoggingUtils.getLogger(Processor.class, this);
+        log = new Log(Processor.class, yamcsInstance);
         log.info("Creating new processor '{}' of type '{}'", name, type);
-
+        log.setContext(name);
     }
 
     /**

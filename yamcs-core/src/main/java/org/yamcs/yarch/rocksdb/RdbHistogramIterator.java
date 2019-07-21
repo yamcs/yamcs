@@ -13,11 +13,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
+import org.yamcs.api.Log;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.LoggingUtils;
-import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
@@ -45,7 +42,7 @@ public class RdbHistogramIterator implements HistogramIterator {
     TableDefinition tblDef;
     YRDB rdb;
 
-    Logger log;
+    Log log;
     String colName;
     boolean stopReached = false;
 
@@ -59,7 +56,8 @@ public class RdbHistogramIterator implements HistogramIterator {
 
         PartitionManager partMgr = RdbStorageEngine.getInstance().getPartitionManager(tblDef);
         partitionIterator = partMgr.intervalIterator(interval);
-        log = LoggingUtils.getLogger(this.getClass(), ydb.getName(), tblDef);
+        log = new Log(getClass(), ydb.getName());
+        log.setContext(tblDef.getName());
         readNextPartition();
     }
 

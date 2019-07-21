@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.StandardTupleDefinitions;
@@ -16,10 +15,11 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsService;
+import org.yamcs.api.Log;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -32,7 +32,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -47,7 +46,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class XtceTmRecorder extends AbstractService implements YamcsService {
     private long totalNumPackets;
-    protected Logger log;
+    protected Log log;
 
     String yamcsInstance;
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
@@ -91,7 +90,7 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
             throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
         this.yamcsInstance = yamcsInstance;
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 

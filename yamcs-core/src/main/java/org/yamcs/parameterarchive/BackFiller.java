@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
@@ -19,6 +18,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
@@ -26,7 +26,6 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -47,13 +46,13 @@ public class BackFiller implements StreamSubscriber {
     long t0;
     int runCount;
 
-    ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     final ParameterArchive parchive;
-    
+
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
-    private final Logger log;
+    private final Log log;
 
     // set of segments that have to be rebuilt following monitoring of streams
     private Set<Long> streamUpdates;
@@ -63,15 +62,14 @@ public class BackFiller implements StreamSubscriber {
     long streamUpdateFillFrequency;
 
     private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
-  
-    
+
     BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
         if (config != null) {
             parseConfig(config);
         }
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
-        log = LoggingUtils.getLogger(BackFiller.class, parchive.getYamcsInstance());
+        log = new Log(BackFiller.class, parchive.getYamcsInstance());
     }
 
     void start() {
@@ -174,7 +172,7 @@ public class BackFiller implements StreamSubscriber {
 
             proc.start();
             proc.awaitTerminated();
-            if(aft.aborted) {
+            if (aft.aborted) {
                 log.warn("Parameter archive fillup for interval {} aborted", timePeriod);
             } else {
                 aft.flush();

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -18,8 +17,8 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
+import org.yamcs.api.Log;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.ParameterAlarmChecker;
@@ -38,7 +37,7 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  */
 public class ParameterRequestManager extends AbstractService implements ParameterListener {
-    Logger log;
+    Log log;
 
     static final String REALTIME_ALARM_SERVER = "alarms_realtime";
     // Maps the parameters to the request(subscription id) in which they have been asked
@@ -75,7 +74,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      */
     public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.processor = yproc;
-        log = LoggingUtils.getLogger(this.getClass(), yproc);
+        log = new Log(this.getClass(), yproc.getInstance());
+        log.setContext(yproc.getName());
         cacheConfig = yproc.getPameterCacheConfig();
         shouldSubcribeAllParameters = yproc.isSubscribeAll();
 
@@ -84,7 +84,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
-            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData(), lastSubscriptionId.incrementAndGet());
+            alarmChecker = new ParameterAlarmChecker(this, yproc.getProcessorData(),
+                    lastSubscriptionId.incrementAndGet());
         }
         if (yproc.hasAlarmServer()) {
             parameterAlarmServer = new AlarmServer<>(yproc.getInstance());
@@ -639,8 +640,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Register a {@link SoftwareParameterManager} for the given {@link DataSource}.
-     * Throws an {@link IllegalStateException} if there is already registered a parameter manager for this data source.
+     * Register a {@link SoftwareParameterManager} for the given {@link DataSource}. Throws an
+     * {@link IllegalStateException} if there is already registered a parameter manager for this data source.
      * 
      * @param ds
      * @param swParameterManager

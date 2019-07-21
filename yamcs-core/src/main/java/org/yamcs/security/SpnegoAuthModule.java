@@ -92,8 +92,8 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         Spec spec = new Spec();
         spec.addOption("krb5.conf", OptionType.STRING);
         spec.addOption("jaas.conf", OptionType.STRING);
-        spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("krbRealm", OptionType.STRING);
+        spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -105,10 +105,10 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         if (args.containsKey("jaas.conf")) {
             System.setProperty("java.security.auth.login.config", args.getString("jaas.conf"));
         }
-        stripRealm = args.getBoolean("stripRealm");
         if (args.containsKey("krbRealm")) {
             krbRealm = args.getString("krbRealm");
         }
+        stripRealm = args.getBoolean("stripRealm");
 
         try {
             yamcsLogin = new LoginContext("Yamcs", new TextCallbackHandler());

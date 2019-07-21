@@ -12,8 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsService;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
+import org.yamcs.api.YamcsService;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
@@ -68,7 +69,7 @@ public class CfdpService extends AbstractService implements StreamSubscriber, Ya
 
         this.cfdpIn.addSubscriber(this);
 
-        YarchDatabaseInstance globalYdb = YarchDatabase.getInstance("_global");
+        YarchDatabaseInstance globalYdb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         String bucketName = config.getString("incomingBucket", "cfdpDown");
         incomingBucket = globalYdb.getBucket(bucketName);
         if (incomingBucket == null) {

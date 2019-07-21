@@ -7,20 +7,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsService;
 import org.yamcs.api.EventProducer;
+import org.yamcs.api.Log;
+import org.yamcs.api.YamcsService;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -42,13 +41,13 @@ public class CfsEventDecoder extends AbstractService implements YamcsService, St
     List<Stream> streams = new ArrayList<>();
     List<String> streamNames = new ArrayList<>();
     private final String yamcsInstance;
-    final Logger log;
+    final Log log;
     Set<Integer> msgIds = new HashSet<>();
     EventProducer eventProducer;
     TimeService timeService;
 
     public CfsEventDecoder(String yamcsInstance, YConfiguration config) {
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
         this.yamcsInstance = yamcsInstance;
 
         if (config.containsKey("streams")) {

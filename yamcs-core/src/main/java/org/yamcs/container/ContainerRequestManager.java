@@ -7,42 +7,39 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
-import org.yamcs.utils.LoggingUtils;
+import org.yamcs.api.Log;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerListener;
 import org.yamcs.xtceproc.XtceTmProcessor;
-
 
 /**
  * Keeps track of the subscribers to the containers of a processor.
  */
 public class ContainerRequestManager implements ContainerListener {
 
-    private Logger log;
+    private Log log;
     // For each container, all the subscribers
-    private Map<SequenceContainer, Set<ContainerConsumer>> subscriptions = new ConcurrentHashMap<>();    
+    private Map<SequenceContainer, Set<ContainerConsumer>> subscriptions = new ConcurrentHashMap<>();
 
     private XtceTmProcessor tmProcessor;
 
     /**
-     * Creates a new ContainerRequestManager, configured to listen to a newly
-     * created XtceTmProcessor.
+     * Creates a new ContainerRequestManager, configured to listen to a newly created XtceTmProcessor.
      */
     public ContainerRequestManager(Processor proc) {
         this(proc, new XtceTmProcessor(proc, null));
     }
 
     /**
-     * Creates a new ContainerRequestManager, configured to listen to the
-     * specified XtceTmProcessor.
+     * Creates a new ContainerRequestManager, configured to listen to the specified XtceTmProcessor.
      */
     public ContainerRequestManager(Processor proc, XtceTmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
-        log = LoggingUtils.getLogger(this.getClass(), proc);
+        log = new Log(this.getClass(), proc.getInstance());
+        log.setContext(proc.getName());
         tmProcessor.setContainerListener(this);
     }
 
@@ -75,12 +72,12 @@ public class ContainerRequestManager implements ContainerListener {
         if (subscriptions.containsKey(container)) {
             Set<ContainerConsumer> subscribers = subscriptions.get(container);
             if (subscribers.remove(subscriber)) {
-                if(subscribers.isEmpty()) {
+                if (subscribers.isEmpty()) {
                     // The following call does not do anything (yet)
                     tmProcessor.stopProviding(container);
                 }
             } else {
-                log.warn("Container removal requested for {} but not subscribed", container);      
+                log.warn("Container removal requested for {} but not subscribed", container);
             }
 
         } else {
@@ -107,7 +104,7 @@ public class ContainerRequestManager implements ContainerListener {
             if (!subscriptions.containsKey(def)) {
                 continue;
             }
-            for (ContainerConsumer subscriber : subscriptions.get(def)) {               
+            for (ContainerConsumer subscriber : subscriptions.get(def)) {
                 subscriber.processContainer(result);
             }
         }

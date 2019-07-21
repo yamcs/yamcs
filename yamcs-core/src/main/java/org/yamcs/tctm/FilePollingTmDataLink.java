@@ -6,21 +6,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 
 /**
  * Reads telemetry files from the directory yamcs.incomingDir/tm
  *
  */
 public class FilePollingTmDataLink extends AbstractTmDataLink {
+
     final String incomingDir;
-    final private Logger log;
+    final private Log log;
     volatile boolean disabled;
     TmSink tmSink;
     volatile long tmCount = 0;
@@ -30,7 +30,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
 
     public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
 
         this.incomingDir = config.getString("incomingDir", getDefaultIncomingDir(yamcsInstance));
         this.deleteAfterImport = config.getBoolean("deleteAfterImport", true);
@@ -41,7 +41,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
 
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
         super(yamcsInstance, name, getConfig(incomingDir));
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
         this.incomingDir = incomingDir;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         initPreprocessor(yamcsInstance, null);

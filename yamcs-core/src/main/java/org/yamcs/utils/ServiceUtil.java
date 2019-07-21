@@ -3,13 +3,14 @@ package org.yamcs.utils;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.slf4j.Logger;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 public class ServiceUtil {
+
     /**
      * Awaits a service to be running but throw an {@link UncheckedExecutionException} instead of an
      * {@link IllegalStateException}
@@ -26,8 +27,8 @@ public class ServiceUtil {
             throw new UncheckedExecutionException(ExceptionUtil.unwind(e.getCause()));
         }
     }
-    
-    public static void awaitServiceTerminated(Service service, int numSeconds, Logger log) {
+
+    public static void awaitServiceTerminated(Service service, int numSeconds, Log log) {
         try {
             service.awaitTerminated(numSeconds, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
@@ -37,5 +38,4 @@ public class ServiceUtil {
             log.error("Service {} was in a bad state: {}", service.getClass().getName(), e.getMessage());
         }
     }
-    
 }

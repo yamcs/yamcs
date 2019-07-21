@@ -9,13 +9,12 @@ import java.util.List;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.slf4j.Logger;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
+import org.yamcs.api.Log;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
@@ -30,7 +29,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.utils.LoggingUtils;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -47,7 +45,7 @@ import com.google.common.collect.Maps;
 public class RealtimeArtemisParameterService implements ParameterWithIdConsumer {
     Processor processor;
     YamcsClient yclient;
-    Logger log;
+    Log log;
     // maps subscription ids <-> addresses
     BiMap<Integer, SimpleString> subscriptions = Maps.synchronizedBiMap(HashBiMap.<Integer, SimpleString> create());
     ParameterWithIdRequestHelper prh;
@@ -57,18 +55,17 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         this.processor = proc;
         prh = new ParameterWithIdRequestHelper(proc.getParameterRequestManager(), this);
 
-        log = LoggingUtils.getLogger(this.getClass(), proc);
+        log = new Log(getClass(), proc.getInstance());
+        log.setContext(proc.getName());
+
         yamcsSession = YamcsSession.newBuilder().build();
         SimpleString rpcAddress = Protocol.getParameterRealtimeAddress(proc.getInstance());
         yclient = yamcsSession.newClientBuilder().setRpcAddress(rpcAddress).setDataProducer(true).build();
-        yclient.rpcConsumer.setMessageHandler(new MessageHandler() {
-            @Override
-            public void onMessage(ClientMessage message) {
-                try {
-                    processRequest(message);
-                } catch (Exception e) {
-                    log.error("got error when processing request", e);
-                }
+        yclient.rpcConsumer.setMessageHandler(message -> {
+            try {
+                processRequest(message);
+            } catch (Exception e) {
+                log.error("got error when processing request", e);
             }
         });
 

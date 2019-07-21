@@ -18,6 +18,7 @@
         <include>org.yamcs:yamcs-core</include>
         <include>org.yamcs:yamcs-server</include>
         <include>org.yamcs:yamcs-tse</include>
+        <include>org.yamcs:yamcs-web</include>
       </includes>
     </dependencySet>
   </dependencySets>

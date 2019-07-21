@@ -10,16 +10,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
-import org.slf4j.Logger;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
@@ -63,7 +62,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 @ThreadSafe
 public class CcsdsTmIndex implements TmIndex {
 
-    final protected Logger log;
+    final protected Log log;
 
     // if time between two packets with the same apid is more than one hour,
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
@@ -79,7 +78,7 @@ public class CcsdsTmIndex implements TmIndex {
      * @throws IOException
      */
     public CcsdsTmIndex(String instance, boolean readonly) throws IOException {
-        log = LoggingUtils.getLogger(this.getClass(), instance);
+        log = new Log(this.getClass(), instance);
         this.yamcsInstance = instance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);

@@ -5,16 +5,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
+import org.yamcs.api.Log;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
 
@@ -42,7 +41,7 @@ public class CommandHistoryRequestManager extends AbstractService {
     Stream realtimeCmdHistoryStream;
 
     static AtomicInteger subscriptionIdGenerator = new AtomicInteger();
-    final Logger log;
+    final Log log;
     // maps strings are requested in the getCommandHistory to strings as they appear in the commnad history
     AtomicInteger extendedId = new AtomicInteger();
     final String instance;
@@ -51,7 +50,8 @@ public class CommandHistoryRequestManager extends AbstractService {
     public CommandHistoryRequestManager(Processor processor) throws ConfigurationException {
         this.processor = processor;
         this.instance = processor.getInstance();
-        log = LoggingUtils.getLogger(this.getClass(), processor);
+        log = new Log(this.getClass(), instance);
+        log.setContext(processor.getName());
     }
 
     /**

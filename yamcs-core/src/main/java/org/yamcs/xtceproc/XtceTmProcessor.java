@@ -2,21 +2,19 @@ package org.yamcs.xtceproc;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
@@ -38,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
 
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    Log log;
     private ParameterListener parameterRequestManager;
     private ContainerListener containerRequestManager;
 
@@ -48,34 +46,40 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
 
-    public XtceTmProcessor(Processor proc, YConfiguration tmProcessorConfig) {
-        log = LoggingUtils.getLogger(this.getClass(), proc);
-        this.processor = proc;
-        this.xtcedb = proc.getXtceDb();
-        tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
+    public XtceTmProcessor(Processor processor, YConfiguration tmProcessorConfig) {
+        this.processor = processor;
+        this.xtcedb = processor.getXtceDb();
+
+        log = new Log(getClass(), processor.getInstance());
+        log.setContext(processor.getName());
+
+        tmExtractor = new XtceTmExtractor(xtcedb, processor.getProcessorData());
 
         if (tmProcessorConfig != null) {
             ContainerProcessingOptions opts = new ContainerProcessingOptions();
-            opts.setIgnoreOutOfContainerEntries(tmProcessorConfig.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false));
-            opts.setExpirationTolerance(tmProcessorConfig.getDouble(CONFIG_KEY_expirationTolerance, opts.expirationTolerance));
+            opts.setIgnoreOutOfContainerEntries(
+                    tmProcessorConfig.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false));
+            opts.setExpirationTolerance(
+                    tmProcessorConfig.getDouble(CONFIG_KEY_expirationTolerance, opts.expirationTolerance));
             tmExtractor.setOptions(opts);
         }
     }
 
-    public XtceTmProcessor(Processor proc) {
-        log = LoggingUtils.getLogger(this.getClass(), proc);
-        this.processor = proc;
-        this.xtcedb = proc.getXtceDb();
-        tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
+    public XtceTmProcessor(Processor processor) {
+        this.processor = processor;
+        this.xtcedb = processor.getXtceDb();
+        log = new Log(getClass(), processor.getInstance());
+        log.setContext(processor.getName());
+        tmExtractor = new XtceTmExtractor(xtcedb, processor.getProcessorData());
     }
 
     /**
      * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
      */
     public XtceTmProcessor(XtceDb xtcedb) {
-        log = LoggerFactory.getLogger(this.getClass());
         this.processor = null;
         this.xtcedb = xtcedb;
+        log = new Log(getClass());
         tmExtractor = new XtceTmExtractor(xtcedb);
     }
 

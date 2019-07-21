@@ -2,10 +2,10 @@ package org.yamcs.tctm.ccsds;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
+import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.AggregatedDataLink;
@@ -13,7 +13,6 @@ import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -29,7 +28,7 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
     long lastFrameSeq = -1;
     EventProducer eventProducer;
     int packetLostCount;
-    private final Logger log;
+    private final Log log;
     PacketDecoder packetDecoder;
     long idleFrameCount = 0;
     PacketPreprocessor packetPreprocessor;
@@ -43,7 +42,7 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
         this.name = name;
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);

@@ -2,6 +2,7 @@ package org.yamcs.web;
 
 import java.io.IOException;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
 import org.yamcs.yarch.Bucket;
@@ -41,7 +42,7 @@ public class WebPlugin implements Plugin {
 
     @Override
     public void onLoad() throws PluginException {
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance("_global");
+        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         try {
             Bucket bucket = yarch.getBucket("displays");
             if (bucket == null) {

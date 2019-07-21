@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,14 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.slf4j.Logger;
-import org.yamcs.utils.LoggingUtils;
+import org.yamcs.api.Log;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
  * This is another implementation of the parameter cache using arrays to store primitive values (instead of storing
@@ -31,19 +29,18 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
  */
 public class ArrayParameterCache implements ParameterCache {
     SimpleParameterIdMap pidMap = new SimpleParameterIdMap();
-    final Logger log;
+    final Log log;
     long cacheStartTime = 0;
     ConcurrentHashMap<SortedIntArray, ParameterValueTable> tables = new ConcurrentHashMap<>();
     final ConcurrentHashMap<Parameter, Boolean> parametersToCache;
     final ParameterCacheConfig cacheConfig;
 
     ArrayParameterCache(String instance, ParameterCacheConfig cacheConfig) {
-        log = LoggingUtils.getLogger(this.getClass(), instance);
+        log = new Log(this.getClass(), instance);
         this.cacheConfig = cacheConfig;
         parametersToCache = cacheConfig.cacheAll ? null : new ConcurrentHashMap<>();
     }
 
-    
     @Override
     public void update(Collection<ParameterValue> pvs) {
         Map<Long, SortedParameterList> m = new HashMap<>();
@@ -94,23 +91,25 @@ public class ArrayParameterCache implements ParameterCache {
         long tmax = Long.MIN_VALUE;
         for (ParameterId p : pidlist) {
             SortedIntArray sia = findLatestTableContaining(p.id);
-            if (sia == null)
+            if (sia == null) {
                 continue;
+            }
 
             ParameterValueTable table = tables.get(sia);
             long t = table.getLastTime();
-            if (t < tmax)
+            if (t < tmax) {
                 continue;
-            
+            }
+
             ParameterValue pv = table.getLastValue(p);
-            if(t==tmax) {
-                if(result!=null && result.getAcquisitionTime() < pv.getAcquisitionTime()) {
+            if (t == tmax) {
+                if (result != null && result.getAcquisitionTime() < pv.getAcquisitionTime()) {
                     result = pv;
                 }
             } else {
                 result = pv;
             }
-            
+
             tmax = t;
         }
 
@@ -155,20 +154,23 @@ public class ArrayParameterCache implements ParameterCache {
 
         for (int i = 0; i < pidlist.size(); i++) {
             ParameterId p = pidlist.get(i);
-            if (p == null)
+            if (p == null) {
                 continue;
+            }
             pidlist.set(i, null);
 
             SortedIntArray sai = findLatestTableContaining(p.id);
-            if(sai==null)
-                continue;            
+            if (sai == null) {
+                continue;
+            }
             ParameterValueTable table = tables.get(sai);
             List<ParameterId> sublist = new ArrayList<>();
             sublist.add(p);
             for (int j = i + 1; j < pidlist.size(); j++) {
                 ParameterId p1 = pidlist.get(j);
-                if (p1 == null)
+                if (p1 == null) {
                     continue;
+                }
                 if (sai.contains(p1.id)) {
                     sublist.add(p1);
                     pidlist.set(j, null);
@@ -221,23 +223,17 @@ public class ArrayParameterCache implements ParameterCache {
                 }
             }
         }
-        //if values are retrieved from multiple tables, we need to sort them by generation time
-        //(in reverse order such that the newest is first)
-        if(needsSorting) {
-            Collections.sort(result, new Comparator<ParameterValue>() {
-                @Override
-                public int compare(ParameterValue pv1, ParameterValue pv2) {
-                    return Long.compare(pv2.getGenerationTime(), pv1.getGenerationTime());
-                }
-            });
+        // if values are retrieved from multiple tables, we need to sort them by generation time
+        // (in reverse order such that the newest is first)
+        if (needsSorting) {
+            Collections.sort(result, (pv1, pv2) -> Long.compare(pv2.getGenerationTime(), pv1.getGenerationTime()));
         }
-        if(result.isEmpty()) {
+        if (result.isEmpty()) {
             return null;
         }
         return result;
     }
-    
-    
+
     private List<ParameterId> getParameterIds(List<Parameter> pdefList) {
         List<ParameterId> result = new ArrayList<>();
         for (Parameter pdef : pdefList) {
@@ -314,12 +310,13 @@ public class ArrayParameterCache implements ParameterCache {
         }
 
         Parameter getParameterForPid(int x) {
-            for(Map.Entry<Parameter, Map<Integer, Integer>> me: p2pidCache.entrySet())
-                for(Map.Entry<Integer, Integer> me1: me.getValue().entrySet()) {
-                    if(x==me1.getValue()) {
+            for (Map.Entry<Parameter, Map<Integer, Integer>> me : p2pidCache.entrySet()) {
+                for (Map.Entry<Integer, Integer> me1 : me.getValue().entrySet()) {
+                    if (x == me1.getValue()) {
                         return me.getKey();
                     }
                 }
+            }
             return null;
         }
 
@@ -391,16 +388,9 @@ public class ArrayParameterCache implements ParameterCache {
     /**
      * Stores values for list of parameters of predefined types
      * 
-     * It's like a big table:
-     * t0, ev01, rv01, ps01, ev02, rv02, ps02 ...
-     * t1, ev11, rv11, ps11, ev12, rv12, ps12 ...
-     * ....
+     * It's like a big table: t0, ev01, rv01, ps01, ev02, rv02, ps02 ... t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
      * 
-     * where:
-     * t = timestamp
-     * ev = engineering value
-     * rv = raw value
-     * ps = parameter status
+     * where: t = timestamp ev = engineering value rv = raw value ps = parameter status
      *
      * Each column is stored as an array of different type (depending on the parameter type). The array works as a
      * circular list
@@ -518,7 +508,7 @@ public class ArrayParameterCache implements ParameterCache {
                 int row = _head;
                 do {
                     row = (row - 1) & n;
-                    if(generationTimeColumn[row]>start && generationTimeColumn[row]<=stop) {
+                    if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
                         result.add(getParameterValue(row, col, p));
                     }
                 } while (row != _tail);
@@ -543,8 +533,8 @@ public class ArrayParameterCache implements ParameterCache {
             }
             pv.setGenerationTime(generationTimeColumn[row]);
             pv.setAcquisitionTime(acquisitionTimeColumns[col][row]);
-            
-            pv.setStatus((ParameterStatus)((Object[])statusColumns[col])[row]);
+
+            pv.setStatus((ParameterStatus) ((Object[]) statusColumns[col])[row]);
             return pv;
         }
 
@@ -567,7 +557,7 @@ public class ArrayParameterCache implements ParameterCache {
             case TIMESTAMP:
                 return ValueUtility.getTimestampValue(((long[]) o)[idx]);
             case STRING:
-                return ValueUtility.getStringValue((String)((Object[]) o)[idx]);
+                return ValueUtility.getStringValue((String) ((Object[]) o)[idx]);
             case BINARY:
                 return ValueUtility.getBinaryValue((byte[]) (((Object[]) o)[idx]));
             case AGGREGATE:
@@ -575,7 +565,7 @@ public class ArrayParameterCache implements ParameterCache {
             case ENUMERATED:
                 return (Value) (((Object[]) o)[idx]);
             default:
-                throw new IllegalStateException("Unknown type " + type); 
+                throw new IllegalStateException("Unknown type " + type);
             }
         }
 
@@ -600,10 +590,10 @@ public class ArrayParameterCache implements ParameterCache {
                 storeValue(rawValueColumns[col], row, v);
             }
             ParameterStatus status = pv.getStatus();
-            
-            if(row>0) { //avoid filling up memory with identical ParameterStatus
-                ParameterStatus prevStatus = (ParameterStatus)((Object[])statusColumns[col])[row-1];
-                if(prevStatus.equals(status)) {
+
+            if (row > 0) { // avoid filling up memory with identical ParameterStatus
+                ParameterStatus prevStatus = (ParameterStatus) ((Object[]) statusColumns[col])[row - 1];
+                if (prevStatus.equals(status)) {
                     status = prevStatus;
                 }
             }
@@ -670,7 +660,7 @@ public class ArrayParameterCache implements ParameterCache {
             case UINT64:
             case TIMESTAMP:
                 return new long[INITIAL_CAPACITY];
-            case STRING:                
+            case STRING:
             case BINARY:
             case AGGREGATE:
             case ARRAY:

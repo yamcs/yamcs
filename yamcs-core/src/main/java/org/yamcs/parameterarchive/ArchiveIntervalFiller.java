@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
+import org.yamcs.api.Log;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -25,10 +25,10 @@ public class ArchiveIntervalFiller {
     final ParameterGroupIdDb parameterGroupIdMap;
     int numParams;
     final int maxSegmentSize;
-    final private Logger log;
+    final private Log log;
     final long intervalStart;
 
-    public ArchiveIntervalFiller(ParameterArchive parchive, Logger log, long intervalStart, int maxSegmentSize) {
+    public ArchiveIntervalFiller(ParameterArchive parchive, Log log, long intervalStart, int maxSegmentSize) {
         this.parchive = parchive;
         this.parameterGroupIdMap = parchive.getParameterGroupIdDb();
         this.maxSegmentSize = maxSegmentSize;
@@ -49,8 +49,9 @@ public class ArchiveIntervalFiller {
                 k -> new PGSegment(parameterGroupId, intervalStart, pvList.getPids()));
 
         if (t < pgs.getSegmentStart()) {
-            log.warn("Ignoring parameter data ({} parameters) because the time {} is too old for this segment starting at {}"
-                    + "(this may happen in case of badly ordered high frequency data)",
+            log.warn(
+                    "Ignoring parameter data ({} parameters) because the time {} is too old for this segment starting at {}"
+                            + "(this may happen in case of badly ordered high frequency data)",
                     pvList.size(),
                     TimeEncoding.toString(t), TimeEncoding.toString(pgs.getSegmentStart()));
             return;
@@ -71,7 +72,7 @@ public class ArchiveIntervalFiller {
                 TimeEncoding.toString(intervalStart),
                 TimeEncoding.toString(ParameterArchive.getIntervalEnd(intervalStart)),
                 pgSegments.size());
-        
+
         for (PGSegment pgs : pgSegments.values()) {
             if (pgs.size() > 0) {
                 parchive.writeToArchive(pgs);

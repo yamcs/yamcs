@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpService;
@@ -86,7 +87,7 @@ public class CfdpRestHandler extends RestHandler {
 
         String objectName = request.getObjectName();
 
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
+        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
 
         Bucket bucket;
         try {

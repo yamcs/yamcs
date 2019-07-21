@@ -11,12 +11,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.Processor;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
@@ -30,7 +30,6 @@ import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
@@ -60,7 +59,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     CommandHistoryPublisher commandHistoryPublisher;
     CommandingManager commandingManager;
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<>();
-    private final Logger log;
+    private final Log log;
 
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<>();
 
@@ -88,7 +87,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.commandingManager = commandingManager;
 
         yproc = commandingManager.getChannel();
-        log = LoggingUtils.getLogger(this.getClass(), yproc);
+        log = new Log(this.getClass(), yproc.getInstance());
+        log.setContext(yproc.getName());
         this.commandHistoryPublisher = yproc.getCommandHistoryPublisher();
         this.commandReleaser = yproc.getCommandReleaser();
         this.instance = yproc.getInstance();

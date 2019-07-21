@@ -10,27 +10,24 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Processor;
+import org.yamcs.YConfiguration;
+import org.yamcs.api.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.utils.LoggingUtils;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
-
-import org.yamcs.YConfiguration;
-import org.yamcs.Processor;
 
 /**
  * Realtime archive filler task - it works even if the data is not perfectly sorted
  * 
- * We can save data in max two intervals at a time. The first interval we keep open only as long as
- * the most recent timestamp received is not older than orderingThreshold ms from the interval end
+ * We can save data in max two intervals at a time. The first interval we keep open only as long as the most recent
+ * timestamp received is not older than orderingThreshold ms from the interval end
  * 
  * 
  * When we receive a new delivery, we sort the parameters into groups, all parameter from the same group having the same
- * timestamp
- * One group corresponds to a set of parameter,types and is written in a segment.
+ * timestamp One group corresponds to a set of parameter,types and is written in a segment.
  * 
  * We keep open max two segments for each group, one in each interval.
  * 
@@ -48,7 +45,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
     protected final ParameterIdDb parameterIdMap;
     protected final ParameterGroupIdDb parameterGroupIdMap;
     final ParameterArchive parameterArchive;
-    final private Logger log;
+    final private Log log;
     final BlockingQueue<List<ParameterValue>> queue = new ArrayBlockingQueue<>(10);
 
     // max allowed time for old data
@@ -63,7 +60,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
         this.yamcsInstance = parameterArchive.getYamcsInstance();
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
 
         if (config != null) {
             parseConfig(config);
@@ -87,7 +84,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
             }
             if (first == null) { // this is the first delivery
                 long t = items.stream().mapToLong(pv -> pv.getGenerationTime()).min().getAsLong();
-                first = new ArchiveIntervalFiller(parameterArchive, log, 
+                first = new ArchiveIntervalFiller(parameterArchive, log,
                         ParameterArchive.getIntervalStart(t), maxSegmentSize);
             }
             long t = processParameters(items);
@@ -173,15 +170,15 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
             long t = entry.getKey();
             BasicParameterList pvList = entry.getValue();
             long is = ParameterArchive.getIntervalStart(t);
-            if(is == first.intervalStart) {
-                first.addParameters(t, pvList);    
+            if (is == first.intervalStart) {
+                first.addParameters(t, pvList);
             } else {
-                if(second==null) {
+                if (second == null) {
                     second = new ArchiveIntervalFiller(parameterArchive, log, is, maxSegmentSize);
                 }
                 second.addParameters(t, pvList);
             }
-            
+
             if (t > maxTimestamp) {
                 maxTimestamp = t;
             }

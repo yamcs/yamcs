@@ -6,8 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.yamcs.utils.LoggingUtils;
+import org.yamcs.api.Log;
 
 /**
  * Streams are means to transport tuples.
@@ -26,7 +25,7 @@ public abstract class Stream {
 
     protected volatile int state = SETUP;
 
-    protected Logger log;
+    protected Log log;
 
     protected YarchDatabaseInstance ydb;
     private volatile AtomicLong dataCount = new AtomicLong();
@@ -37,7 +36,8 @@ public abstract class Stream {
         this.name = name;
         this.outputDefinition = definition;
         this.ydb = ydb;
-        log = LoggingUtils.getLogger(getClass(), ydb.getName(), this);
+        log = new Log(getClass(), ydb.getName());
+        log.setContext(name);
     }
 
     /**

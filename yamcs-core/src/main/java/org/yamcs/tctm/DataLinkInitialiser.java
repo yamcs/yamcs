@@ -5,16 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.api.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.XtceDb;
@@ -41,13 +40,13 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
     private Map<String, Link> linksByName = new HashMap<>();
 
-    private final Logger log;
+    private final Log log;
 
     private String yamcsInstance;
     private YarchDatabaseInstance ydb;
 
     public DataLinkInitialiser(String yamcsInstance) throws IOException {
-        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        log = new Log(this.getClass(), yamcsInstance);
 
         this.yamcsInstance = yamcsInstance;
         YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);

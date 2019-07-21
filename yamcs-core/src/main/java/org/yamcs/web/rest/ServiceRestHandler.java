@@ -1,6 +1,7 @@
 package org.yamcs.web.rest;
 
 import org.yamcs.ServiceWithConfig;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
@@ -27,7 +28,7 @@ public class ServiceRestHandler extends RestHandler {
             throw new BadRequestException("No instance specified");
         }
         boolean global = false;
-        if (GLOBAL_INSTANCE.equals(instance)) {
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
             verifyInstance(req, instance);
@@ -57,7 +58,7 @@ public class ServiceRestHandler extends RestHandler {
             throw new BadRequestException("No instance specified");
         }
         boolean global = false;
-        if (GLOBAL_INSTANCE.equals(instance)) {
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
             verifyInstance(req, instance);
@@ -93,7 +94,7 @@ public class ServiceRestHandler extends RestHandler {
             throw new BadRequestException("No instance specified");
         }
         boolean global = false;
-        if (GLOBAL_INSTANCE.equals(instance)) {
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
             verifyInstance(req, instance);

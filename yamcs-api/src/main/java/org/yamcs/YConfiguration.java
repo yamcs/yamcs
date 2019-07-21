@@ -155,31 +155,6 @@ public class YConfiguration {
     /**
      * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
      * <p>
-     * This method is intended for use by daemons. It does not make use of the home directory of the running user, and
-     * instead resolves configuration based on the working directory.
-     */
-    public static synchronized void setupDaemon(boolean verbose) {
-        if (System.getProperty("java.util.logging.config.file") == null) {
-            String configFile;
-            if (verbose) {
-                configFile = "/default-logging/console-all.properties";
-            } else {
-                configFile = "/default-logging/console-info.properties";
-            }
-
-            try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
-                LogManager.getLogManager().readConfiguration(in);
-            } catch (Exception e) {
-                // do nothing, the default java builtin logging is used
-            }
-        }
-
-        TimeEncoding.setUp();
-    }
-
-    /**
-     * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
-     * <p>
      * This method is intended for use in unit and integration tests. It allows resolving configuration files from a
      * specific subdirectory of the classpath.
      *

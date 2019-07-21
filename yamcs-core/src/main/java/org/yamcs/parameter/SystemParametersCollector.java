@@ -13,14 +13,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.api.YamcsService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.XtceDb;
@@ -65,7 +64,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
     final Stream stream;
 
     int seqCount = 0;
-    private final Logger log;
+    private final Log log;
 
     private final String namespace;
     private final String serverId;
@@ -80,7 +79,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
 
     public SystemParametersCollector(String instance, YConfiguration args) throws ConfigurationException {
         this.instance = instance;
-        log = LoggingUtils.getLogger(this.getClass(), instance);
+        log = new Log(this.getClass(), instance);
         processArgs(args);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -108,8 +107,8 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
             fileStores = new ArrayList<>();
             for (FileStore store : FileSystems.getDefault().getFileStores()) {
                 if (FILE_SYSTEM_TYPES.contains(store.type())) {
-                    if(fileStores.stream().filter(fs -> fs.name().equals(store.name())).findFirst().isPresent()) {
-                        //sometimes (e.g. docker) the same filesystem is mounted multiple times in different locations
+                    if (fileStores.stream().filter(fs -> fs.name().equals(store.name())).findFirst().isPresent()) {
+                        // sometimes (e.g. docker) the same filesystem is mounted multiple times in different locations
                         log.debug("Do not adding duplicate store '{}' to the file stores to be monitored", store);
                     } else {
                         log.debug("Adding store '{}' to the file stores to be monitored", store);

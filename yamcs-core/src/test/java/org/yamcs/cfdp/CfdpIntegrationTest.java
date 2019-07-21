@@ -27,7 +27,6 @@ import org.yamcs.protobuf.Cfdp.TransferDirection;
 import org.yamcs.protobuf.Cfdp.TransferInfo;
 import org.yamcs.protobuf.Cfdp.TransferState;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.web.rest.BucketRestHandler;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -63,7 +62,7 @@ public class CfdpIntegrationTest {
         YConfiguration.setupTest("cfdp");
         YamcsServer.setupYamcsServer();
 
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(BucketRestHandler.GLOBAL_INSTANCE);
+        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
     }

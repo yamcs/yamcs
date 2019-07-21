@@ -51,7 +51,7 @@ public class SecurityStore {
 
     public SecurityStore() throws InitException {
         Path dataDir = YamcsServer.getServer().getDataDirectory();
-        storageDir = dataDir.resolve("_global");
+        storageDir = dataDir.resolve(YamcsServer.GLOBAL_INSTANCE);
 
         YConfiguration config = readConfig();
 

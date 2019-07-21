@@ -2,11 +2,10 @@ package org.yamcs.archive;
 
 import java.util.Arrays;
 
-import org.slf4j.Logger;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.api.Log;
 import org.yamcs.api.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
-import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -25,12 +24,12 @@ import com.google.common.util.concurrent.AbstractService;
 public class CommandHistoryRecorder extends AbstractService implements YamcsService {
     final String instance;
     static TupleDefinition eventTpdef;
-    final Logger log;
+    final Log log;
     final public static String TABLE_NAME = "cmdhist";
 
     public CommandHistoryRecorder(String instance) {
         this.instance = instance;
-        log = LoggingUtils.getLogger(this.getClass(), instance);
+        log = new Log(this.getClass(), instance);
     }
 
     @Override

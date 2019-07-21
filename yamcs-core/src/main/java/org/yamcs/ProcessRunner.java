@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsService;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
@@ -84,6 +84,7 @@ public class ProcessRunner extends AbstractService implements YamcsService {
         new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(line -> {
+                    line = CharMatcher.whitespace().trimTrailingFrom(line);
                     switch (logLevel) {
                     case "DEBUG":
                         log.debug("{}{}", logPrefix, line);
