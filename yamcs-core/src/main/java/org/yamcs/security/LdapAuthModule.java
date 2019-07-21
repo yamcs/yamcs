@@ -2,7 +2,6 @@ package org.yamcs.security;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
 import javax.naming.Context;
@@ -17,6 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 
 public class LdapAuthModule implements AuthModule {
 
@@ -33,31 +35,48 @@ public class LdapAuthModule implements AuthModule {
     private static final Hashtable<String, String> contextEnv = new Hashtable<>();
     private static final Logger log = LoggerFactory.getLogger(LdapAuthModule.class);
 
-    public LdapAuthModule(Map<String, Object> config) {
-        String host = YConfiguration.getString(config, "host");
-        userPath = YConfiguration.getString(config, "userPath");
-        rolePath = YConfiguration.getString(config, "rolePath");
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("userPath", OptionType.STRING).withRequired(true);
+        spec.addOption("rolePath", OptionType.STRING).withRequired(true);
+        spec.addOption("systemPath", OptionType.STRING);
+        spec.addOption("tmParameterPath", OptionType.STRING);
+        spec.addOption("tmParameterSetPath", OptionType.STRING);
+        spec.addOption("tmPacketPath", OptionType.STRING);
+        spec.addOption("tcPath", OptionType.STRING);
+        spec.addOption("streamPath", OptionType.STRING);
+        spec.addOption("cmdHistoryPath", OptionType.STRING);
+        return spec;
+    }
 
-        if (config.containsKey("systemPath")) {
-            systemPrivPath = YConfiguration.getString(config, "systemPath");
+    @Override
+    public void init(YConfiguration args) throws InitException {
+        String host = args.getString("host");
+        userPath = args.getString("userPath");
+        rolePath = args.getString("rolePath");
+
+        if (args.containsKey("systemPath")) {
+            systemPrivPath = args.getString("systemPath");
         }
-        if (config.containsKey("tmParameterPath")) {
-            tmParaPrivPath = YConfiguration.getString(config, "tmParameterPath");
+        if (args.containsKey("tmParameterPath")) {
+            tmParaPrivPath = args.getString("tmParameterPath");
         }
-        if (config.containsKey("tmParameterSetPath")) {
-            tmParaSetPrivPath = YConfiguration.getString(config, "tmParameterSetPath");
+        if (args.containsKey("tmParameterSetPath")) {
+            tmParaSetPrivPath = args.getString("tmParameterSetPath");
         }
-        if (config.containsKey("tmPacketPath")) {
-            tmPacketPrivPath = YConfiguration.getString(config, "tmPacketPath");
+        if (args.containsKey("tmPacketPath")) {
+            tmPacketPrivPath = args.getString("tmPacketPath");
         }
-        if (config.containsKey("tcPath")) {
-            tcPrivPath = YConfiguration.getString(config, "tcPath");
+        if (args.containsKey("tcPath")) {
+            tcPrivPath = args.getString("tcPath");
         }
-        if (config.containsKey("streamPath")) {
-            streamPrivPath = YConfiguration.getString(config, "streamPath");
+        if (args.containsKey("streamPath")) {
+            streamPrivPath = args.getString("streamPath");
         }
-        if (config.containsKey("cmdHistoryPath")) {
-            cmdHistoryPrivPath = YConfiguration.getString(config, "cmdHistoryPath");
+        if (args.containsKey("cmdHistoryPath")) {
+            cmdHistoryPrivPath = args.getString("cmdHistoryPath");
         }
         contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         contextEnv.put(Context.PROVIDER_URL, "ldap://" + host);

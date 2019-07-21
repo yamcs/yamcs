@@ -1,5 +1,8 @@
 package org.yamcs.security;
 
+import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
 import org.yamcs.web.AuthHandler;
 
 /**
@@ -12,6 +15,24 @@ import org.yamcs.web.AuthHandler;
  * @author nm
  */
 public interface AuthModule {
+
+    /**
+     * Returns the valid configuration of the input args of this AuthModule.
+     * 
+     * @return the argument specification.
+     */
+    Spec getSpec();
+
+    /**
+     * Initialize this AuthModule.
+     * 
+     * @param args
+     *            The configured arguments for this AuthModule. If {@link #getSpec()} is implemented then this contains
+     *            the arguments after being validated (including any defaults).
+     * @throws InitException
+     *             When something goes wrong during the execution of this method.
+     */
+    void init(YConfiguration args) throws InitException;
 
     /**
      * Identify the subject based on the given information.

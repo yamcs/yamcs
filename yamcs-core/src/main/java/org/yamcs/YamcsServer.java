@@ -315,7 +315,11 @@ public class YamcsServer {
         Files.createDirectories(globalDir);
         Files.createDirectories(instanceDefDir);
 
-        securityStore = new SecurityStore();
+        try {
+            securityStore = new SecurityStore();
+        } catch (InitException e) {
+            throw new ConfigurationException(e);
+        }
 
         for (File f : instanceDefDir.toFile().listFiles()) {
             boolean online;

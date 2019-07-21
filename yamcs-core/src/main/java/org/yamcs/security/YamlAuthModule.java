@@ -12,6 +12,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.utils.YObjectLoader;
 
 public class YamlAuthModule implements AuthModule {
@@ -23,16 +26,27 @@ public class YamlAuthModule implements AuthModule {
     private Map<String, Map<String, Object>> userDefs = new HashMap<>();
     private Map<String, Map<String, Object>> roleDefs = new HashMap<>();
 
-    public YamlAuthModule() throws IOException {
-        this(Collections.emptyMap());
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("required", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("hasher", OptionType.STRING);
+        return spec;
     }
 
-    public YamlAuthModule(Map<String, Object> config) throws IOException {
-        required = YConfiguration.getBoolean(config, "required", false);
-        if (config.containsKey("hasher")) {
-            String className = YConfiguration.getString(config, "hasher");
-            passwordHasher = YObjectLoader.loadObject(className);
+    @Override
+    public void init(YConfiguration args) throws InitException {
+        required = args.getBoolean("required");
+        if (args.containsKey("hasher")) {
+            String className = args.getString("hasher");
+            try {
+                passwordHasher = YObjectLoader.loadObject(className);
+            } catch (IOException e) {
+                throw new InitException("Could not load configured hasher", e);
+            }
         }
+
+        // Read from users.yaml
         if (YConfiguration.isDefined("users")) {
             YConfiguration yconf = YConfiguration.getConfiguration("users");
             Map<String, Object> userConfig = yconf.getRoot();
@@ -44,6 +58,8 @@ public class YamlAuthModule implements AuthModule {
                 }
             }
         }
+
+        // Read from roles.yaml
         if (YConfiguration.isDefined("roles")) {
             YConfiguration yconf = YConfiguration.getConfiguration("roles");
             Map<String, Object> roleConfig = yconf.getRoot();

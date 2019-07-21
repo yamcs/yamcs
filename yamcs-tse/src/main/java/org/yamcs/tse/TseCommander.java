@@ -42,7 +42,7 @@ public class TseCommander extends ProcessRunner {
         args.put("command", Arrays.asList(
                 new File(System.getProperty("java.home"), "bin/java").toString(),
                 "-cp", System.getProperty("java.class.path"),
-                "org.yamcs.tse.TseCommander",
+                TseCommander.class.getName(),
                 "--telnet-port", "" + telnetPort,
                 "--tctm-port", "" + tctmPort));
         args.put("logPrefix", "");

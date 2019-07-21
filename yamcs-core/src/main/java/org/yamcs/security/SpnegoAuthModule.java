@@ -28,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.AuthModuleHttpHandler;
 import org.yamcs.web.HttpRequestHandler;
@@ -57,23 +60,13 @@ import io.netty.util.CharsetUtil;
  */
 public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
 
-    final String krbRealm; // if not null, only users from this domain will be accepted
-    final boolean stripRealm; // if true, domain has to be not null and will be stripped from the username
-
-    Map<String, SpnegoAuthenticationInfo> code2info = new ConcurrentHashMap<>();
-    final long AUTH_CODE_VALIDITY = 10000;
     private static final Logger log = LoggerFactory.getLogger(SpnegoAuthModule.class);
 
-    private final LoginContext yamcsLogin;
-    final GSSManager gssManager;
+    private static final String NEGOTIATE = "Negotiate";
+    private static final SecureRandom secureRandom = new SecureRandom();
 
-    GSSCredential yamcsCred;
-
-    static final String NEGOTIATE = "Negotiate";
-    static final SecureRandom secureRandom = new SecureRandom();
-
-    static Oid krb5Oid;
-    static Oid spnegoOid;
+    private static Oid krb5Oid;
+    private static Oid spnegoOid;
     static {
         try {
             spnegoOid = new Oid("1.3.6.1.5.5.2");
@@ -83,15 +76,39 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         }
     }
 
-    public SpnegoAuthModule(Map<String, Object> config) {
-        if (config.containsKey("krb5.conf")) {
-            System.setProperty("java.security.krb5.conf", YConfiguration.getString(config, "krb5.conf"));
+    private String krbRealm; // if not null, only users from this domain will be accepted
+    private boolean stripRealm; // if true, domain has to be not null and will be stripped from the username
+
+    private Map<String, SpnegoAuthenticationInfo> code2info = new ConcurrentHashMap<>();
+    private final long AUTH_CODE_VALIDITY = 10000;
+
+    private LoginContext yamcsLogin;
+    private GSSManager gssManager;
+
+    private GSSCredential yamcsCred;
+
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("krb5.conf", OptionType.STRING);
+        spec.addOption("jaas.conf", OptionType.STRING);
+        spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("krbRealm", OptionType.STRING);
+        return spec;
+    }
+
+    @Override
+    public void init(YConfiguration args) throws InitException {
+        if (args.containsKey("krb5.conf")) {
+            System.setProperty("java.security.krb5.conf", args.getString("krb5.conf"));
         }
-        if (config.containsKey("jaas.conf")) {
-            System.setProperty("java.security.auth.login.config", YConfiguration.getString(config, "jaas.conf"));
+        if (args.containsKey("jaas.conf")) {
+            System.setProperty("java.security.auth.login.config", args.getString("jaas.conf"));
         }
-        stripRealm = YConfiguration.getBoolean(config, "stripRealm", false);
-        krbRealm = YConfiguration.getString(config, "krbRealm", null);
+        stripRealm = args.getBoolean("stripRealm");
+        if (args.containsKey("krbRealm")) {
+            krbRealm = args.getString("krbRealm");
+        }
 
         try {
             yamcsLogin = new LoginContext("Yamcs", new TextCallbackHandler());

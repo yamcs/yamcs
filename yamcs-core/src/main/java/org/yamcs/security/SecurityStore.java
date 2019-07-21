@@ -3,7 +3,6 @@ package org.yamcs.security;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
+import org.yamcs.api.InitException;
+import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
+import org.yamcs.api.ValidationException;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yaml.snakeyaml.Yaml;
@@ -45,61 +49,43 @@ public class SecurityStore {
     private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
     private AtomicBoolean dirty = new AtomicBoolean();
 
-    @SuppressWarnings("unchecked")
-    public SecurityStore() {
-        YConfiguration yamcsConf = YConfiguration.getConfiguration("yamcs");
-        String dataDir = yamcsConf.getString("dataDir");
-        storageDir = Paths.get(dataDir).resolve("_global");
+    public SecurityStore() throws InitException {
+        Path dataDir = YamcsServer.getServer().getDataDirectory();
+        storageDir = dataDir.resolve("_global");
 
-        YConfiguration yconf;
-        if (YConfiguration.isDefined("security")) {
-            yconf = YConfiguration.getConfiguration("security");
-        } else {
-            yconf = YConfiguration.emptyConfig();
-        }
+        YConfiguration config = readConfig();
 
-        enabled = yconf.getBoolean("enabled", false);
+        enabled = config.getBoolean("enabled");
         if (enabled) {
-            if (yconf.containsKey("authModules")) {
-                for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
-                    log.info("Loading AuthModule " + YConfiguration.getString(moduleConf, "class"));
-                    try {
-                        AuthModule authModule = YObjectLoader.loadObject(moduleConf);
-                        authModules.add(authModule);
-                    } catch (IOException e) {
-                        throw new ConfigurationException("Failed to load AuthModule", e);
-                    }
-                }
+            for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
+                AuthModule authModule = loadAuthModule(moduleConfig);
+                authModules.add(authModule);
             }
         } else {
             log.warn("Security disabled");
-            if (yconf.containsKey("unauthenticatedUser")) {
-                YConfiguration userProps = yconf.getConfig("unauthenticatedUser");
-                String username = userProps.getString("username");
-                if (username.isEmpty() || username.contains(":")) {
-                    throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
-                }
+            YConfiguration userProps = config.getConfig("unauthenticatedUser");
+            String username = userProps.getString("username");
+            if (username.isEmpty() || username.contains(":")) {
+                throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
+            }
 
-                unauthenticatedUser = new User(username);
-                unauthenticatedUser.setSuperuser(userProps.getBoolean("superuser", false));
-                if (userProps.containsKey("privileges")) {
-                    Map<String, Object> privileges = userProps.getMap("privileges");
-                    privileges.forEach((typeString, objects) -> {
-                        if (typeString.equals("System")) {
-                            for (String name : (List<String>) objects) {
-                                unauthenticatedUser.addSystemPrivilege(new SystemPrivilege(name));
-                            }
-                        } else {
-                            ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
-                            for (String object : (List<String>) objects) {
-                                unauthenticatedUser.addObjectPrivilege(new ObjectPrivilege(type, object));
-                            }
+            unauthenticatedUser = new User(username);
+            unauthenticatedUser.setSuperuser(userProps.getBoolean("superuser"));
+            if (userProps.containsKey("privileges")) {
+                YConfiguration privilegeConfigs = userProps.getConfig("privileges");
+                for (String privilegeName : privilegeConfigs.getKeys()) {
+                    List<String> objects = privilegeConfigs.getList(privilegeName);
+                    if (privilegeName.equals("System")) {
+                        for (String object : objects) {
+                            unauthenticatedUser.addSystemPrivilege(new SystemPrivilege(object));
                         }
-                    });
+                    } else {
+                        ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
+                        for (String object : objects) {
+                            unauthenticatedUser.addObjectPrivilege(new ObjectPrivilege(type, object));
+                        }
+                    }
                 }
-            } else {
-                unauthenticatedUser = new User("admin");
-                unauthenticatedUser.setSuperuser(true);
             }
         }
 
@@ -124,6 +110,68 @@ public class SecurityStore {
                 }
             }
         }, 5000L, 5000L, TimeUnit.MILLISECONDS);
+    }
+
+    private AuthModule loadAuthModule(YConfiguration moduleConfig) throws InitException {
+        String moduleClass = moduleConfig.getString("class");
+        YConfiguration moduleArgs = YConfiguration.emptyConfig();
+        if (moduleConfig.containsKey("args")) {
+            moduleArgs = moduleConfig.getConfig("args");
+        }
+        log.info("Loading AuthModule " + moduleClass);
+        try {
+            AuthModule authModule = YObjectLoader.loadObject(moduleClass);
+            Spec spec = authModule.getSpec();
+            if (log.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = moduleArgs.getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                log.debug("Raw args for {}: {}", moduleClass, safeArgs);
+            }
+
+            moduleArgs = spec.validate((YConfiguration) moduleArgs);
+
+            if (log.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = moduleArgs.getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                log.debug("Initializing {} with resolved args: {}", moduleArgs, safeArgs);
+            }
+            authModule.init(moduleArgs);
+            return authModule;
+        } catch (ValidationException e) {
+            throw new ConfigurationException(e);
+        } catch (IOException e) {
+            throw new ConfigurationException("Failed to load AuthModule", e);
+        }
+    }
+
+    private YConfiguration readConfig() {
+        Spec moduleSpec = new Spec();
+        moduleSpec.addOption("class", OptionType.STRING).withRequired(true);
+        moduleSpec.addOption("args", OptionType.ANY);
+
+        Spec unauthenticatedUserSpec = new Spec();
+        unauthenticatedUserSpec.addOption("username", OptionType.STRING).withDefault("admin");
+        unauthenticatedUserSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(false);
+        unauthenticatedUserSpec.addOption("privileges", OptionType.ANY);
+
+        Spec spec = new Spec();
+        spec.addOption("enabled", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("authModules", OptionType.LIST).withElementType(OptionType.MAP).withSpec(moduleSpec);
+        spec.addOption("unauthenticatedUser", OptionType.MAP).withSpec(unauthenticatedUserSpec)
+                .withApplySpecDefaults(true);
+
+        spec.when("enabled", true).requireAll("authModules");
+
+        YConfiguration yconf = YConfiguration.emptyConfig();
+        if (YConfiguration.isDefined("security")) {
+            yconf = YConfiguration.getConfiguration("security");
+        }
+        try {
+            yconf = spec.validate(yconf);
+        } catch (ValidationException e) {
+            throw new ConfigurationException(e);
+        }
+        return yconf;
     }
 
     public User getUser(String username) {
