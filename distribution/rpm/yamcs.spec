@@ -28,7 +28,7 @@ cp -r opt %{buildroot}
 %pre
 if [ "$1" = 1 -o "$1" = install ] ; then
     groupadd -r yamcs >/dev/null 2>&1 || :
-    useradd -M -r -d %{prefix} -g yamcs -s /bin/bash -c "Yamcs daemon" yamcs >/dev/null 2>&1 || :
+    useradd -M -r -d %{prefix} -g yamcs -s /bin/false -c "Yamcs daemon" yamcs >/dev/null 2>&1 || :
 fi
 
 

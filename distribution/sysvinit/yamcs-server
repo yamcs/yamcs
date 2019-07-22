@@ -48,33 +48,24 @@ case "$1" in
             for i in 4 3 2 1 0; do
                if [ -f $OUTERR.$i ] ; then mv $OUTERR.$i $OUTERR.$((i+1)) ; fi
             done
-            #written such that /etc/profile.d scripts do not trigger
-            su -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
+            su -s /bin/sh -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
             pid=`cat $PID_FILE`
             i=0
             #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded
             while [ $i -lt $WAIT_FOR_START ] ; do
                 sleep 1
                 if is_running $pid ; then
-                    yamcsstartup=`grep yamcsstartup $OUTERR.0`
-                    if [ "$yamcsstartup" != "" ] ; then
-                        stat=`echo $yamcsstartup | cut -d " " -f 2`
-                        if [ $stat = "success" ] ; then
-                            echo done
-                        else
-                            echo $yamcsstartup | cut -d " " -f 3-
-                            echo failure
-                        fi
-                        break
-                    fi
+                    yamcsstartup=`grep yamcsstartup success $OUTERR.0`
+                    echo done
+                    break
                     i=$((i+1))
                 else
-                    echo "yamcs failed to start; see $OUTERR.0 for details"
+                    echo "yamcs-server failed to start"
                     exit 1
                 fi
             done
             if [ $i -eq $WAIT_FOR_START ] ; then 
-                echo "yamcs-server didn't finish the initialization in $WAIT_FOR_START seconds"
+                echo "yamcs-server did not finish initializing in $WAIT_FOR_START seconds"
             fi
         fi
 
