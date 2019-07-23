@@ -16,11 +16,9 @@ public class CompactFormatter extends Formatter {
     public String format(LogRecord r) {
         StringBuffer sb = new StringBuffer();
 
-        // Instance must be first column because would like to make it
-        // easy to filter logs based on instance. Perhaps even adding a
-        // "logs" subcommand to yamcsadmin, although that will require
-        // that we know where the logs are actually located (not the case
-        // as long as we expose JUL logging to our users).
+        d.setTime(r.getMillis());
+        sb.append(sdf.format(d)).append(" ");
+
         String yamcsInstance = "_global";
         if (r instanceof YamcsLogRecord) {
             YamcsLogRecord yRec = (YamcsLogRecord) r;
@@ -29,9 +27,6 @@ public class CompactFormatter extends Formatter {
             }
         }
         sb.append(yamcsInstance).append(" ");
-
-        d.setTime(r.getMillis());
-        sb.append(sdf.format(d)).append(" ");
 
         String name = r.getLoggerName();
         sb.append(name).append(" [").append(r.getThreadID()).append("] ");

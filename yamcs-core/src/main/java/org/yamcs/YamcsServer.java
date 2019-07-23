@@ -3,20 +3,16 @@ package org.yamcs;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.io.Writer;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,6 +59,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
@@ -99,8 +96,8 @@ public class YamcsServer {
     @Parameter(names = { "-v", "--verbose" }, description = "Increase console log output")
     private boolean verbose;
 
-    @Parameter(names = "--pid-file", description = "File where process pid is written after full start")
-    private String pidFile;
+    @Parameter(names = { "--log-output" }, description = "Redirect stdout/stderr to the log system")
+    private boolean logOutput;
 
     @Parameter(names = { "-h", "--help" }, help = true, description = "Show usage")
     private boolean help;
@@ -881,7 +878,6 @@ public class YamcsServer {
     }
 
     /**
-     * 
      * @return the (singleton) server
      */
     public static YamcsServer getServer() {
@@ -889,24 +885,35 @@ public class YamcsServer {
     }
 
     public static void main(String[] args) {
+        // Run jcommander before setting up logging.
+        // We want this to use standard streams.
         try {
-            setupLogging();
             JCommander jcommander = new JCommander(YAMCS);
             jcommander.parse(args);
             if (YAMCS.help) {
                 jcommander.usage();
                 return;
             }
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
 
+        try {
+            setupLogging();
             TimeEncoding.setUp();
             setupYamcsServer();
-        } catch (ConfigurationException e) {
-            LOG.error("Could not start Yamcs", e);
-            System.exit(-1);
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
             System.exit(-1);
         }
+
+        // Output string to signal to wrapper scripts (e.g. init.d)
+        // that Yamcs has fully started. If you modify this, then
+        // also modify the init.d script. Remark that we use
+        // System.out instead of a log statement because the init.d
+        // wrapper does not know the location of the log files.
+        System.out.println("Yamcs started successfully");
     }
 
     private static void setupLogging() throws SecurityException, IOException {
@@ -923,22 +930,25 @@ public class YamcsServer {
             }
         }
 
-        // Intercept stdout/err for sending to the logging framework
-        // Only catches line-terminated strings, but this should cover most use cases.
-        Logger stdoutLogger = Logger.getLogger("stdout");
-        System.setOut(new PrintStream(System.out) {
-            @Override
-            public void println(String x) {
-                stdoutLogger.info(x);
-            }
-        });
-        Logger stderrLogger = Logger.getLogger("stderr");
-        System.setErr(new PrintStream(System.err) {
-            @Override
-            public void println(String x) {
-                stderrLogger.severe(x);
-            }
-        });
+        // Intercept stdout/stderr for sending to the log system. Only
+        // catches line-terminated string, but this should cover most
+        // uses cases.
+        if (YAMCS.logOutput) {
+            Logger stdoutLogger = Logger.getLogger("stdout");
+            System.setOut(new PrintStream(System.out) {
+                @Override
+                public void println(String x) {
+                    stdoutLogger.info(x);
+                }
+            });
+            Logger stderrLogger = Logger.getLogger("stderr");
+            System.setErr(new PrintStream(System.err) {
+                @Override
+                public void println(String x) {
+                    stderrLogger.severe(x);
+                }
+            });
+        }
     }
 
     public static void setupYamcsServer() throws IOException, PluginException {
@@ -955,13 +965,5 @@ public class YamcsServer {
             LOG.error(msg);
             YAMCS.globalCrashHandler.handleCrash("UncaughtException", msg);
         });
-
-        if (System.getenv("YAMCS_DAEMON") == null) {
-            LOG.info("Server running... press ctrl-c to stop");
-        } else {
-            // the init.d/yamcs-server depends on this line on the standard output, do not change it (without
-            // changing the script also)!
-            System.out.println("yamcsstartup success");
-        }
     }
 }
