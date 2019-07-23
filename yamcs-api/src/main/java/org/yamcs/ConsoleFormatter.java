@@ -65,7 +65,7 @@ public class ConsoleFormatter extends Formatter {
             sb.append(name);
         }
 
-        sb.append(" [").append(r.getThreadID()).append("] ");
+        sb.append("[").append(r.getThreadID()).append("]: ");
 
         if (r instanceof YamcsLogRecord) {
             YamcsLogRecord yRec = (YamcsLogRecord) r;

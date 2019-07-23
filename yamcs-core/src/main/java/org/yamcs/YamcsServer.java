@@ -60,6 +60,7 @@ import org.yaml.snakeyaml.Yaml;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.converters.PathConverter;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
@@ -95,6 +96,9 @@ public class YamcsServer {
 
     @Parameter(names = { "-v", "--verbose" }, description = "Increase console log output")
     private boolean verbose;
+
+    @Parameter(names = { "--log-config" }, description = "Logging configuration file", converter = PathConverter.class)
+    private Path logConfig = Paths.get("etc/logging.properties").toAbsolutePath();
 
     @Parameter(names = { "--log-output" }, description = "Redirect stdout/stderr to the log system")
     private boolean logOutput;
@@ -917,16 +921,25 @@ public class YamcsServer {
     }
 
     private static void setupLogging() throws SecurityException, IOException {
-        if (System.getProperty("java.util.logging.config.file") == null) {
-            String configFile;
-            if (YAMCS.verbose) {
-                configFile = "/default-logging/console-all.properties";
-            } else {
-                configFile = "/default-logging/console-info.properties";
-            }
 
-            try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
-                LogManager.getLogManager().readConfiguration(in);
+        // Unless JUL logging is manually configured, we will bootstrap it.
+        if (System.getProperty("java.util.logging.config.file") == null) {
+            if (Files.exists(YAMCS.logConfig)) {
+                try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
+                    LogManager.getLogManager().readConfiguration(in);
+                    LOG.info("Logging enabled using {}", YAMCS.logConfig);
+                }
+            } else {
+                // Add default console-based logging
+                String configFile;
+                if (YAMCS.verbose) {
+                    configFile = "/default-logging/console-all.properties";
+                } else {
+                    configFile = "/default-logging/console-info.properties";
+                }
+                try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
+                    LogManager.getLogManager().readConfiguration(in);
+                }
             }
         }
 
