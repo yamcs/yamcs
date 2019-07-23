@@ -1,0 +1,13 @@
+[Unit]
+Description=Yamcs
+After=network.target
+
+[Service]
+Type=forking
+User=yamcs
+Group=yamcs
+ExecStart=/opt/yamcs/bin/yamcsd
+
+[Install]
+WantedBy=multi-user.target
+Alias=yamcsd.service yamcs-server.service

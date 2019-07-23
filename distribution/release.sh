@@ -50,7 +50,7 @@ if [ $snapshot -eq 0 ]; then
     mvn versions:set versions:commit
 
     if [[ -n $(git status -s) ]]; then
-        git commit `find . -name pom.xml -maxdepth 3` -m"Prepare release yamcs-${version}"
+        git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare release yamcs-${version}"
     fi
 
     git tag yamcs-$version
@@ -106,14 +106,6 @@ mkdir -p "$rpmbuilddir/opt/packet-viewer"
 tar -xzf distribution/target/packet-viewer-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/packet-viewer"
 cat distribution/rpm/packet-viewer.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/packet-viewer.spec
 rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/packet-viewer.spec"
-
-# Legacy Yamcs Client RPM
-cp distribution/target/yamcs-client-$pomversion.tar.gz $yamcshome/distribution/target
-rpmbuilddir="$rpmtopdir/BUILD/yamcs-client-$version-$release"
-mkdir -p "$rpmbuilddir/opt/yamcs-client"
-tar -xzf distribution/target/yamcs-client-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs-client"
-cat distribution/rpm/yamcs-client.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs-client.spec
-rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs-client.spec"
 
 cd "$yamcshome"
 mv distribution/target/rpmbuild/RPMS/noarch/* distribution/target/
@@ -172,10 +164,9 @@ if [ $snapshot -eq 0 ]; then
     if [[ $version =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
         developmentVersion=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))-SNAPSHOT
         mvn versions:set -DnewVersion=$developmentVersion versions:commit
-        git commit `find . -name pom.xml -maxdepth 3` -m"Prepare next development iteration"
+        git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare next development iteration"
     else
         echo 'Failed to set development version'
         exit 1
     fi
 fi
-

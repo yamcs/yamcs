@@ -55,9 +55,10 @@ case "$1" in
             while [ $i -lt $WAIT_FOR_START ] ; do
                 sleep 1
                 if is_running $pid ; then
-                    yamcsstartup=`grep yamcsstartup success $OUTERR.0`
-                    echo done
-                    break
+                    if [ $(grep -c 'yamcsstartup success' $OUTERR.0) -eq 1 ]; then
+                        echo done
+                        break
+                    fi
                     i=$((i+1))
                 else
                     echo "yamcs-server failed to start"
@@ -85,6 +86,7 @@ case "$1" in
                         kill -TERM -$(ps -o pgid= $pid | grep -o [0-9]*)
                     else
                         rm $PID_FILE
+                        echo done
                         break
                     fi
                     sleep 1

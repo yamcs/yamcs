@@ -13,12 +13,12 @@
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>legacy-tools</artifactId>
+      <artifactId>packet-viewer</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>packet-viewer</artifactId>
+      <artifactId>yamcs-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -34,6 +34,11 @@
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-tse</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-xtce</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -73,19 +78,6 @@
                 <descriptor>packet-viewer.descriptor.xml</descriptor>
               </descriptors>
               <finalName>packet-viewer-${project.version}</finalName>
-            </configuration>
-          </execution>
-          <execution>
-            <id>yamcs-client-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>yamcs-client.descriptor.xml</descriptor>
-              </descriptors>
-              <finalName>yamcs-client-${project.version}</finalName>
             </configuration>
           </execution>
         </executions>
