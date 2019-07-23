@@ -90,6 +90,8 @@ tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$
 
 mkdir -p "$rpmbuilddir/etc/init.d"
 cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
+mkdir -p "$rpmbuilddir/usr/lib/systemd/system"
+cp -a distribution/systemd/* "$rpmbuilddir/usr/lib/systemd/system"
 cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
 
 rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
@@ -123,6 +125,9 @@ if [ $builddeb -eq 1 ]; then
     
     mkdir -p "$debbuilddir/etc/init.d"
     cp -a distribution/sysvinit/* "$debbuilddir/etc/init.d"
+    # Remark that on debian systems /lib/systemd/system is used instead of /usr/lib/systemd/system
+    mkdir -p "$debbuilddir/lib/systemd/system"
+    cp -a distribution/sysvinit/* "$debbuilddir/lib/systemd/system"
     
     mkdir $debbuilddir/DEBIAN
     cp distribution/debian/yamcs/* $debbuilddir/DEBIAN

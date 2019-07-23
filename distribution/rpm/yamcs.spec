@@ -7,7 +7,7 @@ Summary: Mission Control System
 
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
-License: AGPL (server) + LGPL (API)
+License: Affero GPL v3
 URL: https://www.yamcs.org
 Prefix: /opt/yamcs
 BuildArch: noarch
@@ -23,6 +23,7 @@ cd %{name}-%{version}-%{release}
 mkdir -p %{buildroot}
 cp -r etc %{buildroot}
 cp -r opt %{buildroot}
+cp -r usr %{buildroot}
 
 
 %pre
@@ -46,6 +47,7 @@ fi
 %config %{prefix}/mdb
 %config %{prefix}/etc
 %{prefix}/lib
+/usr/lib/systemd/system/*
 
 %dir %{prefix}/bin
 %attr(755, root, root) %{prefix}/bin/*

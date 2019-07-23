@@ -60,7 +60,7 @@ if [ "$JMX" = 1 ]; then
   JMX_OPTS="-Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 fi
 
-exec "$_RUNJAVA" $MODULE_OPTS $JAVA_OPTS $JMX_OPTS \
+"$_RUNJAVA" $MODULE_OPTS $JAVA_OPTS $JMX_OPTS \
     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ \
     -Djxl.nowarnings=true \
     -Djava.util.logging.config.file=$ETC_DIR/logging.properties \

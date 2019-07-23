@@ -6,4 +6,4 @@ Architecture: amd64
 Maintainer: Space Applications Services <yamcs@spaceapplications.com>
 Homepage: https://www.yamcs.org
 Installed-Size: @@INSTALLEDSIZE@@
-Description: Yet another mission control system
+Description: Yamcs Mission Control

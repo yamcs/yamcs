@@ -1,12 +1,16 @@
 [Unit]
-Description=Yamcs
-After=network.target
+Description=Yamcs Mission Control
+After=network-online.target
+After=remote-fs.target
+Wants=network-online.target
+Wants=remote-fs.target
 
 [Service]
 Type=forking
-User=yamcs
-Group=yamcs
-ExecStart=/opt/yamcs/bin/yamcsd
+ExecStart=/etc/init.d/yamcs-server start
+ExecStop=/etc/init.d/yamcs-server stop
+PIDFile=/var/run/yamcs-server.pid
+SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target
