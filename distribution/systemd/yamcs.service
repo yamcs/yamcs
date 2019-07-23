@@ -1,9 +1,7 @@
 [Unit]
 Description=Yamcs Mission Control
-After=network-online.target
-After=remote-fs.target
-Wants=network-online.target
-Wants=remote-fs.target
+After=network-online.target remote-fs.target
+Wants=network-online.target remote-fs.target
 
 [Service]
 Type=forking

@@ -15,7 +15,9 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <includes>
         <include>org.yamcs:packet-viewer</include>
+        <include>org.yamcs:yamcs-api</include>
         <include>org.yamcs:yamcs-core</include>
+        <include>org.yamcs:yamcs-xtce</include>
       </includes>
       <excludes>
         <exclude>org.rocksdb:*</exclude>

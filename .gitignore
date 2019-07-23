@@ -11,6 +11,4 @@ bin/
 /live/
 target/
 server.lock
-make-live-devel-local.sh
 testDispose/
-*.log

@@ -30,10 +30,6 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>../yamcs-tse/bin</directory>
-      <outputDirectory>bin</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>../yamcs-core/etc</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>

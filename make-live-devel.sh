@@ -81,10 +81,6 @@ else
     echo "-----------------------------------------------------"
 fi
 
-if [ -f make-live-devel-local.sh ]; then
-    sh make-live-devel-local.sh $TARGET
-fi
-
 # Add sample config (if not already present)
 for f in $YAMCS_HOME/yamcs-core/etc/* ; do
     case "$f" in
