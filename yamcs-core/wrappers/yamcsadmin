@@ -17,6 +17,11 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-. "$YAMCS_HOME"/bin/setclasspath.sh
+if [ -d "$JAVA_HOME" ]; then
+  _RUNJAVA="$JAVA_HOME/bin/java"
+else
+  _RUNJAVA=java
+fi
 
-exec "$_RUNJAVA" $JAVA_LIBRARY_PATH -Xmx512m org.yamcs.cli.YamcsAdminCli "$@"
+export CLASSPATH="$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
+exec "$_RUNJAVA" -Xmx512m org.yamcs.cli.YamcsAdminCli "$@"

@@ -22,10 +22,3 @@ if [ -d "$JAVA_HOME" ]; then
 else
   _RUNJAVA=java
 fi
-
-# Add module flag only if using Java later than v8
-# Java 8 doesn't work with, and Java 9+ doesn't work without.
-#case `"$_RUNJAVA" -version 2>&1` in
-#  *1.8*) ;;
-#  *) MODULE_OPTS="--add-modules java.activation" ;;
-#esac
