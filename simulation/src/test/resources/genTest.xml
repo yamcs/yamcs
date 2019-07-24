@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ppSimulation>
-    <parameterSequence>
-        <parameter spaceSystem="APM" paraName="SOLAR_toto" generationStep="2" aquisitionStep="1"/>
-    </parameterSequence>
-</ppSimulation>

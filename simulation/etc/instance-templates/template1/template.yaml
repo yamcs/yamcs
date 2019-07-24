@@ -11,7 +11,7 @@ services:
       name: "realtime"
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
-  - class: org.yamcs.simulation.simulator.SimulatorCommander
+  - class: org.yamcs.simulation.SimulatorCommander
     args:
       telnet:
         port: {{ telnetPort }}
@@ -38,8 +38,6 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
-      - type: "sheet"
-        spec: "mdb/GS-tmtc.xls"
   - type: "org.yamcs.xtce.TseLoader"
     subLoaders:
       - type: "sheet"

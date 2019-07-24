@@ -48,7 +48,7 @@ like this:
 .. code-block:: yaml
 
     ...
-        - class: org.yamcs.simulation.simulator.SimulatorCommander
+        - class: org.yamcs.simulation.SimulatorCommander
         args:
         telnet:
             port: {{ telnetPort }}
@@ -73,7 +73,7 @@ After the request is executed successfully, a file will be created: <YAMCS_DATA>
 .. code-block:: yaml
 
     ...
-        - class: org.yamcs.simulation.simulator.SimulatorCommander
+        - class: org.yamcs.simulation.SimulatorCommander
             args:
             telnet:
                 port: 30004
