@@ -3,6 +3,7 @@
   height: 5px;
   width: 29px;
   position: relative;
+  background-image: url('/static/assets/level-sprite.png')
 }
 
 .info {

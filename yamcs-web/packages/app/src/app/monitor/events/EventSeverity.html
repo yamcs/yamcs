@@ -1,42 +1,30 @@
-<!--
-  Background images urls via *.html instead of *.css.
-  This prevents an issue where assets are not correctly resolved
-  on yamcs-web rebuilds that use the ng-packagr output.
- -->
 <ng-container [ngSwitch]="severity">
   <div *ngSwitchCase="'INFO'"
         class="info"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <div *ngSwitchCase="'WATCH'"
         class="watch"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <div *ngSwitchCase="'WARNING'"
         class="warning"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <div *ngSwitchCase="'DISTRESS'"
         class="distress"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <div *ngSwitchCase="'CRITICAL'"
         class="critical"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <div *ngSwitchCase="'SEVERE'"
         class="severe"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 
   <!-- Old state. Remove in future -->
   <div *ngSwitchCase="'ERROR'"
         class="error"
-        [class.grayscale]="grayscale"
-        style="background-image: url('/static/assets/level-sprite.png')"></div>
+        [class.grayscale]="grayscale"></div>
 </ng-container>

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
+import { AuthService } from '../services/AuthService';
 
 @Component({
   templateUrl: './LoginPage.html',

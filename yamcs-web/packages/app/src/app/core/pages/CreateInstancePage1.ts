@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { InstanceTemplate } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '../services/YamcsService';
 
 
 @Component({

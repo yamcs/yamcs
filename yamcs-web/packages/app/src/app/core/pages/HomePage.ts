@@ -8,8 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
-import { AuthService } from '../../core/services/AuthService';
-import { YamcsService } from '../../core/services/YamcsService';
+import { AuthService } from '../services/AuthService';
+import { YamcsService } from '../services/YamcsService';
 
 
 @Component({
