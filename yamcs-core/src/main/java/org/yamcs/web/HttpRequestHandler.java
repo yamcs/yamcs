@@ -104,10 +104,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private AuthHandler authHandler = new AuthHandler();
     private WebsiteConfigHandler websiteConfigHandler;
     private boolean contentExpected = false;
+    private String contextPath;
 
     YConfiguration wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, YConfiguration wsConfig, YConfiguration websiteConfig) {
+    public HttpRequestHandler(String contextPath, Router apiRouter, YConfiguration wsConfig,
+            YConfiguration websiteConfig) {
+        this.contextPath = contextPath;
         this.apiRouter = apiRouter;
         this.wsConfig = wsConfig;
         websiteConfigHandler = new WebsiteConfigHandler(websiteConfig);
@@ -181,7 +184,25 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Decode URI, to correctly ignore query strings in path handling
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-        String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
+
+        // Path starts with / so path[0] is always empty
+        String[] path = qsDecoder.path().split("/", 3);
+
+        if (contextPath != null) {
+            if (path.length < 2 || !path[1].equals(contextPath)) {
+                sendPlainTextError(ctx, req, NOT_FOUND);
+                return;
+            } else {
+                // Rewrite the path so it looks as if there was no context
+                String[] realPath = path[2].split("/", 2);
+                if (realPath.length == 2) {
+                    path = new String[] { path[0], realPath[0], realPath[1] };
+                } else {
+                    path = new String[] { path[0], realPath[0] };
+                }
+            }
+        }
+
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
@@ -206,7 +227,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         case API_PATH:
             verifyAuthentication(ctx, req);
-            contentExpected = apiRouter.scheduleExecution(ctx, req, qsDecoder);
+            String uri = String.join("/", path); // Without context path [!]
+            contentExpected = apiRouter.scheduleExecution(ctx, req, uri);
             return;
         case WebSocketFrameHandler.WEBSOCKET_PATH:
             verifyAuthentication(ctx, req);

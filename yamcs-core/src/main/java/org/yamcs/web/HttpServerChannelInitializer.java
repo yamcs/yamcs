@@ -13,14 +13,16 @@ import io.netty.handler.ssl.SslContext;
 
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
+    private String contextPath;
     private Router apiRouter;
     private CorsConfig corsConfig;
     private YConfiguration wsConfig;
     private final YConfiguration websiteConfig;
     private final SslContext sslCtx;
 
-    public HttpServerChannelInitializer(SslContext sslCtx, Router apiRouter, CorsConfig corsConfig,
-            YConfiguration wsConfig, YConfiguration websiteConfig) {
+    public HttpServerChannelInitializer(SslContext sslCtx, String contextPath, Router apiRouter,
+            CorsConfig corsConfig, YConfiguration wsConfig, YConfiguration websiteConfig) {
+        this.contextPath = contextPath;
         this.apiRouter = apiRouter;
         this.corsConfig = corsConfig;
         this.wsConfig = wsConfig;
@@ -41,6 +43,6 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         }
 
         // this has to be the last handler in the pipeline
-        pipeline.addLast(new HttpRequestHandler(apiRouter, wsConfig, websiteConfig));
+        pipeline.addLast(new HttpRequestHandler(contextPath, apiRouter, wsConfig, websiteConfig));
     }
 }

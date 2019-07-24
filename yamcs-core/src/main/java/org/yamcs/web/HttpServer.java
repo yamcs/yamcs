@@ -64,8 +64,9 @@ public class HttpServer extends AbstractYamcsService {
 
     private int port;
     private int tlsPort;
+    private String contextPath;
     private boolean zeroCopyEnabled;
-    private List<String> webRoots = new ArrayList<>(2);
+    private List<String> staticRoots = new ArrayList<>(2);
     ThreadPoolExecutor executor;
     String tlsCert;
     String tlsKey;
@@ -106,6 +107,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsPort", OptionType.INTEGER);
         spec.addOption("tlsCert", OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
+        spec.addOption("contextPath", OptionType.STRING);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("webRoot", OptionType.STRING);
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
@@ -129,14 +131,15 @@ public class HttpServer extends AbstractYamcsService {
             tlsCert = config.getString("tlsCert");
             tlsKey = config.getString("tlsKey");
         }
+        contextPath = config.getString("contextPath", null);
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
 
         if (config.containsKey("webRoot")) {
             if (config.isList("webRoot")) {
                 List<String> rootConf = config.getList("webRoot");
-                webRoots.addAll(rootConf);
+                staticRoots.addAll(rootConf);
             } else {
-                webRoots.add(config.getString("webRoot"));
+                staticRoots.add(config.getString("webRoot"));
             }
         }
 
@@ -144,7 +147,7 @@ public class HttpServer extends AbstractYamcsService {
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
         executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor);
+        apiRouter = new Router(executor, contextPath);
 
         if (config.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
@@ -199,7 +202,7 @@ public class HttpServer extends AbstractYamcsService {
     }
 
     public void startServer() throws InterruptedException, SSLException, CertificateException {
-        StaticFileHandler.init(webRoots, zeroCopyEnabled);
+        StaticFileHandler.init(staticRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
         // Note that by default (i.e. with nThreads = 0), Netty will limit the number
@@ -239,8 +242,8 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(
-                        new HttpServerChannelInitializer(sslCtx, apiRouter, corsConfig, wsConfig, websiteConfig));
+                .childHandler(new HttpServerChannelInitializer(sslCtx, contextPath, apiRouter,
+                        corsConfig, wsConfig, websiteConfig));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();

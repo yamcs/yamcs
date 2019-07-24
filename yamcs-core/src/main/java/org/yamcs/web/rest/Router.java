@@ -91,6 +91,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?:(\\w+)([\\?\\*])?");
     private static final Logger log = LoggerFactory.getLogger(Router.class);
 
+    public final static int MAX_BODY_SIZE = 65536;
+    public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
+    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+
+    private String contextPath;
+
     // Order, because patterns are matched top-down in insertion order
     private List<RouteElement> defaultRoutes = new ArrayList<>();
     private List<RouteElement> dynamicRoutes = new ArrayList<>();
@@ -98,14 +105,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    public final static int MAX_BODY_SIZE = 65536;
-    public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
-    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
     private final ExecutorService offThreadExecutor;
 
-    public Router(ExecutorService executor) {
+    public Router(ExecutorService executor, String contextPath) {
         this.offThreadExecutor = executor;
+        this.contextPath = contextPath;
         registerRouteHandler(new CfdpRestHandler());
         registerRouteHandler(new ClientRestHandler());
         registerRouteHandler(new InstanceRestHandler());
@@ -221,13 +225,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
      * 
      * @param ctx
      * @param req
-     * @param qsDecoder
+     * @param uri
      * @return true if the request has been scheduled and false if the request is invalid or there was another error
      */
-    public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
+    public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, String uri) {
         try {
-            String uri = qsDecoder.path();
-
             RouteMatch match = matchURI(req.method(), uri);
             if (match == null) {
                 log.info("No route matching URI: '{}'", req.uri());
@@ -545,12 +547,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
             for (RouteElement re : defaultRoutes) {
                 re.configByMethod.values().forEach(v -> {
-                    RouteInfo.Builder builder = builders.get(v.originalPath);
+                    String path = v.originalPath;
+                    if (contextPath != null) {
+                        path = "/" + contextPath + path;
+                    }
+                    RouteInfo.Builder builder = builders.get(path);
                     if (builder == null) {
                         builder = RouteInfo.newBuilder();
-                        builders.put(v.originalPath, builder);
+                        builders.put(path, builder);
                     }
-                    builder.setUrl(v.originalPath).addMethod(v.httpMethod.toString());
+                    builder.setUrl(path).addMethod(v.httpMethod.toString());
                 });
             }
             builders.values().forEach(b -> responseb.addRoute(b));
