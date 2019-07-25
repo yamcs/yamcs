@@ -240,26 +240,12 @@ public class HttpServer extends AbstractYamcsService {
 
         if (port != -1) {
             createAndBindBootstrap(workerGroup, null, port);
+            log.debug("Serving http from {}", getHttpBaseUri());
         }
         if (tlsPort != -1) {
             SslContext sslCtx = SslContextBuilder.forServer(new File(tlsCert), new File(tlsKey)).build();
             createAndBindBootstrap(workerGroup, sslCtx, tlsPort);
-        }
-
-        try {
-            if (port != -1) {
-                log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
-            }
-            if (tlsPort != -1) {
-                log.info("Web TLS address: https://{}:{}/", InetAddress.getLocalHost().getHostName(), tlsPort);
-            }
-        } catch (UnknownHostException e) {
-            if (port != -1) {
-                log.info("Web address: http://localhost:{}/", port);
-            }
-            if (tlsPort != -1) {
-                log.info("Web TLS address: https://localhost:{}/", tlsPort);
-            }
+            log.debug("Serving https from {}", getHttpsBaseUri());
         }
     }
 
@@ -278,6 +264,56 @@ public class HttpServer extends AbstractYamcsService {
 
     public Future<?> stopServer() {
         return bossGroup.shutdownGracefully();
+    }
+
+    public boolean isHttpEnabled() {
+        return port != -1;
+    }
+
+    /**
+     * Returns a prettified rendering of the known absolute http address (including context root).
+     */
+    public String getHttpBaseUri() {
+        if (!isHttpEnabled()) {
+            return null;
+        }
+
+        StringBuilder b = new StringBuilder("http://");
+        try {
+            b.append(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException e) {
+            b.append("localhost");
+        }
+        if (port != 80) {
+            b.append(":").append(port);
+        }
+
+        return b.append(contextPath).toString();
+    }
+
+    public boolean isHttpsEnabled() {
+        return tlsPort != -1;
+    }
+
+    /**
+     * Returns a prettified rendering of the known absolute https address (including context root).
+     */
+    public String getHttpsBaseUri() {
+        if (!isHttpsEnabled()) {
+            return null;
+        }
+
+        StringBuilder b = new StringBuilder("https://");
+        try {
+            b.append(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException e) {
+            b.append("localhost");
+        }
+        if (tlsPort != 443) {
+            b.append(":").append(tlsPort);
+        }
+
+        return b.append(contextPath).toString();
     }
 
     Handler createHandler(String pathSegment) {

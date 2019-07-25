@@ -110,6 +110,7 @@ public class YamcsServer {
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
     Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
     Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
+    List<StartListener> startListeners = new ArrayList<>();
 
     private SecurityStore securityStore;
 
@@ -882,6 +883,14 @@ public class YamcsServer {
     }
 
     /**
+     * Register a listener that will be called when Yamcs has fully started. If you register a listener after Yamcs has
+     * already started, your callback will not be executed.
+     */
+    public void addStartListener(StartListener startListener) {
+        startListeners.add(startListener);
+    }
+
+    /**
      * @return the (singleton) server
      */
     public static YamcsServer getServer() {
@@ -918,6 +927,8 @@ public class YamcsServer {
         // System.out instead of a log statement because the init.d
         // wrapper does not know the location of the log files.
         System.out.println("Yamcs started successfully");
+
+        YAMCS.startListeners.forEach(StartListener::onStart);
     }
 
     private static void setupLogging() throws SecurityException, IOException {

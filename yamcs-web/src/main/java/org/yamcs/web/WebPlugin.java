@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.api.Log;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
 import org.yamcs.yarch.Bucket;
@@ -13,6 +14,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class WebPlugin implements Plugin {
 
+    private Log log = new Log(getClass());
     private String version;
 
     public WebPlugin() {
@@ -63,5 +65,16 @@ public class WebPlugin implements Plugin {
         // Angular router will interpret this and do client-side routing as needed.
         IndexHandler indexHandler = new IndexHandler(httpServer, webRoot);
         httpServer.addHandler("*", () -> indexHandler);
+
+        // print these log statements via a start listener because we want
+        // them to clearly appear in the end of the start-up phase.
+        YamcsServer.getServer().addStartListener(() -> {
+            if (httpServer.isHttpEnabled()) {
+                log.info("Website deployed at {}", httpServer.getHttpBaseUri());
+            }
+            if (httpServer.isHttpsEnabled()) {
+                log.info("Website deployed at {}", httpServer.getHttpsBaseUri());
+            }
+        });
     }
 }
