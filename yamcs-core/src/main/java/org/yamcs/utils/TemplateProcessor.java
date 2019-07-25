@@ -3,6 +3,7 @@ package org.yamcs.utils;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Stack;
 import java.util.regex.Pattern;
 
 /**
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  * 
  * <ul>
  * <li><code>{{ var }}</code> references are substituted with the provided args.
- * <li><code>{% if var %} ... {% endif %}</code> blocks are only included if the provided var is set.
+ * <li><code>{% if var %} ... {% else %} ... {% endif %}</code> blocks are only included if the provided var is set.
  * <li><code>{% comment %} ... {% endcomment %}</code> blocks are discarded.
  * </ul>
  */
@@ -24,7 +25,8 @@ public class TemplateProcessor {
 
     private String template;
 
-    private int endifExpected = 0;
+    private String lookahead;
+    private Stack<PendingCondition> pendingConditions = new Stack<>();
 
     public TemplateProcessor(String template) {
         this.template = template;
@@ -35,11 +37,15 @@ public class TemplateProcessor {
     }
 
     public String process(Map<String, Object> args) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         try (Scanner scanner = new Scanner(template)) {
             scanner.useDelimiter("\\{");
-            while (scanner.hasNext()) {
-                if (scanner.findWithinHorizon(VAR_BEGIN, 2) != null) {
+            while (lookahead != null || scanner.hasNext()) {
+                if (lookahead != null) {
+                    String tagName = lookahead;
+                    lookahead = null;
+                    processTag(scanner, tagName, args);
+                } else if (scanner.findWithinHorizon(VAR_BEGIN, 2) != null) {
                     if (scanner.findInLine(VAR_CONTINUE) == null) {
                         throw new IllegalStateException("Unclosed variable. Expected }}");
                     }
@@ -56,20 +62,7 @@ public class TemplateProcessor {
                     }
 
                     String tagName = scanner.match().group(1);
-                    switch (tagName) {
-                    case "comment":
-                        processComment(scanner);
-                        break;
-                    case "if":
-                        String condition = scanner.match().group(2).trim();
-                        processIf(scanner, condition, args);
-                        break;
-                    case "endif":
-                        processEndif(scanner);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unsupported tag '" + tagName + "'");
-                    }
+                    processTag(scanner, tagName, args);
                 } else {
                     String next = scanner.next();
                     buf.append(next);
@@ -79,24 +72,158 @@ public class TemplateProcessor {
         return buf.toString();
     }
 
+    private void processTag(Scanner scanner, String tagName, Map<String, Object> args) {
+        switch (tagName) {
+        case "comment":
+            processComment(scanner);
+            break;
+        case "if":
+            String ifCondition = scanner.match().group(2).trim();
+            processIf(scanner, ifCondition, args);
+            break;
+        case "elif":
+            String elifCondition = scanner.match().group(2).trim();
+            processElif(scanner, elifCondition, args);
+            break;
+        case "else":
+            processElse(scanner, args);
+            break;
+        case "endif":
+            processEndif(scanner);
+            break;
+        default:
+            throw new IllegalStateException("Unsupported tag '" + tagName + "'");
+        }
+    }
+
     private void processIf(Scanner scanner, String condition, Map<String, Object> args) {
-        endifExpected++;
 
         Object variableValue = getValue(condition, args);
+        boolean resolved = isTruthy(variableValue);
+        pendingConditions.add(new PendingCondition(resolved));
 
-        // Skip until matching {% endif %}
+        // Skip this clause
         // Any skipped content is otherwise unprocessed.
-        if (isFalsy(variableValue)) {
-            int returnAt = endifExpected - 1;
+        if (!resolved) {
+            int ignoredEndif = 1;
+            while (scanner.hasNext()) {
+                if (scanner.findWithinHorizon(TAG_BEGIN, 2) != null) {
+                    if (scanner.findInLine(TAG_CONTINUE) != null) {
+                        String tagName = scanner.match().group(1);
+                        switch (tagName) {
+                        case "if":
+                            ignoredEndif++;
+                            break;
+                        case "elif":
+                            if (ignoredEndif == 1) {
+                                lookahead = "elif";
+                                return;
+                            }
+                            break;
+                        case "else":
+                            if (ignoredEndif == 1) {
+                                return;
+                            }
+                            break;
+                        case "endif":
+                            if (ignoredEndif > 0) {
+                                ignoredEndif--;
+                            } else {
+                                throw new IllegalStateException("Unmatched endif tag");
+                            }
+                            if (ignoredEndif == 0) {
+                                return;
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    scanner.next();
+                }
+            }
+
+            throw new IllegalStateException("Unclosed if tag");
+        }
+    }
+
+    private void processElif(Scanner scanner, String condition, Map<String, Object> args) {
+        if (pendingConditions.isEmpty()) {
+            throw new IllegalStateException("Tag 'elif' must be preceded by a matching 'if'");
+        }
+
+        if (!pendingConditions.peek().resolved) {
+            Object variableValue = getValue(condition, args);
+            if (isTruthy(variableValue)) {
+                pendingConditions.peek().resolved = true;
+                return;
+            }
+        }
+
+        // Skip this clause.
+        // Any skipped content is otherwise unprocessed.
+        int ignoredEndif = 1;
+        while (scanner.hasNext()) {
+            if (scanner.findWithinHorizon(TAG_BEGIN, 2) != null) {
+                if (scanner.findInLine(TAG_CONTINUE) != null) {
+                    String tagName = scanner.match().group(1);
+                    switch (tagName) {
+                    case "if":
+                        ignoredEndif++;
+                        break;
+                    case "elif":
+                        if (ignoredEndif == 1) {
+                            lookahead = "elif";
+                            return;
+                        }
+                        break;
+                    case "else":
+                        if (ignoredEndif == 1) {
+                            lookahead = "else";
+                            return;
+                        }
+                        break;
+                    case "endif":
+                        if (ignoredEndif > 0) {
+                            ignoredEndif--;
+                        } else {
+                            throw new IllegalStateException("Unmatched endif tag");
+                        }
+                        if (ignoredEndif == 0) {
+                            return;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                scanner.next();
+            }
+        }
+
+        throw new IllegalStateException("Unclosed if/else tag");
+    }
+
+    private void processElse(Scanner scanner, Map<String, Object> args) {
+        if (pendingConditions.isEmpty()) {
+            throw new IllegalStateException("Tag 'else' must be preceded by a matching 'if'");
+        }
+
+        // Skip this clause
+        // Any skipped content is otherwise unprocessed.
+        if (pendingConditions.peek().resolved) {
+            int ignoredEndif = 1;
             while (scanner.hasNext()) {
                 if (scanner.findWithinHorizon(TAG_BEGIN, 2) != null) {
                     if (scanner.findInLine(TAG_CONTINUE) != null) {
                         String tagName = scanner.match().group(1);
                         if (tagName.equals("if")) {
-                            endifExpected++;
+                            ignoredEndif++;
                         } else if (tagName.equals("endif")) {
-                            processEndif(scanner);
-                            if (endifExpected == returnAt) {
+                            if (ignoredEndif > 0) {
+                                ignoredEndif--;
+                            } else {
+                                throw new IllegalStateException("Unmatched endif tag");
+                            }
+                            if (ignoredEndif == 0) {
                                 return;
                             }
                         }
@@ -106,7 +233,7 @@ public class TemplateProcessor {
                 }
             }
 
-            throw new IllegalStateException("Unclosed if tag");
+            throw new IllegalStateException("Unclosed if/else tag");
         }
     }
 
@@ -135,6 +262,10 @@ public class TemplateProcessor {
         }
     }
 
+    private boolean isTruthy(Object value) {
+        return !isFalsy(value);
+    }
+
     private boolean isFalsy(Object value) {
         if (value == null) {
             return true;
@@ -155,10 +286,10 @@ public class TemplateProcessor {
     }
 
     private void processEndif(Scanner scanner) {
-        if (endifExpected > 0) {
-            endifExpected--;
-        } else {
+        if (pendingConditions.isEmpty()) {
             throw new IllegalStateException("Unmatched endif tag");
+        } else {
+            pendingConditions.pop();
         }
     }
 
@@ -177,5 +308,14 @@ public class TemplateProcessor {
         }
 
         throw new IllegalStateException("Unclosed comment tag");
+    }
+
+    private static final class PendingCondition {
+
+        boolean resolved;
+
+        PendingCondition(boolean resolved) {
+            this.resolved = resolved;
+        }
     }
 }

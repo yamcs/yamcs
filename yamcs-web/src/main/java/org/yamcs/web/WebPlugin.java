@@ -66,8 +66,8 @@ public class WebPlugin implements Plugin {
         IndexHandler indexHandler = new IndexHandler(httpServer, webRoot);
         httpServer.addHandler("*", () -> indexHandler);
 
-        // print these log statements via a start listener because we want
-        // them to clearly appear in the end of the start-up phase.
+        // Print these log statements via a start listener because it is more helpful
+        // if they appear at the end of the boot log.
         YamcsServer.getServer().addStartListener(() -> {
             if (httpServer.isHttpEnabled()) {
                 log.info("Website deployed at {}", httpServer.getHttpBaseUri());

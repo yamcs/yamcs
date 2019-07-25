@@ -35,6 +35,38 @@ public class TemplateProcessorTest {
     }
 
     @Test
+    public void testIfElseCondition() {
+        String template = "Hello {% if a %}{{ a }}{% else %}{{ b }}{% endif %}";
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
+        assertEquals("Hello XX", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("a", "XX", "b", "YY");
+        assertEquals("Hello XX", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("b", "YY");
+        assertEquals("Hello YY", TemplateProcessor.process(template, args));
+    }
+
+    @Test
+    public void testIfElifElseCondition() {
+        String template = "Hello {% if a %}{{ a }}{% elif b %}{{ b }}{% else %}{{ c }}{% endif %}";
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
+        assertEquals("Hello XX", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("b", "YY");
+        assertEquals("Hello YY", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("c", "ZZ");
+        assertEquals("Hello ZZ", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("a", "XX", "b", "YY");
+        assertEquals("Hello XX", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("b", "YY", "c", "ZZ");
+        assertEquals("Hello YY", TemplateProcessor.process(template, args));
+    }
+
+    @Test
     public void testNestedIfCondition() {
         String template = "Hello{% if a %} {{ a }}{% if b %} and {{ b }}{% endif %}{% endif %}";
 

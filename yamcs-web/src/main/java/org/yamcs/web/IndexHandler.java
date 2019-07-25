@@ -106,7 +106,6 @@ public class IndexHandler extends Handler {
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
         webConfig.put("auth", authMap);
 
-        args.put("title", webConfig.getOrDefault("tag", "Yamcs"));
         args.put("config", webConfig);
         args.put("configJson", new Gson().toJson(webConfig));
 
