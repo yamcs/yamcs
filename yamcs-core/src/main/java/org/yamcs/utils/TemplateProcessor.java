@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
  * Processes a template source. Supported features:
  * 
  * <ul>
- * <li><code>{{ var }}</code> references are substituded with the provided args.
+ * <li><code>{{ var }}</code> references are substituted with the provided args.
  * <li><code>{% if var %} ... {% endif %}</code> blocks are only included if the provided var is set.
+ * <li><code>{% comment %} ... {% endcomment %}</code> blocks are discarded.
  * </ul>
  */
 public class TemplateProcessor {
@@ -55,6 +56,9 @@ public class TemplateProcessor {
 
                     String tagName = scanner.match().group(1);
                     switch (tagName) {
+                    case "comment":
+                        processComment(scanner);
+                        break;
                     case "if":
                         String condition = scanner.match().group(2).trim();
                         processIf(scanner, condition, args);
@@ -111,5 +115,22 @@ public class TemplateProcessor {
         } else {
             throw new IllegalStateException("Unmatched endif tag");
         }
+    }
+
+    private void processComment(Scanner scanner) {
+        while (scanner.hasNext()) {
+            if (scanner.findWithinHorizon(TAG_BEGIN, 2) != null) {
+                if (scanner.findInLine(TAG_CONTINUE) != null) {
+                    String tagName = scanner.match().group(1);
+                    if (tagName.equals("endcomment")) {
+                        return;
+                    }
+                }
+            } else {
+                scanner.next();
+            }
+        }
+
+        throw new IllegalStateException("Unclosed comment tag");
     }
 }

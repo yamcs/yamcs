@@ -50,4 +50,11 @@ public class TemplateProcessorTest {
         args = ImmutableMap.of("a", "XX", "b", "YY");
         assertEquals("Hello XX and YY", TemplateProcessor.process(template, args));
     }
+
+    @Test
+    public void testComment() {
+        String template = "Hello {{ a }}{% comment %} and {{ b }}{% endcomment %}!";
+        Map<String, String> args = ImmutableMap.of("a", "XX");
+        assertEquals("Hello XX!", TemplateProcessor.process(template, args));
+    }
 }
