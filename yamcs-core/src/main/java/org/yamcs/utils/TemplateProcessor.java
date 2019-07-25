@@ -1,5 +1,6 @@
 package org.yamcs.utils;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
 public class TemplateProcessor {
 
     private static final Pattern VAR_BEGIN = Pattern.compile("\\{\\{");
-    private static final Pattern VAR_CONTINUE = Pattern.compile("\\s?([\\w_]+)\\s?\\}\\}");
+    private static final Pattern VAR_CONTINUE = Pattern.compile("\\s?([\\w_\\.]+)\\s?\\}\\}");
 
     private static final Pattern TAG_BEGIN = Pattern.compile("\\{\\%");
     private static final Pattern TAG_CONTINUE = Pattern.compile("\\s?([\\w]+)\\s+([^\\{\\}]*)\\%\\}");
@@ -29,11 +30,11 @@ public class TemplateProcessor {
         this.template = template;
     }
 
-    public static String process(String template, Map<String, String> args) {
+    public static String process(String template, Map<String, Object> args) {
         return new TemplateProcessor(template).process(args);
     }
 
-    public String process(Map<String, String> args) {
+    public String process(Map<String, Object> args) {
         StringBuffer buf = new StringBuffer();
         try (Scanner scanner = new Scanner(template)) {
             scanner.useDelimiter("\\{");
@@ -44,7 +45,7 @@ public class TemplateProcessor {
                     }
 
                     String variableName = scanner.match().group(1).trim();
-                    String variableValue = args.get(variableName);
+                    Object variableValue = getValue(variableName, args);
                     if (variableValue == null) {
                         throw new IllegalArgumentException(String.format("Variable '%s' is not set", variableName));
                     }
@@ -78,14 +79,14 @@ public class TemplateProcessor {
         return buf.toString();
     }
 
-    private void processIf(Scanner scanner, String condition, Map<String, String> args) {
+    private void processIf(Scanner scanner, String condition, Map<String, Object> args) {
         endifExpected++;
 
-        String variableValue = args.get(condition);
+        Object variableValue = getValue(condition, args);
 
         // Skip until matching {% endif %}
         // Any skipped content is otherwise unprocessed.
-        if (variableValue == null || variableValue.trim().isEmpty()) {
+        if (isFalsy(variableValue)) {
             int returnAt = endifExpected - 1;
             while (scanner.hasNext()) {
                 if (scanner.findWithinHorizon(TAG_BEGIN, 2) != null) {
@@ -107,6 +108,50 @@ public class TemplateProcessor {
 
             throw new IllegalStateException("Unclosed if tag");
         }
+    }
+
+    private Object getValue(String name, Map<String, Object> args) {
+        return getValue(name, args, "");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object getValue(String name, Map<String, Object> args, String nameContext) {
+        int dotIndex = name.indexOf('.');
+        if (dotIndex == -1) {
+            return args.get(name);
+        } else {
+            String parentName = name.substring(0, dotIndex);
+            Object parentValue = args.get(parentName);
+            if (parentValue == null) {
+                throw new IllegalArgumentException(String.format(
+                        "Variable '%s%s' is not set", nameContext, parentName));
+            }
+            if (!(parentValue instanceof Map)) {
+                throw new IllegalArgumentException(String.format(
+                        "Variable '%s%s' is not a map", nameContext, parentName));
+            }
+            Map<String, Object> parentArgs = (Map<String, Object>) parentValue;
+            return getValue(name.substring(dotIndex + 1), parentArgs);
+        }
+    }
+
+    private boolean isFalsy(Object value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        if (value instanceof String) {
+            return ((String) value).trim().isEmpty();
+        }
+        if (value instanceof Collection) {
+            return ((Collection<?>) value).isEmpty();
+        }
+        if (value.getClass().isArray()) {
+            return ((Object[]) value).length == 0;
+        }
+        return false;
     }
 
     private void processEndif(Scanner scanner) {

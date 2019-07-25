@@ -609,7 +609,7 @@ public class YamcsServer {
      * @return
      */
     public synchronized YamcsServerInstance createInstance(String name, String template,
-            Map<String, String> templateArgs, Map<String, String> labels) {
+            Map<String, Object> templateArgs, Map<String, String> labels) {
         if (instances.containsKey("name")) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }

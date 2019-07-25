@@ -13,21 +13,21 @@ public class TemplateProcessorTest {
     @Test
     public void testProcess() {
         String template = "Hello {{ a }} and {{b}}!";
-        Map<String, String> args = ImmutableMap.of("a", "XX", "b", "YY");
+        Map<String, Object> args = ImmutableMap.of("a", "XX", "b", "YY");
         assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnsetVariable() {
         String template = "Hello {{ a }} and {{b}}!";
-        Map<String, String> args = ImmutableMap.of("a", "XX");
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
         TemplateProcessor.process(template, args);
     }
 
     @Test
     public void testIfCondition() {
         String template = "Hello {{ a }}{% if b %} and {{ b }}{% endif %}";
-        Map<String, String> args = ImmutableMap.of("a", "XX");
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX", TemplateProcessor.process(template, args));
 
         args = ImmutableMap.of("a", "XX", "b", "YY");
@@ -38,7 +38,7 @@ public class TemplateProcessorTest {
     public void testNestedIfCondition() {
         String template = "Hello{% if a %} {{ a }}{% if b %} and {{ b }}{% endif %}{% endif %}";
 
-        Map<String, String> args = ImmutableMap.of();
+        Map<String, Object> args = ImmutableMap.of();
         assertEquals("Hello", TemplateProcessor.process(template, args));
 
         args = ImmutableMap.of("a", "XX");
@@ -54,7 +54,15 @@ public class TemplateProcessorTest {
     @Test
     public void testComment() {
         String template = "Hello {{ a }}{% comment %} and {{ b }}{% endcomment %}!";
-        Map<String, String> args = ImmutableMap.of("a", "XX");
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX!", TemplateProcessor.process(template, args));
+    }
+
+    @Test
+    public void testMapVariable() {
+        String template = "Hello {{ m.a }} and {{ m.b }}!";
+        Map<String, Object> nested = ImmutableMap.of("a", "XX", "b", "YY");
+        Map<String, Object> args = ImmutableMap.of("m", nested);
+        assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
     }
 }

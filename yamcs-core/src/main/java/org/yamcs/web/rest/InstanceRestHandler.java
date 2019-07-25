@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,7 +161,7 @@ public class InstanceRestHandler extends RestHandler {
         CompletableFuture<YamcsServerInstance> cf = CompletableFuture.supplyAsync(() -> {
             try {
                 yamcsServer.createInstance(instanceName, request.getTemplate(),
-                        request.getTemplateArgsMap(),
+                        new HashMap<>(request.getTemplateArgsMap()),
                         request.getLabelsMap());
                 return yamcsServer.startInstance(instanceName);
             } catch (IOException e) {
