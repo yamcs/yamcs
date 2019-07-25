@@ -10,12 +10,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.api.MediaType;
+import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -34,14 +38,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @Sharable
 public class IndexHandler extends Handler {
 
-    private String contextPath;
+    private HttpServer httpServer;
     private Path indexFile;
 
     private String html;
     private FileTime cacheTime;
 
     public IndexHandler(HttpServer httpServer, Path webRoot) {
-        contextPath = httpServer.getContextPath();
+        this.httpServer = httpServer;
         indexFile = webRoot.resolve("index.html");
     }
 
@@ -56,9 +60,7 @@ public class IndexHandler extends Handler {
             try {
                 FileTime lastModified = Files.getLastModifiedTime(indexFile);
                 if (!lastModified.equals(cacheTime)) {
-                    String template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
-                    Map<String, String> args = ImmutableMap.of("contextPath", contextPath);
-                    html = TemplateProcessor.process(template, args);
+                    html = processTemplate();
                     cacheTime = lastModified;
                 }
             } catch (IOException e) {
@@ -82,5 +84,32 @@ public class IndexHandler extends Handler {
         } else {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String processTemplate() throws IOException {
+        String template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
+        Map<String, Object> args = new HashMap<>(2);
+        args.put("contextPath", httpServer.getContextPath());
+
+        YConfiguration httpConfig = httpServer.getConfig();
+
+        Map<String, Object> webConfig = new HashMap<>();
+
+        if (httpConfig.containsKey("website")) {
+            YConfiguration yconf = httpConfig.getConfig("website");
+            webConfig.putAll(yconf.toMap());
+        }
+
+        AuthInfo authInfo = AuthHandler.createAuthInfo();
+        String authJson = JsonFormat.printer().print(authInfo);
+        Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
+        webConfig.put("auth", authMap);
+
+        args.put("title", webConfig.getOrDefault("tag", "Yamcs"));
+        args.put("config", webConfig);
+        args.put("configJson", new Gson().toJson(webConfig));
+
+        return TemplateProcessor.process(template, args);
     }
 }

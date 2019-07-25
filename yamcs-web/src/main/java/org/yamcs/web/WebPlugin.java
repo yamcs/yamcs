@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
@@ -57,16 +56,6 @@ public class WebPlugin implements Plugin {
 
         Path webRoot = Paths.get("lib/yamcs-web");
         httpServer.addStaticRoot(webRoot);
-
-        YConfiguration httpConfig = httpServer.getConfig();
-        YConfiguration websiteConfig = (httpConfig.containsKey("website")) ? httpConfig.getConfig("website")
-                : YConfiguration.emptyConfig();
-
-        // Register a custom root handler. We don't add an api handler because
-        // those are always subject to authentication and for this path we
-        // don't want that.
-        WebsiteConfigHandler configHandler = new WebsiteConfigHandler(websiteConfig);
-        httpServer.addHandler("websiteConfig", () -> configHandler);
 
         // Set-up HTML5 deep-linking:
         // Catch any non-handled URL and make it return the contents of our index.html

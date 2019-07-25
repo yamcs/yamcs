@@ -1,11 +1,6 @@
 import { Observable } from 'rxjs';
 import { CommandQueueEntry, Value } from './monitoring';
 
-export interface WebsiteConfig {
-  auth: AuthInfo;
-  tag: string;
-}
-
 export interface AuthInfo {
   requireAuthentication: boolean;
   flow: AuthFlow[];

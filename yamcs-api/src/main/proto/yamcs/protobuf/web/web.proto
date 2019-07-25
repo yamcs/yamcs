@@ -207,8 +207,3 @@ message TokenResponse {
   optional string refresh_token = 4;
   optional yamcsManagement.UserInfo user = 5;
 }
-
-message WebsiteConfig {
-  optional AuthInfo auth = 1;
-  optional string tag = 2;
-}

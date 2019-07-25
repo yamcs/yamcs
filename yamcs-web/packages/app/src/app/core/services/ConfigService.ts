@@ -1,20 +1,19 @@
-import { APP_BASE_HREF } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
-import { WebsiteConfig, YamcsClient } from '@yamcs/client';
+import { Injectable } from '@angular/core';
+import { AuthInfo } from '@yamcs/client';
+
+export interface WebsiteConfig {
+  auth: AuthInfo;
+  tag: string;
+}
 
 @Injectable()
 export class ConfigService {
 
   private websiteConfig: WebsiteConfig;
 
-  constructor(@Inject(APP_BASE_HREF) private baseHref: string) {
-  }
-
   async loadWebsiteConfig() {
-    const client = new YamcsClient(this.baseHref);
-    return client.getWebsiteConfig().then(websiteConfig => {
-      this.websiteConfig = websiteConfig;
-    });
+    const el = document.getElementById('appConfig')!;
+    this.websiteConfig = JSON.parse(el.innerText);
   }
 
   getAuthInfo() {
