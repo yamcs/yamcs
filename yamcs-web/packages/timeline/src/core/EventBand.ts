@@ -526,7 +526,7 @@ export default class EventBand extends Band {
             'text-anchor': 'middle',
             'dominant-baseline': 'middle',
             'font-size': this.style.textSize,
-            'clip-path': `url(#${pathId})`,
+            'clip-path': `url(${window.location.href}#${pathId})`,
           }, title));
         } else {
           eventG.addChild(new Text({
@@ -537,7 +537,7 @@ export default class EventBand extends Band {
             'text-anchor': 'left',
             'dominant-baseline': 'middle',
             'font-size': this.style.textSize,
-            'clip-path': `url(#${pathId})`,
+            'clip-path': `url(${window.location.href}#${pathId})`,
           }, title));
         }
       }

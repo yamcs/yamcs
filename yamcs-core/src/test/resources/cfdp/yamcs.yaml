@@ -1,9 +1,7 @@
 services:
   - class: org.yamcs.web.HttpServer
     args:
-      webRoot: /tmp/yamcs-web
       port: 9193
-
 
 dataDir: /tmp/yamcs-cfdp-data/
 

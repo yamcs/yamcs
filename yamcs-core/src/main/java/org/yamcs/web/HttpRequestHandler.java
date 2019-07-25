@@ -50,7 +50,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.NotSslRecordException;
 import io.netty.util.AttributeKey;
@@ -73,10 +72,11 @@ import io.netty.util.ReferenceCountUtil;
  */
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
+    public static final String ANY_PATH = "*";
     private static final String API_PATH = "api";
     private static final String AUTH_PATH = "auth";
-    private static final String WEBSITE_CONFIG_PATH = "websiteConfig";
     private static final String STATIC_PATH = "static";
+    private static final String WEBSOCKET_PATH = "_websocket";
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
             .valueOf("chunkedTransferStats");
@@ -94,26 +94,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
 
     private static HttpAuthorizationChecker authChecker = new HttpAuthorizationChecker();
+    public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
+
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
-    public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
+    private HttpServer httpServer;
+    private String contextPath;
     private Router apiRouter;
     private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-    private AuthHandler authHandler = new AuthHandler();
-    private WebsiteConfigHandler websiteConfigHandler;
+    private AuthHandler authHandler;
     private boolean contentExpected = false;
-    private String contextPath;
 
     YConfiguration wsConfig;
 
-    public HttpRequestHandler(String contextPath, Router apiRouter, YConfiguration wsConfig,
-            YConfiguration websiteConfig) {
-        this.contextPath = contextPath;
+    public HttpRequestHandler(HttpServer httpServer, Router apiRouter) {
+        this.httpServer = httpServer;
         this.apiRouter = apiRouter;
-        this.wsConfig = wsConfig;
-        websiteConfigHandler = new WebsiteConfigHandler(websiteConfig);
+        wsConfig = httpServer.getConfig().getConfig("webSocket");
+        contextPath = httpServer.getContextPath();
+        authHandler = new AuthHandler(contextPath);
     }
 
     public static HttpAuthorizationChecker getAuthorizationChecker() {
@@ -125,7 +126,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpMessage) {
             DecoderResult dr = ((HttpMessage) msg).decoderResult();
             if (!dr.isSuccess()) {
-                log.warn("{} got exception decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
+                log.warn("{} Exception while decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
                 ctx.writeAndFlush(BAD_REQUEST);
                 return;
             }
@@ -182,26 +183,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             throws IOException, HttpException {
         cleanPipeline(ctx.pipeline());
 
-        // Decode URI, to correctly ignore query strings in path handling
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-
-        // Path starts with / so path[0] is always empty
-        String[] path = qsDecoder.path().split("/", 3);
-
-        if (contextPath != null) {
-            if (path.length < 2 || !path[1].equals(contextPath)) {
-                sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            } else {
-                // Rewrite the path so it looks as if there was no context
-                String[] realPath = path[2].split("/", 2);
-                if (realPath.length == 2) {
-                    path = new String[] { path[0], realPath[0], realPath[1] };
-                } else {
-                    path = new String[] { path[0], realPath[0] };
-                }
-            }
+        if (!req.uri().startsWith(contextPath)) {
+            sendPlainTextError(ctx, req, NOT_FOUND);
+            return;
         }
+
+        String pathString = HttpUtils.getPathWithoutContext(req, contextPath);
+
+        // Note: pathString starts with / so path[0] is always empty
+        String[] path = pathString.split("/", 3);
 
         switch (path[1]) {
         case STATIC_PATH:
@@ -212,25 +202,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case AUTH_PATH:
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
             ctx.pipeline().addLast(new HttpObjectAggregator(65536));
             ctx.pipeline().addLast(authHandler);
             ctx.fireChannelRead(req);
             contentExpected = true;
             return;
-        case WEBSITE_CONFIG_PATH:
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
-            ctx.pipeline().addLast(websiteConfigHandler);
-            ctx.fireChannelRead(req);
-            contentExpected = true;
-            return;
         case API_PATH:
             verifyAuthentication(ctx, req);
-            String uri = String.join("/", path); // Without context path [!]
-            contentExpected = apiRouter.scheduleExecution(ctx, req, uri);
+            contentExpected = apiRouter.scheduleExecution(ctx, req, pathString);
             return;
-        case WebSocketFrameHandler.WEBSOCKET_PATH:
+        case WEBSOCKET_PATH:
             verifyAuthentication(ctx, req);
             if (path.length == 2) { // No instance specified
                 prepareChannelForWebSocketUpgrade(ctx, req, null, null);
@@ -247,10 +229,24 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             return;
-        default:
-            // Everything else is handled client-side by the Angular router (HTML5 deep-linking)
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
         }
+
+        // Maybe a plugin registered a custom handler
+        Handler handler = httpServer.createHandler(path[1]);
+        if (handler == null) {
+            handler = httpServer.createHandler(ANY_PATH);
+        }
+        if (handler != null) {
+            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
+            ctx.pipeline().addLast(handler);
+            ctx.fireChannelRead(req);
+            contentExpected = true;
+            return;
+        }
+
+        // Too bad.
+        sendPlainTextError(ctx, req, NOT_FOUND);
     }
 
     /**
@@ -293,14 +289,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             log.error("Will close channel due to exception", cause);
         }
         ctx.close();
-    }
-
-    public static ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
-        response.headers().set(HttpHeaderNames.LOCATION, newUri);
-        log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
-                HttpResponseStatus.FOUND.code());
-        return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,

@@ -4,4 +4,4 @@ services:
 mdb: BogusSAT
 
 streamConfig:
-   tm: ["tm_realtime"]
+  tm: ["tm_realtime"]

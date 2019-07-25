@@ -7,12 +7,12 @@ import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbData
 import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo, WebsiteConfig } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
+
 export default class YamcsClient implements HttpHandler {
 
-  readonly baseUrl = '';
-  readonly apiUrl = `${this.baseUrl}/api`;
-  readonly authUrl = `${this.baseUrl}/auth`;
-  readonly staticUrl = `${this.baseUrl}/static`;
+  readonly apiUrl: string;
+  readonly authUrl: string;
+  readonly staticUrl: string;
 
   private accessToken?: string;
 
@@ -20,6 +20,12 @@ export default class YamcsClient implements HttpHandler {
 
   public connected$: Observable<boolean>;
   private webSocketClient?: WebSocketClient;
+
+  constructor(readonly baseHref = '/') {
+    this.apiUrl = `${this.baseHref}api`;
+    this.authUrl = `${this.baseHref}auth`;
+    this.staticUrl = `${this.baseHref}static`;
+  }
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -31,7 +37,7 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getWebsiteConfig() {
-    const response = await this.doFetch(`${this.baseUrl}/websiteConfig`);
+    const response = await this.doFetch(`${this.baseHref}websiteConfig`);
     return await response.json() as WebsiteConfig;
   }
 
@@ -305,7 +311,7 @@ export default class YamcsClient implements HttpHandler {
 
   private prepareWebSocketClient() {
     if (!this.webSocketClient) {
-      this.webSocketClient = new WebSocketClient();
+      this.webSocketClient = new WebSocketClient(this.baseHref);
       this.connected$ = this.webSocketClient.connected$;
     }
   }

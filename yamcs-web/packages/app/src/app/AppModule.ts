@@ -44,7 +44,14 @@ const appComponents = [
     ConfigService,
     {
       provide: APP_BASE_HREF,
-      useValue: '/',
+      useFactory: () => {
+        // base href is set in index.html so that it can be applied
+        // for loading the initial set of js resources. We also copy
+        // it here to make Angular aware of it and make it available
+        // for injection.
+        const baseEl = document.getElementsByTagName('base')[0];
+        return baseEl.getAttribute('href');
+      },
     },
     {
       provide: APP_CONFIG,

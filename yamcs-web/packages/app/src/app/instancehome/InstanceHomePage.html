@@ -24,7 +24,7 @@
                       <td><app-alarm-level [level]="alarm.severity"></app-alarm-level></td>
                       <td [ngSwitch]="alarm.type">
                         <ng-container *ngSwitchCase="'PARAMETER'">
-                          <a [routerLink]="['/monitor/parameters' + alarm.id.namespace + '/' + alarm.id.name]"
+                          <a [routerLink]="['/monitor/parameters/', alarm.id.namespace + '/' + alarm.id.name]"
                              [queryParams]="{instance: instance.name}">
                             {{ alarm.id.namespace }}/{{ alarm.id.name }}
                           </a>

@@ -9,7 +9,7 @@ export default {
     sidebarHoverBackgroundColor: '#3c3f41',
     dividerColor: '#2e2e2e',
     textColor: '#bbb',
-    hatchFill: 'url(#darkHatch)',
+    hatchFill: `url(${window.location.href}#darkHatch)`,
   },
   filters: [],
   defs: [

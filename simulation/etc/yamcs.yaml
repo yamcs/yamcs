@@ -2,7 +2,6 @@
 services:
   - class: org.yamcs.web.HttpServer
     args:
-      webRoot: lib/yamcs-web
       port: 8090
       website:
         tag: DEMO

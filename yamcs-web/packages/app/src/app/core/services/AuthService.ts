@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
@@ -21,7 +22,12 @@ export class AuthService {
   private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
 
-  constructor(private yamcsService: YamcsService, configService: ConfigService,  private router: Router) {
+  constructor(
+    private yamcsService: YamcsService,
+    configService: ConfigService,
+    private router: Router,
+    @Inject(APP_BASE_HREF) private baseHref: string,
+  ) {
     this.authInfo = configService.getAuthInfo();
 
     /*
@@ -90,7 +96,7 @@ export class AuthService {
     if (!this.authInfo.requireAuthentication) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
-        const response = await fetch('/api/user');
+        const response = await fetch(`${this.baseHref}api/user`);
         this.user$.next(new User(await response.json() as UserInfo));
       }
       return;
@@ -104,7 +110,7 @@ export class AuthService {
         // Written such that it bypasses our interceptor
         const headers = new Headers();
         headers.append('Authorization', `Bearer ${accessToken}`);
-        const response = await fetch('/api/user', { headers });
+        const response = await fetch(`${this.baseHref}api/user`, { headers });
         if (response.status === 200) {
           const user = new User(await response.json() as UserInfo);
           this.user$.next(user);

@@ -120,6 +120,7 @@ public abstract class AbstractIntegrationTest {
         HttpServer httpServer = new HttpServer();
         options = httpServer.getSpec().validate(options);
         httpServer.init(null, YConfiguration.wrap(options));
+        httpServer.addStaticRoot(Paths.get("/tmp/yamcs-web/"));
         httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();

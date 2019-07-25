@@ -46,16 +46,16 @@ public class StaticFileHandler extends RouteHandler {
     private static Mimetypes mimetypes;
     public static final int HTTP_CACHE_SECONDS = 60;
 
-    private static List<String> webRoots;
+    private static List<String> staticRoots;
     private static boolean zeroCopyEnabled;
 
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
 
-    public static void init(List<String> webRoots, boolean zeroCopyEnabled) throws ConfigurationException {
+    public static void init(List<String> staticRoots, boolean zeroCopyEnabled) throws ConfigurationException {
         if (mimetypes != null) {
             return;
         }
-        StaticFileHandler.webRoots = webRoots;
+        StaticFileHandler.staticRoots = staticRoots;
         StaticFileHandler.zeroCopyEnabled = zeroCopyEnabled;
 
         try {
@@ -66,8 +66,8 @@ public class StaticFileHandler extends RouteHandler {
     }
 
     protected File locateFile(String path) {
-        for (String webRoot : webRoots) { // Stop on first match
-            File file = new File(webRoot + File.separator + path);
+        for (String staticRoot : staticRoots) { // Stop on first match
+            File file = new File(staticRoot, path);
             if (!file.isHidden() && file.exists()) {
                 return file;
             }
@@ -86,7 +86,7 @@ public class StaticFileHandler extends RouteHandler {
         File file = locateFile(path);
 
         if (file == null) {
-            log.warn("File {} does not exist or is hidden. Searched under {}", path, webRoots);
+            log.warn("File {} does not exist or is hidden. Searched under {}", path, staticRoots);
             HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
             return;
         }

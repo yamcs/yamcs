@@ -156,7 +156,7 @@ export default class Timescale extends Band {
       style: 'overflow: visible',
     });
     if (this.scale === SCALE_1H) {
-      scaleBg['fill'] = `url(#${this.contributionId}_1h)`,
+      scaleBg['fill'] = `url(${window.location.href}#${this.contributionId}_1h)`,
       labelSvg.addChild(...this._renderHoursScale(this.opts.tz));
     } else if (this.scale === SCALE_QD) {
       labelSvg.addChild(...this._renderQuarterDaysScale(this.opts.tz));

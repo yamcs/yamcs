@@ -33,7 +33,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
@@ -57,10 +56,15 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
     private static TokenStore tokenStore = new TokenStore();
 
+    private String contextPath;
+
+    public AuthHandler(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-        String path = qsDecoder.path();
+        String path = HttpUtils.getPathWithoutContext(req, contextPath);
         if (path.equals("/auth")) {
             handleAuthInfoRequest(ctx, req);
         } else if (path.equals("/auth/token")) {

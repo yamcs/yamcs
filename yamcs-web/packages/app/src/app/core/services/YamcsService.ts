@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { Inject, Injectable } from '@angular/core';
 import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -11,7 +12,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 })
 export class YamcsService {
 
-  readonly yamcsClient = new YamcsClient();
+  readonly yamcsClient: YamcsClient;
   private selectedInstance: InstanceClient | null;
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
@@ -19,6 +20,10 @@ export class YamcsService {
 
   private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
   private timeInfoSubscription: Subscription;
+
+  constructor(@Inject(APP_BASE_HREF) baseHref: string) {
+    this.yamcsClient = new YamcsClient(baseHref);
+  }
 
   /**
    * Prepares a (new) instance.

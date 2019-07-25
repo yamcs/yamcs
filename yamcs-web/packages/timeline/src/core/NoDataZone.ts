@@ -38,7 +38,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: '100%',
-      fill: `url(#${this.style.backgroundFilter})`,
+      fill: `url(${window.location.href}#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));
     g.addChild(new Rect({
@@ -54,7 +54,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: '100%',
-      fill: `url(#${this.style.backgroundFilter})`,
+      fill: `url(${window.location.href}#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));
 

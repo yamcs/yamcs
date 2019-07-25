@@ -14,7 +14,7 @@ export default {
     sidebarForegroundColor: 'grey',
     sidebarHoverBackgroundColor: '#e9e9e9',
     dividerColor: '#d1d5da',
-    hatchFill: 'url(#crossHatch)',
+    hatchFill: `url(${window.location.href}#crossHatch)`,
     highlightCursor: 'pointer',
   },
   filters: [],

@@ -32,16 +32,13 @@ export class WebSocketClient {
 
   private requestSequence = 0;
 
-  // Toggle to distinguish original open from a reconnection.
-  private subscribeOnOpen = false;
-
-  constructor(instance?: string) {
+  constructor(baseHref: string, instance?: string) {
     const currentLocation = window.location;
     let url = 'ws://';
     if (currentLocation.protocol === 'https:') {
       url = 'wss://';
     }
-    url += `${currentLocation.host}/_websocket`;
+    url += `${currentLocation.host}${baseHref}_websocket`;
     if (instance) {
       url += `/${instance}`;
     }
@@ -53,7 +50,6 @@ export class WebSocketClient {
       closeObserver: {
         next: () => {
           this.connected$.next(false);
-          this.subscribeOnOpen = true;
         }
       },
       openObserver: {
@@ -76,9 +72,6 @@ export class WebSocketClient {
           const connectionInfo = msg[3].data as ConnectionInfo;
           this.connectionInfo$.next(connectionInfo);
           this.connected$.next(true);
-          if (this.subscribeOnOpen) {
-            this.registerSubscriptions();
-          }
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error(`Server error:  ${msg[3].et}`, msg[3].msg);
         }
@@ -519,45 +512,5 @@ export class WebSocketClient {
       payload,
     ]);
     return this.requestSequence
-  }
-
-  private registerSubscriptions() {
-    if (this.subscriptionModel.alarms) {
-      this.emit({ alarms: 'subscribe' });
-    }
-    if (this.subscriptionModel.commandQueues) {
-      this.emit({ cqueues: 'subscribe' });
-    }
-    if (this.subscriptionModel.events) {
-      this.emit({ events: 'subscribe' });
-    }
-    if (this.subscriptionModel.instance) {
-      this.emit({ instance: 'subscribe' });
-    }
-    if (this.subscriptionModel.links) {
-      this.emit({ links: 'subscribe' });
-    }
-    if (this.subscriptionModel.streams) {
-      this.emit({ streams: 'subscribe' });
-    }
-    if (this.subscriptionModel.processor) {
-      this.emit({ processor: 'subscribe' });
-    }
-    if (this.subscriptionModel.management) {
-      this.emit({ management: 'subscribe' });
-    }
-    if (this.subscriptionModel.parameters) {
-      this.emit({ parameter: 'subscribe', data: this.subscriptionModel.parameters });
-    }
-    if (this.subscriptionModel.stream) {
-      this.emit({
-        stream: 'subscribe',
-        data: {
-          stream: this.subscriptionModel.streamName,
-        }});
-    }
-    if (this.subscriptionModel.time) {
-      this.emit({ time: 'subscribe' });
-    }
   }
 }

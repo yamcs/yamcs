@@ -5,8 +5,10 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
 
@@ -74,11 +77,12 @@ public class HttpServer extends AbstractYamcsService {
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
 
-    private YConfiguration wsConfig;
-    private YConfiguration websiteConfig;
-
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
     private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
+
+    // Extra handlers at root level. Wrapped in a Supplier because
+    // we want to give the possiblity to make request-scoped instances
+    private Map<String, Supplier<Handler>> extraHandlers = new HashMap<>();
 
     @Override
     public Spec getSpec() {
@@ -107,9 +111,10 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsPort", OptionType.INTEGER);
         spec.addOption("tlsCert", OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
-        spec.addOption("contextPath", OptionType.STRING);
+        spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
-        spec.addOption("webRoot", OptionType.STRING);
+        spec.addOption("webRoot", OptionType.STRING)
+                .withDeprecationMessage("This property is automatically set by the yamcs-web jar/plugin.");
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("website", OptionType.MAP).withSpec(websiteSpec);
@@ -131,17 +136,17 @@ public class HttpServer extends AbstractYamcsService {
             tlsCert = config.getString("tlsCert");
             tlsKey = config.getString("tlsKey");
         }
-        contextPath = config.getString("contextPath", null);
-        zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
-
-        if (config.containsKey("webRoot")) {
-            if (config.isList("webRoot")) {
-                List<String> rootConf = config.getList("webRoot");
-                staticRoots.addAll(rootConf);
-            } else {
-                staticRoots.add(config.getString("webRoot"));
+        contextPath = config.getString("contextPath");
+        if (!contextPath.isEmpty()) {
+            if (!contextPath.startsWith("/")) {
+                throw new InitException("contextPath must start with a slash token");
+            }
+            if (contextPath.endsWith("/")) {
+                throw new InitException("contextPath may not end with a slash token");
             }
         }
+
+        zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
 
         // this is used to execute the routes marked as offThread
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
@@ -183,9 +188,32 @@ public class HttpServer extends AbstractYamcsService {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+    }
 
-        websiteConfig = config.containsKey("website") ? config.getConfig("website") : YConfiguration.emptyConfig();
-        wsConfig = config.getConfig("webSocket");
+    public void addStaticRoot(Path staticRoot) {
+        staticRoots.add(staticRoot.toString());
+    }
+
+    public void addHandler(String pathSegment, Supplier<Handler> handlerSupplier) {
+        extraHandlers.put(pathSegment, handlerSupplier);
+    }
+
+    public void addApiHandler(RouteHandler routeHandler) {
+        apiRouter.registerRouteHandler(routeHandler);
+    }
+
+    @Deprecated
+    public void addRouteHandler(RouteHandler routeHandler) {
+        addApiHandler(routeHandler);
+    }
+
+    public void addApiHandler(String yamcsInstance, RouteHandler routeHandler) {
+        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    }
+
+    @Deprecated
+    public void addRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
+        addApiHandler(yamcsInstance, routeHandler);
     }
 
     @Override
@@ -242,8 +270,7 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(sslCtx, contextPath, apiRouter,
-                        corsConfig, wsConfig, websiteConfig));
+                .childHandler(new HttpServerChannelInitializer(this, sslCtx, apiRouter));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
@@ -253,12 +280,13 @@ public class HttpServer extends AbstractYamcsService {
         return bossGroup.shutdownGracefully();
     }
 
-    public void addRouteHandler(RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(routeHandler);
+    Handler createHandler(String pathSegment) {
+        Supplier<Handler> supplier = extraHandlers.get(pathSegment);
+        return supplier != null ? supplier.get() : null;
     }
 
-    public void addRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    public String getContextPath() {
+        return contextPath;
     }
 
     public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {
@@ -271,6 +299,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public GpbExtensionRegistry getGpbExtensionRegistry() {
         return gpbExtensionRegistry;
+    }
+
+    public CorsConfig getCorsConfig() {
+        return corsConfig;
     }
 
     @Override

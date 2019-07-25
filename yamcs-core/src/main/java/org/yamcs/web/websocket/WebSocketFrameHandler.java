@@ -33,7 +33,6 @@ import io.netty.util.AttributeKey;
  */
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
-    public static final String WEBSOCKET_PATH = "_websocket";
     public static final AttributeKey<HttpRequestInfo> CTX_HTTP_REQUEST_INFO = AttributeKey.valueOf("httpRequestInfo");
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketFrameHandler.class);

@@ -27,7 +27,6 @@ This is a global service defined in ``etc/yamcs.yaml``. Example from a typical d
     services:
       - class: org.yamcs.web.HttpServer
         args:
-          webRoot: lib/yamcs-web
           port: 8090
           webSocket:
             writeBufferWaterMark:
@@ -47,8 +46,8 @@ Configuration Options
 port (integer)
     The port at which Yamcs web services may be reached. Default: ``8090``
 
-webRoot (string or string[])
-    List of file paths that are statically served. This usually points to the web files for the built-in Yamcs web interface (``lib/yamcs-web``).
+contextPath (string)
+    Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
 
 zeroCopyEnabled (boolean)
     Indicates whether zero-copy can be used to optimize non-SSL static file serving. Default: ``true``

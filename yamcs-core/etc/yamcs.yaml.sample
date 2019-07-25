@@ -9,9 +9,6 @@ services:
       #tlsCert: /opt/yamcs/etc/yamcs-server.crt
       #tlsKey: /opt/yamcs/etc/yamcs-server.key
 
-      # Where to find the files for the web interface
-      webRoot: lib/yamcs-web
-
       # Indicates whether zero-copy can be used to optimize non-ssl static file serving
       # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)
       zeroCopyEnabled: true

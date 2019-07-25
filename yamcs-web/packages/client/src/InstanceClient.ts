@@ -558,7 +558,7 @@ export class InstanceClient {
 
   private prepareWebSocketClient() {
     if (!this.webSocketClient) {
-      this.webSocketClient = new WebSocketClient(this.instance);
+      this.webSocketClient = new WebSocketClient(this.yamcs.baseHref, this.instance);
       this.connected$ = this.webSocketClient.connected$;
     }
   }

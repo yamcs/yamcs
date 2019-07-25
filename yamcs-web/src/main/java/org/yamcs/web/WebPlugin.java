@@ -1,7 +1,10 @@
 package org.yamcs.web;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
@@ -15,9 +18,7 @@ public class WebPlugin implements Plugin {
 
     public WebPlugin() {
         Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
+        version = pkg != null ? pkg.getImplementationVersion() : null;
     }
 
     @Override
@@ -51,5 +52,27 @@ public class WebPlugin implements Plugin {
         } catch (IOException e) {
             throw new PluginException("Could not create displays bucket", e);
         }
+
+        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+
+        Path webRoot = Paths.get("lib/yamcs-web");
+        httpServer.addStaticRoot(webRoot);
+
+        YConfiguration httpConfig = httpServer.getConfig();
+        YConfiguration websiteConfig = (httpConfig.containsKey("website")) ? httpConfig.getConfig("website")
+                : YConfiguration.emptyConfig();
+
+        // Register a custom root handler. We don't add an api handler because
+        // those are always subject to authentication and for this path we
+        // don't want that.
+        WebsiteConfigHandler configHandler = new WebsiteConfigHandler(websiteConfig);
+        httpServer.addHandler("websiteConfig", () -> configHandler);
+
+        // Set-up HTML5 deep-linking:
+        // Catch any non-handled URL and make it return the contents of our index.html
+        // This will cause initialization of the Angular app on any requested path. The
+        // Angular router will interpret this and do client-side routing as needed.
+        IndexHandler indexHandler = new IndexHandler(httpServer, webRoot);
+        httpServer.addHandler("*", () -> indexHandler);
     }
 }

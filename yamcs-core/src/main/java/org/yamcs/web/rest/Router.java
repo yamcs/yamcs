@@ -32,6 +32,7 @@ import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
+import org.yamcs.web.HttpUtils;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
@@ -273,7 +274,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
         RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+        String uri = HttpUtils.getUriWithoutContext(req, contextPath);
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(uri);
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
@@ -547,10 +549,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
             for (RouteElement re : defaultRoutes) {
                 re.configByMethod.values().forEach(v -> {
-                    String path = v.originalPath;
-                    if (contextPath != null) {
-                        path = "/" + contextPath + path;
-                    }
+                    String path = contextPath + v.originalPath;
                     RouteInfo.Builder builder = builders.get(path);
                     if (builder == null) {
                         builder = RouteInfo.newBuilder();

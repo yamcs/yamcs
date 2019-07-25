@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
@@ -25,9 +26,12 @@ export class AdminPage implements OnDestroy {
     iconRegistry: MatIconRegistry,
     sanitizer: DomSanitizer,
     router: Router,
+    @Inject(APP_BASE_HREF) baseHref: string,
   ) {
     this.sidebar$ = preferenceStore.sidebar$;
-    iconRegistry.addSvgIcon('rocksdb', sanitizer.bypassSecurityTrustResourceUrl('/static/assets/rocksdb.svg'));
+    const resourceUrl = `${baseHref}static/assets/rocksdb.svg`;
+    const safeResourceUrl = sanitizer.bypassSecurityTrustResourceUrl(resourceUrl);
+    iconRegistry.addSvgIcon('rocksdb', safeResourceUrl);
 
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
