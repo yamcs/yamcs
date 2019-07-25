@@ -21,8 +21,9 @@
             "tsConfig": "src/tsconfig.app.json",
             "polyfills": "src/polyfills.ts",
             "preserveSymlinks": true,
+            "outputHashing": "bundles",
             "assets": [
-              "src/assets"
+              { "glob": "**/*", "input": "src/assets/", "output": "/" }
             ],
             "styles": [
               "src/styles/material-theme.scss",
@@ -41,7 +42,6 @@
           "configurations": {
             "production": {
               "optimization": true,
-              "outputHashing": "all",
               "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,

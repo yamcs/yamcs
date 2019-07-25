@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "license": "AGPL-3.0",
   "scripts": {
-    "build": "ng build --output-hashing=all --aot --prod",
-    "watch": "ng build --output-hashing=all --watch"
+    "build": "ng build --aot --prod",
+    "watch": "ng build --watch"
   },
   "private": true,
   "dependencies": {
