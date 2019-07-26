@@ -3,14 +3,14 @@ package org.yamcs.time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.HttpException;
+import org.yamcs.http.HttpServer;
+import org.yamcs.http.NotFoundException;
+import org.yamcs.http.api.RestHandler;
+import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.Route;
 import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpServer;
-import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.Route;
 
 /**
  * Simulation time model where the simulation starts at javaTime0

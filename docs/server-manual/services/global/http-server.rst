@@ -14,7 +14,7 @@ The HTTP Server can be disabled when its functionality is not needed. Note that 
 Class Name
 ----------
 
-:javadoc:`org.yamcs.web.HttpServer`
+:javadoc:`org.yamcs.http.HttpServer`
 
 
 Configuration
@@ -25,7 +25,7 @@ This is a global service defined in ``etc/yamcs.yaml``. Example from a typical d
 .. code-block:: yaml
 
     services:
-      - class: org.yamcs.web.HttpServer
+      - class: org.yamcs.http.HttpServer
         args:
           port: 8090
           webSocket:

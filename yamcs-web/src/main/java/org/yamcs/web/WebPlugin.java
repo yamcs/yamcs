@@ -8,6 +8,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.Log;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
+import org.yamcs.http.HttpServer;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;

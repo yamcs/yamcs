@@ -764,7 +764,7 @@ public class YamcsServer {
         List<T> services = new ArrayList<>();
         if (globalServiceList != null) {
             for (ServiceWithConfig swc : globalServiceList) {
-                if (swc.getServiceClass().equals(serviceClass.getName())) {
+                if (serviceClass.isInstance(swc.service)) {
                     services.add((T) swc.service);
                 }
             }

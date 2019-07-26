@@ -3,7 +3,7 @@ package org.yamcs.security;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.InitException;
 import org.yamcs.api.Spec;
-import org.yamcs.web.AuthHandler;
+import org.yamcs.http.AuthHandler;
 
 /**
  * Interface implemented by the Authentication and Authorization modules.

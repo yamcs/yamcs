@@ -1,6 +1,6 @@
 # System-wide services
 services:
-  - class: org.yamcs.web.HttpServer
+  - class: org.yamcs.http.HttpServer
     args:
       port: 8090
       website:

@@ -4,15 +4,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.rocksdb.RocksDBException;
+import org.yamcs.http.BadRequestException;
+import org.yamcs.http.HttpException;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.api.RestHandler;
+import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.Route;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.web.BadRequestException;
-import org.yamcs.web.HttpException;
-import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.Route;
 
 /**
  * Provides some maintenance operations on the parameter archive

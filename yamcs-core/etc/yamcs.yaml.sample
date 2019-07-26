@@ -1,6 +1,6 @@
 # System-wide services
 services:
-  - class: org.yamcs.web.HttpServer
+  - class: org.yamcs.http.HttpServer
     args:
       port: 8090
       #enable the following three options to have a TLS  (https) connection

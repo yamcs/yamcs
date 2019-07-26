@@ -170,7 +170,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         List<T> services = new ArrayList<>();
         if (serviceList != null) {
             for (ServiceWithConfig swc : serviceList) {
-                if (swc.getServiceClass().equals(serviceClass.getName())) {
+                if (serviceClass.isInstance(swc.service)) {
                     services.add((T) swc.service);
                 }
             }

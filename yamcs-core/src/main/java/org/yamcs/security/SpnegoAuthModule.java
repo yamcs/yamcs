@@ -31,9 +31,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.InitException;
 import org.yamcs.api.Spec;
 import org.yamcs.api.Spec.OptionType;
+import org.yamcs.http.AuthModuleHttpHandler;
+import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.web.AuthModuleHttpHandler;
-import org.yamcs.web.HttpRequestHandler;
 
 import com.sun.security.auth.callback.TextCallbackHandler;
 

@@ -28,6 +28,7 @@ import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.http.RouteHandler;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -78,7 +79,6 @@ import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
-import org.yamcs.web.RouteHandler;
 
 import com.google.gson.JsonStreamParser;
 import com.google.protobuf.Message;

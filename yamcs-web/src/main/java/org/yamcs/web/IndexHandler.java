@@ -15,6 +15,10 @@ import java.util.Map;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.api.MediaType;
+import org.yamcs.http.AuthHandler;
+import org.yamcs.http.Handler;
+import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.HttpServer;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
 
@@ -50,7 +54,7 @@ public class IndexHandler extends Handler {
     }
 
     @Override
-    void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
+    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
         if (req.method() == HttpMethod.GET) {
             if (!Files.exists(indexFile)) {
                 HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
