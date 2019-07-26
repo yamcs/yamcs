@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,6 +31,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.yamcs.api.InitException;
@@ -39,6 +39,7 @@ import org.yamcs.api.Log;
 import org.yamcs.api.Plugin;
 import org.yamcs.api.PluginException;
 import org.yamcs.api.Spec;
+import org.yamcs.api.Spec.OptionType;
 import org.yamcs.api.ValidationException;
 import org.yamcs.api.YamcsService;
 import org.yamcs.management.ManagementService;
@@ -80,11 +81,12 @@ public class YamcsServer {
     public static final String GLOBAL_INSTANCE = "_global";
     private static final Log LOG = new Log(YamcsServer.class);
 
-    private static final Pattern ONLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml");
-    private static final Pattern OFFLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml.offline");
+    private static final Pattern INSTANCE_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml(.offline)?");
     private static final YamcsServer YAMCS = new YamcsServer();
 
-    /** in the shutdown, allow services this number of seconds for stopping */
+    /**
+     * During shutdown, allow services this number of seconds for stopping
+     */
     public static final int SERVICE_STOP_GRACE_TIME = 10;
 
     static TimeService realtimeTimeService = new RealtimeTimeService();
@@ -92,7 +94,7 @@ public class YamcsServer {
     // used for unit tests
     static TimeService mockupTimeService;
 
-    private CrashHandler globalCrashHandler = new LogCrashHandler();
+    private CrashHandler globalCrashHandler;
 
     @Parameter(names = { "-v", "--verbose" }, description = "Increase console log output")
     private boolean verbose;
@@ -105,6 +107,8 @@ public class YamcsServer {
 
     @Parameter(names = { "-h", "--help" }, help = true, description = "Show usage")
     private boolean help;
+
+    private YConfiguration config;
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
@@ -119,6 +123,7 @@ public class YamcsServer {
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
     Path dataDir;
+    Path incomingDir;
     Path cacheDir;
     Path instanceDefDir;
 
@@ -249,8 +254,42 @@ public class YamcsServer {
         return secretKey;
     }
 
+    /**
+     * Returns the main Yamcs configuration
+     */
+    public YConfiguration getConfig() {
+        return config;
+    }
+
+    private void loadConfiguration() {
+        Spec serviceSpec = new Spec();
+        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
+        serviceSpec.addOption("args", OptionType.ANY);
+
+        Spec spec = new Spec();
+        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(serviceSpec);
+        spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
+        spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
+        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
+        spec.addOption("serverId", OptionType.STRING);
+        spec.addOption("secretKey", OptionType.STRING);
+
+        // TODO The goal is to (over time) be able to remove this relaxation
+        spec.allowUnknownKeys(true);
+
+        config = YConfiguration.getConfiguration("yamcs");
+        try {
+            config = spec.validate(config);
+        } catch (ValidationException e) {
+            throw new ConfigurationException(String.format(
+                    "Validation error in %s: %s", config.getPath(), e.getMessage()));
+        }
+    }
+
     private void discoverTemplates() throws IOException {
-        Path templatesDir = Paths.get("etc").resolve("instance-templates");
+        Path templatesDir = Paths.get("etc", "instance-templates");
         if (!Files.exists(templatesDir)) {
             return;
         }
@@ -291,18 +330,24 @@ public class YamcsServer {
         serverId = deriveServerId();
         deriveSecretKey();
 
-        YConfiguration c = YConfiguration.getConfiguration("yamcs");
-        if (c.containsKey("crashHandler")) {
-            globalCrashHandler = loadCrashHandler(c);
+        if (config.containsKey("crashHandler")) {
+            globalCrashHandler = loadCrashHandler();
+        } else {
+            globalCrashHandler = new LogCrashHandler();
         }
-        dataDir = Paths.get(c.getString("dataDir"));
+        dataDir = Paths.get(config.getString("dataDir"));
+        incomingDir = Paths.get(config.getString("incomingDir"));
         instanceDefDir = dataDir.resolve("instance-def");
 
         if (YConfiguration.configDirectory != null) {
             cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
         } else {
-            cacheDir = Paths.get("cache").toAbsolutePath();
+            cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
         }
+
+        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
+        Files.createDirectories(globalDir);
+        Files.createDirectories(instanceDefDir);
 
         try {
             securityStore = new SecurityStore();
@@ -310,86 +355,74 @@ public class YamcsServer {
             throw new ConfigurationException(e);
         }
 
-        if (c.containsKey("services")) {
-            List<YConfiguration> services = c.getServiceConfigList("services");
+        if (config.containsKey("services")) {
+            List<YConfiguration> services = config.getServiceConfigList("services");
             globalServiceList = createServices(null, services);
         }
-        int numOnlineInst = 0;
-        if (c.containsKey("instances")) {
-            List<String> instArray = c.getList("instances");
-            for (String inst : instArray) {
-                if (instances.containsKey(inst)) {
-                    throw new ConfigurationException("Duplicate instance specified: '" + inst + "'");
+
+        // Load user-configured instances. These are the ones that are explictly mentioned in yamcs.yaml
+        int instanceCount = 0;
+        if (config.containsKey("instances")) {
+            for (String name : config.<String> getList("instances")) {
+                if (instances.containsKey(name)) {
+                    throw new ConfigurationException("Duplicate instance specified: '" + name + "'");
                 }
-                createInstance(inst, YConfiguration.getConfiguration("yamcs." + inst));
-                numOnlineInst++;
+                YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);
+                createInstance(name, instanceConfig);
+                instanceCount++;
             }
         }
 
-        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
-        Files.createDirectories(globalDir);
-        Files.createDirectories(instanceDefDir);
-
-        for (File f : instanceDefDir.toFile().listFiles()) {
-            boolean online;
-            String name;
-            Matcher m = ONLINE_INST_PATTERN.matcher(f.getName());
-            if (m.matches()) {
-                online = true;
-                name = m.group(1);
-                numOnlineInst++;
-                if (numOnlineInst > maxOnlineInstances) {
-                    throw new ConfigurationException(
-                            "Number of online instances greater than maximum allowed " + maxOnlineInstances);
-                }
-            } else {
-                m = OFFLINE_INST_PATTERN.matcher(f.getName());
-                if (m.matches()) {
-                    online = false;
-                    name = m.group(1);
-                    if (instances.size() > maxNumInstances) {
-                        LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
-                                maxNumInstances, name);
-                        continue;
-                    }
-                } else {
+        // Load instances saved in storage
+        try (Stream<Path> paths = Files.list(instanceDefDir)) {
+            for (Path instanceDir : paths.collect(Collectors.toList())) {
+                String dirname = instanceDir.getFileName().toString();
+                Matcher m = INSTANCE_PATTERN.matcher(dirname);
+                if (!m.matches()) {
                     continue;
                 }
-            }
 
-            YamcsServerInstance ysi = createInstance(name, online ? getConf(name) : null);
-            Path metadataFile = instanceDefDir.resolve("yamcs." + name + ".metadata");
-            if (Files.exists(metadataFile)) {
-                Yaml y = new Yaml();
-                try (InputStream in = Files.newInputStream(metadataFile)) {
-                    Object o = y.load(in);
-                    if (o instanceof Map<?, ?>) {
-                        Object labels = ((Map<String, Object>) o).get("labels");
-                        if (labels instanceof Map<?, ?>) {
-                            ysi.setLabels((Map<String, String>) labels);
-                        } else {
-                            LOG.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
-                                    metadataFile.toAbsolutePath());
-                        }
-                    } else {
-                        LOG.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
-                                metadataFile.toAbsolutePath());
+                String instanceName = m.group(1);
+                boolean online = m.group(2) == null;
+                YamcsServerInstance ysi;
+                if (online) {
+                    instanceCount++;
+                    if (instanceCount > maxOnlineInstances) {
+                        throw new ConfigurationException("Instance limit exceeded: " + instanceCount);
+                    }
+                    YConfiguration instanceConfig = loadInstanceConfig(instanceName);
+                    ysi = createInstance(instanceName, instanceConfig);
+                } else {
+                    if (instances.size() > maxNumInstances) {
+                        LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
+                                maxNumInstances, instanceName);
+                        continue;
+                    }
+                    ysi = createOfflineInstance(instanceName);
+                }
+
+                Path metadataFile = instanceDefDir.resolve("yamcs." + instanceName + ".metadata");
+                if (Files.exists(metadataFile)) {
+                    try (InputStream in = Files.newInputStream(metadataFile)) {
+                        Map<String, Object> metadata = new Yaml().loadAs(in, Map.class);
+                        Map<String, String> labels = (Map<String, String>) metadata.get("labels");
+                        ysi.setLabels(labels);
                     }
                 }
             }
         }
     }
 
-    static CrashHandler loadCrashHandler(YConfiguration conf) throws ConfigurationException, IOException {
-        if (conf.containsKey("crashHandler", "args")) {
-            return YObjectLoader.loadObject(conf.getSubString("crashHandler", "class"),
-                    conf.getSubMap("crashHandler", "args"));
+    private CrashHandler loadCrashHandler() throws IOException {
+        if (config.containsKey("crashHandler", "args")) {
+            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
+                    config.getSubMap("crashHandler", "args"));
         } else {
-            return YObjectLoader.loadObject(conf.getSubString("crashHandler", "class"));
+            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
         }
     }
 
-    private void loadPlugins() throws PluginException {
+    private void discoverPlugins() {
         List<String> disabledPlugins;
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey("disabledPlugins")) {
@@ -405,7 +438,9 @@ public class YamcsServer {
                 plugins.put(plugin.getClass(), plugin);
             }
         }
+    }
 
+    private void loadPlugins() throws PluginException {
         for (Plugin plugin : plugins.values()) {
             LOG.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
             try {
@@ -461,7 +496,8 @@ public class YamcsServer {
         XtceDbFactory.remove(instanceName);
         LOG.info("Re-loading instance '{}'", instanceName);
 
-        ysi.init(getConf(instanceName));
+        YConfiguration instanceConfig = loadInstanceConfig(instanceName);
+        ysi.init(instanceConfig);
         ysi.startAsync();
         try {
             ysi.awaitRunning();
@@ -473,7 +509,7 @@ public class YamcsServer {
         return ysi;
     }
 
-    private YConfiguration getConf(String instanceName) {
+    private YConfiguration loadInstanceConfig(String instanceName) {
         Path f = instanceDefDir.resolve("yamcs." + instanceName + ".yaml");
         if (Files.exists(f)) {
             try (InputStream is = Files.newInputStream(f)) {
@@ -557,7 +593,8 @@ public class YamcsServer {
             if (Files.exists(f)) {
                 Files.move(f, instanceDefDir.resolve("yamcs." + instanceName + ".yaml"));
             }
-            ysi.init(getConf(instanceName));
+            YConfiguration instanceConfig = loadInstanceConfig(instanceName);
+            ysi.init(instanceConfig);
         }
         ysi.startAsync();
         ysi.awaitRunning();
@@ -569,33 +606,36 @@ public class YamcsServer {
     }
 
     /**
-     * Creates a new yamcs instance. If conf is not null, the instance is also initialized (but not started)
+     * Creates a new yamcs instance.
      * 
-     * If the instance already exists a ConfigurationException is thrown
+     * If the instance already exists an IllegalArgumentException is thrown
      * 
      * @param name
      *            the name of the new instance
+     * @param config
+     *            the configuration for this instance (equivalent of yamcs.instance.yaml)
      * 
      * @return the newly created instance
-     * @throws IOException
      */
-    public synchronized YamcsServerInstance createInstance(String name, YConfiguration conf)
-            throws IOException {
-
+    public synchronized YamcsServerInstance createInstance(String name, YConfiguration conf) {
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
-
-        if (conf != null) {
-            LOG.info("Loading online instance '{}'", name);
-        } else {
-            LOG.debug("Loading offline instance '{}'", name);
-        }
+        LOG.info("Loading online instance '{}'", name);
         YamcsServerInstance ysi = new YamcsServerInstance(name);
         instances.put(name, ysi);
-        if (conf != null) {
-            ysi.init(conf);
+        ysi.init(conf);
+        ManagementService.getInstance().registerYamcsInstance(ysi);
+        return ysi;
+    }
+
+    public synchronized YamcsServerInstance createOfflineInstance(String name) {
+        if (instances.containsKey(name)) {
+            throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
+        LOG.debug("Loading offline instance '{}'", name);
+        YamcsServerInstance ysi = new YamcsServerInstance(name);
+        instances.put(name, ysi);
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
@@ -634,22 +674,21 @@ public class YamcsServer {
             }
 
             Path metadataFile = instanceDefDir.resolve("yamcs." + name + ".metadata");
-            Yaml yaml = new Yaml();
-            try (Writer w = Files.newBufferedWriter(metadataFile)) {
+            try (Writer writer = Files.newBufferedWriter(metadataFile)) {
                 Map<String, Object> metadata = new HashMap<>();
                 metadata.put("templateArgs", templateArgs);
                 metadata.put("labels", labels);
-                yaml.dump(metadata, w);
+                new Yaml().dump(metadata, writer);
             }
 
-            YConfiguration conf;
+            YConfiguration instanceConfig;
             try (InputStream fis = Files.newInputStream(confFile)) {
                 String subSystem = "yamcs." + name;
                 String confPath = confFile.toString();
-                conf = new YConfiguration(subSystem, fis, confPath);
+                instanceConfig = new YConfiguration(subSystem, fis, confPath);
             }
 
-            YamcsServerInstance ysi = createInstance(name, conf);
+            YamcsServerInstance ysi = createInstance(name, instanceConfig);
             ysi.setLabels(labels);
             return ysi;
         } catch (IOException e) {
@@ -659,10 +698,9 @@ public class YamcsServer {
 
     private String deriveServerId() {
         try {
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
             String id;
-            if (yconf.containsKey(SERVER_ID_KEY)) {
-                id = yconf.getString(SERVER_ID_KEY);
+            if (config.containsKey(SERVER_ID_KEY)) {
+                id = config.getString(SERVER_ID_KEY);
             } else {
                 id = InetAddress.getLocalHost().getHostName();
             }
@@ -672,17 +710,16 @@ public class YamcsServer {
         } catch (ConfigurationException e) {
             throw e;
         } catch (UnknownHostException e) {
-            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or alternatively add 'serverId: <name>' to yamcs.yaml";
+            String msg = "Cannot resolve local host. Make sure it's defined properly or alternatively add 'serverId: <name>' to yamcs.yaml";
             LOG.warn(msg);
             throw new ConfigurationException(msg, e);
         }
     }
 
     private void deriveSecretKey() {
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        if (yconf.containsKey(SECRET_KEY)) {
+        if (config.containsKey(SECRET_KEY)) {
             // Should maybe only allow base64 encoded secret keys
-            secretKey = yconf.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
+            secretKey = config.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
         } else {
             LOG.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
@@ -878,6 +915,10 @@ public class YamcsServer {
         return dataDir;
     }
 
+    public Path getIncomingDirectory() {
+        return incomingDir;
+    }
+
     public Path getCacheDirectory() {
         return cacheDir;
     }
@@ -975,9 +1016,11 @@ public class YamcsServer {
         }
     }
 
-    public static void setupYamcsServer() throws IOException, PluginException {
+    public static void setupYamcsServer() throws ValidationException, IOException, PluginException {
         LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
 
+        YAMCS.discoverPlugins();
+        YAMCS.loadConfiguration();
         YAMCS.discoverTemplates();
         YAMCS.createGlobalServicesAndInstances();
         YAMCS.loadPlugins();

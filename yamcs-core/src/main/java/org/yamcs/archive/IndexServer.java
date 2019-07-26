@@ -17,6 +17,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.api.InitException;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
@@ -42,23 +43,28 @@ public class IndexServer extends AbstractYamcsService {
     final HashSet<String> instances = new HashSet<>();
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String instanceName, YConfiguration args) throws InitException {
+        super.init(instanceName, args);
 
-        YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
+        YConfiguration instanceConfig = instance.getConfig();
+
         try {
-            if (c.containsKey("tmIndexer")) {
-                String icn = c.getString("tmIndexer");
-                tmIndexer = loadIndexerFromClass(icn, yamcsInstance, readonly);
+            if (args.containsKey("tmIndexer")) {
+                String icn = args.getString("tmIndexer");
+                tmIndexer = loadIndexerFromClass(icn, instanceName, readonly);
+            } else if (instanceConfig.containsKey("tmIndexer")) {
+                String icn = instanceConfig.getString("tmIndexer");
+                tmIndexer = loadIndexerFromClass(icn, instanceName, readonly);
             } else {
-                tmIndexer = new CcsdsTmIndex(yamcsInstance, readonly);
+                tmIndexer = new CcsdsTmIndex(instanceName, readonly);
             }
         } catch (IOException e) {
             throw new InitException(e);
         }
 
         try {
-            tagDb = YarchDatabase.getInstance(yamcsInstance).getTagDb();
+            tagDb = YarchDatabase.getInstance(instanceName).getTagDb();
         } catch (YarchException e) {
             throw new InitException(e);
         }

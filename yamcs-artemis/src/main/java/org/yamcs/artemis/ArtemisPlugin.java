@@ -8,9 +8,7 @@ public class ArtemisPlugin implements Plugin {
 
     public ArtemisPlugin() {
         Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
+        version = (pkg != null) ? pkg.getImplementationVersion() : null;
     }
 
     @Override

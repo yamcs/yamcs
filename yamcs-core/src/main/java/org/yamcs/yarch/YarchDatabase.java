@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 /**
@@ -30,7 +31,7 @@ public class YarchDatabase {
     private static final String defaultStorageEngineName;
 
     static {
-        config = YConfiguration.getConfiguration("yamcs");
+        config = YamcsServer.getServer().getConfig();
         if (config.containsKey("dataDir")) {
             home = config.getString("dataDir");
         }

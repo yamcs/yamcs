@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.ServiceUnavailableException;
@@ -25,8 +24,7 @@ import com.google.common.util.concurrent.Service.State;
  */
 public class RestReplays {
     static AtomicInteger count = new AtomicInteger();
-    private static int MAX_CONCURRENT_REPLAYS = YConfiguration.getConfiguration("yamcs").getInt("WebConfig",
-            "maxConcurrentReplays", 2 * Runtime.getRuntime().availableProcessors());
+    private static int MAX_CONCURRENT_REPLAYS = 2 * Runtime.getRuntime().availableProcessors();
     static AtomicInteger concurrentCount = new AtomicInteger();
 
     /**

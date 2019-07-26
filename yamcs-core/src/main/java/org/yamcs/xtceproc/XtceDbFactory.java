@@ -631,12 +631,13 @@ public class XtceDbFactory {
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db = instance2Db.get(yamcsInstance);
         if (db == null) {
-            YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
-            if (c.isList("mdb")) {
-                db = createInstance(c.getList("mdb"), true, true);
+            YamcsServer yamcs = YamcsServer.getServer();
+            YConfiguration instanceConfig = yamcs.getInstance(yamcsInstance).getConfig();
+            if (instanceConfig.isList("mdb")) {
+                db = createInstance(instanceConfig.getList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);
             } else {
-                db = getInstanceByConfig(yamcsInstance, c.getString("mdb"));
+                db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdb"));
                 instance2Db.put(yamcsInstance, db);
             }
         }
@@ -669,9 +670,9 @@ public class XtceDbFactory {
 
     private static String sha1(String input) throws ConfigurationException {
         try {
-            MessageDigest msdDigest = MessageDigest.getInstance("SHA-1");
-            msdDigest.update(input.getBytes("UTF-8"), 0, input.length());
-            return StringConverter.arrayToHexString(msdDigest.digest());
+            MessageDigest msgDigest = MessageDigest.getInstance("SHA-1");
+            msgDigest.update(input.getBytes("UTF-8"), 0, input.length());
+            return StringConverter.arrayToHexString(msgDigest.digest());
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             throw new ConfigurationException("Cannot compute SHA-1 of a string", e);
         }

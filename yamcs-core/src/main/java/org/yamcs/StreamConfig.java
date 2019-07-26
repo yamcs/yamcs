@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -36,17 +37,19 @@ public class StreamConfig {
 
     private StreamConfig(String yamcsInstance) {
         XtceDb xtceDb = XtceDbFactory.getInstance(yamcsInstance);
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
-        if (!yconf.containsKey("streamConfig")) {
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(yamcsInstance);
+        YConfiguration instanceConfig = instance.getConfig();
+        if (!instanceConfig.containsKey("streamConfig")) {
             log.warn("No streamConfig defined for instance {}", yamcsInstance);
             return;
         }
-        YConfiguration c = yconf.getConfig("streamConfig");
+        YConfiguration streamConfig = instanceConfig.getConfig("streamConfig");
 
-        for (Map.Entry<String, Object> m : c.getRoot().entrySet()) {
+        for (Entry<String, Object> m : streamConfig.getRoot().entrySet()) {
             String streamType = m.getKey();
-            if("alarm".equals(streamType)) {
-                log.warn("Deprecation in streamConfig, please change 'alarm' into 'parameterAlarm' (since version 4.10 we also have eventAlarm)");
+            if ("alarm".equals(streamType)) {
+                log.warn("Deprecation in streamConfig, please change 'alarm' into 'parameterAlarm'"
+                        + " (since version 4.10 there is also eventAlarm)");
                 streamType = "parameterAlarm";
             }
             StandardStreamType type = null;

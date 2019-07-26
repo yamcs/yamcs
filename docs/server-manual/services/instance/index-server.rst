@@ -13,7 +13,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example from a typical deployment:
+This service is defined in ``etc/yamcs.(instance).yaml``. Example:
 
 .. code-block:: yaml
 
@@ -26,3 +26,6 @@ Configuration Options
 
 tmIndexer (string)
     Class name of a :javadoc:`~org.yamcs.archive.TmIndex` implementation. Default is :javadoc:`org.yamcs.archive.CcsdsTmIndex` which applies CCSDS conventions.
+
+streams (list of strings)
+    The streams to index. When unspecified, all ``tm`` streams defined in ``streamConfig`` are indexed.

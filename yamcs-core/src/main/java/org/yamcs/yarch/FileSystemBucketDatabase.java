@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 
 /**
@@ -44,7 +45,7 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         if (args.containsKey("dataDir")) {
             root = Paths.get(YConfiguration.getString(args, "dataDir"));
         } else {
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+            YConfiguration yconf = YamcsServer.getServer().getConfig();
             String dataDir = yconf.getString("dataDir");
             root = Paths.get(dataDir).resolve(yamcsInstance).resolve("fsbuckets");
         }

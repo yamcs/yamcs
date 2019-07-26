@@ -116,7 +116,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     }
 
     static String getTimePartitioningSchemaSql() {
-        YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
+        YConfiguration yconfig = YamcsServer.getServer().getConfig();
         String partSchema = "";
         if (yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
             partSchema = "('" + yconfig.getSubString("archiveConfig", "timePartitioningSchema") + "')";

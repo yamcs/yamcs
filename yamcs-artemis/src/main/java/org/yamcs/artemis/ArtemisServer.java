@@ -45,7 +45,7 @@ public class ArtemisServer extends AbstractYamcsService {
 
         configFile = config.getString("configFile");
 
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        YConfiguration yconf = YamcsServer.getServer().getConfig();
         if (yconf.containsKey("artemisConfigFile")) {
             log.warn("Deprecation: migrate 'artemisConfigFile' setting to arg 'configFile' of ArtemisServer");
             configFile = yconf.getString("artemisConfigFile");

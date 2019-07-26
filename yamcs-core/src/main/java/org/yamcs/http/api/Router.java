@@ -534,7 +534,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             // at some point, but there's for now unsufficient support.
             // (would need websocket adjustments, which are now
             // instance-specific).
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+            YConfiguration yconf = YamcsServer.getServer().getConfig();
             if (yconf.containsKey("defaultInstance")) {
                 responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
             } else {

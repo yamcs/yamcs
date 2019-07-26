@@ -53,11 +53,6 @@ public class YarchDatabaseInstance {
 
     private static final Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
 
-    static YConfiguration config;
-    static {
-        config = YConfiguration.getConfiguration("yamcs");
-    }
-
     Map<String, TableDefinition> tables = new HashMap<>();
     transient Map<String, Stream> streams = new HashMap<>();
 
@@ -90,7 +85,7 @@ public class YarchDatabaseInstance {
                 loadBucketDatabase(dbConfig);
             }
         } else {
-            yconf = YConfiguration.getConfiguration("yamcs");
+            yconf = YamcsServer.getServer().getConfig();
             tablespaceName = instanceName;
 
             if (yconf.containsKey("bucketDatabase")) {
@@ -203,7 +198,7 @@ public class YarchDatabaseInstance {
                         getStorageEngine(tblDef).loadTable(this, tblDef);
                         managementService.registerTable(instanceName, tblDef);
                         tables.put(tblDef.getName(), tblDef);
-                        log.debug("loaded table definition {} from {}", tblDef.getName(), f);
+                        log.debug("Loaded table definition {} from {}", tblDef.getName(), f);
                     } catch (IOException e) {
                         log.warn("Got exception when reading the table definition from {}: ", f, e);
                         throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
@@ -259,7 +254,7 @@ public class YarchDatabaseInstance {
             }
         }
 
-        log.debug("loaded table definition {} from {}", tblName, fn);
+        log.debug("Loaded table definition {} from {}", tblName, fn);
         return tblDef;
     }
 
@@ -371,7 +366,7 @@ public class YarchDatabaseInstance {
     }
 
     public void dropTable(String tblName) throws YarchException {
-        log.info("dropping table {}", tblName);
+        log.info("Dropping table {}", tblName);
         TableDefinition tbl = tables.remove(tblName);
         if (tbl == null) {
             throw new YarchException("There is no table named '" + tblName + "'");
@@ -408,7 +403,7 @@ public class YarchDatabaseInstance {
     /**
      * Returns the root directory for this database instance. It is usually home/instance_name.
      * 
-     * @return the roor directory for this database instance
+     * @return the root directory for this database instance
      */
     public String getRoot() {
         return YarchDatabase.getHome() + "/" + instanceName;

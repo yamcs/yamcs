@@ -23,6 +23,7 @@ public class Spec {
 
     private Map<String, Option> options = new HashMap<>();
 
+    private boolean allowUnknownKeys = false;
     private List<List<String>> requiredOneOfGroups = new ArrayList<>(0);
     private List<List<String>> requireTogetherGroups = new ArrayList<>(0);
     private List<List<String>> mutuallyExclusiveGroups = new ArrayList<>(0);
@@ -41,6 +42,10 @@ public class Spec {
         Option option = new Option(name, type);
         options.put(name, option);
         return option;
+    }
+
+    public void allowUnknownKeys(boolean allowUnknownKeys) {
+        this.allowUnknownKeys = allowUnknownKeys;
     }
 
     /**
@@ -171,12 +176,16 @@ public class Spec {
 
             Option option = options.get(argName);
             if (option == null) {
-                throw new ValidationException("Unknown argument " + path);
+                if (allowUnknownKeys) {
+                    result.put(argName, entry.getValue());
+                } else {
+                    throw new ValidationException("Unknown argument " + path);
+                }
+            } else {
+                Object arg = entry.getValue();
+                Object resultArg = option.validate(arg, path);
+                result.put(argName, resultArg);
             }
-
-            Object arg = entry.getValue();
-            Object resultArg = option.validate(arg, path);
-            result.put(argName, resultArg);
         }
 
         for (Option option : options.values()) {

@@ -31,7 +31,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
-    private String instanceName;
+    private String name;
     Log log;
     TimeService timeService;
     private CrashHandler crashHandler;
@@ -40,11 +40,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     private XtceDb xtceDb;
 
     Map<String, String> labels;
-    YConfiguration conf;
+    YConfiguration config;
 
     YamcsServerInstance(String name) {
-        this.instanceName = name;
-        log = new Log(YamcsServerInstance.class, name);
+        this.name = name;
+        log = new Log(getClass(), name);
     }
 
     @Override
@@ -71,14 +71,14 @@ public class YamcsServerInstance extends YamcsInstanceService {
             ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
         }
 
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
         ydb.close();
-        YarchDatabase.removeInstance(instanceName);
+        YarchDatabase.removeInstance(name);
         notifyStopped();
     }
 
-    void init(YConfiguration conf) {
-        this.conf = conf;
+    void init(YConfiguration config) {
+        this.config = config;
         initAsync();
         try {
             awaitInitialized();
@@ -91,18 +91,13 @@ public class YamcsServerInstance extends YamcsInstanceService {
     public void doInit() {
         try {
             loadTimeService();
-
-            if (conf.containsKey("crashHandler")) {
-                crashHandler = YamcsServer.loadCrashHandler(conf);
-            } else {
-                crashHandler = YamcsServer.getServer().getGlobalCrashHandler();
-            }
+            loadCrashHandler();
 
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)
-            xtceDb = XtceDbFactory.getInstance(instanceName);
-            StreamInitializer.createStreams(instanceName);
-            List<YConfiguration> services = conf.getServiceConfigList("services");
-            serviceList = YamcsServer.createServices(instanceName, services);
+            xtceDb = XtceDbFactory.getInstance(name);
+            StreamInitializer.createStreams(name);
+            List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
+            serviceList = YamcsServer.createServices(name, serviceConfigs);
             notifyInitialized();
         } catch (Exception e) {
             notifyFailed(e);
@@ -128,16 +123,16 @@ public class YamcsServerInstance extends YamcsInstanceService {
         serviceList = null;
     }
 
-    public void loadTimeService() throws ConfigurationException {
-        if (conf.containsKey("timeService")) {
-            YConfiguration m = conf.getConfig("timeService");
+    public void loadTimeService() {
+        if (config.containsKey("timeService")) {
+            YConfiguration m = config.getConfig("timeService");
             String servclass = m.getString("class");
             Object args = m.get("args");
             try {
                 if (args == null) {
-                    timeService = YObjectLoader.loadObject(servclass, instanceName);
+                    timeService = YObjectLoader.loadObject(servclass, name);
                 } else {
-                    timeService = YObjectLoader.loadObject(servclass, instanceName, args);
+                    timeService = YObjectLoader.loadObject(servclass, name, args);
                 }
             } catch (IOException e) {
                 throw new ConfigurationException("Failed to load time service:" + e.getMessage(), e);
@@ -145,6 +140,26 @@ public class YamcsServerInstance extends YamcsInstanceService {
         } else {
             timeService = new RealtimeTimeService();
         }
+    }
+
+    private void loadCrashHandler() throws IOException {
+        if (config.containsKey("crashHandler")) {
+            if (config.containsKey("crashHandler", "args")) {
+                crashHandler = YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
+                        config.getSubMap("crashHandler", "args"));
+            } else {
+                crashHandler = YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
+            }
+        } else {
+            crashHandler = YamcsServer.getServer().getGlobalCrashHandler();
+        }
+    }
+
+    /**
+     * Returns the main configuration for this Yamcs instance
+     */
+    public YConfiguration getConfig() {
+        return config;
     }
 
     public ServiceWithConfig getServiceWithConfig(String serviceName) {
@@ -187,7 +202,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     public void startService(String serviceName) throws ConfigurationException, ValidationException, IOException {
-        YamcsServer.startService(instanceName, serviceName, serviceList);
+        YamcsServer.startService(name, serviceName, serviceList);
     }
 
     CrashHandler getCrashHandler() {
@@ -199,21 +214,21 @@ public class YamcsServerInstance extends YamcsInstanceService {
      * Returns Yamcs instance name
      */
     public String getName() {
-        return instanceName;
+        return name;
     }
 
     public YamcsInstance getInstanceInfo() {
-        YamcsInstance.Builder aib = YamcsInstance.newBuilder().setName(instanceName);
+        YamcsInstance.Builder aib = YamcsInstance.newBuilder().setName(name);
         InstanceState state = state();
         aib.setState(state);
         if (state == InstanceState.FAILED) {
             aib.setFailureCause(failureCause().toString());
         }
-        if (conf != null) { // Can be null for an offline instance
+        if (config != null) { // Can be null for an offline instance
             try {
                 MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-                if (!conf.isList("mdb")) {
-                    String configName = conf.getString("mdb");
+                if (!config.isList("mdb")) {
+                    String configName = config.getString("mdb");
                     mdb.setConfigName(configName);
                 }
                 XtceDb xtcedb = getXtceDb();
@@ -227,7 +242,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 }
                 aib.setMissionDatabase(mdb.build());
             } catch (ConfigurationException | DatabaseLoadException e) {
-                log.warn("Got error when finding the mission database for instance {}", instanceName, e);
+                log.warn("Got error when finding the mission database for instance {}", name, e);
             }
         }
         if (labels != null) {
