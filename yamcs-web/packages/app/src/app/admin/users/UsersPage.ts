@@ -21,7 +21,7 @@ export class UsersPage implements AfterViewInit {
   dataSource = new MatTableDataSource<UserInfo>();
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Users - Yamcs');
+    title.setTitle('Users');
     this.refreshDataSources();
   }
 

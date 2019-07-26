@@ -2,7 +2,7 @@ Name: yamcs-simulation
 Version: @@VERSION@@
 Release: @@RELEASE@@
 
-Group: MCS
+Group: Unspecified
 Summary: Example of how Yamcs can be configured, with simulated data.
 
 Vendor: Space Applications Services

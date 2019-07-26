@@ -88,7 +88,7 @@ public class CcsdsTmIndex implements TmIndex {
             throw new IOException("Failed to open rocksdb", e);
         }
         for (HttpServer httpServer : YamcsServer.getServer().getGlobalServices(HttpServer.class)) {
-            httpServer.addRouteHandler(instance, new CcsdsTmIndexRestHandler());
+            httpServer.addApiHandler(instance, new CcsdsTmIndexRestHandler());
         }
     }
 

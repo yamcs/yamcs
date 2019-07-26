@@ -2,8 +2,8 @@ Name: yamcs
 Version: @@VERSION@@
 Release: @@RELEASE@@
 
-Group: MCS
-Summary: Mission Control System
+Group: Unspecified
+Summary: Yamcs Mission Control
 
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>

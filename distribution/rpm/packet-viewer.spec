@@ -2,7 +2,7 @@ Name: packet-viewer
 Version: @@VERSION@@
 Release: @@RELEASE@@
 
-Group: MCS
+Group: Unspecified
 Summary: Yamcs Packet Viewer
 
 Vendor: Space Applications Services
