@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 
 /**
  * Streams are means to transport tuples.

@@ -16,7 +16,7 @@ To start developing your own Yamcs application, we recommend the [yamcs-maven-pl
 
 ## License
 
-Yamcs is licensed under Affero GPLv3. The yamcs-client and yamcs-api modules are licensed under LGPLv3.
+Yamcs is licensed under Affero GPLv3.
 
 For commercial licensing please contact [Space Applications Services](https://www.spaceapplications.com) with your use case.
 

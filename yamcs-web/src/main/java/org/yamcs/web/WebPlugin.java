@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.yamcs.Plugin;
+import org.yamcs.PluginException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
-import org.yamcs.api.Plugin;
-import org.yamcs.api.PluginException;
 import org.yamcs.http.HttpServer;
+import org.yamcs.logging.Log;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;

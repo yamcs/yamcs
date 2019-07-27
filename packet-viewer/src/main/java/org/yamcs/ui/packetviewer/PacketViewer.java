@@ -67,9 +67,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsException;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClientCallback;
@@ -969,7 +969,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void connectionFailed(String url, YamcsException exception) {
+    public void connectionFailed(String url, ClientException exception) {
         log("connection to " + url + " failed: " + exception);
     }
 

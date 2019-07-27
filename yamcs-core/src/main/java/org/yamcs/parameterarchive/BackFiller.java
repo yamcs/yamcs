@@ -18,7 +18,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
@@ -101,7 +101,6 @@ public class BackFiller implements StreamSubscriber {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void parseConfig(YConfiguration config) {
         warmupTime = 1000L * config.getInt("warmupTime", 60);
         maxSegmentSize = config.getInt("maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -22,7 +22,7 @@ public class RestClientTest extends AbstractIntegrationTest {
         Throwable e = null;
         try {
             restClient.blockingGetYamcsInstances();
-        } catch (YamcsApiException e1) {
+        } catch (ClientException e1) {
             e = e1;
         }
         assertNotNull(e);

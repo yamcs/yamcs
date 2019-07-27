@@ -11,10 +11,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.utils.YObjectLoader;
 
 public class YamlAuthModule implements AuthModule {

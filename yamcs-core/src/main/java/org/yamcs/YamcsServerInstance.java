@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.api.Log;
-import org.yamcs.api.ValidationException;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
@@ -48,6 +47,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     YamcsServerInstance(String name, InstanceMetadata metadata) {
         this.name = name;
+        this.metadata = metadata;
         log = new Log(getClass(), name);
     }
 

@@ -1,9 +1,6 @@
 package org.yamcs;
 
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.security.SecurityStore;
 
 /**

@@ -15,10 +15,10 @@ import javax.naming.directory.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
+import org.yamcs.Spec.OptionType;
 
 public class LdapAuthModule implements AuthModule {
 

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
@@ -670,7 +670,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
     }
 
@@ -687,7 +687,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("Should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
     }
 
@@ -741,7 +741,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
             restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
                     toJson(bulkb.build())).get();
         } catch (ExecutionException e) {
-            YamcsApiException e1 = (YamcsApiException) e.getCause();
+            ClientException e1 = (ClientException) e.getCause();
             assertTrue(e1.getMessage().contains("members don't match"));
             return;
         }
@@ -1233,12 +1233,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
-        YamcsApiException e1 = null;
+        ClientException e1 = null;
         try {
             httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
                     adminUsername, adminPassword, httpHeaders).get();
         } catch (ExecutionException e) {
-            e1 = (YamcsApiException) e.getCause();
+            e1 = (ClientException) e.getCause();
         }
         assertNotNull(e1);
         assertTrue(e1.toString().contains("304"));

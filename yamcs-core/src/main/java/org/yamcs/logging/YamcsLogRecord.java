@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.logging;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

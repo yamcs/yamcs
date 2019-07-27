@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs;
 
 public interface Plugin {
 

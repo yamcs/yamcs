@@ -1,6 +1,6 @@
-package org.yamcs.api;
+package org.yamcs;
 
-import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 
 import com.google.common.util.concurrent.AbstractService;
 

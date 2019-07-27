@@ -11,8 +11,8 @@ import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
 

@@ -20,7 +20,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.api.YamcsService;
+import org.yamcs.YamcsService;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;

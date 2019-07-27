@@ -4,6 +4,6 @@ java.util.logging.FileHandler.level = ALL
 java.util.logging.FileHandler.pattern = /opt/yamcs/log/yamcs-server.log
 java.util.logging.FileHandler.limit = 20000000
 java.util.logging.FileHandler.count = 50
-java.util.logging.FileHandler.formatter = org.yamcs.CompactFormatter
+java.util.logging.FileHandler.formatter = org.yamcs.logging.CompactFormatter
 
 org.yamcs.level = FINE

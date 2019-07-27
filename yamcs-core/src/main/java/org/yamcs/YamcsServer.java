@@ -34,14 +34,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.yamcs.api.InitException;
-import org.yamcs.api.Log;
-import org.yamcs.api.Plugin;
-import org.yamcs.api.PluginException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
-import org.yamcs.api.ValidationException;
-import org.yamcs.api.YamcsService;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 import org.yamcs.protobuf.YamcsManagement.TemplateVariable;

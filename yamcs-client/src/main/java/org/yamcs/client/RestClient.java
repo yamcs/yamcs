@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
@@ -124,11 +123,12 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body.getBytes(),
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
-                                         // unlikely to have this exception thrown
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
+                                                                                  // since if the code is not buggy it's
+            // unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
-        
+
         if (autoclose) {
             cf.whenComplete((v, t) -> {
                 close();
@@ -157,7 +157,8 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body,
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
+                                                                                  // since if the code is not buggy it's
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -213,9 +214,9 @@ public class RestClient {
         }
 
         @Override
-        public void receiveData(byte[] data) throws YamcsApiException {
+        public void receiveData(byte[] data) throws ClientException {
             if (data.length > MAX_MESSAGE_LENGTH) {
-                throw new YamcsApiException(
+                throw new ClientException(
                         "Message too long: received " + data.length + " max length: " + MAX_MESSAGE_LENGTH);
             }
 
@@ -228,7 +229,7 @@ public class RestClient {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
                 if (msgLength > MAX_MESSAGE_LENGTH) {
-                    throw new YamcsApiException("Message too long: decodedMessagLength: " + msgLength + " max length: "
+                    throw new ClientException("Message too long: decodedMessagLength: " + msgLength + " max length: "
                             + MAX_MESSAGE_LENGTH);
                 }
                 if (msgLength > writeOffset - bb.position()) {
@@ -258,12 +259,12 @@ public class RestClient {
 
     }
 
-    public static int readVarInt32(ByteBuffer bb) throws YamcsApiException {
+    public static int readVarInt32(ByteBuffer bb) throws ClientException {
         byte b = bb.get();
         int v = b & 0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
             if (shift > 28) {
-                throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
+                throw new ClientException("Invalid VarInt32: more than 5 bytes!");
             }
 
             if (!bb.hasRemaining()) {
@@ -323,6 +324,7 @@ public class RestClient {
             throw new RuntimeException(e);
         }
     }
+
     public boolean isInsecureTls() {
         return httpClient.isInsecureTls();
     }
@@ -335,17 +337,17 @@ public class RestClient {
     public void setInsecureTls(boolean insecureTls) {
         httpClient.setInsecureTls(insecureTls);
     }
-    
+
     /**
      * In case of https connections, this file contains the CA certificates that are used to verify server certificate.
      * 
-     * If this is not set, java will use the default mechanism with the trustStore that can be configured 
-     * via the javax.net.ssl.trustStore system property.
-     *  
+     * If this is not set, java will use the default mechanism with the trustStore that can be configured via the
+     * javax.net.ssl.trustStore system property.
+     * 
      * @param caCertFile
      */
     public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
         httpClient.setCaCertFile(caCertFile);
     }
-    
+
 }

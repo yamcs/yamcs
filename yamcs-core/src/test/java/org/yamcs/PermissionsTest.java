@@ -9,9 +9,9 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -98,7 +98,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     HttpMethod.POST, toJson(cmdreq)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
 
     }
@@ -124,7 +124,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -143,7 +143,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     toJson(bulkPvals.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            YamcsApiException e1 = (YamcsApiException) e.getCause();
+            ClientException e1 = (ClientException) e.getCause();
             RestExceptionData excData = e1.getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
@@ -158,13 +158,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
         try {
             updateCommandHistory(getRestClient("operator", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
 

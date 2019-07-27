@@ -19,7 +19,6 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.ActiveMQBufferOutputStream;
 
@@ -118,22 +117,22 @@ public class Protocol {
      */
     final static public SimpleString CMDQUEUE_CONTROL_ADDRESS = new SimpleString("cmdQueueControl");
 
-    public static MessageLite decode(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
+    public static MessageLite decode(ClientMessage msg, MessageLite.Builder builder) throws ArtemisApiException {
         try {
             ActiveMQBuffer buf = msg.getBodyBuffer();
             return builder.mergeFrom(new ActiveMQBufferInputStream(buf)).build();
         } catch (IOException e) {
-            throw new YamcsApiException(e.getMessage(), e);
+            throw new ArtemisApiException(e.getMessage(), e);
         }
     }
 
     public static MessageLite.Builder decodeBuilder(ClientMessage msg, MessageLite.Builder builder)
-            throws YamcsApiException {
+            throws ArtemisApiException {
         try {
             ActiveMQBuffer buf = msg.getBodyBuffer();
             return builder.mergeFrom(new ActiveMQBufferInputStream(buf));
         } catch (IOException e) {
-            throw new YamcsApiException(e.getMessage(), e);
+            throw new ArtemisApiException(e.getMessage(), e);
         }
     }
 

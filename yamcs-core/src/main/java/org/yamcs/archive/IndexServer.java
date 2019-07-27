@@ -10,7 +10,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
@@ -18,8 +20,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;

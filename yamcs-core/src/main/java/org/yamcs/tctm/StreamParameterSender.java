@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.TimeService;
 import org.yamcs.yarch.DataType;
@@ -34,7 +34,7 @@ public class StreamParameterSender {
     public StreamParameterSender(String yamcsInstance, Stream stream) {
         this.stream = stream;
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        log = new Log(this.getClass(), yamcsInstance);
+        log = new Log(getClass(), yamcsInstance);
     }
 
     /**

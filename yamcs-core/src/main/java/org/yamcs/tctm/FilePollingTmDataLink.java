@@ -8,8 +8,8 @@ import java.util.Arrays;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 import org.yamcs.time.TimeService;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,7 +31,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
 
     public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
-        log = new Log(this.getClass(), yamcsInstance);
+        log = new Log(getClass(), yamcsInstance);
 
         if (config.containsKey("incomingDir")) {
             incomingDir = Paths.get(config.getString("incomingDir"));

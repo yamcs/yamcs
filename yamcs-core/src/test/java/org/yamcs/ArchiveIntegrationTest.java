@@ -18,9 +18,9 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.client.BulkRestDataSender;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -455,7 +455,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
-        RestExceptionData excData = ((YamcsApiException) t1).getRestData();
+        RestExceptionData excData = ((ClientException) t1).getRestData();
         assertTrue(excData.hasDetail("rowsLoaded"));
         assertEquals(50, excData.getDetail("rowsLoaded"));
         verifyRecords("table1", 50);
@@ -481,8 +481,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
-        assertTrue(t1 instanceof YamcsApiException);
-        RestExceptionData excData = ((YamcsApiException) t1).getRestData();
+        assertTrue(t1 instanceof ClientException);
+        RestExceptionData excData = ((ClientException) t1).getRestData();
 
         assertTrue(excData.hasDetail("rowsLoaded"));
         int numRowsLoaded = (int) excData.getDetail("rowsLoaded");

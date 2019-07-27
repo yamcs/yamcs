@@ -1,27 +1,28 @@
-package org.yamcs.api;
+package org.yamcs.client;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * this was created because hornetq in its last incarnation throws Exception instead of HornetqException Should be used
- * for problems with encoding/decoding and sending/receiving messages via hornetq.
- */
-public class YamcsApiException extends Exception {
-    private static final long serialVersionUID = 1L;
-    RestExceptionData restData;
+@SuppressWarnings("serial")
+public class ClientException extends Exception {
 
-    public YamcsApiException(String message) {
+    private RestExceptionData restData;
+
+    public ClientException(String message) {
         super(message);
     }
 
-    public YamcsApiException(RestExceptionData restData) {
-        super(restData.getMessage());
-        this.restData = restData;
+    public ClientException(String message, Throwable t) {
+        super(message, t);
     }
 
-    public YamcsApiException(String message, Throwable t) {
-        super(message, t);
+    public ClientException(Throwable t) {
+        super(t);
+    }
+
+    public ClientException(RestExceptionData restData) {
+        super(restData.getMessage());
+        this.restData = restData;
     }
 
     public RestExceptionData getRestData() {

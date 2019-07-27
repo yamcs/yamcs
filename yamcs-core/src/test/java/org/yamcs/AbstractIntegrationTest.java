@@ -24,10 +24,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.client.BulkRestDataReceiver;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
@@ -498,8 +498,8 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void receiveData(byte[] data) throws YamcsApiException {
+        public void receiveData(byte[] data) throws ClientException {
             dist.add(data);
         }
-    };
+    }
 }

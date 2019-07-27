@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
+import org.yamcs.InitException;
 import org.yamcs.ProcessRunner;
+import org.yamcs.Spec;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
-import org.yamcs.api.ValidationException;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
