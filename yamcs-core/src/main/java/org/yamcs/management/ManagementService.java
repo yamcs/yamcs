@@ -538,7 +538,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void unregisterStream(String instance, String name) {
-        tableStreamListeners.forEach(l -> l.tableUnregistered(instance, name));
+        tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
     }
 
     static class LinkWithInfo {

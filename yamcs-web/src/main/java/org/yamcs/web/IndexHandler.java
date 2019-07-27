@@ -45,7 +45,7 @@ public class IndexHandler extends Handler {
     private HttpServer httpServer;
     private Path indexFile;
 
-    private String html;
+    private String cachedHtml;
     private FileTime cacheTime;
 
     public IndexHandler(HttpServer httpServer, Path webRoot) {
@@ -55,39 +55,45 @@ public class IndexHandler extends Handler {
 
     @Override
     public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if (req.method() == HttpMethod.GET) {
-            if (!Files.exists(indexFile)) {
-                HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            }
-
-            try {
-                FileTime lastModified = Files.getLastModifiedTime(indexFile);
-                if (!lastModified.equals(cacheTime)) {
-                    html = processTemplate();
-                    cacheTime = lastModified;
-                }
-            } catch (IOException e) {
-                HttpRequestHandler.sendPlainTextError(ctx, req, INTERNAL_SERVER_ERROR);
-                return;
-            }
-
-            ByteBuf body = ctx.alloc().buffer();
-            body.writeCharSequence(html, StandardCharsets.UTF_8);
-
-            HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML);
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
-
-            // Recommend clients to not cache this file. We hash all of our
-            // web files, and this reduces likelihood of attempting to load
-            // the app from an outdated index.html.
-            response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
-
-            HttpRequestHandler.sendResponse(ctx, req, response, true);
-        } else {
+        if (req.method() != HttpMethod.GET) {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
+            return;
         }
+        if (!Files.exists(indexFile)) {
+            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+            return;
+        }
+
+        String html = null;
+        try {
+            html = getHtml();
+        } catch (IOException e) {
+            HttpRequestHandler.sendPlainTextError(ctx, req, INTERNAL_SERVER_ERROR);
+            return;
+        }
+
+        ByteBuf body = ctx.alloc().buffer();
+        body.writeCharSequence(html, StandardCharsets.UTF_8);
+
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+
+        // Recommend clients to not cache this file. We hash all of our
+        // web files, and this reduces likelihood of attempting to load
+        // the app from an outdated index.html.
+        response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
+
+        HttpRequestHandler.sendResponse(ctx, req, response, true);
+    }
+
+    private synchronized String getHtml() throws IOException {
+        FileTime lastModified = Files.getLastModifiedTime(indexFile);
+        if (!lastModified.equals(cacheTime)) {
+            cachedHtml = processTemplate();
+            cacheTime = lastModified;
+        }
+        return cachedHtml;
     }
 
     @SuppressWarnings("unchecked")
