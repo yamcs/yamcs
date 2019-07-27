@@ -306,6 +306,16 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.6.0</version>
+          <configuration>
+            <!-- Trick exec-maven-plugin into suppressing useless Maven stacktraces
+                 when Yamcs exits with a non-zero return code (e.g. validation
+                 error) -->
+            <successCodes>
+              <successCode>0</successCode>
+              <successCode>1</successCode>
+              <successCode>255</successCode>
+            </successCodes>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>

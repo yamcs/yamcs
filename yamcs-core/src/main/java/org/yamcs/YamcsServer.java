@@ -93,8 +93,11 @@ public class YamcsServer {
     @Parameter(names = { "-v", "--verbose" }, description = "Increase console log output")
     private boolean verbose;
 
+    @Parameter(names = { "--etc-dir" }, description = "Path to config directory", converter = PathConverter.class)
+    private Path configDirectory = Paths.get("etc").toAbsolutePath();
+
     @Parameter(names = { "--log-config" }, description = "Logging configuration file", converter = PathConverter.class)
-    private Path logConfig = Paths.get("etc/logging.properties").toAbsolutePath();
+    private Path logConfig = configDirectory.resolve("logging.properties").toAbsolutePath();
 
     @Parameter(names = { "--log-output" }, description = "Redirect stdout/stderr to the log system")
     private boolean logOutput;
@@ -920,6 +923,10 @@ public class YamcsServer {
         return globalCrashHandler;
     }
 
+    public Path getConfigDirectory() {
+        return configDirectory;
+    }
+
     public Path getDataDirectory() {
         return dataDir;
     }
@@ -962,9 +969,24 @@ public class YamcsServer {
             System.exit(-1);
         }
 
+        System.setProperty("jxl.nowarnings", "true");
+        System.setProperty("jacorb.home", System.getProperty("user.dir"));
+        System.setProperty("javax.net.ssl.trustStore", YAMCS.configDirectory.resolve("trustStore").toString());
+
         try {
+            // Initialize logging first. It is used everywhere.
             setupLogging();
+
+            // Bootstrap YConfiguration such that it only considers physical files.
+            // Not classpath resources.
+            YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.configDirectory));
+
+            // Load the UTC-TAI.history file containing leap second information from the classpath
+            // TODO add a flag to override this with a physical file.
             TimeEncoding.setUp();
+
+            // Really start the server. This method will block until all initial
+            // plugins, instances and services have finished starting.
             setupYamcsServer();
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));

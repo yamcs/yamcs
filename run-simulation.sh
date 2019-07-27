@@ -13,5 +13,5 @@ YAMCS_OPTS="--log-output $@"
 
 mvn -q -f simulation/pom.xml exec:exec \
     -Dexec.executable="java" \
-    -Dexec.args="-classpath %classpath:etc org.yamcs.YamcsServer $YAMCS_OPTS"
+    -Dexec.args="-classpath %classpath org.yamcs.YamcsServer $YAMCS_OPTS"
 

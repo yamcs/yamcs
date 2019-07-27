@@ -3,6 +3,7 @@ package org.yamcs.tse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,12 +13,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
+import org.yamcs.FileBasedConfigurationResolver;
 import org.yamcs.InitException;
 import org.yamcs.ProcessRunner;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.Spec.OptionType;
+import org.yamcs.YamcsServer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
@@ -50,6 +53,7 @@ public class TseCommander extends ProcessRunner {
 
         YConfiguration yamcsArgs = config.getConfig("tctm");
         int tctmPort = yamcsArgs.getInt("port");
+        Path configDirectory = YamcsServer.getServer().getConfigDirectory();
 
         try {
             Map<String, Object> processRunnerConfig = new HashMap<>();
@@ -57,6 +61,7 @@ public class TseCommander extends ProcessRunner {
                     new File(System.getProperty("java.home"), "bin/java").toString(),
                     "-cp", System.getProperty("java.class.path"),
                     TseCommander.class.getName(),
+                    "--etc-dir", configDirectory.toString(),
                     "--telnet-port", "" + telnetPort,
                     "--tctm-port", "" + tctmPort));
             processRunnerConfig.put("logPrefix", "");
@@ -74,7 +79,9 @@ public class TseCommander extends ProcessRunner {
         configureLogging();
         TimeEncoding.setUp();
 
+        YConfiguration.setResolver(new FileBasedConfigurationResolver(runtimeOptions.configDirectory));
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
+
         List<Service> services = createServices(yconf, runtimeOptions);
 
         ServiceManager serviceManager = new ServiceManager(services);

@@ -1,19 +1,14 @@
 package org.yamcs.cli;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 
-import org.yamcs.ConfigurationException;
+import org.yamcs.FileBasedConfigurationResolver;
 import org.yamcs.YConfiguration;
-import org.yamcs.YConfiguration.ConfigurationNotFoundException;
-import org.yamcs.api.YConfigurationResolver;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.converters.PathConverter;
 
 /**
  * Command line utility for doing yamcs stuff.
@@ -34,16 +29,16 @@ public class YamcsAdminCli extends Command {
         addSubCommand(new XtceDbCli(this));
     }
 
-    @Parameter(names = "--etc-dir", description = "Override default Yamcs configuration directory")
-    private String etcDir;
+    @Parameter(names = "--etc-dir", converter = PathConverter.class, description = "Override default Yamcs configuration directory")
+    private Path configDirectory;
 
     @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
     boolean version;
 
     @Override
     void validate() throws ParameterException {
-        if (etcDir != null) {
-            YConfiguration.setResolver(new DirConfigurationResolver(new File(etcDir)));
+        if (configDirectory != null) {
+            YConfiguration.setResolver(new FileBasedConfigurationResolver(configDirectory));
         }
         selectedCommand.validate();
     }
@@ -66,39 +61,7 @@ public class YamcsAdminCli extends Command {
         System.exit(0);
     }
 
-    public File getEtcDir() {
-        return etcDir == null ? null : new File(etcDir);
-    }
-
-    /**
-     * searches all configuration files in a specific directory
-     * 
-     * @author nm
-     *
-     */
-    public static class DirConfigurationResolver implements YConfigurationResolver {
-        private File[] dirs;
-
-        public DirConfigurationResolver(File... dirs) {
-            this.dirs = dirs;
-        }
-
-        @Override
-        public InputStream getConfigurationStream(String name) throws ConfigurationException {
-            for (File dir : dirs) {
-                // see if the users has an own version of the file
-                File f = new File(dir, name);
-                if (f.exists()) {
-                    try {
-                        InputStream is = new FileInputStream(f);
-                        return is;
-                    } catch (FileNotFoundException e) {
-                        throw new ConfigurationNotFoundException("Cannot read file " + f + ": " + e.getMessage(), e);
-                    }
-                }
-            }
-            throw new ConfigurationNotFoundException(
-                    "Configuration file " + name + " does not exist. Searched in: " + Arrays.toString(dirs));
-        }
+    public Path getConfigDirectory() {
+        return configDirectory;
     }
 }
