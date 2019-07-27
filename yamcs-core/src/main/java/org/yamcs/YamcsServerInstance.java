@@ -31,29 +31,33 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
+
     private String name;
     Log log;
     TimeService timeService;
     private CrashHandler crashHandler;
-    // instance specific services
-    List<ServiceWithConfig> serviceList;
+    List<ServiceWithConfig> services;
     private XtceDb xtceDb;
 
-    Map<String, String> labels;
+    InstanceMetadata metadata;
     YConfiguration config;
 
     YamcsServerInstance(String name) {
+        this(name, new InstanceMetadata());
+    }
+
+    YamcsServerInstance(String name, InstanceMetadata metadata) {
         this.name = name;
         log = new Log(getClass(), name);
     }
 
     @Override
     protected void doStart() {
-        for (ServiceWithConfig swc : serviceList) {
+        for (ServiceWithConfig swc : services) {
             log.info("Starting service {}", swc.getName());
             swc.service.startAsync();
         }
-        for (ServiceWithConfig swc : serviceList) {
+        for (ServiceWithConfig swc : services) {
             log.info("Awaiting start of service {}", swc.getName());
             ServiceUtil.awaitServiceRunning(swc.service);
         }
@@ -62,12 +66,12 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStop() {
-        for (int i = serviceList.size() - 1; i >= 0; i--) {
-            ServiceWithConfig swc = serviceList.get(i);
+        for (int i = services.size() - 1; i >= 0; i--) {
+            ServiceWithConfig swc = services.get(i);
             swc.service.stopAsync();
         }
-        for (int i = serviceList.size() - 1; i >= 0; i--) {
-            ServiceWithConfig swc = serviceList.get(i);
+        for (int i = services.size() - 1; i >= 0; i--) {
+            ServiceWithConfig swc = services.get(i);
             ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
         }
 
@@ -97,7 +101,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             xtceDb = XtceDbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
-            serviceList = YamcsServer.createServices(name, serviceConfigs);
+            services = YamcsServer.createServices(name, serviceConfigs);
             notifyInitialized();
         } catch (Exception e) {
             notifyFailed(e);
@@ -120,7 +124,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         // set to null to free some memory
         xtceDb = null;
-        serviceList = null;
+        services = null;
     }
 
     public void loadTimeService() {
@@ -163,11 +167,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     public ServiceWithConfig getServiceWithConfig(String serviceName) {
-        if (serviceList == null) {
+        if (services == null) {
             return null;
         }
 
-        for (ServiceWithConfig swc : serviceList) {
+        for (ServiceWithConfig swc : services) {
             if (swc.getName().equals(serviceName)) {
                 return swc;
             }
@@ -182,15 +186,15 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @SuppressWarnings("unchecked")
     public <T extends Service> List<T> getServices(Class<T> serviceClass) {
-        List<T> services = new ArrayList<>();
-        if (serviceList != null) {
-            for (ServiceWithConfig swc : serviceList) {
+        List<T> result = new ArrayList<>();
+        if (services != null) {
+            for (ServiceWithConfig swc : services) {
                 if (serviceClass.isInstance(swc.service)) {
-                    services.add((T) swc.service);
+                    result.add((T) swc.service);
                 }
             }
         }
-        return services;
+        return result;
     }
 
     public TimeService getTimeService() {
@@ -198,11 +202,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     public List<ServiceWithConfig> getServices() {
-        return new ArrayList<>(serviceList);
+        return new ArrayList<>(services);
     }
 
     public void startService(String serviceName) throws ConfigurationException, ValidationException, IOException {
-        YamcsServer.startService(name, serviceName, serviceList);
+        YamcsServer.startService(name, serviceName, services);
     }
 
     CrashHandler getCrashHandler() {
@@ -210,8 +214,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     /**
-     * 
-     * Returns Yamcs instance name
+     * Returns the name of this Yamcs instance
      */
     public String getName() {
         return name;
@@ -245,17 +248,15 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 log.warn("Got error when finding the mission database for instance {}", name, e);
             }
         }
-        if (labels != null) {
-            aib.putAllLabels(labels);
-        }
+        aib.putAllLabels(getLabels());
         return aib.build();
     }
 
-    public void setLabels(Map<String, String> labels) {
-        this.labels = labels;
+    public Object getMetadata(Object key) {
+        return metadata.get(key);
     }
 
     public Map<String, String> getLabels() {
-        return labels;
+        return metadata.getLabels();
     }
 }

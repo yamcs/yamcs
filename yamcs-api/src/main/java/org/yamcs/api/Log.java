@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
-@Experimental
 public class Log {
 
     private final Logger julLogger;

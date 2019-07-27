@@ -326,7 +326,7 @@ public class YamcsServer {
         }
     }
 
-    public void createGlobalServicesAndInstances() throws ConfigurationException, IOException {
+    public void addGlobalServicesAndInstances() throws IOException {
         serverId = deriveServerId();
         deriveSecretKey();
 
@@ -368,7 +368,7 @@ public class YamcsServer {
                     throw new ConfigurationException("Duplicate instance specified: '" + name + "'");
                 }
                 YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);
-                createInstance(name, instanceConfig);
+                addInstance(name, instanceConfig, new InstanceMetadata());
                 instanceCount++;
             }
         }
@@ -384,30 +384,22 @@ public class YamcsServer {
 
                 String instanceName = m.group(1);
                 boolean online = m.group(2) == null;
-                YamcsServerInstance ysi;
                 if (online) {
                     instanceCount++;
                     if (instanceCount > maxOnlineInstances) {
                         throw new ConfigurationException("Instance limit exceeded: " + instanceCount);
                     }
                     YConfiguration instanceConfig = loadInstanceConfig(instanceName);
-                    ysi = createInstance(instanceName, instanceConfig);
+                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
+                    addInstance(instanceName, instanceConfig, instanceMetadata);
                 } else {
                     if (instances.size() > maxNumInstances) {
                         LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
                                 maxNumInstances, instanceName);
                         continue;
                     }
-                    ysi = createOfflineInstance(instanceName);
-                }
-
-                Path metadataFile = instanceDefDir.resolve("yamcs." + instanceName + ".metadata");
-                if (Files.exists(metadataFile)) {
-                    try (InputStream in = Files.newInputStream(metadataFile)) {
-                        Map<String, Object> metadata = new Yaml().loadAs(in, Map.class);
-                        Map<String, String> labels = (Map<String, String>) metadata.get("labels");
-                        ysi.setLabels(labels);
-                    }
+                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
+                    addOfflineInstance(instanceName, instanceMetadata);
                 }
             }
         }
@@ -510,17 +502,29 @@ public class YamcsServer {
     }
 
     private YConfiguration loadInstanceConfig(String instanceName) {
-        Path f = instanceDefDir.resolve("yamcs." + instanceName + ".yaml");
-        if (Files.exists(f)) {
-            try (InputStream is = Files.newInputStream(f)) {
-                String confPath = f.toAbsolutePath().toString();
+        Path configFile = instanceDefDir.resolve("yamcs." + instanceName + ".yaml");
+        if (Files.exists(configFile)) {
+            try (InputStream is = Files.newInputStream(configFile)) {
+                String confPath = configFile.toAbsolutePath().toString();
                 return new YConfiguration("yamcs." + instanceName, is, confPath);
             } catch (IOException e) {
-                throw new ConfigurationException("Cannot load configuration from " + f.toAbsolutePath(), e);
+                throw new ConfigurationException("Cannot load configuration from " + configFile.toAbsolutePath(), e);
             }
         } else {
             return YConfiguration.getConfiguration("yamcs." + instanceName);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private InstanceMetadata loadInstanceMetadata(String instanceName) throws IOException {
+        Path metadataFile = instanceDefDir.resolve("yamcs." + instanceName + ".metadata");
+        if (Files.exists(metadataFile)) {
+            try (InputStream in = Files.newInputStream(metadataFile)) {
+                Map<String, Object> map = new Yaml().loadAs(in, Map.class);
+                return new InstanceMetadata(map);
+            }
+        }
+        return new InstanceMetadata();
     }
 
     /**
@@ -614,86 +618,97 @@ public class YamcsServer {
      *            the name of the new instance
      * @param config
      *            the configuration for this instance (equivalent of yamcs.instance.yaml)
+     * @param metadata
+     *            the metadata associated to this instance (labels or other attributes)
      * 
      * @return the newly created instance
      */
-    public synchronized YamcsServerInstance createInstance(String name, YConfiguration conf) {
+    public synchronized YamcsServerInstance addInstance(String name, YConfiguration config, InstanceMetadata metadata) {
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
         LOG.info("Loading online instance '{}'", name);
-        YamcsServerInstance ysi = new YamcsServerInstance(name);
+        YamcsServerInstance ysi = new YamcsServerInstance(name, metadata);
         instances.put(name, ysi);
-        ysi.init(conf);
+        ysi.init(config);
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
 
-    public synchronized YamcsServerInstance createOfflineInstance(String name) {
+    public synchronized YamcsServerInstance addOfflineInstance(String name, InstanceMetadata metadata) {
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
         LOG.debug("Loading offline instance '{}'", name);
-        YamcsServerInstance ysi = new YamcsServerInstance(name);
+        YamcsServerInstance ysi = new YamcsServerInstance(name, metadata);
         instances.put(name, ysi);
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
 
     /**
-     * Create an instance from a template
+     * Create a new instance based on a template.
      * 
      * @param name
+     *            the name of the instance
      * @param template
+     *            the name of an available template
      * @param templateArgs
+     *            arguments to use while processing the template
      * @param labels
-     * @return
+     *            labels associated to this instance
+     * @param customMetadata
+     *            custom metadata associated with this instance.
+     * @throws IOException
+     *             when a disk operation failed
+     * @return the newly create instance
      */
     public synchronized YamcsServerInstance createInstance(String name, String template,
-            Map<String, Object> templateArgs, Map<String, String> labels) {
+            Map<String, Object> templateArgs, Map<String, String> labels, Map<String, Object> customMetadata)
+            throws IOException {
         if (instances.containsKey("name")) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
-        try {
-            String tmplResource = "/instance-templates/" + template + "/template.yaml";
-            InputStream is = YConfiguration.getResolver().getConfigurationStream(tmplResource);
 
-            StringBuilder buf = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    buf.append(line).append("\n");
-                }
+        // Build instance metadata as a combination of internal properties and custom metadata from the caller
+        InstanceMetadata metadata = new InstanceMetadata();
+        metadata.setTemplate(template);
+        metadata.setTemplateArgs(templateArgs);
+        metadata.setLabels(labels);
+        customMetadata.forEach((k, v) -> metadata.put(k, v));
+
+        String tmplResource = "/instance-templates/" + template + "/template.yaml";
+        InputStream is = YConfiguration.getResolver().getConfigurationStream(tmplResource);
+
+        StringBuilder buf = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                buf.append(line).append("\n");
             }
-            String source = buf.toString();
-            String processed = TemplateProcessor.process(source, templateArgs);
-
-            Path confFile = instanceDefDir.resolve("yamcs." + name + ".yaml");
-            try (FileWriter writer = new FileWriter(confFile.toFile())) {
-                writer.write(processed);
-            }
-
-            Path metadataFile = instanceDefDir.resolve("yamcs." + name + ".metadata");
-            try (Writer writer = Files.newBufferedWriter(metadataFile)) {
-                Map<String, Object> metadata = new HashMap<>();
-                metadata.put("templateArgs", templateArgs);
-                metadata.put("labels", labels);
-                new Yaml().dump(metadata, writer);
-            }
-
-            YConfiguration instanceConfig;
-            try (InputStream fis = Files.newInputStream(confFile)) {
-                String subSystem = "yamcs." + name;
-                String confPath = confFile.toString();
-                instanceConfig = new YConfiguration(subSystem, fis, confPath);
-            }
-
-            YamcsServerInstance ysi = createInstance(name, instanceConfig);
-            ysi.setLabels(labels);
-            return ysi;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
+        String source = buf.toString();
+        String processed = TemplateProcessor.process(source, metadata.getTemplateArgs());
+
+        Path confFile = instanceDefDir.resolve("yamcs." + name + ".yaml");
+        try (FileWriter writer = new FileWriter(confFile.toFile())) {
+            writer.write(processed);
+        }
+
+        Path metadataFile = instanceDefDir.resolve("yamcs." + name + ".metadata");
+        try (Writer writer = Files.newBufferedWriter(metadataFile)) {
+            Map<String, Object> metadataMap = metadata.toMap();
+            new Yaml().dump(metadataMap, writer);
+        }
+
+        YConfiguration instanceConfig;
+        try (InputStream fis = Files.newInputStream(confFile)) {
+            String subSystem = "yamcs." + name;
+            String confPath = confFile.toString();
+            instanceConfig = new YConfiguration(subSystem, fis, confPath);
+        }
+
+        return addInstance(name, instanceConfig, metadata);
     }
 
     private String deriveServerId() {
@@ -1022,7 +1037,7 @@ public class YamcsServer {
         YAMCS.discoverPlugins();
         YAMCS.loadConfiguration();
         YAMCS.discoverTemplates();
-        YAMCS.createGlobalServicesAndInstances();
+        YAMCS.addGlobalServicesAndInstances();
         YAMCS.loadPlugins();
         YAMCS.startServices();
 

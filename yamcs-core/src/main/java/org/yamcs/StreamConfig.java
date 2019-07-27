@@ -35,6 +35,7 @@ public class StreamConfig {
         return instances.computeIfAbsent(yamcsInstance, k -> new StreamConfig(k));
     }
 
+    @SuppressWarnings("unchecked")
     private StreamConfig(String yamcsInstance) {
         XtceDb xtceDb = XtceDbFactory.getInstance(yamcsInstance);
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(yamcsInstance);

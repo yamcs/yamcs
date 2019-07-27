@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
+import org.yamcs.InstanceMetadata;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.BadRequestException;
@@ -40,6 +42,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  * Handles incoming requests related to yamcs instances.
  */
 public class InstanceRestHandler extends RestHandler {
+
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     public static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
@@ -158,11 +161,17 @@ public class InstanceRestHandler extends RestHandler {
             throw new BadRequestException("An instance named '" + instanceName + "' already exists");
         }
 
+        String template = request.getTemplate();
+        Map<String, Object> templateArgs = new HashMap<>(request.getTemplateArgsMap());
+        Map<String, String> labels = request.getLabelsMap();
+        // Not (yet) supported via HTTP. If we do, should probably use JSON
+        Map<String, Object> customMetadata = Collections.emptyMap();
+        InstanceMetadata metadata = new InstanceMetadata();
+        request.getLabelsMap().forEach((k, v) -> metadata.putLabel(k, v));
+
         CompletableFuture<YamcsServerInstance> cf = CompletableFuture.supplyAsync(() -> {
             try {
-                yamcsServer.createInstance(instanceName, request.getTemplate(),
-                        new HashMap<>(request.getTemplateArgsMap()),
-                        request.getLabelsMap());
+                yamcsServer.createInstance(instanceName, template, templateArgs, labels, customMetadata);
                 return yamcsServer.startInstance(instanceName);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -205,7 +214,6 @@ public class InstanceRestHandler extends RestHandler {
     }
 
     private Predicate<YamcsServerInstance> getPredicate(Result pr) throws HttpException {
-
         if ("state".equals(pr.key)) {
             try {
                 InstanceState state = InstanceState.valueOf(pr.value.toUpperCase());
