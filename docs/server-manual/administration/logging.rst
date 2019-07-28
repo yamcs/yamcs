@@ -7,8 +7,8 @@ By default, if unconfigured, Yamcs will emit messages at INFO level to stdout.
 
 The ``yamcsd`` program acceps some options to modify these defaults. In particular:
 
-``--verbose``
-    The numeric verbosity level, where 0 = OFF, 1 = WARNING, 2 = INFO, 3 = FINE and 4 = ALL
+``--log``
+    The numeric verbosity level, where 0 = OFF, 1 = WARNING, 2 = INFO, 3 = FINE and 4 = ALL. Default: 2
 
 ``--no-color``
     Turn off ANSI color codes
@@ -25,7 +25,7 @@ A full description of the syntax is beyond the scope of this manual, but see thi
 
     handlers = java.util.logging.ConsoleHandler, java.util.logging.FileHandler
 
-    java.util.logging.ConsoleHandler.level = WARNING
+    java.util.logging.ConsoleHandler.level = ERROR
     java.util.logging.ConsoleHandler.formatter = org.yamcs.logging.CompactFormatter
 
     java.util.logging.FileHandler.level = ALL
@@ -36,7 +36,7 @@ A full description of the syntax is beyond the scope of this manual, but see thi
 
     org.yamcs.level = FINE
 
-There are two handlers. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. A ConsoleHandler prints its messages to stdout. The console output can for example be consumed by init systems such as systemd.
+There are two handlers. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. A ConsoleHandler prints its messages to stdout. The console output can for example be consumed by an init system like systemd.
 
 This configuration will output messages coming from ``org.yamcs`` loggers at maximum FINE level. Each handler may apply a further level restriction. This is applied after the former level restriction. For example the above FileHandler has level ALL, however it will never print messages more verbose than FINE.
 

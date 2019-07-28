@@ -278,10 +278,11 @@ public class JMXService extends AbstractYamcsService
         int clientId = client.getId();
         Processor processor = client.getProcessor();
         String instance = null;
+        String processorName = null;
         if (processor != null) {
             instance = processor.getInstance();
+            processorName = processor.getName();
         }
-        String processorName = client.getProcessor().getName();
         return ObjectName.getInstance(
                 TOP_LEVEL_NAME + "." + instance + ":type=clients,processor=" + processorName + ",id=" + clientId);
     }

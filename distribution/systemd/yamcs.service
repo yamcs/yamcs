@@ -1,15 +1,37 @@
 [Unit]
 Description=Yamcs Mission Control
+Documentation=https://yamcs.org/docs
 After=network-online.target remote-fs.target
 Wants=network-online.target remote-fs.target
 
 [Service]
-Type=forking
-ExecStart=/etc/init.d/yamcs-server start
-ExecStop=/etc/init.d/yamcs-server stop
-PIDFile=/var/run/yamcs-server.pid
+Type=notify
+User=yamcs
+Group=yamcs
+ExecStart=/opt/yamcs/bin/yamcsd --no-color
+TimeoutStartSec=120
+
+# The notify is being sent by a onetime child process of the
+# Yamcs java executable. Therefore provide entire cgroup access
+# to the notify socket.
+NotifyAccess=all
+
+# First attempt a graceful shutdown through the main process
+# Only if that fails kill remaining processes in the cgroup
+# directly.
+KillMode=mixed
+
+# 143 (= 128 + 15) means that java was killed with signal 15
+# SIGTERM (the default behaviour of systemd). 
 SuccessExitStatus=143
+
+# Set a high open file limit to avoid problems with rocksdb
+# opening too many files
+LimitNOFILE=10000
 
 [Install]
 WantedBy=multi-user.target
+
+# Install some aliases for convenience.
+# These are only applied when the service is enabled
 Alias=yamcsd.service yamcs-server.service

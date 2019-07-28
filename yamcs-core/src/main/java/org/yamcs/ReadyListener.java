@@ -2,10 +2,10 @@ package org.yamcs;
 
 /**
  * Listener that is called when Yamcs has fully started. Register instances at
- * {@link YamcsServer#addStartListener(StartListener)}
+ * {@link YamcsServer#addReadyListener(ReadyListener)}
  */
 @FunctionalInterface
-public interface StartListener {
+public interface ReadyListener {
 
-    public void onStart();
+    public void onReady();
 }

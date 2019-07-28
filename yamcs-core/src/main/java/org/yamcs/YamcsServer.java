@@ -98,25 +98,22 @@ public class YamcsServer {
 
     private CrashHandler globalCrashHandler;
 
-    @Parameter(names = "--version", description = "Print version information and quit")
+    @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
     private boolean version;
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Level of verbosity")
+    @Parameter(names = "--log", description = "Level of verbosity")
     private int verbose = 2;
 
     @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
     private Path configDirectory = Paths.get("etc").toAbsolutePath();
 
-    @Parameter(names = "--log-config", description = "Logging configuration file", converter = PathConverter.class)
-    private Path logConfig = configDirectory.resolve("logging.properties").toAbsolutePath();
-
-    @Parameter(names = "--log-output", description = "Redirect stdout/stderr to the log system")
-    private boolean logOutput;
+    @Parameter(names = "--no-stream-redirect", description = "Do not redirect stdout/stderr to the log system")
+    private boolean noStreamRedirect;
 
     @Parameter(names = "--no-color", description = "Turn off console log colorization")
     private boolean noColor;
 
-    @Parameter(names = { "-h", "--help" }, help = true, description = "Show usage")
+    @Parameter(names = { "-h", "--help" }, help = true, hidden = true)
     private boolean help;
 
     private YConfiguration config;
@@ -125,7 +122,7 @@ public class YamcsServer {
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
     Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
     Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
-    List<StartListener> startListeners = new ArrayList<>();
+    List<ReadyListener> readyListeners = new ArrayList<>();
 
     private SecurityStore securityStore;
 
@@ -764,8 +761,8 @@ public class YamcsServer {
      * Register a listener that will be called when Yamcs has fully started. If you register a listener after Yamcs has
      * already started, your callback will not be executed.
      */
-    public void addStartListener(StartListener startListener) {
-        startListeners.add(startListener);
+    public void addReadyListener(ReadyListener readyListener) {
+        readyListeners.add(readyListener);
     }
 
     /**
@@ -822,40 +819,28 @@ public class YamcsServer {
             System.exit(-1);
         }
 
-        long t1 = System.nanoTime();
-
-        long instanceCount = YAMCS.getOnlineInstanceCount();
-        long serviceCount = YAMCS.globalServiceList.size() + getInstances().stream()
-                .map(instance -> instance.services != null ? instance.services.size() : 0)
-                .reduce(0, Integer::sum);
-
-        // Output string to signal to wrapper scripts (e.g. init.d)
-        // that Yamcs has fully started. If you modify this, then
-        // also modify the init.d script. Remark that we use
-        // System.out instead of a log statement because the init.d
-        // wrapper does not know the location of the log files.
-        System.out.println(String.format("Yamcs started in %dms. Started %d of %d instances and %d services",
-                NANOSECONDS.toMillis(t1 - t0), instanceCount, YAMCS.instances.size(), serviceCount));
-
-        YAMCS.startListeners.forEach(StartListener::onStart);
+        YAMCS.reportReady(System.nanoTime() - t0);
     }
 
     private static void setupLogging() throws SecurityException, IOException {
         if (System.getProperty("java.util.logging.config.file") != null) {
             LOG.info("Logging configuration overriden via java property");
-        } else if (Files.exists(YAMCS.logConfig)) {
-            try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
-                LogManager.getLogManager().readConfiguration(in);
-                LOG.info("Logging enabled using {}", YAMCS.logConfig);
-            }
         } else {
-            setupDefaultLogging();
+            Path configFile = YAMCS.configDirectory.resolve("logging.properties").toAbsolutePath();
+            if (Files.exists(configFile)) {
+                try (InputStream in = Files.newInputStream(configFile)) {
+                    LogManager.getLogManager().readConfiguration(in);
+                    LOG.info("Logging enabled using {}", configFile);
+                }
+            } else {
+                setupDefaultLogging();
+            }
         }
 
         // Intercept stdout/stderr for sending to the log system. Only
         // catches line-terminated string, but this should cover most
         // uses cases.
-        if (YAMCS.logOutput) {
+        if (!YAMCS.noStreamRedirect) {
             Logger stdoutLogger = Logger.getLogger("stdout");
             System.setOut(new PrintStream(System.out) {
                 @Override
@@ -1129,5 +1114,38 @@ public class YamcsServer {
                 ysi.startAsync();
             }
         }
+    }
+
+    private void reportReady(long bootTime) {
+        long instanceCount = getOnlineInstanceCount();
+        long serviceCount = globalServiceList.size() + getInstances().stream()
+                .map(instance -> instance.services != null ? instance.services.size() : 0)
+                .reduce(0, Integer::sum);
+
+        String msg = String.format("Yamcs started in %dms. Started %d of %d instances and %d services",
+                NANOSECONDS.toMillis(bootTime), instanceCount, instances.size(), serviceCount);
+
+        if (noStreamRedirect) {
+            // The init.d script uses this, by grepping for a known string
+            // Note that the init.d script cannot grep the real log file because it
+            // does not know its location.
+            System.out.println(msg);
+        } else {
+            // Associate the message with a specific logger
+            LOG.info(msg);
+        }
+
+        // If started through systemd with Type=notify, Yamcs will have NOTIFY_SOCKET
+        // env set. We use systemd-notify to report success which will inherit our env.
+        if (System.getenv("NOTIFY_SOCKET") != null) {
+            try {
+                new ProcessBuilder("systemd-notify", "--ready").inheritIO().start();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        // Report start success to internal listeners
+        readyListeners.forEach(ReadyListener::onReady);
     }
 }

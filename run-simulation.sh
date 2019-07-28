@@ -9,7 +9,7 @@
 # The only reason we are not using it here, is to avoid a cyclic
 # dependency between both projects.
 
-YAMCS_OPTS="$YAMCS_OPTS --log-output $@"
+YAMCS_OPTS="$YAMCS_OPTS $@"
 
 mvn -q -f simulation/pom.xml exec:exec \
     -Dexec.executable="java" \

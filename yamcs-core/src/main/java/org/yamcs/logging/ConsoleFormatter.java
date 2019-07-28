@@ -81,9 +81,9 @@ public class ConsoleFormatter extends Formatter {
         }
 
         if (enableAnsiColors && ("stdout".equals(name) || "stderr".equals(name))) {
-            colorize(sb, r.getMessage(), 0, 33);
+            colorize(sb, formatMessage(r), 0, 33);
         } else {
-            sb.append(r.getMessage());
+            sb.append(formatMessage(r));
         }
 
         Throwable t = r.getThrown();
