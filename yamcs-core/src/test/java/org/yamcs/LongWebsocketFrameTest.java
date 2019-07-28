@@ -43,8 +43,8 @@ public class LongWebsocketFrameTest {
         options = httpServer.getSpec().validate(options);
         httpServer.init(null, YConfiguration.wrap(options));
         httpServer.startServer();
-        YamcsServer.setupYamcsServer();
-        Logger.getLogger("org.yamcs.api.ws.WebSocketClientHandler").setLevel(Level.OFF);
+        YamcsServer.getServer().start();
+        Logger.getLogger("org.yamcs.client.WebSocketClientHandler").setLevel(Level.OFF);
     }
 
     @AfterClass

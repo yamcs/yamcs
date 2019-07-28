@@ -3,6 +3,7 @@ package org.yamcs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -11,7 +12,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 
 /**
  * Specifies the valid structure of a {@link YConfiguration} instance. While not strictly 'validation', the spec also
@@ -20,6 +20,14 @@ import org.yamcs.YConfiguration;
 public class Spec {
 
     private static final Logger log = LoggerFactory.getLogger(Spec.class);
+
+    /**
+     * Spec implementation that allows any key.
+     */
+    public static final Spec ANY = new Spec();
+    static {
+        ANY.allowUnknownKeys = true;
+    }
 
     private Map<String, Option> options = new HashMap<>();
 
@@ -167,7 +175,8 @@ public class Spec {
         }
 
         // Build a new set of args where defaults have been entered
-        Map<String, Object> result = new HashMap<>();
+        // Makes this a linked hashmap to keep the defined order
+        Map<String, Object> result = new LinkedHashMap<>();
 
         // Check the provided arguments
         for (Entry<String, Object> entry : args.entrySet()) {
@@ -227,7 +236,7 @@ public class Spec {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> makeSafe(Map<String, Object> unsafeArgs, boolean mask) {
-        Map<String, Object> safeArgs = new HashMap<>();
+        Map<String, Object> safeArgs = new LinkedHashMap<>();
         for (Entry<String, Object> arg : unsafeArgs.entrySet()) {
             Option option = options.get(arg.getKey());
             if (option == null) {
@@ -426,6 +435,9 @@ public class Spec {
          * type indicates the type of each element of that list.
          */
         public Option withElementType(OptionType elementType) {
+            if (type != OptionType.LIST && type != OptionType.LIST_OR_ELEMENT) {
+                throw new IllegalArgumentException("Element type can only be set on LIST or LIST_OR_ELEMENT");
+            }
             this.elementType = elementType;
             return this;
         }
@@ -509,7 +521,7 @@ public class Spec {
                 return defaultValue;
             }
             if (applySpecDefaults) {
-                Map<String, Object> result = new HashMap<>();
+                Map<String, Object> result = new LinkedHashMap<>();
                 for (Option option : spec.options.values()) {
                     Object subDefaultValue = option.getDefaultValue();
                     if (subDefaultValue != null) {

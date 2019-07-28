@@ -39,11 +39,11 @@ import org.yamcs.security.User;
 import com.google.common.util.concurrent.AbstractService;
 
 public class ProcessorsTest {
-    // static EmbeddedActiveMQ artemisServer;
+
     @BeforeClass
     public static void setup() throws Exception {
         YConfiguration.setupTest("ProcessorsTest");
-        YamcsServer.setupYamcsServer();
+        YamcsServer.getServer().start();
     }
 
     @AfterClass
@@ -256,5 +256,4 @@ public class ProcessorsTest {
             proc.setPacketProvider(this);
         }
     }
-
 }

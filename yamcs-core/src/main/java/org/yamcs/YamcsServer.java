@@ -258,189 +258,6 @@ public class YamcsServer {
         return config;
     }
 
-    private void loadConfiguration() {
-        Spec serviceSpec = new Spec();
-        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
-        serviceSpec.addOption("args", OptionType.ANY);
-
-        Spec spec = new Spec();
-        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
-                .withSpec(serviceSpec);
-        spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
-        spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
-        spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
-        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
-        spec.addOption("serverId", OptionType.STRING);
-        spec.addOption("secretKey", OptionType.STRING);
-
-        // TODO The goal is to (over time) be able to remove this relaxation
-        spec.allowUnknownKeys(true);
-
-        config = YConfiguration.getConfiguration("yamcs");
-        try {
-            config = spec.validate(config);
-        } catch (ValidationException e) {
-            throw new ConfigurationException(String.format(
-                    "Validation error in %s: %s", config.getPath(), e.getMessage()));
-        }
-    }
-
-    private void discoverTemplates() throws IOException {
-        Path templatesDir = Paths.get("etc", "instance-templates");
-        if (!Files.exists(templatesDir)) {
-            return;
-        }
-
-        try (Stream<Path> dirStream = Files.list(templatesDir)) {
-            dirStream.filter(Files::isDirectory).forEach(p -> {
-                if (Files.exists(p.resolve("template.yaml"))) {
-                    String name = p.getFileName().toString();
-                    InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
-                            .setName(name);
-
-                    Path varFile = p.resolve("variables.yaml");
-                    if (Files.exists(varFile)) {
-                        try (InputStream in = new FileInputStream(varFile.toFile())) {
-                            @SuppressWarnings("unchecked")
-                            List<Map<String, Object>> varDefs = (List<Map<String, Object>>) new Yaml().load(in);
-                            for (Map<String, Object> varDef : varDefs) {
-                                TemplateVariable.Builder varb = TemplateVariable.newBuilder();
-                                varb.setName(YConfiguration.getString(varDef, "name"));
-                                varb.setRequired(YConfiguration.getBoolean(varDef, "required", true));
-                                if (varDef.containsKey("description")) {
-                                    varb.setDescription(YConfiguration.getString(varDef, "description"));
-                                }
-                                templateb.addVariable(varb);
-                            }
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    }
-
-                    YAMCS.instanceTemplates.put(name, templateb.build());
-                }
-            });
-        }
-    }
-
-    public void addGlobalServicesAndInstances() throws IOException {
-        serverId = deriveServerId();
-        deriveSecretKey();
-
-        if (config.containsKey("crashHandler")) {
-            globalCrashHandler = loadCrashHandler();
-        } else {
-            globalCrashHandler = new LogCrashHandler();
-        }
-        dataDir = Paths.get(config.getString("dataDir"));
-        incomingDir = Paths.get(config.getString("incomingDir"));
-        instanceDefDir = dataDir.resolve("instance-def");
-
-        if (YConfiguration.configDirectory != null) {
-            cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
-        } else {
-            cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
-        }
-
-        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
-        Files.createDirectories(globalDir);
-        Files.createDirectories(instanceDefDir);
-
-        try {
-            securityStore = new SecurityStore();
-        } catch (InitException e) {
-            throw new ConfigurationException(e);
-        }
-
-        if (config.containsKey("services")) {
-            List<YConfiguration> services = config.getServiceConfigList("services");
-            globalServiceList = createServices(null, services);
-        }
-
-        // Load user-configured instances. These are the ones that are explictly mentioned in yamcs.yaml
-        int instanceCount = 0;
-        if (config.containsKey("instances")) {
-            for (String name : config.<String> getList("instances")) {
-                if (instances.containsKey(name)) {
-                    throw new ConfigurationException("Duplicate instance specified: '" + name + "'");
-                }
-                YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);
-                addInstance(name, instanceConfig, new InstanceMetadata());
-                instanceCount++;
-            }
-        }
-
-        // Load instances saved in storage
-        try (Stream<Path> paths = Files.list(instanceDefDir)) {
-            for (Path instanceDir : paths.collect(Collectors.toList())) {
-                String dirname = instanceDir.getFileName().toString();
-                Matcher m = INSTANCE_PATTERN.matcher(dirname);
-                if (!m.matches()) {
-                    continue;
-                }
-
-                String instanceName = m.group(1);
-                boolean online = m.group(2) == null;
-                if (online) {
-                    instanceCount++;
-                    if (instanceCount > maxOnlineInstances) {
-                        throw new ConfigurationException("Instance limit exceeded: " + instanceCount);
-                    }
-                    YConfiguration instanceConfig = loadInstanceConfig(instanceName);
-                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
-                    addInstance(instanceName, instanceConfig, instanceMetadata);
-                } else {
-                    if (instances.size() > maxNumInstances) {
-                        LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
-                                maxNumInstances, instanceName);
-                        continue;
-                    }
-                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
-                    addOfflineInstance(instanceName, instanceMetadata);
-                }
-            }
-        }
-    }
-
-    private CrashHandler loadCrashHandler() throws IOException {
-        if (config.containsKey("crashHandler", "args")) {
-            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
-                    config.getSubMap("crashHandler", "args"));
-        } else {
-            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
-        }
-    }
-
-    private void discoverPlugins() {
-        List<String> disabledPlugins;
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        if (yconf.containsKey("disabledPlugins")) {
-            disabledPlugins = yconf.getList("disabledPlugins");
-        } else {
-            disabledPlugins = Collections.emptyList();
-        }
-
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-            if (disabledPlugins.contains(plugin.getName())) {
-                LOG.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
-            } else {
-                plugins.put(plugin.getClass(), plugin);
-            }
-        }
-    }
-
-    private void loadPlugins() throws PluginException {
-        for (Plugin plugin : plugins.values()) {
-            LOG.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
-            try {
-                plugin.onLoad();
-            } catch (PluginException e) {
-                LOG.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
-                throw e;
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public <T extends Plugin> T getPlugin(Class<T> clazz) {
         return (T) plugins.get(clazz);
@@ -448,18 +265,6 @@ public class YamcsServer {
 
     private int getNumOnlineInstances() {
         return (int) instances.values().stream().filter(ysi -> ysi.state() != InstanceState.OFFLINE).count();
-    }
-
-    private void startServices() {
-        if (globalServiceList != null) {
-            startServices(globalServiceList);
-        }
-
-        for (YamcsServerInstance ysi : instances.values()) {
-            if (ysi.state() != InstanceState.OFFLINE) {
-                ysi.startAsync();
-            }
-        }
     }
 
     /**
@@ -987,7 +792,7 @@ public class YamcsServer {
 
             // Really start the server. This method will block until all initial
             // plugins, instances and services have finished starting.
-            setupYamcsServer();
+            YAMCS.start();
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
             System.exit(-1);
@@ -1047,15 +852,15 @@ public class YamcsServer {
         }
     }
 
-    public static void setupYamcsServer() throws ValidationException, IOException, PluginException {
+    public void start() throws ValidationException, IOException, PluginException {
         LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
 
-        YAMCS.discoverPlugins();
-        YAMCS.loadConfiguration();
-        YAMCS.discoverTemplates();
-        YAMCS.addGlobalServicesAndInstances();
-        YAMCS.loadPlugins();
-        YAMCS.startServices();
+        discoverPlugins();
+        loadConfiguration();
+        discoverTemplates();
+        addGlobalServicesAndInstances();
+        loadPlugins();
+        startServices();
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             String msg = String.format("Uncaught exception '%s' in thread %s: %s", e, t,
@@ -1063,5 +868,200 @@ public class YamcsServer {
             LOG.error(msg);
             YAMCS.globalCrashHandler.handleCrash("UncaughtException", msg);
         });
+    }
+
+    private void discoverPlugins() {
+        List<String> disabledPlugins;
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        if (yconf.containsKey("disabledPlugins")) {
+            disabledPlugins = yconf.getList("disabledPlugins");
+        } else {
+            disabledPlugins = Collections.emptyList();
+        }
+
+        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+            if (disabledPlugins.contains(plugin.getName())) {
+                LOG.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
+            } else {
+                plugins.put(plugin.getClass(), plugin);
+            }
+        }
+    }
+
+    private void loadConfiguration() {
+        Spec serviceSpec = new Spec();
+        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
+        serviceSpec.addOption("args", OptionType.ANY);
+
+        Spec spec = new Spec();
+        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(serviceSpec);
+        spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
+        spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
+        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
+        spec.addOption("serverId", OptionType.STRING);
+        spec.addOption("secretKey", OptionType.STRING);
+
+        // TODO The goal is to (over time) be able to remove this relaxation
+        spec.allowUnknownKeys(true);
+
+        config = YConfiguration.getConfiguration("yamcs");
+        try {
+            config = spec.validate(config);
+        } catch (ValidationException e) {
+            throw new ConfigurationException(String.format(
+                    "Validation error in %s: %s", config.getPath(), e.getMessage()));
+        }
+    }
+
+    private void discoverTemplates() throws IOException {
+        Path templatesDir = Paths.get("etc", "instance-templates");
+        if (!Files.exists(templatesDir)) {
+            return;
+        }
+
+        try (Stream<Path> dirStream = Files.list(templatesDir)) {
+            dirStream.filter(Files::isDirectory).forEach(p -> {
+                if (Files.exists(p.resolve("template.yaml"))) {
+                    String name = p.getFileName().toString();
+                    InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
+                            .setName(name);
+
+                    Path varFile = p.resolve("variables.yaml");
+                    if (Files.exists(varFile)) {
+                        try (InputStream in = new FileInputStream(varFile.toFile())) {
+                            @SuppressWarnings("unchecked")
+                            List<Map<String, Object>> varDefs = (List<Map<String, Object>>) new Yaml().load(in);
+                            for (Map<String, Object> varDef : varDefs) {
+                                TemplateVariable.Builder varb = TemplateVariable.newBuilder();
+                                varb.setName(YConfiguration.getString(varDef, "name"));
+                                varb.setRequired(YConfiguration.getBoolean(varDef, "required", true));
+                                if (varDef.containsKey("description")) {
+                                    varb.setDescription(YConfiguration.getString(varDef, "description"));
+                                }
+                                templateb.addVariable(varb);
+                            }
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+
+                    YAMCS.instanceTemplates.put(name, templateb.build());
+                }
+            });
+        }
+    }
+
+    public void addGlobalServicesAndInstances() throws IOException {
+        serverId = deriveServerId();
+        deriveSecretKey();
+
+        if (config.containsKey("crashHandler")) {
+            globalCrashHandler = loadCrashHandler();
+        } else {
+            globalCrashHandler = new LogCrashHandler();
+        }
+        dataDir = Paths.get(config.getString("dataDir"));
+        incomingDir = Paths.get(config.getString("incomingDir"));
+        instanceDefDir = dataDir.resolve("instance-def");
+
+        if (YConfiguration.configDirectory != null) {
+            cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
+        } else {
+            cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
+        }
+
+        Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
+        Files.createDirectories(globalDir);
+        Files.createDirectories(instanceDefDir);
+
+        try {
+            securityStore = new SecurityStore();
+        } catch (InitException e) {
+            throw new ConfigurationException(e);
+        }
+
+        if (config.containsKey("services")) {
+            List<YConfiguration> services = config.getServiceConfigList("services");
+            globalServiceList = createServices(null, services);
+        }
+
+        // Load user-configured instances. These are the ones that are explictly mentioned in yamcs.yaml
+        int instanceCount = 0;
+        if (config.containsKey("instances")) {
+            for (String name : config.<String> getList("instances")) {
+                if (instances.containsKey(name)) {
+                    throw new ConfigurationException("Duplicate instance specified: '" + name + "'");
+                }
+                YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);
+                addInstance(name, instanceConfig, new InstanceMetadata());
+                instanceCount++;
+            }
+        }
+
+        // Load instances saved in storage
+        try (Stream<Path> paths = Files.list(instanceDefDir)) {
+            for (Path instanceDir : paths.collect(Collectors.toList())) {
+                String dirname = instanceDir.getFileName().toString();
+                Matcher m = INSTANCE_PATTERN.matcher(dirname);
+                if (!m.matches()) {
+                    continue;
+                }
+
+                String instanceName = m.group(1);
+                boolean online = m.group(2) == null;
+                if (online) {
+                    instanceCount++;
+                    if (instanceCount > maxOnlineInstances) {
+                        throw new ConfigurationException("Instance limit exceeded: " + instanceCount);
+                    }
+                    YConfiguration instanceConfig = loadInstanceConfig(instanceName);
+                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
+                    addInstance(instanceName, instanceConfig, instanceMetadata);
+                } else {
+                    if (instances.size() > maxNumInstances) {
+                        LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
+                                maxNumInstances, instanceName);
+                        continue;
+                    }
+                    InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
+                    addOfflineInstance(instanceName, instanceMetadata);
+                }
+            }
+        }
+    }
+
+    private CrashHandler loadCrashHandler() throws IOException {
+        if (config.containsKey("crashHandler", "args")) {
+            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"),
+                    config.getSubMap("crashHandler", "args"));
+        } else {
+            return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
+        }
+    }
+
+    private void loadPlugins() throws PluginException {
+        for (Plugin plugin : plugins.values()) {
+            LOG.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
+            try {
+                plugin.onLoad();
+            } catch (PluginException e) {
+                LOG.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
+                throw e;
+            }
+        }
+    }
+
+    private void startServices() {
+        if (globalServiceList != null) {
+            startServices(globalServiceList);
+        }
+
+        for (YamcsServerInstance ysi : instances.values()) {
+            if (ysi.state() != InstanceState.OFFLINE) {
+                ysi.startAsync();
+            }
+        }
     }
 }

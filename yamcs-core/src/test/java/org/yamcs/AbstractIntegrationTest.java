@@ -124,7 +124,7 @@ public abstract class AbstractIntegrationTest {
         httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();
-        YamcsServer.setupYamcsServer();
+        YamcsServer.getServer().start();
     }
 
     IssueCommandRequest getCommand(int seq, String... args) {

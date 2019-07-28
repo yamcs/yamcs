@@ -60,7 +60,7 @@ public class CfdpIntegrationTest {
         Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
         YConfiguration.setupTest("cfdp");
-        YamcsServer.setupYamcsServer();
+        YamcsServer.getServer().start();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         incomingBucket = yarch.createBucket("cfdp-bucket-in");

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
@@ -51,6 +52,53 @@ public class YamcsServerInstance extends YamcsInstanceService {
         log = new Log(getClass(), name);
     }
 
+    void init(YConfiguration config) {
+        Spec serviceSpec = new Spec();
+        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
+        serviceSpec.addOption("args", OptionType.ANY);
+
+        Spec spec = new Spec();
+        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
+
+        // Detailed validation on these is done
+        // in DataLinkInitialiser, XtceDbFactory, and StreamInitializer
+        spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
+
+        try {
+            this.config = spec.validate(config);
+        } catch (ValidationException e) {
+            // Don't care about stacktrace inside spec
+            throw new UncheckedExecutionException(new ValidationException(String.format(
+                    "Validation error in %s: %s", config.getPath(), e.getMessage())));
+        }
+
+        initAsync();
+        try {
+            awaitInitialized();
+        } catch (IllegalStateException e) {
+            throw new UncheckedExecutionException(e.getCause());
+        }
+    }
+
+    @Override
+    public void doInit() {
+        try {
+            loadTimeService();
+            loadCrashHandler();
+
+            // first load the XtceDB (if there is an error in it, we don't want to load any other service)
+            xtceDb = XtceDbFactory.getInstance(name);
+            StreamInitializer.createStreams(name);
+            List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
+            services = YamcsServer.createServices(name, serviceConfigs);
+            notifyInitialized();
+        } catch (Exception e) {
+            notifyFailed(e);
+        }
+    }
+
     @Override
     protected void doStart() {
         for (ServiceWithConfig swc : services) {
@@ -79,33 +127,6 @@ public class YamcsServerInstance extends YamcsInstanceService {
         ydb.close();
         YarchDatabase.removeInstance(name);
         notifyStopped();
-    }
-
-    void init(YConfiguration config) {
-        this.config = config;
-        initAsync();
-        try {
-            awaitInitialized();
-        } catch (IllegalStateException e) {
-            throw new UncheckedExecutionException(e.getCause());
-        }
-    }
-
-    @Override
-    public void doInit() {
-        try {
-            loadTimeService();
-            loadCrashHandler();
-
-            // first load the XtceDB (if there is an error in it, we don't want to load any other service)
-            xtceDb = XtceDbFactory.getInstance(name);
-            StreamInitializer.createStreams(name);
-            List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
-            services = YamcsServer.createServices(name, serviceConfigs);
-            notifyInitialized();
-        } catch (Exception e) {
-            notifyFailed(e);
-        }
     }
 
     public XtceDb getXtceDb() {
