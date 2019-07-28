@@ -1,31 +1,43 @@
 Logging
 =======
 
-Yamcs Server writes log output to the directory ``/opt/yamcs/log``.
+Yamcs allows capturing runtime log messages at different verbosity levels to different output handlers.
 
-yamcs-server.log.x
-------------------
+By default, if unconfigured, Yamcs will emit messages at INFO level to stdout.
 
-Log files usually provide the best debug information. These contain log entries that are emitted by any of the Yamcs components with a fine level of detail.
+The ``yamcsd`` program acceps some options to modify these defaults. In particular:
 
-Log files are rotated at 20MB with a maximum of 50 files. The theoretic maximum of disk space is therefore 1GB. ``x`` is a sequence number. The lower the number, the more recent the logs. The most recent log file can always be found at ``/opt/yamcs/log/yamcs-server.log.0``. Note that when Yamcs Server is restarted the log files will always rotate even if ``yamcs-server.log.0`` had not yet reached 20MB.
+``--verbose``
+    The numeric verbosity level, where 0 = OFF, 1 = WARNING, 2 = INFO, 3 = FINE and 4 = ALL
 
-
-yamcs-server.out.x
-------------------
-
-Out files are directly captured from the process standard output and error streams. The logging level is typically less detailed then with `yamcs-server.log.x`, but the files may contain stdout and stderr output which does not make use of Yamcs' logging system.
-
-Out files are rotated over a maximum of 5 files. There is no size restriction on the file, but since the logging is not so detailed, the files do not grow very large. ``x`` is a sequence number. The lower the number, the more recent the logs. The most recent out file can always be found at ``/opt/yamcs/log/yamcs-server.out.0``. Note that when Yamcs Server is restarted the out files will always rotate.
+``--no-color``
+    Turn off ANSI color codes
 
 
-Configuration
--------------
+If the configuration directory of Yamcs includes a file ``logging.properties``, then logging properties are read from this file instead of applying the default console logging. Logging-related program arguments (e.g. verbosity) are then ignored.
 
-The logging properties of Yamcs Server may be adjusted to your specific situation. This is done by modifying the file ``/opt/yamcs/etc/logging.properties``. The file structure is defined by the standard Java logging framework and requires a bit of background with Java development. There are two handlers. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. A ConsoleHandler can be used to tweak output for logging to ``/opt/yamcs/log/yamcs-server.out.x``. The rotation of out files is not configured in this file, since this occurs at the level of the init system where the Yamcs process is managed.
+The ``logging.properties`` uses the standard Java logging format, which allows to tweak the logging in much more detail than what is possible through the command-line flags of the yamcsd executable.
 
-Yamcs comes with different log formatters that can be useful in different situations:
+A full description of the syntax is beyond the scope of this manual, but see this example of how we usually configure our generic RPM packages:
 
-* :javadoc:`org.yamcs.logging.CompactFormatter` outputs one line per log entry and contains detailed datetime information, thread id, severity, logger name (typically the class of the originating component), a log message and finally an optional stack trace.
+.. code-block:: text
+    :caption: logging.properties
 
-* :javadoc:`org.yamcs.logging.ConsoleFormatter` outputs one line per log entry and is actually more compact than ``CompactFormatter``. It is especially suited for development of Yamcs or its extensions. Each log entry contains short time information, thread id, short class name, a log message and optionally a stack trace. Some entry fields make use of ANSI color codes for colorized display inside the developer's terminal.
+    handlers = java.util.logging.ConsoleHandler, java.util.logging.FileHandler
+
+    java.util.logging.ConsoleHandler.level = WARNING
+    java.util.logging.ConsoleHandler.formatter = org.yamcs.logging.CompactFormatter
+
+    java.util.logging.FileHandler.level = ALL
+    java.util.logging.FileHandler.pattern = /opt/yamcs/log/yamcs-server.log
+    java.util.logging.FileHandler.limit = 20000000
+    java.util.logging.FileHandler.count = 50
+    java.util.logging.FileHandler.formatter = org.yamcs.logging.CompactFormatter
+
+    org.yamcs.level = FINE
+
+There are two handlers. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. A ConsoleHandler prints its messages to stdout. The console output can for example be consumed by init systems such as systemd.
+
+This configuration will output messages coming from ``org.yamcs`` loggers at maximum FINE level. Each handler may apply a further level restriction. This is applied after the former level restriction. For example the above FileHandler has level ALL, however it will never print messages more verbose than FINE.
+
+The FileHandler in this configuration applies a rotation 20MB with a maximum of 50 files. The theoretic maximum of disk space is therefore 1GB. The most recent log file can be found at ``/opt/yamcs/log/yamcs-server.log.0``. Note that when Yamcs Server is restarted the log files will always rotate even if ``yamcs-server.log.0`` had not yet reached 20MB.

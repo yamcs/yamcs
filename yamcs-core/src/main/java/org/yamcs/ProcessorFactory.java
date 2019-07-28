@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.logging.Log;
+
 /**
  * Used to create processors as defined in processor.yaml
  *
@@ -51,7 +53,9 @@ public class ProcessorFactory {
                 throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getPath());
             }
             conf = conf.getConfig(type);
-            serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"));
+            Log targetLog = new Log(ProcessorFactory.class, yamcsInstance);
+            targetLog.setContext(name);
+            serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"), targetLog);
 
             if (conf.containsKey("config")) {
                 processorConfig = conf.getConfig("config");

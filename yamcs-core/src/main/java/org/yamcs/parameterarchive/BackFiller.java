@@ -155,7 +155,7 @@ public class BackFiller implements StreamSubscriber {
             ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
             aft.setCollectionSegmentStart(start);
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
-            log.info("Starting an parameter archive fillup for interval {}", timePeriod);
+            log.info("Starting parameter archive fillup for interval {}", timePeriod);
 
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder()
                     .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -175,7 +175,7 @@ public class BackFiller implements StreamSubscriber {
                 log.warn("Parameter archive fillup for interval {} aborted", timePeriod);
             } else {
                 aft.flush();
-                log.info("Parameter archive fillup for interval {} finished, number of processed parameter samples: {}",
+                log.info("Parameter archive fillup for interval {} finished, processed samples: {}",
                         timePeriod, aft.getNumProcessedParameters());
             }
         } catch (Exception e) {

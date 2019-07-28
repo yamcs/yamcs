@@ -1,6 +1,9 @@
 package org.yamcs;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,6 +30,10 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -35,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.yamcs.Spec.OptionType;
+import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
@@ -90,17 +98,23 @@ public class YamcsServer {
 
     private CrashHandler globalCrashHandler;
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Increase console log output")
-    private boolean verbose;
+    @Parameter(names = "--version", description = "Print version information and quit")
+    private boolean version;
 
-    @Parameter(names = { "--etc-dir" }, description = "Path to config directory", converter = PathConverter.class)
+    @Parameter(names = { "-v", "--verbose" }, description = "Level of verbosity")
+    private int verbose = 2;
+
+    @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
     private Path configDirectory = Paths.get("etc").toAbsolutePath();
 
-    @Parameter(names = { "--log-config" }, description = "Logging configuration file", converter = PathConverter.class)
+    @Parameter(names = "--log-config", description = "Logging configuration file", converter = PathConverter.class)
     private Path logConfig = configDirectory.resolve("logging.properties").toAbsolutePath();
 
-    @Parameter(names = { "--log-output" }, description = "Redirect stdout/stderr to the log system")
+    @Parameter(names = "--log-output", description = "Redirect stdout/stderr to the log system")
     private boolean logOutput;
+
+    @Parameter(names = "--no-color", description = "Turn off console log colorization")
+    private boolean noColor;
 
     @Parameter(names = { "-h", "--help" }, help = true, description = "Show usage")
     private boolean help;
@@ -132,10 +146,12 @@ public class YamcsServer {
      *            if null, then start a global service, otherwise an instance service
      * @param services
      *            list of service configuration; each of them is a string (=classname) or a map
+     * @param targetLog
+     *            the logger to use for any messages
      * @throws IOException
      * @throws ConfigurationException
      */
-    static List<ServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig)
+    static List<ServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig, Log targetLog)
             throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
         Set<String> names = new HashSet<>();
@@ -160,20 +176,20 @@ public class YamcsServer {
             }
             name = candidateName;
 
-            LOG.info("Loading {} service {} ({})", (instance == null) ? "global" : instance, name, servclass);
+            targetLog.info("Loading service {}", name);
             ServiceWithConfig swc;
             try {
                 swc = createService(instance, servclass, name, args);
                 serviceList.add(swc);
             } catch (NoClassDefFoundError e) {
-                LOG.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args,
+                targetLog.error("Cannot create service {}, with arguments {}: class {} not found", name, args,
                         e.getMessage());
                 throw e;
             } catch (ValidationException e) {
-                LOG.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                targetLog.error("Cannot create service {}, with arguments {}: {}", name, args, e.getMessage());
                 throw new ConfigurationException("Invalid configuration");
             } catch (Exception e) {
-                LOG.error("Cannot create service {}, with arguments {}: {}", servclass, args, e.getMessage());
+                targetLog.error("Cannot create service {}, with arguments {}: {}", name, args, e.getMessage());
                 throw e;
             }
             if (managementService != null) {
@@ -195,7 +211,7 @@ public class YamcsServer {
             }
         }
 
-        LOG.info("Loading global service {} ({})", name, serviceClass.getName());
+        LOG.info("Loading service {}", name);
         ServiceWithConfig swc = createService(null, serviceClass.getName(), name, args);
         YAMCS.globalServiceList.add(swc);
 
@@ -263,7 +279,7 @@ public class YamcsServer {
         return (T) plugins.get(clazz);
     }
 
-    private int getNumOnlineInstances() {
+    private int getOnlineInstanceCount() {
         return (int) instances.values().stream().filter(ysi -> ysi.state() != InstanceState.OFFLINE).count();
     }
 
@@ -390,7 +406,7 @@ public class YamcsServer {
             return restartInstance(instanceName);
         }
 
-        if (getNumOnlineInstances() >= maxOnlineInstances) {
+        if (getOnlineInstanceCount() >= maxOnlineInstances) {
             throw new LimitExceededException("Number of online instances already at the limit " + maxOnlineInstances);
         }
 
@@ -760,6 +776,8 @@ public class YamcsServer {
     }
 
     public static void main(String[] args) {
+        long t0 = System.nanoTime();
+
         // Run jcommander before setting up logging.
         // We want this to use standard streams.
         try {
@@ -768,6 +786,12 @@ public class YamcsServer {
             if (YAMCS.help) {
                 jcommander.usage();
                 return;
+            } else if (YAMCS.version) {
+                System.out.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
+                for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+                    System.out.println(plugin.getName() + " " + plugin.getVersion());
+                }
+                System.exit(0);
             }
         } catch (ParameterException e) {
             System.err.println(e.getMessage());
@@ -798,37 +822,34 @@ public class YamcsServer {
             System.exit(-1);
         }
 
+        long t1 = System.nanoTime();
+
+        long instanceCount = YAMCS.getOnlineInstanceCount();
+        long serviceCount = YAMCS.globalServiceList.size() + getInstances().stream()
+                .map(instance -> instance.services != null ? instance.services.size() : 0)
+                .reduce(0, Integer::sum);
+
         // Output string to signal to wrapper scripts (e.g. init.d)
         // that Yamcs has fully started. If you modify this, then
         // also modify the init.d script. Remark that we use
         // System.out instead of a log statement because the init.d
         // wrapper does not know the location of the log files.
-        System.out.println("Yamcs started successfully");
+        System.out.println(String.format("Yamcs started in %dms. Started %d of %d instances and %d services",
+                NANOSECONDS.toMillis(t1 - t0), instanceCount, YAMCS.instances.size(), serviceCount));
 
         YAMCS.startListeners.forEach(StartListener::onStart);
     }
 
     private static void setupLogging() throws SecurityException, IOException {
-
-        // Unless JUL logging is manually configured, we will bootstrap it.
-        if (System.getProperty("java.util.logging.config.file") == null) {
-            if (Files.exists(YAMCS.logConfig)) {
-                try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
-                    LogManager.getLogManager().readConfiguration(in);
-                    LOG.info("Logging enabled using {}", YAMCS.logConfig);
-                }
-            } else {
-                // Add default console-based logging
-                String configFile;
-                if (YAMCS.verbose) {
-                    configFile = "/default-logging/console-all.properties";
-                } else {
-                    configFile = "/default-logging/console-info.properties";
-                }
-                try (InputStream in = YConfiguration.class.getResourceAsStream(configFile)) {
-                    LogManager.getLogManager().readConfiguration(in);
-                }
+        if (System.getProperty("java.util.logging.config.file") != null) {
+            LOG.info("Logging configuration overriden via java property");
+        } else if (Files.exists(YAMCS.logConfig)) {
+            try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
+                LogManager.getLogManager().readConfiguration(in);
+                LOG.info("Logging enabled using {}", YAMCS.logConfig);
             }
+        } else {
+            setupDefaultLogging();
         }
 
         // Intercept stdout/stderr for sending to the log system. Only
@@ -849,6 +870,51 @@ public class YamcsServer {
                     stderrLogger.severe(x);
                 }
             });
+        }
+    }
+
+    private static void setupDefaultLogging() throws SecurityException, IOException {
+        Level logLevel;
+        switch (YAMCS.verbose) {
+        case 0:
+            logLevel = Level.OFF;
+            break;
+        case 1:
+            logLevel = Level.WARNING;
+            break;
+        case 2:
+            logLevel = Level.INFO;
+            break;
+        case 3:
+            logLevel = Level.FINE;
+            break;
+        default:
+            logLevel = Level.ALL;
+            break;
+        }
+
+        // Not sure. This seems to be the best programmatic way. Changing Logger
+        // instances directly only works on the weak instance.
+        String defaultHandler = ConsoleHandler.class.getName();
+        String defaultFormatter = ConsoleFormatter.class.getName();
+        StringBuilder buf = new StringBuilder();
+        buf.append("handlers=").append(defaultHandler).append("\n");
+        buf.append(defaultHandler).append(".level=").append(logLevel).append("\n");
+        buf.append(defaultHandler).append(".formatter=").append(defaultFormatter).append("\n");
+
+        // This sets up the level for *everything*.
+        // If this turns out to be too much, we could optimize by setting the log level
+        // on each logger obtained through org.yamcs.logging.Log
+        buf.append(".level=").append(logLevel);
+
+        try (InputStream in = new ByteArrayInputStream(buf.toString().getBytes())) {
+            LogManager.getLogManager().readConfiguration(in);
+        }
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            Formatter formatter = handler.getFormatter();
+            if (formatter != null && formatter instanceof ConsoleFormatter) {
+                ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.noColor);
+            }
         }
     }
 
@@ -984,7 +1050,7 @@ public class YamcsServer {
 
         if (config.containsKey("services")) {
             List<YConfiguration> services = config.getServiceConfigList("services");
-            globalServiceList = createServices(null, services);
+            globalServiceList = createServices(null, services, LOG);
         }
 
         // Load user-configured instances. These are the ones that are explictly mentioned in yamcs.yaml

@@ -6,12 +6,11 @@ import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.MasterChannelFrameHandler;
 import org.yamcs.tctm.ccsds.VirtualChannelHandler;
 
@@ -32,7 +31,7 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
     private DatagramSocket tmSocket;
     private int port;
 
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private Log log;
     final DatagramPacket datagram;
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
@@ -52,12 +51,14 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
     public UdpTmFrameLink(String instance, String name, YConfiguration args) throws ConfigurationException {
         this.yamcsInstance = instance;
         this.name = name;
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         port = args.getInt("port");
 
         frameHandler = new MasterChannelFrameHandler(yamcsInstance, name, args);
         int maxLength = frameHandler.getMaxFrameSize();
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, getClass().getSimpleName(), 10000);
         subLinks = new ArrayList<>();
         for (VirtualChannelHandler vch : frameHandler.getVcHandlers()) {
             if (vch instanceof Link) {

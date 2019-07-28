@@ -55,7 +55,7 @@ case "$1" in
             while [ $i -lt $WAIT_FOR_START ] ; do
                 sleep 1
                 if is_running $pid ; then
-                    if [ $(grep -c 'Yamcs started successfully' $OUTERR.0) -eq 1 ]; then
+                    if [ $(grep -c 'Yamcs started in' $OUTERR.0) -eq 1 ]; then
                         echo done
                         break
                     fi
@@ -66,7 +66,7 @@ case "$1" in
                 fi
             done
             if [ $i -eq $WAIT_FOR_START ] ; then 
-                echo "Yamcs did not finish initializing in $WAIT_FOR_START seconds"
+                echo "Yamcs did not finish starting in under $WAIT_FOR_START seconds"
             fi
         fi
 

@@ -24,17 +24,18 @@ public class CompactFormatter extends Formatter {
                 yamcsInstance = yRec.getYamcsInstance();
             }
         }
-        sb.append(yamcsInstance).append(" ");
+        sb.append(yamcsInstance).append(" ").append("[").append(r.getThreadID()).append("] ");
 
         String name = r.getLoggerName();
-        sb.append(name).append(" [").append(r.getThreadID()).append("] ");
+        sb.append(name);
 
         if (r instanceof YamcsLogRecord) {
             YamcsLogRecord yRec = (YamcsLogRecord) r;
             if (yRec.getContext() != null) {
-                sb.append(yRec.getContext()).append(" ");
+                sb.append("[").append(yRec.getContext()).append("]");
             }
         }
+        sb.append(" ");
 
         sb.append("[").append(r.getLevel()).append("] ").append(r.getMessage());
 

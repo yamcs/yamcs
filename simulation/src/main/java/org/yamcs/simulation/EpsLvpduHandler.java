@@ -36,7 +36,7 @@ public class EpsLvpduHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have {} EPS LVPDU data records", entries.size());
+        log.debug("have {} EPS LVPDU data records", entries.size());
     }
 
     public void fillPacket(CCSDSPacket packet) {

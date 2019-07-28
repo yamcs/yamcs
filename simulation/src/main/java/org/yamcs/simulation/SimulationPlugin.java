@@ -8,9 +8,7 @@ public class SimulationPlugin implements Plugin {
 
     public SimulationPlugin() {
         Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
+        version = (pkg != null) ? pkg.getImplementationVersion() : null;
     }
 
     @Override

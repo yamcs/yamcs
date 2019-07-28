@@ -81,7 +81,7 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
 
     @Override
     public void start() {
-        log.info("starting the merge stream");
+        log.info("Starting merge stream");
         // first start all the substreams
         for (Stream s : streams) {
             s.start();

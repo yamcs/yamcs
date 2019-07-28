@@ -24,15 +24,11 @@ public class ConsoleFormatter extends Formatter {
     private static final String COLOR_SUFFIX = "m";
     private static final String COLOR_RESET = "\033[0;0m";
 
-    boolean enableAnsiColors;
-    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-    Date d = new Date();
+    private boolean enableAnsiColors = true;
+    private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+    private Date d = new Date();
 
-    public ConsoleFormatter() {
-        this(true);
-    }
-
-    public ConsoleFormatter(boolean enableAnsiColors) {
+    public void setEnableAnsiColors(boolean enableAnsiColors) {
         this.enableAnsiColors = enableAnsiColors;
     }
 
@@ -50,7 +46,7 @@ public class ConsoleFormatter extends Formatter {
                 yamcsInstance = yRec.getYamcsInstance();
             }
         }
-        sb.append(yamcsInstance).append(" ");
+        sb.append(yamcsInstance).append(" ").append("[").append(r.getThreadID()).append("] ");
 
         String name = r.getLoggerName();
         if (name.lastIndexOf('.') != -1) {
@@ -63,19 +59,17 @@ public class ConsoleFormatter extends Formatter {
             sb.append(name);
         }
 
-        sb.append("[").append(r.getThreadID()).append("]: ");
-
         if (r instanceof YamcsLogRecord) {
             YamcsLogRecord yRec = (YamcsLogRecord) r;
             if (yRec.getContext() != null) {
                 if (enableAnsiColors) {
-                    colorize(sb, yRec.getContext(), 0, 35);
+                    colorize(sb, "[" + yRec.getContext() + "]", 0, 35);
                 } else {
-                    sb.append(yRec.getContext());
+                    sb.append("[").append(yRec.getContext()).append("]");
                 }
-                sb.append(" ");
             }
         }
+        sb.append(" ");
 
         if (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE) {
             if (enableAnsiColors) {
@@ -85,7 +79,12 @@ public class ConsoleFormatter extends Formatter {
             }
             sb.append(" ");
         }
-        sb.append(r.getMessage());
+
+        if (enableAnsiColors && ("stdout".equals(name) || "stderr".equals(name))) {
+            colorize(sb, r.getMessage(), 0, 33);
+        } else {
+            sb.append(r.getMessage());
+        }
 
         Throwable t = r.getThrown();
         if (t != null) {

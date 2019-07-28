@@ -43,6 +43,7 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         log = new Log(this.getClass(), yamcsInstance);
+        log.setContext(name);
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);

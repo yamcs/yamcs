@@ -36,9 +36,9 @@ import com.google.common.util.concurrent.RateLimiter;
  */
 public class UdpTcDataLink extends AbstractService implements TcDataLink, SystemParametersProducer {
 
-    protected DatagramSocket socket = null;
+    protected DatagramSocket socket;
     protected String host;
-    protected int port = 10003;
+    protected int port;
     protected CommandHistoryPublisher commandHistoryListener;
     SelectionKey selectionKey;
 
@@ -65,6 +65,7 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
 
     public UdpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         log = new Log(getClass(), yamcsInstance);
+        log.setContext(name);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
         this.config = config;
@@ -94,7 +95,6 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
-
     }
 
     protected long getCurrentTime() {

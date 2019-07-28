@@ -47,7 +47,7 @@ public class FlightDataHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have {} flight data records", entries.size());
+        log.debug("have {} flight data records", entries.size());
     }
 
     public void fillPacket(CCSDSPacket packet) {

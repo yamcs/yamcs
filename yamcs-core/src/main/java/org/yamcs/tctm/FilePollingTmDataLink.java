@@ -48,6 +48,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
         super(yamcsInstance, name, YConfiguration.wrap(ImmutableMap.of("incomingDir", incomingDir)));
         log = new Log(getClass(), yamcsInstance);
+        log.setContext(name);
         this.incomingDir = Paths.get(incomingDir);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         initPreprocessor(yamcsInstance, null);

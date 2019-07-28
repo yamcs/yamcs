@@ -92,7 +92,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             xtceDb = XtceDbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
-            services = YamcsServer.createServices(name, serviceConfigs);
+            services = YamcsServer.createServices(name, serviceConfigs, log);
             notifyInitialized();
         } catch (Exception e) {
             notifyFailed(e);

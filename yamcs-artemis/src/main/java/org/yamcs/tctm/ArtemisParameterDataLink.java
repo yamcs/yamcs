@@ -6,13 +6,12 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -29,7 +28,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     protected volatile long totalPpCount = 0;
     protected volatile boolean disabled = false;
 
-    protected Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    protected Log log;
     private ParameterSink ppListener;
     final XtceDb ppdb;
     final String artemisAddress;
@@ -39,14 +38,15 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     final String linkName;
 
     public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         ppdb = XtceDbFactory.getInstance(instance);
         this.artemisAddress = artemisAddress;
         this.linkName = name;
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
-    public ArtemisParameterDataLink(String instance, String name, YConfiguration config)
-            throws ConfigurationException {
+    public ArtemisParameterDataLink(String instance, String name, YConfiguration config) {
         this(instance, name, config.getString("address"));
         this.config = config;
     }

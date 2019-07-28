@@ -2,11 +2,10 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
@@ -31,13 +30,15 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     TmFileReader tmFileReader;
     long tmCount = 0;
 
-    static Logger log = LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
+    Log log;
     TimeService timeService;
     String name;
 
     public FileTmPacketProvider(String instance, String name, String fileName) throws IOException {
         this(fileName, "STOP", 1000);
         this.name = name;
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         timeService = YamcsServer.getTimeService(instance);
     }
 
@@ -50,6 +51,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
      * @throws IOException
      */
     public FileTmPacketProvider(String fileName, String endActionStr, long delayBetweenPackets) throws IOException {
+        log = new Log(getClass());
         this.fileName = fileName;
         this.delayBetweenPackets = delayBetweenPackets;
         if (endActionStr.equalsIgnoreCase("LOOP")) {

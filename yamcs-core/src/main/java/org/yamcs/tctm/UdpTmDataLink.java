@@ -5,11 +5,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 
 /**
  * Receives telemetry packets via UDP. One UDP datagram = one TM packet.
@@ -29,7 +28,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
 
     private TmSink tmSink;
 
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private Log log;
     final static int MAX_LENGTH = 1500;
     final DatagramPacket datagram;
     final int maxLength;
@@ -44,6 +43,8 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      */
     public UdpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         port = config.getInt("port");
         maxLength = config.getInt("maxLength", MAX_LENGTH);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
@@ -64,7 +65,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     public void run() {
         while (isRunning()) {
             PacketWithTime pwrt = getNextPacket();
-            if(pwrt!=null) {
+            if (pwrt != null) {
                 tmSink.processPacket(pwrt);
             }
             while (isRunning() && disabled) {
