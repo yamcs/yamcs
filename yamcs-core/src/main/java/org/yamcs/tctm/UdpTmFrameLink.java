@@ -75,7 +75,7 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
     }
 
     @Override
-    public void shutDown() {
+    public void triggerShutdown() {
         tmSocket.close();
     }
 

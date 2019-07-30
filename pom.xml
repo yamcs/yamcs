@@ -313,6 +313,8 @@
             <successCodes>
               <successCode>0</successCode>
               <successCode>1</successCode>
+              <successCode>134</successCode> <!--  JVM crash -->
+              <successCode>143</successCode> <!-- SIGTERM -->
               <successCode>255</successCode>
             </successCodes>
           </configuration>

@@ -102,7 +102,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     @Override
     protected void doStart() {
         for (ServiceWithConfig swc : services) {
-            log.info("Starting service {}", swc.getName());
+            log.debug("Starting service {}", swc.getName());
             swc.service.startAsync();
         }
         for (ServiceWithConfig swc : services) {

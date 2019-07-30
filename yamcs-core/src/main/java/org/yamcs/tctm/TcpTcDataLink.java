@@ -201,7 +201,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      * 
      * @return
      */
-    private boolean isSocketOpen() {
+    private synchronized boolean isSocketOpen() {
         if (socketChannel == null) {
             return false;
         }

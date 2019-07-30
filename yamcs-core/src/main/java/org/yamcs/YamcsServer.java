@@ -249,6 +249,14 @@ public class YamcsServer {
         for (YamcsServerInstance ys : instances.values()) {
             ys.awaitOffline();
         }
+        if (globalServiceList != null) {
+            for (ServiceWithConfig swc : globalServiceList) {
+                swc.getService().stopAsync();
+            }
+            for (ServiceWithConfig swc : globalServiceList) {
+                swc.getService().awaitTerminated();
+            }
+        }
     }
 
     public static boolean hasInstance(String instance) {
@@ -890,25 +898,31 @@ public class YamcsServer {
             }
         }
 
-        // Intercept stdout/stderr for sending to the log system. Only
-        // catches line-terminated string, but this should cover most
-        // uses cases.
-        if (!YAMCS.noStreamRedirect) {
-            Logger stdoutLogger = Logger.getLogger("stdout");
-            System.setOut(new PrintStream(System.out) {
-                @Override
-                public void println(String x) {
+        // Intercept stdout/stderr for sending to the log system. Only catches line-terminated
+        // string, but this should cover most uses cases.
+        // NOTE: stream redirect gets disabled on shutdown, so keep the check dynamic.
+        Logger stdoutLogger = Logger.getLogger("stdout");
+        System.setOut(new PrintStream(System.out) {
+            @Override
+            public void println(String x) {
+                if (YAMCS.noStreamRedirect) {
+                    super.println(x);
+                } else {
                     stdoutLogger.info(x);
                 }
-            });
-            Logger stderrLogger = Logger.getLogger("stderr");
-            System.setErr(new PrintStream(System.err) {
-                @Override
-                public void println(String x) {
+            }
+        });
+        Logger stderrLogger = Logger.getLogger("stderr");
+        System.setErr(new PrintStream(System.err) {
+            @Override
+            public void println(String x) {
+                if (YAMCS.noStreamRedirect) {
+                    super.println(x);
+                } else {
                     stderrLogger.severe(x);
                 }
-            });
-        }
+            }
+        });
     }
 
     private static void setupDefaultLogging() throws SecurityException, IOException {
@@ -984,6 +998,18 @@ public class YamcsServer {
     }
 
     public void start() throws PluginException {
+        // Before starting anything, register a shutdown hook that will attempt graceful shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOG.info("Shutting down...");
+                // JUL messages don't seem to appear during shutdown, so turn redirect off.
+                noStreamRedirect = true;
+                System.out.println("Shutting down...");
+                shutDown();
+            }
+        });
+
         loadPlugins();
         startServices();
 
@@ -991,7 +1017,7 @@ public class YamcsServer {
             String msg = String.format("Uncaught exception '%s' in thread %s: %s", e, t,
                     Arrays.toString(e.getStackTrace()));
             LOG.error(msg);
-            YAMCS.globalCrashHandler.handleCrash("UncaughtException", msg);
+            globalCrashHandler.handleCrash("UncaughtException", msg);
         });
     }
 

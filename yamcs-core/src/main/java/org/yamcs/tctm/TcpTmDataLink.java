@@ -139,11 +139,16 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 } catch (Exception e2) {
                 }
                 tmSocket = null;
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e1) {
-                    Thread.currentThread().interrupt();
-                    return null;
+                for (int i = 0; i < 10; i++) {
+                    if (!isRunning()) {
+                        break;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
                 }
             } catch (PacketTooLongException e) {
                 log.warn(e.toString());
