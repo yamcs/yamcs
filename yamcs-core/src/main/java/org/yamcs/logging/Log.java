@@ -8,6 +8,9 @@ import org.slf4j.helpers.MessageFormatter;
 
 public class Log {
 
+    // Kill switch used to force stdout logging
+    private static Level stdoutLoggingLevel;
+
     private final Logger julLogger;
     private String yamcsInstance;
     private String context;
@@ -19,6 +22,10 @@ public class Log {
     public Log(Class<?> clazz, String yamcsInstance) {
         julLogger = Logger.getLogger(clazz.getName());
         this.yamcsInstance = yamcsInstance;
+    }
+
+    public Logger getJulLogger() {
+        return julLogger;
     }
 
     public void setContext(String context) {
@@ -134,6 +141,31 @@ public class Log {
         rec.setThrown(t);
         rec.setContext(context);
 
-        julLogger.log(rec);
+        if (stdoutLoggingLevel != null) {
+            logToStdOut(rec);
+        } else {
+            julLogger.log(rec);
+        }
+    }
+
+    private void logToStdOut(YamcsLogRecord rec) {
+        if (rec.getLevel().intValue() >= stdoutLoggingLevel.intValue()) {
+            StringBuilder sb = new StringBuilder("[")
+                    .append(rec.getLevel())
+                    .append("] ")
+                    .append(rec.getMessage());
+            if (rec.getThrown() != null) {
+                sb.append(": " + rec.getThrown());
+            }
+            System.out.println(sb.toString());
+        }
+    }
+
+    /**
+     * Force all log message to be printed on stdout instead of the configured logger. This may be of use for short
+     * tests and scripts.
+     */
+    public static void forceStandardStreams(Level level) {
+        stdoutLoggingLevel = level;
     }
 }

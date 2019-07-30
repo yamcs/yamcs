@@ -41,9 +41,10 @@ public class ProcessorFactory {
      * @return a new processor
      * @throws ProcessorException
      * @throws ConfigurationException
+     * @throws ValidationException
      */
     public static Processor create(String yamcsInstance, String name, String type, String creator, Object spec)
-            throws ProcessorException, ConfigurationException {
+            throws ProcessorException, ConfigurationException, ValidationException {
         YConfiguration processorConfig = null;
         YConfiguration conf = YConfiguration.getConfiguration("processor");
 

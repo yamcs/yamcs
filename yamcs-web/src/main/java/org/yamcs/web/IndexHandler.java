@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
@@ -102,12 +103,12 @@ public class IndexHandler extends Handler {
         Map<String, Object> args = new HashMap<>(2);
         args.put("contextPath", httpServer.getContextPath());
 
-        YConfiguration httpConfig = httpServer.getConfig();
+        YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
 
         Map<String, Object> webConfig = new HashMap<>();
 
-        if (httpConfig.containsKey("website")) {
-            YConfiguration yconf = httpConfig.getConfig("website");
+        if (yamcsConfig.containsKey("yamcs-web")) {
+            YConfiguration yconf = yamcsConfig.getConfig("yamcs-web");
             webConfig.putAll(yconf.toMap());
         }
 

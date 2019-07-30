@@ -1148,7 +1148,7 @@ public class V6Loader extends V6LoaderBase {
                 // 2) extract the condition and create the restrictioncriteria
                 if (!"".equals(condition.trim())) {
                     container.setRestrictionCriteria(toMatchCriteria(spaceSystem, condition));
-                    MatchCriteria.printParsedMatchCriteria(log, container.getRestrictionCriteria(), "");
+                    MatchCriteria.printParsedMatchCriteria(log.getJulLogger(), container.getRestrictionCriteria(), "");
                 }
             } else {
                 if (spaceSystem.getRootSequenceContainer() == null) {

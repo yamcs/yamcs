@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.HttpServer;
 import org.yamcs.logging.Log;
@@ -20,7 +22,12 @@ public class WebPlugin implements Plugin {
 
     public WebPlugin() {
         Package pkg = getClass().getPackage();
-        version = pkg != null ? pkg.getImplementationVersion() : null;
+        version = (pkg != null) ? pkg.getImplementationVersion() : null;
+
+        Spec spec = new Spec();
+        spec.addOption("tag", OptionType.STRING);
+        spec.addOption("staticRoot", OptionType.STRING);
+        YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
     }
 
     @Override

@@ -1,7 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
-import java.io.File;
+import static org.yamcs.utils.ByteArrayUtils.decodeInt;
+import static org.yamcs.utils.ByteArrayUtils.encodeInt;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +14,15 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
-import com.google.protobuf.InvalidProtocolBufferException;
 
-import static org.yamcs.utils.ByteArrayUtils.decodeInt;
-import static org.yamcs.utils.ByteArrayUtils.encodeInt;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * 
@@ -56,7 +55,7 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
  * 
  */
 public class Tablespace {
-    static Logger log = LoggerFactory.getLogger(Tablespace.class.getName());
+    static Log log = new Log(Tablespace.class);
 
     // unique name for this tablespace
     private final String name;

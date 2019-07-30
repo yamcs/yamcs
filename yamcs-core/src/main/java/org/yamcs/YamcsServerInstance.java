@@ -70,8 +70,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
             this.config = spec.validate(config);
         } catch (ValidationException e) {
             // Don't care about stacktrace inside spec
-            throw new UncheckedExecutionException(new ValidationException(String.format(
-                    "Validation error in %s: %s", config.getPath(), e.getMessage())));
+            throw new UncheckedExecutionException(new ValidationException(
+                    e.getContext(), e.getMessage()));
         }
 
         initAsync();

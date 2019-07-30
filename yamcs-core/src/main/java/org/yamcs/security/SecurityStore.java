@@ -14,15 +14,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yaml.snakeyaml.Yaml;
@@ -36,7 +35,7 @@ public class SecurityStore {
 
     private Path storageDir;
 
-    private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
+    private static final Log log = new Log(SecurityStore.class);
 
     private boolean authenticationEnabled = false;
 

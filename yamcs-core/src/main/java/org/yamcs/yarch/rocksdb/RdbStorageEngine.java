@@ -8,10 +8,9 @@ import java.util.Map;
 
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.TagDb;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
@@ -43,7 +42,7 @@ public class RdbStorageEngine implements StorageEngine {
     static {
         RocksDB.loadLibrary();
     }
-    static Logger log = LoggerFactory.getLogger(RdbStorageEngine.class.getName());
+    static Log log = new Log(RdbStorageEngine.class);
     RdbTagDb rdbTagDb = null;
     boolean ignoreVersionIncompatibility = false;
     static RdbStorageEngine instance = new RdbStorageEngine();

@@ -117,7 +117,8 @@ public class HttpServer extends AbstractYamcsService {
                 .withDeprecationMessage("This property is automatically set by the yamcs-web jar/plugin.");
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
-        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec);
+        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec)
+                .withDeprecationMessage("Define website options under a key 'yamcs-web' in yamcs.yaml");
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
 
         spec.requireOneOf("port", "tlsPort");

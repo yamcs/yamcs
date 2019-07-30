@@ -108,8 +108,14 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public YConfiguration validate(YConfiguration args) throws ValidationException {
-        Map<String, Object> result = validate(args.getRoot());
-        return YConfiguration.wrap(result);
+        ValidationContext ctx = new ValidationContext();
+        ctx.path = args.getPath();
+        Map<String, Object> result = doValidate(ctx, args.getRoot(), "");
+        YConfiguration wrapped = YConfiguration.wrap(result);
+        wrapped.parent = args.parent;
+        wrapped.parentKey = args.parentKey;
+        wrapped.rootLocation = args.rootLocation;
+        return wrapped;
     }
 
     /**
@@ -122,10 +128,10 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public Map<String, Object> validate(Map<String, Object> args) throws ValidationException {
-        return doValidate(args, "");
+        return doValidate(new ValidationContext(), args, "");
     }
 
-    private Map<String, Object> doValidate(Map<String, Object> args, String parent)
+    private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent)
             throws ValidationException {
 
         for (List<String> group : requiredOneOfGroups) {
@@ -134,7 +140,7 @@ public class Spec {
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
-                throw new ValidationException(msg);
+                throw new ValidationException(ctx, msg);
             }
         }
 
@@ -144,7 +150,7 @@ public class Spec {
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
-                throw new ValidationException(msg);
+                throw new ValidationException(ctx, msg);
             }
         }
 
@@ -155,7 +161,7 @@ public class Spec {
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
-                throw new ValidationException(msg);
+                throw new ValidationException(ctx, msg);
             }
         }
 
@@ -167,7 +173,7 @@ public class Spec {
                         .collect(Collectors.toList());
                 if (!missing.isEmpty()) {
                     String path = "".equals(parent) ? whenCondition.key : (parent + "->" + whenCondition.key);
-                    throw new ValidationException(String.format(
+                    throw new ValidationException(ctx, String.format(
                             "%s is %s but the following arguments are missing: %s",
                             path, whenCondition.value, missing));
                 }
@@ -188,11 +194,11 @@ public class Spec {
                 if (allowUnknownKeys) {
                     result.put(argName, entry.getValue());
                 } else {
-                    throw new ValidationException("Unknown argument " + path);
+                    throw new ValidationException(ctx, "Unknown argument " + path);
                 }
             } else {
                 Object arg = entry.getValue();
-                Object resultArg = option.validate(arg, path);
+                Object resultArg = option.validate(ctx, arg, path);
                 result.put(argName, resultArg);
             }
         }
@@ -201,7 +207,7 @@ public class Spec {
             if (!args.containsKey(option.name)) {
                 if (option.required) {
                     String path = "".equals(parent) ? option.name : parent + "->" + option.name;
-                    throw new ValidationException("Missing required argument " + path);
+                    throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
                 Object defaultValue = option.getDefaultValue();
@@ -317,7 +323,8 @@ public class Spec {
         MAP,
         STRING;
 
-        Object convertArgument(String path, Object arg, OptionType elementType) throws ValidationException {
+        Object convertArgument(ValidationContext ctx, String path, Object arg, OptionType elementType)
+                throws ValidationException {
             if (this == ANY) {
                 return arg;
             }
@@ -329,7 +336,7 @@ public class Spec {
                 if (argType == LIST) {
                     return arg;
                 } else {
-                    Object elementArg = elementType.convertArgument(path, arg, null);
+                    Object elementArg = elementType.convertArgument(ctx, path, arg, null);
                     return Arrays.asList(elementArg);
                 }
             } else if (this == FLOAT) {
@@ -339,7 +346,7 @@ public class Spec {
                     return new Double((Long) arg);
                 }
             }
-            throw new ValidationException(String.format(
+            throw new ValidationException(ctx, String.format(
                     "%s is of type %s, but should be %s instead",
                     path, argType, this));
         }
@@ -479,14 +486,14 @@ public class Spec {
         }
 
         @SuppressWarnings("unchecked")
-        private Object validate(Object arg, String path) throws ValidationException {
+        private Object validate(ValidationContext ctx, Object arg, String path) throws ValidationException {
             if (deprecationMessage != null) {
                 log.warn("Argument {} has been deprecated: {}", path, deprecationMessage);
             }
-            arg = type.convertArgument(path, arg, elementType);
+            arg = type.convertArgument(ctx, path, arg, elementType);
 
             if (choices != null && !choices.contains(arg)) {
-                throw new ValidationException(String.format(
+                throw new ValidationException(ctx, String.format(
                         "%s should be one of %s", name, choices));
             }
 
@@ -496,13 +503,13 @@ public class Spec {
                 while (it.hasNext()) {
                     String elPath = path + "[" + it.nextIndex() + "]";
                     Object argElement = it.next();
-                    argElement = elementType.convertArgument(elPath, argElement, null);
+                    argElement = elementType.convertArgument(ctx, elPath, argElement, null);
 
                     if (elementType == OptionType.LIST) {
                         throw new UnsupportedOperationException("List of lists cannot be validated");
                     } else if (elementType == OptionType.MAP) {
                         Map<String, Object> m = (Map<String, Object>) argElement;
-                        Object resultArg = spec.doValidate(m, elPath);
+                        Object resultArg = spec.doValidate(ctx, m, elPath);
                         resultList.add(resultArg);
                     } else {
                         resultList.add(argElement);
@@ -510,7 +517,7 @@ public class Spec {
                 }
                 return resultList;
             } else if (type == OptionType.MAP) {
-                return spec.doValidate((Map<String, Object>) arg, path);
+                return spec.doValidate(ctx, (Map<String, Object>) arg, path);
             } else {
                 return arg;
             }
@@ -531,6 +538,18 @@ public class Spec {
                 return result;
             }
             return null;
+        }
+    }
+
+    /**
+     * Extra information to be attached to any generated {@link ValidationException}
+     */
+    public static final class ValidationContext {
+
+        private String path;
+
+        public String getPath() {
+            return path;
         }
     }
 }

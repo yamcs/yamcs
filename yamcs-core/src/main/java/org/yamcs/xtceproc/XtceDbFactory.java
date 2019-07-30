@@ -22,11 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.AggregateParameterType;
@@ -52,7 +51,7 @@ import org.yamcs.xtce.util.UnresolvedParameterReference;
 
 public class XtceDbFactory {
 
-    static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
+    static Log log = new Log(XtceDbFactory.class);
 
     /**
      * map instance names and config names to databases

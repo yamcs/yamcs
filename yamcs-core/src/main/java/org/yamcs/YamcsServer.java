@@ -101,6 +101,9 @@ public class YamcsServer {
     @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
     private boolean version;
 
+    @Parameter(names = "--check", description = "Run syntax tests on configuration files and quit")
+    private boolean check;
+
     @Parameter(names = "--log", description = "Level of verbosity")
     private int verbose = 2;
 
@@ -117,6 +120,7 @@ public class YamcsServer {
     private boolean help;
 
     private YConfiguration config;
+    private Map<String, Spec> sectionSpecs = new HashMap<>();
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
@@ -146,10 +150,10 @@ public class YamcsServer {
      * @param targetLog
      *            the logger to use for any messages
      * @throws IOException
-     * @throws ConfigurationException
+     * @throws ValidationException
      */
     static List<ServiceWithConfig> createServices(String instance, List<YConfiguration> servicesConfig, Log targetLog)
-            throws ConfigurationException, IOException {
+            throws ValidationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
         Set<String> names = new HashSet<>();
         List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
@@ -183,8 +187,7 @@ public class YamcsServer {
                         e.getMessage());
                 throw e;
             } catch (ValidationException e) {
-                targetLog.error("Cannot create service {}, with arguments {}: {}", name, args, e.getMessage());
-                throw new ConfigurationException("Invalid configuration");
+                throw e;
             } catch (Exception e) {
                 targetLog.error("Cannot create service {}, with arguments {}: {}", name, args, e.getMessage());
                 throw e;
@@ -422,6 +425,19 @@ public class YamcsServer {
 
     public Collection<Plugin> getPlugins() {
         return plugins.values();
+    }
+
+    /**
+     * Add the definition of an additional configuration section to the root Yamcs spec (yamcs.yaml).
+     * 
+     * @param key
+     *            the name of this section. This represent a direct subkey of the main app config
+     * @param spec
+     *            the specification of this configuration section.
+     */
+    @Experimental
+    public void addConfigurationSection(String key, Spec spec) {
+        sectionSpecs.put(key, spec);
     }
 
     /**
@@ -777,12 +793,70 @@ public class YamcsServer {
 
         // Run jcommander before setting up logging.
         // We want this to use standard streams.
+        parseArgs(args);
+
+        System.setProperty("jxl.nowarnings", "true");
+        System.setProperty("jacorb.home", System.getProperty("user.dir"));
+        System.setProperty("javax.net.ssl.trustStore", YAMCS.configDirectory.resolve("trustStore").toString());
+
+        try {
+            setupLogging();
+
+            // Bootstrap YConfiguration such that it only considers physical files.
+            // Not classpath resources.
+            YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.configDirectory));
+
+            YAMCS.discoverPlugins();
+
+            // Load the UTC-TAI.history file containing leap second information from the classpath
+            // TODO add a flag to override this with a physical file.
+            TimeEncoding.setUp();
+
+            YAMCS.validateMainConfiguration();
+            YAMCS.discoverTemplates();
+
+            // Create also services and instances so that they can validate too.
+            YAMCS.addGlobalServicesAndInstances();
+        } catch (Exception e) {
+            Throwable t = ExceptionUtil.unwind(e);
+            if (t instanceof ValidationException) {
+                String path = ((ValidationException) t).getContext().getPath();
+                LOG.error("{}: {}", path, e.getMessage());
+                if (YAMCS.check) {
+                    System.out.println("Configuration Invalid");
+                }
+                System.exit(-1);
+            } else {
+                LOG.error("Failure while attempting to validate configuration", t);
+                System.exit(-1);
+            }
+        }
+
+        if (YAMCS.check) {
+            System.out.println("Configuration OK");
+            System.exit(0);
+        }
+
+        // Good to go!
+        try {
+            LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION.substring(0, 8));
+            YAMCS.start();
+        } catch (Exception e) {
+            LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
+            System.exit(-1);
+        }
+
+        YAMCS.reportReady(System.nanoTime() - t0);
+    }
+
+    private static void parseArgs(String[] args) {
         try {
             JCommander jcommander = new JCommander(YAMCS);
+            jcommander.setProgramName("yamcsd");
             jcommander.parse(args);
             if (YAMCS.help) {
                 jcommander.usage();
-                return;
+                System.exit(0);
             } else if (YAMCS.version) {
                 System.out.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
                 for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
@@ -794,35 +868,14 @@ public class YamcsServer {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
-
-        System.setProperty("jxl.nowarnings", "true");
-        System.setProperty("jacorb.home", System.getProperty("user.dir"));
-        System.setProperty("javax.net.ssl.trustStore", YAMCS.configDirectory.resolve("trustStore").toString());
-
-        try {
-            // Initialize logging first. It is used everywhere.
-            setupLogging();
-
-            // Bootstrap YConfiguration such that it only considers physical files.
-            // Not classpath resources.
-            YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.configDirectory));
-
-            // Load the UTC-TAI.history file containing leap second information from the classpath
-            // TODO add a flag to override this with a physical file.
-            TimeEncoding.setUp();
-
-            // Really start the server. This method will block until all initial
-            // plugins, instances and services have finished starting.
-            YAMCS.start();
-        } catch (Exception e) {
-            LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
-            System.exit(-1);
-        }
-
-        YAMCS.reportReady(System.nanoTime() - t0);
     }
 
     private static void setupLogging() throws SecurityException, IOException {
+        if (YAMCS.check) {
+            Log.forceStandardStreams(Level.WARNING);
+            return;
+        }
+
         if (System.getProperty("java.util.logging.config.file") != null) {
             LOG.info("Logging configuration overriden via java property");
         } else {
@@ -903,13 +956,34 @@ public class YamcsServer {
         }
     }
 
-    public void start() throws ValidationException, IOException, PluginException {
-        LOG.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
+    public void validateMainConfiguration() throws ValidationException {
+        Spec serviceSpec = new Spec();
+        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
+        serviceSpec.addOption("args", OptionType.ANY);
 
-        discoverPlugins();
-        loadConfiguration();
-        discoverTemplates();
-        addGlobalServicesAndInstances();
+        Spec spec = new Spec();
+        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(serviceSpec);
+        spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
+        spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
+        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
+        spec.addOption("serverId", OptionType.STRING);
+        spec.addOption("secretKey", OptionType.STRING);
+
+        sectionSpecs.forEach((key, sectionSpec) -> {
+            spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
+                    .withApplySpecDefaults(true);
+        });
+
+        // TODO The goal is to (over time) be able to remove this relaxation
+        spec.allowUnknownKeys(true);
+
+        config = YConfiguration.getConfiguration("yamcs");
+        config = spec.validate(config);
+    }
+
+    public void start() throws PluginException {
         loadPlugins();
         startServices();
 
@@ -936,33 +1010,6 @@ public class YamcsServer {
             } else {
                 plugins.put(plugin.getClass(), plugin);
             }
-        }
-    }
-
-    private void loadConfiguration() {
-        Spec serviceSpec = new Spec();
-        serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
-        serviceSpec.addOption("args", OptionType.ANY);
-
-        Spec spec = new Spec();
-        spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
-                .withSpec(serviceSpec);
-        spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
-        spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
-        spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
-        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
-        spec.addOption("serverId", OptionType.STRING);
-        spec.addOption("secretKey", OptionType.STRING);
-
-        // TODO The goal is to (over time) be able to remove this relaxation
-        spec.allowUnknownKeys(true);
-
-        config = YConfiguration.getConfiguration("yamcs");
-        try {
-            config = spec.validate(config);
-        } catch (ValidationException e) {
-            throw new ConfigurationException(String.format(
-                    "Validation error in %s: %s", config.getPath(), e.getMessage()));
         }
     }
 
@@ -1004,7 +1051,7 @@ public class YamcsServer {
         }
     }
 
-    public void addGlobalServicesAndInstances() throws IOException {
+    public void addGlobalServicesAndInstances() throws IOException, ValidationException {
         serverId = deriveServerId();
         deriveSecretKey();
 

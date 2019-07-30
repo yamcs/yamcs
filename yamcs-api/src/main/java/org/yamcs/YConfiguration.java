@@ -807,9 +807,12 @@ public class YConfiguration {
     private static void buildPath(YConfiguration c, StringBuilder sb) {
         if (c.parent != null) {
             buildPath(c.parent, sb);
+            if (c.parent.parent != null) {
+                sb.append(".");
+            }
             sb.append(c.parentKey);
         } else {
-            sb.append(c.rootLocation).append(":");
+            sb.append(c.rootLocation).append(": ");
         }
     }
 

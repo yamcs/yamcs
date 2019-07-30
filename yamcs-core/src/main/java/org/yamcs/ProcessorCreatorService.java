@@ -47,7 +47,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
             String systemUser = securityStore.getSystemUser().getUsername();
             processor = ProcessorFactory.create(yamcsInstance, processorName, processorType, systemUser,
                     processorConfig);
-        } catch (ProcessorException e) {
+        } catch (ProcessorException | ValidationException e) {
             throw new InitException(e);
         }
         processor.setPersistent(true);
