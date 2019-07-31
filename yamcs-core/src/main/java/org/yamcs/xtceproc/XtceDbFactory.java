@@ -630,8 +630,7 @@ public class XtceDbFactory {
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db = instance2Db.get(yamcsInstance);
         if (db == null) {
-            YamcsServer yamcs = YamcsServer.getServer();
-            YConfiguration instanceConfig = yamcs.getInstance(yamcsInstance).getConfig();
+            YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
             if (instanceConfig.isList("mdb")) {
                 db = createInstance(instanceConfig.getList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);

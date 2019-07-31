@@ -14,7 +14,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.DataType._type;
 
@@ -41,7 +40,7 @@ public class ColumnSerializerFactory {
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>();
 
     static {
-        config = YamcsServer.getServer().getConfig();
+        config = YConfiguration.getConfiguration("yamcs");
         if (config.containsKey("maxBinaryLength")) {
             maxBinaryLength = config.getInt("maxBinaryLength");
         }

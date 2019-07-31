@@ -1,4 +1,8 @@
-mdb: refmdb
+mdb:
+  - type: "sheet"
+    args: 
+      file: "mdb/refmdb.xls"
+      enableAliasReferences: false
 
 streamConfig:
   event: ["events_realtime"]

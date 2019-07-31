@@ -63,8 +63,14 @@ public class YamcsServerInstance extends YamcsInstanceService {
         // Detailed validation on these is done
         // in DataLinkInitialiser, XtceDbFactory, and StreamInitializer
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
+
+        /*
+         *  TODO not possible to activate this validation because mdb is being used
+         *  ambiguously as both LIST and STRING with completely different meanings.
+         */
+        // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("mdb", OptionType.ANY);
 
         try {
             this.config = spec.validate(config);

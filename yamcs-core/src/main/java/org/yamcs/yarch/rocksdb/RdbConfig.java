@@ -15,7 +15,6 @@ import org.rocksdb.IndexType;
 import org.rocksdb.Options;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 
 /**
  * reads the rdbConfig from the yamcs.yaml and provides RocksDB Options when creating and opening databases
@@ -50,7 +49,7 @@ public class RdbConfig {
 
     @SuppressWarnings("unchecked")
     private RdbConfig() {
-        YConfiguration config = YamcsServer.getServer().getConfig();
+        YConfiguration config = YConfiguration.getConfiguration("yamcs");
         if (config.containsKey(KEY_RDB_CONFIG)) {
             Map<String, Object> rdbOptions = config.getMap(KEY_RDB_CONFIG);
             if (rdbOptions.containsKey(KEY_TABLESPACE_CONFIG)) {

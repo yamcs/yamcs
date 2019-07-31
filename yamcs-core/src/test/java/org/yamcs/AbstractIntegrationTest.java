@@ -115,7 +115,6 @@ public abstract class AbstractIntegrationTest {
 
         YConfiguration.setupTest("IntegrationTest");
         Map<String, Object> options = new HashMap<>();
-        options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9190);
         HttpServer httpServer = new HttpServer();
         options = httpServer.getSpec().validate(options);
@@ -124,7 +123,10 @@ public abstract class AbstractIntegrationTest {
         httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();
-        YamcsServer.getServer().start();
+
+        YamcsServer yamcs = YamcsServer.getServer();
+        yamcs.prepareStart();
+        yamcs.start();
     }
 
     IssueCommandRequest getCommand(int seq, String... args) {

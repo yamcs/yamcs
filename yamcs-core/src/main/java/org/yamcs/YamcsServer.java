@@ -814,17 +814,7 @@ public class YamcsServer {
             // Not classpath resources.
             YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.configDirectory));
 
-            YAMCS.discoverPlugins();
-
-            // Load the UTC-TAI.history file containing leap second information from the classpath
-            // TODO add a flag to override this with a physical file.
-            TimeEncoding.setUp();
-
-            YAMCS.validateMainConfiguration();
-            YAMCS.discoverTemplates();
-
-            // Create also services and instances so that they can validate too.
-            YAMCS.addGlobalServicesAndInstances();
+            YAMCS.prepareStart();
         } catch (Exception e) {
             Throwable t = ExceptionUtil.unwind(e);
             if (t instanceof ValidationException) {
@@ -968,6 +958,20 @@ public class YamcsServer {
                 ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.noColor);
             }
         }
+    }
+
+    public void prepareStart() throws ValidationException, IOException {
+        discoverPlugins();
+
+        // Load the UTC-TAI.history file containing leap second information from the classpath
+        // TODO add a flag to override this with a physical file.
+        TimeEncoding.setUp();
+
+        validateMainConfiguration();
+        discoverTemplates();
+
+        // Create also services and instances so that they can validate too.
+        addGlobalServicesAndInstances();
     }
 
     public void validateMainConfiguration() throws ValidationException {

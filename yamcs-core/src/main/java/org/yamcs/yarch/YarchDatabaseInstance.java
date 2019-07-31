@@ -85,7 +85,7 @@ public class YarchDatabaseInstance {
                 loadBucketDatabase(dbConfig);
             }
         } else {
-            yconf = YamcsServer.getServer().getConfig();
+            yconf = YConfiguration.getConfiguration("yamcs");
             tablespaceName = instanceName;
 
             if (yconf.containsKey("bucketDatabase")) {

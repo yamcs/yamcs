@@ -43,6 +43,7 @@ public class ProcessorsTest {
     @BeforeClass
     public static void setup() throws Exception {
         YConfiguration.setupTest("ProcessorsTest");
+        YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
     }
 
