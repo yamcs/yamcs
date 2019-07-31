@@ -1,7 +1,7 @@
 Configuration
 =============
 
-The security system is configured in the file ``etc/security.yaml``. Example from a typical deployment:
+The security system is configured in the file ``etc/security.yaml``. Example:
 
 .. code-block:: yaml
 

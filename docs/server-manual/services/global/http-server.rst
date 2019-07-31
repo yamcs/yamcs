@@ -20,7 +20,7 @@ Class Name
 Configuration
 -------------
 
-This is a global service defined in ``etc/yamcs.yaml``. Example from a typical deployment:
+This is a global service defined in ``etc/yamcs.yaml``. Example:
 
 .. code-block:: yaml
 

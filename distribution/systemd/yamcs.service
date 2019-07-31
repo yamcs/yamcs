@@ -32,6 +32,6 @@ LimitNOFILE=10000
 [Install]
 WantedBy=multi-user.target
 
-# Install some aliases for convenience.
-# These are only applied when the service is enabled
-Alias=yamcsd.service yamcs-server.service
+# Alias for convenience.
+# This is only applied when the service is enabled
+Alias=yamcsd.service

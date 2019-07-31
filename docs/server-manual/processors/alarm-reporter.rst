@@ -13,7 +13,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/processor.yaml``. Example from a typical deployment:
+This service is defined in ``etc/processor.yaml``. Example:
 
 .. code-block:: yaml
 
