@@ -56,7 +56,6 @@ ln -fs $YAMCS_HOME/yamcs-artemis/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 
 # Sets up a development environment for an example Yamcs configuration
 if [ $YSS_CONFIGURATION -eq "1" ]; then

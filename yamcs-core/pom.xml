@@ -115,7 +115,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <tasks>
+              <target>
                 <exec executable="git" outputproperty="revision">
                   <arg value="rev-parse" />
                   <arg value="HEAD" />
@@ -125,7 +125,7 @@
                   version = ${project.version}
                   revision = ${revision}
                 </echo>
-              </tasks>
+              </target>
             </configuration>
           </execution>
         </executions>

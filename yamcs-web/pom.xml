@@ -54,6 +54,26 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-manifest</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <fileset id="webfiles" dir="${basedir}/target/webapp/static" />
+                <property name="prop.webfiles" refid="webfiles" />
+                <echo file="${basedir}/target/webapp/static/manifest.txt">${prop.webfiles}</echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

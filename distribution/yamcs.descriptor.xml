@@ -33,10 +33,6 @@
       <directory>../yamcs-core/etc</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>
-    <fileSet>
-      <directory>../yamcs-web/packages/app/dist</directory>
-      <outputDirectory>lib/yamcs-web</outputDirectory>
-    </fileSet>
 
     <!-- Tricks to add empty directories... -->
     <fileSet>
