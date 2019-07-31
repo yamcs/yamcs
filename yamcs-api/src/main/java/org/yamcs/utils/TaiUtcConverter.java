@@ -1,7 +1,6 @@
 package org.yamcs.utils;
 
 import java.io.BufferedReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,8 +16,8 @@ import java.util.regex.Pattern;
 import com.google.protobuf.Timestamp;
 
 /**
- * Utility class to convert between TAI and UTC.
- * It reads the UTC-TAI.history (available at http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)
+ * Utility class to convert between TAI and UTC. It reads the UTC-TAI.history (available at
+ * http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)
  * 
  * It only supports added leap seconds not removed ones (negative leap seconds have never happened and probably never
  * will).
@@ -50,21 +49,24 @@ public class TaiUtcConverter {
     static final long PROTOBUF_SECONDS_MIN = -62135596800L;
 
     // Timestamp for "9999-12-31T23:59:59Z"
-    static final long PROTOBUB_SECONDS_MAX = 253402300799L;
+    static final long PROTOBUF_SECONDS_MAX = 253402300799L;
 
     public TaiUtcConverter() throws IOException, ParseException {
-        InputStream is = TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN);
-        if (is == null)
+        InputStream in = TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN);
+        if (in == null) {
             throw new RuntimeException("Cannot find " + UTC_TAI_HISTORY_FN + " in the classpath");
+        }
+    }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+    public TaiUtcConverter(InputStream utcTaiHistory) throws IOException, ParseException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(utcTaiHistory));
         String line = null;
         // 1974 Jan. 1 - 1975 Jan. 1 13s
         String dp = "\\s?(\\d+)?\\s+(\\w{3})\\.?\\s+(\\d+)";
 
         Pattern p = Pattern.compile(dp + "\\s*\\.?\\-\\s*(" + dp + ")?\\s*(\\d+)s\\s*");
 
-        ArrayList<Long> tmp1 = new ArrayList<Long>();
+        ArrayList<Long> tmp1 = new ArrayList<>();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy MMM dd", Locale.ENGLISH);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -170,9 +172,9 @@ public class TaiUtcConverter {
         d += 146097L * (y / 400);
         y %= 400;
 
-        if (m >= 2)
+        if (m >= 2) {
             m -= 2;
-        else {
+        } else {
             m += 10;
             --y;
         }
@@ -225,8 +227,9 @@ public class TaiUtcConverter {
 
         int i;
         for (i = timesecs.length - 1; i >= 0; i--) {
-            if (u >= timesecs[i])
+            if (u >= timesecs[i]) {
                 break;
+            }
             ls--;
         }
         if ((i >= 0) && (u - timesecs[i] < 43200)) {
@@ -242,8 +245,8 @@ public class TaiUtcConverter {
             ls++;
         }
         long sec = u - ls;
-        if (sec > PROTOBUB_SECONDS_MAX) {
-            sec = PROTOBUB_SECONDS_MAX;
+        if (sec > PROTOBUF_SECONDS_MAX) {
+            sec = PROTOBUF_SECONDS_MAX;
         } else if (sec < PROTOBUF_SECONDS_MIN) {
             sec = PROTOBUF_SECONDS_MIN;
         }
@@ -258,8 +261,9 @@ public class TaiUtcConverter {
         long u = ts.getSeconds() + diffTaiUtc;
         int i;
         for (i = timesecs.length - 1; i >= 0; i--) {
-            if (u > timesecs[i])
+            if (u > timesecs[i]) {
                 break;
+            }
             u--;
         }
         if ((i >= 0) && (u - timesecs[i] <= 43200)) {
@@ -294,8 +298,9 @@ public class TaiUtcConverter {
         int ls = diffTaiUtc;
 
         for (int i = timesecs.length - 1; i >= 0; i--) {
-            if (u > timesecs[i])
+            if (u > timesecs[i]) {
                 break;
+            }
             if (u == timesecs[i]) {
                 leap = 1;
                 break;
@@ -305,7 +310,7 @@ public class TaiUtcConverter {
         u -= ls;
 
         s = u % 86400L;
-        
+
         if (s < 0) {
             s += 86400L;
             u -= 86400L;
@@ -335,16 +340,16 @@ public class TaiUtcConverter {
         long u = t / 1000;
         int ls = diffTaiUtc;
         for (int i = timesecs.length - 1; i >= 0; i--) {
-            if (u >= timesecs[i])
+            if (u >= timesecs[i]) {
                 break;
+            }
             ls--;
         }
         return t - ls * 1000;
     }
 
     /**
-     * Converts UTC to instant.
-     * WARNING: DOY is ignored.
+     * Converts UTC to instant. WARNING: DOY is ignored.
      * 
      * @param dtc
      * @return
@@ -358,10 +363,12 @@ public class TaiUtcConverter {
         int ls = diffTaiUtc;
         for (int i = timesecs.length - 1; i >= 0; i--) {
             long u = timesecs[i] - ls + 1;
-            if (s > u)
+            if (s > u) {
                 break;
-            if ((s < u) || (dtc.second == 60))
+            }
+            if ((s < u) || (dtc.second == 60)) {
                 ls--;
+            }
         }
         s += ls;
 
@@ -378,8 +385,9 @@ public class TaiUtcConverter {
         long u = t / 1000;
         int ls = diffTaiUtc;
         for (int i = timesecs.length - 1; i >= 0; i--) {
-            if (u >= timesecs[i] - ls + 1)
+            if (u >= timesecs[i] - ls + 1) {
                 break;
+            }
             ls--;
         }
         return t + ls * 1000;

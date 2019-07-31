@@ -1,5 +1,6 @@
 package org.yamcs.utils;
 
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -24,7 +25,7 @@ public class TimeEncoding {
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691191000L;
     static final long J2000_EPOCH_YAMCS_EPOCH_DELTA = 946727967816L;
-    
+
     static final long GPS_TAI_DELTA = 19000;
 
     static TaiUtcConverter taiUtcConverter;
@@ -32,9 +33,18 @@ public class TimeEncoding {
             .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?Z?");
     static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?");
 
-    public static void setUp() throws RuntimeException {
+    public static void setUp() {
         try {
             taiUtcConverter = new TaiUtcConverter();
+            MAX_INSTANT = 185539080470399999L + taiUtcConverter.diffTaiUtc * 1000;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void setUp(InputStream in) {
+        try {
+            taiUtcConverter = new TaiUtcConverter(in);
             MAX_INSTANT = 185539080470399999L + taiUtcConverter.diffTaiUtc * 1000;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -58,30 +68,33 @@ public class TimeEncoding {
     }
 
     private static void formatOn2Digits(int x, StringBuilder sb) {
-        if (x < 10)
+        if (x < 10) {
             sb.append("0").append(x);
-        else
+        } else {
             sb.append(x);
+        }
     }
 
     private static void formatOn3Digits(int x, StringBuilder sb) {
-        if (x < 10)
+        if (x < 10) {
             sb.append("00").append(x);
-        else if (x < 100)
+        } else if (x < 100) {
             sb.append("0").append(x);
-        else
+        } else {
             sb.append(x);
+        }
     }
 
     private static void formatOn4Digits(int x, StringBuilder sb) {
-        if (x < 10)
+        if (x < 10) {
             sb.append("000").append(x);
-        else if (x < 100)
+        } else if (x < 100) {
             sb.append("00").append(x);
-        else if (x < 1000)
+        } else if (x < 1000) {
             sb.append("0").append(x);
-        else
+        } else {
             sb.append(x);
+        }
     }
 
     /**
@@ -298,7 +311,7 @@ public class TimeEncoding {
     public static long fromUnixTime(long milliseconds) {
         return fromUnixMillisec(milliseconds);
     }
-    
+
     /**
      * Transforms UNIX time (milliseconds since 1970) to instant
      * 
@@ -308,6 +321,7 @@ public class TimeEncoding {
     public static long fromUnixMillisec(long milliseconds) {
         return taiUtcConverter.unixToInstant(milliseconds);
     }
+
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant WARNING: this conversion will
      * lose precision (microsecond to millisecond)
@@ -321,10 +335,6 @@ public class TimeEncoding {
         return taiUtcConverter.unixToInstant(millisec);
     }
 
-    
-    
-    
-    
     /**
      * Transforms instant to UNIX time expressed in milliseconds since 1970
      * 
@@ -359,8 +369,9 @@ public class TimeEncoding {
      * @return
      */
     public static Calendar toCalendar(long instant) {
-        if (instant == TimeEncoding.INVALID_INSTANT)
+        if (instant == TimeEncoding.INVALID_INSTANT) {
             return null;
+        }
         long t = taiUtcConverter.instantToUnix(instant);
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(t);
@@ -395,31 +406,32 @@ public class TimeEncoding {
     public static long fromTaiMillisec(long taitime) {
         return taitime + TAI_EPOCH_YAMCS_EPOCH_DELTA;
     }
-    
+
     public static long fromJ2000Millisec(long j2000time) {
         return j2000time + J2000_EPOCH_YAMCS_EPOCH_DELTA;
     }
-    
-    
+
     /**
-     * Transforms protobuf Timestamp to instant.
-     * The conversion will do the "unsmearing" around the leap seconds and will also lose precision (nanoseconds to milliseconds).
+     * Transforms protobuf Timestamp to instant. The conversion will do the "unsmearing" around the leap seconds and
+     * will also lose precision (nanoseconds to milliseconds).
      * 
      * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
      * 
-     * @param ts - the timestamp to be converted
+     * @param ts
+     *            - the timestamp to be converted
      * @return
      */
     public static long fromProtobufTimestamp(Timestamp ts) {
         return taiUtcConverter.protobufToInstant(ts);
     }
-    
+
     /**
      * Transforms the instant to protobuf timestamp performing the smearing around the leap seconds.
      * 
      * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
      * 
-     * @param instant - the instant to be converted
+     * @param instant
+     *            - the instant to be converted
      * @return
      */
     public static Timestamp toProtobufTimestamp(long instant) {

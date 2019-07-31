@@ -963,9 +963,17 @@ public class YamcsServer {
     public void prepareStart() throws ValidationException, IOException {
         discoverPlugins();
 
-        // Load the UTC-TAI.history file containing leap second information from the classpath
-        // TODO add a flag to override this with a physical file.
-        TimeEncoding.setUp();
+        // Load the UTC-TAI.history file.
+        // Give priority to a file in etc folder.
+        Path utcTaiFile = configDirectory.resolve("UTC-TAI.history");
+        if (Files.exists(utcTaiFile)) {
+            try (InputStream in = Files.newInputStream(utcTaiFile)) {
+                TimeEncoding.setUp(in);
+            }
+        } else {
+            // Default to a bundled version inside the yamcs-api jar
+            TimeEncoding.setUp();
+        }
 
         validateMainConfiguration();
         discoverTemplates();
