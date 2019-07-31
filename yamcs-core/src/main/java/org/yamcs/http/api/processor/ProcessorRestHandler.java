@@ -294,7 +294,7 @@ public class ProcessorRestHandler extends RestHandler {
             comment = request.getComment();
         }
 
-        // URI can override body
+        // URI can override body (legacy)
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
         }

@@ -17,26 +17,16 @@ state (string)
 
 .. rubric:: Example
 
-.. code-block:: text
-
-    PATCH /api/instances/simulator?state=stop
-
 .. code-block:: json
 
     {
-      "name": "simulator",
-      "missionTime": "2019-03-12T11:06:08.514Z",
-      "state": "OFFLINE"
+      "state": "stopped"
     }
 
-.. code-block:: text
 
-     PATCH /api/instances/simulator?state=running
+.. rubric:: Request Schema (Protobuf)
+.. code-block:: proto
 
-.. code-block:: json
-
-    {
-      "name": "simulator",
-      "missionTime": "2019-03-12T11:06:08.514Z",
-      "state": "RUNNING"
+    message EditInstanceRequest {
+      optional string state = 1;
     }

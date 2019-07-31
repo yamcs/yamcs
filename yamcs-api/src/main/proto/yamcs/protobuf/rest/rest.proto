@@ -203,6 +203,10 @@ message EditTagRequest {
   optional string color = 5;
 }
 
+message EditInstanceRequest {
+  optional string state = 1;
+}
+
 message ListAlarmsResponse {
   repeated alarms.AlarmData alarm = 1;
 }

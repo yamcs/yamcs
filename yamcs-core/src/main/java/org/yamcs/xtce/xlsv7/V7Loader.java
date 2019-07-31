@@ -198,10 +198,10 @@ public class V7Loader extends V7LoaderBase {
 
     @Override
     public SpaceSystem load() {
-        log.info("Loading spreadsheet {}", path);
+        File ssFile = new File(path).getAbsoluteFile();
+        log.info("Loading spreadsheet {}", ssFile);
         try {
             // Given path may be relative, so use absolute path to report issues
-            File ssFile = new File(path);
             if (!ssFile.exists()) {
                 throw new FileNotFoundException(ssFile.getAbsolutePath());
             }

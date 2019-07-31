@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -134,6 +135,8 @@ public class JMXService extends AbstractYamcsService
             TableControlImpl tci = new TableControlImpl(table);
             mbeanServer.registerMBean(tci,
                     ObjectName.getInstance(TOP_LEVEL_NAME + "." + instance + ":type=tables,name=" + table.getName()));
+        } catch (InstanceAlreadyExistsException e) {
+            // Ignore. This happens when restarting a yamcs instance. (tables don't get dropped)
         } catch (Exception e) {
             log.warn("Got exception when registering a table: ", e);
         }
@@ -231,8 +234,7 @@ public class JMXService extends AbstractYamcsService
     @Override
     public void commandQueueUnregistered(String instance, String processorName, CommandQueue q) {
         try {
-            CommandQueueControlImpl cqci = new CommandQueueControlImpl(instance, processorName, q);
-            mbeanServer.registerMBean(cqci, getCommandQueueObjectName(instance, processorName, q));
+            mbeanServer.unregisterMBean(getCommandQueueObjectName(instance, processorName, q));
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
         }

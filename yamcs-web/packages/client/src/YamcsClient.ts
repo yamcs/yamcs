@@ -156,8 +156,9 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async editInstance(name: string, options: EditInstanceOptions) {
-    const url = `${this.apiUrl}/instances/${name}`;
-    return this.doFetch(url + this.queryString(options), {
+    const body = JSON.stringify(options);
+    return this.doFetch(`${this.apiUrl}/instances/${name}`, {
+      body,
       method: 'PATCH',
     });
   }

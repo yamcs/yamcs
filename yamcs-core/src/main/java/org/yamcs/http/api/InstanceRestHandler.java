@@ -24,6 +24,7 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.CreateInstanceRequest;
+import org.yamcs.protobuf.Rest.EditInstanceRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
@@ -84,59 +85,69 @@ public class InstanceRestHandler extends RestHandler {
     @Route(path = "/api/instances/:instance", method = { "PATCH", "PUT", "POST" })
     public void editInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
-
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        String state;
+
+        String state = null;
+        EditInstanceRequest request = req.bodyAsMessage(EditInstanceRequest.newBuilder()).build();
+        if (request.hasState()) {
+            state = request.getState();
+        }
+
+        // URI can override body (legacy)
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
-        } else {
-            throw new BadRequestException("No state specified");
         }
 
-        CompletableFuture<YamcsServerInstance> cf;
-        switch (state.toLowerCase()) {
-        case "stop":
-        case "stopped":
-            if (yamcsServer.getInstance(instance) == null) {
-                throw new BadRequestException("No instance named '" + instance + "'");
+        CompletableFuture<Void> cf = CompletableFuture.completedFuture(null);
+        if (state != null) {
+            switch (state.toLowerCase()) {
+            case "stop":
+            case "stopped":
+                if (yamcsServer.getInstance(instance) == null) {
+                    throw new BadRequestException("No instance named '" + instance + "'");
+                }
+                cf = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        yamcsServer.stopInstance(instance);
+                        return null;
+                    } catch (IOException e) {
+                        throw new UncheckedExecutionException(e);
+                    }
+                });
+                break;
+            case "restarted":
+                cf = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        yamcsServer.restartInstance(instance);
+                        return null;
+                    } catch (IOException e) {
+                        throw new UncheckedExecutionException(e);
+                    }
+                });
+                break;
+            case "running":
+                cf = CompletableFuture.supplyAsync(() -> {
+                    log.info("Starting instance {}", instance);
+                    try {
+                        yamcsServer.startInstance(instance);
+                        return null;
+                    } catch (IOException e) {
+                        throw new UncheckedExecutionException(e);
+                    }
+                });
+                break;
+            default:
+                throw new BadRequestException("Unsupported service state '" + state + "'");
             }
-            cf = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return yamcsServer.stopInstance(instance);
-                } catch (IOException e) {
-                    throw new UncheckedExecutionException(e);
-                }
-            });
-            break;
-        case "restarted":
-            cf = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return yamcsServer.restartInstance(instance);
-                } catch (IOException e) {
-                    throw new UncheckedExecutionException(e);
-                }
-            });
-            break;
-        case "running":
-            cf = CompletableFuture.supplyAsync(() -> {
-                log.info("Starting instance {}", instance);
-                try {
-                    return yamcsServer.startInstance(instance);
-                } catch (IOException e) {
-                    throw new UncheckedExecutionException(e);
-                }
-            });
-            break;
-        default:
-            throw new BadRequestException("Unsupported service state '" + state + "'");
         }
+
         cf.whenComplete((v, error) -> {
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, v.getInstanceInfo());
+                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, ysi.getInstanceInfo());
                 completeOK(req, enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
-                log.error("Error when changing instance state to {}", state, t);
                 completeWithError(req, new InternalServerErrorException(t));
             }
         });
