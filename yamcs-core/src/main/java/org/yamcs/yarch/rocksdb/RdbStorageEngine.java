@@ -16,6 +16,7 @@ import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
+import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -35,6 +36,7 @@ public class RdbStorageEngine implements StorageEngine {
     Map<String, Tablespace> tablespaces = new HashMap<>();
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
+    Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
 
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
@@ -254,6 +256,22 @@ public class RdbStorageEngine implements StorageEngine {
             bucketDbs.put(tablespaceName, bdb);
         }
         return bdb;
+    }
+
+    @Override
+    public synchronized ProtobufDatabase getProtobufDatabase(YarchDatabaseInstance ydb) throws YarchException {
+        String tablespaceName = ydb.getTablespaceName();
+        String yamcsInstance = ydb.getYamcsInstance();
+        RdbProtobufDatabase db = protobufDbs.get(tablespaceName);
+        if (db == null) {
+            try {
+                db = new RdbProtobufDatabase(yamcsInstance, getTablespace(ydb));
+            } catch (RocksDBException e) {
+                throw new YarchException("Cannot create protobuf database", e);
+            }
+            protobufDbs.put(tablespaceName, db);
+        }
+        return db;
     }
 
     static byte[] dbKey(int tbsIndex) {

@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
-import org.yamcs.YConfiguration;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
 import org.yamcs.http.AuthModuleHttpHandler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.utils.StringConverter;
@@ -155,7 +155,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     }
 
     @Override
-    public boolean verifyValidity(User user) {
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         // TODO check expiration
         return true;
     }

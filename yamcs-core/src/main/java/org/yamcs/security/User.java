@@ -1,11 +1,14 @@
 package org.yamcs.security;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
+import org.yamcs.security.protobuf.UserRecord;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * A user contains identifying information and a convenient set of methods to perform access control.
@@ -22,34 +25,111 @@ import java.util.Set;
  */
 public class User {
 
+    private int id;
     private String username;
-
-    /**
-     * May contain contextual security information of use to a specific AuthModule. (e.g. expiration of an externally
-     * issued token)
-     */
-    private AuthenticationInfo authenticationInfo;
-
-    private boolean superuser = false;
+    private String name;
+    private String email;
+    String hash; // Password hash, only for internal users
+    private boolean active; // Inactive users are considered "blocked"
+    private boolean superuser;
+    private int createdBy; // Id of the user that created this user
+    private long creationTime = TimeEncoding.INVALID_INSTANT;
+    private long confirmationTime = TimeEncoding.INVALID_INSTANT;
+    private long lastLoginTime = TimeEncoding.INVALID_INSTANT;
+    private String identityProvider; // AuthModule classname for non-internal users
 
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
-    public User(AuthenticationInfo authenticationInfo) {
-        this.authenticationInfo = authenticationInfo;
-        this.username = authenticationInfo.getPrincipal();
+    public User(String username, String name, User createdBy) {
+        this.username = Objects.requireNonNull(username);
+        this.name = name;
+        if (createdBy != null) {
+            this.createdBy = createdBy.id;
+        }
+        creationTime = TimeEncoding.getWallclockTime();
     }
 
-    public User(String username) {
-        this.username = username;
+    User(UserRecord record) {
+        id = record.getId();
+        username = record.getUsername();
+        if (record.hasHash()) {
+            hash = record.getHash();
+        }
+        if (record.hasName()) {
+            name = record.getName();
+        }
+        if (record.hasEmail()) {
+            email = record.getEmail();
+        }
+        active = record.getActive();
+        superuser = record.getSuperuser();
+        if (record.hasCreatedBy()) {
+            createdBy = record.getCreatedBy();
+        }
+        creationTime = TimeEncoding.fromProtobufTimestamp(record.getCreationTime());
+        if (record.hasConfirmationTime()) {
+            confirmationTime = TimeEncoding.fromProtobufTimestamp(record.getConfirmationTime());
+        }
+        if (record.hasLastLoginTime()) {
+            lastLoginTime = TimeEncoding.fromProtobufTimestamp(record.getLastLoginTime());
+        }
+        if (record.hasIdentityProvider()) {
+            identityProvider = record.getIdentityProvider();
+        }
+    }
+
+    public void confirm() {
+        active = true;
+        confirmationTime = TimeEncoding.getWallclockTime();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public AuthenticationInfo getAuthenticationInfo() {
-        return authenticationInfo;
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public boolean isExternallyManaged() {
+        return hash == null;
+    }
+
+    public String getIdentityProvider() {
+        return identityProvider;
+    }
+
+    public int getCreatedBy() {
+        return createdBy;
+    }
+
+    public long getCreationTime() {
+        return creationTime;
+    }
+
+    public long getConfirmationTime() {
+        return confirmationTime;
+    }
+
+    public long getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public boolean isSuperuser() {
@@ -58,6 +138,14 @@ public class User {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
+    }
+
+    public void setIdentityProvider(String identityProvider) {
+        this.identityProvider = identityProvider;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Set<SystemPrivilege> getSystemPrivileges() {
@@ -108,13 +196,43 @@ public class User {
         return false;
     }
 
-    public Map<String, Object> serialize() {
-        Map<String, Object> props = new HashMap<>();
-        props.put("username", username);
-        // props.put("hash", password);
-        props.put("superuser", superuser);
-        props.put("roles", new ArrayList<>());
-        return props;
+    void setId(int id) {
+        this.id = id;
+    }
+
+    void updateLoginData() {
+        lastLoginTime = TimeEncoding.getWallclockTime();
+    }
+
+    UserRecord toRecord() {
+        UserRecord.Builder b = UserRecord.newBuilder();
+        b.setId(id);
+        b.setUsername(username);
+        if (hash != null) {
+            b.setHash(hash);
+        }
+        if (name != null) {
+            b.setName(name);
+        }
+        if (email != null) {
+            b.setEmail(email);
+        }
+        b.setActive(active);
+        b.setSuperuser(superuser);
+        if (createdBy > 0) {
+            b.setCreatedBy(createdBy);
+        }
+        b.setCreationTime(TimeEncoding.toProtobufTimestamp(creationTime));
+        if (confirmationTime != TimeEncoding.INVALID_INSTANT) {
+            b.setConfirmationTime(TimeEncoding.toProtobufTimestamp(confirmationTime));
+        }
+        if (lastLoginTime != TimeEncoding.INVALID_INSTANT) {
+            b.setLastLoginTime(TimeEncoding.toProtobufTimestamp(lastLoginTime));
+        }
+        if (identityProvider != null) {
+            b.setIdentityProvider(identityProvider);
+        }
+        return b.build();
     }
 
     @Override
@@ -123,16 +241,16 @@ public class User {
             return false;
         }
         User other = (User) obj;
-        return username.equals(other.username);
+        return id == other.id;
     }
 
     @Override
     public int hashCode() {
-        return username.hashCode();
+        return Integer.hashCode(id);
     }
 
     @Override
     public String toString() {
-        return username;
+        return String.format("[username=%s, id=%s, provider=%s]", username, id, identityProvider);
     }
 }

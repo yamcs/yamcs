@@ -30,6 +30,7 @@ public class Spec {
     }
 
     private Map<String, Option> options = new HashMap<>();
+    private Map<String, String> aliases = new HashMap<>();
 
     private boolean allowUnknownKeys = false;
     private List<List<String>> requiredOneOfGroups = new ArrayList<>(0);
@@ -44,10 +45,10 @@ public class Spec {
      *             if an option with this name is already defined.
      */
     public Option addOption(String name, OptionType type) {
-        if (options.containsKey(name)) {
+        if (options.containsKey(name) || aliases.containsKey(name)) {
             throw new IllegalArgumentException("Option '" + name + "' is already defined");
         }
-        Option option = new Option(name, type);
+        Option option = new Option(this, name, type);
         options.put(name, option);
         return option;
     }
@@ -189,22 +190,32 @@ public class Spec {
             String argName = entry.getKey();
             String path = "".equals(parent) ? argName : (parent + "->" + argName);
 
-            Option option = options.get(argName);
+            Option option = getOption(argName);
             if (option == null) {
                 if (allowUnknownKeys) {
                     result.put(argName, entry.getValue());
                 } else {
                     throw new ValidationException(ctx, "Unknown argument " + path);
                 }
+            } else if (result.containsKey(option.name)) {
+                throw new ValidationException(ctx,
+                        String.format("Argument '%s' already specified. Check for aliases.", option.name));
             } else {
                 Object arg = entry.getValue();
                 Object resultArg = option.validate(ctx, arg, path);
-                result.put(argName, resultArg);
+                result.put(option.name, resultArg);
             }
         }
 
         for (Option option : options.values()) {
-            if (!args.containsKey(option.name)) {
+            boolean specified = args.containsKey(option.name);
+            for (Entry<String, String> alias : aliases.entrySet()) {
+                if (alias.getValue().equals(option.name) && args.containsKey(alias.getKey())) {
+                    specified = true;
+                }
+            }
+
+            if (!specified) {
                 if (option.required) {
                     String path = "".equals(parent) ? option.name : parent + "->" + option.name;
                     throw new ValidationException(ctx, "Missing required argument " + path);
@@ -218,6 +229,11 @@ public class Spec {
         }
 
         return result;
+    }
+
+    private Option getOption(String key) {
+        key = aliases.getOrDefault(key, key);
+        return options.get(key);
     }
 
     /**
@@ -244,7 +260,7 @@ public class Spec {
     private Map<String, Object> makeSafe(Map<String, Object> unsafeArgs, boolean mask) {
         Map<String, Object> safeArgs = new LinkedHashMap<>();
         for (Entry<String, Object> arg : unsafeArgs.entrySet()) {
-            Option option = options.get(arg.getKey());
+            Option option = getOption(arg.getKey());
             if (option == null) {
                 // No exception. Often this method is called while we are already
                 // handling another exception.
@@ -261,12 +277,12 @@ public class Spec {
 
             if (option.secret) {
                 if (mask) {
-                    safeArgs.put(option.name, "*****");
+                    safeArgs.put(arg.getKey(), "*****");
                 }
             } else if (type == OptionType.MAP) {
                 Map<String, Object> map = (Map<String, Object>) argValue;
                 Map<String, Object> safeMap = option.spec.makeSafe(map, mask);
-                safeArgs.put(option.name, safeMap);
+                safeArgs.put(arg.getKey(), safeMap);
             } else if (type == OptionType.LIST) {
                 List<Object> list = (List<Object>) argValue;
                 List<Object> safeList = new ArrayList<>();
@@ -281,9 +297,9 @@ public class Spec {
                         safeList.add(element);
                     }
                 }
-                safeArgs.put(option.name, safeList);
+                safeArgs.put(arg.getKey(), safeList);
             } else {
-                safeArgs.put(option.name, argValue);
+                safeArgs.put(arg.getKey(), argValue);
             }
         }
         return safeArgs;
@@ -395,6 +411,7 @@ public class Spec {
 
     public static final class Option {
 
+        private final Spec parentSpec;
         private final String name;
         private final OptionType type;
         private boolean required;
@@ -406,7 +423,8 @@ public class Spec {
         private Spec spec;
         private boolean applySpecDefaults;
 
-        public Option(String name, OptionType type) {
+        public Option(Spec parentSpec, String name, OptionType type) {
+            this.parentSpec = parentSpec;
             this.name = name;
             this.type = type;
         }
@@ -462,6 +480,19 @@ public class Spec {
          */
         public Option withChoices(Object... choices) {
             this.choices = Arrays.asList(choices);
+            return this;
+        }
+
+        /**
+         * Add aliases for this option. During validation the alias will be converted to the real option name.
+         */
+        public Option withAliases(String... aliases) {
+            for (String alias : aliases) {
+                if (parentSpec.options.containsKey(alias)) {
+                    throw new IllegalArgumentException("Option '" + alias + "' is already defined");
+                }
+                parentSpec.aliases.put(alias, name);
+            }
             return this;
         }
 

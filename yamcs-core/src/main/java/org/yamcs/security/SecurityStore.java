@@ -1,18 +1,10 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -20,97 +12,93 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
-import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.YObjectLoader;
-import org.yaml.snakeyaml.Yaml;
 
 /**
- * Manages the security layer. It allows logging in users with a pluggable variety of extensions. The Security Store
- * reads its configuration from the security.yaml file. This file may define any number of {@link AuthModule}s that may
- * all participate in the authentication and authorization process.
+ * Manages the security layer.
+ * 
+ * Some security properties can be tweaked in security.yaml
  */
 public class SecurityStore {
 
-    private Path storageDir;
-
     private static final Log log = new Log(SecurityStore.class);
 
-    private boolean authenticationEnabled = false;
+    /**
+     * Baked-in user for system operations. Not manageable through a directory, not available for login.
+     */
+    private User systemUser;
 
+    /**
+     * Baked-in user for guest access.
+     */
+    private User guestUser;
+
+    /**
+     * Stores users and roles in the Yamcs database.
+     */
+    private Directory directory;
+
+    /**
+     * Establish the identity of a user (authentication) and can attribute additional user roles (authorization). These
+     * are only used during the login process.
+     */
     private List<AuthModule> authModules = new ArrayList<>();
 
-    private Map<String, User> users = new HashMap<>();
-    private User systemUser;
-    private User unauthenticatedUser;
-
-    private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-    private AtomicBoolean dirty = new AtomicBoolean();
-
     public SecurityStore() throws InitException {
-        Path dataDir = YamcsServer.getServer().getDataDirectory();
-        storageDir = dataDir.resolve(YamcsServer.GLOBAL_INSTANCE);
-
         YConfiguration config = readConfig();
 
-        authenticationEnabled = config.getBoolean("enabled");
-        if (authenticationEnabled) {
+        // Create the system and guest user. These are not stored in the directory,
+        // and can not be used to log in directly.
+        generateFixedUsers(config);
+
+        directory = new Directory();
+
+        if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
                 authModules.add(authModule);
             }
-        } else {
-            YConfiguration userProps = config.getConfig("unauthenticatedUser");
-            String username = userProps.getString("username");
-            if (username.isEmpty() || username.contains(":")) {
-                throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
-            }
+        }
 
-            log.warn("Authentication disabled. All connections use the"
-                    + " permissions of user '{}'", username);
+        if (!config.getBoolean("enabled", true) || authModules.isEmpty()) {
+            log.info("Enabling guest access");
+            guestUser.setActive(true);
+        }
+    }
 
-            unauthenticatedUser = new User(username);
-            unauthenticatedUser.setSuperuser(userProps.getBoolean("superuser"));
-            if (userProps.containsKey("privileges")) {
-                YConfiguration privilegeConfigs = userProps.getConfig("privileges");
-                for (String privilegeName : privilegeConfigs.getKeys()) {
-                    List<String> objects = privilegeConfigs.getList(privilegeName);
-                    if (privilegeName.equals("System")) {
-                        for (String object : objects) {
-                            unauthenticatedUser.addSystemPrivilege(new SystemPrivilege(object));
-                        }
-                    } else {
-                        ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
-                        for (String object : objects) {
-                            unauthenticatedUser.addObjectPrivilege(new ObjectPrivilege(type, object));
-                        }
+    /**
+     * Generates the system and the guest user. These users are not manageable via the directory and can not be used to
+     * log in directly.
+     */
+    private void generateFixedUsers(YConfiguration config) {
+        systemUser = new User("System", "System", null);
+        systemUser.setId(1);
+        systemUser.setSuperuser(true);
+
+        YConfiguration guestConfig = config.getConfig("guest");
+        String username = guestConfig.getString("username");
+        String name = guestConfig.getString("name", username);
+        guestUser = new User(username, name, systemUser);
+        guestUser.setId(2);
+        guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
+        guestUser.setActive(false);
+        if (guestConfig.containsKey("privileges")) {
+            YConfiguration privilegeConfigs = guestConfig.getConfig("privileges");
+            for (String privilegeName : privilegeConfigs.getKeys()) {
+                List<String> objects = privilegeConfigs.getList(privilegeName);
+                if (privilegeName.equals("System")) {
+                    for (String object : objects) {
+                        guestUser.addSystemPrivilege(new SystemPrivilege(object));
+                    }
+                } else {
+                    ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
+                    for (String object : objects) {
+                        guestUser.addObjectPrivilege(new ObjectPrivilege(type, object));
                     }
                 }
             }
         }
-
-        systemUser = new User("System");
-        systemUser.setSuperuser(true);
-
-        exec.scheduleWithFixedDelay(() -> {
-            if (dirty.getAndSet(false)) {
-                List<Map<String, Object>> allUsers = new ArrayList<>();
-                for (Entry<String, User> entry : users.entrySet()) {
-                    allUsers.add(entry.getValue().serialize());
-                }
-
-                String dump = new Yaml().dump(allUsers);
-                Path usersFile = storageDir.resolve("users.yaml");
-                try {
-                    FileUtils.writeAtomic(usersFile, dump.getBytes());
-                } catch (IOException e) {
-                    log.warn("Failed to persist user db", e);
-                    dirty.set(true);
-                    throw new UncheckedIOException(e);
-                }
-            }
-        }, 5000L, 5000L, TimeUnit.MILLISECONDS);
     }
 
     private AuthModule loadAuthModule(YConfiguration moduleConfig) throws InitException {
@@ -119,7 +107,7 @@ public class SecurityStore {
         if (moduleConfig.containsKey("args")) {
             moduleArgs = moduleConfig.getConfig("args");
         }
-        log.info("Loading AuthModule " + moduleClass);
+        log.debug("Loading AuthModule " + moduleClass);
         try {
             AuthModule authModule = YObjectLoader.loadObject(moduleClass);
             Spec spec = authModule.getSpec();
@@ -134,7 +122,7 @@ public class SecurityStore {
             if (log.isDebugEnabled()) {
                 Map<String, Object> unsafeArgs = moduleArgs.getRoot();
                 Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
-                log.debug("Initializing {} with resolved args: {}", moduleArgs, safeArgs);
+                log.debug("Initializing {} with resolved args: {}", moduleClass, safeArgs);
             }
             authModule.init(moduleArgs);
             return authModule;
@@ -150,18 +138,19 @@ public class SecurityStore {
         moduleSpec.addOption("class", OptionType.STRING).withRequired(true);
         moduleSpec.addOption("args", OptionType.ANY);
 
-        Spec unauthenticatedUserSpec = new Spec();
-        unauthenticatedUserSpec.addOption("username", OptionType.STRING).withDefault("admin");
-        unauthenticatedUserSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(true);
-        unauthenticatedUserSpec.addOption("privileges", OptionType.ANY);
+        Spec guestSpec = new Spec();
+        guestSpec.addOption("username", OptionType.STRING).withDefault("guest");
+        guestSpec.addOption("name", OptionType.STRING);
+        guestSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(true);
+        guestSpec.addOption("privileges", OptionType.ANY);
 
         Spec spec = new Spec();
-        spec.addOption("enabled", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("enabled", OptionType.BOOLEAN).withDeprecationMessage(
+                "Remove this argument. If you want to allow guest access, remove security.yaml");
         spec.addOption("authModules", OptionType.LIST).withElementType(OptionType.MAP).withSpec(moduleSpec);
-        spec.addOption("unauthenticatedUser", OptionType.MAP).withSpec(unauthenticatedUserSpec)
+        spec.addOption("guest", OptionType.MAP).withSpec(guestSpec)
+                .withAliases("unauthenticatedUser") // Legacy, remove some day
                 .withApplySpecDefaults(true);
-
-        spec.when("enabled", true).requireAll("authModules");
 
         YConfiguration yconf = YConfiguration.emptyConfig();
         if (YConfiguration.isDefined("security")) {
@@ -175,12 +164,8 @@ public class SecurityStore {
         return yconf;
     }
 
-    public User getUser(String username) {
-        return users.get(username);
-    }
-
-    public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+    public Directory getDirectory() {
+        return directory;
     }
 
     public List<AuthModule> getAuthModules() {
@@ -205,33 +190,29 @@ public class SecurityStore {
         return systemUser;
     }
 
-    /**
-     * Returns the unauthenticated user. This is always null if authentication is not enabled
-     */
-    public User getUnauthenticatedUser() {
-        return unauthenticatedUser;
-    }
-
-    public boolean isAuthenticationEnabled() {
-        return authenticationEnabled;
+    public User getGuestUser() {
+        return guestUser;
     }
 
     /**
-     * Attempts to authenticate a user with the given token and adds authorization information.
+     * Performs the login process. Depending on how Yamcs is configured, this may involve reaching out to an external
+     * identity provider. If the login attempt is successful, the associated user is imported or resynchronized in the
+     * Yamcs internal user database.
+     * <p>
+     * This method does not return a {@link User} object. Use {@link #getDirectory()}.
+     * 
+     * @return a future that resolves to the {@link AuthenticationInfo} when the login was successful. This contains the
+     *         username as well as any other principals or credentials specific to a custom identity provider.
      */
-    public CompletableFuture<User> login(AuthenticationToken token) {
-        if (!authenticationEnabled) {
-            return CompletableFuture.completedFuture(unauthenticatedUser);
-        }
-
-        CompletableFuture<User> f = new CompletableFuture<>();
+    public synchronized CompletableFuture<AuthenticationInfo> login(AuthenticationToken token) {
+        CompletableFuture<AuthenticationInfo> f = new CompletableFuture<>();
 
         // 1. Authenticate. Stops on first match.
-        AuthenticationInfo authInfo = null;
+        AuthenticationInfo authenticationInfo = null;
         for (AuthModule authModule : authModules) {
             try {
-                authInfo = authModule.getAuthenticationInfo(token);
-                if (authInfo != null) {
+                authenticationInfo = authModule.getAuthenticationInfo(token);
+                if (authenticationInfo != null) {
                     log.debug("User successfully authenticated by {}", authModule.getClass().getName());
                     break;
                 } else {
@@ -244,18 +225,43 @@ public class SecurityStore {
             }
         }
 
-        if (authInfo == null) {
+        if (authenticationInfo == null) {
             log.info("Cannot identify user for token");
             f.completeExceptionally(new AuthenticationException("Cannot identify user for token"));
             return f;
         }
 
-        User user = new User(authInfo);
+        User user = directory.getUser(authenticationInfo.getUsername());
+        if (user == null) {
+            User createdBy = systemUser;
+            user = new User(authenticationInfo.getUsername(), authenticationInfo.getName(), createdBy);
+            user.setEmail(authenticationInfo.getEmail());
+            user.setIdentityProvider(authenticationInfo.getProvider().getClass().getName());
+            user.confirm(); // TODO should probably be made a configuration option
+            try {
+                directory.addUser(user);
+            } catch (IOException e) {
+                f.completeExceptionally(e);
+                return f;
+            }
+        }
+
+        String provider = authenticationInfo.getProvider().getClass().getName();
+        if (!provider.equals(user.getIdentityProvider())) {
+            log.warn("Login attempt was identified by {} but user was created by {}",
+                    provider, user.getIdentityProvider());
+        }
+
+        if (user.getUsername().equals(systemUser.getUsername()) || !user.isActive()) {
+            log.warn("Denying access to {}", user);
+            f.completeExceptionally(new AuthenticationException("Access denied"));
+            return f;
+        }
 
         // 2. Authorize. All modules get the opportunity.
         for (AuthModule authModule : authModules) {
             try {
-                AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
+                AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authenticationInfo);
                 if (authzInfo != null) {
                     user.setSuperuser(authzInfo.isSuperuser());
                     for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
@@ -273,18 +279,20 @@ public class SecurityStore {
         }
 
         log.info("Successfully logged in user {}", user);
-        users.put(user.getUsername(), user);
-        dirty.set(true);
-
-        f.complete(user);
+        try {
+            user.updateLoginData();
+            directory.updateUserProperties(user);
+            f.complete(authenticationInfo);
+        } catch (IOException e) {
+            f.completeExceptionally(e);
+        }
         return f;
     }
 
-    public boolean verifyValidity(User user) {
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         for (AuthModule authModule : authModules) {
-            AuthenticationInfo authInfo = user.getAuthenticationInfo();
-            if (authInfo != null && authModule.equals(authInfo.getAuthenticator())) {
-                return authModule.verifyValidity(user);
+            if (authenticationInfo != null && authModule.equals(authenticationInfo.getProvider())) {
+                return authModule.verifyValidity(authenticationInfo);
             }
         }
         return true;

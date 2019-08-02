@@ -78,6 +78,10 @@ message ListUsersResponse {
   repeated yamcsManagement.UserInfo users = 1;
 }
 
+message ListRolesResponse {
+  repeated yamcsManagement.RoleInfo roles = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }

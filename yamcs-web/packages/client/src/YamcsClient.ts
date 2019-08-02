@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
+import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, RoleInfo, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -200,6 +200,25 @@ export default class YamcsClient implements HttpHandler {
     const response = await this.doFetch(url);
     const wrapper = await response.json() as UsersWrapper;
     return wrapper.users || [];
+  }
+
+  async getUser(username: string) {
+    const url = `${this.apiUrl}/users/${username}`;
+    const response = await this.doFetch(url);
+    return await response.json() as UserInfo;
+  }
+
+  async getRoles() {
+    const url = `${this.apiUrl}/roles`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as RolesWrapper;
+    return wrapper.roles || [];
+  }
+
+  async getRole(name: string) {
+    const url = `${this.apiUrl}/roles/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as RoleInfo;
   }
 
   async getClients() {

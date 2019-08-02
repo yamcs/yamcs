@@ -11,6 +11,7 @@ import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ServicesPage } from './services/ServicesPage';
+import { UserPage } from './users/UserPage';
 import { UsersPage } from './users/UsersPage';
 
 const routes: Routes = [
@@ -59,7 +60,13 @@ const routes: Routes = [
       },
       {
         path: 'users',
+        pathMatch: 'full',
         component: UsersPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'users/:username',
+        component: UserPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       }
     ]
@@ -81,4 +88,5 @@ export const routingComponents = [
   PluginsPage,
   ServicesPage,
   UsersPage,
+  UserPage,
 ];

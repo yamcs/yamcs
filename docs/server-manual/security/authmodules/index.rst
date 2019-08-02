@@ -13,6 +13,8 @@ The security subsystem is modular by design and allows combining different AuthM
 
 The default set of AuthModules include:
 
+:doc:`directory`
+    Authenticates users against the internal Yamcs database.
 :doc:`yaml`
     Reads Yaml files to verify the credentials of the user, or assign privileges.
 :doc:`ldap`

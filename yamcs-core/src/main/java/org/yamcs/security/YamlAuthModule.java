@@ -9,17 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
-import org.yamcs.YConfiguration;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 
 public class YamlAuthModule implements AuthModule {
-
-    private static final Logger log = LoggerFactory.getLogger(YamlAuthModule.class);
 
     private boolean required;
     private PasswordHasher passwordHasher;
@@ -80,7 +76,6 @@ public class YamlAuthModule implements AuthModule {
             Map<String, Object> userDef = userDefs.get(username);
             if (userDef == null || !userDef.containsKey("password")
                     || YConfiguration.getString(userDef, "password").trim().isEmpty()) {
-                log.debug("User does not exist");
                 return null;
             }
 
@@ -108,7 +103,7 @@ public class YamlAuthModule implements AuthModule {
     @Override
     @SuppressWarnings("unchecked")
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
-        String principal = authenticationInfo.getPrincipal();
+        String principal = authenticationInfo.getUsername();
 
         AuthorizationInfo authz = new AuthorizationInfo();
 
@@ -149,7 +144,7 @@ public class YamlAuthModule implements AuthModule {
     }
 
     @Override
-    public boolean verifyValidity(User user) {
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         return true;
     }
 }

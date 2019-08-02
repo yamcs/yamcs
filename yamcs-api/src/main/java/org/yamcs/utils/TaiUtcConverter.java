@@ -52,10 +52,7 @@ public class TaiUtcConverter {
     static final long PROTOBUF_SECONDS_MAX = 253402300799L;
 
     public TaiUtcConverter() throws IOException, ParseException {
-        InputStream in = TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN);
-        if (in == null) {
-            throw new RuntimeException("Cannot find " + UTC_TAI_HISTORY_FN + " in the classpath");
-        }
+        this(TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN));
     }
 
     public TaiUtcConverter(InputStream utcTaiHistory) throws IOException, ParseException {

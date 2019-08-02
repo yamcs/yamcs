@@ -6,7 +6,7 @@ export class User {
   }
 
   getUsername() {
-    return this.userInfo.login;
+    return this.userInfo.username;
   }
 
   isSuperuser() {

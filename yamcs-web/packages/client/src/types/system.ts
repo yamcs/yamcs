@@ -101,12 +101,24 @@ export interface ClientSubscriptionResponse {
 }
 
 export interface UserInfo {
-  login: string;
-  clientInfo: ClientInfo[];
+  username: string;
+  name: string;
+  email: string;
+  active: boolean;
   superuser: boolean;
+  createdBy: UserInfo;
+  creationTime: string;
+  confirmationTime: string;
+  lastLoginTime: string;
+  clientInfo: ClientInfo[];
 
   systemPrivilege: string[];
   objectPrivilege: ObjectPrivilege[];
+}
+
+export interface RoleInfo {
+  name: string;
+  description: string;
 }
 
 export interface ObjectPrivilege {

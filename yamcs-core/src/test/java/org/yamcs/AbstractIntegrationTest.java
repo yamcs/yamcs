@@ -88,7 +88,7 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws InterruptedException, SSLException, GeneralSecurityException {
-        if (YamcsServer.getServer().getSecurityStore().isAuthenticationEnabled()) {
+        if (!YamcsServer.getServer().getSecurityStore().getGuestUser().isActive()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
         parameterProvider = ParameterProvider.instance;

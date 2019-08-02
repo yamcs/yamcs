@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
-import org.yamcs.YConfiguration;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
 
 public class LdapAuthModule implements AuthModule {
 
@@ -124,7 +124,7 @@ public class LdapAuthModule implements AuthModule {
 
     @Override
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
-        String principal = authenticationInfo.getPrincipal();
+        String principal = authenticationInfo.getUsername();
         AuthorizationInfo authz = new AuthorizationInfo();
 
         DirContext context = null;
@@ -223,7 +223,7 @@ public class LdapAuthModule implements AuthModule {
     }
 
     @Override
-    public boolean verifyValidity(User user) {
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         return true;
     }
 }

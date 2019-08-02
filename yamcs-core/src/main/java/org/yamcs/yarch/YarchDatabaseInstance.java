@@ -434,6 +434,10 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getDefaultStorageEngine().getTagDb(this);
     }
 
+    public ProtobufDatabase getProtobufDatabase() throws YarchException {
+        return YarchDatabase.getDefaultStorageEngine().getProtobufDatabase(this);
+    }
+
     public TimePartitionSchema getDefaultPartitioningSchema() {
         return TimePartitionSchema.getInstance("YYYY");
     }

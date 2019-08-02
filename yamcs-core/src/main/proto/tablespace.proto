@@ -7,45 +7,49 @@ message TimeBasedPartition {
   optional int64 partitionStart = 2;
   optional int64 partitionEnd = 3;
 }
+
 /**
-*  This is used to encode values in the tablespace metadata database .
-*/
+ *  This is used to encode values in the tablespace metadata database
+ */
 message TablespaceRecord {
   enum Type {
-     //used to store table (partition) data
-     //relevant information: instanceName, tableName and optionally partitionValue, partitionDir, partitionStart and partitionEnd
-     TABLE_PARTITION = 1;
+    //used to store table (partition) data
+    //relevant information: instanceName, tableName and optionally partitionValue, partitionDir, partitionStart and partitionEnd
+    TABLE_PARTITION = 1;
 
-     //used to store table histogram data
-     //relevant information: instanceName, tableName, columnName
-     HISTOGRAM = 2;
+    //used to store table histogram data
+    //relevant information: instanceName, tableName, columnName
+    HISTOGRAM = 2;
 
-     //used as part of the ParameterArchive to keep the parameter group id -> parameter group (list of parameter ids) mapping
-     //relevant information: instanceName
-     //there is only one record of this type for each instance and ParameterArchive
-     PARCHIVE_PGID2PG = 4;
+    //used as part of the ParameterArchive to keep the parameter group id -> parameter group (list of parameter ids) mapping
+    //relevant information: instanceName
+    //there is only one record of this type for each instance and ParameterArchive
+    PARCHIVE_PGID2PG = 4;
 
-     //used to store ParameterArchive data. There is one record for each separate parameter 
-     //(taking into account that a different type represents a different parameter in the ParameterArchive even if it has the same name)
-     //relevant information: instanceName, parameterFqn, parameterType
-     PARCHIVE_DATA = 5;
+    //used to store ParameterArchive data. There is one record for each separate parameter 
+    //(taking into account that a different type represents a different parameter in the ParameterArchive even if it has the same name)
+    //relevant information: instanceName, parameterFqn, parameterType
+    PARCHIVE_DATA = 5;
 
-     //used to store information about the partitions of the ParameterArchive in case they are partitioned by time
-     // relevant information: instanceName, partitioningSchema
-     //there is only one record of this type for each instance and ParameterArchive
-     PARCHIVE_PINFO = 6;
+    //used to store information about the partitions of the ParameterArchive in case they are partitioned by time
+    // relevant information: instanceName, partitioningSchema
+    //there is only one record of this type for each instance and ParameterArchive
+    PARCHIVE_PINFO = 6;
      
-     //used by the tag database
-     // relevant information: instanceName
-     TAGDB = 7;
+    //used by the tag database
+    // relevant information: instanceName
+    TAGDB = 7;
 
-     //used to store bucket and user objects
-     // relevant information: instanceName, bucketProperties
-     BUCKET = 8;
+    //used to store bucket and user objects
+    // relevant information: instanceName, bucketProperties
+    BUCKET = 8;
 
     //used to store CCSDS TM index
     //relevant information: instanceName
     CCSDS_TM_INDEX = 9;
+    
+    //used to store small named protobuf messages
+    PROTOBUF = 10;
   }
   optional uint32 tbsIndex = 1;
   optional Type type = 2;
@@ -81,24 +85,24 @@ message TablespaceRecord {
   //bucketProperties
   optional BucketProperties bucketProperties = 11;
 }
+
 //associated to each bucket
 message BucketProperties {
-   optional string name = 1;
-   optional int64 created = 2;
-   optional int32 maxNumObjects = 3; //maximum number of objects in the bucket
-   optional uint64 maxSize = 4; //maximum size in bytes
-   optional int32 numObjects = 5; //current number of objects in the bucket
-   optional uint64 size = 6; //current bucket size
-
+  optional string name = 1;
+  optional int64 created = 2;
+  optional int32 maxNumObjects = 3; //maximum number of objects in the bucket
+  optional uint64 maxSize = 4; //maximum size in bytes
+  optional int32 numObjects = 5; //current number of objects in the bucket
+  optional uint64 size = 6; //current bucket size
 }
 
 //associated to each user object
 message ObjectProperties {
-   optional string name = 1;
-   optional uint32 objectId = 2;
-   optional string contentType = 3;
-   optional int64 created = 4;
-   optional uint64 size = 5;
+  optional string name = 1;
+  optional uint32 objectId = 2;
+  optional string contentType = 3;
+  optional int64 created = 4;
+  optional uint64 size = 5;
 
-   map<string, string> metadata = 6;
+  map<string, string> metadata = 6;
 }

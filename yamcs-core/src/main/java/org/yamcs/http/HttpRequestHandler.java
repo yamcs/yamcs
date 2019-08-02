@@ -16,7 +16,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 
 import com.google.protobuf.Message;
@@ -93,18 +92,19 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
 
-    private static HttpAuthorizationChecker authChecker = new HttpAuthorizationChecker();
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
 
+    private static TokenStore tokenStore = new TokenStore();
+
     private HttpServer httpServer;
     private String contextPath;
     private Router apiRouter;
-    private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
     private AuthHandler authHandler;
+    private HttpAuthorizationChecker authChecker;
     private boolean contentExpected = false;
 
     YConfiguration wsConfig;
@@ -114,11 +114,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         this.apiRouter = apiRouter;
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
-        authHandler = new AuthHandler(contextPath);
-    }
-
-    public static HttpAuthorizationChecker getAuthorizationChecker() {
-        return authChecker;
+        authHandler = new AuthHandler(tokenStore, contextPath);
+        authChecker = new HttpAuthorizationChecker(tokenStore);
     }
 
     @Override
@@ -165,17 +162,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         } catch (HttpException e) {
             sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
-        }
-    }
-
-    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
-            throws HttpException {
-        if (securityStore.isAuthenticationEnabled()) {
-            User user = authChecker.verifyAuth(ctx, req);
-            ctx.channel().attr(CTX_USER).set(user);
-        } else {
-            User user = securityStore.getUnauthenticatedUser();
-            ctx.channel().attr(CTX_USER).set(user);
         }
     }
 
@@ -247,6 +233,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Too bad.
         sendPlainTextError(ctx, req, NOT_FOUND);
+    }
+
+    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        User user = authChecker.verifyAuth(ctx, req);
+        ctx.channel().attr(CTX_USER).set(user);
     }
 
     /**

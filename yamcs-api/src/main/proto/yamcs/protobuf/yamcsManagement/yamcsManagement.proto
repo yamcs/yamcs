@@ -94,11 +94,26 @@ message ObjectPrivilegeInfo {
 }
 
 message UserInfo {
-  optional string login = 1;
-  repeated ClientInfo clientInfo = 2;
+  optional string login = 1 [deprecated=true];
+  optional string username = 17;
+  optional string name = 18;
+  optional string email = 19;
+  optional bool active = 16;
+  optional bool superuser = 13;
+  optional UserInfo createdBy = 20;
+  optional google.protobuf.Timestamp creationTime = 14;
+  optional google.protobuf.Timestamp confirmationTime = 21;
+  optional google.protobuf.Timestamp lastLoginTime = 15;
+  optional string identityProvider = 22;
   repeated string systemPrivilege = 11;
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
-  optional bool superuser = 13;
+  repeated ClientInfo clientInfo = 2;
+}
+
+message RoleInfo {
+  optional string name = 1;
+  optional string description = 2;
+  repeated UserInfo users = 3;
 }
 
 message TmStatistics {
@@ -109,7 +124,6 @@ message TmStatistics {
   optional int32 subscribedParameterCount = 6;
   optional google.protobuf.Timestamp lastReceived = 10;
   optional google.protobuf.Timestamp lastPacketTime = 11;
-
 }
 
 message Statistics {

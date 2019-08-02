@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.security.protobuf";
+option java_outer_classname = "SecurityProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+// These collections use surrogate ids. They make it more
+// convenient to do things like renaming a user. Internal storage
+// that references a user "should" make use of the id, although
+// it's true this is not yet the case everywhere.
+
+message UserCollection {
+  optional int32 seq = 1;
+  repeated UserRecord records = 2;
+}
+
+message UserRecord {
+  optional int32 id = 1;
+  optional string username = 2;
+  optional string hash = 3;
+  optional string name = 4;
+  optional string email = 5;
+  optional bool active = 6;
+  optional bool superuser = 7;
+  repeated int32 roles = 8;
+  optional int32 createdBy = 9;
+  optional google.protobuf.Timestamp creationTime = 10;
+  optional google.protobuf.Timestamp confirmationTime = 11;
+  optional google.protobuf.Timestamp lastLoginTime = 12;
+  optional string identityProvider  = 13;
+}
+
+message RoleCollection {
+  optional int32 seq = 1;
+  repeated RoleRecord records = 2;
+}
+
+message RoleRecord {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string description = 3;
+}

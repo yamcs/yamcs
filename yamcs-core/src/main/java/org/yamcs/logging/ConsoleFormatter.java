@@ -52,38 +52,26 @@ public class ConsoleFormatter extends Formatter {
         if (name.lastIndexOf('.') != -1) {
             name = name.substring(name.lastIndexOf('.') + 1);
         }
-
-        if (enableAnsiColors) {
-            colorize(sb, name, 0, 36);
-        } else {
-            sb.append(name);
-        }
-
         if (r instanceof YamcsLogRecord) {
             YamcsLogRecord yRec = (YamcsLogRecord) r;
             if (yRec.getContext() != null) {
-                if (enableAnsiColors) {
-                    colorize(sb, "[" + yRec.getContext() + "]", 0, 35);
-                } else {
-                    sb.append("[").append(yRec.getContext()).append("]");
-                }
+                name += " [" + yRec.getContext() + "]";
             }
         }
-        sb.append(" ");
 
-        if (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE) {
-            if (enableAnsiColors) {
-                colorize(sb, r.getLevel().toString(), 0, 31);
-            } else {
-                sb.append(r.getLevel().toString());
-            }
+        if (enableAnsiColors) {
+            colorize(sb, name, 0, 36);
             sb.append(" ");
-        }
-
-        if (enableAnsiColors && ("stdout".equals(name) || "stderr".equals(name))) {
-            colorize(sb, formatMessage(r), 0, 33);
+            if (r.getLevel() == Level.WARNING || "stdout".equals(name)) {
+                colorize(sb, formatMessage(r), 0, 33);
+            } else if (r.getLevel() == Level.SEVERE || "stderr".equals(name)) {
+                colorize(sb, formatMessage(r), 0, 31);
+            } else {
+                sb.append(formatMessage(r));
+            }
         } else {
-            sb.append(formatMessage(r));
+            sb.append(name).append(": ");
+            sb.append(r.getLevel().toString()).append(" ").append(formatMessage(r));
         }
 
         Throwable t = r.getThrown();

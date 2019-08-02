@@ -51,12 +51,16 @@ public interface AuthModule {
     AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException;
 
     /**
-     * Verify if the previously authenticated user is (still) valid
+     * Verify if previously generated authentication info is (still) valid. For example, if the authentication info
+     * references an externally issued expiring ticket, this can be validated here.
+     * <p>
+     * This method is called very frequently, so implementations must take care to limit external requests.
      * 
-     * @param user
-     *            user to be verified
-     * @return true if the user is valid, false otherwise
+     * @param authenticationInfo
+     *            information relevant to the authentication process
+     * 
+     * @return true if the authentication info is valid, false otherwise
      * 
      */
-    boolean verifyValidity(User user);
+    boolean verifyValidity(AuthenticationInfo authenticationInfo);
 }

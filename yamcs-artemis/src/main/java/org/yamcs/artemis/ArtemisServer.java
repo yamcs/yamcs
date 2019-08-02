@@ -11,7 +11,6 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -66,15 +65,12 @@ public class ArtemisServer extends AbstractYamcsService {
             throw new UnsupportedOperationException("This service cannot be instantiated more than once");
         }
 
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
 
         if (securityManager != null) {
             artemisServer.setSecurityManager(securityManager);
-        } else if (securityStore.isAuthenticationEnabled()) {
-            log.warn("Artemis security is unconfigured. All connections are given full permissions");
         } else {
-            log.debug("Artemis security is unconfigured. All connections are given full permissions");
+            log.warn("Artemis security is unconfigured. All connections are given full permissions");
         }
 
         // We are supposed to pass a "classpath resource", however the called code also accepts

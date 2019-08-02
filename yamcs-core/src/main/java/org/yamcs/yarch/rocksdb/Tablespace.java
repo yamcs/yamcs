@@ -28,31 +28,28 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * 
  * Tablespaces are rocksdb databases normally stored in the yamcs data directory (/storage/yamcs-data). Each corresponds
  * to a directory &lt;tablespace-name&gt;.rdb and has a definition file tablespace-name.tbs.
- * 
+ * <p>
  * Tablespaces can also have time based partitions in different RocksDB databases in sub-directories such as
  * &lt;tablespace-name&gt;.rdb/YYYY/
- * 
+ * <p>
  * There are two column families in the main database: - the _metadata_ column family - contains metadata. - the default
  * column family - contains data.
- * 
+ * <p>
  * The data is partitioned by the first 4 bytes of the key which we call tbsIndex.
- * 
+ * <p>
  * One tbsIndex corresponds to a so called tablespace record. For example tbsIndex=5 can correspond to all telemetry
  * packets for packet XYZ.
- * 
+ * <p>
  * Except for the 4 bytes tbsIndex, the rest of the key and value are completely dependent on the data type. For example
  * for yarch table data, the rest of key following the 4 bytes tbsIndex represents the key of the row in the table.
- * 
- * The metadata contains two types of records, identified by the first byte of the key: - key: 0x1 value: 1 byte version
- * number (0x1), 4 bytes max tbsIndex used to store the max tbsIndex and also stores a version number in case the format
- * will change in the future
- * 
- * - key: 0x2, 1 byte record type, 4 bytes tbsIndex value: protobuf encoded TablespaceRecord used to store what
+ * <p>
+ * The metadata contains two types of records, identified by the first byte of the key:
+ * <ul>
+ * <li>key: 0x1 value: 1 byte version number (0x1), 4 bytes max tbsIndex used to store the max tbsIndex and also stores
+ * a version number in case the format will change in the future
+ * <li>key: 0x2, 1 byte record type, 4 bytes tbsIndex value: protobuf encoded TablespaceRecord used to store what
  * information corresponds to each tbsIndex the record type corresponds to the Type enumerations from tablespace.proto
- * In tablespace.proto for a description of the possible record types.
- * 
- * The metadata
- * 
+ * </ul>
  */
 public class Tablespace {
     static Log log = new Log(Tablespace.class);
@@ -181,7 +178,7 @@ public class Tablespace {
      * Creates a new tablespace record and adds it to the metadata database
      * 
      * @param trb
-     *            - the builder has to have all fields set except for the tbsIndex which will be assigned by this method
+     *            the builder has to have all fields set except for the tbsIndex which will be assigned by this method
      * @return a fully built
      * @throws RocksDBException
      */

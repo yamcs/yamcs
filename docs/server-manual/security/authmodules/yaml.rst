@@ -1,7 +1,7 @@
 YAML AuthModule
 ===============
 
-This AuthModule supports authentication and authorization of users via YAML files available directly in the ``etc/`` folder.
+This AuthModule supports authentication and authorization of users via YAML files available directly in the Yamcs configuration folder.
 
 Class Name
 ----------

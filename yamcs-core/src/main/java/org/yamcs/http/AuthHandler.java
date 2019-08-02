@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.http.TokenStore.IdentifyResult;
+import org.yamcs.http.TokenStore.RefreshResult;
 import org.yamcs.http.api.UserRestHandler;
 import org.yamcs.protobuf.Web.AuthFlow;
 import org.yamcs.protobuf.Web.AuthFlow.Type;
@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.protobuf.Web.TokenResponse;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
+import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
 import org.yamcs.security.SecurityStore;
@@ -54,11 +55,12 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
     private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-    private static TokenStore tokenStore = new TokenStore();
 
+    private TokenStore tokenStore;
     private String contextPath;
 
-    public AuthHandler(String contextPath) {
+    public AuthHandler(TokenStore tokenStore, String contextPath) {
+        this.tokenStore = tokenStore;
         this.contextPath = contextPath;
     }
 
@@ -99,7 +101,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public static AuthInfo createAuthInfo() {
         AuthInfo.Builder infob = AuthInfo.newBuilder();
-        infob.setRequireAuthentication(securityStore.isAuthenticationEnabled());
+        infob.setRequireAuthentication(!securityStore.getGuestUser().isActive());
         for (AuthModule authModule : securityStore.getAuthModules()) {
             if (authModule instanceof SpnegoAuthModule) {
                 infob.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
@@ -161,9 +163,9 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         String password = getStringFromForm(formDecoder, "password");
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
-            User user = securityStore.login(token).get();
-            String refreshToken = tokenStore.generateRefreshToken(user);
-            sendNewAccessToken(ctx, req, user, refreshToken);
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+            sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -187,9 +189,10 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         // endpoint.
         String authcode = getStringFromForm(formDecoder, "code");
         try {
-            User user = securityStore.login(new ThirdPartyAuthorizationCode(authcode)).get();
-            String refreshToken = tokenStore.generateRefreshToken(user);
-            sendNewAccessToken(ctx, req, user, refreshToken);
+            AuthenticationInfo authenticationInfo = securityStore.login(new ThirdPartyAuthorizationCode(authcode))
+                    .get();
+            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+            sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -211,19 +214,21 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private void handleTokenRequestWithRefreshToken(ChannelHandlerContext ctx, FullHttpRequest req,
             HttpPostRequestDecoder formDecoder) throws IOException {
         String refreshToken = getStringFromForm(formDecoder, "refresh_token");
-        IdentifyResult result = tokenStore.identify(refreshToken);
+        RefreshResult result = tokenStore.verifyRefreshToken(refreshToken);
         if (result == null) {
             log.info("Invalid refresh token");
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
         } else {
-            sendNewAccessToken(ctx, req, result.user, result.refreshToken);
+            sendNewAccessToken(ctx, req, result.authenticationInfo, result.refreshToken);
         }
     }
 
-    private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req, User user, String refreshToken) {
+    private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req,
+            AuthenticationInfo authenticationInfo, String refreshToken) {
         try {
+            User user = securityStore.getDirectory().getUser(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
-            HttpRequestHandler.getAuthorizationChecker().storeTokenToUserMapping(response.getAccessToken(), user);
+            tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response, true);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -244,7 +249,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         responseb.setTokenType("bearer");
         responseb.setAccessToken(jwt);
         responseb.setExpiresIn(ttl);
-        responseb.setUser(UserRestHandler.toUserInfo(user));
+        responseb.setUser(UserRestHandler.toUserInfo(user, false));
 
         if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);

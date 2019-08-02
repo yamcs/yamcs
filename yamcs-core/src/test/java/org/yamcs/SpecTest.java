@@ -287,4 +287,32 @@ public class SpecTest {
         Map<String, Object> blaEl = (Map<String, Object>) result1.get("bla");
         assertEquals(123, blaEl.get("anything"));
     }
+
+    @Test
+    public void testAlias() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("bla", OptionType.ANY).withAliases("bloe");
+
+        Map<String, Object> result1 = spec.validate(of("bla", 123));
+        assertEquals(123, result1.get("bla"));
+        Map<String, Object> result2 = spec.validate(of("bloe", 123));
+        assertEquals(123, result2.get("bla"));
+    }
+
+    @Test(expected = ValidationException.class)
+    public void testAliasExists() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("bla", OptionType.ANY).withAliases("bloe");
+
+        spec.validate(of("bla", 123, "bloe", 456));
+    }
+
+    @Test
+    public void testAliasWithDefault() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("bla", OptionType.ANY).withDefault(555).withAliases("bloe");
+
+        Map<String, Object> result2 = spec.validate(of("bloe", 123));
+        assertEquals(123, result2.get("bla"));
+    }
 }

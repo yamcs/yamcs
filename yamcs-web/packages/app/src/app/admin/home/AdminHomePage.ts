@@ -12,7 +12,7 @@ export class AdminHomePage {
   info$: Promise<GeneralInfo>;
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Admin CP');
+    title.setTitle('Admin Area');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
   }
 }
