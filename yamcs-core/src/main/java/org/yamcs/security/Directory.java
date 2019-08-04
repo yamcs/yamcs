@@ -108,7 +108,17 @@ public class Directory {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
         }
-        return hasher.validatePassword(password, user.hash);
+        return hasher.validatePassword(password, user.getHash());
+    }
+
+    public void changePassword(User user, char[] password)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        if (user.isExternallyManaged()) {
+            throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
+        }
+        String hash = hasher.createHash(password);
+        user.setHash(hash);
+        persistChanges();
     }
 
     public User getUser(int id) {

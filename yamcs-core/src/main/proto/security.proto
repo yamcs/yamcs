@@ -29,7 +29,7 @@ message UserRecord {
   optional google.protobuf.Timestamp creationTime = 10;
   optional google.protobuf.Timestamp confirmationTime = 11;
   optional google.protobuf.Timestamp lastLoginTime = 12;
-  optional string identityProvider  = 13;
+  optional string identityProvider = 13;
 }
 
 message RoleCollection {

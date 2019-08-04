@@ -4,8 +4,9 @@ AuthModules
 .. toctree::
     :maxdepth: 1
 
-    yaml
+    directory
     ldap
+    yaml
     spnego
 
 
@@ -15,10 +16,10 @@ The default set of AuthModules include:
 
 :doc:`directory`
     Authenticates users against the internal Yamcs database.
-:doc:`yaml`
-    Reads Yaml files to verify the credentials of the user, or assign privileges.
 :doc:`ldap`
     Attempts to bind to LDAP with the provided credentials. Also capable of reading privileges for the user.
+:doc:`yaml`
+    Reads Yaml files to verify the credentials of the user, or assign privileges.
 :doc:`spnego`
     Supports authenticating against a Kerberos server. This module includes extra support for Single-Sign-On via the Yamcs web interface.
 

@@ -29,7 +29,7 @@ public class User {
     private String username;
     private String name;
     private String email;
-    String hash; // Password hash, only for internal users
+    private String hash; // Password hash, only for internal users
     private boolean active; // Inactive users are considered "blocked"
     private boolean superuser;
     private int createdBy; // Id of the user that created this user
@@ -100,6 +100,10 @@ public class User {
         return email;
     }
 
+    public String getHash() {
+        return hash;
+    }
+
     public boolean isExternallyManaged() {
         return hash == null;
     }
@@ -146,6 +150,10 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     public Set<SystemPrivilege> getSystemPrivileges() {

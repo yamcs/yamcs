@@ -1,10 +1,13 @@
 package org.yamcs.cli;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 import org.yamcs.FileBasedConfigurationResolver;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -26,11 +29,15 @@ public class YamcsAdminCli extends Command {
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
+        addSubCommand(new UsersCli(this));
         addSubCommand(new XtceDbCli(this));
     }
 
-    @Parameter(names = "--etc-dir", converter = PathConverter.class, description = "Override default Yamcs configuration directory")
-    private Path configDirectory;
+    @Parameter(names = "--etc-dir", converter = PathConverter.class, description = "Path to config directory")
+    private Path configDirectory = Paths.get("etc").toAbsolutePath();
+
+    @Parameter(names = "--log", description = "Level of verbosity")
+    private int verbose = 1;
 
     @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
     boolean version;
@@ -46,6 +53,26 @@ public class YamcsAdminCli extends Command {
     public static void main(String[] args) {
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
         yamcsCli.parse(args);
+
+        Level logLevel;
+        switch (yamcsCli.verbose) {
+        case 0:
+            logLevel = Level.OFF;
+            break;
+        case 1:
+            logLevel = Level.WARNING;
+            break;
+        case 2:
+            logLevel = Level.INFO;
+            break;
+        case 3:
+            logLevel = Level.FINE;
+            break;
+        default:
+            logLevel = Level.ALL;
+            break;
+        }
+        Log.forceStandardStreams(logLevel);
 
         try {
             yamcsCli.validate();
