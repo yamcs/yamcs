@@ -27,7 +27,7 @@ cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib
 cp -r simulation/mdb %{buildroot}/%{prefix}
 
 cp -r simulation/etc %{buildroot}/%{prefix}
-mv %{buildroot}/%{prefix}/etc/logging.properties.rpm %{buildroot}/%{prefix}/etc/logging.properties
+mv %{buildroot}/%{prefix}/etc/logging.properties.sample %{buildroot}/%{prefix}/etc/logging.properties
 
 mkdir -p %{buildroot}/storage/yamcs-data
 mkdir -p %{buildroot}/storage/yamcs-incoming
@@ -35,8 +35,6 @@ mkdir -p %{buildroot}/storage/yamcs-incoming
 # Clean-up
 rm %{buildroot}/%{prefix}/lib/*-javadoc.jar
 rm %{buildroot}/%{prefix}/lib/*-sources.jar
-rm %{buildroot}/%{prefix}/etc/users.yaml
-rm %{buildroot}/%{prefix}/etc/roles.yaml
 
 
 %files

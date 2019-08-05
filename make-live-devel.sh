@@ -79,18 +79,3 @@ else
     echo "   ./run-simulation.sh"
     echo "-----------------------------------------------------"
 fi
-
-# Add sample config (if not already present)
-for f in $YAMCS_HOME/yamcs-core/etc/* ; do
-    case "$f" in
-        *.sample)
-            FILENAME=$(basename "$f")
-            cp -an "$f" $TARGET/etc/${FILENAME%.*}
-            ;;
-        *)
-            cp -an "$f" $TARGET/etc/
-            ;;
-    esac
-done
-
-
