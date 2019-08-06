@@ -58,6 +58,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.rocksdb.RDBFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.beust.jcommander.JCommander;
@@ -257,6 +258,8 @@ public class YamcsServer {
                 swc.getService().awaitTerminated();
             }
         }
+        // Shutdown database when we're sure no services are using it.
+        RDBFactory.shutdownAll();
     }
 
     public static boolean hasInstance(String instance) {
@@ -978,6 +981,9 @@ public class YamcsServer {
         validateMainConfiguration();
         discoverTemplates();
 
+        // Prevent RDBFactory from installing shutdown hooks, shutdown is organised by YamcsServer.
+        RDBFactory.setRegisterShutdownHooks(false);
+
         // Create also services and instances so that they can validate too.
         addGlobalServicesAndInstances();
     }
@@ -1014,10 +1020,6 @@ public class YamcsServer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                LOG.info("Shutting down...");
-                // JUL messages don't seem to appear during shutdown, so turn redirect off.
-                noStreamRedirect = true;
-                System.out.println("Shutting down...");
                 shutDown();
             }
         });
