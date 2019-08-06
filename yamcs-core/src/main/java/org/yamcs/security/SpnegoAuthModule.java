@@ -1,21 +1,17 @@
 package org.yamcs.security;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
 
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
@@ -61,7 +57,8 @@ import io.netty.util.CharsetUtil;
 public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
 
     private static final Logger log = LoggerFactory.getLogger(SpnegoAuthModule.class);
-
+    private static final String JAAS_ENTRY_NAME = "YamcsHTTP";
+    private static final String JAAS_KRB5 = "com.sun.security.auth.module.Krb5LoginModule";
     private static final String NEGOTIATE = "Negotiate";
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -76,7 +73,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         }
     }
 
-    private String krbRealm; // if not null, only users from this domain will be accepted
+    private String realm; // if not null, only users from this realm will be accepted
     private boolean stripRealm; // if true, domain has to be not null and will be stripped from the username
 
     private Map<String, SpnegoAuthenticationInfo> code2info = new ConcurrentHashMap<>();
@@ -90,57 +87,44 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("krb5.conf", OptionType.STRING);
-        spec.addOption("jaas.conf", OptionType.STRING);
-        spec.addOption("krbRealm", OptionType.STRING);
-        spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("keytab", OptionType.BOOLEAN).withRequired(true);
+        spec.addOption("principal", OptionType.STRING).withRequired(true);
+        spec.addOption("realm", OptionType.STRING);
+        spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(true);
         return spec;
     }
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        if (args.containsKey("krb5.conf")) {
-            System.setProperty("java.security.krb5.conf", args.getString("krb5.conf"));
-        }
-        if (args.containsKey("jaas.conf")) {
-            System.setProperty("java.security.auth.login.config", args.getString("jaas.conf"));
-        }
-        if (args.containsKey("krbRealm")) {
-            krbRealm = args.getString("krbRealm");
-        }
+        realm = args.getString("realm", null);
         stripRealm = args.getBoolean("stripRealm");
 
+        Map<String, String> jaasOpts = new HashMap<>();
+        jaasOpts.put("useKeyTab", "true");
+        jaasOpts.put("storeKey", "true");
+        jaasOpts.put("keyTab", args.getString("keytab"));
+        jaasOpts.put("useTicketCache", "true");
+        jaasOpts.put("principal", args.getString("principal"));
+        jaasOpts.put("debug", "false");
+
+        AppConfigurationEntry jaasEntry = new AppConfigurationEntry(JAAS_KRB5, REQUIRED, jaasOpts);
+        JaasConfiguration.addEntry(JAAS_ENTRY_NAME, jaasEntry);
+
         try {
-            yamcsLogin = new LoginContext("Yamcs", new TextCallbackHandler());
+            yamcsLogin = new LoginContext(JAAS_ENTRY_NAME, new TextCallbackHandler());
             yamcsLogin.login();
             gssManager = GSSManager.getInstance();
-        } catch (Exception e) {
+        } catch (LoginException e) {
             throw new ConfigurationException("Cannot login to kerberos", e);
         }
     }
 
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-        if (token instanceof UsernamePasswordToken) {
-            return authenticateByPassword((UsernamePasswordToken) token);
-        } else if (token instanceof ThirdPartyAuthorizationCode) {
+        if (token instanceof ThirdPartyAuthorizationCode) {
             return authenticateByCode((ThirdPartyAuthorizationCode) token);
         } else {
             return null;
-        }
-    }
-
-    private AuthenticationInfo authenticateByPassword(UsernamePasswordToken token) throws AuthenticationException {
-        String username = token.getPrincipal();
-        char[] password = token.getPassword();
-        try {
-            LoginContext userLogin = new LoginContext("UserAuth", new UserPassCallbackHandler(username, password));
-            userLogin.login();
-            return new AuthenticationInfo(this, username);
-        } catch (AccountNotFoundException e) {
-            return null;
-        } catch (LoginException e) {
-            throw new AuthenticationException(e);
         }
     }
 
@@ -215,13 +199,13 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
                         String client = yamcsContext.getSrcName().toString();
                         log.debug("Got GSS Src Name {}", client);
 
-                        if ((krbRealm != null) && (!client.endsWith("@" + krbRealm))) {
-                            log.warn("User {} does not match the defined realm {}", client, krbRealm);
+                        if ((realm != null) && (!client.endsWith("@" + realm))) {
+                            log.warn("User {} does not match the defined realm {}", client, realm);
                             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
                             return;
                         }
                         if (stripRealm) {
-                            client = client.substring(0, client.length() - krbRealm.length() - 1);
+                            client = client.substring(0, client.length() - realm.length() - 1);
                         }
                         SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, client);
                         String authorizationCode = generateAuthCode();
@@ -256,40 +240,13 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         }
     }
 
-    static class SpnegoAuthenticationInfo extends AuthenticationInfo {
+    private static class SpnegoAuthenticationInfo extends AuthenticationInfo {
 
         long created; // date of creation
 
         public SpnegoAuthenticationInfo(AuthModule authenticator, String principal) {
             super(authenticator, principal);
             this.created = System.currentTimeMillis();
-        }
-    }
-
-    static class UserPassCallbackHandler implements CallbackHandler {
-        private char[] password;
-        private String username;
-
-        public UserPassCallbackHandler(String name, char[] password) {
-            super();
-            this.username = name;
-            this.password = password;
-        }
-
-        @Override
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-
-            for (Callback callback : callbacks) {
-                if (callback instanceof NameCallback && username != null) {
-                    NameCallback nc = (NameCallback) callback;
-                    nc.setName(username);
-                } else if (callback instanceof PasswordCallback) {
-                    PasswordCallback pc = (PasswordCallback) callback;
-                    pc.setPassword(password);
-                } else {
-                    log.warn("Unrecognized callback " + callback);
-                }
-            }
         }
     }
 }

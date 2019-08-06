@@ -15,11 +15,11 @@ import org.yamcs.protobuf.Rest.ListUsersResponse;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
+import org.yamcs.security.Directory;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
-import org.yamcs.security.Directory;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -81,9 +81,6 @@ public class UserRestHandler extends RestHandler {
             }
             if (user.getLastLoginTime() != TimeEncoding.INVALID_INSTANT) {
                 userb.setLastLoginTime(TimeEncoding.toProtobufTimestamp(user.getLastLoginTime()));
-            }
-            if (user.getIdentityProvider() != null) {
-                userb.setIdentityProvider(user.getIdentityProvider());
             }
 
             List<String> unsortedSystemPrivileges = new ArrayList<>();

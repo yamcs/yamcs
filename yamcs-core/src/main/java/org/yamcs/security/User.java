@@ -36,7 +36,6 @@ public class User {
     private long creationTime = TimeEncoding.INVALID_INSTANT;
     private long confirmationTime = TimeEncoding.INVALID_INSTANT;
     private long lastLoginTime = TimeEncoding.INVALID_INSTANT;
-    private String identityProvider; // AuthModule classname for non-internal users
 
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
@@ -74,9 +73,6 @@ public class User {
         if (record.hasLastLoginTime()) {
             lastLoginTime = TimeEncoding.fromProtobufTimestamp(record.getLastLoginTime());
         }
-        if (record.hasIdentityProvider()) {
-            identityProvider = record.getIdentityProvider();
-        }
     }
 
     public void confirm() {
@@ -106,10 +102,6 @@ public class User {
 
     public boolean isExternallyManaged() {
         return hash == null;
-    }
-
-    public String getIdentityProvider() {
-        return identityProvider;
     }
 
     public int getCreatedBy() {
@@ -142,10 +134,6 @@ public class User {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
-    }
-
-    public void setIdentityProvider(String identityProvider) {
-        this.identityProvider = identityProvider;
     }
 
     public void setEmail(String email) {
@@ -237,9 +225,6 @@ public class User {
         if (lastLoginTime != TimeEncoding.INVALID_INSTANT) {
             b.setLastLoginTime(TimeEncoding.toProtobufTimestamp(lastLoginTime));
         }
-        if (identityProvider != null) {
-            b.setIdentityProvider(identityProvider);
-        }
         return b.build();
     }
 
@@ -259,6 +244,6 @@ public class User {
 
     @Override
     public String toString() {
-        return String.format("[username=%s, id=%s, provider=%s]", username, id, identityProvider);
+        return String.format("[username=%s, id=%s]", username, id);
     }
 }

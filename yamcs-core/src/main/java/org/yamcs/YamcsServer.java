@@ -1115,6 +1115,9 @@ public class YamcsServer {
         try {
             securityStore = new SecurityStore();
         } catch (InitException e) {
+            if (e.getCause() instanceof ValidationException) {
+                throw (ValidationException) e.getCause();
+            }
             throw new ConfigurationException(e);
         }
 

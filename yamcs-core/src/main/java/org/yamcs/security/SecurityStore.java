@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -40,19 +39,31 @@ public class SecurityStore {
     private Directory directory;
 
     /**
+     * If true, successful login attempts of users that were not previously known by Yamcs (e.g. when authenticating to
+     * Yamcs), are by default inactivated.
+     */
+    private boolean blockUnknownUsers;
+
+    /**
      * Establish the identity of a user (authentication) and can attribute additional user roles (authorization). These
      * are only used during the login process.
      */
     private List<AuthModule> authModules = new ArrayList<>();
 
     public SecurityStore() throws InitException {
-        YConfiguration config = readConfig();
+        YConfiguration config;
+        try {
+            config = readConfig();
+        } catch (ValidationException e) {
+            throw new InitException(e);
+        }
 
         // Create the system and guest user. These are not stored in the directory,
         // and can not be used to log in directly.
         generateFixedUsers(config);
 
         directory = new Directory();
+        blockUnknownUsers = config.getBoolean("blockUnknownUsers", false);
 
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
@@ -127,13 +138,13 @@ public class SecurityStore {
             authModule.init(moduleArgs);
             return authModule;
         } catch (ValidationException e) {
-            throw new ConfigurationException(e);
+            throw new InitException(e);
         } catch (IOException e) {
-            throw new ConfigurationException("Failed to load AuthModule", e);
+            throw new InitException("Failed to load AuthModule", e);
         }
     }
 
-    private YConfiguration readConfig() {
+    private YConfiguration readConfig() throws ValidationException {
         Spec moduleSpec = new Spec();
         moduleSpec.addOption("class", OptionType.STRING).withRequired(true);
         moduleSpec.addOption("args", OptionType.ANY);
@@ -147,6 +158,7 @@ public class SecurityStore {
         Spec spec = new Spec();
         spec.addOption("enabled", OptionType.BOOLEAN).withDeprecationMessage(
                 "Remove this argument. If you want to allow guest access, remove security.yaml");
+        spec.addOption("blockUnknownUsers", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("authModules", OptionType.LIST).withElementType(OptionType.MAP).withSpec(moduleSpec);
         spec.addOption("guest", OptionType.MAP).withSpec(guestSpec)
                 .withAliases("unauthenticatedUser") // Legacy, remove some day
@@ -156,11 +168,7 @@ public class SecurityStore {
         if (YConfiguration.isDefined("security")) {
             yconf = YConfiguration.getConfiguration("security");
         }
-        try {
-            yconf = spec.validate(yconf);
-        } catch (ValidationException e) {
-            throw new ConfigurationException(e);
-        }
+        yconf = spec.validate(yconf);
         return yconf;
     }
 
@@ -236,20 +244,15 @@ public class SecurityStore {
             User createdBy = systemUser;
             user = new User(authenticationInfo.getUsername(), authenticationInfo.getName(), createdBy);
             user.setEmail(authenticationInfo.getEmail());
-            user.setIdentityProvider(authenticationInfo.getProvider().getClass().getName());
-            user.confirm(); // TODO should probably be made a configuration option
+            if (!blockUnknownUsers) {
+                user.confirm();
+            }
             try {
                 directory.addUser(user);
             } catch (IOException e) {
                 f.completeExceptionally(e);
                 return f;
             }
-        }
-
-        String provider = authenticationInfo.getProvider().getClass().getName();
-        if (!provider.equals(user.getIdentityProvider())) {
-            log.warn("Login attempt was identified by {} but user was created by {}",
-                    provider, user.getIdentityProvider());
         }
 
         if (user.getUsername().equals(systemUser.getUsername()) || !user.isActive()) {

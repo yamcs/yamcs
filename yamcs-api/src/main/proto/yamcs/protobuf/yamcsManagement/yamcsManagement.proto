@@ -104,7 +104,6 @@ message UserInfo {
   optional google.protobuf.Timestamp creationTime = 14;
   optional google.protobuf.Timestamp confirmationTime = 21;
   optional google.protobuf.Timestamp lastLoginTime = 15;
-  optional string identityProvider = 22;
   repeated string systemPrivilege = 11;
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
   repeated ClientInfo clientInfo = 2;

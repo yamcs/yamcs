@@ -79,7 +79,6 @@ public class UsersCli extends Command {
             b.addLine("active:", user.isActive());
             b.addLine("superuser:", user.isSuperuser());
             b.addLine("external:", user.isExternallyManaged());
-            b.addLine("identity provider:", user.getIdentityProvider());
             b.addLine("created:", printInstant(user.getCreationTime()));
             b.addLine("confirmed:", printInstant(user.getConfirmationTime()));
             b.addLine("last login:", printInstant(user.getLastLoginTime()));
