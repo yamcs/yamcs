@@ -44,9 +44,6 @@ public class YamcsAdminCli extends Command {
 
     @Override
     void validate() throws ParameterException {
-        if (configDirectory != null) {
-            YConfiguration.setResolver(new FileBasedConfigurationResolver(configDirectory));
-        }
         selectedCommand.validate();
     }
 
@@ -73,6 +70,8 @@ public class YamcsAdminCli extends Command {
             break;
         }
         Log.forceStandardStreams(logLevel);
+
+        YConfiguration.setResolver(new FileBasedConfigurationResolver(yamcsCli.configDirectory));
 
         try {
             yamcsCli.validate();

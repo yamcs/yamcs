@@ -142,7 +142,7 @@ public class ProcessorsTest {
 
         assertEquals(4, ml.clientUpdatedList.size());
         // first one is from the ProcessorControlClient
-        assertCEquals("yproctest1", "realtime", clientId - 1, "admin", "ProcessorTest-randname1",
+        assertCEquals("yproctest1", "realtime", clientId - 1, "guest", "ProcessorTest-randname1",
                 ml.clientUpdatedList.get(0));
 
         assertCEquals("yproctest1", "yproc1", clientId, "random-test-user", "random-app-name",
