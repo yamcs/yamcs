@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
@@ -43,13 +42,15 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @Sharable
 public class IndexHandler extends Handler {
 
+    private YConfiguration config;
     private HttpServer httpServer;
     private Path indexFile;
 
     private String cachedHtml;
     private FileTime cacheTime;
 
-    public IndexHandler(HttpServer httpServer, Path webRoot) {
+    public IndexHandler(YConfiguration config, HttpServer httpServer, Path webRoot) {
+        this.config = config;
         this.httpServer = httpServer;
         indexFile = webRoot.resolve("index.html");
     }
@@ -103,14 +104,8 @@ public class IndexHandler extends Handler {
         Map<String, Object> args = new HashMap<>(2);
         args.put("contextPath", httpServer.getContextPath());
 
-        YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
-
         Map<String, Object> webConfig = new HashMap<>();
-
-        if (yamcsConfig.containsKey("yamcs-web")) {
-            YConfiguration yconf = yamcsConfig.getConfig("yamcs-web");
-            webConfig.putAll(yconf.toMap());
-        }
+        webConfig.putAll(config.toMap());
 
         AuthInfo authInfo = AuthHandler.createAuthInfo();
         String authJson = JsonFormat.printer().print(authInfo);

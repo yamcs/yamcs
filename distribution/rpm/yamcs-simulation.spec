@@ -29,6 +29,7 @@ cp -r simulation/mdb %{buildroot}/%{prefix}
 cp -r simulation/etc %{buildroot}/%{prefix}
 mv %{buildroot}/%{prefix}/etc/logging.properties.sample %{buildroot}/%{prefix}/etc/logging.properties
 
+mkdir -p %{buildroot}/%{prefix}/displays
 mkdir -p %{buildroot}/storage/yamcs-data
 mkdir -p %{buildroot}/storage/yamcs-incoming
 
@@ -45,5 +46,6 @@ rm %{buildroot}/%{prefix}/lib/*-sources.jar
 %config %{prefix}/mdb/*
 %config %{prefix}/etc/*
 
+%dir %attr(700,yamcs,yamcs) %{prefix}/displays
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-data
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-incoming

@@ -13,6 +13,7 @@ import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.HttpServer;
 import org.yamcs.logging.Log;
@@ -34,6 +35,7 @@ public class WebPlugin implements Plugin {
 
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
+        spec.addOption("displayPath", OptionType.STRING);
         YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
     }
 
@@ -59,11 +61,22 @@ public class WebPlugin implements Plugin {
 
     @Override
     public void onLoad() throws PluginException {
+        YConfiguration yamcsConfig = YamcsServer.getServer().getConfig();
+        YConfiguration config = YConfiguration.emptyConfig();
+        if (yamcsConfig.containsKey("yamcs-web")) {
+            config = yamcsConfig.getConfig("yamcs-web");
+        }
+
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         try {
-            Bucket bucket = yarch.getBucket("displays");
-            if (bucket == null) {
-                yarch.createBucket("displays");
+            if (config.containsKey("displayPath")) {
+                Path displayPath = Paths.get(config.getString("displayPath")).toAbsolutePath().normalize();
+                yarch.addFileSystemBucket("displays", displayPath);
+            } else {
+                Bucket bucket = yarch.getBucket("displays");
+                if (bucket == null) {
+                    yarch.createBucket("displays");
+                }
             }
         } catch (IOException e) {
             throw new PluginException("Could not create displays bucket", e);
@@ -88,7 +101,7 @@ public class WebPlugin implements Plugin {
         // Catch any non-handled URL and make it return the contents of our index.html
         // This will cause initialization of the Angular app on any requested path. The
         // Angular router will interpret this and do client-side routing as needed.
-        IndexHandler indexHandler = new IndexHandler(httpServer, staticRoot);
+        IndexHandler indexHandler = new IndexHandler(config, httpServer, staticRoot);
         httpServer.addHandler("*", () -> indexHandler);
 
         // Print these log statements via a ready listener because it is more helpful

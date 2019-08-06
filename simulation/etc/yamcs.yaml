@@ -24,3 +24,5 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: DEMO
+  displayPath: displays
+
