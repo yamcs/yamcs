@@ -118,7 +118,21 @@ public class ProcessRunner extends AbstractYamcsService {
     @Override
     protected void doStop() {
         watchdog.shutdown();
+
         process.destroy();
-        notifyStopped();
+
+        // Give the process some time to stop before reporting success. During
+        // shutdown, this reduces the chance of subprocess to be momentarily
+        // alive after the main Yamcs process has already stopped.
+        try {
+            boolean exited = process.waitFor(1000, TimeUnit.SECONDS);
+            if (!exited) {
+                // This is also no "guarantee", but we did our best.
+                process.destroyForcibly();
+            }
+            notifyStopped();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
