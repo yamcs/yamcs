@@ -23,7 +23,7 @@ public class JwtHelperTest {
 
     @Test()
     public void testUnsigned() throws JwtDecodeException {
-        User testUser = new User("someUser", null, null);
+        User testUser = new User("someUser", null);
         String unsignedToken = JwtHelper.generateUnsignedToken(testUser, 1000);
 
         JsonObject claims = JwtHelper.decodeUnverified(unsignedToken);
@@ -36,7 +36,7 @@ public class JwtHelperTest {
     public void testHS256() throws InvalidKeyException, NoSuchAlgorithmException, JwtDecodeException {
         byte[] secret = "secret".getBytes();
 
-        User testUser = new User("someUser", null, null);
+        User testUser = new User("someUser", null);
         String signedToken = JwtHelper.generateHS256Token(testUser, secret, 1000);
 
         JsonObject unverifiedClaims = JwtHelper.decodeUnverified(signedToken);

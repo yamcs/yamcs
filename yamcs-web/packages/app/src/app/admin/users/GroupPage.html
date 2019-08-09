@@ -1,0 +1,37 @@
+<app-admin-page *ngIf="group$ | async as group">
+  <app-admin-toolbar>
+    {{ group.name }}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="new">
+      <mat-icon>person_add</mat-icon>
+      ADD MEMBER
+    </a>
+  </app-admin-toolbar>
+
+  <div class="panel-content ya-link">
+    <dl class="dl-horizontal">
+      <dt>Name</dt>
+      <dd>{{ group.name || '-' }}</dd>
+
+      <dt>Description</dt>
+      <dd>{{ group.description || '-' }}</dd>
+    </dl>
+
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+    <h4>Members</h4>
+    <table yaDataTable>
+      <tr>
+        <th>Username</th>
+      </tr>
+      <tr *ngFor="let member of group.members">
+        <td>
+          <a [routerLink]="['../../' + member.username]">{{ member.username || '-' }}</a>
+        </td>
+      </tr>
+    </table>
+  </div>
+</app-admin-page>

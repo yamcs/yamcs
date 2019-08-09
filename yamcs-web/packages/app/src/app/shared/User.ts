@@ -9,6 +9,18 @@ export class User {
     return this.userInfo.username;
   }
 
+  getName() {
+    return this.userInfo.name;
+  }
+
+  getEmail() {
+    return this.userInfo.email;
+  }
+
+  getDisplayName() {
+    return this.userInfo.name || this.userInfo.username;
+  }
+
   isSuperuser() {
     return this.userInfo.superuser || false;
   }

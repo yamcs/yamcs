@@ -16,6 +16,8 @@ export class AdminPage implements OnDestroy {
 
   sidebar$: Observable<boolean>;
 
+  userManagementActive = false;
+  userManagementExpanded = false;
   rocksDbActive = false;
   rocksDbExpanded = false;
 
@@ -38,7 +40,10 @@ export class AdminPage implements OnDestroy {
     ).subscribe((evt: any) => {
       const url = evt.url as string;
       this.collapseAllGroups();
-      if (url.match(/\/rocksdb.*/)) {
+      if (url.match(/\/user-management.*/)) {
+        this.userManagementActive = true;
+        this.userManagementExpanded = true;
+      } else if (url.match(/\/rocksdb.*/)) {
         this.rocksDbActive = true;
         this.rocksDbExpanded = true;
       }
@@ -46,7 +51,14 @@ export class AdminPage implements OnDestroy {
   }
 
   private collapseAllGroups() {
+    this.userManagementExpanded = false;
     this.rocksDbExpanded = false;
+  }
+
+  toggleUserManagementGroup() {
+    const expanded = this.userManagementExpanded;
+    this.collapseAllGroups();
+    this.userManagementExpanded = !expanded;
   }
 
   toggleRocksDbGroup() {

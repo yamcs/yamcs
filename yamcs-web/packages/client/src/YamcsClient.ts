@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, RoleInfo, Service, TokenResponse, UserInfo } from './types/system';
+import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateUserRequest, EditClientRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -208,17 +208,50 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as UserInfo;
   }
 
-  async getRoles() {
-    const url = `${this.apiUrl}/roles`;
-    const response = await this.doFetch(url);
-    const wrapper = await response.json() as RolesWrapper;
-    return wrapper.roles || [];
+  async createUser(options: CreateUserRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/users`;
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
   }
 
-  async getRole(name: string) {
-    const url = `${this.apiUrl}/roles/${name}`;
+  async editUser(username: string, options: EditUserRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/users/${username}`;
+    return await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteIdentity(username: string, provider: string) {
+    const url = `${this.apiUrl}/users/${username}/identities/${provider}`;
+    const response = await this.doFetch(url, { method: 'DELETE' });
+    return await response.json() as UserInfo;
+  }
+
+  async createGroup(options: CreateGroupRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/groups`, {
+      body,
+      method: 'POST',
+    })
+    return await response.json() as GroupInfo;
+  }
+
+  async getGroups() {
+    const url = `${this.apiUrl}/groups`;
     const response = await this.doFetch(url);
-    return await response.json() as RoleInfo;
+    const wrapper = await response.json() as GroupsWrapper;
+    return wrapper.groups || [];
+  }
+
+  async getGroup(name: string) {
+    const url = `${this.apiUrl}/groups/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as GroupInfo;
   }
 
   async getClients() {

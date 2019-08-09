@@ -276,6 +276,18 @@ public class SpecTest {
     }
 
     @Test
+    public void testListOrElementWithDefault() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("command", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.INTEGER)
+                .withDefault(123);
+
+        Map<String, Object> result1 = spec.validate(of());
+        assertEquals(1, result1.size());
+        assertEquals(123, ((List<?>) result1.get("command")).get(0));
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testAnySpec() throws ValidationException {
         // This is similar to OptionType.ANY, but allows to enforce that

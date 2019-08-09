@@ -115,7 +115,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new ClientRestHandler());
         registerRouteHandler(new InstanceRestHandler());
         registerRouteHandler(new LinkRestHandler());
-        registerRouteHandler(new RoleRestHandler());
+        registerRouteHandler(new GroupRestHandler());
         registerRouteHandler(new ServiceRestHandler());
         registerRouteHandler(new TemplateRestHandler());
         registerRouteHandler(new UserRestHandler());
@@ -234,7 +234,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         try {
             RouteMatch match = matchURI(req.method(), uri);
             if (match == null) {
-                log.info("No route matching URI: '{}'", req.uri());
+                log.debug("No route matching URI: '{}'", req.uri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
                 return false;
             }

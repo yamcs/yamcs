@@ -4,9 +4,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import org.yamcs.security.protobuf.ExternalIdentity;
 import org.yamcs.security.protobuf.UserRecord;
 import org.yamcs.utils.TimeEncoding;
 
@@ -37,12 +39,13 @@ public class User {
     private long confirmationTime = TimeEncoding.INVALID_INSTANT;
     private long lastLoginTime = TimeEncoding.INVALID_INSTANT;
 
+    private Map<String, String> identitiesByProvider = new HashMap<>();
+
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
-    public User(String username, String name, User createdBy) {
+    public User(String username, User createdBy) {
         this.username = Objects.requireNonNull(username);
-        this.name = name;
         if (createdBy != null) {
             this.createdBy = createdBy.id;
         }
@@ -73,6 +76,9 @@ public class User {
         if (record.hasLastLoginTime()) {
             lastLoginTime = TimeEncoding.fromProtobufTimestamp(record.getLastLoginTime());
         }
+        for (ExternalIdentity identity : record.getIdentitiesList()) {
+            identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
+        }
     }
 
     public void confirm() {
@@ -101,7 +107,19 @@ public class User {
     }
 
     public boolean isExternallyManaged() {
-        return hash == null;
+        return !identitiesByProvider.isEmpty();
+    }
+
+    public void addIdentity(String provider, String identity) {
+        identitiesByProvider.put(provider, identity);
+    }
+
+    public Set<Entry<String, String>> getIdentityEntrySet() {
+        return identitiesByProvider.entrySet();
+    }
+
+    public void deleteIdentity(String provider) {
+        identitiesByProvider.remove(provider);
     }
 
     public int getCreatedBy() {
@@ -134,6 +152,10 @@ public class User {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setEmail(String email) {
@@ -225,6 +247,11 @@ public class User {
         if (lastLoginTime != TimeEncoding.INVALID_INSTANT) {
             b.setLastLoginTime(TimeEncoding.toProtobufTimestamp(lastLoginTime));
         }
+        identitiesByProvider.forEach((provider, identity) -> {
+            b.addIdentities(ExternalIdentity.newBuilder()
+                    .setProvider(provider)
+                    .setIdentity(identity));
+        });
         return b.build();
     }
 

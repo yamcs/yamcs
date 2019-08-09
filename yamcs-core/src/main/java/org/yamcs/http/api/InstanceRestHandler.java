@@ -153,7 +153,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(path = "/api/instances", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/instances", method = "POST")
     public void createInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.CreateInstances);
         CreateInstanceRequest request = req.bodyAsMessage(CreateInstanceRequest.newBuilder()).build();

@@ -20,7 +20,7 @@
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <div class="panel-content">
+    <div class="form-content">
       <table mat-table
              [dataSource]="dataSource"
              class="ya-data-table"
@@ -46,10 +46,14 @@
       </table>
 
       <p>&nbsp;</p>
-      <button type="submit" (click)="goToCustomizeInstance()"
-              mat-raised-button
-              [disabled]="!(selectedTemplate$ | async)"
-              color="primary">Next</button>
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" (click)="goToCustomizeInstance()"
+                mat-raised-button
+                [disabled]="!(selectedTemplate$ | async)"
+                color="primary">Next</button>
+      </mat-toolbar>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

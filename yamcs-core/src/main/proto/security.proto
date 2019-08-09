@@ -24,20 +24,26 @@ message UserRecord {
   optional string email = 5;
   optional bool active = 6;
   optional bool superuser = 7;
-  repeated int32 roles = 8;
   optional int32 createdBy = 9;
   optional google.protobuf.Timestamp creationTime = 10;
   optional google.protobuf.Timestamp confirmationTime = 11;
   optional google.protobuf.Timestamp lastLoginTime = 12;
+  repeated ExternalIdentity identities = 13;
 }
 
-message RoleCollection {
+message ExternalIdentity {
+  optional string identity = 1;
+  optional string provider = 2;
+}
+
+message GroupCollection {
   optional int32 seq = 1;
-  repeated RoleRecord records = 2;
+  repeated GroupRecord records = 2;
 }
 
-message RoleRecord {
+message GroupRecord {
   optional int32 id = 1;
   optional string name = 2;
   optional string description = 3;
+  repeated int32 members = 4;
 }

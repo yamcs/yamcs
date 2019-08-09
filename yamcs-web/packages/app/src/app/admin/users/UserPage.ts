@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { UserInfo } from '@yamcs/client';
+import { ExternalIdentity, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './UserPage.html',
+  styleUrls: ['./UserPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserPage {
@@ -17,6 +19,7 @@ export class UserPage {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private title: Title,
+    private messageService: MessageService,
   ) {
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
@@ -32,5 +35,14 @@ export class UserPage {
       this.user$.next(user);
       this.title.setTitle(user.username);
     });
+  }
+
+  deleteIdentity(identity: ExternalIdentity) {
+    if (confirm(`Are you sure you want to delete the ${identity.provider} identity?`)) {
+      const username = this.user$.value!.username;
+      this.yamcs.yamcsClient.deleteIdentity(username, identity.provider)
+        .then(user => this.user$.next(user))
+        .catch(err => this.messageService.showError(err));
+    }
   }
 }

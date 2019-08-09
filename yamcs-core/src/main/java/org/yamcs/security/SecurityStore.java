@@ -83,15 +83,16 @@ public class SecurityStore {
      * log in directly.
      */
     private void generateFixedUsers(YConfiguration config) {
-        systemUser = new User("System", "System", null);
+        systemUser = new User("System", null);
         systemUser.setId(1);
+        systemUser.setName("System");
         systemUser.setSuperuser(true);
 
         YConfiguration guestConfig = config.getConfig("guest");
         String username = guestConfig.getString("username");
-        String name = guestConfig.getString("name", username);
-        guestUser = new User(username, name, systemUser);
+        guestUser = new User(username, systemUser);
         guestUser.setId(2);
+        guestUser.setName(guestConfig.getString("name", username));
         guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
         guestUser.setActive(false);
         if (guestConfig.containsKey("privileges")) {
@@ -239,11 +240,17 @@ public class SecurityStore {
             return f;
         }
 
+        // 1.b. Notify all modules of successful login.
+        // They may choose to bring some additions to the AuthenticationInfo
+        for (AuthModule authModule : authModules) {
+            authModule.authenticationSucceeded(authenticationInfo);
+        }
+
         User user = directory.getUser(authenticationInfo.getUsername());
         if (user == null) {
             User createdBy = systemUser;
-            user = new User(authenticationInfo.getUsername(), authenticationInfo.getName(), createdBy);
-            user.setEmail(authenticationInfo.getEmail());
+            user = new User(authenticationInfo.getUsername(), createdBy);
+
             if (!blockUnknownUsers) {
                 user.confirm();
             }
@@ -255,8 +262,8 @@ public class SecurityStore {
             }
         }
 
-        if (user.getUsername().equals(systemUser.getUsername()) || !user.isActive()) {
-            log.warn("Denying access to {}", user);
+        if (!user.isActive()) {
+            log.warn("Denying access to {}. User account is not active.", user);
             f.completeExceptionally(new AuthenticationException("Access denied"));
             return f;
         }
@@ -266,7 +273,9 @@ public class SecurityStore {
             try {
                 AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authenticationInfo);
                 if (authzInfo != null) {
-                    user.setSuperuser(authzInfo.isSuperuser());
+                    if (authzInfo.isSuperuser()) { // Only override directory if 'true'
+                        user.setSuperuser(true);
+                    }
                     for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
                         user.addSystemPrivilege(privilege);
                     }
@@ -284,6 +293,15 @@ public class SecurityStore {
         log.info("Successfully logged in user {}", user);
         try {
             user.updateLoginData();
+            if (!authenticationInfo.getExternalIdentities().isEmpty()) {
+                authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
+                if (authenticationInfo.getName() != null) {
+                    user.setName(authenticationInfo.getName());
+                }
+                if (authenticationInfo.getEmail() != null) {
+                    user.setEmail(authenticationInfo.getEmail());
+                }
+            }
             directory.updateUserProperties(user);
             f.complete(authenticationInfo);
         } catch (IOException e) {
@@ -294,7 +312,7 @@ public class SecurityStore {
 
     public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         for (AuthModule authModule : authModules) {
-            if (authenticationInfo != null && authModule.equals(authenticationInfo.getProvider())) {
+            if (authenticationInfo != null && authModule.equals(authenticationInfo.getAuthenticator())) {
                 return authModule.verifyValidity(authenticationInfo);
             }
         }

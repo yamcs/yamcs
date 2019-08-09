@@ -11,6 +11,11 @@ import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ServicesPage } from './services/ServicesPage';
+import { CreateGroupPage } from './users/CreateGroupPage';
+import { CreateUserPage } from './users/CreateUserPage';
+import { EditUserPage } from './users/EditUserPage';
+import { GroupPage } from './users/GroupPage';
+import { GroupsPage } from './users/GroupsPage';
 import { UserPage } from './users/UserPage';
 import { UsersPage } from './users/UsersPage';
 
@@ -59,16 +64,46 @@ const routes: Routes = [
         loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
       },
       {
-        path: 'users',
+        path: 'user-management/users',
         pathMatch: 'full',
         component: UsersPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'users/:username',
+        path: 'user-management/users/create',
+        pathMatch: 'full',
+        component: CreateUserPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'user-management/users/:username',
+        pathMatch: 'full',
         component: UserPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
-      }
+      },
+      {
+        path: 'user-management/users/:username/edit',
+        pathMatch: 'full',
+        component: EditUserPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'user-management/groups',
+        pathMatch: 'full',
+        component: GroupsPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'user-management/groups/new',
+        pathMatch: 'full',
+        component: CreateGroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'user-management/groups/:name',
+        component: GroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
     ]
   }
 ];
@@ -81,10 +116,15 @@ export class AdminRoutingModule { }
 
 export const routingComponents = [
   AdminHomePage,
-  ClientsPage,
   BucketsPage,
   BucketPage,
   BucketPlaceholderPage,
+  ClientsPage,
+  CreateGroupPage,
+  CreateUserPage,
+  EditUserPage,
+  GroupsPage,
+  GroupPage,
   PluginsPage,
   ServicesPage,
   UsersPage,

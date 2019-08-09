@@ -556,6 +556,9 @@ public class Spec {
 
         private Object getDefaultValue() {
             if (defaultValue != null) {
+                if (type == OptionType.LIST_OR_ELEMENT && !(defaultValue instanceof List)) {
+                    return Arrays.asList(defaultValue);
+                }
                 return defaultValue;
             }
             if (applySpecDefaults) {

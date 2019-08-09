@@ -78,8 +78,29 @@ message ListUsersResponse {
   repeated yamcsManagement.UserInfo users = 1;
 }
 
-message ListRolesResponse {
-  repeated yamcsManagement.RoleInfo roles = 1;
+message ListGroupsResponse {
+  repeated yamcsManagement.GroupInfo groups = 1;
+}
+
+message CreateGroupRequest {
+  optional string name = 1;
+  optional string description = 2;
+  repeated string members = 3;
+}
+
+message CreateUserRequest {
+  optional string username = 1;
+  optional string name = 2;
+  optional string email = 3;
+  optional string password = 4;
+}
+
+message EditUserRequest {
+  optional string name = 1;
+  optional string email = 2;
+  optional bool active = 3;
+  optional bool superuser = 4;
+  optional string password = 5;
 }
 
 message ListClientsResponse {

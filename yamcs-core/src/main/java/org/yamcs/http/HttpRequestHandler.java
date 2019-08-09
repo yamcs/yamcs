@@ -277,7 +277,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof NotSslRecordException) {
             log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing the channel");
         } else {
-            log.error("Will close channel due to exception", cause);
+            log.error("Closing channel due to exception", cause);
         }
         ctx.close();
     }

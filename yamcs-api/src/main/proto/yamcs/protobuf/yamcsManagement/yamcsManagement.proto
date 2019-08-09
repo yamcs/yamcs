@@ -106,13 +106,20 @@ message UserInfo {
   optional google.protobuf.Timestamp lastLoginTime = 15;
   repeated string systemPrivilege = 11;
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
+  repeated GroupInfo groups = 22;
   repeated ClientInfo clientInfo = 2;
+  repeated ExternalIdentityInfo identities = 23;
 }
 
-message RoleInfo {
+message ExternalIdentityInfo {
+  optional string identity = 1;
+  optional string provider = 2;
+}
+
+message GroupInfo {
   optional string name = 1;
   optional string description = 2;
-  repeated UserInfo users = 3;
+  repeated UserInfo members = 3;
 }
 
 message TmStatistics {

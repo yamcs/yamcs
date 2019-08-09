@@ -84,7 +84,7 @@ public class ProcessorsTest {
 
         client1.createProcessor("yproctest1", "yproc1", "dummy", null, true, new int[] {}).get();
 
-        ConnectedClient client = new ConnectedClient(new User("random-test-user", null, null), "random-app-name",
+        ConnectedClient client = new ConnectedClient(new User("random-test-user", null), "random-app-name",
                 "random-address");
         Processor processor1 = Processor.getInstance("yproctest1", "yproc1");
         assertNotNull(processor1);

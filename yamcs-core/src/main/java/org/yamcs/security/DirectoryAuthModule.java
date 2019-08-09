@@ -13,8 +13,6 @@ import org.yamcs.YamcsServer;
  */
 public class DirectoryAuthModule implements AuthModule {
 
-    private Directory directory;
-
     @Override
     public Spec getSpec() {
         return new Spec();
@@ -22,11 +20,11 @@ public class DirectoryAuthModule implements AuthModule {
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        directory = YamcsServer.getServer().getSecurityStore().getDirectory();
     }
 
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
         if (token instanceof UsernamePasswordToken) {
             String username = token.getPrincipal();
             User user = directory.getUser(username);

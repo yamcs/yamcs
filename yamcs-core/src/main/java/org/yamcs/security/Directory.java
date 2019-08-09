@@ -8,12 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
-import org.yamcs.security.protobuf.RoleCollection;
-import org.yamcs.security.protobuf.RoleRecord;
+import org.yamcs.security.protobuf.GroupCollection;
+import org.yamcs.security.protobuf.GroupRecord;
 import org.yamcs.security.protobuf.UserCollection;
 import org.yamcs.security.protobuf.UserRecord;
 import org.yamcs.yarch.ProtobufDatabase;
@@ -28,16 +29,16 @@ public class Directory {
 
     private static final Log log = new Log(Directory.class);
     private static final String USER_COLLECTION = "users";
-    private static final String ROLE_COLLECTION = "roles";
+    private static final String GROUP_COLLECTION = "groups";
     private static final PasswordHasher hasher = new PBKDF2PasswordHasher();
 
     // Reserve first few ids for potential future use
     // (also not to overlap with system and guest users which are not currently in the directory)
     private AtomicInteger userIdSequence = new AtomicInteger(5);
-    private AtomicInteger roleIdSequence = new AtomicInteger(5);
+    private AtomicInteger groupIdSequence = new AtomicInteger(5);
 
     private Map<String, User> users = new ConcurrentHashMap<>();
-    private Map<String, Role> roles = new ConcurrentHashMap<>();
+    private Map<String, Group> groups = new ConcurrentHashMap<>();
 
     private ProtobufDatabase protobufDatabase;
 
@@ -53,11 +54,11 @@ public class Directory {
                     users.put(rec.getUsername(), new User(rec));
                 }
             }
-            RoleCollection roleCollection = protobufDatabase.get(ROLE_COLLECTION, RoleCollection.class);
-            if (roleCollection != null) {
-                roleIdSequence.set(roleCollection.getSeq());
-                for (RoleRecord rec : roleCollection.getRecordsList()) {
-                    roles.put(rec.getName(), new Role(rec));
+            GroupCollection groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
+            if (groupCollection != null) {
+                groupIdSequence.set(groupCollection.getSeq());
+                for (GroupRecord rec : groupCollection.getRecordsList()) {
+                    groups.put(rec.getName(), new Group(rec));
                 }
             }
         } catch (YarchException | IOException e) {
@@ -85,19 +86,36 @@ public class Directory {
         persistChanges();
     }
 
+    public synchronized void addGroup(Group group) throws IOException {
+        String groupName = group.getName();
+        if (groups.containsKey(groupName)) {
+            throw new IllegalArgumentException("Group '" + groupName + "' already exists");
+        }
+        int id = groupIdSequence.incrementAndGet();
+        group.setId(id);
+        log.info("Saving new group {}", group);
+        groups.put(group.getName(), group);
+        persistChanges();
+    }
+
+    public synchronized void updateGroupProperties(Group group) throws IOException {
+        groups.put(group.getName(), group);
+        persistChanges();
+    }
+
     private synchronized void persistChanges() throws IOException {
         UserCollection.Builder usersb = UserCollection.newBuilder();
         usersb.setSeq(userIdSequence.get());
         for (User user : users.values()) {
             usersb.addRecords(user.toRecord());
         }
-        RoleCollection.Builder rolesb = RoleCollection.newBuilder();
-        rolesb.setSeq(roleIdSequence.get());
-        for (Role role : roles.values()) {
-            rolesb.addRecords(role.toRecord());
+        GroupCollection.Builder groupsb = GroupCollection.newBuilder();
+        groupsb.setSeq(groupIdSequence.get());
+        for (Group group : groups.values()) {
+            groupsb.addRecords(group.toRecord());
         }
         protobufDatabase.save(USER_COLLECTION, usersb.build());
-        protobufDatabase.save(ROLE_COLLECTION, rolesb.build());
+        protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
     }
 
     /**
@@ -136,11 +154,17 @@ public class Directory {
         return new ArrayList<>(users.values());
     }
 
-    public Role getRole(String name) {
-        return roles.get(name);
+    public Group getGroup(String name) {
+        return groups.get(name);
     }
 
-    public List<Role> getRoles() {
-        return new ArrayList<>(roles.values());
+    public List<Group> getGroups() {
+        return new ArrayList<>(groups.values());
+    }
+
+    public List<Group> getGroups(User user) {
+        return groups.values().stream()
+                .filter(g -> g.hasMember(user.getId()))
+                .collect(Collectors.toList());
     }
 }

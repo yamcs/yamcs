@@ -7,6 +7,7 @@ import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
+import { UsersTable } from './users/UsersTable';
 
 const dialogComponents = [
   CreateBucketDialog,
@@ -23,6 +24,7 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    UsersTable,
     ServiceState,
     ServicesTable,
   ],

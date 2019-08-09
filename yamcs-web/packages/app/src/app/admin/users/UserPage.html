@@ -1,6 +1,15 @@
 <app-admin-page *ngIf="user$ | async as user">
   <app-admin-toolbar>
-    {{ user.name || user.username }}
+    <a mat-icon-button routerLink=".." color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ user.name || user.username }}
+    &nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="edit">
+      <mat-icon>edit</mat-icon>
+      EDIT USER
+    </a>
   </app-admin-toolbar>
 
   <div class="panel-content ya-link">
@@ -23,6 +32,12 @@
       <dt>Last login</dt>
       <dd>{{ (user.lastLoginTime | datetime) || 'never' }}</dd>
 
+      <dt>Active</dt>
+      <dd>{{ user.active }}</dd>
+
+      <dt>Superuser</dt>
+      <dd>{{ user.superuser }}</dd>
+
       <dt>Created by</dt>
       <dd>
         <a *ngIf="user.createdBy"
@@ -30,5 +45,26 @@
         <ng-container *ngIf="!user.createdBy">-</ng-container>
       </dd>
     </dl>
+
+    <ng-container *ngIf="user.identities">
+      <div class="section-divider">
+        <mat-divider></mat-divider>
+      </div>
+      <h4>External Identities</h4>
+      <table yaDataTable>
+        <tr>
+          <th>Identity</th>
+          <th>Provider</th>
+          <th></th>
+        </tr>
+        <tr *ngFor="let identity of user.identities">
+          <td>{{ identity.identity }}</td>
+          <td>{{ identity.provider }}</td>
+          <td>
+            <app-text-action icon="delete" (click)="deleteIdentity(identity)">DELETE</app-text-action>
+          </td>
+        </tr>
+      </table>
+    </ng-container>
   </div>
 </app-admin-page>

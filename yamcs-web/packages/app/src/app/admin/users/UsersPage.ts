@@ -1,10 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserInfo } from '@yamcs/client';
-import { fromEvent } from 'rxjs';
+import { BehaviorSubject, from, fromEvent, Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -17,17 +15,16 @@ export class UsersPage implements AfterViewInit {
   @ViewChild('filter', { static: true })
   filter: ElementRef;
 
-  @ViewChild(MatSort, { static: true })
-  sort: MatSort;
+  filterValue$ = new BehaviorSubject<string | null>(null);
 
-  displayedColumns = [
-    'username',
-    'registered',
-    'lastLogin',
-    'active',
-    'superuser',
-  ];
-  dataSource = new MatTableDataSource<UserInfo>();
+  activeUsers$: Observable<UserInfo[]>;
+  activeUserCount$: Observable<number>;
+  superUsers$: Observable<UserInfo[]>;
+  superUserCount$: Observable<number>;
+  internalUsers$: Observable<UserInfo[]>;
+  internalUserCount$: Observable<number>;
+  blockedUsers$: Observable<UserInfo[]>;
+  blockedUserCount$: Observable<number>;
 
   constructor(
     private yamcs: YamcsService,
@@ -36,21 +33,40 @@ export class UsersPage implements AfterViewInit {
     private router: Router,
   ) {
     title.setTitle('Users');
-    this.dataSource.filterPredicate = (user, filter) => {
-      return user.username.toLowerCase().indexOf(filter) >= 0;
-    };
   }
 
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
       this.filter.nativeElement.value = queryParams.get('filter');
-      this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
+      this.filterValue$.next(queryParams.get('filter')!.toLowerCase());
     }
 
-    this.yamcs.yamcsClient.getUsers().then(users => {
-      this.dataSource.data = users;
-    });
+    const users$ = from(this.yamcs.yamcsClient.getUsers());
+    this.activeUsers$ = users$.pipe(
+      map(users => users.filter(u => u.active)),
+    );
+    this.activeUserCount$ = this.activeUsers$.pipe(
+      map(users => users.length),
+    );
+    this.superUsers$ = users$.pipe(
+      map(users => users.filter(u => u.superuser)),
+    );
+    this.superUserCount$ = this.superUsers$.pipe(
+      map(users => users.length),
+    );
+    this.internalUsers$ = users$.pipe(
+      map(users => users.filter(u => !u.identities)),
+    );
+    this.internalUserCount$ = this.internalUsers$.pipe(
+      map(users => users.length),
+    );
+    this.blockedUsers$ = users$.pipe(
+      map(users => users.filter(u => !u.active)),
+    );
+    this.blockedUserCount$ = this.blockedUsers$.pipe(
+      map(users => users.length),
+    );
 
     fromEvent(this.filter.nativeElement, 'keyup').pipe(
       debounceTime(150), // Keep low -- Client-side filter
@@ -58,10 +74,8 @@ export class UsersPage implements AfterViewInit {
       distinctUntilChanged(),
     ).subscribe(value => {
       this.updateURL();
-      this.dataSource.filter = value.toLowerCase();
+      this.filterValue$.next(value.toLowerCase());
     });
-
-    this.dataSource.sort = this.sort;
   }
 
   private updateURL() {
@@ -73,9 +87,5 @@ export class UsersPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  addUser() {
-
   }
 }

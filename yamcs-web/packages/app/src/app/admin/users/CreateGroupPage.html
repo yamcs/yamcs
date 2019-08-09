@@ -1,0 +1,29 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    <a mat-icon-button routerLink=".." color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create a group
+  </app-admin-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate>
+      <label>
+        Group name<br>
+        <input formControlName="name" type="text">
+      </label>
+      <label>
+        Description
+        <textarea formControlName="description" rows="5"></textarea>
+      </label>
+    </form>
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-button routerLink=".." class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="submit" (click)="onConfirm()"
+              mat-raised-button
+              [disabled]="!form.valid"
+              color="primary">CREATE</button>
+    </mat-toolbar>
+  </div>
+</app-admin-page>

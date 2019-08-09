@@ -2,12 +2,12 @@
   <app-admin-toolbar>
     Users
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            (click)="addUser()">
-      <mat-icon>person_add</mat-icon>
-      ADD
-    </button>
+    <a mat-button
+       color="primary"
+       routerLink="create">
+      <mat-icon>add_box</mat-icon>
+      CREATE USER
+    </a>
   </app-admin-toolbar>
 
   <div class="panel-content">
@@ -18,48 +18,35 @@
               placeholder="Filter users"
               style="width: 400px">
     </div>
-    <table mat-table
-           [dataSource]="dataSource"
-           class="ya-data-table"
-           matSort
-           matSortActive="username"
-           matSortDirection="asc"
-           matSortDisableClear>
-
-    <ng-container matColumnDef="username">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">Username</th>
-      <td mat-cell *matCellDef="let user">
-        <a [routerLink]="user.username">
-          {{ user.username }}
-        </a>
-        <mat-icon *ngIf="user.superuser"
-                  class="icon12"
-                  style="color: gold; vertical-align: middle">flash_on</mat-icon>
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="superuser">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Superuser</th>
-      <td mat-cell *matCellDef="let user">{{ user.superuser }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="active">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Active</th>
-      <td mat-cell *matCellDef="let user">{{ user.active }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="registered">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Registered</th>
-      <td mat-cell *matCellDef="let user">{{ (user.creationTime | datetime) || 'never' }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="lastLogin">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Login</th>
-      <td mat-cell *matCellDef="let user">{{ (user.lastLoginTime | datetime) || 'never' }}</td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+    <mat-tab-group animationDuration="0ms">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          ACTIVE ({{ activeUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="activeUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          SUPERUSERS ({{ superUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="superUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          INTERNAL ({{ internalUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="internalUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          BLOCKED ({{ blockedUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="blockedUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 </app-admin-page>

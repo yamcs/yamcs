@@ -1,5 +1,7 @@
 package org.yamcs.security;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -10,21 +12,22 @@ import java.util.Objects;
  */
 public class AuthenticationInfo {
 
-    private AuthModule provider;
+    private AuthModule authenticator;
     private String username;
     private String name;
     private String email;
+    private Map<String, String> externalIdentities = new HashMap<>(2);
 
-    public AuthenticationInfo(AuthModule provider, String username) {
-        this.provider = Objects.requireNonNull(provider);
+    public AuthenticationInfo(AuthModule authenticator, String username) {
+        this.authenticator = Objects.requireNonNull(authenticator);
         this.username = Objects.requireNonNull(username);
     }
 
     /**
      * The {@link AuthModule} that verified this authentication attempt.
      */
-    public AuthModule getProvider() {
-        return provider;
+    public AuthModule getAuthenticator() {
+        return authenticator;
     }
 
     /**
@@ -48,6 +51,14 @@ public class AuthenticationInfo {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Map<String, String> getExternalIdentities() {
+        return externalIdentities;
+    }
+
+    public void addExternalIdentity(String provider, String externalIdentity) {
+        externalIdentities.put(provider, externalIdentity);
     }
 
     @Override

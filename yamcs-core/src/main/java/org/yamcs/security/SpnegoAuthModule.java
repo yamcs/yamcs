@@ -3,6 +3,7 @@ package org.yamcs.security;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
 
+import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -11,6 +12,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
@@ -30,8 +34,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.http.AuthModuleHttpHandler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.utils.StringConverter;
-
-import com.sun.security.auth.callback.TextCallbackHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -60,43 +62,48 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     private static final String JAAS_ENTRY_NAME = "YamcsHTTP";
     private static final String JAAS_KRB5 = "com.sun.security.auth.module.Krb5LoginModule";
     private static final String NEGOTIATE = "Negotiate";
-    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final long AUTH_CODE_VALIDITY = 10000;
 
-    private static Oid krb5Oid;
     private static Oid spnegoOid;
     static {
         try {
             spnegoOid = new Oid("1.3.6.1.5.5.2");
-            krb5Oid = new Oid("1.2.840.113554.1.2.2");
+            // krb5Oid = new Oid("1.2.840.113554.1.2.2");
         } catch (GSSException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    private String realm; // if not null, only users from this realm will be accepted
-    private boolean stripRealm; // if true, domain has to be not null and will be stripped from the username
+    private String realm;
+    private boolean stripRealm; // if true, realm will be stripped from the username
 
     private Map<String, SpnegoAuthenticationInfo> code2info = new ConcurrentHashMap<>();
-    private final long AUTH_CODE_VALIDITY = 10000;
 
     private LoginContext yamcsLogin;
     private GSSManager gssManager;
-
     private GSSCredential yamcsCred;
 
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("keytab", OptionType.BOOLEAN).withRequired(true);
+        spec.addOption("keytab", OptionType.STRING).withRequired(true);
         spec.addOption("principal", OptionType.STRING).withRequired(true);
-        spec.addOption("realm", OptionType.STRING);
         spec.addOption("stripRealm", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("debug", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        realm = args.getString("realm", null);
+        String userPrincipal = args.getString("principal");
+        int idx = userPrincipal.lastIndexOf('@');
+        if (idx < 0) {
+            throw new InitException("SPNEGO principal should take the form HTTP/<host>.<domain>@<REALM>");
+        }
+
+        String servicePrincipal = userPrincipal.substring(0, idx);
+        realm = userPrincipal.substring(idx + 1);
         stripRealm = args.getBoolean("stripRealm");
 
         Map<String, String> jaasOpts = new HashMap<>();
@@ -104,18 +111,18 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         jaasOpts.put("storeKey", "true");
         jaasOpts.put("keyTab", args.getString("keytab"));
         jaasOpts.put("useTicketCache", "true");
-        jaasOpts.put("principal", args.getString("principal"));
-        jaasOpts.put("debug", "false");
+        jaasOpts.put("principal", servicePrincipal);
+        jaasOpts.put("debug", Boolean.toString(args.getBoolean("debug")));
 
         AppConfigurationEntry jaasEntry = new AppConfigurationEntry(JAAS_KRB5, REQUIRED, jaasOpts);
         JaasConfiguration.addEntry(JAAS_ENTRY_NAME, jaasEntry);
 
         try {
-            yamcsLogin = new LoginContext(JAAS_ENTRY_NAME, new TextCallbackHandler());
+            yamcsLogin = new LoginContext(JAAS_ENTRY_NAME, new DummyCallbackHandler());
             yamcsLogin.login();
             gssManager = GSSManager.getInstance();
         } catch (LoginException e) {
-            throw new ConfigurationException("Cannot login to kerberos", e);
+            throw new InitException(String.format("Cannot login %s to Kerberos", userPrincipal), e);
         }
     }
 
@@ -156,7 +163,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
 
     private static String generateAuthCode() {
         byte[] b = new byte[16];
-        secureRandom.nextBytes(b);
+        SECURE_RANDOM.nextBytes(b);
         return StringConverter.arrayToHexString(b);
     }
 
@@ -196,18 +203,20 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
                     GSSContext yamcsContext = gssManager.createContext(cred);
                     yamcsContext.acceptSecContext(spnegoToken, 0, spnegoToken.length);
                     if (yamcsContext.isEstablished()) {
-                        String client = yamcsContext.getSrcName().toString();
-                        log.debug("Got GSS Src Name {}", client);
+                        String userPrincipal = yamcsContext.getSrcName().toString();
+                        log.debug("Got GSS Src Name {}", userPrincipal);
 
-                        if ((realm != null) && (!client.endsWith("@" + realm))) {
-                            log.warn("User {} does not match the defined realm {}", client, realm);
+                        if (!userPrincipal.endsWith("@" + realm)) {
+                            log.warn("User {} does not match realm {}", userPrincipal, realm);
                             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
                             return;
                         }
+                        String username = userPrincipal;
                         if (stripRealm) {
-                            client = client.substring(0, client.length() - realm.length() - 1);
+                            username = userPrincipal.substring(0, userPrincipal.length() - realm.length() - 1);
                         }
-                        SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, client);
+                        SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, username);
+                        authInfo.addExternalIdentity(getClass().getName(), userPrincipal);
                         String authorizationCode = generateAuthCode();
                         code2info.put(authorizationCode, authInfo);
                         ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
@@ -244,9 +253,17 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
 
         long created; // date of creation
 
-        public SpnegoAuthenticationInfo(AuthModule authenticator, String principal) {
-            super(authenticator, principal);
+        public SpnegoAuthenticationInfo(AuthModule authenticator, String username) {
+            super(authenticator, username);
             this.created = System.currentTimeMillis();
+        }
+    }
+
+    private static class DummyCallbackHandler implements CallbackHandler {
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            return;
         }
     }
 }

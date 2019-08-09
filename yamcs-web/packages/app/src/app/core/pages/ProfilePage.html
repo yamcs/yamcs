@@ -3,8 +3,14 @@
 </mat-toolbar>
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
-    <dt>Login</dt>
+    <dt>Username</dt>
     <dd>{{ user.getUsername() }}</dd>
+
+    <dt>Full name</dt>
+    <dd>{{ user.getName() || '-' }}</dd>
+
+    <dt>Email</dt>
+    <dd>{{ user.getEmail() || '-' }}</dd>
 
     <ng-container *ngIf="user.isSuperuser()">
       <dt>Attributes</dt>

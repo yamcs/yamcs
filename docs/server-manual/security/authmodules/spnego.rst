@@ -15,16 +15,13 @@ Configuration Options
 
 principal (string)
     | **Required.** Kerberos Service Principal of the HTTP service that matches the external address of Yamcs.
-    | This should be in the format ``HTTP/<host>.<domain>``
+    | This should be in the format ``HTTP/<host>.<domain>@<realm>``
 
 keytab (string)
     | **Required.** Path to the keytab file matching the principal.
 
-realm (string)
-    Accept only users from this realm.
-
 stripRealm (boolean)
-    | Whether to strip the realm from the username (e.g. ``user@<realm>`` becomes just ``user``). Use this only when ``realm`` is also set.
+    | Whether to strip the realm from the username (e.g. ``user@<realm>`` becomes just ``user``).
     | Default: ``true``.
 
 This module reads Kerberos configuration from the Kerberos system configuration file. This is usually available at ``/etc/krb5.conf``. If you need to override this location, you have to set a system property at JVM level:

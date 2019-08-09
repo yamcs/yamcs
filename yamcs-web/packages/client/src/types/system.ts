@@ -100,6 +100,21 @@ export interface ClientSubscriptionResponse {
   client$: Observable<ClientInfo>;
 }
 
+export interface CreateUserRequest {
+  username: string;
+  name: string;
+  email: string;
+  password?: string;
+}
+
+export interface EditUserRequest {
+  name?: string;
+  email?: string;
+  active?: boolean;
+  superuser?: boolean;
+  password?: string;
+}
+
 export interface UserInfo {
   username: string;
   name: string;
@@ -110,15 +125,23 @@ export interface UserInfo {
   creationTime: string;
   confirmationTime: string;
   lastLoginTime: string;
+  groups: GroupInfo[];
   clientInfo: ClientInfo[];
+  identities: ExternalIdentity[];
 
   systemPrivilege: string[];
   objectPrivilege: ObjectPrivilege[];
 }
 
-export interface RoleInfo {
+export interface ExternalIdentity {
+  identity: string;
+  provider: string;
+}
+
+export interface GroupInfo {
   name: string;
   description: string;
+  members: UserInfo[];
 }
 
 export interface ObjectPrivilege {
@@ -359,6 +382,11 @@ export interface CreateInstanceRequest {
   template: string;
   templateArgs?: { [key: string]: string };
   labels?: { [key: string]: string };
+}
+
+export interface CreateGroupRequest {
+  name: string;
+  description?: string;
 }
 
 export interface RocksDbDatabase {

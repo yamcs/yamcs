@@ -1,0 +1,51 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    <a mat-icon-button routerLink=".." color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create a user
+  </app-admin-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <label>
+        Username <span class="hint">(required)</span><br>
+        <input formControlName="username" type="text">
+      </label>
+      <br>
+      <label>
+        Full name <span class="hint">(required)</span><br>
+        <input formControlName="name" type="text">
+      </label>
+      <br>
+      <label>
+        Email <span class="hint">(required)</span><br>
+        <input formControlName="email" type="text">
+      </label>
+      <p>&nbsp;</p>
+      <div class="section-divider">
+        <mat-divider></mat-divider>
+      </div>
+      <br>
+      <label>
+        Password <span class="hint">(optional)</span><br>
+        <span class="hint">User without a password may still be able to login if an external identity provider is configured.</span>
+        <input formControlName="password" type="password">
+      </label>
+      <br>
+      <label>
+        Password confirmation<br>
+        <input formControlName="passwordConfirmation" type="password">
+      </label>
+    </form>
+
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-button routerLink=".." class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="submit" (click)="onConfirm()"
+              mat-raised-button
+              [disabled]="!form.valid"
+              color="primary">CREATE</button>
+    </mat-toolbar>
+  </div>
+</app-admin-page>

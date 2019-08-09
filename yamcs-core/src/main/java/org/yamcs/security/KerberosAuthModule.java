@@ -3,6 +3,7 @@ package org.yamcs.security;
 import static javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,7 +63,10 @@ public class KerberosAuthModule implements AuthModule {
         try {
             LoginContext userLogin = new LoginContext(JAAS_ENTRY_NAME, new UserPassCallbackHandler(username, password));
             userLogin.login();
-            return new AuthenticationInfo(this, username);
+            AuthenticationInfo authenticationInfo = new AuthenticationInfo(this, username);
+            Principal identity = userLogin.getSubject().getPrincipals().iterator().next();
+            authenticationInfo.addExternalIdentity(getClass().getName(), identity.getName());
+            return authenticationInfo;
         } catch (AccountNotFoundException e) {
             return null;
         } catch (LoginException e) {
@@ -92,7 +96,6 @@ public class KerberosAuthModule implements AuthModule {
 
         @Override
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-
             for (Callback callback : callbacks) {
                 if (callback instanceof NameCallback && username != null) {
                     NameCallback nc = (NameCallback) callback;
