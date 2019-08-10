@@ -11,24 +11,37 @@ import "google/protobuf/timestamp.proto";
 // that references a user "should" make use of the id, although
 // it's true this is not yet the case everywhere.
 
-message UserCollection {
+message AccountCollection {
   optional int32 seq = 1;
-  repeated UserRecord records = 2;
+  repeated AccountRecord records = 2;
 }
 
-message UserRecord {
+message AccountRecord {
   optional int32 id = 1;
-  optional string username = 2;
-  optional string hash = 3;
-  optional string name = 4;
-  optional string email = 5;
-  optional bool active = 6;
-  optional bool superuser = 7;
-  optional int32 createdBy = 9;
-  optional google.protobuf.Timestamp creationTime = 10;
-  optional google.protobuf.Timestamp confirmationTime = 11;
-  optional google.protobuf.Timestamp lastLoginTime = 12;
-  repeated ExternalIdentity identities = 13;
+  optional string name = 2;
+  optional string displayName = 3;
+  optional bool active = 4;
+  optional int32 createdBy = 5;
+  optional google.protobuf.Timestamp creationTime = 6;
+  optional google.protobuf.Timestamp confirmationTime = 7;
+  optional google.protobuf.Timestamp lastLoginTime = 8;
+  
+  oneof accountType {
+    UserAccountRecordDetail userDetail = 9;
+    ServiceAccountRecordDetail serviceDetail = 10;
+  }
+}
+
+message UserAccountRecordDetail {
+  optional string email = 1;
+  optional string hash = 2;
+  optional bool superuser = 3;
+  repeated ExternalIdentity identities = 4;
+}
+
+message ServiceAccountRecordDetail {
+  optional string applicationId = 1;
+  optional string applicationHash = 2;
 }
 
 message ExternalIdentity {
@@ -46,4 +59,20 @@ message GroupRecord {
   optional string name = 2;
   optional string description = 3;
   repeated int32 members = 4;
+}
+
+message ApplicationCollection {
+  optional int32 seq = 1;
+  repeated ApplicationRecord records = 2;
+}
+
+message ApplicationRecord {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string clientId = 3;
+  optional string clientHash = 4;
+  repeated string scopes = 5;
+  optional int32 createdBy = 6;
+  optional google.protobuf.Timestamp creationTime = 7;
+  optional google.protobuf.Timestamp lastLoginTime = 8;
 }

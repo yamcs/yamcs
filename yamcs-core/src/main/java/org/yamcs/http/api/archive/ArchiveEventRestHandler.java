@@ -28,10 +28,10 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.SqlBuilder;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.protobuf.Archive.EventSourceInfo;
 import org.yamcs.protobuf.Rest.CreateEventRequest;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
@@ -209,7 +209,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
 
         Event.Builder eventb = Event.newBuilder();
-        eventb.setCreatedBy(req.getUser().getUsername());
+        eventb.setCreatedBy(req.getUser().getName());
         eventb.setMessage(request.getMessage());
 
         if (request.hasType()) {

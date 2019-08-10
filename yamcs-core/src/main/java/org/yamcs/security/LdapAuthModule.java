@@ -33,8 +33,8 @@ public class LdapAuthModule implements AuthModule {
     private Hashtable<String, String> yamcsEnv;
 
     private String userBase;
-    private String usernameAttribute;
-    private String[] nameAttributes;
+    private String nameAttribute;
+    private String[] displayNameAttributes;
     private String[] emailAttributes;
     private String[] searchAttributes;
 
@@ -45,12 +45,12 @@ public class LdapAuthModule implements AuthModule {
     @Override
     public Spec getSpec() {
         Spec attributesSpec = new Spec();
-        attributesSpec.addOption("username", OptionType.STRING)
+        attributesSpec.addOption("name", OptionType.STRING)
                 .withDefault("uid");
         attributesSpec.addOption("email", OptionType.LIST_OR_ELEMENT)
                 .withElementType(OptionType.STRING)
                 .withDefault(Arrays.asList("mail", "email", "userPrincipalName"));
-        attributesSpec.addOption("name", OptionType.LIST_OR_ELEMENT)
+        attributesSpec.addOption("displayName", OptionType.LIST_OR_ELEMENT)
                 .withElementType(OptionType.STRING)
                 .withDefault("cn");
 
@@ -83,14 +83,14 @@ public class LdapAuthModule implements AuthModule {
         userBase = args.getString("userBase");
 
         YConfiguration attributesArgs = args.getConfig("attributes");
-        usernameAttribute = attributesArgs.getString("username");
+        nameAttribute = attributesArgs.getString("name");
 
-        nameAttributes = attributesArgs.getList("name").toArray(new String[0]);
+        displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
 
         List<String> concat = new ArrayList<>();
-        concat.add(usernameAttribute);
-        concat.addAll(attributesArgs.getList("name"));
+        concat.add(nameAttribute);
+        concat.addAll(attributesArgs.getList("displayName"));
         concat.addAll(attributesArgs.getList("email"));
         searchAttributes = concat.toArray(new String[0]);
 
@@ -131,7 +131,7 @@ public class LdapAuthModule implements AuthModule {
             bindUser(info.dn, password);
             AuthenticationInfo authenticationInfo = new AuthenticationInfo(this, info.uid);
             authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
-            authenticationInfo.setName(info.name);
+            authenticationInfo.setDisplayName(info.cn);
             authenticationInfo.setEmail(info.email);
             return authenticationInfo;
         } else {
@@ -150,7 +150,7 @@ public class LdapAuthModule implements AuthModule {
             try {
                 LdapUserInfo info = searchUserInfo(username);
                 authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
-                authenticationInfo.setName(info.name);
+                authenticationInfo.setDisplayName(info.cn);
                 authenticationInfo.setEmail(info.email);
             } catch (NamingException e) {
                 log.warn("Failed to search LDAP for user {}", username, e);
@@ -170,16 +170,16 @@ public class LdapAuthModule implements AuthModule {
             SearchControls controls = new SearchControls();
             controls.setReturningAttributes(searchAttributes);
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            String filter = usernameAttribute + "=" + username;
+            String filter = nameAttribute + "=" + username;
             SearchResult result = getSingleResult(ctx, userBase, filter, controls);
             if (result == null) {
                 return null;
             }
             info = new LdapUserInfo();
             // Use the uid from LDAP, just to prevent case sensitivity issues.
-            info.uid = (String) result.getAttributes().get(usernameAttribute).get();
+            info.uid = (String) result.getAttributes().get(nameAttribute).get();
             info.dn = result.getNameInNamespace();
-            info.name = findAttribute(result, nameAttributes);
+            info.cn = findAttribute(result, displayNameAttributes);
             info.email = findAttribute(result, emailAttributes);
 
             infoCache.put(username, info);
@@ -246,7 +246,7 @@ public class LdapAuthModule implements AuthModule {
     private static final class LdapUserInfo {
         String uid;
         String dn;
-        String name;
+        String cn;
         String email;
     }
 }

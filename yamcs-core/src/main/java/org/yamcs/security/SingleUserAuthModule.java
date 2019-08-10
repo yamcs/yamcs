@@ -1,8 +1,6 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,7 +44,7 @@ public class SingleUserAuthModule implements AuthModule {
         expectedHash = args.getString("password");
 
         String name = args.getString("name", username);
-        authenticationInfo.setName(name);
+        authenticationInfo.setDisplayName(name);
 
         String email = args.getString("email", null);
         authenticationInfo.setEmail(email);
@@ -85,7 +83,7 @@ public class SingleUserAuthModule implements AuthModule {
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         if (token instanceof UsernamePasswordToken) {
-            String username = token.getPrincipal();
+            String username = ((UsernamePasswordToken) token).getPrincipal();
             char[] password = ((UsernamePasswordToken) token).getPassword();
 
             if (!username.equals(authenticationInfo.getUsername())) {
@@ -93,12 +91,8 @@ public class SingleUserAuthModule implements AuthModule {
             }
 
             if (passwordHasher != null) {
-                try {
-                    if (!passwordHasher.validatePassword(password, expectedHash)) {
-                        throw new AuthenticationException("Password does not match");
-                    }
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new AuthenticationException(e);
+                if (!passwordHasher.validatePassword(password, expectedHash)) {
+                    throw new AuthenticationException("Password does not match");
                 }
             } else {
                 if (!Arrays.equals(expectedHash.toCharArray(), password)) {

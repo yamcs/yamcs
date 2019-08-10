@@ -73,9 +73,3 @@ This file defines which privileges belong to which roles.
 This example specifies one role ``Operator``. It also demonstrates the use of regular expressions to grant a set of object privileges.
 
 System privileges must be defined under the key ``System``. System privileges may not use regular expressions.
-
-All keys are optional so the simplest role definition is simply:
-
-.. code-block:: yaml
-
-    EmptyRole:

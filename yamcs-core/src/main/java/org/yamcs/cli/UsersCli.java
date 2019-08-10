@@ -38,9 +38,9 @@ public class UsersCli extends Command {
             RocksDB.loadLibrary();
             Directory directory = new Directory();
 
-            TableStringBuilder b = new TableStringBuilder("username", "name", "email", "active", "superuser");
+            TableStringBuilder b = new TableStringBuilder("username", "display name", "email", "active", "superuser");
             directory.getUsers().forEach(user -> {
-                b.addLine(user.getUsername(), user.getName(), user.getEmail(), user.isActive(), user.isSuperuser());
+                b.addLine(user.getName(), user.getDisplayName(), user.getEmail(), user.isActive(), user.isSuperuser());
             });
             console.println(b.toString());
         }
@@ -73,8 +73,8 @@ public class UsersCli extends Command {
 
             TableStringBuilder b = new TableStringBuilder(2);
             b.addLine("id:", user.getId());
-            b.addLine("username:", user.getUsername());
-            b.addLine("name:", user.getName());
+            b.addLine("username:", user.getName());
+            b.addLine("display name:", user.getDisplayName());
             b.addLine("email:", user.getEmail());
             b.addLine("active:", user.isActive());
             b.addLine("superuser:", user.isSuperuser());

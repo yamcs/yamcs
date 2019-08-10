@@ -59,7 +59,7 @@ public class YamcsToGpbAssembler {
         ClientInfo.Builder clientb = ClientInfo.newBuilder()
                 .setApplicationName(client.getApplicationName())
                 .setAddress(client.getAddress())
-                .setUsername(client.getUser().getUsername())
+                .setUsername(client.getUser().getName())
                 .setId(client.getId())
                 .setState(state)
                 .setLoginTime(TimeEncoding.toProtobufTimestamp(client.getLoginTime()));

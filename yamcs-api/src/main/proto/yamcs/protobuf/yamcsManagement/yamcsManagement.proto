@@ -95,8 +95,8 @@ message ObjectPrivilegeInfo {
 
 message UserInfo {
   optional string login = 1 [deprecated=true];
-  optional string username = 17;
-  optional string name = 18;
+  optional string name = 17;
+  optional string displayName = 18;
   optional string email = 19;
   optional bool active = 16;
   optional bool superuser = 13;
@@ -120,6 +120,16 @@ message GroupInfo {
   optional string name = 1;
   optional string description = 2;
   repeated UserInfo members = 3;
+}
+
+message ServiceAccountInfo {
+  optional string name = 1;
+  optional string displayName = 2;
+  optional bool active = 3;
+  optional UserInfo createdBy = 4;
+  optional google.protobuf.Timestamp creationTime = 5;
+  optional google.protobuf.Timestamp confirmationTime = 6;
+  optional google.protobuf.Timestamp lastLoginTime = 7;
 }
 
 message TmStatistics {

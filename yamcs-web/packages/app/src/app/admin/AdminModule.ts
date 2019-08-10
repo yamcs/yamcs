@@ -5,9 +5,9 @@ import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
+import { UsersTable } from './iam/UsersTable';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
-import { UsersTable } from './users/UsersTable';
 
 const dialogComponents = [
   CreateBucketDialog,

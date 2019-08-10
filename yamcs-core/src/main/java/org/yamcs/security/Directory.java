@@ -1,11 +1,10 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -13,31 +12,32 @@ import java.util.stream.Collectors;
 import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.security.protobuf.AccountCollection;
+import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.security.protobuf.GroupCollection;
 import org.yamcs.security.protobuf.GroupRecord;
-import org.yamcs.security.protobuf.UserCollection;
-import org.yamcs.security.protobuf.UserRecord;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 /**
- * Stores user and group information in the Yamcs database.
+ * Stores user, group and application information in the Yamcs database.
  */
 public class Directory {
 
     private static final Log log = new Log(Directory.class);
-    private static final String USER_COLLECTION = "users";
+    private static final String ACCOUNT_COLLECTION = "accounts";
     private static final String GROUP_COLLECTION = "groups";
     private static final PasswordHasher hasher = new PBKDF2PasswordHasher();
 
     // Reserve first few ids for potential future use
     // (also not to overlap with system and guest users which are not currently in the directory)
-    private AtomicInteger userIdSequence = new AtomicInteger(5);
+    private AtomicInteger accountIdSequence = new AtomicInteger(5);
     private AtomicInteger groupIdSequence = new AtomicInteger(5);
 
     private Map<String, User> users = new ConcurrentHashMap<>();
+    private Map<String, ServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
     private Map<String, Group> groups = new ConcurrentHashMap<>();
 
     private ProtobufDatabase protobufDatabase;
@@ -46,12 +46,20 @@ public class Directory {
         try {
             YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
             protobufDatabase = yarch.getProtobufDatabase();
-            // protobufDatabase.delete(USER_COLLECTION); ///
-            UserCollection userCollection = protobufDatabase.get(USER_COLLECTION, UserCollection.class);
-            if (userCollection != null) {
-                userIdSequence.set(userCollection.getSeq());
-                for (UserRecord rec : userCollection.getRecordsList()) {
-                    users.put(rec.getUsername(), new User(rec));
+            AccountCollection accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
+            if (accountCollection != null) {
+                accountIdSequence.set(accountCollection.getSeq());
+                for (AccountRecord rec : accountCollection.getRecordsList()) {
+                    switch (rec.getAccountTypeCase()) {
+                    case USERDETAIL:
+                        users.put(rec.getName(), new User(rec));
+                        break;
+                    case SERVICEDETAIL:
+                        serviceAccounts.put(rec.getName(), new ServiceAccount(rec));
+                        break;
+                    case ACCOUNTTYPE_NOT_SET:
+                        throw new IllegalStateException("Unexpected account type");
+                    }
                 }
             }
             GroupCollection groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
@@ -67,22 +75,22 @@ public class Directory {
     }
 
     public synchronized void addUser(User user) throws IOException {
-        String username = user.getUsername();
-        if (users.containsKey(username)) {
-            throw new IllegalArgumentException("User '" + username + "' already exists");
+        String username = user.getName();
+        if (users.containsKey(username) || serviceAccounts.containsKey(username)) {
+            throw new IllegalArgumentException("Name '" + username + "' is already taken");
         }
         if (username.isEmpty() || username.contains(":")) {
             throw new IllegalArgumentException("Invalid username '" + username + "'");
         }
-        int id = userIdSequence.incrementAndGet();
+        int id = accountIdSequence.incrementAndGet();
         user.setId(id);
         log.info("Saving new user {}", user);
-        users.put(user.getUsername(), user);
+        users.put(user.getName(), user);
         persistChanges();
     }
 
     public synchronized void updateUserProperties(User user) throws IOException {
-        users.put(user.getUsername(), user);
+        users.put(user.getName(), user);
         persistChanges();
     }
 
@@ -103,40 +111,98 @@ public class Directory {
         persistChanges();
     }
 
+    /**
+     * Creates a new service account. The service account is assumed to represent one appplication only, for which
+     * automatically generate credentials are returned. These may be used to identify as that application, for example
+     * to generate access tokens.
+     */
+    public synchronized ApplicationCredentials addServiceAccount(ServiceAccount service) throws IOException {
+        String serviceName = service.getName();
+        if (users.containsKey(serviceName) || serviceAccounts.containsKey(serviceName)) {
+            throw new IllegalArgumentException("Name '" + serviceName + "' is already taken");
+        }
+        int id = accountIdSequence.incrementAndGet();
+        service.setId(id);
+
+        String applicationId = UUID.randomUUID().toString();
+        String applicationSecret = CryptoUtils.generateRandomPassword(10);
+        String applicationHash = hasher.createHash(applicationSecret.toCharArray());
+        service.setApplicationId(applicationId);
+        service.setApplicationHash(applicationHash);
+
+        log.info("Saving new service account {}", service);
+        serviceAccounts.put(service.getName(), service);
+        persistChanges();
+
+        return new ApplicationCredentials(applicationId, applicationSecret /* not the hash */);
+    }
+
+    public synchronized void deleteServiceAccount(String name) {
+        serviceAccounts.remove(name);
+    }
+
+    public synchronized void updateApplicationProperties(ServiceAccount service) throws IOException {
+        serviceAccounts.put(service.getName(), service);
+        persistChanges();
+    }
+
     private synchronized void persistChanges() throws IOException {
-        UserCollection.Builder usersb = UserCollection.newBuilder();
-        usersb.setSeq(userIdSequence.get());
+        AccountCollection.Builder accountsb = AccountCollection.newBuilder();
+        accountsb.setSeq(accountIdSequence.get());
         for (User user : users.values()) {
-            usersb.addRecords(user.toRecord());
+            accountsb.addRecords(user.toRecord());
+        }
+        for (ServiceAccount service : serviceAccounts.values()) {
+            accountsb.addRecords(service.toRecord());
         }
         GroupCollection.Builder groupsb = GroupCollection.newBuilder();
         groupsb.setSeq(groupIdSequence.get());
         for (Group group : groups.values()) {
             groupsb.addRecords(group.toRecord());
         }
-        protobufDatabase.save(USER_COLLECTION, usersb.build());
+        protobufDatabase.save(ACCOUNT_COLLECTION, accountsb.build());
         protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
     }
 
     /**
      * Validates the provided password against the stored password hash of a user.
      */
-    public boolean validatePassword(User user, char[] password)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        if (user.isExternallyManaged()) {
-            throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
-        }
+    public boolean validateUserPassword(String username, char[] password) {
+        User user = users.get(username);
         return hasher.validatePassword(password, user.getHash());
     }
 
-    public void changePassword(User user, char[] password)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+    /**
+     * Validates the provided password against the stored password hash of an application.
+     * <p>
+     * Currently this is only functional for service accounts (which map to one and only one application), but some day
+     * we may also want to support user applications.
+     */
+    public boolean validateApplicationPassword(String applicationId, char[] password) {
+        Account account = getAccountForApplication(applicationId);
+        if (account == null) {
+            throw new IllegalArgumentException("No such application");
+        }
+
+        if (account instanceof ServiceAccount) {
+            return hasher.validatePassword(password, ((ServiceAccount) account).getApplicationHash());
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public void changePassword(User user, char[] password) throws IOException {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
         }
         String hash = hasher.createHash(password);
         user.setHash(hash);
         persistChanges();
+    }
+
+    public Account getAccount(String name) {
+        User user = getUser(name);
+        return user != null ? user : getServiceAccount(name);
     }
 
     public User getUser(int id) {
@@ -154,6 +220,15 @@ public class Directory {
         return new ArrayList<>(users.values());
     }
 
+    public Account getAccountForApplication(String applicationId) {
+        for (ServiceAccount service : serviceAccounts.values()) {
+            if (service.getApplicationId().equals(applicationId)) {
+                return service;
+            }
+        }
+        return null;
+    }
+
     public Group getGroup(String name) {
         return groups.get(name);
     }
@@ -166,5 +241,13 @@ public class Directory {
         return groups.values().stream()
                 .filter(g -> g.hasMember(user.getId()))
                 .collect(Collectors.toList());
+    }
+
+    public ServiceAccount getServiceAccount(String name) {
+        return serviceAccounts.get(name);
+    }
+
+    public List<ServiceAccount> getServiceAccounts() {
+        return new ArrayList<>(serviceAccounts.values());
     }
 }

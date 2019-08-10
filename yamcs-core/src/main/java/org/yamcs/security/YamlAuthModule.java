@@ -1,8 +1,6 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,7 +68,7 @@ public class YamlAuthModule implements AuthModule {
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         if (token instanceof UsernamePasswordToken) {
-            String username = token.getPrincipal();
+            String username = ((UsernamePasswordToken) token).getPrincipal();
             char[] password = ((UsernamePasswordToken) token).getPassword();
 
             Map<String, Object> userDef = userDefs.get(username);
@@ -82,12 +80,8 @@ public class YamlAuthModule implements AuthModule {
             // Verify password
             String expected = YConfiguration.getString(userDef, "password");
             if (passwordHasher != null) {
-                try {
-                    if (!passwordHasher.validatePassword(password, expected)) {
-                        throw new AuthenticationException("Password does not match");
-                    }
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new AuthenticationException(e);
+                if (!passwordHasher.validatePassword(password, expected)) {
+                    throw new AuthenticationException("Password does not match");
                 }
             } else {
                 if (!Arrays.equals(expected.toCharArray(), password)) {

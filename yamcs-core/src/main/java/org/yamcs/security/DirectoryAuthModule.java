@@ -1,15 +1,12 @@
 package org.yamcs.security;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 
 /**
- * Identifies users stored in the Yamcs {@link Directory}.
+ * Identifies users and service accounts based on authentication information stored in the Yamcs {@link Directory}.
  */
 public class DirectoryAuthModule implements AuthModule {
 
@@ -26,18 +23,35 @@ public class DirectoryAuthModule implements AuthModule {
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
         if (token instanceof UsernamePasswordToken) {
-            String username = token.getPrincipal();
+            String username = ((UsernamePasswordToken) token).getPrincipal();
             User user = directory.getUser(username);
             if (user != null && !user.isExternallyManaged()) {
                 char[] password = ((UsernamePasswordToken) token).getPassword();
-                try {
-                    if (directory.validatePassword(user, password)) {
-                        return new AuthenticationInfo(this, username);
-                    } else {
-                        throw new AuthenticationException("Password does not match");
+                if (directory.validateUserPassword(username, password)) {
+                    return new AuthenticationInfo(this, user.getName());
+                } else {
+                    throw new AuthenticationException("Password does not match");
+                }
+            }
+        } else if (token instanceof ApplicationCredentials) {
+            String applicationId = ((ApplicationCredentials) token).getApplicationId();
+            String applicationSecret = ((ApplicationCredentials) token).getApplicationSecret();
+            String become = ((ApplicationCredentials) token).getBecome();
+            Account account = directory.getAccountForApplication(applicationId);
+            if (account != null) {
+                if (directory.validateApplicationPassword(applicationId, applicationSecret.toCharArray())) {
+                    if (become == null) {
+                        return new AuthenticationInfo(this, account.getName());
+                    } else { // TODO add a role, currently we assume all applications can do 'become'.
+                        Account becomeAccount = directory.getAccount(become);
+                        if (becomeAccount != null) {
+                            return new AuthenticationInfo(this, become);
+                        } else {
+                            throw new AuthenticationException("Unknown account " + become);
+                        }
                     }
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new AuthenticationException(e);
+                } else {
+                    throw new AuthenticationException("Secret does not match");
                 }
             }
         }

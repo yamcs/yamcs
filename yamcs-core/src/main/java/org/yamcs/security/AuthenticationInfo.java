@@ -14,7 +14,7 @@ public class AuthenticationInfo {
 
     private AuthModule authenticator;
     private String username;
-    private String name;
+    private String displayName;
     private String email;
     private Map<String, String> externalIdentities = new HashMap<>(2);
 
@@ -37,12 +37,12 @@ public class AuthenticationInfo {
         return username;
     }
 
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getEmail() {

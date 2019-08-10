@@ -4,8 +4,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import org.yamcs.protobuf.Web.AuthFlow;
 import org.yamcs.protobuf.Web.AuthFlow.Type;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.protobuf.Web.TokenResponse;
+import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
@@ -32,6 +35,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.Attribute;
@@ -135,6 +139,9 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                 case "refresh_token":
                     handleTokenRequestWithRefreshToken(ctx, req, formDecoder);
                     break;
+                case "client_credentials":
+                    handleTokenRequestWithClientCredentials(ctx, req, formDecoder);
+                    break;
                 case "spnego":
                     // TODO ?
                     // Could maybe move the http handling from SpnegoAuthModule here.
@@ -220,6 +227,60 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
         } else {
             sendNewAccessToken(ctx, req, result.authenticationInfo, result.refreshToken);
+        }
+    }
+
+    private void handleTokenRequestWithClientCredentials(ChannelHandlerContext ctx, FullHttpRequest req,
+            HttpPostRequestDecoder formDecoder) throws IOException {
+        String clientId = null;
+        String clientSecret = null;
+        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
+            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+            if (authorizationHeader.startsWith("Basic ")) {
+                String userpassEncoded = authorizationHeader.substring("Basic ".length());
+                String userpassDecoded;
+                try {
+                    userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Could not decode Base64-encoded credentials");
+                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+                    return;
+                }
+                String[] parts = userpassDecoded.split(":", 2);
+                if (parts.length < 2) {
+                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+                    return;
+                }
+                clientId = URLDecoder.decode(parts[0], "UTF-8");
+                clientSecret = URLDecoder.decode(parts[1], "UTF-8");
+            }
+        }
+        if (clientId == null) {
+            clientId = getStringFromForm(formDecoder, "client_id");
+            clientSecret = getStringFromForm(formDecoder, "client_secret");
+        }
+        if (clientId == null || clientSecret == null) {
+            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+            return;
+        }
+
+        ApplicationCredentials token = new ApplicationCredentials(clientId, clientSecret);
+        token.setBecome(getStringFromForm(formDecoder, "become"));
+
+        try {
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            sendNewAccessToken(ctx, req, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
+                log.info("Denying access to '" + clientId + "': " + cause.getMessage());
+                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+            } else {
+                log.error("Unexpected error while attempting user login", cause);
+                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 

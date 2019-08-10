@@ -9,15 +9,15 @@ import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
+import { CreateGroupPage } from './iam/CreateGroupPage';
+import { CreateUserPage } from './iam/CreateUserPage';
+import { EditUserPage } from './iam/EditUserPage';
+import { GroupPage } from './iam/GroupPage';
+import { GroupsPage } from './iam/GroupsPage';
+import { UserPage } from './iam/UserPage';
+import { UsersPage } from './iam/UsersPage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ServicesPage } from './services/ServicesPage';
-import { CreateGroupPage } from './users/CreateGroupPage';
-import { CreateUserPage } from './users/CreateUserPage';
-import { EditUserPage } from './users/EditUserPage';
-import { GroupPage } from './users/GroupPage';
-import { GroupsPage } from './users/GroupsPage';
-import { UserPage } from './users/UserPage';
-import { UsersPage } from './users/UsersPage';
 
 const routes: Routes = [
   {
@@ -64,43 +64,43 @@ const routes: Routes = [
         loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
       },
       {
-        path: 'user-management/users',
+        path: 'iam/users',
         pathMatch: 'full',
         component: UsersPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/users/create',
+        path: 'iam/users/create',
         pathMatch: 'full',
         component: CreateUserPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/users/:username',
+        path: 'iam/users/:username',
         pathMatch: 'full',
         component: UserPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/users/:username/edit',
+        path: 'iam/users/:username/edit',
         pathMatch: 'full',
         component: EditUserPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/groups',
+        path: 'iam/groups',
         pathMatch: 'full',
         component: GroupsPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/groups/new',
+        path: 'iam/groups/new',
         pathMatch: 'full',
         component: CreateGroupPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'user-management/groups/:name',
+        path: 'iam/groups/:name',
         component: GroupPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },

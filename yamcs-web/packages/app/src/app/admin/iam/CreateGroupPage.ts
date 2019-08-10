@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
 @Component({
   templateUrl: './CreateGroupPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

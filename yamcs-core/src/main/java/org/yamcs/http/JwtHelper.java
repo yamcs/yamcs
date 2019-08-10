@@ -51,7 +51,7 @@ public class JwtHelper {
 
         // Standard JWT props (aka Registered Claims)
         claims.addProperty("iss", "Yamcs"); // Issuer of the JWT token
-        claims.addProperty("sub", user.getUsername()); // Subject
+        claims.addProperty("sub", user.getName()); // Subject
         long now = System.currentTimeMillis() / 1000;
         claims.addProperty("iat", now); // Issued at (Time at issuer)
         if (ttl >= 0) {

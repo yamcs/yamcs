@@ -133,7 +133,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 mgr.sendCommand(entryId, false);
                 break;
             case "rejected":
-                String username = req.getUser().getUsername();
+                String username = req.getUser().getName();
                 mgr.rejectCommand(entryId, username);
                 break;
             default:

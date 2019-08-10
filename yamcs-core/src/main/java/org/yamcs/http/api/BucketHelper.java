@@ -54,7 +54,7 @@ public class BucketHelper {
     }
 
     static String getUserBucketName(User user) {
-        return "user." + user.getUsername();
+        return "user." + user.getName();
     }
 
     static Bucket verifyAndGetBucket(RestRequest req) throws HttpException {

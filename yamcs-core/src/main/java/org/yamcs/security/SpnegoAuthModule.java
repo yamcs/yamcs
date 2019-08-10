@@ -5,7 +5,6 @@ import static javax.security.auth.login.AppConfigurationEntry.LoginModuleControl
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +32,6 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.AuthModuleHttpHandler;
 import org.yamcs.http.HttpRequestHandler;
-import org.yamcs.utils.StringConverter;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -62,7 +60,6 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     private static final String JAAS_ENTRY_NAME = "YamcsHTTP";
     private static final String JAAS_KRB5 = "com.sun.security.auth.module.Krb5LoginModule";
     private static final String NEGOTIATE = "Negotiate";
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final long AUTH_CODE_VALIDITY = 10000;
 
     private static Oid spnegoOid;
@@ -161,12 +158,6 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         return "spnego";
     }
 
-    private static String generateAuthCode() {
-        byte[] b = new byte[16];
-        SECURE_RANDOM.nextBytes(b);
-        return StringConverter.arrayToHexString(b);
-    }
-
     private synchronized GSSCredential getGSSCredential() throws GSSException {
         if (yamcsCred == null || yamcsCred.getRemainingLifetime() == 0) {
             yamcsCred = Subject.doAs(yamcsLogin.getSubject(), (PrivilegedAction<GSSCredential>) () -> {
@@ -217,7 +208,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
                         }
                         SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, username);
                         authInfo.addExternalIdentity(getClass().getName(), userPrincipal);
-                        String authorizationCode = generateAuthCode();
+                        String authorizationCode = CryptoUtils.generateRandomPassword(10);
                         code2info.put(authorizationCode, authInfo);
                         ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
                         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);

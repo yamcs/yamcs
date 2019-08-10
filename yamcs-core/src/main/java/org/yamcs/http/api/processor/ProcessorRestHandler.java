@@ -306,7 +306,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
 
         // TODO permissions on AlarmServer
-        String username = req.getUser().getUsername();
+        String username = req.getUser().getName();
 
         switch (state.toLowerCase()) {
         case "acknowledged":
@@ -369,7 +369,7 @@ public class ProcessorRestHandler extends RestHandler {
         reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), restReq.getUser().getUsername());
+            mservice.createProcessor(reqb.build(), restReq.getUser().getName());
             completeOK(restReq);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
@@ -378,7 +378,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
             throws ForbiddenException {
-        String username = user.getUsername();
+        String username = user.getName();
         if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
@@ -405,7 +405,7 @@ public class ProcessorRestHandler extends RestHandler {
                 log.warn("Invalid client id {} specified, ignoring", id);
                 it.remove();
             } else {
-                if (!username.equals(client.getUser().getUsername())) {
+                if (!username.equals(client.getUser().getName())) {
                     log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
                     throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }

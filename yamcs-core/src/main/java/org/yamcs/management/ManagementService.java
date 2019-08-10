@@ -410,7 +410,7 @@ public class ManagementService implements ProcessorListener {
     public Set<ConnectedClient> getClients(String username) {
         synchronized (clients) {
             return clients.values().stream()
-                    .filter(client -> client.getUser().getUsername().equals(username))
+                    .filter(client -> client.getUser().getName().equals(username))
                     .collect(Collectors.toSet());
         }
     }

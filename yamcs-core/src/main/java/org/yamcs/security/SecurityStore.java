@@ -15,8 +15,8 @@ import org.yamcs.logging.Log;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Manages the security layer.
- * 
+ * Responsible for Identity and Access Management (IAM).
+ * <p>
  * Some security properties can be tweaked in security.yaml
  */
 public class SecurityStore {
@@ -34,7 +34,7 @@ public class SecurityStore {
     private User guestUser;
 
     /**
-     * Stores users and roles in the Yamcs database.
+     * Stores users, groups and applications in the Yamcs database.
      */
     private Directory directory;
 
@@ -85,14 +85,14 @@ public class SecurityStore {
     private void generateFixedUsers(YConfiguration config) {
         systemUser = new User("System", null);
         systemUser.setId(1);
-        systemUser.setName("System");
+        systemUser.setDisplayName("System");
         systemUser.setSuperuser(true);
 
         YConfiguration guestConfig = config.getConfig("guest");
         String username = guestConfig.getString("username");
         guestUser = new User(username, systemUser);
         guestUser.setId(2);
-        guestUser.setName(guestConfig.getString("name", username));
+        guestUser.setDisplayName(guestConfig.getString("displayName", username));
         guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
         guestUser.setActive(false);
         if (guestConfig.containsKey("privileges")) {
@@ -152,7 +152,7 @@ public class SecurityStore {
 
         Spec guestSpec = new Spec();
         guestSpec.addOption("username", OptionType.STRING).withDefault("guest");
-        guestSpec.addOption("name", OptionType.STRING);
+        guestSpec.addOption("displayName", OptionType.STRING);
         guestSpec.addOption("superuser", OptionType.BOOLEAN).withDefault(true);
         guestSpec.addOption("privileges", OptionType.ANY);
 
@@ -235,8 +235,8 @@ public class SecurityStore {
         }
 
         if (authenticationInfo == null) {
-            log.info("Cannot identify user for token");
-            f.completeExceptionally(new AuthenticationException("Cannot identify user for token"));
+            log.info("Cannot identify account for token");
+            f.completeExceptionally(new AuthenticationException("Cannot identify account for token"));
             return f;
         }
 
@@ -263,7 +263,7 @@ public class SecurityStore {
         }
 
         if (!user.isActive()) {
-            log.warn("Denying access to {}. User account is not active.", user);
+            log.warn("Denying access to {}. Account is not active.", user);
             f.completeExceptionally(new AuthenticationException("Access denied"));
             return f;
         }
@@ -290,13 +290,13 @@ public class SecurityStore {
             }
         }
 
-        log.info("Successfully logged in user {}", user);
+        log.info("Successfully logged in {}", user);
         try {
             user.updateLoginData();
             if (!authenticationInfo.getExternalIdentities().isEmpty()) {
                 authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
-                if (authenticationInfo.getName() != null) {
-                    user.setName(authenticationInfo.getName());
+                if (authenticationInfo.getDisplayName() != null) {
+                    user.setDisplayName(authenticationInfo.getDisplayName());
                 }
                 if (authenticationInfo.getEmail() != null) {
                     user.setEmail(authenticationInfo.getEmail());

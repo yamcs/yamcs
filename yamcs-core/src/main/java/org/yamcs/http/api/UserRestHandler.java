@@ -1,8 +1,6 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +39,7 @@ public class UserRestHandler extends RestHandler {
     @Route(path = "/api/users", method = "GET")
     public void listUsers(RestRequest req) throws HttpException {
         List<User> users = securityStore.getDirectory().getUsers();
-        Collections.sort(users, (u1, u2) -> u1.getUsername().compareToIgnoreCase(u2.getUsername()));
+        Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
 
         ListUsersResponse.Builder responseb = ListUsersResponse.newBuilder();
         for (User user : users) {
@@ -58,20 +56,20 @@ public class UserRestHandler extends RestHandler {
         }
         Directory directory = securityStore.getDirectory();
         CreateUserRequest request = req.bodyAsMessage(CreateUserRequest.newBuilder()).build();
-        if (!request.hasUsername()) {
-            throw new BadRequestException("Username is required");
+        if (!request.hasName()) {
+            throw new BadRequestException("Name is required");
         }
-        String username = request.getUsername().trim();
-        if (username.isEmpty()) {
-            throw new BadRequestException("Username is required");
+        String name = request.getName().trim();
+        if (name.isEmpty()) {
+            throw new BadRequestException("Name is required");
         }
-        if (directory.getUser(username) != null) {
-            throw new BadRequestException("A user named '" + username + "' already exists");
+        if (directory.getUser(name) != null) {
+            throw new BadRequestException("A user named '" + name + "' already exists");
         }
 
-        User user = new User(username, req.getUser());
-        if (request.hasName()) {
-            user.setName(request.getName());
+        User user = new User(name, req.getUser());
+        if (request.hasDisplayName()) {
+            user.setDisplayName(request.getDisplayName());
         }
         if (request.hasEmail()) {
             user.setEmail(request.getEmail());
@@ -84,7 +82,7 @@ public class UserRestHandler extends RestHandler {
             if (request.hasPassword()) {
                 directory.changePassword(user, request.getPassword().toCharArray());
             }
-        } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
+        } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
 
@@ -126,8 +124,8 @@ public class UserRestHandler extends RestHandler {
             }
         }
 
-        if (request.hasName()) {
-            user.setName(request.getName());
+        if (request.hasDisplayName()) {
+            user.setDisplayName(request.getDisplayName());
         }
         if (request.hasEmail()) {
             user.setEmail(request.getEmail());
@@ -144,7 +142,7 @@ public class UserRestHandler extends RestHandler {
             if (request.hasPassword()) {
                 directory.changePassword(user, request.getPassword().toCharArray());
             }
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
@@ -179,12 +177,12 @@ public class UserRestHandler extends RestHandler {
     public static UserInfo toUserInfo(User user, boolean sensitiveDetails) {
         UserInfo.Builder userb;
         userb = UserInfo.newBuilder();
-        userb.setUsername(user.getUsername());
-        userb.setLogin(user.getUsername());
+        userb.setName(user.getName());
+        userb.setLogin(user.getName());
         userb.setActive(user.isActive());
         userb.setSuperuser(user.isSuperuser());
-        if (user.getName() != null) {
-            userb.setName(user.getName());
+        if (user.getDisplayName() != null) {
+            userb.setDisplayName(user.getDisplayName());
         }
         if (user.getEmail() != null) {
             userb.setEmail(user.getEmail());
@@ -232,7 +230,7 @@ public class UserRestHandler extends RestHandler {
                 GroupInfo groupInfo = GroupRestHandler.toGroupInfo(group, false);
                 userb.addGroups(groupInfo);
             }
-            for (ConnectedClient client : ManagementService.getInstance().getClients(user.getUsername())) {
+            for (ConnectedClient client : ManagementService.getInstance().getClients(user.getName())) {
                 userb.addClientInfo(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
             }
         }

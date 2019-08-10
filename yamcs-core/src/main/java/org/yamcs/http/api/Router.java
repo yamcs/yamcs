@@ -111,6 +111,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public Router(ExecutorService executor, String contextPath) {
         this.offThreadExecutor = executor;
         this.contextPath = contextPath;
+        registerRouteHandler(new ServiceAccountRestHandler());
         registerRouteHandler(new CfdpRestHandler());
         registerRouteHandler(new ClientRestHandler());
         registerRouteHandler(new InstanceRestHandler());

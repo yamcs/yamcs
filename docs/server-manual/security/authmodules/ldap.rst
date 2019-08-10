@@ -43,11 +43,11 @@ attributes (map)
 Attributes sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-username (string)
-    The name of the username attribute. This is used to search a DN within the ``userBase`` as well as to map to the Yamcs username. Default: ``uid``.
+name (string)
+    The name of the account name attribute. This is used to search a DN within the ``userBase`` as well as to map to the Yamcs account name. Default: ``uid``.
 
 email (string or string[])
     The name of the email attribute. If multiples are defined, they are tried in order. Default: ``[mail, email, userPrincipalName]``.
 
-name (string or string[])
-    The name of the name attribute. If mutliples are defined, they are tried in order. Default: ``cn``.
+displayName (string or string[])
+    The name of the display name attribute. If multiples are defined, they are tried in order. Default: ``cn``.

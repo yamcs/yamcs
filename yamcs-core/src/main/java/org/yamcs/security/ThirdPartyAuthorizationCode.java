@@ -18,7 +18,6 @@ public class ThirdPartyAuthorizationCode implements AuthenticationToken {
         this.code = code;
     }
 
-    @Override
     public String getPrincipal() {
         return code;
     }

@@ -102,7 +102,7 @@ public class ClientRestHandler extends RestHandler {
             return;
         }
 
-        String username = req.getUser().getUsername();
+        String username = req.getUser().getName();
 
         // other users can only connect clients to the processor they own
         if (!(processor.isPersistent() || processor.getCreator().equals(username))) {
@@ -115,7 +115,7 @@ public class ClientRestHandler extends RestHandler {
         if (client == null) {
             throw new BadRequestException("Invalid client id " + clientId);
         }
-        if (!client.getUser().getUsername().equals(username)) {
+        if (!client.getUser().getName().equals(username)) {
             log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }

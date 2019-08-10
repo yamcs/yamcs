@@ -23,14 +23,17 @@
                      [class.active]="userManagementActive"
                      (click)="toggleUserManagementGroup()">
         <mat-icon class="item-icon">supervised_user_circle</mat-icon>
-        User Management
+        Identity Management
       </mat-list-item>
       <div *ngIf="userManagementExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/admin/user-management/users" [subitem]="true">
+        <app-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
           Users
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/admin/user-management/groups" [subitem]="true">
+        <app-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
           Groups
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
+          Service Accounts
         </app-sidebar-nav-item>
       </div>
       <app-sidebar-nav-item routerLink="/admin/clients">

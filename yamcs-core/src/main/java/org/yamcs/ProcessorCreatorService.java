@@ -44,7 +44,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
                 processorType);
         try {
             SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-            String systemUser = securityStore.getSystemUser().getUsername();
+            String systemUser = securityStore.getSystemUser().getName();
             processor = ProcessorFactory.create(yamcsInstance, processorName, processorType, systemUser,
                     processorConfig);
         } catch (ProcessorException | ValidationException e) {

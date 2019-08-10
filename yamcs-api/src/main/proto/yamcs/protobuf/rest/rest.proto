@@ -88,15 +88,29 @@ message CreateGroupRequest {
   repeated string members = 3;
 }
 
+message ListServiceAccountResponse {
+  repeated yamcsManagement.ServiceAccountInfo serviceAccounts = 1;
+}
+
+message CreateServiceAccountRequest {
+  optional string name = 1;
+}
+
+message CreateServiceAccountResponse {
+  optional string name = 1;
+  optional string applicationId = 2;
+  optional string applicationSecret = 3;
+}
+
 message CreateUserRequest {
-  optional string username = 1;
-  optional string name = 2;
+  optional string name = 1;
+  optional string displayName = 2;
   optional string email = 3;
   optional string password = 4;
 }
 
 message EditUserRequest {
-  optional string name = 1;
+  optional string displayName = 1;
   optional string email = 2;
   optional bool active = 3;
   optional bool superuser = 4;
