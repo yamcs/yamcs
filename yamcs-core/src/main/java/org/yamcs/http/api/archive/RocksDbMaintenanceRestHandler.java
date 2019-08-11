@@ -34,7 +34,7 @@ import io.netty.buffer.ByteBufUtil;
 public class RocksDbMaintenanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RocksDbMaintenanceRestHandler.class);
 
-    @Route(path = "/api/archive/rocksdb/tablespaces", method = "GET")
+    @Route(rpc = "RocksDB.ListTablespaces")
     public void listTablespaces(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
@@ -58,7 +58,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/rocksdb/databases", method = "GET")
+    @Route(rpc = "RocksDB.ListDatabases")
     public void listDatabases(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
@@ -123,8 +123,8 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/rocksdb/:tablespace/compact", method = "GET", offThread = true)
-    @Route(path = "/api/archive/rocksdb/:tablespace/compact/:dbpath*", method = "GET", offThread = true)
+    @Route(rpc = "RocksDB.CompactRootDatabase", offThread = true)
+    @Route(rpc = "RocksDB.CompactDatabase", offThread = true)
     public void compactDatabase(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
@@ -182,7 +182,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, MediaType.PLAIN_TEXT, buf);
     }
 
-    @Route(path = "/api/archive/rocksdb/backup/:dbpath*", method = "POST")
+    @Route(rpc = "RocksDB.BackupTablespace")
     public void doBackup(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 

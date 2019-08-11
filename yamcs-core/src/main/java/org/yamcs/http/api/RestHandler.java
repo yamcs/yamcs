@@ -111,6 +111,7 @@ public abstract class RestHandler extends RouteHandler {
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
+        restRequest.reportStatusCode(httpResponse.status().code());
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
@@ -123,6 +124,7 @@ public abstract class RestHandler extends RouteHandler {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
         MediaType contentType = restRequest.deriveTargetContentType();
         if (contentType != MediaType.JSON) {
+            restRequest.reportStatusCode(status.code());
             return HttpRequestHandler.sendMessageResponse(ctx, req, status, responseMsg);
         } else {
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
@@ -131,14 +133,16 @@ public abstract class RestHandler extends RouteHandler {
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
                 // body.writeBytes(HttpRequestHandler.NEWLINE_BYTES); // For curl comfort
             } catch (IOException e) {
-                return HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                        e.toString());
+                status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+                restRequest.reportStatusCode(status.code());
+                return HttpRequestHandler.sendPlainTextError(ctx, req, status, e.toString());
             }
             HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
             HttpUtils.setContentTypeHeader(response, contentType);
 
             int txSize = body.readableBytes();
             HttpUtil.setContentLength(response, txSize);
+            restRequest.reportStatusCode(status.code());
             return HttpRequestHandler.sendResponse(ctx, req, response, true);
         }
 
@@ -147,6 +151,7 @@ public abstract class RestHandler extends RouteHandler {
     protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         RestExceptionMessage msg = toException(t).build();
+        req.reportStatusCode(status.code());
         return HttpRequestHandler.sendMessageResponse(ctx, req.getHttpRequest(), status, msg);
     }
 

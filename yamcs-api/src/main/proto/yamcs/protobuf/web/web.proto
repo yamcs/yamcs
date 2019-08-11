@@ -8,6 +8,7 @@ import "yamcs/protobuf/archive/archive.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/iam/iam.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 message WebSocketClientMessage {
@@ -205,5 +206,5 @@ message TokenResponse {
   optional string token_type = 2;
   optional int32 expires_in = 3; // In seconds
   optional string refresh_token = 4;
-  optional yamcsManagement.UserInfo user = 5;
+  optional iam.UserInfo user = 5;
 }

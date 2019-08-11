@@ -38,6 +38,15 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${project.build.directory}/generated-resources/protobuf</directory>
+      </resource>
+    </resources>
+  
     <plugins>
       <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf-maven-plugin) -->
         <groupId>kr.motd.maven</groupId>
@@ -53,6 +62,13 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <writeDescriptorSet>true</writeDescriptorSet>
+          <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
+          <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
+          <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
+          <!-- includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet-->
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -10,10 +10,10 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.protobuf.Rest.CreateGroupRequest;
-import org.yamcs.protobuf.Rest.ListGroupsResponse;
-import org.yamcs.protobuf.YamcsManagement.GroupInfo;
-import org.yamcs.protobuf.YamcsManagement.UserInfo;
+import org.yamcs.protobuf.CreateGroupRequest;
+import org.yamcs.protobuf.GroupInfo;
+import org.yamcs.protobuf.ListGroupsResponse;
+import org.yamcs.protobuf.UserInfo;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.User;
@@ -23,7 +23,7 @@ import org.yamcs.security.User;
  */
 public class GroupRestHandler extends RestHandler {
 
-    @Route(path = "/api/groups", method = "GET")
+    @Route(rpc = "IAM.ListGroups")
     public void listGroups(RestRequest req) throws HttpException {
         Directory directory = securityStore.getDirectory();
         List<Group> groups = directory.getGroups();
@@ -37,7 +37,7 @@ public class GroupRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/groups/:name", method = "GET")
+    @Route(rpc = "IAM.GetGroup")
     public void getGroup(RestRequest req) throws HttpException {
         Directory directory = securityStore.getDirectory();
         String name = req.getRouteParam("name");
@@ -48,7 +48,7 @@ public class GroupRestHandler extends RestHandler {
         completeOK(req, toGroupInfo(group, true));
     }
 
-    @Route(path = "/api/groups", method = "POST")
+    @Route(rpc = "IAM.CreateGroup")
     public void createGroup(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");

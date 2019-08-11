@@ -1,0 +1,79 @@
+<app-admin-page>
+  <app-admin-toolbar [hasDetailPane]="true">
+    API Endpoints
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-icon-button
+            color="primary"
+            (click)="refresh()"
+            matTooltip="Refresh view">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-admin-toolbar>
+
+  <app-detail-pane>
+    <ng-container *ngIf="selectedEndpoint$ | async as selectedItem; else noSelection">
+      <app-detail-toolbar>
+        Endpoint Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-endpoint-detail [endpoint]="selectedItem"></app-endpoint-detail>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select an endpoint
+      </app-detail-toolbar>
+    </ng-template>
+  </app-detail-pane>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <div style="margin-bottom: 12px;">
+        <input #filter
+                class="ya-input"
+                type="text"
+                placeholder="Filter endpoints"
+                style="width: 400px">
+      </div>
+      <table mat-table
+            [dataSource]="dataSource"
+            class="ya-data-table"
+            matSort
+            matSortActive="requestCount"
+            matSortDirection="desc"
+            matSortDisableClear>
+
+        <ng-container matColumnDef="service">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">Service</th>
+          <td mat-cell *matCellDef="let route">{{ route.service || 'Other' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Method</th>
+          <td mat-cell *matCellDef="let route">{{ route.description || 'Undocumented' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="requestCount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Requests</th>
+          <td mat-cell *matCellDef="let route">{{ route.requestCount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="errorCount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Errors</th>
+          <td mat-cell *matCellDef="let route">{{ route.errorCount }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="http">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">HTTP</th>
+          <td mat-cell *matCellDef="let route">{{ route.httpMethod }} {{ route.url }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            (click)="selectEndpoint(row)"
+            [ngClass]="{selected: (row === (selectedEndpoint$ | async))}"
+            [class.deprecated]="row.deprecated"></tr>
+      </table>
+    </div>
+  </div>
+</app-admin-page>

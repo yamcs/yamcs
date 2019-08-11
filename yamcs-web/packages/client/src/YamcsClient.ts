@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateUserRequest, EditClientRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateUserRequest, EditClientRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -130,6 +130,12 @@ export default class YamcsClient implements HttpHandler {
   async getUserInfo() {
     const response = await this.doFetch(`${this.apiUrl}/user`);
     return await response.json() as UserInfo;
+  }
+
+  async getEndpoints() {
+    const url = `${this.apiUrl}/endpoints`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListEndpointsResponse;
   }
 
   async getInstances(options: ListInstancesOptions = {}) {

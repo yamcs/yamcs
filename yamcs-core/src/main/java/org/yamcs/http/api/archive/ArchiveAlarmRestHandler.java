@@ -4,12 +4,12 @@ import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.SqlBuilder;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Rest.ListAlarmsResponse;
+import org.yamcs.protobuf.Archive.ListAlarmsResponse;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -19,7 +19,7 @@ import org.yamcs.yarch.Tuple;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/alarms", method = "GET")
+    @Route(rpc = "StreamArchive.ListAlarms")
     public void listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -60,7 +60,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         });
     }
 
-    @Route(path = "/api/archive/:instance/alarms/:parameter*", method = "GET")
+    @Route(rpc = "StreamArchive.ListParameterAlarms")
     public void listParameterAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

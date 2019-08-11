@@ -3,7 +3,351 @@ syntax="proto2";
 package yamcs.protobuf.archive;
 option java_package = "org.yamcs.protobuf";
 
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
+
+service RocksDB {
+
+  rpc ListTablespaces(google.protobuf.Empty) returns (ListRocksDbTablespacesResponse) {
+    option (yamcs.api.route) = {
+      description: "List tablespaces"
+      method: "GET"
+      path: "/api/archive/rocksdb/tablespaces"
+    };
+  }
+  
+  rpc BackupTablespace(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Backup tablespace"
+      method: "POST"
+      path: "/api/archive/rocksdb/backup/:dbpath*"
+    };
+  }
+  
+  rpc ListDatabases(google.protobuf.Empty) returns (ListRocksDbDatabasesResponse) {
+    option (yamcs.api.route) = {
+      description: "List databases"
+      method: "GET"
+      path: "/api/archive/rocksdb/databases"
+    };
+  }
+  
+  rpc CompactRootDatabase(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Compact root database"
+      method: "GET"
+      path: "/api/archive/rocksdb/:tablespace/compact"
+    };
+  }
+  
+  rpc CompactDatabase(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Compact database"
+      method: "GET"
+      path: "/api/archive/rocksdb/:tablespace/compact/:dbpath*"
+    };
+  }
+}
+
+service ParameterArchive {
+
+  rpc RebuildRange(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Rebuild range"
+      method: "POST"
+      path: "/api/archive/:instance/parameterArchive/rebuild"
+    };
+  }
+
+  rpc DeletePartitions(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Delete partitions"
+      method: "POST"
+      path: "/api/archive/:instance/parameterArchive/deletePartitions"
+    };
+  }
+  
+  rpc GetArchiveInfo(google.protobuf.Empty) returns (StringMessage) {
+    option (yamcs.api.route) = {
+      description: "Get parameter info"
+      method: "GET"
+      path: "/api/archive/:instance/parameterArchive/info/parameter/:name*"
+    };
+  }
+  
+  rpc GetParameterSamples(google.protobuf.Empty) returns (pvalue.TimeSeries) {
+    option (yamcs.api.route) = {
+      description: "Get parameter samples"
+      method: "GET"
+      path: "/api/archive/:instance/parameters/:name*/samples"
+    };
+  }
+  
+  rpc GetParameterRanges(google.protobuf.Empty) returns (pvalue.Ranges) {
+    option (yamcs.api.route) = {
+      description: "Get parameter ranges"
+      method: "GET"
+      path: "/api/archive/:instance/parameters/:name*/ranges"
+    };
+  }
+  
+  rpc ListParameterHistory(google.protobuf.Empty) returns (ListParameterValuesResponse) {
+    option (yamcs.api.route) = {
+      description: "List parameter history"
+      method: "GET"
+      path: "/api/archive/:instance/parameters/:name*"
+    };
+  }
+}
+
+service StreamArchive {
+
+  rpc ExecuteSql(ExecuteSqlRequest) returns (ExecuteSqlResponse) {
+    option (yamcs.api.route) = {
+      description: "Execute SQL"
+      method: "POST"
+      path: "/api/archive/:instance/sql"
+    };
+  }
+
+  rpc ListEvents(google.protobuf.Empty) returns (ListEventsResponse) {
+    option (yamcs.api.route) = {
+      description: "List events"
+      method: "GET"
+      path: "/api/archive/:instance/events"
+    };
+  }
+
+  rpc CreateEvent(CreateEventRequest) returns (Event) {
+    option (yamcs.api.route) = {
+      description: "Create an event"
+      method: "POST"
+      path: "/api/archive/:instance/events"
+    };
+  }
+  
+  rpc ListEventSources(google.protobuf.Empty) returns (EventSourceInfo) {
+    option (yamcs.api.route) = {
+      description: "List event sources"
+      method: "GET"
+      path: "/api/archive/:instance/events/sources"
+    };
+  }
+  
+  rpc ListAlarms(google.protobuf.Empty) returns (ListAlarmsResponse) {
+    option (yamcs.api.route) = {
+      description: "List alarms"
+      method: "GET"
+      path: "/api/archive/:instance/alarms"
+    };
+  }
+  
+  rpc ListParameterAlarms(google.protobuf.Empty) returns (ListAlarmsResponse) {
+    option (yamcs.api.route) = {
+      description: "List parameter alarms"
+      method: "GET"
+      path: "/api/archive/:instance/alarms/:parameter*"
+    };
+  }
+  
+  rpc ListParameterGroups(google.protobuf.Empty) returns (ParameterGroupInfo) {
+    option (yamcs.api.route) = {
+      description: "List parameter groups"
+      method: "GET"
+      path: "/api/archive/:instance/parameter-groups"
+    };
+  }
+  
+  rpc ListParameterHistory(google.protobuf.Empty) returns (ListParameterValuesResponse) {
+    option (yamcs.api.route) = {
+      description: "List parameter history"
+      method: "GET"
+      path: "/api/stream-archive/:instance/parameters/:name*"
+    };
+  }
+  
+  rpc GetParameterSamples(google.protobuf.Empty) returns (pvalue.TimeSeries) {
+    option (yamcs.api.route) = {
+      description: "Get parameter samples"
+      method: "GET"
+      path: "/api/stream-archive/:instance/parameters/:name*/samples"
+    };
+  }
+  
+  rpc ListStreams(google.protobuf.Empty) returns (ListStreamsResponse) {
+    option (yamcs.api.route) = {
+      description: "List streams"
+      method: "GET"
+      path: "/api/archive/:instance/streams"
+    };
+  }
+  
+  rpc GetStream(google.protobuf.Empty) returns (StreamInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a stream"
+      method: "GET"
+      path: "/api/archive/:instance/streams/:name"
+    };
+  }
+  
+  rpc ListTables(google.protobuf.Empty) returns (ListTablesResponse) {
+    option (yamcs.api.route) = {
+      description: "List tables"
+      method: "GET"
+      path: "/api/archive/:instance/tables"
+    };
+  }
+  
+  rpc GetTable(google.protobuf.Empty) returns (TableInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a table"
+      method: "GET"
+      path: "/api/archive/:instance/tables/:name"
+    };
+  }
+  
+  rpc GetTableData(google.protobuf.Empty) returns (TableData) {
+    option (yamcs.api.route) = {
+      description: "Get table data"
+      method: "GET"
+      path: "/api/archive/:instance/tables/:name/data"
+    };
+  }
+  
+  rpc ListCommandHistoryIndex(google.protobuf.Empty) returns (IndexResult) {
+    option (yamcs.api.route) = {
+      description: "List command history index"
+      method: "GET"
+      path: "/api/archive/:instance/command-index"
+    };
+  }
+  
+  rpc ListEventIndex(google.protobuf.Empty) returns (IndexResult) {
+    option (yamcs.api.route) = {
+      description: "List event index"
+      method: "GET"
+      path: "/api/archive/:instance/event-index"
+    };
+  }
+  
+  rpc ListPacketIndex(google.protobuf.Empty) returns (IndexResult) {
+    option (yamcs.api.route) = {
+      description: "List packet index"
+      method: "GET"
+      path: "/api/archive/:instance/packet-index"
+    };
+  }
+  
+  rpc ListParameterIndex(google.protobuf.Empty) returns (IndexResult) {
+    option (yamcs.api.route) = {
+      description: "List parameter index"
+      method: "GET"
+      path: "/api/archive/:instance/parameter-index"
+    };
+  }
+  
+  rpc ListCompletenessIndex(google.protobuf.Empty) returns (IndexResult) {
+    option (yamcs.api.route) = {
+      description: "List completeness index"
+      method: "GET"
+      path: "/api/archive/:instance/completeness-index"
+    };
+  }
+  
+  rpc ListTags(google.protobuf.Empty) returns (ListTagsResponse) {
+    option (yamcs.api.route) = {
+      description: "List tags"
+      method: "GET"
+      path: "/api/archive/:instance/tags"
+    };
+  }
+  
+  rpc GetTag(google.protobuf.Empty) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      description: "Get a tag"
+      method: "GET"
+      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+    };
+  }
+  
+  rpc CreateTag(CreateTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      description: "Create a tag"
+      method: "POST"
+      path: "/api/archive/:instance/tags"
+    };
+  }
+  
+  rpc UpdateTag(EditTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      description: "Update a tag"
+      method: "PATCH"
+      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+    };
+  }
+  
+  rpc DeleteTag(google.protobuf.Empty) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      description: "Delete a tag"
+      method: "DELETE"
+      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+    };
+  }
+  
+  rpc ListPacketNames(google.protobuf.Empty) returns (GetPacketNamesResponse) {
+    option (yamcs.api.route) = {
+      description: "List packet names"
+      method: "GET"
+      path: "/api/archive/:instance/packet-names"
+    };
+  }
+  
+  rpc ListPackets(google.protobuf.Empty) returns (ListPacketsResponse) {
+    option (yamcs.api.route) = {
+      description: "List packets"
+      method: "GET"
+      path: "/api/archive/:instance/packets/:gentime?"
+    };
+  }
+  
+  rpc GetPacket(google.protobuf.Empty) returns (TmPacketData) {
+    option (yamcs.api.route) = {
+      description: "Get a packet"
+      method: "GET"
+      path: "/api/archive/:instance/packets/:gentime/:seqnum"
+    };
+  }
+}
+
+message ListEventsResponse {
+  repeated Event event = 1;
+  optional string continuationToken = 2;
+}
+
+message CreateEventRequest {
+  optional string type = 1;
+  optional string message = 2;
+  optional string severity = 3;
+  optional string time = 4;
+  optional string source = 5;
+  optional int32 sequenceNumber = 6;
+}
+
+message ListAlarmsResponse {
+  repeated alarms.AlarmData alarm = 1;
+}
+
+message ListTablesResponse {
+  repeated TableInfo table = 1;
+}
+
+message ListStreamsResponse {
+  repeated StreamInfo stream = 1;
+}
 
 message ColumnData {
   optional string name = 1;
@@ -104,6 +448,11 @@ message ExecuteSqlResponse {
   optional string result = 1;
 }
 
+message ListParameterValuesResponse {
+  repeated pvalue.ParameterValue parameter = 1;
+  optional string continuationToken = 2;
+}
+
 message ListRocksDbTablespacesResponse {
   repeated RocksDbTablespaceInfo tablespace = 1;
 }
@@ -122,4 +471,29 @@ message RocksDbDatabaseInfo {
   optional string tablespace = 1;
   optional string dataDir = 2;
   optional string dbPath = 3;
+}
+
+message ListTagsResponse {
+  repeated ArchiveTag tag = 1;
+}
+
+message CreateTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
+message EditTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
+message ListPacketsResponse {
+  repeated TmPacketData packet = 1;
+  optional string continuationToken = 2;
 }

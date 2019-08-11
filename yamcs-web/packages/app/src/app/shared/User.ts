@@ -1,4 +1,4 @@
-import { ClientInfo, ObjectPrivilege, UserInfo } from '@yamcs/client';
+import { ObjectPrivilege, UserInfo } from '@yamcs/client';
 
 export class User {
 
@@ -23,10 +23,6 @@ export class User {
 
   isSuperuser() {
     return this.userInfo.superuser || false;
-  }
-
-  getClientConnections(): ClientInfo[] {
-    return this.userInfo.clientInfo || [];
   }
 
   getSystemPrivileges() {

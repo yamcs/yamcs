@@ -25,6 +25,21 @@ export interface GeneralInfo {
   plugin: PluginInfo[];
 }
 
+export interface ListEndpointsResponse {
+  endpoints: Endpoint[];
+}
+
+export interface Endpoint {
+  service: string;
+  method: string;
+  inputType: string;
+  outputType: string;
+  deprecated: boolean;
+  url: string;
+  httpMethod: string;
+  requestCount: number;
+}
+
 export interface PluginInfo {
   name: string;
   description: string;

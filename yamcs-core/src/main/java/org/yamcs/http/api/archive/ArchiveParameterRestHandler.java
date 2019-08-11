@@ -40,11 +40,11 @@ import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterRequest;
+import org.yamcs.protobuf.Archive.ListParameterValuesResponse;
 import org.yamcs.protobuf.Archive.ParameterGroupInfo;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
-import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
@@ -74,7 +74,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
 
-    @Route(path = "/api/archive/:instance/parameter-groups", method = "GET")
+    @Route(rpc = "StreamArchive.ListParameterGroups")
     public void listGroups(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -93,7 +93,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/:instance/parameters/:name*/samples")
+    @Route(rpc = "ParameterArchive.GetParameterSamples")
     public void getParameterSamples(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
             aprh.getParameterSamples(req);
@@ -143,7 +143,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, series.build());
     }
 
-    @Route(path = "/api/archive/:instance/parameters/:name*/ranges")
+    @Route(rpc = "ParameterArchive.GetParameterRanges")
     public void getParameterRanges(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -187,7 +187,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         return l.get(0);
     }
 
-    @Route(path = "/api/archive/:instance/parameters/:name*")
+    @Route(rpc = "ParameterArchive.ListParameterHistory")
     public void listParameterHistory(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
             aprh.listParameterHistory(req);
@@ -355,7 +355,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private void sendFromCache(ParameterWithId pid, ParameterCache pcache, boolean ascending, long start,
             long stop, RestParameterReplayListener replayListener) {
         List<ParameterValue> pvlist = pcache.getAllValues(pid.getParameter());
-        
+
         if (pvlist == null) {
             return;
         }
@@ -389,10 +389,9 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
     }
 
-    
     private void sendToListener(ParameterValue pv, ParameterWithId pid, RestParameterReplayListener replayListener) {
         ParameterValue pv1;
-        if(pid.getPath()!=null) {
+        if (pid.getPath() != null) {
             try {
                 pv1 = AggregateUtil.extractMember(pv, pid.getPath());
                 if (pv1 == null) { // could be that we reference an element of an array that doesn't exist
@@ -407,8 +406,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
         replayListener.update(new ParameterValueWithId(pv1, pid.getId()));
     }
-    
-    
+
     private static ParameterCache getParameterCache(String instance, RestRequest req) throws NotFoundException {
         ParameterCache pcache = null;
         Processor realtimeProcessor = getRealtimeProc(instance, req);

@@ -345,7 +345,7 @@ public final class ArchiveHelper {
 
     final static Event tupleToEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
         Event incoming = (Event) tuple.getColumn("body");
-        Event event = extensionRegistry.getExtendedEvent(incoming);
+        Event event = extensionRegistry.extend(incoming);
 
         Event.Builder eventb = Event.newBuilder(event);
         eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));

@@ -1,9 +1,50 @@
 syntax="proto2";
   
 package yamcs.protobuf.cfdp;
+
 option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "CfdpProto";
+option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+service CFDP {
+
+  rpc ListTransfers(google.protobuf.Empty) returns (ListTransfersResponse) {
+    option (yamcs.api.route) = {
+      description: "List transfers"
+      method: "GET"
+      path: "/api/cfdp/:instance/transfers"
+    };
+  }
+  
+  rpc GetTransfer(google.protobuf.Empty) returns (TransferInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a transfer"
+      method: "GET"
+      path: "/api/cfdp/:instance/transfers/:id"
+    };
+  }
+  
+  rpc CreateTransfer(CreateTransferRequest) returns (TransferInfo) {
+    option (yamcs.api.route) = {
+      description: "Create a transfer"
+      method: "POST"
+      path: "/api/cfdp/:instance/transfers"
+    };
+  }
+  
+  rpc UpdateTransfer(EditTransferRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Update a transfer"
+      method: "PATCH"
+      path: "/api/cfdp/:instance/transfers/:id"
+    };
+  }
+}
 
 enum TransferDirection {
   UPLOAD = 1;

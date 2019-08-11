@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package yamcs.api;
+
+import "google/protobuf/descriptor.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "AnnotationsProto";
+option java_package = "org.yamcs.api";
+
+extend google.protobuf.MethodOptions {
+  optional HttpRoute route = 6433;
+}
+
+message HttpRoute {
+  optional string method = 1;
+  optional string path = 2;
+  optional string description = 3;
+  optional bool deprecated = 4;
+}

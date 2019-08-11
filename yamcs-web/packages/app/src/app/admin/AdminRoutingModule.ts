@@ -8,6 +8,7 @@ import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
+import { EndpointsPage } from './endpoints/EndpointsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateUserPage } from './iam/CreateUserPage';
@@ -50,6 +51,10 @@ const routes: Routes = [
       {
         path: 'clients',
         component: ClientsPage,
+      },
+      {
+        path: 'endpoints',
+        component: EndpointsPage,
       },
       {
         path: 'plugins',
@@ -123,6 +128,7 @@ export const routingComponents = [
   CreateGroupPage,
   CreateUserPage,
   EditUserPage,
+  EndpointsPage,
   GroupsPage,
   GroupPage,
   PluginsPage,

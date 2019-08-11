@@ -3,6 +3,7 @@ package org.yamcs.client;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import org.yamcs.protobuf.Archive.ListTablesResponse;
 import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
@@ -12,7 +13,6 @@ import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;

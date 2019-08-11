@@ -1,10 +1,14 @@
 package org.yamcs.http.api;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,16 +19,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Plugin;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
+import org.yamcs.api.AnnotationsProto;
+import org.yamcs.api.HttpRoute;
+import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
@@ -37,6 +43,7 @@ import org.yamcs.http.api.archive.ArchiveEventRestHandler;
 import org.yamcs.http.api.archive.ArchiveIndexDownloadsRestHandler;
 import org.yamcs.http.api.archive.ArchiveIndexRestHandler;
 import org.yamcs.http.api.archive.ArchivePacketRestHandler;
+import org.yamcs.http.api.archive.ArchiveParameterReplayRestHandler;
 import org.yamcs.http.api.archive.ArchiveParameterRestHandler;
 import org.yamcs.http.api.archive.ArchiveSqlRestHandler;
 import org.yamcs.http.api.archive.ArchiveStreamRestHandler;
@@ -54,11 +61,19 @@ import org.yamcs.http.api.processor.ProcessorCommandQueueRestHandler;
 import org.yamcs.http.api.processor.ProcessorCommandRestHandler;
 import org.yamcs.http.api.processor.ProcessorParameterRestHandler;
 import org.yamcs.http.api.processor.ProcessorRestHandler;
+import org.yamcs.logging.Log;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
+import org.yamcs.protobuf.Rest.EndpointInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.security.User;
+
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileDescriptorSet;
+import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
+import com.google.protobuf.DescriptorProtos.MethodOptions;
+import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -90,7 +105,7 @@ import io.netty.util.AttributeKey;
 public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?:(\\w+)([\\?\\*])?");
-    private static final Logger log = LoggerFactory.getLogger(Router.class);
+    private static final Log log = new Log(Router.class);
 
     public final static int MAX_BODY_SIZE = 65536;
     public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
@@ -98,6 +113,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
 
     private String contextPath;
+
+    // Metadata on registered routes. Used for discovery and self-documentation.
+    private Map<String, RouteDescriptor> routeDescriptors = new HashMap<>();
 
     // Order, because patterns are matched top-down in insertion order
     private List<RouteElement> defaultRoutes = new ArrayList<>();
@@ -108,15 +126,18 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     private final ExecutorService offThreadExecutor;
 
-    public Router(ExecutorService executor, String contextPath) {
+    public Router(ExecutorService executor, String contextPath, GpbExtensionRegistry gpbExtensionRegistry) {
         this.offThreadExecutor = executor;
         this.contextPath = contextPath;
-        registerRouteHandler(new ServiceAccountRestHandler());
+
+        discoverRouteDescriptors(gpbExtensionRegistry);
+
         registerRouteHandler(new CfdpRestHandler());
         registerRouteHandler(new ClientRestHandler());
         registerRouteHandler(new InstanceRestHandler());
         registerRouteHandler(new LinkRestHandler());
         registerRouteHandler(new GroupRestHandler());
+        registerRouteHandler(new ServiceAccountRestHandler());
         registerRouteHandler(new ServiceRestHandler());
         registerRouteHandler(new TemplateRestHandler());
         registerRouteHandler(new UserRestHandler());
@@ -129,6 +150,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new ArchiveIndexRestHandler());
         registerRouteHandler(new ArchivePacketRestHandler());
         registerRouteHandler(new ArchiveParameterRestHandler());
+        registerRouteHandler(new ArchiveParameterReplayRestHandler());
         registerRouteHandler(new ArchiveStreamRestHandler());
         registerRouteHandler(new ArchiveSqlRestHandler());
         registerRouteHandler(new ArchiveTableRestHandler());
@@ -151,6 +173,44 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new MDBAlgorithmRestHandler());
 
         registerRouteHandler(new OverviewRouteHandler());
+        registerRouteHandler(new DiscoveryRestHandler(this));
+    }
+
+    private void discoverRouteDescriptors(GpbExtensionRegistry registry) {
+        registry.installExtension(AnnotationsProto.route);
+
+        try (InputStream in = getClass().getResourceAsStream("/yamcs-api.protobin")) {
+            if (in == null) {
+                throw new UnsupportedOperationException("Missing binary protobuf descriptions");
+            }
+            FileDescriptorSet proto = FileDescriptorSet.parseFrom(in);
+            proto = registry.extend(proto);
+
+            for (FileDescriptorProto fileDescriptor : proto.getFileList()) {
+                for (ServiceDescriptorProto serviceDescriptor : fileDescriptor.getServiceList()) {
+                    for (MethodDescriptorProto methodDescriptor : serviceDescriptor.getMethodList()) {
+                        MethodOptions options = methodDescriptor.getOptions();
+                        if (options.hasExtension(AnnotationsProto.route)) {
+                            HttpRoute route = methodDescriptor.getOptions().getExtension(AnnotationsProto.route);
+
+                            String service = serviceDescriptor.getName();
+                            String method = methodDescriptor.getName();
+                            String inputType = methodDescriptor.getInputType();
+                            String outputType = methodDescriptor.getOutputType();
+                            RouteDescriptor descriptor = new RouteDescriptor(service, method, inputType, outputType,
+                                    route);
+
+                            RouteDescriptor previous = routeDescriptors.put(service + "." + method, descriptor);
+                            if (previous != null) {
+                                log.warn("Duplicate rpc definition {}.{}", service, method);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public void registerRouteHandler(RouteHandler routeHandler) {
@@ -173,10 +233,20 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
                     Route[] anns = reflectedMethod.getDeclaredAnnotationsByType(Route.class);
                     for (Route ann : anns) {
-                        for (String m : ann.method()) {
-                            HttpMethod httpMethod = HttpMethod.valueOf(m);
-                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(),
-                                    ann.offThread(), ann.maxBodySize(), httpMethod, handle));
+                        if (!ann.rpc().isEmpty()) {
+                            RouteDescriptor descriptor = routeDescriptors.get(ann.rpc());
+                            if (descriptor == null) {
+                                throw new UnsupportedOperationException("Unable to find rpc definition: " + ann.rpc());
+                            }
+                            routeConfigs.add(new RouteConfig(routeHandler, descriptor, ann.priority(), ann.dataLoad(),
+                                    ann.offThread(), ann.maxBodySize(), handle));
+                        } else {
+                            for (String m : ann.method()) {
+                                HttpMethod httpMethod = HttpMethod.valueOf(m);
+
+                                routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(),
+                                        ann.dataLoad(), ann.offThread(), ann.maxBodySize(), httpMethod, handle));
+                            }
                         }
                     }
                 }
@@ -239,8 +309,12 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
                 return false;
             }
+            if (match.routeConfig.descriptor != null && match.routeConfig.descriptor.isDeprecated()) {
+                log.warn("A client used a deprecated endpoint: {}", match.routeConfig.originalPath);
+            }
             ctx.channel().attr(CTX_ROUTE_MATCH).set(match);
             RouteConfig rc = match.getRouteConfig();
+            rc.requestCount.incrementAndGet();
             if (rc.isDataLoad()) {
                 try {
                     RouteHandler target = match.routeConfig.routeHandler;
@@ -281,6 +355,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
+
+        // Track status for metric purposes
+        restReq.getCompletableFuture().whenComplete((channelFuture, e) -> {
+            if (restReq.statusCode == 0) {
+                log.warn("R{}: Status code not reported", restReq.getRequestId());
+            } else if (restReq.statusCode < 200 || restReq.statusCode >= 300) {
+                match.routeConfig.errorCount.incrementAndGet();
+            }
+        });
+
         if (match.routeConfig.offThread) {
             restReq.getRequestContent().retain();
             offThreadExecutor.execute(() -> {
@@ -356,8 +440,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             });
         } catch (Throwable t) {
-            req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
+            req.getCompletableFuture().completeExceptionally(t);
         }
         if (twoSecWarn != null) {
             twoSecWarn.cancel(true);
@@ -433,6 +517,22 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final boolean dataLoad;
         final int maxBodySize;
         final boolean offThread;
+        final RouteDescriptor descriptor;
+        final AtomicLong requestCount = new AtomicLong();
+        final AtomicLong errorCount = new AtomicLong();
+
+        RouteConfig(RouteHandler routeHandler, RouteDescriptor descriptor, boolean priority, boolean dataLoad,
+                boolean offThread, int maxBodySize, MethodHandle handle) {
+            this.routeHandler = routeHandler;
+            this.originalPath = descriptor.getPath();
+            this.priority = priority;
+            this.httpMethod = HttpMethod.valueOf(descriptor.getHttpMethod());
+            this.handle = handle;
+            this.dataLoad = dataLoad;
+            this.maxBodySize = maxBodySize;
+            this.offThread = offThread;
+            this.descriptor = descriptor;
+        }
 
         RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
                 boolean offThread, int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
@@ -444,6 +544,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.dataLoad = dataLoad;
             this.maxBodySize = maxBodySize;
             this.offThread = offThread;
+            descriptor = null;
+        }
+
+        public RouteDescriptor getDescriptor() {
+            return descriptor;
         }
 
         @Override
@@ -563,6 +668,33 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             builders.values().forEach(b -> responseb.addRoute(b));
             completeOK(req, responseb.build());
         }
+    }
+
+    public List<EndpointInfo> getEndpointInfoSet() {
+        List<EndpointInfo> endpoints = new ArrayList<>();
+        for (RouteElement re : defaultRoutes) {
+            re.configByMethod.values().forEach(v -> {
+                EndpointInfo.Builder endpointb = EndpointInfo.newBuilder();
+                endpointb.setHttpMethod(v.httpMethod.toString());
+                endpointb.setUrl(contextPath + v.originalPath);
+                endpointb.setRequestCount(v.requestCount.get());
+                endpointb.setErrorCount(v.errorCount.get());
+                if (v.descriptor != null) {
+                    endpointb.setService(v.descriptor.getService());
+                    endpointb.setMethod(v.descriptor.getMethod());
+                    endpointb.setInputType(v.descriptor.getInputType());
+                    endpointb.setOutputType(v.descriptor.getOutputType());
+                    if (v.descriptor.getDescription() != null) {
+                        endpointb.setDescription(v.descriptor.getDescription());
+                    }
+                    if (v.descriptor.isDeprecated()) {
+                        endpointb.setDeprecated(true);
+                    }
+                }
+                endpoints.add(endpointb.build());
+            });
+        }
+        return endpoints;
     }
 
     @Override

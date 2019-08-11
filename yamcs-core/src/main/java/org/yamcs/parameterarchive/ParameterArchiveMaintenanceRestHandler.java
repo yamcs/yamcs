@@ -26,7 +26,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
      * Request to (re)build the parameterArchive between start and stop
      * 
      */
-    @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST", offThread = true)
+    @Route(rpc = "ParameterArchive.RebuildRange", offThread = true)
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
@@ -50,7 +50,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions", method = "POST")
+    @Route(rpc = "ParameterArchive.DeletePartitions")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
@@ -88,7 +88,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
 
     }
 
-    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
+    @Route(rpc = "ParameterArchive.GetArchiveInfo")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);

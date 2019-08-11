@@ -17,12 +17,12 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.SqlBuilder;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.protobuf.Archive.GetPacketNamesResponse;
-import org.yamcs.protobuf.Rest.ListPacketsResponse;
+import org.yamcs.protobuf.Archive.ListPacketsResponse;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -43,7 +43,7 @@ import io.netty.buffer.ByteBuf;
 
 public class ArchivePacketRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/packet-names", method = "GET")
+    @Route(rpc = "StreamArchive.ListPacketNames")
     public void listPacketNames(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -70,7 +70,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/:instance/packets/:gentime?", method = "GET")
+    @Route(rpc = "StreamArchive.ListPackets")
     public void listPackets(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -178,7 +178,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/packets/:gentime/:seqnum", method = "GET")
+    @Route(rpc = "StreamArchive.GetPacket")
     public void getPacket(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         long gentime = req.getDateRouteParam("gentime");

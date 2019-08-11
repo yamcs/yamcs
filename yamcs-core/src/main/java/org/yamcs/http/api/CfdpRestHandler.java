@@ -20,14 +20,14 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.protobuf.Cfdp.CreateTransferRequest;
-import org.yamcs.protobuf.Cfdp.CreateTransferRequest.UploadOptions;
-import org.yamcs.protobuf.Cfdp.EditTransferRequest;
-import org.yamcs.protobuf.Cfdp.ListRemoteFilesResponse;
-import org.yamcs.protobuf.Cfdp.ListTransfersResponse;
-import org.yamcs.protobuf.Cfdp.RemoteFile;
-import org.yamcs.protobuf.Cfdp.TransferDirection;
-import org.yamcs.protobuf.Cfdp.TransferInfo;
+import org.yamcs.protobuf.CreateTransferRequest;
+import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.EditTransferRequest;
+import org.yamcs.protobuf.ListRemoteFilesResponse;
+import org.yamcs.protobuf.ListTransfersResponse;
+import org.yamcs.protobuf.RemoteFile;
+import org.yamcs.protobuf.TransferDirection;
+import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
@@ -46,7 +46,7 @@ public class CfdpRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
 
-    @Route(path = "/api/cfdp/:instance/transfers", method = "GET")
+    @Route(rpc = "CFDP.ListTransfers")
     public void listTransfers(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -64,14 +64,14 @@ public class CfdpRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/cfdp/:instance/transfers/:id", method = "GET")
+    @Route(rpc = "CFDP.GetTransfer")
     public void getTransfer(RestRequest req) throws HttpException {
         long transactionId = req.getLongRouteParam("id");
         CfdpTransaction transaction = verifyTransaction(req, transactionId);
         completeOK(req, toTransferInfo(transaction));
     }
 
-    @Route(path = "/api/cfdp/:instance/transfers", method = "POST")
+    @Route(rpc = "CFDP.CreateTransfer")
     public void createTransfer(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -138,7 +138,7 @@ public class CfdpRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/cfdp/:instance/transfers/:id", method = { "PATCH", "PUT", "POST" })
+    @Route(rpc = "CFDP.UpdateTransfer")
     public void editTransfer(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -169,6 +169,7 @@ public class CfdpRestHandler extends RestHandler {
                 }
             }
         }
+        completeOK(req);
     }
 
     // TODO @Route(path = "/api/cfdp/:instance/filestore", method = "GET")

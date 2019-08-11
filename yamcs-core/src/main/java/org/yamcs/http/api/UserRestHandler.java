@@ -7,22 +7,19 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.yamcs.ConnectedClient;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.CreateUserRequest;
-import org.yamcs.protobuf.Rest.EditUserRequest;
-import org.yamcs.protobuf.Rest.ListUsersResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ExternalIdentityInfo;
-import org.yamcs.protobuf.YamcsManagement.GroupInfo;
-import org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo;
-import org.yamcs.protobuf.YamcsManagement.UserInfo;
+import org.yamcs.protobuf.CreateUserRequest;
+import org.yamcs.protobuf.ExternalIdentityInfo;
+import org.yamcs.protobuf.GroupInfo;
+import org.yamcs.protobuf.ListUsersResponse;
+import org.yamcs.protobuf.ObjectPrivilegeInfo;
+import org.yamcs.protobuf.UpdateUserRequest;
+import org.yamcs.protobuf.UserInfo;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.ObjectPrivilege;
@@ -36,7 +33,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class UserRestHandler extends RestHandler {
 
-    @Route(path = "/api/users", method = "GET")
+    @Route(rpc = "IAM.ListUsers")
     public void listUsers(RestRequest req) throws HttpException {
         List<User> users = securityStore.getDirectory().getUsers();
         Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
@@ -49,7 +46,7 @@ public class UserRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/users", method = "POST")
+    @Route(rpc = "IAM.CreateUser")
     public void createUser(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -89,7 +86,7 @@ public class UserRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(path = "/api/users/:username", method = "GET")
+    @Route(rpc = "IAM.GetUser")
     public void getUser(RestRequest req) throws HttpException {
         String username = req.getRouteParam("username");
         User user = securityStore.getDirectory().getUser(username);
@@ -99,8 +96,8 @@ public class UserRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(path = "/api/users/:username", method = "PATCH")
-    public void editUser(RestRequest req) throws HttpException {
+    @Route(rpc = "IAM.UpdateUser")
+    public void updateUser(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
         }
@@ -111,7 +108,7 @@ public class UserRestHandler extends RestHandler {
             throw new NotFoundException(req);
         }
 
-        EditUserRequest request = req.bodyAsMessage(EditUserRequest.newBuilder()).build();
+        UpdateUserRequest request = req.bodyAsMessage(UpdateUserRequest.newBuilder()).build();
         if (request.hasPassword() && user.isExternallyManaged()) {
             throw new BadRequestException("Cannot set the password of an externally managed user");
         }
@@ -148,7 +145,7 @@ public class UserRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(path = "/api/users/:username/identities/:provider", method = "DELETE")
+    @Route(rpc = "IAM.DeleteIdentity")
     public void deleteIdentity(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -168,7 +165,7 @@ public class UserRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(path = "/api/user", method = "GET")
+    @Route(rpc = "IAM.GetOwnUser")
     public void getMyUser(RestRequest req) throws HttpException {
         User user = req.getUser();
         completeOK(req, toUserInfo(user, true));
@@ -229,9 +226,6 @@ public class UserRestHandler extends RestHandler {
             for (Group group : directory.getGroups(user)) {
                 GroupInfo groupInfo = GroupRestHandler.toGroupInfo(group, false);
                 userb.addGroups(groupInfo);
-            }
-            for (ConnectedClient client : ManagementService.getInstance().getClients(user.getName())) {
-                userb.addClientInfo(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
             }
         }
 

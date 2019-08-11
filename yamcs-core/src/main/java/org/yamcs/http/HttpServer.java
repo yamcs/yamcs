@@ -149,12 +149,6 @@ public class HttpServer extends AbstractYamcsService {
 
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
 
-        // this is used to execute the routes marked as offThread
-        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
-        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor, contextPath);
-
         if (config.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
             try {
@@ -169,6 +163,12 @@ public class HttpServer extends AbstractYamcsService {
                 throw new InitException("Could not load GPB extensions", e);
             }
         }
+
+        // this is used to execute the routes marked as offThread
+        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
+        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(), tf);
+        apiRouter = new Router(executor, contextPath, gpbExtensionRegistry);
 
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");

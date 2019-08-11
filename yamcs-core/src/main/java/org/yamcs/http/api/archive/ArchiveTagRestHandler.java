@@ -11,11 +11,11 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.Route;
 import org.yamcs.http.api.RestRequest.IntervalResult;
-import org.yamcs.protobuf.Rest.CreateTagRequest;
-import org.yamcs.protobuf.Rest.EditTagRequest;
-import org.yamcs.protobuf.Rest.ListTagsResponse;
+import org.yamcs.http.api.Route;
+import org.yamcs.protobuf.Archive.CreateTagRequest;
+import org.yamcs.protobuf.Archive.EditTagRequest;
+import org.yamcs.protobuf.Archive.ListTagsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -24,7 +24,7 @@ import org.yamcs.yarch.YarchException;
 
 public class ArchiveTagRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/tags", method = "GET")
+    @Route(rpc = "StreamArchive.ListTags")
     public void listTags(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -52,7 +52,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "GET")
+    @Route(rpc = "StreamArchive.GetTag")
     public void getTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -78,7 +78,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Adds a new tag. The newly added tag is returned as a response so the user knows the assigned id.
      */
-    @Route(path = "/api/archive/:instance/tags", method = "POST")
+    @Route(rpc = "StreamArchive.CreateTag")
     public void createTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -118,7 +118,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Updates an existing tag. Returns the updated tag
      */
-    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = { "PATCH", "PUT", "POST" })
+    @Route(rpc = "StreamArchive.UpdateTag")
     public void updateTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -178,7 +178,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
-    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "DELETE")
+    @Route(rpc = "StreamArchive.DeleteTag")
     public void deleteTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);

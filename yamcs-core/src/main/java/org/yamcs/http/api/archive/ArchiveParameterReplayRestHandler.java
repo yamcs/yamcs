@@ -17,12 +17,13 @@ import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestParameterReplayListener;
 import org.yamcs.http.api.RestReplayListener;
 import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.Route;
 import org.yamcs.http.api.archive.RestDownsampler.Sample;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
+import org.yamcs.protobuf.Archive.ListParameterValuesResponse;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
-import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
@@ -55,6 +56,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
      * unstable.
      */
+    @Route(rpc = "StreamArchive.GetParameterSamples")
     public void getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -105,6 +107,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
         });
     }
 
+    @Route(rpc = "StreamArchive.ListParameterHistory")
     public void listParameterHistory(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

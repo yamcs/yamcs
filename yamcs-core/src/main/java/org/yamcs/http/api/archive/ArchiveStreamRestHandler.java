@@ -7,8 +7,8 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
+import org.yamcs.protobuf.Archive.ListStreamsResponse;
 import org.yamcs.protobuf.Archive.StreamInfo;
-import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
@@ -16,7 +16,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class ArchiveStreamRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/streams", method = "GET")
+    @Route(rpc = "StreamArchive.ListStreams")
     public void listStreams(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -33,7 +33,7 @@ public class ArchiveStreamRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/:instance/streams/:name", method = "GET")
+    @Route(rpc = "StreamArchive.GetStream")
     public void getStream(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);

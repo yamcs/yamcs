@@ -17,7 +17,12 @@ public @interface Route {
      * Currently must be an absolute path. Specify route params by preceding them with a colon, followed by their
      * identifying name.
      */
-    String path();
+    String path() default "";
+
+    /**
+     * Reference to a Protobuf rpc service method in the format SERVICE.METHOD.
+     */
+    String rpc() default "";
 
     /**
      * HTTP method or methods by which this rule is available. By default set to "GET".
@@ -30,15 +35,8 @@ public @interface Route {
      * Whether this route must be checked before any other route. Used to differentiate a route when it's identifying
      * part overlaps with the route params of another route.
      * <p>
-     * When matching the request URI, the first rule with the highest weight that matches is responsible for handling
-     * the request.
-     * <p>
-     * FYI: The order of java methods is non-deterministic when accessing them through reflection. We implement some
-     * tricks to get the desired result. This priority qualifier is one of them, another is that paths are reverse
-     * sorted on string length before matching. This to make suffixes of otherwise identical rules stand out.
-     * <p>
-     * Try to architect non-overlapping paths such that you don't require this extra parameter, we have it here mostly
-     * due to some legacy paths, that may need rework.
+     * Use this as a last resort only. It's generally better to come up with a route scheme where you don't need this
+     * flag. We have it here mostly for legacy purposes that need rework.
      */
     boolean priority() default false;
 
@@ -51,12 +49,13 @@ public @interface Route {
      * HttpObjectAgregator.
      */
     boolean dataLoad() default false;
-    
+
     /**
-     * Set true if the execution of the route is expected to take a long time (more than 0.5 seconds).
-     * It will be executed on another thread.
+     * Set true if the execution of the route is expected to take a long time (more than 0.5 seconds). It will be
+     * executed on another thread.
      * 
      * Leave false if the execution uses its own off thread mechanism (most of the routes should do that).
+     * 
      * @return
      */
     boolean offThread() default false;

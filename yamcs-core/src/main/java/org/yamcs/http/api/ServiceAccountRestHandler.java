@@ -9,10 +9,10 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.protobuf.Rest.CreateServiceAccountRequest;
-import org.yamcs.protobuf.Rest.CreateServiceAccountResponse;
-import org.yamcs.protobuf.Rest.ListServiceAccountResponse;
-import org.yamcs.protobuf.YamcsManagement.ServiceAccountInfo;
+import org.yamcs.protobuf.CreateServiceAccountRequest;
+import org.yamcs.protobuf.CreateServiceAccountResponse;
+import org.yamcs.protobuf.ListServiceAccountsResponse;
+import org.yamcs.protobuf.ServiceAccountInfo;
 import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.Directory;
 import org.yamcs.security.ServiceAccount;
@@ -22,7 +22,7 @@ import org.yamcs.security.ServiceAccount;
  */
 public class ServiceAccountRestHandler extends RestHandler {
 
-    @Route(path = "/api/service-accounts", method = "GET")
+    @Route(rpc = "IAM.ListServiceAccounts")
     public void listServiceAccounts(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -31,7 +31,7 @@ public class ServiceAccountRestHandler extends RestHandler {
         List<ServiceAccount> serviceAccounts = directory.getServiceAccounts();
         Collections.sort(serviceAccounts, (r1, r2) -> r1.getName().compareToIgnoreCase(r2.getName()));
 
-        ListServiceAccountResponse.Builder responseb = ListServiceAccountResponse.newBuilder();
+        ListServiceAccountsResponse.Builder responseb = ListServiceAccountsResponse.newBuilder();
         for (ServiceAccount serviceAccount : serviceAccounts) {
             ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount);
             responseb.addServiceAccounts(serviceAccountInfo);
@@ -39,7 +39,7 @@ public class ServiceAccountRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/service-accounts/:name", method = "GET")
+    @Route(rpc = "IAM.GetServiceAccount")
     public void getServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -53,7 +53,7 @@ public class ServiceAccountRestHandler extends RestHandler {
         completeOK(req, toServiceAccountInfo(serviceAccount));
     }
 
-    @Route(path = "/api/service-accounts/:name", method = "DELETE")
+    @Route(rpc = "IAM.DeleteServiceAccount")
     public void deleteServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -63,7 +63,7 @@ public class ServiceAccountRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/service-accounts", method = "POST")
+    @Route(rpc = "IAM.CreateServiceAccount")
     public void createServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");

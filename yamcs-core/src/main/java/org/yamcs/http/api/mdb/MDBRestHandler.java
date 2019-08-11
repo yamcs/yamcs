@@ -3,8 +3,6 @@ package org.yamcs.http.api.mdb;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
@@ -25,9 +23,7 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class MDBRestHandler extends RestHandler {
 
-    final static Logger log = LoggerFactory.getLogger(MDBRestHandler.class);
-
-    @Route(path = "/api/mdb/:instance", method = "GET")
+    @Route(rpc = "MDB.GetMissionDatabase")
     public void getMissionDatabase(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 

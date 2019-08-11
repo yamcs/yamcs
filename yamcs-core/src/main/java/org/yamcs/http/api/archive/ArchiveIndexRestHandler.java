@@ -14,8 +14,8 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.Route;
 import org.yamcs.http.api.RestRequest.IntervalResult;
+import org.yamcs.http.api.Route;
 import org.yamcs.protobuf.Archive.IndexEntry;
 import org.yamcs.protobuf.Archive.IndexGroup;
 import org.yamcs.protobuf.Archive.IndexResponse;
@@ -28,7 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchiveIndexRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/command-index", method = "GET")
+    @Route(rpc = "StreamArchive.ListCommandHistoryIndex")
     public void listCommandIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -62,7 +62,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(path = "/api/archive/:instance/event-index", method = "GET")
+    @Route(rpc = "StreamArchive.ListEventIndex")
     public void listEventIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -96,7 +96,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(path = "/api/archive/:instance/packet-index", method = "GET")
+    @Route(rpc = "StreamArchive.ListPacketIndex")
     public void listPacketIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -130,7 +130,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(path = "/api/archive/:instance/parameter-index", method = "GET")
+    @Route(rpc = "StreamArchive.ListParameterIndex")
     public void listParameterIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -163,7 +163,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(path = "/api/archive/:instance/completeness-index", method = "GET")
+    @Route(rpc = "StreamArchive.ListCompletenessIndex")
     public void listCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);

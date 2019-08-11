@@ -9,15 +9,15 @@ import org.yamcs.http.api.Route;
 import org.yamcs.protobuf.Archive.ExecuteSqlRequest;
 import org.yamcs.protobuf.Archive.ExecuteSqlResponse;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class ArchiveSqlRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/sql", method = "POST")
+    @Route(rpc = "StreamArchive.ExecuteSql")
     public void executeSql(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 

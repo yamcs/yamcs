@@ -47,6 +47,7 @@ public class RestRequest {
     static AtomicInteger counter = new AtomicInteger();
     final int requestId;
     long txSize = 0;
+    int statusCode;
 
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest,
             QueryStringDecoder qsDecoder, User user) {
@@ -74,6 +75,13 @@ public class RestRequest {
 
     public String getRouteParam(String name) {
         return routeMatch.getRouteParam(name);
+    }
+
+    public void reportStatusCode(int statusCode) {
+        if (this.statusCode != 0) {
+            throw new IllegalArgumentException("Status code already set to " + this.statusCode);
+        }
+        this.statusCode = statusCode;
     }
 
     /**

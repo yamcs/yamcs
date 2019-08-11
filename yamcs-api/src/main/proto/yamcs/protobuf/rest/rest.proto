@@ -3,19 +3,49 @@ syntax = "proto2";
 package yamcs.protobuf.rest;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs/protobuf/yamcs.proto";
-import "yamcs/protobuf/archive/archive.proto";
-import "yamcs/protobuf/pvalue/pvalue.proto";
-import "yamcs/protobuf/alarms/alarms.proto";
-import "yamcs/protobuf/commanding/commanding.proto";
-import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+
+service Discovery {
+
+  rpc ListEndpoints(google.protobuf.Empty) returns (ListEndpointsResponse) {
+    option (yamcs.api.route) = {
+      description: "List endpoints"
+      method: "GET"
+      path: "/api/endpoints"
+    };
+  }
+}
+
+
+message ListEndpointsResponse {
+  repeated EndpointInfo endpoints = 1;
+}
+
+message EndpointInfo {
+  optional string service = 1;
+  optional string method = 2;
+  optional string description = 3;
+  optional string httpMethod = 4;
+  optional string url = 5;
+  optional string inputType = 6;
+  optional string outputType = 7;
+  optional bool deprecated = 8;
+  optional int64 requestCount = 9;
+  optional int64 errorCount = 10;
+}
 
 message GetApiOverviewResponse {
   message RouteInfo {
     optional string url = 1;
     repeated string method = 2;
+    optional bool deprecated = 3;
   }
   message PluginInfo {
     optional string name = 1;
@@ -74,49 +104,6 @@ message EditCommandQueueRequest {
   optional string state = 1;
 }
 
-message ListUsersResponse {
-  repeated yamcsManagement.UserInfo users = 1;
-}
-
-message ListGroupsResponse {
-  repeated yamcsManagement.GroupInfo groups = 1;
-}
-
-message CreateGroupRequest {
-  optional string name = 1;
-  optional string description = 2;
-  repeated string members = 3;
-}
-
-message ListServiceAccountResponse {
-  repeated yamcsManagement.ServiceAccountInfo serviceAccounts = 1;
-}
-
-message CreateServiceAccountRequest {
-  optional string name = 1;
-}
-
-message CreateServiceAccountResponse {
-  optional string name = 1;
-  optional string applicationId = 2;
-  optional string applicationSecret = 3;
-}
-
-message CreateUserRequest {
-  optional string name = 1;
-  optional string displayName = 2;
-  optional string email = 3;
-  optional string password = 4;
-}
-
-message EditUserRequest {
-  optional string displayName = 1;
-  optional string email = 2;
-  optional bool active = 3;
-  optional bool superuser = 4;
-  optional string password = 5;
-}
-
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }
@@ -170,15 +157,6 @@ message UpdateCommandHistoryRequest {
     repeated KeyValue historyEntry = 2;
 }
 
-message CreateEventRequest {
-  optional string type = 1;
-  optional string message = 2;
-  optional string severity = 3;
-  optional string time = 4;
-  optional string source = 5;
-  optional int32 sequenceNumber = 6;
-}
-
 message CreateProcessorRequest {
   optional string name = 1;
   repeated int32 clientId = 6;
@@ -222,64 +200,12 @@ message ListInstanceTemplatesResponse {
   repeated yamcsManagement.InstanceTemplate template = 1; 
 }
 
-message ListTagsResponse {
-  repeated ArchiveTag tag = 1;
-}
-
-message CreateTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
-message EditTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
 message EditInstanceRequest {
   optional string state = 1;
 }
 
-message ListAlarmsResponse {
-  repeated alarms.AlarmData alarm = 1;
-}
-
-message EditAlarmRequest {
-  optional string state = 1;
-  optional string comment = 2;
-}
-
-message ListTablesResponse {
-  repeated archive.TableInfo table = 1;
-}
-
-message ListStreamsResponse {
-  repeated archive.StreamInfo stream = 1;
-}
-
-message ListEventsResponse {
-  repeated Event event = 1;
-  optional string continuationToken = 2;
-}
-
-message ListPacketsResponse {
-  repeated TmPacketData packet = 1;
-  optional string continuationToken = 2;
-}
-
 message ListServiceInfoResponse {
   repeated yamcsManagement.ServiceInfo service = 1;
-}
-
-message ListParameterValuesResponse {
-  repeated pvalue.ParameterValue parameter = 1;
-  optional string continuationToken = 2;
 }
 
 message EditServiceRequest {

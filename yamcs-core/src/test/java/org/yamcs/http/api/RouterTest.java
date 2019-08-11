@@ -18,11 +18,9 @@ import java.util.regex.MatchResult;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.RouteHandler;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.Route;
-import org.yamcs.http.api.Router;
 import org.yamcs.http.api.Router.RouteMatch;
 
 import io.netty.channel.ChannelFuture;
@@ -34,7 +32,7 @@ public class RouterTest {
 
     @Before
     public void before() {
-        router = new Router(Executors.newSingleThreadExecutor(), null);
+        router = new Router(Executors.newSingleThreadExecutor(), null, new GpbExtensionRegistry());
 
         router.registerRouteHandler(null, new RouteHandler() {
 
@@ -227,7 +225,7 @@ public class RouterTest {
     private static final class MockRestRouter extends Router {
 
         public MockRestRouter() {
-            super(Executors.newSingleThreadScheduledExecutor(), null);
+            super(Executors.newSingleThreadScheduledExecutor(), null, new GpbExtensionRegistry());
         }
 
         RestRequest observedRestRequest;

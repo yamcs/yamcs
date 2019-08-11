@@ -5,6 +5,8 @@ import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
+import { EndpointDetail } from './endpoints/EndpointDetail';
+import { MessageNamePipe } from './endpoints/MessageNamePipe';
 import { UsersTable } from './iam/UsersTable';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
@@ -16,6 +18,10 @@ const dialogComponents = [
   UploadProgressDialog,
 ];
 
+const pipes = [
+  MessageNamePipe,
+];
+
 @NgModule({
   imports: [
     SharedModule,
@@ -24,6 +30,8 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    pipes,
+    EndpointDetail,
     UsersTable,
     ServiceState,
     ServicesTable,

@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.Event;
 
+import com.google.protobuf.DescriptorProtos.FileDescriptorSet;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
@@ -21,7 +21,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 public class GpbExtensionRegistry {
 
-    private static final Logger log = LoggerFactory.getLogger(GpbExtensionRegistry.class);
+    private static final Log log = new Log(GpbExtensionRegistry.class);
 
     private ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
 
@@ -46,7 +46,19 @@ public class GpbExtensionRegistry {
         fieldExtensions.add(extensionInfo);
     }
 
-    public Event getExtendedEvent(Event original) {
+    public void installExtension(GeneratedExtension<?, ?> extension) {
+        extensionRegistry.add(extension);
+    }
+
+    public FileDescriptorSet extend(FileDescriptorSet original) {
+        try {
+            return FileDescriptorSet.parseFrom(original.toByteArray(), extensionRegistry);
+        } catch (InvalidProtocolBufferException e) {
+            throw new UnsupportedOperationException(e);
+        }
+    }
+
+    public Event extend(Event original) {
         try {
             return Event.parseFrom(original.toByteArray(), extensionRegistry);
         } catch (InvalidProtocolBufferException e) {

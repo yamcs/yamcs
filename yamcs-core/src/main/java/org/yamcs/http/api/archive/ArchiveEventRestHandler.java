@@ -32,9 +32,9 @@ import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.SqlBuilder;
+import org.yamcs.protobuf.Archive.CreateEventRequest;
 import org.yamcs.protobuf.Archive.EventSourceInfo;
-import org.yamcs.protobuf.Rest.CreateEventRequest;
-import org.yamcs.protobuf.Rest.ListEventsResponse;
+import org.yamcs.protobuf.Archive.ListEventsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.security.SystemPrivilege;
@@ -60,7 +60,7 @@ public class ArchiveEventRestHandler extends RestHandler {
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
     private GpbExtensionRegistry gpbExtensionRegistry;
 
-    @Route(path = "/api/archive/:instance/events", method = "GET")
+    @Route(rpc = "StreamArchive.ListEvents")
     public void listEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
@@ -173,7 +173,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 public void onTuple(Stream stream, Tuple tuple) {
                     if (++count <= limit) {
                         Event incoming = (Event) tuple.getColumn("body");
-                        Event event = getExtensionRegistry().getExtendedEvent(incoming);
+                        Event event = getExtensionRegistry().extend(incoming);
 
                         Event.Builder eventb = Event.newBuilder(event);
                         eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
@@ -196,8 +196,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/events", method = "POST")
-    @Route(path = "/api/archive/:instance/events2", method = "POST") // TODO remove if no longer used by clients
+    @Route(rpc = "StreamArchive.CreateEvent")
     public void postEvent(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
 
@@ -269,7 +268,7 @@ public class ArchiveEventRestHandler extends RestHandler {
      * information via the table-related API, but then users without MayReadTables privilege, would not be able to call
      * it.
      */
-    @Route(path = "/api/archive/:instance/events/sources", method = "GET")
+    @Route(rpc = "StreamArchive.ListEventSources")
     public void listSources(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);

@@ -79,3 +79,8 @@ message EventAlarmData {
   optional Event mostSevereEvent = 2;
   optional Event currentEvent = 3;
 }
+
+message EditAlarmRequest {
+  optional string state = 1;
+  optional string comment = 2;
+}

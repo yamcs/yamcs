@@ -5,7 +5,8 @@ import java.util.function.Consumer;
 
 import org.yamcs.parameter.Value;
 
-class MyValueConsummer implements Consumer<TimedValue> {
+public class MyValueConsumer implements Consumer<TimedValue> {
+
     ArrayList<Long> times = new ArrayList<>();
     ArrayList<Value> values = new ArrayList<>();
 
@@ -14,5 +15,4 @@ class MyValueConsummer implements Consumer<TimedValue> {
         times.add(tv.instant);
         values.add(tv.engValue);
     }
-
 }

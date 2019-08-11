@@ -23,12 +23,12 @@ import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
-import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.http.api.Router.RouteMatch;
+import org.yamcs.http.api.SqlBuilder;
+import org.yamcs.protobuf.Archive.ListTablesResponse;
 import org.yamcs.protobuf.Archive.TableData;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Archive.TableInfo;
-import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
@@ -61,7 +61,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 
 public class ArchiveTableRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/tables", method = "GET")
+    @Route(rpc = "StreamArchive.ListTables")
     public void listTables(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
@@ -77,7 +77,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/:instance/tables/:name", method = "GET")
+    @Route(rpc = "StreamArchive.GetTable")
     public void getTable(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
@@ -89,7 +89,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         completeOK(req, response);
     }
 
-    @Route(path = "/api/archive/:instance/tables/:name/data", method = "GET")
+    @Route(rpc = "StreamArchive.GetTableData")
     public void getTableData(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
