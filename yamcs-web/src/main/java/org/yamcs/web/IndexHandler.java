@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
@@ -101,20 +102,19 @@ public class IndexHandler extends Handler {
     @SuppressWarnings("unchecked")
     private String processTemplate() throws IOException {
         String template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
-        Map<String, Object> args = new HashMap<>(2);
-        args.put("contextPath", httpServer.getContextPath());
 
-        Map<String, Object> webConfig = new HashMap<>();
-        webConfig.putAll(config.toMap());
+        Map<String, Object> webConfig = new HashMap<>(config.toMap());
 
         AuthInfo authInfo = AuthHandler.createAuthInfo();
         String authJson = JsonFormat.printer().print(authInfo);
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
         webConfig.put("auth", authMap);
+        webConfig.put("serverId", YamcsServer.getServer().getServerId());
 
+        Map<String, Object> args = new HashMap<>(4);
+        args.put("contextPath", httpServer.getContextPath());
         args.put("config", webConfig);
         args.put("configJson", new Gson().toJson(webConfig));
-
         return TemplateProcessor.process(template, args);
     }
 }
