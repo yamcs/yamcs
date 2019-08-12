@@ -24,8 +24,8 @@ export class CreateUserPage {
   ) {
     title.setTitle('Create a User');
     this.form = formBuilder.group({
-      username: new FormControl('', [Validators.required]),
       name: new FormControl('', [Validators.required]),
+      displayName: new FormControl('', [Validators.required]),
       email: new FormControl('', [Validators.required]),
       password: new FormControl(),
       passwordConfirmation: new FormControl(),
@@ -36,8 +36,8 @@ export class CreateUserPage {
     const formValue = this.form.value;
 
     const options: CreateUserRequest = {
-      username: formValue.username,
       name: formValue.name,
+      displayName: formValue.displayName,
       email: formValue.email,
     };
     if (formValue.password) {
@@ -48,7 +48,7 @@ export class CreateUserPage {
       options.password = formValue.password;
     }
     this.yamcs.yamcsClient.createUser(options)
-      .then(() => this.router.navigateByUrl(`/admin/user-administration/users/${formValue.username}`))
+      .then(() => this.router.navigateByUrl(`/admin/iam/users/${formValue.name}`))
       .catch(err => this.messageService.showError(err));
   }
 }

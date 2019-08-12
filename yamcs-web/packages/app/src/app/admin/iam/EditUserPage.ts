@@ -31,7 +31,7 @@ export class EditUserPage {
     this.user$.then(user => {
       this.user = user;
       this.form = formBuilder.group({
-        name: new FormControl(user.name),
+        displayName: new FormControl(user.displayName),
         email: new FormControl(user.email),
         active: new FormControl(user.active),
         superuser: new FormControl(user.superuser),
@@ -45,8 +45,8 @@ export class EditUserPage {
     const formValue = this.form.value;
 
     const options: EditUserRequest = {};
-    if (formValue.name !== this.user.name) {
-      options.name = formValue.name;
+    if (formValue.displayName !== this.user.displayName) {
+      options.displayName = formValue.displayName;
     }
     if (formValue.email !== this.user.email) {
       options.email = formValue.email;
@@ -65,7 +65,7 @@ export class EditUserPage {
       options.password = formValue.password;
     }
 
-    this.yamcs.yamcsClient.editUser(this.user.username, options)
+    this.yamcs.yamcsClient.editUser(this.user.name, options)
       .then(() => this.router.navigate(['..'], { relativeTo: this.route }))
       .catch(err => this.messageService.showError(err));
   }

@@ -29,7 +29,7 @@
       </tr>
       <tr *ngFor="let member of group.members">
         <td>
-          <a [routerLink]="['../../' + member.username]">{{ member.username || '-' }}</a>
+          <a [routerLink]="['../../' + member.name]">{{ member.name || '-' }}</a>
         </td>
       </tr>
     </table>

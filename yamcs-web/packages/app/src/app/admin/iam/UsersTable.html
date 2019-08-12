@@ -3,15 +3,15 @@
        [dataSource]="dataSource"
        class="ya-data-table"
        matSort
-       matSortActive="username"
+       matSortActive="name"
        matSortDirection="asc"
        matSortDisableClear>
 
-  <ng-container matColumnDef="username">
+  <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">Username</th>
     <td mat-cell *matCellDef="let user">
-      <a [routerLink]="user.username">
-        {{ user.username }}
+      <a [routerLink]="user.name">
+        {{ user.name }}
       </a>
     </td>
   </ng-container>

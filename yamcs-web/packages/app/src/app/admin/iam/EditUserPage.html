@@ -1,18 +1,18 @@
 <app-admin-page *ngIf="user$ | async as user">
   <app-admin-toolbar>
-    Edit User: {{ user.name || user.username }}
+    Edit User: {{ user.displayName || user.name }}
   </app-admin-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <label>
         Username<br>
-        <input disabled type="text" [value]="user.username">
+        <input disabled type="text" [value]="user.name">
       </label>
       <br>
       <label>
-        Full name<br>
-        <input formControlName="name" type="text">
+        Display name<br>
+        <input formControlName="displayName" type="text">
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
             This user has an external identity. Changes to this field may get overwritten on next login.
         </span>

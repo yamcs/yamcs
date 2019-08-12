@@ -11,7 +11,7 @@ import { UserInfo } from '@yamcs/client';
 export class UsersTable implements AfterViewInit, OnChanges {
 
   displayedColumns = [
-    'username',
+    'name',
     'groups',
     'registered',
     'lastLogin',
@@ -30,7 +30,7 @@ export class UsersTable implements AfterViewInit, OnChanges {
 
   ngAfterViewInit() {
     this.dataSource.filterPredicate = (user, filter) => {
-      return user.username.toLowerCase().indexOf(filter) >= 0;
+      return user.name.toLowerCase().indexOf(filter) >= 0;
     };
     this.dataSource.sort = this.sort;
   }

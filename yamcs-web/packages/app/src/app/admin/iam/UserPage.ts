@@ -33,13 +33,13 @@ export class UserPage {
   private changeUser(username: string) {
     this.yamcs.yamcsClient.getUser(username).then(user => {
       this.user$.next(user);
-      this.title.setTitle(user.username);
+      this.title.setTitle(user.name);
     });
   }
 
   deleteIdentity(identity: ExternalIdentity) {
     if (confirm(`Are you sure you want to delete the ${identity.provider} identity?`)) {
-      const username = this.user$.value!.username;
+      const username = this.user$.value!.name;
       this.yamcs.yamcsClient.deleteIdentity(username, identity.provider)
         .then(user => this.user$.next(user))
         .catch(err => this.messageService.showError(err));

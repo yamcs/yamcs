@@ -116,14 +116,14 @@ export interface ClientSubscriptionResponse {
 }
 
 export interface CreateUserRequest {
-  username: string;
   name: string;
+  displayName: string;
   email: string;
   password?: string;
 }
 
 export interface EditUserRequest {
-  name?: string;
+  displayName?: string;
   email?: string;
   active?: boolean;
   superuser?: boolean;
@@ -131,8 +131,8 @@ export interface EditUserRequest {
 }
 
 export interface UserInfo {
-  username: string;
   name: string;
+  displayName: string;
   email: string;
   active: boolean;
   superuser: boolean;

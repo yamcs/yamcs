@@ -2,7 +2,7 @@
   <app-admin-toolbar>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ user.name || user.username }}
+    </a> {{ user.displayName || user.name }}
     &nbsp;&nbsp;&nbsp;
     <a mat-button
        color="primary"
@@ -15,10 +15,10 @@
   <div class="panel-content ya-link">
     <dl class="dl-horizontal">
       <dt>Username</dt>
-      <dd>{{ user.username }}</dd>
+      <dd>{{ user.name }}</dd>
 
-      <dt>Name</dt>
-      <dd>{{ user.name || '-' }}</dd>
+      <dt>Display name</dt>
+      <dd>{{ user.displayName || '-' }}</dd>
 
       <dt>Email</dt>
       <dd>{{ user.email || '-' }}</dd>
@@ -41,7 +41,7 @@
       <dt>Created by</dt>
       <dd>
         <a *ngIf="user.createdBy"
-           [routerLink]="['../' + user.createdBy.username]">{{ user.createdBy.username || '-' }}</a>
+           [routerLink]="['../' + user.createdBy.name]">{{ user.createdBy.name || '-' }}</a>
         <ng-container *ngIf="!user.createdBy">-</ng-container>
       </dd>
     </dl>

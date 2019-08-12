@@ -5,10 +5,6 @@ export class User {
   constructor(private userInfo: UserInfo) {
   }
 
-  getUsername() {
-    return this.userInfo.username;
-  }
-
   getName() {
     return this.userInfo.name;
   }
@@ -18,7 +14,7 @@ export class User {
   }
 
   getDisplayName() {
-    return this.userInfo.name || this.userInfo.username;
+    return this.userInfo.displayName;
   }
 
   isSuperuser() {

@@ -4,10 +4,10 @@
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
     <dt>Username</dt>
-    <dd>{{ user.getUsername() }}</dd>
+    <dd>{{ user.getName() }}</dd>
 
-    <dt>Full name</dt>
-    <dd>{{ user.getName() || '-' }}</dd>
+    <dt>Display name</dt>
+    <dd>{{ user.getDisplayName() || '-' }}</dd>
 
     <dt>Email</dt>
     <dd>{{ user.getEmail() || '-' }}</dd>

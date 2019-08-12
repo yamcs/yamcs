@@ -54,7 +54,7 @@
               [matMenuTriggerFor]="userMenu"
               matTooltipPosition="left">
         <mat-icon>person</mat-icon>
-        {{ user.getDisplayName() }}
+        {{ user.getDisplayName() || user.getName() }}
       </button>
     </ng-container>
   </mat-toolbar-row>
