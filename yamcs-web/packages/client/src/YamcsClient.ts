@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateUserRequest, EditClientRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -201,6 +201,35 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async getServiceAccounts() {
+    const url = `${this.apiUrl}/service-accounts`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListServiceAccountsResponse;
+  }
+
+  async getServiceAccount(name: string) {
+    const url = `${this.apiUrl}/service-accounts/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ServiceAccount;
+  }
+
+  async createServiceAccount(options: CreateServiceAccountRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/service-accounts`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as CreateServiceAccountResponse;
+  }
+
+  async deleteServiceAccount(name: string) {
+    const url = `${this.apiUrl}/service-accounts/${name}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
   async getUsers() {
     const url = `${this.apiUrl}/users`;
     const response = await this.doFetch(url);
@@ -258,6 +287,20 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/groups/${name}`;
     const response = await this.doFetch(url);
     return await response.json() as GroupInfo;
+  }
+
+  async editGroup(name: string, options: EditGroupRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/groups/${name}`;
+    return await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteGroup(name: string) {
+    const url = `${this.apiUrl}/groups/${name}`;
+    return await this.doFetch(url, { method: 'DELETE' });
   }
 
   async getClients() {

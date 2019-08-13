@@ -106,8 +106,24 @@ public class Directory {
         persistChanges();
     }
 
+    public synchronized void renameGroup(String from, String to) throws IOException {
+        if (groups.containsKey(to)) {
+            throw new IllegalArgumentException("Group '" + to + "' already exists");
+        }
+        Group group = groups.get(from);
+        group.setName(to);
+        groups.remove(from);
+        groups.put(to, group);
+        persistChanges();
+    }
+
     public synchronized void updateGroupProperties(Group group) throws IOException {
         groups.put(group.getName(), group);
+        persistChanges();
+    }
+
+    public synchronized void deleteGroup(Group group) throws IOException {
+        groups.remove(group.getName());
         persistChanges();
     }
 

@@ -1,14 +1,12 @@
-<app-admin-page>
+<app-admin-page *ngIf="group$ | async as group">
   <app-admin-toolbar>
-    <a mat-icon-button routerLink=".." color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> Create group
+    Edit Group: {{ group.name }}
   </app-admin-toolbar>
 
   <div class="form-content ya-form">
-    <form [formGroup]="form" novalidate>
+    <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Group name<br>
+        Name<br>
         <input formControlName="name" type="text">
       </label>
       <br>
@@ -50,8 +48,8 @@
       <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
       <button type="submit" (click)="onConfirm()"
               mat-raised-button
-              [disabled]="!form.valid"
-              color="primary">CREATE</button>
+              [disabled]="!(dirty$ | async) || !form.valid"
+              color="primary">SAVE CHANGES</button>
     </mat-toolbar>
   </div>
 </app-admin-page>

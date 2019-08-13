@@ -28,7 +28,6 @@ service IAM {
     };
   }
   
-  // Create a user
   rpc CreateUser(CreateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
       description: "Create a user"
@@ -37,7 +36,6 @@ service IAM {
     };
   }
   
-  // Update a user
   rpc UpdateUser(UpdateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
       description: "Update a user"
@@ -85,6 +83,22 @@ service IAM {
       path: "/api/groups"
     };
   }
+  
+  rpc UpdateGroup(UpdateGroupRequest) returns (GroupInfo) {
+    option (yamcs.api.route) = {
+      description: "Update a group"
+      method: "PATCH"
+      path: "/api/groups/:name"
+    };
+  }
+  
+  rpc DeleteGroup(google.protobuf.Empty) returns (GroupInfo) {
+    option (yamcs.api.route) = {
+      description: "Delete a group"
+      method: "DELETE"
+      path: "/api/groups/:name"
+    };
+  }
 
   rpc ListServiceAccounts(google.protobuf.Empty) returns (ListServiceAccountsResponse) {
     option (yamcs.api.route) = {
@@ -130,7 +144,18 @@ message ListGroupsResponse {
 message CreateGroupRequest {
   optional string name = 1;
   optional string description = 2;
-  repeated string members = 3;
+  repeated string users = 3;
+  repeated string serviceAccounts = 4;
+}
+
+message UpdateGroupRequest {
+  message MemberInfo {
+    repeated string users = 1;
+    repeated string serviceAccounts = 2;
+  }
+  optional string name = 1;
+  optional string description = 2;
+  optional MemberInfo memberInfo = 3;
 }
 
 message ListServiceAccountsResponse {
@@ -187,7 +212,8 @@ message ExternalIdentityInfo {
 message GroupInfo {
   optional string name = 1;
   optional string description = 2;
-  repeated UserInfo members = 3;
+  repeated UserInfo users = 3;
+  repeated ServiceAccountInfo serviceAccounts = 4;
 }
 
 message ServiceAccountInfo {

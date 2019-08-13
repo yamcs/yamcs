@@ -153,10 +153,41 @@ export interface ExternalIdentity {
   provider: string;
 }
 
+export interface ListServiceAccountsResponse {
+  serviceAccounts: ServiceAccount[];
+}
+
+export interface CreateServiceAccountRequest {
+  name: string;
+}
+
+export interface CreateServiceAccountResponse {
+  name: string;
+  applicationId: string;
+  applicationSecret: string;
+}
+
+export interface ServiceAccount {
+  name: string;
+  active: boolean;
+}
+
 export interface GroupInfo {
   name: string;
   description: string;
-  members: UserInfo[];
+  users: UserInfo[];
+  serviceAccounts: ServiceAccount[];
+}
+
+export interface GroupMemberInfo {
+  users?: string[];
+  serviceAccounts?: string[];
+}
+
+export interface EditGroupRequest {
+  name?: string;
+  description?: string;
+  memberInfo?: GroupMemberInfo;
 }
 
 export interface ObjectPrivilege {
@@ -402,6 +433,8 @@ export interface CreateInstanceRequest {
 export interface CreateGroupRequest {
   name: string;
   description?: string;
+  users?: string[];
+  serviceAccounts?: string[];
 }
 
 export interface RocksDbDatabase {

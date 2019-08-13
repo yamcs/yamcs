@@ -7,11 +7,15 @@ import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { EndpointDetail } from './endpoints/EndpointDetail';
 import { MessageNamePipe } from './endpoints/MessageNamePipe';
+import { AddMembersDialog } from './iam/AddMembersDialog';
+import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
 import { UsersTable } from './iam/UsersTable';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 
 const dialogComponents = [
+  AddMembersDialog,
+  ApplicationCredentialsDialog,
   CreateBucketDialog,
   RenameObjectDialog,
   UploadObjectsDialog,
@@ -32,9 +36,9 @@ const pipes = [
     dialogComponents,
     pipes,
     EndpointDetail,
-    UsersTable,
     ServiceState,
     ServicesTable,
+    UsersTable,
   ],
   entryComponents: [
     dialogComponents,

@@ -91,12 +91,17 @@ body {
 }
 
 .ya-data-table td.mat-cell,
-.ya-data-table th.mat-cell {
+.ya-data-table th.mat-cell,
+.ya-data-table-placeholder {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
   padding: 7px 8px 8px 0;
 }
+
+/*.ya-data-table-placeholder {
+  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+}*/
 
 .ya-data-table th.mat-header-cell {
   padding-right: 8px;

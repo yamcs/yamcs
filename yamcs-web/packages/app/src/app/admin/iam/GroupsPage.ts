@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GroupInfo } from '@yamcs/client';
 import { fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -22,6 +23,8 @@ export class GroupsPage implements AfterViewInit {
 
   displayedColumns = [
     'name',
+    'members',
+    'actions',
   ];
   dataSource = new MatTableDataSource<GroupInfo>();
 
@@ -30,6 +33,7 @@ export class GroupsPage implements AfterViewInit {
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
+    private messageService: MessageService,
   ) {
     title.setTitle('Groups');
     this.dataSource.filterPredicate = (group, filter) => {
@@ -44,9 +48,7 @@ export class GroupsPage implements AfterViewInit {
       this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
     }
 
-    this.yamcs.yamcsClient.getGroups().then(groups => {
-      this.dataSource.data = groups;
-    });
+    this.refresh();
 
     fromEvent(this.filter.nativeElement, 'keyup').pipe(
       debounceTime(150), // Keep low -- Client-side filter
@@ -60,6 +62,12 @@ export class GroupsPage implements AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  private refresh() {
+    this.yamcs.yamcsClient.getGroups().then(groups => {
+      this.dataSource.data = groups;
+    });
+  }
+
   private updateURL() {
     const filterValue = this.filter.nativeElement.value.trim();
     this.router.navigate([], {
@@ -71,7 +79,11 @@ export class GroupsPage implements AfterViewInit {
     });
   }
 
-  addGroup() {
-
+  deleteGroup(name: string) {
+    if (confirm(`Are you sure you want to delete group ${name}`)) {
+      this.yamcs.yamcsClient.deleteGroup(name)
+        .then(() => this.refresh())
+        .catch(err => this.messageService.showError(err));
+    }
   }
 }

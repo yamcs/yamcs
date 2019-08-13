@@ -13,8 +13,9 @@ export class UsersTable implements AfterViewInit, OnChanges {
   displayedColumns = [
     'name',
     'groups',
-    'registered',
-    'lastLogin',
+    // 'registered',
+    // 'lastLogin',
+    'actions',
   ];
 
   @Input()

@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -5,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EditUserRequest, UserInfo } from '@yamcs/client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-
 
 @Component({
   templateUrl: './EditUserPage.html',
@@ -24,6 +24,7 @@ export class EditUserPage {
     private route: ActivatedRoute,
     private yamcs: YamcsService,
     private messageService: MessageService,
+    readonly location: Location,
   ) {
     title.setTitle('Edit User');
     const username = route.snapshot.paramMap.get('username')!;

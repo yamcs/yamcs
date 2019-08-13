@@ -2,6 +2,7 @@ package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.yamcs.security.protobuf.GroupRecord;
 
@@ -58,6 +59,15 @@ public class Group {
 
     public boolean hasMember(int memberId) {
         return members.contains(memberId);
+    }
+
+    public void setMembers(Set<Integer> memberIds) {
+        members.clear();
+        members.addAll(memberIds);
+    }
+
+    void setName(String name) {
+        this.name = name;
     }
 
     public GroupRecord toRecord() {

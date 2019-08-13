@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
@@ -16,6 +17,8 @@ import org.yamcs.protobuf.ServiceAccountInfo;
 import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.Directory;
 import org.yamcs.security.ServiceAccount;
+import org.yamcs.security.User;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Handles incoming requests related to service accounts
@@ -33,7 +36,7 @@ public class ServiceAccountRestHandler extends RestHandler {
 
         ListServiceAccountsResponse.Builder responseb = ListServiceAccountsResponse.newBuilder();
         for (ServiceAccount serviceAccount : serviceAccounts) {
-            ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount);
+            ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount, false);
             responseb.addServiceAccounts(serviceAccountInfo);
         }
         completeOK(req, responseb.build());
@@ -50,7 +53,7 @@ public class ServiceAccountRestHandler extends RestHandler {
         if (serviceAccount == null) {
             throw new NotFoundException(req);
         }
-        completeOK(req, toServiceAccountInfo(serviceAccount));
+        completeOK(req, toServiceAccountInfo(serviceAccount, true));
     }
 
     @Route(rpc = "IAM.DeleteServiceAccount")
@@ -92,12 +95,20 @@ public class ServiceAccountRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    private static ServiceAccountInfo toServiceAccountInfo(ServiceAccount serviceAccount) {
+    private static ServiceAccountInfo toServiceAccountInfo(ServiceAccount serviceAccount, boolean details) {
         ServiceAccountInfo.Builder b = ServiceAccountInfo.newBuilder();
         b.setName(serviceAccount.getName());
         b.setActive(serviceAccount.isActive());
         if (serviceAccount.getDisplayName() != null) {
             b.setDisplayName(serviceAccount.getDisplayName());
+        }
+        if (details) {
+            Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
+            User createdBy = directory.getUser(serviceAccount.getCreatedBy());
+            if (createdBy != null) {
+                b.setCreatedBy(UserRestHandler.toUserInfo(createdBy, false));
+            }
+            b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
         }
         return b.build();
     }

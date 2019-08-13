@@ -11,10 +11,13 @@ import { ClientsPage } from './clients/ClientsPage';
 import { EndpointsPage } from './endpoints/EndpointsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
+import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
 import { CreateUserPage } from './iam/CreateUserPage';
+import { EditGroupPage } from './iam/EditGroupPage';
 import { EditUserPage } from './iam/EditUserPage';
 import { GroupPage } from './iam/GroupPage';
 import { GroupsPage } from './iam/GroupsPage';
+import { ServiceAccountsPage } from './iam/ServiceAccountsPage';
 import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
 import { PluginsPage } from './plugins/PluginsPage';
@@ -69,6 +72,18 @@ const routes: Routes = [
         loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
       },
       {
+        path: 'iam/service-accounts',
+        pathMatch: 'full',
+        component: ServiceAccountsPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/service-accounts/create',
+        pathMatch: 'full',
+        component: CreateServiceAccountPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
         path: 'iam/users',
         pathMatch: 'full',
         component: UsersPage,
@@ -99,14 +114,21 @@ const routes: Routes = [
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'iam/groups/new',
+        path: 'iam/groups/create',
         pathMatch: 'full',
         component: CreateGroupPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/groups/:name',
+        pathMatch: 'full',
         component: GroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/groups/:name/edit',
+        pathMatch: 'full',
+        component: EditGroupPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
     ]
@@ -126,12 +148,15 @@ export const routingComponents = [
   BucketPlaceholderPage,
   ClientsPage,
   CreateGroupPage,
+  CreateServiceAccountPage,
   CreateUserPage,
+  EditGroupPage,
   EditUserPage,
   EndpointsPage,
   GroupsPage,
   GroupPage,
   PluginsPage,
+  ServiceAccountsPage,
   ServicesPage,
   UsersPage,
   UserPage,
