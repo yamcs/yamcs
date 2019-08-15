@@ -84,12 +84,11 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/rocksdb/{tablespace}/properties", method = "GET")
-    @Route(path = "/api/archive/rocksdb/{tablespace}/properties/{dbpath*}", method = "GET")
+    @Route(path = "/api/archive/rocksdb/{tablespace}/properties/{dbpath**}", method = "GET")
     public void getProperty(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
-        String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;
+        String dbpath = req.getRouteParam("dbpath");
 
         RDBFactory rdbFactory = tablespace.getRdbFactory();
         YRDB yrdb;
@@ -123,7 +122,6 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "RocksDB.CompactRootDatabase", offThread = true)
     @Route(rpc = "RocksDB.CompactDatabase", offThread = true)
     public void compactDatabase(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);

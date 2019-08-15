@@ -36,19 +36,11 @@ service RocksDB {
     };
   }
   
-  rpc CompactRootDatabase(google.protobuf.Empty) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      description: "Compact root database"
-      method: "GET"
-      path: "/api/archive/rocksdb/{tablespace}/compact"
-    };
-  }
-  
   rpc CompactDatabase(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       description: "Compact database"
       method: "GET"
-      path: "/api/archive/rocksdb/{tablespace}/compact/{dbpath*}"
+      path: "/api/archive/rocksdb/{tablespace}/compact/{dbpath**}"
     };
   }
 }

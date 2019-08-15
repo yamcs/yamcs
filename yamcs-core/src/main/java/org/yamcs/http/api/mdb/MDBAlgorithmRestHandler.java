@@ -31,76 +31,9 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     private static final Log log = new Log(MDBAlgorithmRestHandler.class);
 
     @Route(path = "/api/mdb/{instance}/algorithms", method = "GET")
-    @Route(path = "/api/mdb/{instance}/algorithms/{name*}", method = "GET")
-    public void getAlgorithm(RestRequest req) throws HttpException {
+    public void listAlgorithms(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
-        if (req.hasRouteParam("name")) {
-            getAlgorithmInfo(req);
-        } else {
-            listAlgorithms(req);
-        }
-    }
-
-    @Route(path = "/api/mdb/{instance}/{processor}/algorithms/{name*}", method = { "PATCH", "PUT", "POST" })
-    public void setAlgorithm(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);
-
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
-        if (l.size() == 0) {
-            throw new BadRequestException("No AlgorithmManager available for this processor");
-        }
-        if (l.size() > 1) {
-            throw new BadRequestException(
-                    "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
-        }
-        AlgorithmManager algMng = l.get(0);
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
-        Algorithm a = verifyAlgorithm(req, xtcedb, req.getRouteParam("name"));
-        if (!(a instanceof CustomAlgorithm)) {
-            throw new BadRequestException("Can only patch CustomAlgorithm instances");
-        }
-        CustomAlgorithm calg = (CustomAlgorithm) a;
-        ChangeAlgorithmRequest car = req.bodyAsMessage(ChangeAlgorithmRequest.newBuilder()).build();
-        log.debug("received ChangeAlgorithmRequest {}", car);
-        switch (car.getAction()) {
-        case RESET:
-            algMng.clearAlgorithmOverride(calg);
-            break;
-        case SET:
-            if (!car.hasAlgorithm()) {
-                throw new BadRequestException("No algorithm info provided");
-            }
-            AlgorithmInfo ai = car.getAlgorithm();
-            if (!ai.hasText()) {
-                throw new BadRequestException("No algorithm text provided");
-            }
-            try {
-                log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
-                algMng.setAlgorithmText(calg, ai.getText());
-            } catch (Exception e) {
-                throw new BadRequestException(e.getMessage());
-            }
-            break;
-        default:
-            throw new BadRequestException("Unknown action " + car.getAction());
-        }
-
-        completeOK(req);
-    }
-
-    private void getAlgorithmInfo(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
-
-        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
-        completeOK(req, cinfo);
-    }
-
-    private void listAlgorithms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -169,5 +102,65 @@ public class MDBAlgorithmRestHandler extends RestHandler {
             responseb.setContinuationToken(continuationToken.encodeAsString());
         }
         completeOK(req, responseb.build());
+    }
+
+    @Route(path = "/api/mdb/{instance}/algorithms/{name*}", method = "GET")
+    public void getAlgorithm(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
+
+        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
+        completeOK(req, cinfo);
+    }
+
+    @Route(path = "/api/mdb/{instance}/{processor}/algorithms/{name*}", method = { "PATCH", "PUT", "POST" })
+    public void setAlgorithm(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);
+
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
+        if (l.size() == 0) {
+            throw new BadRequestException("No AlgorithmManager available for this processor");
+        }
+        if (l.size() > 1) {
+            throw new BadRequestException(
+                    "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
+        }
+        AlgorithmManager algMng = l.get(0);
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm a = verifyAlgorithm(req, xtcedb, req.getRouteParam("name"));
+        if (!(a instanceof CustomAlgorithm)) {
+            throw new BadRequestException("Can only patch CustomAlgorithm instances");
+        }
+        CustomAlgorithm calg = (CustomAlgorithm) a;
+        ChangeAlgorithmRequest car = req.bodyAsMessage(ChangeAlgorithmRequest.newBuilder()).build();
+        log.debug("received ChangeAlgorithmRequest {}", car);
+        switch (car.getAction()) {
+        case RESET:
+            algMng.clearAlgorithmOverride(calg);
+            break;
+        case SET:
+            if (!car.hasAlgorithm()) {
+                throw new BadRequestException("No algorithm info provided");
+            }
+            AlgorithmInfo ai = car.getAlgorithm();
+            if (!ai.hasText()) {
+                throw new BadRequestException("No algorithm text provided");
+            }
+            try {
+                log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
+                algMng.setAlgorithmText(calg, ai.getText());
+            } catch (Exception e) {
+                throw new BadRequestException(e.getMessage());
+            }
+            break;
+        default:
+            throw new BadRequestException("Unknown action " + car.getAction());
+        }
+
+        completeOK(req);
     }
 }

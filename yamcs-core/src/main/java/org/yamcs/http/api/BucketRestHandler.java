@@ -109,8 +109,7 @@ public class BucketRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/buckets/{instance}/{bucketName}", method = "POST", maxBodySize = MAX_BODY_SIZE)
-    @Route(path = "/api/buckets/{instance}/{bucketName}/{objectName*}", method = "POST", maxBodySize = MAX_BODY_SIZE)
+    @Route(path = "/api/buckets/{instance}/{bucketName}/{objectName**}", method = "POST", maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
         BucketHelper.checkManageBucketPrivilege(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);

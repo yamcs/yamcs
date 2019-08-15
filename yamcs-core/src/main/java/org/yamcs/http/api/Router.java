@@ -104,7 +104,7 @@ import io.netty.util.AttributeKey;
 @Sharable
 public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)([\\?\\*])?\\}");
+    private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)(\\?|\\*|\\*\\*)?\\}");
     private static final Log log = new Log(Router.class);
 
     public final static int MAX_BODY_SIZE = 65536;
@@ -134,9 +134,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         registerRouteHandler(new CfdpRestHandler());
         registerRouteHandler(new ClientRestHandler());
+        registerRouteHandler(new IAMRestHandler());
         registerRouteHandler(new InstanceRestHandler());
         registerRouteHandler(new LinkRestHandler());
-        registerRouteHandler(new IAMRestHandler());
         registerRouteHandler(new ServiceAccountRestHandler());
         registerRouteHandler(new ServiceRestHandler());
         registerRouteHandler(new SystemInfoRestHandler());
@@ -477,17 +477,18 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
     }
 
-    /*
-     * Pattern matching loosely inspired from RFC6570
-     */
     private Pattern toPattern(String route) {
         Matcher matcher = ROUTE_PATTERN.matcher(route);
         StringBuffer buf = new StringBuffer("^");
         while (matcher.find()) {
             boolean star = ("*".equals(matcher.group(3)));
             boolean optional = ("?".equals(matcher.group(3)));
+            if ("**".equals(matcher.group(3))) {
+                star = true;
+                optional = true;
+            }
             String slash = (matcher.group(1) != null) ? matcher.group(1) : "";
-            StringBuffer replacement = new StringBuffer();
+            StringBuilder replacement = new StringBuilder();
             if (optional) {
                 replacement.append("(?:");
                 replacement.append(slash);

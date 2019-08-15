@@ -206,7 +206,6 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring,
                     filename);
             l.setNoRepeat(noRepeat);
-            System.out.println("will do replay " + rr);
             RestReplays.replay(instance, req.getUser(), rr, l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);

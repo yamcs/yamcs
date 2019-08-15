@@ -21,17 +21,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBSpaceSystemRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/{instance}/space-systems", method = "GET")
     @Route(path = "/api/mdb/{instance}/space-systems/{name*}", method = "GET")
-    public void getSpaceSystem(RestRequest req) throws HttpException {
-        if (req.hasRouteParam("name")) {
-            getSpaceSystemInfo(req);
-        } else {
-            listSpaceSystems(req);
-        }
-    }
-
-    private void getSpaceSystemInfo(RestRequest req) throws HttpException {
+    public void getSpaceSystemInfo(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -43,7 +34,8 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    private void listSpaceSystems(RestRequest req) throws HttpException {
+    @Route(path = "/api/mdb/{instance}/space-systems", method = "GET")
+    public void listSpaceSystems(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 

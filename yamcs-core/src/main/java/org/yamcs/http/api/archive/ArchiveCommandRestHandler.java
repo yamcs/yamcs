@@ -24,8 +24,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class ArchiveCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/{instance}/commands")
-    @Route(path = "/api/archive/{instance}/commands/{name*}")
+    @Route(path = "/api/archive/{instance}/commands/{name**}")
     public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

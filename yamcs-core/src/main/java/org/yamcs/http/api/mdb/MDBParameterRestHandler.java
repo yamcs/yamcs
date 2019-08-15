@@ -81,17 +81,8 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/mdb/{instance}/parameters", method = "GET")
     @Route(path = "/api/mdb/{instance}/parameters/{name*}", method = "GET")
-    public void getParameter(RestRequest req) throws HttpException {
-        if (req.hasRouteParam("name")) {
-            getParameterInfo(req);
-        } else {
-            listParameters(req);
-        }
-    }
-
-    private void getParameterInfo(RestRequest req) throws HttpException {
+    public void getParameterInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -123,7 +114,8 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    private void listParameters(RestRequest req) throws HttpException {
+    @Route(path = "/api/mdb/{instance}/parameters", method = "GET")
+    public void listParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -225,8 +217,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 && types.contains(p.getParameterType().getTypeAsString());
     }
 
-    @Route(path = "/api/mdb/{instance}/{processor}/parameters/{name*}", method = { "PATCH", "PUT",
-            "POST" })
+    @Route(path = "/api/mdb/{instance}/{processor}/parameters/{name*}", method = { "PATCH", "PUT", "POST" })
     public void setParameterCalibrators(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);
 

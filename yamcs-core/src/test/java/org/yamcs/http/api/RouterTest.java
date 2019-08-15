@@ -87,6 +87,10 @@ public class RouterTest {
             @Route(path = "/g/archive/{instance}/parameters/{name*}/series")
             public void pathX() {
             }
+
+            @Route(path = "/h/archive/{name**}")
+            public void pathZ() {
+            }
         });
     }
 
@@ -195,6 +199,21 @@ public class RouterTest {
         assertEquals(2, res.groupCount());
         assertEquals("simulator", res.group(1));
         assertEquals("YSS/SIMULATOR/BatteryVoltage1", res.group(2));
+    }
+
+    @Test
+    public void testOneOrMoreMatching() throws MethodNotAllowedException {
+        MatchResult res = router.matchURI(GET, "/h/archive/bla/bloe").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals("bla/bloe", res.group(1));
+
+        res = router.matchURI(GET, "/h/archive/bla").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals("bla", res.group(1));
+
+        res = router.matchURI(GET, "/h/archive").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals(null, res.group(1));
     }
 
     @Test
