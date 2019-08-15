@@ -4,17 +4,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.EditServiceRequest;
+import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.Rest.CreateBucketRequest;
-import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.ServiceInfo;
+import org.yamcs.protobuf.YamcsInstance;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -92,10 +92,10 @@ public class YamcsClient {
         });
     }
 
-    public CompletableFuture<ListServiceInfoResponse> getServices() {
+    public CompletableFuture<ListServicesResponse> getServices() {
         return restClient.doRequest("/services/_global", HttpMethod.GET).thenApply(response -> {
             try {
-                return ListServiceInfoResponse.parseFrom(response);
+                return ListServicesResponse.parseFrom(response);
             } catch (InvalidProtocolBufferException e) {
                 throw new CompletionException(e);
             }

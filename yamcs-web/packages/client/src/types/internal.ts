@@ -32,7 +32,7 @@ export interface InstancesWrapper {
 }
 
 export interface InstanceTemplatesWrapper {
-  template: InstanceTemplate[];
+  templates: InstanceTemplate[];
 }
 
 export interface LinksWrapper {
@@ -40,7 +40,7 @@ export interface LinksWrapper {
 }
 
 export interface ServicesWrapper {
-  service: Service[];
+  services: Service[];
 }
 
 export interface SpaceSystemsWrapper {

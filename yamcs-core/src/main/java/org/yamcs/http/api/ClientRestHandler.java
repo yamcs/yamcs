@@ -13,13 +13,13 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.ProcessorManagementRequest;
+import org.yamcs.protobuf.ProcessorManagementRequest.Operation;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 
 /**

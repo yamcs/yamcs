@@ -12,6 +12,7 @@ export class UsersTable implements AfterViewInit, OnChanges {
 
   displayedColumns = [
     'name',
+    'displayName',
     'groups',
     // 'registered',
     // 'lastLogin',

@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance;
 
 public class RestClientTest extends AbstractIntegrationTest {
 

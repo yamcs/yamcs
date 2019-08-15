@@ -17,18 +17,15 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
-import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.mdb.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest;
 import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse;
 import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse;
-import org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
@@ -38,9 +35,7 @@ import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
-import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
@@ -305,55 +300,6 @@ public class MDBParameterRestHandler extends RestHandler {
         ParameterType ptype = pdata.getParameterType(p);
         ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
         completeOK(req, pinfo);
-    }
-
-    @Route(path = "/api/mdb/:instance/:processor/algorithms/:name*", method = { "PATCH", "PUT", "POST" })
-    public void setAlgorithm(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);
-
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
-        if (l.size() == 0) {
-            throw new BadRequestException("No AlgorithmManager available for this processor");
-        }
-        if (l.size() > 1) {
-            throw new BadRequestException(
-                    "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
-        }
-        AlgorithmManager algMng = l.get(0);
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
-        Algorithm a = verifyAlgorithm(req, xtcedb, req.getRouteParam("name"));
-        if (!(a instanceof CustomAlgorithm)) {
-            throw new BadRequestException("Can only patch CustomAlgorithm instances");
-        }
-        CustomAlgorithm calg = (CustomAlgorithm) a;
-        ChangeAlgorithmRequest car = req.bodyAsMessage(ChangeAlgorithmRequest.newBuilder()).build();
-        log.debug("received ChangeAlgorithmRequest {}", car);
-        switch (car.getAction()) {
-        case RESET:
-            algMng.clearAlgorithmOverride(calg);
-            break;
-        case SET:
-            if (!car.hasAlgorithm()) {
-                throw new BadRequestException("No algorithm info provided");
-            }
-            AlgorithmInfo ai = car.getAlgorithm();
-            if (!ai.hasText()) {
-                throw new BadRequestException("No algorithm text provided");
-            }
-            try {
-                log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
-                algMng.setAlgorithmText(calg, ai.getText());
-            } catch (Exception e) {
-                System.out.println("here ---------- " + e.getMessage());
-                throw new BadRequestException(e.getMessage());
-            }
-            break;
-        default:
-            throw new BadRequestException("Unknown action " + car.getAction());
-        }
-
-        completeOK(req);
     }
 
     private static void verifyNumericParameter(Parameter p) throws BadRequestException {

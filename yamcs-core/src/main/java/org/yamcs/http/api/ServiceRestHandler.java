@@ -7,9 +7,9 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.protobuf.Rest.EditServiceRequest;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.EditServiceRequest;
+import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.security.SystemPrivilege;
 
 import com.google.common.util.concurrent.Service;
@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.Service;
  */
 public class ServiceRestHandler extends RestHandler {
 
-    @Route(path = "/api/services/:instance?", method = "GET")
+    @Route(rpc = "YamcsManagement.ListServices")
     public void listServices(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -34,22 +34,22 @@ public class ServiceRestHandler extends RestHandler {
             verifyInstance(req, instance);
         }
 
-        ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
+        ListServicesResponse.Builder responseb = ListServicesResponse.newBuilder();
 
         if (global) {
             for (ServiceWithConfig serviceWithConfig : yamcsServer.getGlobalServices()) {
-                responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));
+                responseb.addServices(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));
             }
         } else {
             YamcsServerInstance ysi = yamcsServer.getInstance(instance);
             for (ServiceWithConfig serviceWithConfig : ysi.getServices()) {
-                responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, null));
+                responseb.addServices(ServiceHelper.toServiceInfo(serviceWithConfig, instance, null));
             }
         }
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/services/:instance/:name", method = "GET")
+    @Route(rpc = "YamcsManagement.GetService")
     public void getService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -84,8 +84,7 @@ public class ServiceRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/services/:instance/:name", method = { "PATCH", "PUT", "POST" })
-    @Route(path = "/api/services/:instance/service/:name", method = { "PATCH", "PUT", "POST" })
+    @Route(rpc = "YamcsManagement.UpdateService")
     public void editService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 

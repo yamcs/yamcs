@@ -23,13 +23,13 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.ClientInfo.ClientState;
 import org.yamcs.protobuf.Rest.CreateInstanceRequest;
 import org.yamcs.protobuf.Rest.EditInstanceRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.parser.FilterParser;
@@ -82,7 +82,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/instances/:instance", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/instances/:instance", method = "PATCH")
     public void editInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

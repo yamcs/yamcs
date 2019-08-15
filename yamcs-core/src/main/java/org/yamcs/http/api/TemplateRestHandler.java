@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.http.HttpException;
+import org.yamcs.protobuf.InstanceTemplate;
 import org.yamcs.protobuf.Rest.ListInstanceTemplatesResponse;
-import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 
 public class TemplateRestHandler extends RestHandler {
 
@@ -18,7 +18,7 @@ public class TemplateRestHandler extends RestHandler {
         templates.sort((t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
         for (InstanceTemplate template : templates) {
-            templatesb.addTemplate(template);
+            templatesb.addTemplates(template);
         }
         completeOK(req, templatesb.build());
     }

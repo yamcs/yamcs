@@ -1,59 +1,49 @@
-<mat-sidenav-container class="mat-typography">
-  <mat-sidenav mode="side" opened="true">
-    <mat-toolbar class="module-title">
-      <mat-toolbar-row>&nbsp;</mat-toolbar-row>
-    </mat-toolbar>
-  </mat-sidenav>
+<mat-toolbar class="main">
+  <mat-toolbar-row>
+    <a mat-icon-button routerLink="/" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create an instance
+  </mat-toolbar-row>
+</mat-toolbar>
 
-  <mat-sidenav-content>
-    <mat-toolbar class="main">
-      <mat-toolbar-row>
-        <a mat-icon-button routerLink="/" color="primary">
-          <mat-icon>arrow_back</mat-icon>
-        </a> Create an instance
-      </mat-toolbar-row>
-    </mat-toolbar>
+<mat-toolbar class="sub">
+  <mat-toolbar-row>
+    <app-create-instance-wizard-step step="1"></app-create-instance-wizard-step>
+  </mat-toolbar-row>
+</mat-toolbar>
 
-    <mat-toolbar class="sub">
-      <mat-toolbar-row>
-        <app-create-instance-wizard-step step="1"></app-create-instance-wizard-step>
-      </mat-toolbar-row>
-    </mat-toolbar>
+<div class="form-content mat-typography">
+  <table mat-table
+          [dataSource]="dataSource"
+          class="ya-data-table"
+          style="width: 100%">
 
-    <div class="form-content">
-      <table mat-table
-             [dataSource]="dataSource"
-             class="ya-data-table"
-             style="width: 100%">
+    <ng-container cdkColumnDef="select">
+      <td mat-cell *matCellDef="let row" style="width: 50px">
+        <mat-checkbox (click)="$event.stopPropagation()"
+                      (change)="$event ? selectRow(row) : null"
+                      [checked]="selection.isSelected(row)">
+        </mat-checkbox>
+      </td>
+    </ng-container>
 
-        <ng-container cdkColumnDef="select">
-          <td mat-cell *matCellDef="let row" style="width: 50px">
-            <mat-checkbox (click)="$event.stopPropagation()"
-                          (change)="$event ? selectRow(row) : null"
-                          [checked]="selection.isSelected(row)">
-            </mat-checkbox>
-          </td>
-        </ng-container>
+    <ng-container cdkColumnDef="name">
+      <td mat-cell *cdkCellDef="let row">
+        {{ row.name }}
+      </td>
+    </ng-container>
 
-        <ng-container cdkColumnDef="name">
-          <td mat-cell *cdkCellDef="let row">
-            {{ row.name }}
-          </td>
-        </ng-container>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+        [class.vs-selected]></tr>
+  </table>
 
-        <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-            [class.vs-selected]></tr>
-      </table>
-
-      <p>&nbsp;</p>
-      <mat-toolbar>
-        <span style="flex: 1 1 auto"></span>
-        <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
-        <button type="submit" (click)="goToCustomizeInstance()"
-                mat-raised-button
-                [disabled]="!(selectedTemplate$ | async)"
-                color="primary">Next</button>
-      </mat-toolbar>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <p>&nbsp;</p>
+  <mat-toolbar>
+    <span style="flex: 1 1 auto"></span>
+    <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    <button type="submit" (click)="goToCustomizeInstance()"
+            mat-raised-button
+            [disabled]="!(selectedTemplate$ | async)"
+            color="primary">Next</button>
+  </mat-toolbar>
+</div>

@@ -4,18 +4,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.yamcs.protobuf.Archive.ListTablesResponse;
+import org.yamcs.protobuf.EditServiceRequest;
+import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
-import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.ServiceInfo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -66,11 +66,11 @@ public class InstanceClient {
         });
     }
 
-    public CompletableFuture<ListServiceInfoResponse> getServices() {
+    public CompletableFuture<ListServicesResponse> getServices() {
         String url = "/services/" + instance;
         return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
             try {
-                return ListServiceInfoResponse.parseFrom(response);
+                return ListServicesResponse.parseFrom(response);
             } catch (InvalidProtocolBufferException e) {
                 throw new CompletionException(e);
             }

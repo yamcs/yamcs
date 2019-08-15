@@ -54,7 +54,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "PATCH")
     public void editQueue(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
@@ -107,8 +107,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT",
-            "POST" })
+    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = "PATCH")
     public void editQueueEntry(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 

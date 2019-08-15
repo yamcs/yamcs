@@ -1,6 +1,6 @@
 package org.yamcs.management;
 
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.protobuf.LinkInfo;
 
 /**
  * Used by ManagementService to distribute data link related updates

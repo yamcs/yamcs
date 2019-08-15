@@ -40,6 +40,8 @@ export class AdminPage implements OnDestroy {
     ).subscribe((evt: any) => {
       const url = evt.url as string;
       this.collapseAllGroups();
+      this.userManagementActive = false;
+      this.rocksDbActive = false;
       if (url.match(/\/iam.*/)) {
         this.userManagementActive = true;
         this.userManagementExpanded = true;

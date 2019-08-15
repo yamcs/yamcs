@@ -1,11 +1,52 @@
 syntax="proto2";
 
 package yamcs.protobuf.yamcsManagement;
+
 option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "YamcsManagementProto";
+option java_multiple_files = true;
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+service YamcsManagement {
+
+  rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
+    option (yamcs.api.route) = {
+      description: "Get system info"
+      method: "GET"
+      path: "/api/sysinfo"
+    };
+  }
+  
+  rpc ListServices(google.protobuf.Empty) returns (ListServicesResponse) {
+    option (yamcs.api.route) = {
+      description: "List services"
+      method: "GET"
+      path: "/api/services/:instance?"
+    };
+  }
+  
+  rpc GetService(google.protobuf.Empty) returns (ServiceInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a service"
+      method: "GET"
+      path: "/api/services/:instance/:name"
+    };
+  }
+  
+  rpc UpdateService(EditServiceRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Update a service"
+      method: "PATCH"
+      path: "/api/services/:instance/:name"
+    };
+  }
+}
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
@@ -177,4 +218,44 @@ message StreamEvent {
   optional Type type = 1;
   optional string name = 2;
   optional int64 dataCount = 3;
+}
+
+message SystemInfo {
+  optional string yamcsVersion = 1;
+  optional string revision = 2;
+  optional string serverId = 3;
+  optional int64 uptime = 5;
+  optional string jvm = 6;
+  optional string workingDirectory = 7;
+  optional string configDirectory = 8;
+  optional string dataDirectory = 9;
+  optional string cacheDirectory = 10;
+  optional string os = 11;
+  optional string arch = 12;
+  optional int32 availableProcessors = 13;
+  optional double loadAverage = 14;
+  optional int64 heapMemory = 15;
+  optional int64 usedHeapMemory = 16;
+  optional int64 maxHeapMemory = 17;
+  optional int64 nonHeapMemory = 18;
+  optional int64 usedNonHeapMemory = 19;
+  optional int64 maxNonHeapMemory = 20;
+  optional int64 jvmThreadCount = 21;
+  repeated RootDirectory rootDirectories = 22;
+}
+
+message RootDirectory {
+  optional string directory = 1;
+  optional string type = 2;
+  optional int64 totalSpace = 3;
+  optional int64 unallocatedSpace = 4;
+  optional int64 usableSpace = 5;
+}
+
+message ListServicesResponse {
+  repeated ServiceInfo services = 1;
+}
+
+message EditServiceRequest {
+  optional string state = 1;
 }

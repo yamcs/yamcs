@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -148,7 +148,7 @@ export default class YamcsClient implements HttpHandler {
   async getInstanceTemplates() {
     const response = await this.doFetch(`${this.apiUrl}/instance-templates`);
     const wrapper = await response.json() as InstanceTemplatesWrapper;
-    return wrapper.template || [];
+    return wrapper.templates || [];
   }
 
   async getInstanceTemplate(name: string) {
@@ -172,7 +172,7 @@ export default class YamcsClient implements HttpHandler {
   async getServices(): Promise<Service[]> {
     const response = await this.doFetch(`${this.apiUrl}/services/_global`);
     const wrapper = await response.json() as ServicesWrapper;
-    return wrapper.service || [];
+    return wrapper.services || [];
   }
 
   async getService(name: string): Promise<Service> {
@@ -321,6 +321,12 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.getClientUpdates();
   }
 
+  async getSystemInfo() {
+    const url = `${this.apiUrl}/sysinfo`;
+    const response = await this.doFetch(url);
+    return await response.json() as SystemInfo;
+  }
+
   async getRocksDbDatabases() {
     const url = `${this.apiUrl}/archive/rocksdb/databases`;
     const response = await this.doFetch(url);
@@ -381,18 +387,18 @@ export default class YamcsClient implements HttpHandler {
     }
 
     let response: Response;
-    if (this.interceptor) {
-      try {
+    try {
+      if (this.interceptor) {
         response = await this.interceptor(this, url, init);
-      } catch (err) {
-        return Promise.reject(err);
+      } else {
+        response = await this.handle(url, init);
       }
-    } else {
-      response = await this.handle(url, init);
+    } catch (err) { // NOTE: Fetch fails with "TypeError" on network or CORS failures.
+      return Promise.reject(err);
     }
 
     // Make non 2xx responses available to clients via 'catch' instead of 'then'.
-    if (response.status >= 200 && response.status < 300) {
+    if (response.ok) {
       return Promise.resolve(response);
     } else {
       return Promise.reject(new HttpError(response));

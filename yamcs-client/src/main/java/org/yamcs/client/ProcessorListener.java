@@ -1,8 +1,8 @@
 package org.yamcs.client;
 
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.Statistics;
 
 public interface ProcessorListener {
 

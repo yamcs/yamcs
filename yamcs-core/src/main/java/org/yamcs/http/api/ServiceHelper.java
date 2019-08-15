@@ -1,8 +1,8 @@
 package org.yamcs.http.api;
 
 import org.yamcs.ServiceWithConfig;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
+import org.yamcs.protobuf.ServiceInfo;
+import org.yamcs.protobuf.ServiceState;
 
 public class ServiceHelper {
 

@@ -5,7 +5,7 @@
     <a mat-button
        color="primary"
        routerLink="create">
-      <mat-icon>add_box</mat-icon>
+      <mat-icon>add</mat-icon>
       CREATE GROUP
     </a>
   </app-admin-toolbar>
@@ -29,9 +29,7 @@
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">Group</th>
         <td mat-cell *matCellDef="let group">
-          <a [routerLink]="group.name">
-            <mat-icon class="icon16" style="vertical-align: middle">group</mat-icon> {{ group.name }}
-          </a>
+          <a [routerLink]="group.name">{{ group.name }}</a>
         </td>
       </ng-container>
 

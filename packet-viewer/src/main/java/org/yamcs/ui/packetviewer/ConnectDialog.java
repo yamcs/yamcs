@@ -34,7 +34,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.RestClient;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance;
 
 /**
  * Dialog for entering yamcs connection parameters. This is a copy of the YamcsConnectDialog with options to get also

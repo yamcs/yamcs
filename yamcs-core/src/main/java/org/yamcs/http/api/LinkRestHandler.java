@@ -6,9 +6,9 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.SystemPrivilege;
 
 /**
@@ -35,14 +35,12 @@ public class LinkRestHandler extends RestHandler {
     }
 
     @Route(path = "/api/links/:instance/:name", method = "GET")
-    @Route(path = "/api/links/:instance/link/:name", method = "GET")
     public void getLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
         completeOK(req, linkInfo);
     }
 
-    @Route(path = "/api/links/:instance/:name", method = { "PATCH", "PUT", "POST" })
-    @Route(path = "/api/links/:instance/link/:name", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/links/:instance/:name", method = "PATCH")
     public void editLink(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlLinks);
 

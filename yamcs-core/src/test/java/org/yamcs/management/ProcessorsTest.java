@@ -30,10 +30,10 @@ import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.ProcessorControlClient;
 import org.yamcs.client.ProcessorListener;
 import org.yamcs.client.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Statistics;
 import org.yamcs.security.User;
 
 import com.google.common.util.concurrent.AbstractService;

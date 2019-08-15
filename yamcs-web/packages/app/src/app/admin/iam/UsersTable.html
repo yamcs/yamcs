@@ -16,6 +16,13 @@
     </td>
   </ng-container>
 
+  <ng-container matColumnDef="displayName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">Display name</th>
+    <td mat-cell *matCellDef="let user">
+      {{ user.displayName || '-' }}
+    </td>
+  </ng-container>
+
   <ng-container matColumnDef="groups">
     <th mat-header-cell *matHeaderCellDef>Groups</th>
     <td mat-cell *matCellDef="let user">

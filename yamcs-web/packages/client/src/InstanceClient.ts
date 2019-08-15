@@ -253,7 +253,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/services/${this.instance}`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ServicesWrapper;
-    return wrapper.service || [];
+    return wrapper.services || [];
   }
 
   async getService(name: string): Promise<Service> {

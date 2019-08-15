@@ -190,25 +190,17 @@ message ListInstancesResponse {
 }
 
 message CreateInstanceRequest {
-   optional string name = 1;
-   optional string template = 2;
-   map<string, string> templateArgs = 3;
-   map<string, string> labels = 4;
+  optional string name = 1;
+  optional string template = 2;
+  map<string, string> templateArgs = 3;
+  map<string, string> labels = 4;
 }
 
 message ListInstanceTemplatesResponse {
-  repeated yamcsManagement.InstanceTemplate template = 1; 
+  repeated yamcsManagement.InstanceTemplate templates = 1; 
 }
 
 message EditInstanceRequest {
-  optional string state = 1;
-}
-
-message ListServiceInfoResponse {
-  repeated yamcsManagement.ServiceInfo service = 1;
-}
-
-message EditServiceRequest {
   optional string state = 1;
 }
 
@@ -225,20 +217,20 @@ message CreateBucketRequest {
 
 message BucketInfo {
   optional string name = 1;
-  optional uint64 size  = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
-  optional uint32 numObjects  = 3; //number of objects in the bucket
+  optional uint64 size = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint32 numObjects = 3; //number of objects in the bucket
 }
+
 message ObjectInfo {
   optional string name = 1;
-  optional string created  = 2; //time in UTC format
-  optional uint64 size  = 3; //size in bytes
+  optional string created = 2; //time in UTC format
+  optional uint64 size = 3; //size in bytes
   map<string, string> metadata = 4;
 }
 
 message ListBucketsResponse {
   repeated BucketInfo bucket = 1;
 }
-
 
 message ListObjectsResponse {
   repeated string prefix = 1;

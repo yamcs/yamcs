@@ -45,9 +45,9 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
-import org.yamcs.protobuf.YamcsManagement.TemplateVariable;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.InstanceTemplate;
+import org.yamcs.protobuf.TemplateVariable;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.time.RealtimeTimeService;
@@ -904,6 +904,15 @@ public class YamcsServer {
                     stdoutLogger.info(x);
                 }
             }
+
+            @Override
+            public void println(Object x) {
+                if (YAMCS.noStreamRedirect) {
+                    super.println(x);
+                } else {
+                    stdoutLogger.info(String.valueOf(x));
+                }
+            }
         });
         Logger stderrLogger = Logger.getLogger("stderr");
         System.setErr(new PrintStream(System.err) {
@@ -913,6 +922,15 @@ public class YamcsServer {
                     super.println(x);
                 } else {
                     stderrLogger.severe(x);
+                }
+            }
+
+            @Override
+            public void println(Object x) {
+                if (YAMCS.noStreamRedirect) {
+                    super.println(x);
+                } else {
+                    stdoutLogger.info(String.valueOf(x));
                 }
             }
         });

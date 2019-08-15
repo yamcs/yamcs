@@ -442,3 +442,35 @@ export interface RocksDbDatabase {
   dbPath: string;
   dataDir: string;
 }
+
+export interface SystemInfo {
+  yamcsVersion: string;
+  revision: string;
+  serverId: string;
+  uptime: number;
+  jvm: string;
+  workingDirectory: string;
+  configDirectory: string;
+  dataDirectory: string;
+  cacheDirectory: string;
+  os: string;
+  arch: string;
+  availableProcessors: number;
+  loadAverage: number;
+  heapMemory: number;
+  usedHeapMemory: number;
+  maxHeapMemory: number;
+  nonHeapMemory: number;
+  usedNonHeapMemory: number;
+  usedMaxHeapMemory: number;
+  jvmThreadCount: number;
+  rootDirectories: RootDirectory[];
+}
+
+export interface RootDirectory {
+  directory: string;
+  type: string;
+  totalSpace: number;
+  unallocatedSpace: number;
+  usableSpace: number;
+}

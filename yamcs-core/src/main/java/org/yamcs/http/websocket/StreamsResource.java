@@ -5,10 +5,9 @@ import org.yamcs.ProcessorException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.management.TableStreamListener;
 import org.yamcs.protobuf.Archive.StreamInfo;
+import org.yamcs.protobuf.StreamEvent;
 import org.yamcs.protobuf.Web.StreamsSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.StreamEvent;
-import org.yamcs.protobuf.YamcsManagement.StreamEvent.Type;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -53,7 +52,7 @@ public class StreamsResource implements WebSocketResource, TableStreamListener {
 
         for (Stream stream : ydb.getStreams()) {
             client.sendData(ProtoDataType.STREAM_EVENT, StreamEvent.newBuilder()
-                    .setType(Type.CREATED)
+                    .setType(StreamEvent.Type.CREATED)
                     .setName(stream.getName())
                     .setDataCount(stream.getDataCount())
                     .build());
@@ -66,7 +65,7 @@ public class StreamsResource implements WebSocketResource, TableStreamListener {
     public void streamRegistered(String instance, Stream stream) {
         if (instance.equals(this.instance)) {
             client.sendData(ProtoDataType.STREAM_EVENT, StreamEvent.newBuilder()
-                    .setType(Type.CREATED)
+                    .setType(StreamEvent.Type.CREATED)
                     .setName(stream.getName())
                     .setDataCount(stream.getDataCount())
                     .build());
@@ -77,7 +76,7 @@ public class StreamsResource implements WebSocketResource, TableStreamListener {
     public void streamUpdated(String instance, StreamInfo stream) {
         if (instance.equals(this.instance)) {
             client.sendData(ProtoDataType.STREAM_EVENT, StreamEvent.newBuilder()
-                    .setType(Type.UPDATED)
+                    .setType(StreamEvent.Type.UPDATED)
                     .setName(stream.getName())
                     .setDataCount(stream.getDataCount())
                     .build());
@@ -88,7 +87,7 @@ public class StreamsResource implements WebSocketResource, TableStreamListener {
     public void streamUnregistered(String instance, String name) {
         if (instance.equals(this.instance)) {
             client.sendData(ProtoDataType.STREAM_EVENT, StreamEvent.newBuilder()
-                    .setType(Type.DELETED)
+                    .setType(StreamEvent.Type.DELETED)
                     .setName(name)
                     .build());
         }

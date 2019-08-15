@@ -9,8 +9,8 @@ import java.io.File;
 import org.junit.Test;
 import org.yamcs.protobuf.Rest.CreateInstanceRequest;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 
 import io.netty.handler.codec.http.HttpMethod;
 

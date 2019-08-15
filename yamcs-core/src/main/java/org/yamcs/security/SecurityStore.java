@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.yamcs.InitException;
 import org.yamcs.Spec;
@@ -50,6 +52,9 @@ public class SecurityStore {
      */
     private List<AuthModule> authModules = new ArrayList<>();
 
+    private Set<SystemPrivilege> systemPrivileges = new CopyOnWriteArraySet<>();
+    private Set<ObjectPrivilegeType> objectPrivilegeTypes = new CopyOnWriteArraySet<>();
+
     public SecurityStore() throws InitException {
         YConfiguration config;
         try {
@@ -60,7 +65,8 @@ public class SecurityStore {
 
         // Create the system and guest user. These are not stored in the directory,
         // and can not be used to log in directly.
-        generateFixedUsers(config);
+        generatePredefinedUsers(config);
+        generatePredefinedPrivileges();
 
         directory = new Directory();
         blockUnknownUsers = config.getBoolean("blockUnknownUsers", false);
@@ -82,7 +88,7 @@ public class SecurityStore {
      * Generates the system and the guest user. These users are not manageable via the directory and can not be used to
      * log in directly.
      */
-    private void generateFixedUsers(YConfiguration config) {
+    private void generatePredefinedUsers(YConfiguration config) {
         systemUser = new User("System", null);
         systemUser.setId(1);
         systemUser.setDisplayName("System");
@@ -111,6 +117,34 @@ public class SecurityStore {
                 }
             }
         }
+    }
+
+    private void generatePredefinedPrivileges() {
+        systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
+        systemPrivileges.add(SystemPrivilege.Command);
+        systemPrivileges.add(SystemPrivilege.ControlArchiving);
+        systemPrivileges.add(SystemPrivilege.ControlCommandQueue);
+        systemPrivileges.add(SystemPrivilege.ControlLinks);
+        systemPrivileges.add(SystemPrivilege.ControlProcessor);
+        systemPrivileges.add(SystemPrivilege.ControlServices);
+        systemPrivileges.add(SystemPrivilege.CreateInstances);
+        systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
+        systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
+        systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
+        systemPrivileges.add(SystemPrivilege.ReadEvents);
+        systemPrivileges.add(SystemPrivilege.ReadTables);
+        systemPrivileges.add(SystemPrivilege.WriteEvents);
+        systemPrivileges.add(SystemPrivilege.WriteTables);
+
+        objectPrivilegeTypes.add(ObjectPrivilegeType.Command);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.CommandHistory);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.InsertCommandQueue);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ManageBucket);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ReadBucket);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ReadPacket);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ReadParameter);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.Stream);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.WriteParameter);
     }
 
     private AuthModule loadAuthModule(YConfiguration moduleConfig) throws InitException {

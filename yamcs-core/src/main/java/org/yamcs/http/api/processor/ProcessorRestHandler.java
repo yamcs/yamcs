@@ -35,6 +35,9 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Alarms.EditAlarmRequest;
 import org.yamcs.protobuf.Archive.ListAlarmsResponse;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
@@ -43,9 +46,6 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
@@ -107,7 +107,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/processors/:instance/:processor", method = "PATCH")
     public void editProcessor(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
 
@@ -220,8 +220,7 @@ public class ProcessorRestHandler extends RestHandler {
     }
 
     @Deprecated
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT",
-            "POST" })
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = "PATCH")
     public void patchParameterAlarm(RestRequest req) throws HttpException {
         log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
         patchAlarm(req);

@@ -34,6 +34,7 @@ import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -62,7 +63,8 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
+import org.yamcs.protobuf.ServiceInfo;
+import org.yamcs.protobuf.ServiceState;
 import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
@@ -75,8 +77,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 
@@ -1118,10 +1118,10 @@ public class IntegrationTest extends AbstractIntegrationTest {
         String serviceClass = "org.yamcs.archive.CommandHistoryRecorder";
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        ListServiceInfoResponse r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        assertEquals(10, r.getServiceList().size());
+        ListServicesResponse r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        assertEquals(10, r.getServicesList().size());
 
-        ServiceInfo servInfo = r.getServiceList().stream()
+        ServiceInfo servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
@@ -1133,8 +1133,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream()
+        r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
@@ -1146,8 +1146,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream()
+        r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);

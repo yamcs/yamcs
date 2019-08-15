@@ -99,6 +99,15 @@ body {
   padding: 7px 8px 8px 0;
 }
 
+dd, dt {
+  font-size: 12px;
+  color: rgba(0, 0, 0, .654);
+}
+
+dt {
+  font-weight: bold;
+}
+
 /*.ya-data-table-placeholder {
   border-bottom: 1.1px solid rgba(0, 0, 0, .08);
 }*/
@@ -344,4 +353,13 @@ button.expandable {
 .section-divider {
   padding-top: 12px;
   padding-bottom: 12px;
+}
+
+.mat-toolbar.top {
+  min-height: 48px;
+}
+
+.mat-toolbar.top .mat-toolbar-row {
+  height: 48px;
+  font-weight: 400;
 }
