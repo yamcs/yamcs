@@ -16,7 +16,7 @@ import org.yamcs.security.SystemPrivilege;
  */
 public class LinkRestHandler extends RestHandler {
 
-    @Route(path = "/api/links/:instance?", method = "GET")
+    @Route(path = "/api/links/{instance?}", method = "GET")
     public void listLinks(RestRequest req) throws HttpException {
         String instance = req.getRouteParam("instance");
         if (instance != null) {
@@ -34,13 +34,13 @@ public class LinkRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/links/:instance/:name", method = "GET")
+    @Route(path = "/api/links/{instance}/{name}", method = "GET")
     public void getLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
         completeOK(req, linkInfo);
     }
 
-    @Route(path = "/api/links/:instance/:name", method = "PATCH")
+    @Route(path = "/api/links/{instance}/{name}", method = "PATCH")
     public void editLink(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlLinks);
 

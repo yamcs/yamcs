@@ -15,11 +15,11 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ServiceUnavailableException;
-import org.yamcs.protobuf.Rest.BucketInfo;
-import org.yamcs.protobuf.Rest.CreateBucketRequest;
-import org.yamcs.protobuf.Rest.ListBucketsResponse;
-import org.yamcs.protobuf.Rest.ListObjectsResponse;
-import org.yamcs.protobuf.Rest.ObjectInfo;
+import org.yamcs.protobuf.BucketInfo;
+import org.yamcs.protobuf.CreateBucketRequest;
+import org.yamcs.protobuf.ListBucketsResponse;
+import org.yamcs.protobuf.ListObjectsResponse;
+import org.yamcs.protobuf.ObjectInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
@@ -50,7 +50,7 @@ public class BucketRestHandler extends RestHandler {
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
-    @Route(path = "/api/buckets/:instance", method = "GET")
+    @Route(rpc = "Buckets.ListBuckets")
     public void listBuckets(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -67,7 +67,7 @@ public class BucketRestHandler extends RestHandler {
                 if (bp.hasSize()) {
                     bucketb.setSize(bp.getSize());
                 }
-                responseb.addBucket(bucketb);
+                responseb.addBuckets(bucketb);
             }
             completeOK(req, responseb.build());
         } catch (IOException e) {
@@ -75,7 +75,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/buckets/:instance", method = { "POST" })
+    @Route(rpc = "Buckets.CreateBucket")
     public void createBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -94,7 +94,7 @@ public class BucketRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/buckets/:instance/:bucketName", method = { "DELETE" })
+    @Route(rpc = "Buckets.DeleteBucket")
     public void deleteBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -109,8 +109,8 @@ public class BucketRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/buckets/:instance/:bucketName", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
-    @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
+    @Route(path = "/api/buckets/{instance}/{bucketName}", method = "POST", maxBodySize = MAX_BODY_SIZE)
+    @Route(path = "/api/buckets/{instance}/{bucketName}/{objectName*}", method = "POST", maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
         BucketHelper.checkManageBucketPrivilege(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
@@ -198,7 +198,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/buckets/:instance/:bucketName", method = { "GET" })
+    @Route(rpc = "Buckets.ListObjects")
     public void listObjects(RestRequest req) throws HttpException {
         BucketHelper.checkReadBucketPrivilege(req);
         Bucket b = BucketHelper.verifyAndGetBucket(req);
@@ -228,14 +228,14 @@ public class BucketRestHandler extends RestHandler {
                     }
                 });
                 Collections.sort(prefixes);
-                lor.addAllPrefix(prefixes);
+                lor.addAllPrefixes(prefixes);
             }
 
             for (ObjectProperties props : objects) {
                 ObjectInfo oinfo = ObjectInfo.newBuilder().setCreated(TimeEncoding.toString(props.getCreated()))
                         .setName(props.getName()).setSize(props.getSize()).putAllMetadata(props.getMetadataMap())
                         .build();
-                lor.addObject(oinfo);
+                lor.addObjects(oinfo);
             }
             completeOK(req, lor.build());
         } catch (IOException e) {
@@ -245,7 +245,7 @@ public class BucketRestHandler extends RestHandler {
 
     }
 
-    @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "GET" })
+    @Route(path = "/api/buckets/{instance}/{bucketName}/{objectName*}", method = "GET")
     public void getObject(RestRequest req) throws HttpException {
         BucketHelper.checkReadBucketPrivilege(req);
 
@@ -265,7 +265,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "DELETE" })
+    @Route(rpc = "Buckets.DeleteBucket")
     public void deleteObject(RestRequest req) throws HttpException {
         BucketHelper.checkManageBucketPrivilege(req);
 

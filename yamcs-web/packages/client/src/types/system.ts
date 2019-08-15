@@ -403,8 +403,8 @@ export interface Bucket {
 }
 
 export interface ListObjectsResponse {
-  prefix: string[];
-  object: ObjectInfo[];
+  prefixes: string[];
+  objects: ObjectInfo[];
 }
 
 export interface ObjectInfo {

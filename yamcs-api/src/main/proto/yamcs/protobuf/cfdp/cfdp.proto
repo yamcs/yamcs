@@ -17,7 +17,7 @@ service CFDP {
     option (yamcs.api.route) = {
       description: "List transfers"
       method: "GET"
-      path: "/api/cfdp/:instance/transfers"
+      path: "/api/cfdp/{instance}/transfers"
     };
   }
   
@@ -25,7 +25,7 @@ service CFDP {
     option (yamcs.api.route) = {
       description: "Get a transfer"
       method: "GET"
-      path: "/api/cfdp/:instance/transfers/:id"
+      path: "/api/cfdp/{instance}/transfers/{id}"
     };
   }
   
@@ -33,7 +33,7 @@ service CFDP {
     option (yamcs.api.route) = {
       description: "Create a transfer"
       method: "POST"
-      path: "/api/cfdp/:instance/transfers"
+      path: "/api/cfdp/{instance}/transfers"
     };
   }
   
@@ -41,7 +41,7 @@ service CFDP {
     option (yamcs.api.route) = {
       description: "Update a transfer"
       method: "PATCH"
-      path: "/api/cfdp/:instance/transfers/:id"
+      path: "/api/cfdp/{instance}/transfers/{id}"
     };
   }
 }

@@ -5,10 +5,10 @@ import org.yamcs.archive.GPBHelper;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
+import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.SqlBuilder;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
@@ -24,8 +24,8 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class ArchiveCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/commands")
-    @Route(path = "/api/archive/:instance/commands/:name*")
+    @Route(path = "/api/archive/{instance}/commands")
+    @Route(path = "/api/archive/{instance}/commands/{name*}")
     public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

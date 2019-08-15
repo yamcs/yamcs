@@ -104,7 +104,7 @@ export interface PacketNameWrapper {
 }
 
 export interface BucketsWrapper {
-  bucket: Bucket[];
+  buckets: Bucket[];
 }
 
 export interface RocksDbDatabasesWrapper {

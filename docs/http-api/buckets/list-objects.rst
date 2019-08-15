@@ -25,8 +25,8 @@ The ``delimiter`` allows the list to work in a directory mode despite the object
 .. code-block:: proto
 
     {
-      "prefix": [ "a/"],
-      "object": [{
+      "prefixes": [ "a/"],
+      "objects": [{
         "name": "request-example-to-REST-Archive-CSV-API.txt",
         "created": "2018-05-28T08:25:19.809Z",
         "size": "869"
@@ -45,6 +45,6 @@ The ``delimiter`` allows the list to work in a directory mode despite the object
     }
 
     message ListObjectsResponse {
-       repeated string prefix = 1;
-       repeated ObjectInfo object = 2;
+       repeated string prefixes = 1;
+       repeated ObjectInfo objects = 2;
     }

@@ -32,7 +32,7 @@ import org.yamcs.http.api.StreamToChunkedProtobufEncoder;
 import org.yamcs.http.api.StreamToChunkedTransferEncoder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchDownloadParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -66,7 +66,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
     private GpbExtensionRegistry gpbExtensionRegistry;
 
-    @Route(path = "/api/archive/:instance/downloads/parameters", method = { "GET", "POST" })
+    @Route(path = "/api/archive/{instance}/downloads/parameters:batchGet", method = "POST")
     public void downloadParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -79,8 +79,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         // First try from body
         if (req.hasBody()) {
-            BulkDownloadParameterValueRequest request = req
-                    .bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder()).build();
+            BatchDownloadParameterValueRequest request = req
+                    .bodyAsMessage(BatchDownloadParameterValueRequest.newBuilder()).build();
             if (request.hasStart()) {
                 rr.setStart(RestRequest.parseTime(request.getStart()));
             }
@@ -174,7 +174,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/downloads/parameters/:name*", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/parameters/{name*}", method = "GET")
     public void downloadParameter(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -215,7 +215,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/downloads/packets", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/packets", method = "GET")
     public void downloadPackets(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -260,7 +260,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/downloads/commands", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/commands", method = "GET")
     public void downloadCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -293,7 +293,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 });
     }
 
-    @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/tables/{name}", method = "GET")
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -339,7 +339,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/:instance/downloads/events", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/events", method = "GET")
     public void downloadEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ArchiveEventRestHandler.verifyEventArchiveSupport(instance);

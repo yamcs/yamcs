@@ -84,8 +84,8 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/archive/rocksdb/:tablespace/properties", method = "GET")
-    @Route(path = "/api/archive/rocksdb/:tablespace/properties/:dbpath*", method = "GET")
+    @Route(path = "/api/archive/rocksdb/{tablespace}/properties", method = "GET")
+    @Route(path = "/api/archive/rocksdb/{tablespace}/properties/{dbpath*}", method = "GET")
     public void getProperty(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
@@ -211,7 +211,6 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
                 completeOK(req);
             }
         });
-
     }
 
     private Tablespace verifyTablespace(RestRequest req) throws HttpException {

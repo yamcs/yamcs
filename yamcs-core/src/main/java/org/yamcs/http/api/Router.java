@@ -98,13 +98,13 @@ import io.netty.util.AttributeKey;
  * The Router itself has the same granularity as HttpServer: one instance only.
  * <p>
  * When matching a route, priority is first given to built-in routes, only if none match the first matching
- * instance-specific dynamic route is matched. Dynamic routes often mention ':instance' in their url, which will be
+ * instance-specific dynamic route is matched. Dynamic routes often mention '{instance}' in their url, which will be
  * expanded upon registration into the actual yamcs instance.
  */
 @Sharable
 public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?:(\\w+)([\\?\\*])?");
+    private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)([\\?\\*])?\\}");
     private static final Log log = new Log(Router.class);
 
     public final static int MAX_BODY_SIZE = 65536;
@@ -136,7 +136,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new ClientRestHandler());
         registerRouteHandler(new InstanceRestHandler());
         registerRouteHandler(new LinkRestHandler());
-        registerRouteHandler(new GroupRestHandler());
+        registerRouteHandler(new IAMRestHandler());
         registerRouteHandler(new ServiceAccountRestHandler());
         registerRouteHandler(new ServiceRestHandler());
         registerRouteHandler(new SystemInfoRestHandler());
@@ -239,13 +239,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                             if (descriptor == null) {
                                 throw new UnsupportedOperationException("Unable to find rpc definition: " + ann.rpc());
                             }
-                            routeConfigs.add(new RouteConfig(routeHandler, descriptor, ann.priority(), ann.dataLoad(),
+                            routeConfigs.add(new RouteConfig(routeHandler, descriptor, ann.dataLoad(),
                                     ann.offThread(), ann.maxBodySize(), handle));
                         } else {
                             for (String m : ann.method()) {
                                 HttpMethod httpMethod = HttpMethod.valueOf(m);
 
-                                routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(),
+                                routeConfigs.add(new RouteConfig(routeHandler, ann.path(),
                                         ann.dataLoad(), ann.offThread(), ann.maxBodySize(), httpMethod, handle));
                             }
                         }
@@ -267,13 +267,14 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         for (RouteConfig routeConfig : routeConfigs) {
             String routeString = routeConfig.originalPath;
-            if (yamcsInstance != null) { // Expand :instance upon registration (only for dynamic routes)
-                if (!routeString.contains(":instance")) {
+            if (yamcsInstance != null) { // Expand {instance} upon registration (only for dynamic routes)
+                if (!routeString.contains("{instance}")) {
                     log.warn("Dynamically added route {} {} is instance-specific, yet does not "
-                            + "contain ':instance' in its url. Routing of incoming requests "
+                            + "contain '{instance}' in its url. Routing of incoming requests "
                             + "will be ambiguous.", routeConfig.httpMethod, routeConfig.originalPath);
                 }
-                routeString = routeString.replace(":instance", yamcsInstance);
+                routeString = routeString.replace(":instance", yamcsInstance); // Legacy, remove some day
+                routeString = routeString.replace("{instance}", yamcsInstance);
             }
             Pattern pattern = toPattern(routeString);
             Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
@@ -477,7 +478,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     /*
-     * Pattern matching loosely inspired from angular and express.js
+     * Pattern matching loosely inspired from RFC6570
      */
     private Pattern toPattern(String route) {
         Matcher matcher = ROUTE_PATTERN.matcher(route);
@@ -512,7 +513,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public static final class RouteConfig implements Comparable<RouteConfig> {
         final RouteHandler routeHandler;
         final String originalPath;
-        final boolean priority;
         final HttpMethod httpMethod;
         final MethodHandle handle;
         final boolean dataLoad;
@@ -522,11 +522,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final AtomicLong requestCount = new AtomicLong();
         final AtomicLong errorCount = new AtomicLong();
 
-        RouteConfig(RouteHandler routeHandler, RouteDescriptor descriptor, boolean priority, boolean dataLoad,
+        RouteConfig(RouteHandler routeHandler, RouteDescriptor descriptor, boolean dataLoad,
                 boolean offThread, int maxBodySize, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = descriptor.getPath();
-            this.priority = priority;
             this.httpMethod = HttpMethod.valueOf(descriptor.getHttpMethod());
             this.handle = handle;
             this.dataLoad = dataLoad;
@@ -535,11 +534,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.descriptor = descriptor;
         }
 
-        RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
+        RouteConfig(RouteHandler routeHandler, String originalPath, boolean dataLoad,
                 boolean offThread, int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
-            this.priority = priority;
             this.httpMethod = httpMethod;
             this.handle = handle;
             this.dataLoad = dataLoad;
@@ -554,16 +552,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         @Override
         public int compareTo(RouteConfig o) {
-            int priorityCompare = Boolean.compare(priority, o.priority);
-            if (priorityCompare != 0) {
-                return -priorityCompare;
+            int pathLengthCompare = Integer.compare(originalPath.length(), o.originalPath.length());
+            if (pathLengthCompare != 0) {
+                return -pathLengthCompare;
             } else {
-                int pathLengthCompare = Integer.compare(originalPath.length(), o.originalPath.length());
-                if (pathLengthCompare != 0) {
-                    return -pathLengthCompare;
-                } else {
-                    return originalPath.compareTo(o.originalPath);
-                }
+                return originalPath.compareTo(o.originalPath);
             }
         }
 

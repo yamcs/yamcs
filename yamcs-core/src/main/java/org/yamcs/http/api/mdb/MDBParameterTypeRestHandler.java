@@ -25,8 +25,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class MDBParameterTypeRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterTypeRestHandler.class);
 
-    @Route(path = "/api/mdb/:instance/parameter-types", method = "GET")
-    @Route(path = "/api/mdb/:instance/parameter-types/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/parameter-types", method = "GET")
+    @Route(path = "/api/mdb/{instance}/parameter-types/{name*}", method = "GET")
     public void getParameterType(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
             getParameterTypeInfo(req);

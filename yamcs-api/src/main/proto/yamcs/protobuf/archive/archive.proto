@@ -24,7 +24,7 @@ service RocksDB {
     option (yamcs.api.route) = {
       description: "Backup tablespace"
       method: "POST"
-      path: "/api/archive/rocksdb/backup/:dbpath*"
+      path: "/api/archive/rocksdb/backup/{dbpath*}"
     };
   }
   
@@ -40,7 +40,7 @@ service RocksDB {
     option (yamcs.api.route) = {
       description: "Compact root database"
       method: "GET"
-      path: "/api/archive/rocksdb/:tablespace/compact"
+      path: "/api/archive/rocksdb/{tablespace}/compact"
     };
   }
   
@@ -48,7 +48,7 @@ service RocksDB {
     option (yamcs.api.route) = {
       description: "Compact database"
       method: "GET"
-      path: "/api/archive/rocksdb/:tablespace/compact/:dbpath*"
+      path: "/api/archive/rocksdb/{tablespace}/compact/{dbpath*}"
     };
   }
 }
@@ -59,7 +59,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Rebuild range"
       method: "POST"
-      path: "/api/archive/:instance/parameterArchive/rebuild"
+      path: "/api/archive/{instance}/parameterArchive/rebuild"
     };
   }
 
@@ -67,7 +67,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Delete partitions"
       method: "POST"
-      path: "/api/archive/:instance/parameterArchive/deletePartitions"
+      path: "/api/archive/{instance}/parameterArchive/deletePartitions"
     };
   }
   
@@ -75,7 +75,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Get parameter info"
       method: "GET"
-      path: "/api/archive/:instance/parameterArchive/info/parameter/:name*"
+      path: "/api/archive/{instance}/parameterArchive/info/parameter/{name*}"
     };
   }
   
@@ -83,7 +83,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Get parameter samples"
       method: "GET"
-      path: "/api/archive/:instance/parameters/:name*/samples"
+      path: "/api/archive/{instance}/parameters/{name*}/samples"
     };
   }
   
@@ -91,7 +91,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Get parameter ranges"
       method: "GET"
-      path: "/api/archive/:instance/parameters/:name*/ranges"
+      path: "/api/archive/{instance}/parameters/{name*}/ranges"
     };
   }
   
@@ -99,7 +99,7 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "List parameter history"
       method: "GET"
-      path: "/api/archive/:instance/parameters/:name*"
+      path: "/api/archive/{instance}/parameters/{name*}"
     };
   }
 }
@@ -110,7 +110,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Execute SQL"
       method: "POST"
-      path: "/api/archive/:instance/sql"
+      path: "/api/archive/{instance}/sql"
     };
   }
 
@@ -118,7 +118,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List events"
       method: "GET"
-      path: "/api/archive/:instance/events"
+      path: "/api/archive/{instance}/events"
     };
   }
 
@@ -126,7 +126,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Create an event"
       method: "POST"
-      path: "/api/archive/:instance/events"
+      path: "/api/archive/{instance}/events"
     };
   }
   
@@ -134,7 +134,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List event sources"
       method: "GET"
-      path: "/api/archive/:instance/events/sources"
+      path: "/api/archive/{instance}/events/sources"
     };
   }
   
@@ -142,7 +142,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List alarms"
       method: "GET"
-      path: "/api/archive/:instance/alarms"
+      path: "/api/archive/{instance}/alarms"
     };
   }
   
@@ -150,7 +150,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List parameter alarms"
       method: "GET"
-      path: "/api/archive/:instance/alarms/:parameter*"
+      path: "/api/archive/{instance}/alarms/{parameter*}"
     };
   }
   
@@ -158,7 +158,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List parameter groups"
       method: "GET"
-      path: "/api/archive/:instance/parameter-groups"
+      path: "/api/archive/{instance}/parameter-groups"
     };
   }
   
@@ -166,7 +166,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List parameter history"
       method: "GET"
-      path: "/api/stream-archive/:instance/parameters/:name*"
+      path: "/api/stream-archive/{instance}/parameters/{name*}"
     };
   }
   
@@ -174,7 +174,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get parameter samples"
       method: "GET"
-      path: "/api/stream-archive/:instance/parameters/:name*/samples"
+      path: "/api/stream-archive/{instance}/parameters/{name*}/samples"
     };
   }
   
@@ -182,7 +182,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List streams"
       method: "GET"
-      path: "/api/archive/:instance/streams"
+      path: "/api/archive/{instance}/streams"
     };
   }
   
@@ -190,7 +190,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get a stream"
       method: "GET"
-      path: "/api/archive/:instance/streams/:name"
+      path: "/api/archive/{instance}/streams/{name}"
     };
   }
   
@@ -198,7 +198,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List tables"
       method: "GET"
-      path: "/api/archive/:instance/tables"
+      path: "/api/archive/{instance}/tables"
     };
   }
   
@@ -206,7 +206,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get a table"
       method: "GET"
-      path: "/api/archive/:instance/tables/:name"
+      path: "/api/archive/{instance}/tables/{name}"
     };
   }
   
@@ -214,7 +214,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get table data"
       method: "GET"
-      path: "/api/archive/:instance/tables/:name/data"
+      path: "/api/archive/{instance}/tables/{name}/data"
     };
   }
   
@@ -222,7 +222,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List command history index"
       method: "GET"
-      path: "/api/archive/:instance/command-index"
+      path: "/api/archive/{instance}/command-index"
     };
   }
   
@@ -230,7 +230,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List event index"
       method: "GET"
-      path: "/api/archive/:instance/event-index"
+      path: "/api/archive/{instance}/event-index"
     };
   }
   
@@ -238,7 +238,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List packet index"
       method: "GET"
-      path: "/api/archive/:instance/packet-index"
+      path: "/api/archive/{instance}/packet-index"
     };
   }
   
@@ -246,7 +246,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List parameter index"
       method: "GET"
-      path: "/api/archive/:instance/parameter-index"
+      path: "/api/archive/{instance}/parameter-index"
     };
   }
   
@@ -254,7 +254,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List completeness index"
       method: "GET"
-      path: "/api/archive/:instance/completeness-index"
+      path: "/api/archive/{instance}/completeness-index"
     };
   }
   
@@ -262,7 +262,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List tags"
       method: "GET"
-      path: "/api/archive/:instance/tags"
+      path: "/api/archive/{instance}/tags"
     };
   }
   
@@ -270,7 +270,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get a tag"
       method: "GET"
-      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
     };
   }
   
@@ -278,7 +278,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Create a tag"
       method: "POST"
-      path: "/api/archive/:instance/tags"
+      path: "/api/archive/{instance}/tags"
     };
   }
   
@@ -286,7 +286,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Update a tag"
       method: "PATCH"
-      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
     };
   }
   
@@ -294,7 +294,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Delete a tag"
       method: "DELETE"
-      path: "/api/archive/:instance/tags/:tagTime/:tagId"
+      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
     };
   }
   
@@ -302,7 +302,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List packet names"
       method: "GET"
-      path: "/api/archive/:instance/packet-names"
+      path: "/api/archive/{instance}/packet-names"
     };
   }
   
@@ -310,7 +310,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "List packets"
       method: "GET"
-      path: "/api/archive/:instance/packets/:gentime?"
+      path: "/api/archive/{instance}/packets/{gentime?}"
     };
   }
   
@@ -318,7 +318,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Get a packet"
       method: "GET"
-      path: "/api/archive/:instance/packets/:gentime/:seqnum"
+      path: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
     };
   }
 }

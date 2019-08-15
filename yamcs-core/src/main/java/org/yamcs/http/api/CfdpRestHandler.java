@@ -172,8 +172,8 @@ public class CfdpRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    // TODO @Route(path = "/api/cfdp/:instance/filestore", method = "GET")
-    // TODO @Route(path = "/api/cfdp/:instance/filestore/path*", method = "GET")
+    // TODO @Route(path = "/api/cfdp/{instance}/filestore", method = "GET")
+    // TODO @Route(path = "/api/cfdp/{instance}/filestore/path*", method = "GET")
     public void listRemoteFiles(RestRequest req) throws HttpException {
         ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
 

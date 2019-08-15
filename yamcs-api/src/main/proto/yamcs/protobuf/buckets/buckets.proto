@@ -1,0 +1,80 @@
+syntax="proto2";
+  
+package yamcs.protobuf.buckets;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "BucketsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+service Buckets {
+
+  rpc ListBuckets(google.protobuf.Empty) returns (ListBucketsResponse) {
+    option (yamcs.api.route) = {
+      description: "List buckets"
+      method: "GET"
+      path: "/api/buckets/{instance}"
+    };
+  }
+  
+  rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
+    option (yamcs.api.route) = {
+      description: "Create a bucket"
+      method: "POST"
+      path: "/api/buckets/{instance}"
+    };
+  }
+  
+  rpc DeleteBucket(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Delete a bucket"
+      method: "DELETE"
+      path: "/api/buckets/{instance}/{bucketName}"
+    };
+  }
+  
+  rpc ListObjects(google.protobuf.Empty) returns (ListObjectsResponse) {
+    option (yamcs.api.route) = {
+      description: "List objects"
+      method: "GET"
+      path: "/api/buckets/{instance}/{bucketName}"
+    };
+  }
+  
+  rpc DeleteObject(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Delete an object"
+      method: "DELETE"
+      path: "/api/buckets/{instance}/{bucketName}/{objectName*}"
+    };
+  }
+}
+
+message CreateBucketRequest {
+  optional string name = 1;
+}
+
+message BucketInfo {
+  optional string name = 1;
+  optional uint64 size = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint32 numObjects = 3; //number of objects in the bucket
+}
+
+message ObjectInfo {
+  optional string name = 1;
+  optional string created = 2; //time in UTC format
+  optional uint64 size = 3; //size in bytes
+  map<string, string> metadata = 4;
+}
+
+message ListBucketsResponse {
+  repeated BucketInfo buckets = 1;
+}
+
+message ListObjectsResponse {
+  repeated string prefixes = 1;
+  repeated ObjectInfo objects = 2;
+}

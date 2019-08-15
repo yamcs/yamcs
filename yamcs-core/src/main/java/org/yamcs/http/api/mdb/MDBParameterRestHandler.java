@@ -52,8 +52,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class MDBParameterRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class);
 
-    @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
-    public void getBulkParameterInfo(RestRequest req) throws HttpException {
+    @Route(path = "/api/mdb/{instance}/parameters:batchGet", method = "POST")
+    public void batchGetParameterInfo(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -81,8 +81,8 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/mdb/:instance/parameters", method = "GET")
-    @Route(path = "/api/mdb/:instance/parameters/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/parameters", method = "GET")
+    @Route(path = "/api/mdb/{instance}/parameters/{name*}", method = "GET")
     public void getParameter(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
             getParameterInfo(req);
@@ -225,7 +225,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 && types.contains(p.getParameterType().getTypeAsString());
     }
 
-    @Route(path = "/api/mdb/:instance/:processor/parameters/:name*", method = { "PATCH", "PUT",
+    @Route(path = "/api/mdb/{instance}/{processor}/parameters/{name*}", method = { "PATCH", "PUT",
             "POST" })
     public void setParameterCalibrators(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);

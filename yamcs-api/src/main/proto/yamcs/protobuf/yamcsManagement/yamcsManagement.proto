@@ -27,7 +27,7 @@ service YamcsManagement {
     option (yamcs.api.route) = {
       description: "List services"
       method: "GET"
-      path: "/api/services/:instance?"
+      path: "/api/services/{instance?}"
     };
   }
   
@@ -35,7 +35,7 @@ service YamcsManagement {
     option (yamcs.api.route) = {
       description: "Get a service"
       method: "GET"
-      path: "/api/services/:instance/:name"
+      path: "/api/services/{instance}/{name}"
     };
   }
   
@@ -43,7 +43,7 @@ service YamcsManagement {
     option (yamcs.api.route) = {
       description: "Update a service"
       method: "PATCH"
-      path: "/api/services/:instance/:name"
+      path: "/api/services/{instance}/{name}"
     };
   }
 }

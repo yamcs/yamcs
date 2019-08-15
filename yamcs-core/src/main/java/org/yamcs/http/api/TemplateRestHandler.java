@@ -23,7 +23,7 @@ public class TemplateRestHandler extends RestHandler {
         completeOK(req, templatesb.build());
     }
 
-    @Route(path = "/api/instance-templates/:template", method = "GET")
+    @Route(path = "/api/instance-templates/{template}", method = "GET")
     public void getInstanceTemplate(RestRequest req) throws HttpException {
         String name = verifyInstanceTemplate(req, req.getRouteParam("template"));
         InstanceTemplate template = yamcsServer.getInstanceTemplate(name);

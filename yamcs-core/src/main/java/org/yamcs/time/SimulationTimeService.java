@@ -65,7 +65,7 @@ public class SimulationTimeService implements TimeService {
      */
     public static class SimTimeRestHandler extends RestHandler {
 
-        @Route(path = "/api/time/:instance", method = { "PUT", "POST" })
+        @Route(path = "/api/time/{instance}", method = { "PUT", "POST" })
         public void setSimTime(RestRequest req) throws HttpException {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
             TimeService ts = yamcsServer.getInstance(instance).getTimeService();

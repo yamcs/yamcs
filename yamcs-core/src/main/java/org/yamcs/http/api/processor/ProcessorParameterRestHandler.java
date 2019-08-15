@@ -28,10 +28,10 @@ import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchGetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchGetParameterValueResponse;
+import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -43,7 +43,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ProcessorParameterRestHandler extends RestHandler {
 
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
+    @Route(path = "/api/processors/{instance}/{processor}/parameters/{name*}", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
@@ -69,12 +69,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority = true)
+    @Route(path = "/api/processors/{instance}/{processor}/parameters:batchSet", method = "POST")
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ParameterRequestManager prm = processor.getParameterRequestManager();
 
-        BulkSetParameterValueRequest request = req.bodyAsMessage(BulkSetParameterValueRequest.newBuilder()).build();
+        BatchSetParameterValueRequest request = req.bodyAsMessage(BatchSetParameterValueRequest.newBuilder()).build();
         List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
         List<ParameterWithId> pidList;
         try {
@@ -115,7 +115,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/parameters/{name*}", method = "GET")
     public void getParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
@@ -145,11 +145,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req, pval);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = { "GET", "POST" }, priority = true)
+    @Route(path = "/api/processors/{instance}/{processor}/parameters:batchGet", method = "POST")
     public void getParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
-        BulkGetParameterValueRequest request = req.bodyAsMessage(BulkGetParameterValueRequest.newBuilder()).build();
+        BatchGetParameterValueRequest request = req.bodyAsMessage(BatchGetParameterValueRequest.newBuilder()).build();
         if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
         }
@@ -176,7 +176,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         List<NamedObjectId> ids = request.getIdList();
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getUser(), ids, fromCache, timeout);
 
-        BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
+        BatchGetParameterValueResponse.Builder responseb = BatchGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
         completeOK(req, responseb.build());
     }

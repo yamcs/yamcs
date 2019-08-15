@@ -17,9 +17,9 @@ import org.yamcs.client.WebSocketRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchGetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
@@ -110,14 +110,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Allowed to subscribe to Integer parameter from cache
         ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValueRequest req = BatchGetParameterValueRequest.newBuilder().setFromCache(true)
                 .addAllId(validSubscrList.getIdList()).build();
         restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
                 .get();
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
+        req = BatchGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
                 .build();
         try {
             restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
@@ -134,7 +134,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
     public void testPermissionSetParameter() throws Exception {
         RestClient restClient1 = getRestClient("operator", "password");
 
-        BulkSetParameterValueRequest.Builder bulkPvals = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValueRequest.Builder bulkPvals = BatchSetParameterValueRequest.newBuilder();
         bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setValue(ValueHelper.newValue(5)));

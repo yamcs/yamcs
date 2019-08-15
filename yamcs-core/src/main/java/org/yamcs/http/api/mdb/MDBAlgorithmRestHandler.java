@@ -30,8 +30,8 @@ public class MDBAlgorithmRestHandler extends RestHandler {
 
     private static final Log log = new Log(MDBAlgorithmRestHandler.class);
 
-    @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
-    @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/algorithms", method = "GET")
+    @Route(path = "/api/mdb/{instance}/algorithms/{name*}", method = "GET")
     public void getAlgorithm(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
@@ -42,7 +42,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/mdb/:instance/:processor/algorithms/:name*", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/mdb/{instance}/{processor}/algorithms/{name*}", method = { "PATCH", "PUT", "POST" })
     public void setAlgorithm(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ChangeMissionDatabase);
 
@@ -80,7 +80,6 @@ public class MDBAlgorithmRestHandler extends RestHandler {
                 log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
                 algMng.setAlgorithmText(calg, ai.getText());
             } catch (Exception e) {
-                System.out.println("here ---------- " + e.getMessage());
                 throw new BadRequestException(e.getMessage());
             }
             break;

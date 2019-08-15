@@ -28,7 +28,7 @@ import org.yamcs.security.SystemPrivilege;
 
 public class ProcessorCommandQueueRestHandler extends RestHandler {
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
@@ -42,7 +42,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}", method = "GET")
     public void getQueue(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
@@ -54,7 +54,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}", method = "PATCH")
     public void editQueue(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
@@ -91,7 +91,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, qinfo);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}/entries", method = "GET")
     public void listQueueEntries(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
@@ -107,7 +107,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{cqueue}/entries/{uuid}", method = "PATCH")
     public void editQueueEntry(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 

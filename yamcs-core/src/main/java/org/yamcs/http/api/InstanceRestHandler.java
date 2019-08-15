@@ -60,7 +60,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, instancesb.build());
     }
 
-    @Route(path = "/api/instances/:instance", method = "GET")
+    @Route(path = "/api/instances/{instance}", method = "GET")
     public void getInstance(RestRequest req) throws HttpException {
         String instanceName = verifyInstance(req, req.getRouteParam("instance"));
         YamcsServerInstance instance = yamcsServer.getInstance(instanceName);
@@ -69,7 +69,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, enriched);
     }
 
-    @Route(path = "/api/instances/:instance/clients", method = "GET")
+    @Route(path = "/api/instances/{instance}/clients", method = "GET")
     public void listClientsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
@@ -82,7 +82,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/instances/:instance", method = "PATCH")
+    @Route(path = "/api/instances/{instance}", method = "PATCH")
     public void editInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

@@ -26,19 +26,8 @@ public @interface Route {
 
     /**
      * HTTP method or methods by which this rule is available. By default set to "GET".
-     * <p>
-     * Implementation note: can't use netty's HttpMethod because it's not an enum
      */
     String[] method() default { "GET" };
-
-    /**
-     * Whether this route must be checked before any other route. Used to differentiate a route when it's identifying
-     * part overlaps with the route params of another route.
-     * <p>
-     * Use this as a last resort only. It's generally better to come up with a route scheme where you don't need this
-     * flag. We have it here mostly for legacy purposes that need rework.
-     */
-    boolean priority() default false;
 
     /**
      * Data load routes expect to receive a large body and they receive it piece by piece in HttpContent objects.

@@ -15,11 +15,11 @@ Parameters are usually read-only. But software parameters can be updated::
     }
 
 
-.. rubric:: Multi-set
+.. rubric:: Batch Set
 
 To update multiple parameters at once, send a request to this address::
 
-    POST /api/processors/:instance/:processor/parameters/mset
+    POST /api/processors/:instance/:processor/parameters:batchSet
 
 .. code-block:: json
 
@@ -66,10 +66,10 @@ To update multiple parameters at once, send a request to this address::
     }
 
 
-.. rubric:: Bulk Request Schema (protobuf)
+.. rubric:: Batch Set Request Schema (protobuf)
 .. code-block:: proto
 
-    message BulkSetParameterValueRequest {
+    message BatchSetParameterValueRequest {
       message SetParameterValueRequest {
         optional yamcs.NamedObjectId id = 1;
         optional yamcs.Value value = 2;

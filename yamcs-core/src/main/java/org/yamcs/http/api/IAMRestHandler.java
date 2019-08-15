@@ -1,6 +1,7 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -15,17 +16,31 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.CreateGroupRequest;
 import org.yamcs.protobuf.GroupInfo;
 import org.yamcs.protobuf.ListGroupsResponse;
+import org.yamcs.protobuf.ListPrivilegesResponse;
 import org.yamcs.protobuf.UpdateGroupRequest;
 import org.yamcs.protobuf.UserInfo;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.ServiceAccount;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 
 /**
- * Handles incoming requests related to groups
+ * Handles incoming requests related to Identity and Access Management (IAM)
  */
-public class GroupRestHandler extends RestHandler {
+public class IAMRestHandler extends RestHandler {
+
+    @Route(rpc = "IAM.ListPrivileges")
+    public void listSystemPrivileges(RestRequest req) throws HttpException {
+        List<SystemPrivilege> privileges = new ArrayList<>(securityStore.getSystemPrivileges());
+        Collections.sort(privileges, (p1, p2) -> p1.getName().compareTo(p2.getName()));
+
+        ListPrivilegesResponse.Builder responseb = ListPrivilegesResponse.newBuilder();
+        for (SystemPrivilege privilege : privileges) {
+            responseb.addSystemPrivileges(privilege.getName());
+        }
+        completeOK(req, responseb.build());
+    }
 
     @Route(rpc = "IAM.ListGroups")
     public void listGroups(RestRequest req) throws HttpException {

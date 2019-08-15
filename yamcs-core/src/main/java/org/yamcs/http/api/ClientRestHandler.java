@@ -39,14 +39,14 @@ public class ClientRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/clients/:id", method = "GET")
+    @Route(path = "/api/clients/{id}", method = "GET")
     public void getClient(RestRequest req) throws HttpException {
         ConnectedClient client = verifyClient(req, req.getIntegerRouteParam("id"));
         ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
         completeOK(req, clientInfo);
     }
 
-    @Route(path = "/api/clients/:id", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/clients/{id}", method = { "PATCH", "PUT", "POST" })
     public void patchClient(RestRequest restReq) throws HttpException {
         ConnectedClient client = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 

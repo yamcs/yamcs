@@ -190,8 +190,8 @@ public class RestClient {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, HttpMethod.GET, body,
-                    connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
+            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, HttpMethod.POST,
+                    body, connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
         } catch (URISyntaxException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }

@@ -61,17 +61,17 @@ message GetApiOverviewResponse {
   repeated PluginInfo plugin = 5;
 }
 
-message BulkGetParameterValueRequest {
+message BatchGetParameterValueRequest {
   repeated NamedObjectId id = 1;
   optional bool fromCache = 2;
   optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
 }
 
-message BulkGetParameterValueResponse {
+message BatchGetParameterValueResponse {
   repeated pvalue.ParameterValue value = 1;
 }
 
-message BulkSetParameterValueRequest {
+message BatchSetParameterValueRequest {
   message SetParameterValueRequest {
     optional NamedObjectId id = 1;
     optional Value value = 2;
@@ -79,7 +79,7 @@ message BulkSetParameterValueRequest {
   repeated SetParameterValueRequest request = 1;
 }
 
-message BulkDownloadParameterValueRequest {
+message BatchDownloadParameterValueRequest {
   optional string start = 1;
   optional string stop = 2;
   repeated NamedObjectId id = 3;
@@ -204,35 +204,9 @@ message EditInstanceRequest {
   optional string state = 1;
 }
 
-message BulkGetIndexRequest {
+message BatchGetIndexRequest {
   optional string start = 1;
   optional string stop = 2;
   repeated string filter = 3;
   repeated string packetname = 4;
-}
-
-message CreateBucketRequest {
-  optional string name = 1;
-}
-
-message BucketInfo {
-  optional string name = 1;
-  optional uint64 size = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
-  optional uint32 numObjects = 3; //number of objects in the bucket
-}
-
-message ObjectInfo {
-  optional string name = 1;
-  optional string created = 2; //time in UTC format
-  optional uint64 size = 3; //size in bytes
-  map<string, string> metadata = 4;
-}
-
-message ListBucketsResponse {
-  repeated BucketInfo bucket = 1;
-}
-
-message ListObjectsResponse {
-  repeated string prefix = 1;
-  repeated ObjectInfo object = 2;
 }

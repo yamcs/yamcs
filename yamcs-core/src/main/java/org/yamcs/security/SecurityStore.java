@@ -225,6 +225,14 @@ public class SecurityStore {
         return null;
     }
 
+    public Set<SystemPrivilege> getSystemPrivileges() {
+        return systemPrivileges;
+    }
+
+    public Set<ObjectPrivilegeType> getObjectPrivilegeTypes() {
+        return objectPrivilegeTypes;
+    }
+
     /**
      * Returns the system user. This user object is only intended for internal use when actions require a user, yet
      * cannot be linked to an actual user. The System user is granted all privileges.

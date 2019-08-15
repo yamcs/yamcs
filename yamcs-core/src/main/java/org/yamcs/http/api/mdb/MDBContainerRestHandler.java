@@ -27,8 +27,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBContainerRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/:instance/containers", method = "GET")
-    @Route(path = "/api/mdb/:instance/containers/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/containers", method = "GET")
+    @Route(path = "/api/mdb/{instance}/containers/{name*}", method = "GET")
     public void getContainer(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 

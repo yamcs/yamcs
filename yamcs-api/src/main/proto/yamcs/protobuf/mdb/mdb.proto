@@ -14,7 +14,7 @@ service MDB {
     option (yamcs.api.route) = {
       description: "Get a mission database"
       method: "GET"
-      path: "/api/mdb/:instance"
+      path: "/api/mdb/{instance}"
     };
   }
 }

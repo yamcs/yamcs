@@ -75,7 +75,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance", method = "GET")
+    @Route(path = "/api/processors/{instance}", method = "GET")
     public void listProcessorsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -86,7 +86,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}", method = "GET")
     public void getProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
@@ -94,7 +94,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
+    @Route(path = "/api/processors/{instance}/{processor}", method = "DELETE")
     public void deleteProcessor(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
 
@@ -107,7 +107,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}", method = "PATCH")
     public void editProcessor(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
 
@@ -185,7 +185,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/clients", method = "GET")
     public void listClientsForProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
@@ -199,7 +199,7 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/alarms", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/alarms", method = "GET")
     public void listAlarmsForProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
@@ -220,16 +220,16 @@ public class ProcessorRestHandler extends RestHandler {
     }
 
     @Deprecated
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/parameters/{name*}/alarms/{seqnum}", method = "PATCH")
     public void patchParameterAlarm(RestRequest req) throws HttpException {
-        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        log.warn("Deprecated endpoint. Use /api/processors/{instance}/{processor}/alarms/{name*}/{seqnum} instead");
         patchAlarm(req);
     }
 
     @Deprecated
-    @Route(path = "/api/processors/:instance/:processor/events/:name*/alarms/:seqnum", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/events/{name*}/alarms/{seqnum}", method = "PATCH")
     public void patchEventAlarm(RestRequest req) throws HttpException {
-        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        log.warn("Deprecated endpoint. Use /api/processors/{instance}/{processor}/alarms/{name*}/{seqnum} instead");
         patchAlarm(req);
     }
 
@@ -272,7 +272,7 @@ public class ProcessorRestHandler extends RestHandler {
         throw new NotFoundException(req, "No active alarm named '" + alarmName + "'");
     }
 
-    @Route(path = "/api/processors/:instance/:processor/alarms/:name*/:seqnum", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}", method = "PATCH")
     public void patchAlarm(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         String alarmName = req.getRouteParam("name");
@@ -335,7 +335,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/processors/:instance", method = "POST")
+    @Route(path = "/api/processors/{instance}", method = "POST")
     public void createProcessorForInstance(RestRequest restReq) throws HttpException {
         CreateProcessorRequest request = restReq.bodyAsMessage(CreateProcessorRequest.newBuilder()).build();
         String yamcsInstance = verifyInstance(restReq, restReq.getRouteParam("instance"));

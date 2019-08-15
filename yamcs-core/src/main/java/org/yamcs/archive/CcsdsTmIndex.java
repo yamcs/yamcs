@@ -531,7 +531,7 @@ public class CcsdsTmIndex implements TmIndex {
     }
 
     public class CcsdsTmIndexRestHandler extends RestHandler {
-        @Route(path = "/api/ccsdstmindex/:instance/rebuild", method = { "PUT", "POST" })
+        @Route(path = "/api/ccsdstmindex/{instance}/rebuild", method = { "PUT", "POST" })
         public void rebuildIndex(RestRequest req) throws HttpException {
             checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 

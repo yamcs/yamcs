@@ -23,8 +23,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/:instance/commands", method = "GET")
-    @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/commands", method = "GET")
+    @Route(path = "/api/mdb/{instance}/commands/{name*}", method = "GET")
     public void getCommand(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 

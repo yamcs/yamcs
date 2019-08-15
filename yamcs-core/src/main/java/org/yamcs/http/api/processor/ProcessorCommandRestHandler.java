@@ -43,7 +43,7 @@ import com.google.protobuf.ByteString;
  */
 public class ProcessorCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
+    @Route(path = "/api/processors/{instance}/{processor}/commands/{name*}", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.Command);
 
@@ -163,7 +163,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")
+    @Route(path = "/api/processors/{instance}/{processor}/commandhistory/{name*}", method = "POST")
     public void updateCommandHistory(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {

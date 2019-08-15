@@ -41,7 +41,7 @@ export class LayoutsPage {
     this.storageClient.listObjects('_global', `user.${username}`, {
       prefix: 'layouts',
     }).then(response => {
-      this.dataSource.data = response.object || [];
+      this.dataSource.data = response.objects || [];
     });
   }
 

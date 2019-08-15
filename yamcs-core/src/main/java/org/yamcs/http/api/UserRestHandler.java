@@ -224,7 +224,7 @@ public class UserRestHandler extends RestHandler {
             });
 
             for (Group group : directory.getGroups(user)) {
-                GroupInfo groupInfo = GroupRestHandler.toGroupInfo(group, false);
+                GroupInfo groupInfo = IAMRestHandler.toGroupInfo(group, false);
                 userb.addGroups(groupInfo);
             }
         }

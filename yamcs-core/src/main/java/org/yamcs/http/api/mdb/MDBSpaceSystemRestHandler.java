@@ -21,8 +21,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBSpaceSystemRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/:instance/space-systems", method = "GET")
-    @Route(path = "/api/mdb/:instance/space-systems/:name*", method = "GET")
+    @Route(path = "/api/mdb/{instance}/space-systems", method = "GET")
+    @Route(path = "/api/mdb/{instance}/space-systems/{name*}", method = "GET")
     public void getSpaceSystem(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
             getSpaceSystemInfo(req);

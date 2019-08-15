@@ -144,7 +144,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
     AtomicInteger count = new AtomicInteger();
 
-    @Route(path = "/api/archive/:instance/tables/:name/data", method = "POST", dataLoad = true)
+    @Route(path = "/api/archive/{instance}/tables/{name}/data", method = "POST", dataLoad = true)
     public void loadTableData(ChannelHandlerContext ctx, HttpRequest req, RouteMatch match) throws HttpException {
         User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
         if (!user.hasSystemPrivilege(SystemPrivilege.WriteTables)) {
