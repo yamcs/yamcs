@@ -23,6 +23,79 @@ service YamcsManagement {
     };
   }
   
+  rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
+    option (yamcs.api.route) = {
+      description: "List instance templates"
+      method: "GET"
+      path: "/api/instance-templates"
+    };
+  }
+  
+  rpc GetInstanceTemplate(google.protobuf.Empty) returns (InstanceTemplate) {
+    option (yamcs.api.route) = {
+      description: "Get an instance template"
+      method: "GET"
+      path: "/api/instance-templates/{template}"
+    };
+  }
+  
+  rpc ListInstances(google.protobuf.Empty) returns (ListInstancesResponse) {
+    option (yamcs.api.route) = {
+      description: "List instances"
+      method: "GET"
+      path: "/api/instances"
+    };
+  }
+  
+  rpc GetInstance(google.protobuf.Empty) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Get an instance"
+      method: "GET"
+      path: "/api/instances/{instance}"
+    };
+  }
+  
+  rpc UpdateInstance(EditInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Update an instance"
+      method: "PATCH"
+      path: "/api/instances/{instance}"
+      deprecated: true
+    };
+  }
+  
+  rpc CreateInstance(CreateInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Create an instance"
+      method: "POST"
+      path: "/api/instances"
+    };
+  }
+  
+  rpc StartInstance(google.protobuf.Empty) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Start an instance"
+      method: "POST"
+      path: "/api/instances/{instance}:start"
+    };
+  }
+  
+  rpc StopInstance(google.protobuf.Empty) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Stop an instance"
+      method: "POST"
+      path: "/api/instances/{instance}:stop"
+    };
+  }
+  
+  rpc RestartInstance(google.protobuf.Empty) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      description: "Restart an instance"
+      method: "POST"
+      path: "/api/instances/{instance}:restart"
+    };
+  }
+  
   rpc ListServices(google.protobuf.Empty) returns (ListServicesResponse) {
     option (yamcs.api.route) = {
       description: "List services"
@@ -39,11 +112,28 @@ service YamcsManagement {
     };
   }
   
+  rpc StartService(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Start a service"
+      method: "POST"
+      path: "/api/services/{instance}/{name}:start"
+    };
+  }
+  
+  rpc StopService(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Stop a service"
+      method: "POST"
+      path: "/api/services/{instance}/{name}:stop"
+    };
+  }
+  
   rpc UpdateService(EditServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       description: "Update a service"
       method: "PATCH"
       path: "/api/services/{instance}/{name}"
+      deprecated: true
     };
   }
 }
@@ -257,5 +347,24 @@ message ListServicesResponse {
 }
 
 message EditServiceRequest {
+  optional string state = 1;
+}
+
+message ListInstancesResponse {
+  repeated YamcsInstance instances = 1;
+}
+
+message CreateInstanceRequest {
+  optional string name = 1;
+  optional string template = 2;
+  map<string, string> templateArgs = 3;
+  map<string, string> labels = 4;
+}
+
+message ListInstanceTemplatesResponse {
+  repeated InstanceTemplate templates = 1; 
+}
+
+message EditInstanceRequest {
   optional string state = 1;
 }

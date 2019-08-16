@@ -84,7 +84,69 @@ public class ServiceRestHandler extends RestHandler {
         }
     }
 
+    @Route(rpc = "YamcsManagement.StartService")
+    public void startService(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
+
+        String instance = req.getRouteParam("instance");
+        String serviceName = req.getRouteParam("name");
+
+        boolean global = false;
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
+            global = true;
+        } else {
+            verifyInstance(req, instance);
+        }
+
+        try {
+            if (global) {
+                ServiceWithConfig service = yamcsServer.getGlobalServiceWithConfig(serviceName);
+                yamcsServer.startGlobalService(service.getName());
+            } else {
+                ServiceWithConfig service = yamcsServer.getInstance(instance)
+                        .getServiceWithConfig(serviceName);
+                yamcsServer.getInstance(instance).startService(service.getName());
+            }
+            completeOK(req);
+        } catch (Exception e) {
+            completeWithError(req, new InternalServerErrorException(e));
+        }
+    }
+
+    @Route(rpc = "YamcsManagement.StopService")
+    public void stopService(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
+
+        String instance = req.getRouteParam("instance");
+        String serviceName = req.getRouteParam("name");
+
+        boolean global = false;
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
+            global = true;
+        } else {
+            verifyInstance(req, instance);
+        }
+
+        try {
+            Service s;
+            if (global) {
+                s = yamcsServer.getGlobalService(serviceName);
+            } else {
+                s = yamcsServer.getInstance(instance).getService(serviceName);
+            }
+            if (s == null) {
+                throw new NotFoundException(req, "No service by name '" + serviceName + "'");
+            }
+
+            s.stopAsync();
+            completeOK(req);
+        } catch (Exception e) {
+            completeWithError(req, new InternalServerErrorException(e));
+        }
+    }
+
     @Route(rpc = "YamcsManagement.UpdateService")
+    @Deprecated
     public void editService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 

@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.TokenStore.RefreshResult;
-import org.yamcs.http.api.UserRestHandler;
+import org.yamcs.http.api.IAMRestHandler;
 import org.yamcs.protobuf.Web.AuthFlow;
 import org.yamcs.protobuf.Web.AuthFlow.Type;
 import org.yamcs.protobuf.Web.AuthInfo;
@@ -310,7 +310,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         responseb.setTokenType("bearer");
         responseb.setAccessToken(jwt);
         responseb.setExpiresIn(ttl);
-        responseb.setUser(UserRestHandler.toUserInfo(user, false));
+        responseb.setUser(IAMRestHandler.toUserInfo(user, false));
 
         if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);

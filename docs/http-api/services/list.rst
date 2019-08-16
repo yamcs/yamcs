@@ -14,7 +14,7 @@ List all services for the given Yamcs instance::
 .. code-block:: json
 
     {
-      "service" : [ {
+      "services" : [ {
         "instance" : "simulator",
         "name" : "org.yamcs.tctm.DataLinkInitialiser",
         "state" : "RUNNING"
@@ -38,6 +38,6 @@ List all services for the given Yamcs instance::
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListServiceInfoResponse {
-      repeated yamcsManagement.ServiceInfo service = 1;
+    message ListServicesResponse {
+      repeated yamcsManagement.ServiceInfo services = 1;
     }

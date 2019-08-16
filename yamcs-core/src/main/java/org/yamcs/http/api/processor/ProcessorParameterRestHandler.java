@@ -27,11 +27,11 @@ import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.BatchGetParameterValuesRequest;
+import org.yamcs.protobuf.BatchGetParameterValuesResponse;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.BatchGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BatchGetParameterValueResponse;
-import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -69,12 +69,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/{instance}/{processor}/parameters:batchSet", method = "POST")
+    @Route(rpc = "ProcessingAPI.BatchSetParameterValues")
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ParameterRequestManager prm = processor.getParameterRequestManager();
 
-        BatchSetParameterValueRequest request = req.bodyAsMessage(BatchSetParameterValueRequest.newBuilder()).build();
+        BatchSetParameterValuesRequest request = req.bodyAsMessage(BatchSetParameterValuesRequest.newBuilder()).build();
         List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
         List<ParameterWithId> pidList;
         try {
@@ -115,7 +115,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/{instance}/{processor}/parameters/{name*}", method = "GET")
+    @Route(rpc = "ProcessingAPI.GetParameterValue")
     public void getParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
@@ -145,11 +145,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req, pval);
     }
 
-    @Route(path = "/api/processors/{instance}/{processor}/parameters:batchGet", method = "POST")
+    @Route(rpc = "ProcessingAPI.BatchGetParameterValues")
     public void getParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
-        BatchGetParameterValueRequest request = req.bodyAsMessage(BatchGetParameterValueRequest.newBuilder()).build();
+        BatchGetParameterValuesRequest request = req.bodyAsMessage(BatchGetParameterValuesRequest.newBuilder()).build();
         if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
         }
@@ -176,7 +176,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         List<NamedObjectId> ids = request.getIdList();
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getUser(), ids, fromCache, timeout);
 
-        BatchGetParameterValueResponse.Builder responseb = BatchGetParameterValueResponse.newBuilder();
+        BatchGetParameterValuesResponse.Builder responseb = BatchGetParameterValuesResponse.newBuilder();
         responseb.addAllValue(pvals);
         completeOK(req, responseb.build());
     }

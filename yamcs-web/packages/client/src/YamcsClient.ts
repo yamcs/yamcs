@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditInstanceOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -142,7 +142,7 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/instances`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as InstancesWrapper;
-    return wrapper.instance || [];
+    return wrapper.instances || [];
   }
 
   async getInstanceTemplates() {
@@ -161,11 +161,21 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Instance;
   }
 
-  async editInstance(name: string, options: EditInstanceOptions) {
-    const body = JSON.stringify(options);
-    return this.doFetch(`${this.apiUrl}/instances/${name}`, {
-      body,
-      method: 'PATCH',
+  async startInstance(name: string) {
+    return this.doFetch(`${this.apiUrl}/instances/${name}:start`, {
+      method: 'POST',
+    });
+  }
+
+  async stopInstance(name: string) {
+    return this.doFetch(`${this.apiUrl}/instances/${name}:stop`, {
+      method: 'POST',
+    });
+  }
+
+  async restartInstance(name: string) {
+    return this.doFetch(`${this.apiUrl}/instances/${name}:restart`, {
+      method: 'POST',
     });
   }
 
@@ -182,22 +192,14 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async startService(name: string) {
-    const body = JSON.stringify({
-      state: 'running'
-    });
-    return this.doFetch(`${this.apiUrl}/services/_global/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.doFetch(`${this.apiUrl}/services/_global/${name}:start`, {
+      method: 'POST',
     });
   }
 
   async stopService(name: string) {
-    const body = JSON.stringify({
-      state: 'stopped'
-    });
-    return this.doFetch(`${this.apiUrl}/services/_global/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.doFetch(`${this.apiUrl}/services/_global/${name}:stop`, {
+      method: 'POST',
     });
   }
 

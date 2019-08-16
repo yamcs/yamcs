@@ -23,7 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/{instance}/commands/{name*}", method = "GET")
+    @Route(rpc = "MDB.GetCommand")
     public void getCommandInfo(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -35,7 +35,7 @@ public class MDBCommandRestHandler extends RestHandler {
         completeOK(req, cinfo);
     }
 
-    @Route(path = "/api/mdb/{instance}/commands", method = "GET")
+    @Route(rpc = "MDB.ListCommands")
     public void listCommands(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -105,7 +105,7 @@ public class MDBCommandRestHandler extends RestHandler {
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (MetaCommand c : matchedCommands) {
-            responseb.addCommand(XtceToGpbAssembler.toCommandInfo(c, detailLevel));
+            responseb.addCommands(XtceToGpbAssembler.toCommandInfo(c, detailLevel));
         }
         if (continuationToken != null) {
             responseb.setContinuationToken(continuationToken.encodeAsString());

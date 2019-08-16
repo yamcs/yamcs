@@ -17,6 +17,110 @@ service MDB {
       path: "/api/mdb/{instance}"
     };
   }
+  
+  rpc ListSpaceSystems(google.protobuf.Empty) returns (ListSpaceSystemsResponse) {
+    option (yamcs.api.route) = {
+      description: "List space systems"
+      method: "GET"
+      path: "/api/mdb/{instance}/space-systems"
+    };
+  }
+  
+  rpc GetSpaceSystem(google.protobuf.Empty) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a space system"
+      method: "GET"
+      path: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+  
+  rpc ListParameters(google.protobuf.Empty) returns (ListParametersResponse) {
+    option (yamcs.api.route) = {
+      description: "List parameters"
+      method: "GET"
+      path: "/api/mdb/{instance}/parameters"
+    };
+  }
+  
+  rpc GetParameter(google.protobuf.Empty) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a parameter"
+      method: "GET"
+      path: "/api/mdb/{instance}/parameters/{name*}"
+    };
+  }
+  
+  rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
+    option (yamcs.api.route) = {
+      description: "Batch get of multiple parameters"
+      method: "POST"
+      path: "/api/mdb/{instance}/parameters:batchGet"
+    };
+  }
+  
+  rpc ListParameterTypes(google.protobuf.Empty) returns (ListParameterTypesResponse) {
+    option (yamcs.api.route) = {
+      description: "List parameter types"
+      method: "GET"
+      path: "/api/mdb/{instance}/parameter-types"
+    };
+  }
+  
+  rpc GetParameterType(google.protobuf.Empty) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a parameter type"
+      method: "GET"
+      path: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+  
+  rpc ListContainers(google.protobuf.Empty) returns (ListContainersResponse) {
+    option (yamcs.api.route) = {
+      description: "List containers"
+      method: "GET"
+      path: "/api/mdb/{instance}/containers"
+    };
+  }
+  
+  rpc GetContainer(google.protobuf.Empty) returns (ContainerInfo) {
+    option (yamcs.api.route) = {
+      description: "Get container"
+      method: "GET"
+      path: "/api/mdb/{instance}/containers/{name*}"
+    };
+  }
+  
+  rpc ListCommands(google.protobuf.Empty) returns (ListCommandsResponse) {
+    option (yamcs.api.route) = {
+      description: "List commands"
+      method: "GET"
+      path: "/api/mdb/{instance}/commands"
+    };
+  }
+  
+  rpc GetCommand(google.protobuf.Empty) returns (CommandInfo) {
+    option (yamcs.api.route) = {
+      description: "Get a command"
+      method: "GET"
+      path: "/api/mdb/{instance}/commands/{name*}"
+    };
+  }
+  
+  rpc ListAlgorithms(google.protobuf.Empty) returns (ListAlgorithmsResponse) {
+    option (yamcs.api.route) = {
+      description: "List algorithms"
+      method: "GET"
+      path: "/api/mdb/{instance}/algorithms"
+    };
+  }
+  
+  rpc GetAlgorithm(google.protobuf.Empty) returns (AlgorithmInfo) {
+    option (yamcs.api.route) = {
+      description: "Get an algorithm"
+      method: "GET"
+      path: "/api/mdb/{instance}/algorithms/{name*}"
+    };
+  }
 }
 
 message MissionDatabase {
@@ -383,49 +487,49 @@ message AlgorithmInfo {
 }
 
 message ListParametersResponse {
-  repeated ParameterInfo parameter = 1;
+  repeated ParameterInfo parameters = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListParameterTypesResponse {
-  repeated ParameterTypeInfo type = 1;
+  repeated ParameterTypeInfo types = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
-message BulkGetParameterInfoRequest {
+message BatchGetParametersRequest {
   repeated NamedObjectId id = 1;
 }
 
-message BulkGetParameterInfoResponse {
-  message GetParameterInfoResponse {
+message BatchGetParametersResponse {
+  message GetParameterResponse {
     optional NamedObjectId id = 1;
     optional ParameterInfo parameter = 2;
   }
-  repeated GetParameterInfoResponse response = 1;
+  repeated GetParameterResponse response = 1;
 }
 
 message ListContainersResponse {
-  repeated ContainerInfo container = 1;
+  repeated ContainerInfo containers = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListCommandsResponse {
-  repeated CommandInfo command = 1;
+  repeated CommandInfo commands = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListAlgorithmsResponse {
-  repeated AlgorithmInfo algorithm = 1;
+  repeated AlgorithmInfo algorithms = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListSpaceSystemsResponse {
-  repeated SpaceSystemInfo spaceSystem = 1;
+  repeated SpaceSystemInfo spaceSystems = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }

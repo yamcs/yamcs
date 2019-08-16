@@ -28,7 +28,7 @@ export interface EventsWrapper {
 }
 
 export interface InstancesWrapper {
-  instance: Instance[];
+  instances: Instance[];
 }
 
 export interface InstanceTemplatesWrapper {

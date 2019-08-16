@@ -22,7 +22,7 @@ export class CommandsDataSource extends DataSource<Command> {
     this.yamcs.getInstanceClient()!.getCommands(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
-      this.commands$.next(page.command || []);
+      this.commands$.next(page.commands || []);
     });
   }
 

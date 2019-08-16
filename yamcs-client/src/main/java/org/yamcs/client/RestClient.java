@@ -14,7 +14,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
-import org.yamcs.protobuf.Rest.ListInstancesResponse;
+import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -81,7 +81,7 @@ public class RestClient {
         CompletableFuture<byte[]> future = doRequest("/instances", HttpMethod.GET);
         return future.thenApply(b -> {
             try {
-                return ListInstancesResponse.parseFrom(b).getInstanceList();
+                return ListInstancesResponse.parseFrom(b).getInstancesList();
             } catch (Exception e) {
                 throw new CompletionException(e);
             }

@@ -1,7 +1,7 @@
-Edit Tag
-========
+Update Tag
+==========
 
-Edit a tag::
+Update a tag::
 
     PATCH /api/archive/:instance/tags/:start/:id
 

@@ -30,7 +30,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
 
     private static final Log log = new Log(MDBAlgorithmRestHandler.class);
 
-    @Route(path = "/api/mdb/{instance}/algorithms", method = "GET")
+    @Route(rpc = "MDB.ListAlgorithms")
     public void listAlgorithms(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
@@ -96,7 +96,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         ListAlgorithmsResponse.Builder responseb = ListAlgorithmsResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (Algorithm a : matchedAlgorithms) {
-            responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, DetailLevel.SUMMARY));
+            responseb.addAlgorithms(XtceToGpbAssembler.toAlgorithmInfo(a, DetailLevel.SUMMARY));
         }
         if (continuationToken != null) {
             responseb.setContinuationToken(continuationToken.encodeAsString());
@@ -104,7 +104,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/mdb/{instance}/algorithms/{name*}", method = "GET")
+    @Route(rpc = "MDB.GetAlgorithm")
     public void getAlgorithm(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

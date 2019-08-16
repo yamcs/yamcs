@@ -14,12 +14,12 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketRequest;
+import org.yamcs.protobuf.BatchGetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.BatchGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BatchSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
@@ -110,17 +110,18 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Allowed to subscribe to Integer parameter from cache
         ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        BatchGetParameterValueRequest req = BatchGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(validSubscrList.getIdList()).build();
-        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
+        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
                 .get();
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = BatchGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
+        req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
                 .build();
         try {
-            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
+            restClient1
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
@@ -134,12 +135,12 @@ public class PermissionsTest extends AbstractIntegrationTest {
     public void testPermissionSetParameter() throws Exception {
         RestClient restClient1 = getRestClient("operator", "password");
 
-        BatchSetParameterValueRequest.Builder bulkPvals = BatchSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkPvals = BatchSetParameterValuesRequest.newBuilder();
         bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setValue(ValueHelper.newValue(5)));
         try {
-            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                     toJson(bulkPvals.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {

@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,10 +25,12 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ClientInfo.ClientState;
-import org.yamcs.protobuf.Rest.CreateInstanceRequest;
-import org.yamcs.protobuf.Rest.EditInstanceRequest;
+import org.yamcs.protobuf.CreateInstanceRequest;
+import org.yamcs.protobuf.EditInstanceRequest;
+import org.yamcs.protobuf.InstanceTemplate;
+import org.yamcs.protobuf.ListInstanceTemplatesResponse;
+import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
@@ -47,20 +50,40 @@ public class InstanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     public static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
-    @Route(path = "/api/instances", method = "GET")
+    @Route(rpc = "YamcsManagement.ListInstanceTemplates")
+    public void listInstanceTemplates(RestRequest req) {
+        ListInstanceTemplatesResponse.Builder templatesb = ListInstanceTemplatesResponse.newBuilder();
+
+        List<InstanceTemplate> templates = new ArrayList<>(YamcsServer.getInstanceTemplates());
+        templates.sort((t1, t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
+
+        for (InstanceTemplate template : templates) {
+            templatesb.addTemplates(template);
+        }
+        completeOK(req, templatesb.build());
+    }
+
+    @Route(rpc = "YamcsManagement.GetInstanceTemplate")
+    public void getInstanceTemplate(RestRequest req) throws HttpException {
+        String name = verifyInstanceTemplate(req, req.getRouteParam("template"));
+        InstanceTemplate template = yamcsServer.getInstanceTemplate(name);
+        completeOK(req, template);
+    }
+
+    @Route(rpc = "YamcsManagement.ListInstances")
     public void listInstances(RestRequest req) throws HttpException {
         Predicate<YamcsServerInstance> filter = getFilter(req.getQueryParameterList("filter"));
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsServerInstance instance : YamcsServer.getInstances()) {
             if (filter.test(instance)) {
                 YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, instance.getInstanceInfo());
-                instancesb.addInstance(enriched);
+                instancesb.addInstances(enriched);
             }
         }
         completeOK(req, instancesb.build());
     }
 
-    @Route(path = "/api/instances/{instance}", method = "GET")
+    @Route(rpc = "YamcsManagement.GetInstance")
     public void getInstance(RestRequest req) throws HttpException {
         String instanceName = verifyInstance(req, req.getRouteParam("instance"));
         YamcsServerInstance instance = yamcsServer.getInstance(instanceName);
@@ -82,7 +105,83 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/instances/{instance}", method = "PATCH")
+    @Route(rpc = "YamcsManagement.StartInstance")
+    public void startInstance(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                yamcsServer.startInstance(instance);
+                return null;
+            } catch (IOException e) {
+                throw new UncheckedExecutionException(e);
+            }
+        }).whenComplete((v, error) -> {
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
+            if (error == null) {
+                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, ysi.getInstanceInfo());
+                completeOK(req, enriched);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                completeWithError(req, new InternalServerErrorException(t));
+            }
+        });
+    }
+
+    @Route(rpc = "YamcsManagement.StopInstance")
+    public void stopInstance(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        if (yamcsServer.getInstance(instance) == null) {
+            throw new BadRequestException("No instance named '" + instance + "'");
+        }
+
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                yamcsServer.stopInstance(instance);
+                return null;
+            } catch (IOException e) {
+                throw new UncheckedExecutionException(e);
+            }
+        }).whenComplete((v, error) -> {
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
+            if (error == null) {
+                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, ysi.getInstanceInfo());
+                completeOK(req, enriched);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                completeWithError(req, new InternalServerErrorException(t));
+            }
+        });
+    }
+
+    @Route(rpc = "YamcsManagement.RestartInstance")
+    public void restartInstance(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                yamcsServer.restartInstance(instance);
+                return null;
+            } catch (IOException e) {
+                throw new UncheckedExecutionException(e);
+            }
+        }).whenComplete((v, error) -> {
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
+            if (error == null) {
+                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, ysi.getInstanceInfo());
+                completeOK(req, enriched);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                completeWithError(req, new InternalServerErrorException(t));
+            }
+        });
+    }
+
+    @Route(rpc = "YamcsManagement.UpdateInstance")
+    @Deprecated
     public void editInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -153,7 +252,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(path = "/api/instances", method = "POST")
+    @Route(rpc = "YamcsManagement.CreateInstance")
     public void createInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.CreateInstances);
         CreateInstanceRequest request = req.bodyAsMessage(CreateInstanceRequest.newBuilder()).build();

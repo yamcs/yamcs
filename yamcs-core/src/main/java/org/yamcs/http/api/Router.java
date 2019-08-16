@@ -137,11 +137,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new IAMRestHandler());
         registerRouteHandler(new InstanceRestHandler());
         registerRouteHandler(new LinkRestHandler());
-        registerRouteHandler(new ServiceAccountRestHandler());
         registerRouteHandler(new ServiceRestHandler());
         registerRouteHandler(new SystemInfoRestHandler());
-        registerRouteHandler(new TemplateRestHandler());
-        registerRouteHandler(new UserRestHandler());
 
         registerRouteHandler(new ArchiveAlarmRestHandler());
         registerRouteHandler(new ArchiveCommandRestHandler());

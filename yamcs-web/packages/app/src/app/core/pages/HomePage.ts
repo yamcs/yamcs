@@ -9,6 +9,7 @@ import { Instance } from '@yamcs/client';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { AuthService } from '../services/AuthService';
+import { MessageService } from '../services/MessageService';
 import { YamcsService } from '../services/YamcsService';
 
 
@@ -48,6 +49,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     private yamcs: YamcsService,
     title: Title,
     private authService: AuthService,
+    private messageService: MessageService,
     private route: ActivatedRoute,
     private router: Router,
   ) {
@@ -120,17 +122,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   startInstance(instance: Instance) {
-    this.yamcs.yamcsClient.editInstance(instance.name, {
-      state: 'running',
-    }).catch(err => {
-      if (err.response) {
-        err.response.json().then((json: any) => {
-          alert(`Failed to start instance: ${json.msg}`);
-        });
-      } else {
-        alert(err);
-      }
-    });
+    this.yamcs.yamcsClient.startInstance(instance.name)
+      .catch(err => this.messageService.showError(err));
   }
 
   restartSelectedInstances() {
@@ -142,17 +135,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   restartInstance(instance: Instance) {
-    this.yamcs.yamcsClient.editInstance(instance.name, {
-      state: 'restarted',
-    }).catch(err => {
-      if (err.response) {
-        err.response.json().then((json: any) => {
-          alert(`Failed to restart instance: ${json.msg}`);
-        });
-      } else {
-        alert(err);
-      }
-    });
+    this.yamcs.yamcsClient.restartInstance(instance.name)
+      .catch(err => this.messageService.showError(err));
   }
 
   stopSelectedInstances() {
@@ -164,17 +148,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   stopInstance(instance: Instance) {
-    this.yamcs.yamcsClient.editInstance(instance.name, {
-      state: 'stopped',
-    }).catch(err => {
-      if (err.response) {
-        err.response.json().then((json: any) => {
-          alert(`Failed to stop instance: ${json.msg}`);
-        });
-      } else {
-        alert(err);
-      }
-    });
+    this.yamcs.yamcsClient.stopInstance(instance.name)
+      .catch(err => this.messageService.showError(err));
   }
 
   isGroupStartEnabled() {

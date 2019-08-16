@@ -89,10 +89,10 @@ export class InstancePage implements OnInit, OnDestroy {
         if (val) {
           return this.yamcs.getInstanceClient()!.getParameters({ q: val, limit: 25 });
         } else {
-          return of({ parameter: [] });
+          return of({ parameters: [] });
         }
       }),
-      map(page => page.parameter || []),
+      map(page => page.parameters || []),
     );
   }
 

@@ -25,7 +25,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class MDBParameterTypeRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterTypeRestHandler.class);
 
-    @Route(path = "/api/mdb/{instance}/parameter-types/{name*}", method = "GET")
+    @Route(rpc = "MDB.GetParameterType")
     public void getParameterTypeInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -36,7 +36,7 @@ public class MDBParameterTypeRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    @Route(path = "/api/mdb/{instance}/parameter-types", method = "GET")
+    @Route(rpc = "MDB.ListParameterTypes")
     public void listParameterTypes(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -100,7 +100,7 @@ public class MDBParameterTypeRestHandler extends RestHandler {
         ListParameterTypesResponse.Builder responseb = ListParameterTypesResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (ParameterType t : matchedTypes) {
-            responseb.addType(
+            responseb.addTypes(
                     XtceToGpbAssembler.toParameterTypeInfo(t, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
         }
         if (continuationToken != null) {

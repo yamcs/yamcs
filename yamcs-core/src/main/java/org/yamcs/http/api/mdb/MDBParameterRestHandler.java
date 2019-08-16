@@ -23,9 +23,9 @@ import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.mdb.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest;
-import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse;
-import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse;
+import org.yamcs.protobuf.Mdb.BatchGetParametersRequest;
+import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
+import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
 import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
@@ -52,36 +52,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class MDBParameterRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class);
 
-    @Route(path = "/api/mdb/{instance}/parameters:batchGet", method = "POST")
-    public void batchGetParameterInfo(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
-
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-
-        BulkGetParameterInfoRequest request = req.bodyAsMessage(BulkGetParameterInfoRequest.newBuilder()).build();
-        BulkGetParameterInfoResponse.Builder responseb = BulkGetParameterInfoResponse.newBuilder();
-        for (NamedObjectId id : request.getIdList()) {
-            Parameter p = mdb.getParameter(id);
-            if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified " + id);
-            }
-            if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-                log.warn("Not providing information about parameter {} because no privileges exists",
-                        p.getQualifiedName());
-                continue;
-            }
-
-            GetParameterInfoResponse.Builder response = GetParameterInfoResponse.newBuilder();
-            response.setId(id);
-            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, DetailLevel.SUMMARY));
-            responseb.addResponse(response);
-        }
-
-        completeOK(req, responseb.build());
-    }
-
-    @Route(path = "/api/mdb/{instance}/parameters/{name*}", method = "GET")
+    @Route(rpc = "MDB.GetParameter")
     public void getParameterInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -114,7 +85,36 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    @Route(path = "/api/mdb/{instance}/parameters", method = "GET")
+    @Route(rpc = "MDB.BatchGetParameters")
+    public void batchGetParameterInfo(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
+
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        BatchGetParametersRequest request = req.bodyAsMessage(BatchGetParametersRequest.newBuilder()).build();
+        BatchGetParametersResponse.Builder responseb = BatchGetParametersResponse.newBuilder();
+        for (NamedObjectId id : request.getIdList()) {
+            Parameter p = mdb.getParameter(id);
+            if (p == null) {
+                throw new BadRequestException("Invalid parameter name specified " + id);
+            }
+            if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                log.warn("Not providing information about parameter {} because no privileges exists",
+                        p.getQualifiedName());
+                continue;
+            }
+
+            GetParameterResponse.Builder response = GetParameterResponse.newBuilder();
+            response.setId(id);
+            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, DetailLevel.SUMMARY));
+            responseb.addResponse(response);
+        }
+
+        completeOK(req, responseb.build());
+    }
+
+    @Route(rpc = "MDB.ListParameters")
     public void listParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -200,7 +200,7 @@ public class MDBParameterRestHandler extends RestHandler {
         ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (Parameter p : matchedParameters) {
-            responseb.addParameter(
+            responseb.addParameters(
                     XtceToGpbAssembler.toParameterInfo(p, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
         }
         if (continuationToken != null) {

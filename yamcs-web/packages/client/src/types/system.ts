@@ -375,10 +375,6 @@ export interface EditLinkOptions {
   resetCounters?: boolean;
 }
 
-export interface EditInstanceOptions {
-  state: 'stopped' | 'restarted' | 'running';
-}
-
 export interface EditCommandQueueOptions {
   state: 'enabled' | 'disabled' | 'blocked';
 }

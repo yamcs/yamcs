@@ -27,8 +27,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBContainerRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/{instance}/containers/{name*}", method = "GET")
-    public void getContainerInfo(RestRequest req) throws HttpException {
+    @Route(rpc = "MDB.GetContainer")
+    public void getContainer(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -62,7 +62,7 @@ public class MDBContainerRestHandler extends RestHandler {
         completeOK(req, cinfo);
     }
 
-    @Route(path = "/api/mdb/{instance}/containers", method = "GET")
+    @Route(rpc = "MDB.ListContainers")
     public void listContainers(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -127,7 +127,7 @@ public class MDBContainerRestHandler extends RestHandler {
         ListContainersResponse.Builder responseb = ListContainersResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (SequenceContainer c : matchedContainers) {
-            responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
+            responseb.addContainers(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
         }
         if (continuationToken != null) {
             responseb.setContinuationToken(continuationToken.encodeAsString());

@@ -51,15 +51,15 @@ service ParameterArchive {
     option (yamcs.api.route) = {
       description: "Rebuild range"
       method: "POST"
-      path: "/api/archive/{instance}/parameterArchive/rebuild"
+      path: "/api/archive/{instance}/parameterArchive:rebuild"
     };
   }
 
-  rpc DeletePartitions(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc DeletePartitions(google.protobuf.Empty) returns (StringMessage) {
     option (yamcs.api.route) = {
       description: "Delete partitions"
       method: "POST"
-      path: "/api/archive/{instance}/parameterArchive/deletePartitions"
+      path: "/api/archive/{instance}/parameterArchive:deletePartitions"
     };
   }
   
@@ -102,7 +102,7 @@ service StreamArchive {
     option (yamcs.api.route) = {
       description: "Execute SQL"
       method: "POST"
-      path: "/api/archive/{instance}/sql"
+      path: "/api/archive/{instance}:executeSql"
     };
   }
 

@@ -36,7 +36,7 @@ limit (integer)
 .. code-block:: json
 
     {
-      "parameter" : [ {
+      "parameters" : [ {
         "name": "ccsds-apid",
         "qualifiedName" : "/YSS/ccsds-apid",
         "alias" : [ {
@@ -58,6 +58,6 @@ limit (integer)
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListParameterInfoResponse {
-      repeated mdb.ParameterInfo parameter = 1;
+    message ListParametersResponse {
+      repeated mdb.ParameterInfo parameters = 1;
     }

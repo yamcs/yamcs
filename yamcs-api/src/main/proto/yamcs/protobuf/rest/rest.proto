@@ -8,7 +8,6 @@ import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
-import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
@@ -61,25 +60,7 @@ message GetApiOverviewResponse {
   repeated PluginInfo plugin = 5;
 }
 
-message BatchGetParameterValueRequest {
-  repeated NamedObjectId id = 1;
-  optional bool fromCache = 2;
-  optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
-}
-
-message BatchGetParameterValueResponse {
-  repeated pvalue.ParameterValue value = 1;
-}
-
-message BatchSetParameterValueRequest {
-  message SetParameterValueRequest {
-    optional NamedObjectId id = 1;
-    optional Value value = 2;
-  }
-  repeated SetParameterValueRequest request = 1;
-}
-
-message BatchDownloadParameterValueRequest {
+message BatchDownloadParameterValuesRequest {
   optional string start = 1;
   optional string stop = 2;
   repeated NamedObjectId id = 3;
@@ -165,7 +146,6 @@ message CreateProcessorRequest {
   optional string config = 13;
 }
 
-
 message EditProcessorRequest {
   optional string state = 1;
   optional string seek = 2;
@@ -183,25 +163,6 @@ message SetSimulationTimeRequest {
   optional int64 simElapsedTime = 3;
   optional double simSpeed = 4;
   optional google.protobuf.Timestamp time0 = 5;
-}
-
-message ListInstancesResponse {
-  repeated yamcsManagement.YamcsInstance instance = 1;
-}
-
-message CreateInstanceRequest {
-  optional string name = 1;
-  optional string template = 2;
-  map<string, string> templateArgs = 3;
-  map<string, string> labels = 4;
-}
-
-message ListInstanceTemplatesResponse {
-  repeated yamcsManagement.InstanceTemplate templates = 1; 
-}
-
-message EditInstanceRequest {
-  optional string state = 1;
 }
 
 message BatchGetIndexRequest {

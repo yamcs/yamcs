@@ -263,22 +263,14 @@ export class InstanceClient {
   }
 
   async startService(name: string) {
-    const body = JSON.stringify({
-      state: 'running'
-    })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}:start`, {
+      method: 'POST',
     });
   }
 
   async stopService(name: string) {
-    const body = JSON.stringify({
-      state: 'stopped'
-    })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}:stop`, {
+      method: 'POST',
     });
   }
 

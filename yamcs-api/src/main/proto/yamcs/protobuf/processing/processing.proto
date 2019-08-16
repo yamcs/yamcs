@@ -1,0 +1,58 @@
+syntax="proto2";
+  
+package yamcs.protobuf.processing;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ProcessingProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service ProcessingAPI {
+
+  rpc GetParameterValue(google.protobuf.Empty) returns (pvalue.ParameterValue) {
+    option (yamcs.api.route) = {
+      description: "Get parameter value"
+      method: "GET"
+      path: "/api/processors/{instance}/{processor}/parameters/{name*}"
+    };
+  }
+  
+  rpc BatchGetParameterValues(BatchGetParameterValuesRequest) returns (BatchGetParameterValuesResponse) {
+    option (yamcs.api.route) = {
+      description: "Batch get multiple parameter values"
+      method: "POST"
+      path: "/api/processors/{instance}/{processor}/parameters:batchGet"
+    };
+  }
+  
+  rpc BatchSetParameterValues(BatchSetParameterValuesRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      description: "Batch set multiple parameter values"
+      method: "POST"
+      path: "/api/processors/{instance}/{processor}/parameters:batchSet"
+    };
+  }
+}
+
+message BatchGetParameterValuesRequest {
+  repeated NamedObjectId id = 1;
+  optional bool fromCache = 2;
+  optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
+}
+
+message BatchGetParameterValuesResponse {
+  repeated pvalue.ParameterValue value = 1;
+}
+
+message BatchSetParameterValuesRequest {
+  message SetParameterValueRequest {
+    optional NamedObjectId id = 1;
+    optional Value value = 2;
+  }
+  repeated SetParameterValueRequest request = 1;
+}

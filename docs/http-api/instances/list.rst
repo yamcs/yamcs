@@ -10,7 +10,7 @@ List all configured Yamcs instances::
 .. code-block:: json
 
     {
-      "instance" : [ {
+      "instances" : [ {
         "name" : "simulator",
         "missionDatabase" : {
           "configName" : "landing",
@@ -41,5 +41,5 @@ List all configured Yamcs instances::
 .. code-block:: proto
 
     message ListInstancesResponse {
-      repeated yamcsManagement.YamcsInstance instance = 1;
+      repeated YamcsInstance instances = 1;
     }

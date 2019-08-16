@@ -21,8 +21,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBSpaceSystemRestHandler extends RestHandler {
 
-    @Route(path = "/api/mdb/{instance}/space-systems/{name*}", method = "GET")
-    public void getSpaceSystemInfo(RestRequest req) throws HttpException {
+    @Route(rpc = "MDB.GetSpaceSystem")
+    public void getSpaceSystem(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -34,8 +34,9 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    @Route(path = "/api/mdb/{instance}/space-systems", method = "GET")
+    @Route(rpc = "MDB.ListSpaceSystems")
     public void listSpaceSystems(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -98,7 +99,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         ListSpaceSystemsResponse.Builder responseb = ListSpaceSystemsResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (SpaceSystem s : matchedSpaceSystems) {
-            responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, s));
+            responseb.addSpaceSystems(XtceToGpbAssembler.toSpaceSystemInfo(req, s));
         }
         if (continuationToken != null) {
             responseb.setContinuationToken(continuationToken.encodeAsString());

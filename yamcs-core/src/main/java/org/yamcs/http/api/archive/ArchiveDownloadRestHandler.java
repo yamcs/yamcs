@@ -32,7 +32,7 @@ import org.yamcs.http.api.StreamToChunkedProtobufEncoder;
 import org.yamcs.http.api.StreamToChunkedTransferEncoder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Rest.BatchDownloadParameterValueRequest;
+import org.yamcs.protobuf.Rest.BatchDownloadParameterValuesRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -79,8 +79,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         // First try from body
         if (req.hasBody()) {
-            BatchDownloadParameterValueRequest request = req
-                    .bodyAsMessage(BatchDownloadParameterValueRequest.newBuilder()).build();
+            BatchDownloadParameterValuesRequest request = req
+                    .bodyAsMessage(BatchDownloadParameterValuesRequest.newBuilder()).build();
             if (request.hasStart()) {
                 rr.setStart(RestRequest.parseTime(request.getStart()));
             }
