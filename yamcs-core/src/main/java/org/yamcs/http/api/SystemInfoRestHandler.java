@@ -11,16 +11,42 @@ import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.protobuf.LeapSecondsTable;
+import org.yamcs.protobuf.LeapSecondsTable.ValidityRange;
 import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.SystemInfo;
+import org.yamcs.utils.TaiUtcConverter.ValidityLine;
+import org.yamcs.utils.TimeEncoding;
 
 public class SystemInfoRestHandler extends RestHandler {
+
+    @Route(rpc = "YamcsManagement.GetLeapSeconds")
+    public void getLeapSeconds(RestRequest req) throws HttpException {
+        LeapSecondsTable.Builder b = LeapSecondsTable.newBuilder();
+        List<ValidityLine> lines = TimeEncoding.getTaiUtcConversionTable();
+        for (int i = 0; i < lines.size(); i++) {
+            ValidityLine line = lines.get(i);
+            long instant = TimeEncoding.fromUnixMillisec(line.unixMillis);
+            ValidityRange.Builder rangeb = ValidityRange.newBuilder()
+                    .setStart(TimeEncoding.toString(instant))
+                    .setLeapSeconds(line.seconds - 10)
+                    .setTaiDifference(line.seconds);
+            if (i != lines.size() - 1) {
+                ValidityLine next = lines.get(i + 1);
+                instant = TimeEncoding.fromUnixMillisec(next.unixMillis);
+                rangeb.setStop(TimeEncoding.toString(instant));
+            }
+            b.addRanges(rangeb);
+        }
+        completeOK(req, b.build());
+    }
 
     @Route(rpc = "YamcsManagement.GetSystemInfo")
     public void getSystemInfo(RestRequest req) throws HttpException {

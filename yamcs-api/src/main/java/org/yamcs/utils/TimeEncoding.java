@@ -3,9 +3,12 @@ package org.yamcs.utils;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.yamcs.utils.TaiUtcConverter.ValidityLine;
 
 import com.google.protobuf.Timestamp;
 
@@ -252,6 +255,10 @@ public class TimeEncoding {
 
     public static TaiUtcConverter.DateTimeComponents toUtc(long instant) {
         return taiUtcConverter.instantToUtc(instant);
+    }
+
+    public static List<ValidityLine> getTaiUtcConversionTable() {
+        return taiUtcConverter.lines;
     }
 
     /**

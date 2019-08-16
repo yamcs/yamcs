@@ -20,6 +20,7 @@ import { GroupsPage } from './iam/GroupsPage';
 import { ServiceAccountsPage } from './iam/ServiceAccountsPage';
 import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
+import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
 import { ServicesPage } from './services/ServicesPage';
 
@@ -58,6 +59,10 @@ const routes: Routes = [
       {
         path: 'endpoints',
         component: EndpointsPage,
+      },
+      {
+        path: 'leap-seconds',
+        component: LeapSecondsPage,
       },
       {
         path: 'plugins',
@@ -155,6 +160,7 @@ export const routingComponents = [
   EndpointsPage,
   GroupsPage,
   GroupPage,
+  LeapSecondsPage,
   PluginsPage,
   ServiceAccountsPage,
   ServicesPage,

@@ -23,6 +23,14 @@ service YamcsManagement {
     };
   }
   
+  rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
+    option (yamcs.api.route) = {
+      description: "Get UTC leap seconds"
+      method: "GET"
+      path: "/api/leap-seconds"
+    };
+  }
+  
   rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
     option (yamcs.api.route) = {
       description: "List instance templates"
@@ -367,4 +375,14 @@ message ListInstanceTemplatesResponse {
 
 message EditInstanceRequest {
   optional string state = 1;
+}
+
+message LeapSecondsTable {
+  message ValidityRange {
+    optional string start = 1; // UTC timestamp (unsmeared)
+    optional string stop = 2; // UTC timestamp (unsmeared)
+    optional int32 leapSeconds = 3;
+    optional int32 taiDifference = 4;
+  }
+  repeated ValidityRange ranges = 1;      
 }

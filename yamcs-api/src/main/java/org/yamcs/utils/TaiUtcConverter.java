@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -30,8 +31,7 @@ import com.google.protobuf.Timestamp;
  *
  */
 public class TaiUtcConverter {
-    long[] timesecs; // TAI time in seconds when leap seconds are added
-    int diffTaiUtc; // the difference between the TAI and UTC at the last interval
+
     static String UTC_TAI_HISTORY_FN = "UTC-TAI.history";
 
     static final int[] times365 = new int[] { 0, 365, 730, 1095 };
@@ -50,6 +50,12 @@ public class TaiUtcConverter {
 
     // Timestamp for "9999-12-31T23:59:59Z"
     static final long PROTOBUF_SECONDS_MAX = 253402300799L;
+
+    long[] timesecs; // TAI time in seconds when leap seconds are added
+    int diffTaiUtc; // the difference between the TAI and UTC at the last interval
+
+    // Unprocessed input parsed from UTC-TAI.history file.
+    List<ValidityLine> lines = new ArrayList<>();
 
     public TaiUtcConverter() throws IOException, ParseException {
         this(TaiUtcConverter.class.getResourceAsStream("/" + UTC_TAI_HISTORY_FN));
@@ -87,6 +93,7 @@ public class TaiUtcConverter {
                 }
                 diffTaiUtc = ls;
                 prevYear = year;
+                lines.add(new ValidityLine(d.getTime(), ls));
             }
         }
         timesecs = new long[tmp1.size()];
@@ -459,6 +466,16 @@ public class TaiUtcConverter {
         public String toIso8860String() {
             return String.format("%04d-%02d-%02dT%02d:%02d:%02d.%03d", year, month, day, hour, minute, second,
                     millisec);
+        }
+    }
+
+    public static final class ValidityLine {
+        public final long unixMillis;
+        public final int seconds; // TAI - UTC seconds
+
+        private ValidityLine(long unixMillis, int seconds) {
+            this.unixMillis = unixMillis;
+            this.seconds = seconds;
         }
     }
 }

@@ -470,3 +470,14 @@ export interface RootDirectory {
   unallocatedSpace: number;
   usableSpace: number;
 }
+
+export interface LeapSecondsTable {
+  ranges: ValidityRange[];
+}
+
+export interface ValidityRange {
+  start: string;
+  stop: string;
+  leapSeconds: number;
+  taiDifference: number;
+}
