@@ -23,14 +23,14 @@
                      [class.active]="userManagementActive"
                      (click)="toggleUserManagementGroup()">
         <mat-icon class="item-icon">supervised_user_circle</mat-icon>
-        Identity Management
+        Access control
       </mat-list-item>
       <div *ngIf="userManagementExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
           Users
         </app-sidebar-nav-item>
         <app-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
-          Service Accounts
+          Service accounts
         </app-sidebar-nav-item>
         <app-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
           Groups
@@ -38,7 +38,7 @@
       </div>
       <app-sidebar-nav-item routerLink="/admin/clients">
         <mat-icon class="item-icon">devices</mat-icon>
-        Connected Clients
+        Connected clients
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/services">
         <mat-icon class="item-icon">traffic</mat-icon>
@@ -56,12 +56,12 @@
       </mat-list-item>
       <div *ngIf="rocksDbExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
-          Open Databases
+          Open databases
         </app-sidebar-nav-item>
       </div>
       <app-sidebar-nav-item routerLink="/admin/endpoints">
         <mat-icon class="item-icon">http</mat-icon>
-        API Endpoints
+        API endpoints
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/leap-seconds">
         <mat-icon class="item-icon">access_time</mat-icon>

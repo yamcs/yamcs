@@ -112,7 +112,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(validSubscrList.getIdList()).build();
-        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
+        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                 .get();
 
         // Denied to subscribe to Float parameter from cache
@@ -121,7 +121,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .build();
         try {
             restClient1
-                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {

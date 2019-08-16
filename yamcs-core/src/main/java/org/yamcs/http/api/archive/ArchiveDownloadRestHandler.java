@@ -292,7 +292,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 });
     }
 
-    @Route(path = "/api/archive/{instance}/downloads/tables/{name}", method = "GET")
+    @Route(path = "/api/archive/{instance}/downloads/tables/{name}", method = { "GET", "POST" })
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);

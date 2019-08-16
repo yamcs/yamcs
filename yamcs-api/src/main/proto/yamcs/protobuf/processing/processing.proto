@@ -24,7 +24,7 @@ service ProcessingAPI {
   
   rpc BatchGetParameterValues(BatchGetParameterValuesRequest) returns (BatchGetParameterValuesResponse) {
     option (yamcs.api.route) = {
-      description: "Batch get multiple parameter values"
+      description: "Batch get the value of multiple parameters"
       method: "POST"
       path: "/api/processors/{instance}/{processor}/parameters:batchGet"
     };
@@ -32,7 +32,7 @@ service ProcessingAPI {
   
   rpc BatchSetParameterValues(BatchSetParameterValuesRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Batch set multiple parameter values"
+      description: "Batch set the value of multiple parameters"
       method: "POST"
       path: "/api/processors/{instance}/{processor}/parameters:batchSet"
     };

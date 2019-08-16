@@ -49,7 +49,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
     /**
      * indexes a combination of multiple indexes. If nothing is specified, sends all available
      */
-    @Route(path = "/api/archive/{instance}/indexes", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes", method = { "GET", "POST" })
     public void downloadIndexes(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -116,7 +116,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/{instance}/indexes/packets", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes/packets", method = { "GET", "POST" })
     public void downloadPacketIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -149,7 +149,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/{instance}/indexes/pp", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes/pp", method = { "GET", "POST" })
     public void downloadPpIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -172,7 +172,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/{instance}/indexes/commands", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes/commands", method = { "GET", "POST" })
     public void downloadCommandHistoryIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -195,7 +195,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/{instance}/indexes/events", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes/events", method = { "GET", "POST" })
     public void downloadEventIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -218,7 +218,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/archive/{instance}/indexes/completeness", method = "GET")
+    @Route(path = "/api/archive/{instance}/indexes/completeness", method = { "GET", "POST" })
     public void downloadCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);

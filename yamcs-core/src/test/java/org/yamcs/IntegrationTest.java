@@ -528,7 +528,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         try {
             restClient
-                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
@@ -546,7 +546,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         String response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
+                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                 .get();
         BatchGetParameterValuesResponse bulkPvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
                 .build();
@@ -559,7 +559,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setTimeout(2000).addAllId(validSubscrList.getIdList()).build();
 
         Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.GET, toJson(req));
+                HttpMethod.POST, toJson(req));
 
         bulkPvals = fromJson(responseFuture.get(), BatchGetParameterValuesResponse.newBuilder()).build();
         long t1 = System.currentTimeMillis();
@@ -569,7 +569,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         packetGenerator.pIntegerPara1_1_6 = 10;
         packetGenerator.pIntegerPara1_1_7 = 5;
         responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.GET,
+                HttpMethod.POST,
                 toJson(req));
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
@@ -592,7 +592,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         String response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.GET, toJson(req))
+                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                 .get();
 
         BatchGetParameterValuesResponse bulkPvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
@@ -613,7 +613,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setTimeout(2000).addAllId(subscrList.getIdList()).build();
 
         Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.GET, toJson(req));
+                HttpMethod.POST, toJson(req));
 
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
@@ -646,7 +646,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
-                HttpMethod.GET, toJson(req)).get();
+                HttpMethod.POST, toJson(req)).get();
         BatchGetParameterValuesResponse pvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
                 .build();
         assertEquals(1, pvals.getValueCount());
@@ -1132,7 +1132,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=STOPPED", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":stop", HttpMethod.POST, "")
                 .get();
         assertEquals("", resp);
 
@@ -1145,7 +1145,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=running", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":start", HttpMethod.POST, "")
                 .get();
         assertEquals("", resp);
 
