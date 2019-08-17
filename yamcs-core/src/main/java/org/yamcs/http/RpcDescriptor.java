@@ -10,16 +10,18 @@ public class RpcDescriptor {
     private String method;
     private DescriptorProto inputType;
     private DescriptorProto outputType;
+    private String description;
 
     private HttpRoute proto;
 
     public RpcDescriptor(String service, String method, DescriptorProto inputType, DescriptorProto outputType,
-            HttpRoute proto) {
+            HttpRoute proto, String description) {
         this.service = service;
         this.method = method;
         this.inputType = inputType;
         this.outputType = outputType;
         this.proto = proto;
+        this.description = description;
     }
 
     public String getService() {
@@ -39,10 +41,7 @@ public class RpcDescriptor {
     }
 
     public String getDescription() {
-        if (proto.hasDescription()) {
-            return proto.getDescription();
-        }
-        return null;
+        return description;
     }
 
     public String getHttpMethod() {

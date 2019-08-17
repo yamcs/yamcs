@@ -13,33 +13,33 @@ import "yamcs/api/annotations.proto";
 
 service CFDP {
 
+  // List transfers
   rpc ListTransfers(google.protobuf.Empty) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
-      description: "List transfers"
       method: "GET"
       path: "/api/cfdp/{instance}/transfers"
     };
   }
   
+  // Get a transfer
   rpc GetTransfer(google.protobuf.Empty) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      description: "Get a transfer"
       method: "GET"
       path: "/api/cfdp/{instance}/transfers/{id}"
     };
   }
   
+  // Create a transfer
   rpc CreateTransfer(CreateTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      description: "Create a transfer"
       method: "POST"
       path: "/api/cfdp/{instance}/transfers"
     };
   }
   
+  // Update a transfer
   rpc UpdateTransfer(EditTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Update a transfer"
       method: "PATCH"
       path: "/api/cfdp/{instance}/transfers/{id}"
     };

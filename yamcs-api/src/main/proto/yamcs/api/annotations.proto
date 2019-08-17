@@ -15,13 +15,12 @@ extend google.protobuf.MethodOptions {
 message HttpRoute {
   optional string method = 1;
   optional string path = 2;
-  optional string description = 3;
-  optional bool deprecated = 4;
-  
+  optional bool deprecated = 3;
+
   // Name of the field in the request message that maps to the request body
   // The special value "*" indicates that the request message as a whole
   // represents the body (excepting route params).
-  optional string body = 5;
+  optional string body = 4;
 }
 
 message HttpBody {

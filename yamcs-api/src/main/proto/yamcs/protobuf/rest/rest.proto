@@ -13,9 +13,9 @@ import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 service Discovery {
 
+  // List endpoints
   rpc ListEndpoints(google.protobuf.Empty) returns (ListEndpointsResponse) {
     option (yamcs.api.route) = {
-      description: "List endpoints"
       method: "GET"
       path: "/api/endpoints"
     };

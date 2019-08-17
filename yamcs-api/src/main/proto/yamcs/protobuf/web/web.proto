@@ -42,7 +42,6 @@ message WebSocketServerMessage {
     optional bytes data = 5; // Structured exception data
   }
 
-  // Could use protobuf3 Any-type some day.
   message WebSocketSubscriptionData {
     optional uint32 sequenceNumber = 1;
     optional ProtoDataType type = 2;

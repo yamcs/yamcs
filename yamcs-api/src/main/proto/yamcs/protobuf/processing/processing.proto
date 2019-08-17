@@ -14,25 +14,25 @@ import "yamcs/protobuf/yamcs.proto";
 
 service ProcessingAPI {
 
+  // Get parameter value
   rpc GetParameterValue(google.protobuf.Empty) returns (pvalue.ParameterValue) {
     option (yamcs.api.route) = {
-      description: "Get parameter value"
       method: "GET"
       path: "/api/processors/{instance}/{processor}/parameters/{name*}"
     };
   }
   
+  // Batch get the value of multiple parameters
   rpc BatchGetParameterValues(BatchGetParameterValuesRequest) returns (BatchGetParameterValuesResponse) {
     option (yamcs.api.route) = {
-      description: "Batch get the value of multiple parameters"
       method: "POST"
       path: "/api/processors/{instance}/{processor}/parameters:batchGet"
     };
   }
   
+  // Batch set the value of multiple parameters
   rpc BatchSetParameterValues(BatchSetParameterValuesRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Batch set the value of multiple parameters"
       method: "POST"
       path: "/api/processors/{instance}/{processor}/parameters:batchSet"
     };

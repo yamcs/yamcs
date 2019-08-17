@@ -12,41 +12,41 @@ import "yamcs/api/annotations.proto";
 
 service Buckets {
 
+  // List buckets
   rpc ListBuckets(google.protobuf.Empty) returns (ListBucketsResponse) {
     option (yamcs.api.route) = {
-      description: "List buckets"
       method: "GET"
       path: "/api/buckets/{instance}"
     };
   }
   
+  // Create a bucket
   rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
     option (yamcs.api.route) = {
-      description: "Create a bucket"
       method: "POST"
       path: "/api/buckets/{instance}"
     };
   }
   
+  // Delete a bucket
   rpc DeleteBucket(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Delete a bucket"
       method: "DELETE"
       path: "/api/buckets/{instance}/{bucketName}"
     };
   }
   
+  // List objects
   rpc ListObjects(google.protobuf.Empty) returns (ListObjectsResponse) {
     option (yamcs.api.route) = {
-      description: "List objects"
       method: "GET"
       path: "/api/buckets/{instance}/{bucketName}"
     };
   }
   
+  // Delete an object
   rpc DeleteObject(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Delete an object"
       method: "DELETE"
       path: "/api/buckets/{instance}/{bucketName}/{objectName*}"
     };

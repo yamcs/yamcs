@@ -35,6 +35,14 @@
       <artifactId>protobuf-java-util</artifactId>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Explicit dependency to make sure that yamcs-protoc-plugin is compiled before this module. -->
+    <dependency>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-protoc-plugin</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <build>
@@ -67,7 +75,16 @@
           <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
           <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
           <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
-          <!-- includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet-->
+          <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
+          <protocPlugins>
+            <protocPlugin>
+              <id>yamcs</id>
+              <groupId>org.yamcs</groupId>
+              <artifactId>yamcs-protoc-plugin</artifactId>
+              <version>${project.version}</version>
+              <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
+            </protocPlugin>
+          </protocPlugins>
         </configuration>
       </plugin>
     </plugins>

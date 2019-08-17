@@ -90,6 +90,7 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <executions>
           <execution>
+            <id>protoc-core</id>
             <goals>
               <goal>compile</goal>
             </goals>

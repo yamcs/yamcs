@@ -12,129 +12,129 @@ import "google/protobuf/empty.proto";
 
 service IAM {
 
+  // List privileges
   rpc ListPrivileges(google.protobuf.Empty) returns (ListPrivilegesResponse) {
     option (yamcs.api.route) = {
-      description: "List privileges"
       method: "GET"
       path: "/api/privileges"
     };
   }
 
+  // List users
   rpc ListUsers(google.protobuf.Empty) returns (ListUsersResponse) {
     option (yamcs.api.route) = {
-      description: "List users"
       method: "GET"
       path: "/api/users"
     };
   }
 
+  // Get a user
   rpc GetUser(google.protobuf.Empty) returns (UserInfo) {
     option (yamcs.api.route) = {
-      description: "Get a user"
       method: "GET"
       path: "/api/users/{username}"
     };
   }
   
+  // Create a user
   rpc CreateUser(CreateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
-      description: "Create a user"
       method: "POST"
       path: "/api/users"
     };
   }
   
+  // Update a user
   rpc UpdateUser(UpdateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
-      description: "Update a user"
       method: "PATCH"
       path: "/api/users/{username}"
     };
   }
   
+  // Get own user
   rpc GetOwnUser(google.protobuf.Empty) returns (UserInfo) {
     option (yamcs.api.route) = {
-      description: "Get own user"
       method: "GET"
       path: "/api/user"
     };
   }
   
+  // Delete an external identity
   rpc DeleteIdentity(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Delete an external identity"
       method: "DELETE"
       path: "/api/users/{username}/identities/{provider}"
     };
   }
   
+  // List groups
   rpc ListGroups(google.protobuf.Empty) returns (ListGroupsResponse) {
     option (yamcs.api.route) = {
-      description: "List groups"
       method: "GET"
       path: "/api/groups"
     };
   }
   
+  // Get a group
   rpc GetGroup(google.protobuf.Empty) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      description: "Get a group"
       method: "GET"
       path: "/api/groups/{name}"
     };
   }
   
+  // Create a group
   rpc CreateGroup(CreateGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      description: "Create a group"
       method: "POST"
       path: "/api/groups"
     };
   }
   
+  // Update a group
   rpc UpdateGroup(UpdateGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      description: "Update a group"
       method: "PATCH"
       path: "/api/groups/{name}"
     };
   }
   
+  // Delete a group
   rpc DeleteGroup(google.protobuf.Empty) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      description: "Delete a group"
       method: "DELETE"
       path: "/api/groups/{name}"
     };
   }
 
+  // List service accounts
   rpc ListServiceAccounts(google.protobuf.Empty) returns (ListServiceAccountsResponse) {
     option (yamcs.api.route) = {
-      description: "List service accounts"
       method: "GET"
       path: "/api/service-accounts"
     };
   }
   
+  // Get a service account
   rpc GetServiceAccount(google.protobuf.Empty) returns (ServiceAccountInfo) {
     option (yamcs.api.route) = {
-      description: "Get a service account"
       method: "GET"
       path: "/api/service-accounts/{name}"
     };
   }
   
+  // Delete a service account
   rpc DeleteServiceAccount(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Delete a service account"
       method: "DELETE"
       path: "/api/service-accounts/{name}"
     };
   }
   
+  // Create a service account
   rpc CreateServiceAccount(CreateServiceAccountRequest) returns (CreateServiceAccountResponse) {
     option (yamcs.api.route) = {
-      description: "Create a service account"
       method: "POST"
       path: "/api/service-accounts"
     };

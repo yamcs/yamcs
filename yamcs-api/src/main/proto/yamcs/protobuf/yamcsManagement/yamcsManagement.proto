@@ -15,130 +15,130 @@ import "yamcs/api/annotations.proto";
 
 service YamcsManagement {
 
+  // Get system info
   rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
     option (yamcs.api.route) = {
-      description: "Get system info"
       method: "GET"
       path: "/api/sysinfo"
     };
   }
   
+  // Get UTC leap seconds
   rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
     option (yamcs.api.route) = {
-      description: "Get UTC leap seconds"
       method: "GET"
       path: "/api/leap-seconds"
     };
   }
   
+  // List instance templates
   rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
     option (yamcs.api.route) = {
-      description: "List instance templates"
       method: "GET"
       path: "/api/instance-templates"
     };
   }
   
+  // Get an instance template
   rpc GetInstanceTemplate(google.protobuf.Empty) returns (InstanceTemplate) {
     option (yamcs.api.route) = {
-      description: "Get an instance template"
       method: "GET"
       path: "/api/instance-templates/{template}"
     };
   }
   
+  // List instances
   rpc ListInstances(google.protobuf.Empty) returns (ListInstancesResponse) {
     option (yamcs.api.route) = {
-      description: "List instances"
       method: "GET"
       path: "/api/instances"
     };
   }
   
+  // Get an instance
   rpc GetInstance(google.protobuf.Empty) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Get an instance"
       method: "GET"
       path: "/api/instances/{instance}"
     };
   }
   
+  // Update an instance
   rpc UpdateInstance(EditInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Update an instance"
       method: "PATCH"
       path: "/api/instances/{instance}"
       deprecated: true
     };
   }
   
+  // Create an instance
   rpc CreateInstance(CreateInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Create an instance"
       method: "POST"
       path: "/api/instances"
     };
   }
   
+  // Start an instance
   rpc StartInstance(google.protobuf.Empty) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Start an instance"
       method: "POST"
       path: "/api/instances/{instance}:start"
     };
   }
   
+  // Stop an instance
   rpc StopInstance(google.protobuf.Empty) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Stop an instance"
       method: "POST"
       path: "/api/instances/{instance}:stop"
     };
   }
   
+  // Restart an instance
   rpc RestartInstance(google.protobuf.Empty) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      description: "Restart an instance"
       method: "POST"
       path: "/api/instances/{instance}:restart"
     };
   }
   
+  // List services
   rpc ListServices(google.protobuf.Empty) returns (ListServicesResponse) {
     option (yamcs.api.route) = {
-      description: "List services"
       method: "GET"
       path: "/api/services/{instance?}"
     };
   }
   
+  // Get a service
   rpc GetService(google.protobuf.Empty) returns (ServiceInfo) {
     option (yamcs.api.route) = {
-      description: "Get a service"
       method: "GET"
       path: "/api/services/{instance}/{name}"
     };
   }
   
+  // Start a service
   rpc StartService(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Start a service"
       method: "POST"
       path: "/api/services/{instance}/{name}:start"
     };
   }
   
+  // Stop a service
   rpc StopService(google.protobuf.Empty) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Stop a service"
       method: "POST"
       path: "/api/services/{instance}/{name}:stop"
     };
   }
   
+  // Update a service
   rpc UpdateService(EditServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      description: "Update a service"
       method: "PATCH"
       path: "/api/services/{instance}/{name}"
       deprecated: true
