@@ -187,7 +187,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         try {
             deletedTag = tagDb.deleteTag(tag.getStart(), tag.getId());
         } catch (YamcsException e) { // Delete-tag returns an exception when it's not found
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
@@ -215,7 +215,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         if (tag == null) {
-            throw new NotFoundException(req, "No tag for ID (" + tagTime + ", " + tagId + ")");
+            throw new NotFoundException("No tag for ID (" + tagTime + ", " + tagId + ")");
         } else {
             return tag;
         }

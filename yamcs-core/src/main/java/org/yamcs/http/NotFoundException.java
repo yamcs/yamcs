@@ -1,8 +1,5 @@
 package org.yamcs.http;
 
-import org.yamcs.http.api.RestRequest;
-
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -14,20 +11,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class NotFoundException extends HttpException {
     private static final long serialVersionUID = 1L;
 
-    public NotFoundException(RestRequest request) {
-        super("Resource not found No resource named '" + request.getFullPathWithoutQueryString() + "'");
+    public NotFoundException() {
+        super("Resource not found");
     }
 
-    public NotFoundException(RestRequest request, String message) {
-        super("No resource named '" + request.getFullPathWithoutQueryString() + "' (" + message + ")");
-    }
-
-    public NotFoundException(HttpRequest request) {
-        super("No resource named '" + request.uri() + "'");
-    }
-
-    public NotFoundException(HttpRequest request, String message) {
-        super("No resource named '" + request.uri() + "' (" + message + ")");
+    public NotFoundException(String message) {
+        super(message);
     }
 
     public NotFoundException(Throwable t) {

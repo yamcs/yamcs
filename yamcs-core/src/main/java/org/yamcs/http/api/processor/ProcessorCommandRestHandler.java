@@ -54,7 +54,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
         String requestCommandName = UriEncoder.decode(req.getRouteParam("name"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
+        MetaCommand cmd = verifyCommand(mdb, requestCommandName);
 
         checkObjectPrivileges(req, ObjectPrivilegeType.Command, cmd.getQualifiedName());
 

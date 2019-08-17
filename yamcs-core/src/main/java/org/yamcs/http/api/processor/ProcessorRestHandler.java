@@ -266,10 +266,10 @@ public class ProcessorRestHandler extends RestHandler {
                 }
             }
         } catch (AlarmSequenceException e) {
-            throw new NotFoundException(req, "Subject is in state of alarm, but alarm id does not match");
+            throw new NotFoundException("Subject is in state of alarm, but alarm id does not match");
         }
 
-        throw new NotFoundException(req, "No active alarm named '" + alarmName + "'");
+        throw new NotFoundException("No active alarm named '" + alarmName + "'");
     }
 
     @Route(path = "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}", method = "PATCH")

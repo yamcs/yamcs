@@ -253,7 +253,7 @@ public class BucketRestHandler extends RestHandler {
         try {
             ObjectProperties props = b.findObject(objName);
             if (props == null) {
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
             byte[] objData = b.getObject(objName);
             String contentType = props.hasContentType() ? props.getContentType() : "application/octet-stream";
@@ -273,7 +273,7 @@ public class BucketRestHandler extends RestHandler {
         try {
             ObjectProperties props = b.findObject(objName);
             if (props == null) {
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
             b.deleteObject(objName);
             completeOK(req);

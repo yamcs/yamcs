@@ -298,7 +298,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
-        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        TableDefinition table = verifyTable(ydb, req.getRouteParam("name"));
 
         boolean dumpFormat = req.hasQueryParameter("format")
                 && "dump".equalsIgnoreCase(req.getQueryParameter("format"));

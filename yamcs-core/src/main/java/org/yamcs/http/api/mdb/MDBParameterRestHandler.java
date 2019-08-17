@@ -112,7 +112,7 @@ public class MDBParameterRestHandler extends AbstractMdbHandler {
     }
 
     @Override
-    public void listParameters(RestRequest req, ListParametersRequest request) throws HttpException {
+    void listParameters(RestRequest req, ListParametersRequest request) throws HttpException {
         String instance = verifyInstance(req, request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -122,8 +122,8 @@ public class MDBParameterRestHandler extends AbstractMdbHandler {
             matcher = new NameDescriptionSearchMatcher(request.getQ());
         }
 
-        boolean recurse = request.hasRecurse() && request.getRecurse();
-        boolean details = request.hasDetails() && request.getDetails();
+        boolean recurse = request.getRecurse();
+        boolean details = request.getDetails();
 
         List<Parameter> matchedParameters = new ArrayList<>();
         if (request.hasNamespace()) {

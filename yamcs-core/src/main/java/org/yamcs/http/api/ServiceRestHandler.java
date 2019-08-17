@@ -67,7 +67,7 @@ public class ServiceRestHandler extends RestHandler {
         if (global) {
             ServiceWithConfig serviceWithConfig = yamcsServer.getGlobalServiceWithConfig(serviceName);
             if (serviceWithConfig == null) {
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
 
             ServiceInfo serviceInfo = ServiceHelper.toServiceInfo(serviceWithConfig, null, null);
@@ -76,7 +76,7 @@ public class ServiceRestHandler extends RestHandler {
             YamcsServerInstance ysi = yamcsServer.getInstance(instance);
             ServiceWithConfig serviceWithConfig = ysi.getServiceWithConfig(serviceName);
             if (serviceWithConfig == null) {
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
 
             ServiceInfo serviceInfo = ServiceHelper.toServiceInfo(serviceWithConfig, instance, null);
@@ -135,7 +135,7 @@ public class ServiceRestHandler extends RestHandler {
                 s = yamcsServer.getInstance(instance).getService(serviceName);
             }
             if (s == null) {
-                throw new NotFoundException(req, "No service by name '" + serviceName + "'");
+                throw new NotFoundException("No service by name '" + serviceName + "'");
             }
 
             s.stopAsync();
@@ -187,7 +187,7 @@ public class ServiceRestHandler extends RestHandler {
                     s = yamcsServer.getInstance(instance).getService(serviceName);
                 }
                 if (s == null) {
-                    throw new NotFoundException(req, "No service by name '" + serviceName + "'");
+                    throw new NotFoundException("No service by name '" + serviceName + "'");
                 }
 
                 s.stopAsync();

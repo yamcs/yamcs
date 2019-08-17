@@ -30,7 +30,7 @@ public class MDBParameterTypeRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        ParameterType p = verifyParameterType(req, mdb, req.getRouteParam("name"));
+        ParameterType p = verifyParameterType(mdb, req.getRouteParam("name"));
 
         ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(p, DetailLevel.FULL);
         completeOK(req, pinfo);

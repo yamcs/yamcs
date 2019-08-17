@@ -204,14 +204,14 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
-            throw new NotFoundException(req, "No instance named '" + instance + "'");
+            throw new NotFoundException("No instance named '" + instance + "'");
         }
         return instance;
     }
 
     protected static String verifyInstanceTemplate(RestRequest req, String template) throws NotFoundException {
         if (!YamcsServer.hasInstanceTemplate(template)) {
-            throw new NotFoundException(req, "No template named '" + template + "'");
+            throw new NotFoundException("No template named '" + template + "'");
         }
         return template;
     }
@@ -220,7 +220,7 @@ public abstract class RestHandler extends RouteHandler {
         verifyInstance(req, instance);
         LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
         if (linkInfo == null) {
-            throw new NotFoundException(req, "No link named '" + linkName + "' within instance '" + instance + "'");
+            throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
         }
         return linkInfo;
     }
@@ -228,7 +228,7 @@ public abstract class RestHandler extends RouteHandler {
     protected static ConnectedClient verifyClient(RestRequest req, int clientId) throws NotFoundException {
         ConnectedClient client = ManagementService.getInstance().getClient(clientId);
         if (client == null) {
-            throw new NotFoundException(req, "No such client");
+            throw new NotFoundException("No such client");
         } else {
             return client;
         }
@@ -239,7 +239,7 @@ public abstract class RestHandler extends RouteHandler {
         verifyInstance(req, instance);
         Processor processor = Processor.getInstance(instance, processorName);
         if (processor == null) {
-            throw new NotFoundException(req, "No processor '" + processorName + "' within instance '" + instance + "'");
+            throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
         } else {
             return processor;
         }
@@ -255,7 +255,7 @@ public abstract class RestHandler extends RouteHandler {
             return rooted;
         }
 
-        throw new NotFoundException(req, "No such namespace");
+        throw new NotFoundException("No such namespace");
     }
 
     protected static SpaceSystem verifySpaceSystem(RestRequest req, XtceDb mdb, String pathName)
@@ -285,7 +285,7 @@ public abstract class RestHandler extends RouteHandler {
             return spaceSystem;
         }
 
-        throw new NotFoundException(req, "No such space system");
+        throw new NotFoundException("No such space system");
     }
 
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)
@@ -308,7 +308,7 @@ public abstract class RestHandler extends RouteHandler {
             try {
                 aggPath = AggregateUtil.parseReference(pathName.substring(aggSep));
             } catch (IllegalArgumentException e) {
-                throw new NotFoundException(req, "Invalid array/aggregate path in name " + pathName);
+                throw new NotFoundException("Invalid array/aggregate path in name " + pathName);
             }
         }
 
@@ -316,7 +316,7 @@ public abstract class RestHandler extends RouteHandler {
         // }
         int lastSlash = nwa.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == nwa.length() - 1) {
-            throw new NotFoundException(req, "No such parameter (missing namespace?)");
+            throw new NotFoundException("No such parameter (missing namespace?)");
         }
 
         String _namespace = nwa.substring(0, lastSlash);
@@ -335,12 +335,12 @@ public abstract class RestHandler extends RouteHandler {
             throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
         if (p == null) {
-            throw new NotFoundException(req, "No parameter named " + pathName);
+            throw new NotFoundException("No parameter named " + pathName);
         }
 
         if (aggPath != null) {
             if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {
-                throw new NotFoundException(req, "Nonexistent array/aggregate path in name " + pathName);
+                throw new NotFoundException("Nonexistent array/aggregate path in name " + pathName);
             }
             name += AggregateUtil.toString(aggPath);
         }
@@ -360,27 +360,26 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         if (stream == null) {
-            throw new NotFoundException(req,
-                    "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
+            throw new NotFoundException("No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
         } else {
             return stream;
         }
     }
 
-    protected static TableDefinition verifyTable(RestRequest req, YarchDatabaseInstance ydb, String tableName)
+    protected static TableDefinition verifyTable(YarchDatabaseInstance ydb, String tableName)
             throws NotFoundException {
         TableDefinition table = ydb.getTable(tableName);
         if (table == null) {
-            throw new NotFoundException(req, "No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
+            throw new NotFoundException("No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
         } else {
             return table;
         }
     }
 
-    protected static MetaCommand verifyCommand(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static MetaCommand verifyCommand(XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such command (missing namespace?)");
+            throw new NotFoundException("No such command (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -396,16 +395,16 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         if (cmd == null) {
-            throw new NotFoundException(req, "No such command");
+            throw new NotFoundException("No such command");
         } else {
             return cmd;
         }
     }
 
-    protected static Algorithm verifyAlgorithm(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static Algorithm verifyAlgorithm(XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such algorithm (missing namespace?)");
+            throw new NotFoundException("No such algorithm (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -425,14 +424,14 @@ public abstract class RestHandler extends RouteHandler {
             return algorithm;
         }
 
-        throw new NotFoundException(req, "No such algorithm");
+        throw new NotFoundException("No such algorithm");
     }
 
-    protected static ParameterType verifyParameterType(RestRequest req, XtceDb mdb, String pathName)
+    protected static ParameterType verifyParameterType(XtceDb mdb, String pathName)
             throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such parameter type (missing namespace?)");
+            throw new NotFoundException("No such parameter type (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -452,14 +451,14 @@ public abstract class RestHandler extends RouteHandler {
             return type;
         }
 
-        throw new NotFoundException(req, "No such parameter type");
+        throw new NotFoundException("No such parameter type");
     }
 
-    protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName)
+    protected static SequenceContainer verifyContainer(XtceDb mdb, String pathName)
             throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such container (missing namespace?)");
+            throw new NotFoundException("No such container (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -479,7 +478,7 @@ public abstract class RestHandler extends RouteHandler {
             return container;
         }
 
-        throw new NotFoundException(req, "No such container");
+        throw new NotFoundException("No such container");
     }
 
     protected static AlarmServer<Parameter, ParameterValue> verifyParameterAlarmServer(Processor processor)

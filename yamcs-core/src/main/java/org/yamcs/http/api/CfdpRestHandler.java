@@ -99,7 +99,7 @@ public class CfdpRestHandler extends RestHandler {
         try {
             ObjectProperties props = bucket.findObject(objectName);
             if (props == null) {
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
             objData = bucket.getObject(objectName);
         } catch (IOException e) {
@@ -173,7 +173,7 @@ public class CfdpRestHandler extends RestHandler {
         CfdpService cfdpService = verifyCfdpService(req);
         CfdpTransaction transaction = cfdpService.getCfdpTransfer(transactionId);
         if (transaction == null) {
-            throw new NotFoundException(req, "No such transaction");
+            throw new NotFoundException("No such transaction");
         } else {
             return transaction;
         }
@@ -203,7 +203,7 @@ public class CfdpRestHandler extends RestHandler {
 
         List<CfdpService> services = yamcsServer.getInstance(instance).getServices(CfdpService.class);
         if (services.isEmpty()) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
         return services.get(0);
     }

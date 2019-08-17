@@ -34,7 +34,7 @@ public class MDBContainerRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        SequenceContainer c = verifyContainer(req, mdb, req.getRouteParam("name"));
+        SequenceContainer c = verifyContainer(mdb, req.getRouteParam("name"));
 
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, DetailLevel.FULL);
         List<ContainerEntry> containerEntries = mdb.getContainerEntries(c);

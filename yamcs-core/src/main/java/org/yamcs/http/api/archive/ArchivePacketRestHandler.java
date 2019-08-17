@@ -202,7 +202,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             public void streamClosed(Stream stream) {
                 if (packets.isEmpty()) {
                     completeWithError(req,
-                            new NotFoundException(req, "No packet for id (" + gentime + ", " + seqNum + ")"));
+                            new NotFoundException("No packet for id (" + gentime + ", " + seqNum + ")"));
                 } else if (packets.size() > 1) {
                     completeWithError(req, new InternalServerErrorException("Too many results"));
                 } else {

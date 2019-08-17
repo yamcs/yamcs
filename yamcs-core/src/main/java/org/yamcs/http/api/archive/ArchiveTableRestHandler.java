@@ -83,7 +83,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        TableDefinition table = verifyTable(ydb, req.getRouteParam("name"));
 
         TableInfo response = ArchiveHelper.toTableInfo(table);
         completeOK(req, response);
@@ -95,7 +95,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        TableDefinition table = verifyTable(ydb, req.getRouteParam("name"));
 
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
@@ -158,7 +158,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         String instance = match.getRouteParam("instance");
         if (!YamcsServer.hasInstance(instance)) {
-            throw new NotFoundException(req, "No instance named '" + instance + "'");
+            throw new NotFoundException("No instance named '" + instance + "'");
         }
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
@@ -166,7 +166,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         TableDefinition table = ydb.getTable(tableName);
         if (table == null) {
-            throw new NotFoundException(req, "No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
+            throw new NotFoundException("No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
         }
         Stream inputStream;
         try {

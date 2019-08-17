@@ -51,7 +51,7 @@ public class ArchiveCommandRestHandler extends RestHandler {
         }
         if (req.hasRouteParam("name")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
-            MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
+            MetaCommand cmd = verifyCommand(mdb, req.getRouteParam("name"));
             checkObjectPrivileges(req, ObjectPrivilegeType.CommandHistory, cmd.getQualifiedName());
             sqlb.where("cmdName = ?", cmd.getQualifiedName());
         }

@@ -71,7 +71,7 @@ public class SimulationTimeService implements TimeService {
             TimeService ts = yamcsServer.getInstance(instance).getTimeService();
             if (!(ts instanceof SimulationTimeService)) {
                 log.warn("Simulation time service requested for a non-simulation TimeService {}", ts);
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
 
             SimulationTimeService sts = (SimulationTimeService) ts;

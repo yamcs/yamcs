@@ -29,7 +29,7 @@ public class MDBCommandRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
+        MetaCommand cmd = verifyCommand(mdb, req.getRouteParam("name"));
 
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.FULL);
         completeOK(req, cinfo);

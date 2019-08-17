@@ -178,7 +178,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         if (queue == null) {
             String processorName = mgr.getChannelName();
             String instance = mgr.getInstance();
-            throw new NotFoundException(req,
+            throw new NotFoundException(
                     "No queue named '" + queueName + "' (processor: '" + instance + "/" + processorName + "')");
         } else {
             return queue;

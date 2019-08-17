@@ -114,7 +114,7 @@ public class IAMRestHandler extends RestHandler {
         String username = req.getRouteParam("username");
         User user = securityStore.getDirectory().getUser(username);
         if (user == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
@@ -128,7 +128,7 @@ public class IAMRestHandler extends RestHandler {
         Directory directory = securityStore.getDirectory();
         User user = directory.getUser(username);
         if (user == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
 
         UpdateUserRequest request = req.bodyAsMessage(UpdateUserRequest.newBuilder()).build();
@@ -177,7 +177,7 @@ public class IAMRestHandler extends RestHandler {
         String username = req.getRouteParam("username");
         User user = directory.getUser(username);
         if (user == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
         user.deleteIdentity(req.getRouteParam("provider"));
         try {
@@ -220,7 +220,7 @@ public class IAMRestHandler extends RestHandler {
         String name = req.getRouteParam("name");
         ServiceAccount serviceAccount = directory.getServiceAccount(name);
         if (serviceAccount == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
         completeOK(req, toServiceAccountInfo(serviceAccount, true));
     }
@@ -284,7 +284,7 @@ public class IAMRestHandler extends RestHandler {
         String name = req.getRouteParam("name");
         Group group = directory.getGroup(name);
         if (group == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
         completeOK(req, toGroupInfo(group, true));
     }
@@ -332,7 +332,7 @@ public class IAMRestHandler extends RestHandler {
         Directory directory = securityStore.getDirectory();
         Group group = directory.getGroup(name);
         if (group == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
 
         UpdateGroupRequest request = req.bodyAsMessage(UpdateGroupRequest.newBuilder()).build();
@@ -375,7 +375,7 @@ public class IAMRestHandler extends RestHandler {
         Directory directory = securityStore.getDirectory();
         Group group = directory.getGroup(name);
         if (group == null) {
-            throw new NotFoundException(req);
+            throw new NotFoundException();
         }
 
         try {

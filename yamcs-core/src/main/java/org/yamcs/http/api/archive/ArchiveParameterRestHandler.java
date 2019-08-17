@@ -235,7 +235,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
             if (pidArray.isEmpty()) {
                 log.error("No parameter group id found in the parameter archive for {}", qn);
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
         } else {
             log.warn("No parameter id found in the parameter archive for {}", qn);

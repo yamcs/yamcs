@@ -70,7 +70,7 @@ public class BucketHelper {
                         throw new InternalServerErrorException("Error creating user bucket", e);
                     }
                 } else {
-                    throw new NotFoundException(req);
+                    throw new NotFoundException();
                 }
             }
 

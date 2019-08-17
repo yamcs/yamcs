@@ -110,7 +110,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
+        Algorithm algo = verifyAlgorithm(mdb, req.getRouteParam("name"));
 
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
         completeOK(req, cinfo);
@@ -131,7 +131,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         }
         AlgorithmManager algMng = l.get(0);
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
-        Algorithm a = verifyAlgorithm(req, xtcedb, req.getRouteParam("name"));
+        Algorithm a = verifyAlgorithm(xtcedb, req.getRouteParam("name"));
         if (!(a instanceof CustomAlgorithm)) {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
         }
