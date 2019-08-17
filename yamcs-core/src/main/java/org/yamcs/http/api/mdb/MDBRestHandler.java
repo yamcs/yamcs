@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class MDBRestHandler extends RestHandler {
 
-    @Route(rpc = "MDB.GetMissionDatabase")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetMissionDatabase")
     public void getMissionDatabase(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 

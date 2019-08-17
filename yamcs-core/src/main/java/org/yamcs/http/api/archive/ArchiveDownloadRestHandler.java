@@ -15,9 +15,9 @@ import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.http.api.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.http.api.RestHandler;
@@ -64,7 +64,7 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
 
-    private GpbExtensionRegistry gpbExtensionRegistry;
+    private ProtobufRegistry protobufRegistry;
 
     @Route(path = "/api/archive/{instance}/downloads/parameters:batchGet", method = "POST")
     public void downloadParameters(RestRequest req) throws HttpException {
@@ -424,11 +424,11 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
 
-    private GpbExtensionRegistry getExtensionRegistry() {
-        if (gpbExtensionRegistry == null) {
+    private ProtobufRegistry getExtensionRegistry() {
+        if (protobufRegistry == null) {
             List<HttpServer> services = yamcsServer.getGlobalServices(HttpServer.class);
-            gpbExtensionRegistry = services.get(0).getGpbExtensionRegistry();
+            protobufRegistry = services.get(0).getProtobufRegistry();
         }
-        return gpbExtensionRegistry;
+        return protobufRegistry;
     }
 }

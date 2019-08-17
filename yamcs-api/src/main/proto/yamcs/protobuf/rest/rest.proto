@@ -130,12 +130,12 @@ message IssueCommandResponse {
 }
 
 message UpdateCommandHistoryRequest {
-    message KeyValue {
-        required string key = 1;
-        required string value = 2;
-    }
-    required commanding.CommandId cmdId = 1;
-    repeated KeyValue historyEntry = 2;
+  message KeyValue {
+    optional string key = 1;
+    optional string value = 2;
+  }
+  optional commanding.CommandId cmdId = 1;
+  repeated KeyValue historyEntry = 2;
 }
 
 message CreateProcessorRequest {

@@ -22,10 +22,10 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.RestRequest.IntervalResult;
@@ -48,6 +48,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
 import com.google.common.collect.BiMap;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -58,9 +59,9 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
-    private GpbExtensionRegistry gpbExtensionRegistry;
+    private ProtobufRegistry protobufRegistry;
 
-    @Route(rpc = "StreamArchive.ListEvents")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListEvents")
     public void listEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
@@ -137,7 +138,7 @@ public class ArchiveEventRestHandler extends RestHandler {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
             CsvWriter w = new CsvWriter(bw, '\t');
             try {
-                w.writeRecord(ArchiveHelper.getEventCSVHeader(getExtensionRegistry()));
+                w.writeRecord(ArchiveHelper.getEventCSVHeader(getProtobufRegistry()));
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -146,7 +147,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     try {
-                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry()));
+                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple, getProtobufRegistry()));
                     } catch (IOException e) {
                         // TODO maybe support passing up as rest exception using custom listeners
                         log.error("Could not write CSV record ", e);
@@ -173,7 +174,13 @@ public class ArchiveEventRestHandler extends RestHandler {
                 public void onTuple(Stream stream, Tuple tuple) {
                     if (++count <= limit) {
                         Event incoming = (Event) tuple.getColumn("body");
-                        Event event = getExtensionRegistry().extend(incoming);
+                        Event event;
+                        try {
+                            event = Event.parseFrom(incoming.toByteArray(),
+                                    getProtobufRegistry().getExtensionRegistry());
+                        } catch (InvalidProtocolBufferException e) {
+                            throw new UnsupportedOperationException(e);
+                        }
 
                         Event.Builder eventb = Event.newBuilder(event);
                         eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
@@ -196,7 +203,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "StreamArchive.CreateEvent")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.CreateEvent")
     public void postEvent(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
 
@@ -268,7 +275,7 @@ public class ArchiveEventRestHandler extends RestHandler {
      * information via the table-related API, but then users without MayReadTables privilege, would not be able to call
      * it.
      */
-    @Route(rpc = "StreamArchive.ListEventSources")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListEventSources")
     public void listSources(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
@@ -305,11 +312,11 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-    private GpbExtensionRegistry getExtensionRegistry() {
-        if (gpbExtensionRegistry == null) {
+    private ProtobufRegistry getProtobufRegistry() {
+        if (protobufRegistry == null) {
             List<HttpServer> services = yamcsServer.getGlobalServices(HttpServer.class);
-            gpbExtensionRegistry = services.get(0).getGpbExtensionRegistry();
+            protobufRegistry = services.get(0).getProtobufRegistry();
         }
-        return gpbExtensionRegistry;
+        return protobufRegistry;
     }
 }

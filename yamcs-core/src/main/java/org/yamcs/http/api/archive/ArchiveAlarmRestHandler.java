@@ -19,7 +19,7 @@ import org.yamcs.yarch.Tuple;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ListAlarms")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListAlarms")
     public void listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -60,7 +60,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "StreamArchive.ListParameterAlarms")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListParameterAlarms")
     public void listParameterAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

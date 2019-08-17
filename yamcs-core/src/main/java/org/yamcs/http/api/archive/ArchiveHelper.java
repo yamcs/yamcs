@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.HttpException;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.archive.ParameterRanger.Range;
@@ -52,6 +52,7 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 
 /**
@@ -310,8 +311,8 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static String[] getEventCSVHeader(GpbExtensionRegistry extensionRegistry) {
-        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
+    final static String[] getEventCSVHeader(ProtobufRegistry protobufRegistry) {
+        List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
         String[] rec = new String[5 + extensionFields.size()];
         int i = 0;
         rec[i++] = "Source";
@@ -325,10 +326,10 @@ public final class ArchiveHelper {
         return rec;
     }
 
-    final static String[] tupleToCSVEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
-        Event event = tupleToEvent(tuple, extensionRegistry);
+    final static String[] tupleToCSVEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
+        Event event = tupleToEvent(tuple, protobufRegistry);
 
-        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
+        List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
 
         String[] rec = new String[5 + extensionFields.size()];
         int i = 0;
@@ -343,9 +344,14 @@ public final class ArchiveHelper {
         return rec;
     }
 
-    final static Event tupleToEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
+    final static Event tupleToEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
         Event incoming = (Event) tuple.getColumn("body");
-        Event event = extensionRegistry.extend(incoming);
+        Event event;
+        try {
+            event = Event.parseFrom(incoming.toByteArray(), protobufRegistry.getExtensionRegistry());
+        } catch (InvalidProtocolBufferException e) {
+            throw new UnsupportedOperationException(e);
+        }
 
         Event.Builder eventb = Event.newBuilder(event);
         eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));

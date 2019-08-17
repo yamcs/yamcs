@@ -1,14 +1,10 @@
 package org.yamcs.http.api;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,14 +24,13 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
-import org.yamcs.api.AnnotationsProto;
-import org.yamcs.api.HttpRoute;
-import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.MethodNotAllowedException;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.RouteHandler;
+import org.yamcs.http.RpcDescriptor;
 import org.yamcs.http.api.archive.ArchiveAlarmRestHandler;
 import org.yamcs.http.api.archive.ArchiveCommandRestHandler;
 import org.yamcs.http.api.archive.ArchiveDownloadRestHandler;
@@ -68,12 +63,6 @@ import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.security.User;
-
-import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
-import com.google.protobuf.DescriptorProtos.FileDescriptorSet;
-import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
-import com.google.protobuf.DescriptorProtos.MethodOptions;
-import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -113,9 +102,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
 
     private String contextPath;
-
-    // Metadata on registered routes. Used for discovery and self-documentation.
-    private Map<String, RouteDescriptor> routeDescriptors = new HashMap<>();
+    private ProtobufRegistry protobufRegistry;
 
     // Order, because patterns are matched top-down in insertion order
     private List<RouteElement> defaultRoutes = new ArrayList<>();
@@ -126,11 +113,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     private final ExecutorService offThreadExecutor;
 
-    public Router(ExecutorService executor, String contextPath, GpbExtensionRegistry gpbExtensionRegistry) {
+    public Router(ExecutorService executor, String contextPath, ProtobufRegistry protobufRegistry) {
         this.offThreadExecutor = executor;
         this.contextPath = contextPath;
-
-        discoverRouteDescriptors(gpbExtensionRegistry);
+        this.protobufRegistry = protobufRegistry;
 
         registerRouteHandler(new CfdpRestHandler());
         registerRouteHandler(new ClientRestHandler());
@@ -174,43 +160,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(new DiscoveryRestHandler(this));
     }
 
-    private void discoverRouteDescriptors(GpbExtensionRegistry registry) {
-        registry.installExtension(AnnotationsProto.route);
-
-        try (InputStream in = getClass().getResourceAsStream("/yamcs-api.protobin")) {
-            if (in == null) {
-                throw new UnsupportedOperationException("Missing binary protobuf descriptions");
-            }
-            FileDescriptorSet proto = FileDescriptorSet.parseFrom(in);
-            proto = registry.extend(proto);
-
-            for (FileDescriptorProto fileDescriptor : proto.getFileList()) {
-                for (ServiceDescriptorProto serviceDescriptor : fileDescriptor.getServiceList()) {
-                    for (MethodDescriptorProto methodDescriptor : serviceDescriptor.getMethodList()) {
-                        MethodOptions options = methodDescriptor.getOptions();
-                        if (options.hasExtension(AnnotationsProto.route)) {
-                            HttpRoute route = methodDescriptor.getOptions().getExtension(AnnotationsProto.route);
-
-                            String service = serviceDescriptor.getName();
-                            String method = methodDescriptor.getName();
-                            String inputType = methodDescriptor.getInputType();
-                            String outputType = methodDescriptor.getOutputType();
-                            RouteDescriptor descriptor = new RouteDescriptor(service, method, inputType, outputType,
-                                    route);
-
-                            RouteDescriptor previous = routeDescriptors.put(service + "." + method, descriptor);
-                            if (previous != null) {
-                                log.warn("Duplicate rpc definition {}.{}", service, method);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
     public void registerRouteHandler(RouteHandler routeHandler) {
         registerRouteHandler(null, routeHandler);
     }
@@ -218,33 +167,30 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     // Using method handles for better invoke performance
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
-        Method[] declaredMethods = routeHandler.getClass().getDeclaredMethods();
+        Method[] methods = getAnnotatedMethods(routeHandler.getClass());
 
         // Temporary structure used to sort before map insertion
         List<RouteConfig> routeConfigs = new ArrayList<>();
         try {
-            for (int i = 0; i < declaredMethods.length; i++) {
-                Method reflectedMethod = declaredMethods[i];
-                if (reflectedMethod.isAnnotationPresent(Route.class)
-                        || reflectedMethod.isAnnotationPresent(Routes.class)) {
-                    MethodHandle handle = lookup.unreflect(reflectedMethod);
+            for (int i = 0; i < methods.length; i++) {
+                Method reflectedMethod = methods[i];
+                MethodHandle handle = lookup.unreflect(reflectedMethod);
 
-                    Route[] anns = reflectedMethod.getDeclaredAnnotationsByType(Route.class);
-                    for (Route ann : anns) {
-                        if (!ann.rpc().isEmpty()) {
-                            RouteDescriptor descriptor = routeDescriptors.get(ann.rpc());
-                            if (descriptor == null) {
-                                throw new UnsupportedOperationException("Unable to find rpc definition: " + ann.rpc());
-                            }
-                            routeConfigs.add(new RouteConfig(routeHandler, descriptor, ann.dataLoad(),
-                                    ann.offThread(), ann.maxBodySize(), handle));
-                        } else {
-                            for (String m : ann.method()) {
-                                HttpMethod httpMethod = HttpMethod.valueOf(m);
+                Route[] anns = reflectedMethod.getAnnotationsByType(Route.class);
+                for (Route ann : anns) {
+                    if (!ann.rpc().isEmpty()) {
+                        RpcDescriptor descriptor = protobufRegistry.getRpc(ann.rpc());
+                        if (descriptor == null) {
+                            throw new UnsupportedOperationException("Unable to find rpc definition: " + ann.rpc());
+                        }
+                        routeConfigs.add(new RouteConfig(routeHandler, descriptor, ann.dataLoad(),
+                                ann.offThread(), ann.maxBodySize(), handle));
+                    } else {
+                        for (String m : ann.method()) {
+                            HttpMethod httpMethod = HttpMethod.valueOf(m);
 
-                                routeConfigs.add(new RouteConfig(routeHandler, ann.path(),
-                                        ann.dataLoad(), ann.offThread(), ann.maxBodySize(), httpMethod, handle));
-                            }
+                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(),
+                                    ann.dataLoad(), ann.offThread(), ann.maxBodySize(), httpMethod, handle));
                         }
                     }
                 }
@@ -255,9 +201,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
 
         // Sort in a way that increases chances of a good URI match
-        // 1. @Route(priority=true) first
-        // 2. Descending on path length
-        // 3. Actual path contents (should not matter too much)
         Collections.sort(routeConfigs);
 
         List<RouteElement> targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
@@ -277,6 +220,24 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
+    }
+
+    private Method[] getAnnotatedMethods(Class<?> clazz) {
+        List<Method> result = new ArrayList<>();
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(Route.class) || method.isAnnotationPresent(Routes.class)) {
+                result.add(method);
+            }
+        }
+        clazz = clazz.getSuperclass();
+        if (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.isAnnotationPresent(Route.class) || method.isAnnotationPresent(Routes.class)) {
+                    result.add(method);
+                }
+            }
+        }
+        return result.toArray(new Method[result.size()]);
     }
 
     private RouteElement createAndGet(List<RouteElement> routes, Pattern pattern) {
@@ -516,11 +477,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final boolean dataLoad;
         final int maxBodySize;
         final boolean offThread;
-        final RouteDescriptor descriptor;
+        final RpcDescriptor descriptor;
         final AtomicLong requestCount = new AtomicLong();
         final AtomicLong errorCount = new AtomicLong();
 
-        RouteConfig(RouteHandler routeHandler, RouteDescriptor descriptor, boolean dataLoad,
+        RouteConfig(RouteHandler routeHandler, RpcDescriptor descriptor, boolean dataLoad,
                 boolean offThread, int maxBodySize, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = descriptor.getPath();
@@ -544,7 +505,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             descriptor = null;
         }
 
-        public RouteDescriptor getDescriptor() {
+        public RpcDescriptor getDescriptor() {
             return descriptor;
         }
 
@@ -674,8 +635,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 if (v.descriptor != null) {
                     endpointb.setService(v.descriptor.getService());
                     endpointb.setMethod(v.descriptor.getMethod());
-                    endpointb.setInputType(v.descriptor.getInputType());
-                    endpointb.setOutputType(v.descriptor.getOutputType());
+                    endpointb.setInputType(v.descriptor.getInputType().getName());
+                    endpointb.setOutputType(v.descriptor.getOutputType().getName());
                     if (v.descriptor.getDescription() != null) {
                         endpointb.setDescription(v.descriptor.getDescription());
                     }

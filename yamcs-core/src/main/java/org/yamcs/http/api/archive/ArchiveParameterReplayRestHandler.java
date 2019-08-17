@@ -56,7 +56,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
      * unstable.
      */
-    @Route(rpc = "StreamArchive.GetParameterSamples")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetParameterSamples")
     public void getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -107,7 +107,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "StreamArchive.ListParameterHistory")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListParameterHistory")
     public void listParameterHistory(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

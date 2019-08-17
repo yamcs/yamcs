@@ -17,4 +17,14 @@ message HttpRoute {
   optional string path = 2;
   optional string description = 3;
   optional bool deprecated = 4;
+  
+  // Name of the field in the request message that maps to the request body
+  // The special value "*" indicates that the request message as a whole
+  // represents the body (excepting route params).
+  optional string body = 5;
+}
+
+message HttpBody {
+  optional string content_type = 1;
+  optional bytes data = 2;
 }

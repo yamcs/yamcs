@@ -27,7 +27,7 @@ import org.yamcs.utils.TimeEncoding;
 
 public class SystemInfoRestHandler extends RestHandler {
 
-    @Route(rpc = "YamcsManagement.GetLeapSeconds")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.GetLeapSeconds")
     public void getLeapSeconds(RestRequest req) throws HttpException {
         LeapSecondsTable.Builder b = LeapSecondsTable.newBuilder();
         List<ValidityLine> lines = TimeEncoding.getTaiUtcConversionTable();
@@ -48,7 +48,7 @@ public class SystemInfoRestHandler extends RestHandler {
         completeOK(req, b.build());
     }
 
-    @Route(rpc = "YamcsManagement.GetSystemInfo")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.GetSystemInfo")
     public void getSystemInfo(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Access is limited to superusers");

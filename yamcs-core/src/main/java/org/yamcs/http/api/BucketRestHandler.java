@@ -50,7 +50,7 @@ public class BucketRestHandler extends RestHandler {
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
-    @Route(rpc = "Buckets.ListBuckets")
+    @Route(rpc = "yamcs.protobuf.buckets.Buckets.ListBuckets")
     public void listBuckets(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -75,7 +75,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "Buckets.CreateBucket")
+    @Route(rpc = "yamcs.protobuf.buckets.Buckets.CreateBucket")
     public void createBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -94,7 +94,7 @@ public class BucketRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(rpc = "Buckets.DeleteBucket")
+    @Route(rpc = "yamcs.protobuf.buckets.Buckets.DeleteBucket")
     public void deleteBucket(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
@@ -197,7 +197,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "Buckets.ListObjects")
+    @Route(rpc = "yamcs.protobuf.buckets.Buckets.ListObjects")
     public void listObjects(RestRequest req) throws HttpException {
         BucketHelper.checkReadBucketPrivilege(req);
         Bucket b = BucketHelper.verifyAndGetBucket(req);
@@ -264,7 +264,7 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "Buckets.DeleteBucket")
+    @Route(rpc = "yamcs.protobuf.buckets.Buckets.DeleteBucket")
     public void deleteObject(RestRequest req) throws HttpException {
         BucketHelper.checkManageBucketPrivilege(req);
 

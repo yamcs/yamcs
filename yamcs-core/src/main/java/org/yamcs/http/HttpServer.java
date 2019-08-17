@@ -78,7 +78,7 @@ public class HttpServer extends AbstractYamcsService {
     private CorsConfig corsConfig;
 
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
-    private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
+    private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -157,7 +157,7 @@ public class HttpServer extends AbstractYamcsService {
                     String fieldName = YConfiguration.getString(conf, "field");
                     Class<?> extensionClass = Class.forName(className);
                     Field field = extensionClass.getField(fieldName);
-                    gpbExtensionRegistry.installExtension(extensionClass, field);
+                    protobufRegistry.installExtension(extensionClass, field);
                 }
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
                 throw new InitException("Could not load GPB extensions", e);
@@ -168,7 +168,7 @@ public class HttpServer extends AbstractYamcsService {
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
         executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor, contextPath, gpbExtensionRegistry);
+        apiRouter = new Router(executor, contextPath, protobufRegistry);
 
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
@@ -334,8 +334,8 @@ public class HttpServer extends AbstractYamcsService {
         return webSocketExtensions;
     }
 
-    public GpbExtensionRegistry getGpbExtensionRegistry() {
-        return gpbExtensionRegistry;
+    public ProtobufRegistry getProtobufRegistry() {
+        return protobufRegistry;
     }
 
     public CorsConfig getCorsConfig() {

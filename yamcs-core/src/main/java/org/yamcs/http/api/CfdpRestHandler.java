@@ -2,7 +2,6 @@ package org.yamcs.http.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,9 +22,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.EditTransferRequest;
-import org.yamcs.protobuf.ListRemoteFilesResponse;
 import org.yamcs.protobuf.ListTransfersResponse;
-import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.utils.TimeEncoding;
@@ -46,7 +43,7 @@ public class CfdpRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CfdpRestHandler.class);
 
-    @Route(rpc = "CFDP.ListTransfers")
+    @Route(rpc = "yamcs.protobuf.cfdp.CFDP.ListTransfers")
     public void listTransfers(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -64,14 +61,14 @@ public class CfdpRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "CFDP.GetTransfer")
+    @Route(rpc = "yamcs.protobuf.cfdp.CFDP.GetTransfer")
     public void getTransfer(RestRequest req) throws HttpException {
         long transactionId = req.getLongRouteParam("id");
         CfdpTransaction transaction = verifyTransaction(req, transactionId);
         completeOK(req, toTransferInfo(transaction));
     }
 
-    @Route(rpc = "CFDP.CreateTransfer")
+    @Route(rpc = "yamcs.protobuf.cfdp.CFDP.CreateTransfer")
     public void createTransfer(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -138,7 +135,7 @@ public class CfdpRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "CFDP.UpdateTransfer")
+    @Route(rpc = "yamcs.protobuf.cfdp.CFDP.UpdateTransfer")
     public void editTransfer(RestRequest req) throws HttpException {
         CfdpService cfdpService = verifyCfdpService(req);
 
@@ -170,23 +167,6 @@ public class CfdpRestHandler extends RestHandler {
             }
         }
         completeOK(req);
-    }
-
-    // TODO @Route(path = "/api/cfdp/{instance}/filestore", method = "GET")
-    // TODO @Route(path = "/api/cfdp/{instance}/filestore/path*", method = "GET")
-    public void listRemoteFiles(RestRequest req) throws HttpException {
-        ListRemoteFilesResponse.Builder lrfr = ListRemoteFilesResponse.newBuilder();
-
-        String remotePath = req.getQueryParameter("target");
-
-        // TODO get the remote files using CFDP
-        Collection<RemoteFile> remoteFiles = null;
-
-        lrfr.setRemotePath(remotePath);
-        for (RemoteFile rf : remoteFiles) {
-            lrfr.addFilepaths(rf);
-        }
-        completeOK(req, lrfr.build());
     }
 
     private CfdpTransaction verifyTransaction(RestRequest req, long transactionId) throws NotFoundException {

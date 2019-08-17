@@ -30,7 +30,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
 
     private static final Log log = new Log(MDBAlgorithmRestHandler.class);
 
-    @Route(rpc = "MDB.ListAlgorithms")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.ListAlgorithms")
     public void listAlgorithms(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
@@ -104,7 +104,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "MDB.GetAlgorithm")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetAlgorithm")
     public void getAlgorithm(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

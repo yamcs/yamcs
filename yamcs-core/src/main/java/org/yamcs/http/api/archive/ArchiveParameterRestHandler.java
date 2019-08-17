@@ -74,7 +74,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
 
-    @Route(rpc = "StreamArchive.ListParameterGroups")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListParameterGroups")
     public void listGroups(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -93,7 +93,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "ParameterArchive.GetParameterSamples")
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.GetParameterSamples")
     public void getParameterSamples(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
             aprh.getParameterSamples(req);
@@ -143,7 +143,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, series.build());
     }
 
-    @Route(rpc = "ParameterArchive.GetParameterRanges")
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.GetParameterRanges")
     public void getParameterRanges(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -187,7 +187,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         return l.get(0);
     }
 
-    @Route(rpc = "ParameterArchive.ListParameterHistory")
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.ListParameterHistory")
     public void listParameterHistory(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
             aprh.listParameterHistory(req);

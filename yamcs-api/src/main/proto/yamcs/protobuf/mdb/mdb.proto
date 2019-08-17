@@ -34,7 +34,7 @@ service MDB {
     };
   }
   
-  rpc ListParameters(google.protobuf.Empty) returns (ListParametersResponse) {
+  rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
     option (yamcs.api.route) = {
       description: "List parameters"
       method: "GET"
@@ -42,7 +42,7 @@ service MDB {
     };
   }
   
-  rpc GetParameter(google.protobuf.Empty) returns (ParameterInfo) {
+  rpc GetParameter(GetParameterRequest) returns (ParameterInfo) {
     option (yamcs.api.route) = {
       description: "Get a parameter"
       method: "GET"
@@ -55,6 +55,7 @@ service MDB {
       description: "Batch get of multiple parameters"
       method: "POST"
       path: "/api/mdb/{instance}/parameters:batchGet"
+      body: "*"
     };
   }
   
@@ -486,6 +487,23 @@ message AlgorithmInfo {
   repeated int64 onPeriodicRate = 12;
 }
 
+message GetParameterRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message ListParametersRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  repeated string type = 5;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
 message ListParametersResponse {
   repeated ParameterInfo parameters = 1;
   optional string continuationToken = 2;
@@ -499,6 +517,7 @@ message ListParameterTypesResponse {
 }
 
 message BatchGetParametersRequest {
+  optional string instance = 2;
   repeated NamedObjectId id = 1;
 }
 

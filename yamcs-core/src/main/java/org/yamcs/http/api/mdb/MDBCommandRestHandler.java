@@ -23,7 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBCommandRestHandler extends RestHandler {
 
-    @Route(rpc = "MDB.GetCommand")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetCommand")
     public void getCommandInfo(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -35,7 +35,7 @@ public class MDBCommandRestHandler extends RestHandler {
         completeOK(req, cinfo);
     }
 
-    @Route(rpc = "MDB.ListCommands")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.ListCommands")
     public void listCommands(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

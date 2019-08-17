@@ -44,7 +44,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class IAMRestHandler extends RestHandler {
 
-    @Route(rpc = "IAM.ListPrivileges")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.ListPrivileges")
     public void listSystemPrivileges(RestRequest req) throws HttpException {
         List<SystemPrivilege> privileges = new ArrayList<>(securityStore.getSystemPrivileges());
         Collections.sort(privileges, (p1, p2) -> p1.getName().compareTo(p2.getName()));
@@ -56,7 +56,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "IAM.ListUsers")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.ListUsers")
     public void listUsers(RestRequest req) throws HttpException {
         List<User> users = securityStore.getDirectory().getUsers();
         Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
@@ -69,7 +69,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "IAM.CreateUser")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.CreateUser")
     public void createUser(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -109,7 +109,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(rpc = "IAM.GetUser")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.GetUser")
     public void getUser(RestRequest req) throws HttpException {
         String username = req.getRouteParam("username");
         User user = securityStore.getDirectory().getUser(username);
@@ -119,7 +119,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(rpc = "IAM.UpdateUser")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.UpdateUser")
     public void updateUser(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -168,7 +168,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(rpc = "IAM.DeleteIdentity")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.DeleteIdentity")
     public void deleteIdentity(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -188,13 +188,13 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toUserInfo(user, req.getUser().isSuperuser()));
     }
 
-    @Route(rpc = "IAM.GetOwnUser")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.GetOwnUser")
     public void getMyUser(RestRequest req) throws HttpException {
         User user = req.getUser();
         completeOK(req, toUserInfo(user, true));
     }
 
-    @Route(rpc = "IAM.ListServiceAccounts")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.ListServiceAccounts")
     public void listServiceAccounts(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -211,7 +211,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "IAM.GetServiceAccount")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.GetServiceAccount")
     public void getServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -225,7 +225,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toServiceAccountInfo(serviceAccount, true));
     }
 
-    @Route(rpc = "IAM.DeleteServiceAccount")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.DeleteServiceAccount")
     public void deleteServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -235,7 +235,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(rpc = "IAM.CreateServiceAccount")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.CreateServiceAccount")
     public void createServiceAccount(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -264,7 +264,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "IAM.ListGroups")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.ListGroups")
     public void listGroups(RestRequest req) throws HttpException {
         Directory directory = securityStore.getDirectory();
         List<Group> groups = directory.getGroups();
@@ -278,7 +278,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "IAM.GetGroup")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.GetGroup")
     public void getGroup(RestRequest req) throws HttpException {
         Directory directory = securityStore.getDirectory();
         String name = req.getRouteParam("name");
@@ -289,7 +289,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toGroupInfo(group, true));
     }
 
-    @Route(rpc = "IAM.CreateGroup")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.CreateGroup")
     public void createGroup(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -323,7 +323,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toGroupInfo(group, true));
     }
 
-    @Route(rpc = "IAM.UpdateGroup")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.UpdateGroup")
     public void updateGroup(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
@@ -366,7 +366,7 @@ public class IAMRestHandler extends RestHandler {
         completeOK(req, toGroupInfo(group, true));
     }
 
-    @Route(rpc = "IAM.DeleteGroup")
+    @Route(rpc = "yamcs.protobuf.iam.IAM.DeleteGroup")
     public void deleteGroup(RestRequest req) throws HttpException {
         if (!req.getUser().isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");

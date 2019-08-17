@@ -21,7 +21,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBSpaceSystemRestHandler extends RestHandler {
 
-    @Route(rpc = "MDB.GetSpaceSystem")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetSpaceSystem")
     public void getSpaceSystem(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
@@ -34,7 +34,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    @Route(rpc = "MDB.ListSpaceSystems")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.ListSpaceSystems")
     public void listSpaceSystems(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.Service;
  */
 public class ServiceRestHandler extends RestHandler {
 
-    @Route(rpc = "YamcsManagement.ListServices")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.ListServices")
     public void listServices(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -49,7 +49,7 @@ public class ServiceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "YamcsManagement.GetService")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.GetService")
     public void getService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -84,7 +84,7 @@ public class ServiceRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "YamcsManagement.StartService")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.StartService")
     public void startService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -113,7 +113,7 @@ public class ServiceRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "YamcsManagement.StopService")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.StopService")
     public void stopService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
@@ -145,7 +145,7 @@ public class ServiceRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "YamcsManagement.UpdateService")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.UpdateService")
     @Deprecated
     public void editService(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);

@@ -25,7 +25,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class MDBParameterTypeRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterTypeRestHandler.class);
 
-    @Route(rpc = "MDB.GetParameterType")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetParameterType")
     public void getParameterTypeInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -36,7 +36,7 @@ public class MDBParameterTypeRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    @Route(rpc = "MDB.ListParameterTypes")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.ListParameterTypes")
     public void listParameterTypes(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);

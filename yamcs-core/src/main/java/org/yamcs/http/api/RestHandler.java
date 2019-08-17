@@ -6,7 +6,9 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,8 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
@@ -551,5 +555,36 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static boolean hasObjectPrivilege(RestRequest req, ObjectPrivilegeType type, String privilege) {
         return req.getUser().hasObjectPrivilege(type, privilege);
+    }
+
+    protected Object convertToFieldValue(RestRequest req, FieldDescriptor field, String parameter)
+            throws HttpException {
+        if (field.isRepeated()) {
+            if (field.getJavaType() != JavaType.STRING) {
+                throw new UnsupportedOperationException(
+                        "No query parameter conversion for repeated type " + field.getJavaType());
+            }
+            List<Object> values = new ArrayList<>();
+            for (String value : req.getQueryParameterList(field.getJsonName())) {
+                for (String item : value.split(",")) { // Support both repeated query params and comma-separated
+                    values.add(item);
+                }
+            }
+            return values;
+        } else {
+            switch (field.getJavaType()) {
+            case BOOLEAN:
+                return req.getQueryParameterAsBoolean(field.getJsonName());
+            case INT:
+                return req.getQueryParameterAsInt(field.getJsonName());
+            case LONG:
+                return req.getQueryParameterAsLong(field.getJsonName());
+            case STRING:
+                return req.getQueryParameter(field.getJsonName());
+            default:
+                throw new UnsupportedOperationException(
+                        "No query parameter conversion for type " + field.getJavaType());
+            }
+        }
     }
 }

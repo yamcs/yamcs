@@ -18,8 +18,8 @@ import java.util.regex.MatchResult;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.http.GpbExtensionRegistry;
 import org.yamcs.http.MethodNotAllowedException;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.RouteHandler;
 import org.yamcs.http.api.Router.RouteMatch;
 
@@ -32,7 +32,7 @@ public class RouterTest {
 
     @Before
     public void before() {
-        router = new Router(Executors.newSingleThreadExecutor(), null, new GpbExtensionRegistry());
+        router = new Router(Executors.newSingleThreadExecutor(), null, new ProtobufRegistry());
 
         router.registerRouteHandler(null, new RouteHandler() {
 
@@ -243,7 +243,7 @@ public class RouterTest {
     private static final class MockRestRouter extends Router {
 
         public MockRestRouter() {
-            super(Executors.newSingleThreadScheduledExecutor(), null, new GpbExtensionRegistry());
+            super(Executors.newSingleThreadScheduledExecutor(), null, new ProtobufRegistry());
         }
 
         RestRequest observedRestRequest;

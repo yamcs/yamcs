@@ -26,7 +26,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
      * Request to (re)build the parameterArchive between start and stop
      * 
      */
-    @Route(rpc = "ParameterArchive.RebuildRange", offThread = true)
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.RebuildRange", offThread = true)
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
@@ -50,7 +50,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(rpc = "ParameterArchive.DeletePartitions")
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.DeletePartitions")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
@@ -88,7 +88,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
 
     }
 
-    @Route(rpc = "ParameterArchive.GetArchiveInfo")
+    @Route(rpc = "yamcs.protobuf.archive.ParameterArchive.GetArchiveInfo")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);

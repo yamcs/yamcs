@@ -18,7 +18,7 @@ public class DiscoveryRestHandler extends RestHandler {
         this.router = router;
     }
 
-    @Route(rpc = "Discovery.ListEndpoints")
+    @Route(rpc = "yamcs.protobuf.rest.Discovery.ListEndpoints")
     public void listEndpoints(RestRequest req) throws HttpException {
         List<EndpointInfo> endpoints = router.getEndpointInfoSet();
         Collections.sort(endpoints, (e1, e2) -> {

@@ -17,7 +17,7 @@ import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 public class ArchiveSqlRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ExecuteSql")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ExecuteSql")
     public void executeSql(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 

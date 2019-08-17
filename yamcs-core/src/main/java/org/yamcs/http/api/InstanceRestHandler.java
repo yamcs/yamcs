@@ -50,7 +50,7 @@ public class InstanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     public static Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
-    @Route(rpc = "YamcsManagement.ListInstanceTemplates")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.ListInstanceTemplates")
     public void listInstanceTemplates(RestRequest req) {
         ListInstanceTemplatesResponse.Builder templatesb = ListInstanceTemplatesResponse.newBuilder();
 
@@ -63,14 +63,14 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, templatesb.build());
     }
 
-    @Route(rpc = "YamcsManagement.GetInstanceTemplate")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.GetInstanceTemplate")
     public void getInstanceTemplate(RestRequest req) throws HttpException {
         String name = verifyInstanceTemplate(req, req.getRouteParam("template"));
         InstanceTemplate template = yamcsServer.getInstanceTemplate(name);
         completeOK(req, template);
     }
 
-    @Route(rpc = "YamcsManagement.ListInstances")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.ListInstances")
     public void listInstances(RestRequest req) throws HttpException {
         Predicate<YamcsServerInstance> filter = getFilter(req.getQueryParameterList("filter"));
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
@@ -83,7 +83,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, instancesb.build());
     }
 
-    @Route(rpc = "YamcsManagement.GetInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.GetInstance")
     public void getInstance(RestRequest req) throws HttpException {
         String instanceName = verifyInstance(req, req.getRouteParam("instance"));
         YamcsServerInstance instance = yamcsServer.getInstance(instanceName);
@@ -105,7 +105,7 @@ public class InstanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "YamcsManagement.StartInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.StartInstance")
     public void startInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -129,7 +129,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "YamcsManagement.StopInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.StopInstance")
     public void stopInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -156,7 +156,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "YamcsManagement.RestartInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.RestartInstance")
     public void restartInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -180,7 +180,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "YamcsManagement.UpdateInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.UpdateInstance")
     @Deprecated
     public void editInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlServices);
@@ -252,7 +252,7 @@ public class InstanceRestHandler extends RestHandler {
         });
     }
 
-    @Route(rpc = "YamcsManagement.CreateInstance")
+    @Route(rpc = "yamcs.protobuf.yamcsManagement.YamcsManagement.CreateInstance")
     public void createInstance(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.CreateInstances);
         CreateInstanceRequest request = req.bodyAsMessage(CreateInstanceRequest.newBuilder()).build();

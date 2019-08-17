@@ -28,7 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchiveIndexRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ListCommandHistoryIndex")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListCommandHistoryIndex")
     public void listCommandIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -62,7 +62,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(rpc = "StreamArchive.ListEventIndex")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListEventIndex")
     public void listEventIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -96,7 +96,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(rpc = "StreamArchive.ListPacketIndex")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListPacketIndex")
     public void listPacketIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -130,7 +130,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(rpc = "StreamArchive.ListParameterIndex")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListParameterIndex")
     public void listParameterIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
@@ -163,7 +163,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
-    @Route(rpc = "StreamArchive.ListCompletenessIndex")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListCompletenessIndex")
     public void listCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);

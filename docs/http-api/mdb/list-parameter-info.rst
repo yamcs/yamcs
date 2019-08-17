@@ -18,7 +18,7 @@ type (array of strings)
     The parameter types to be included in the result. Valid types are ``boolean``, ``binary``, ``enumeration``, ``float``, ``integer`` or ``string``. Both these notations are accepted:
 
     * ``?type=float,integer``
-    * ``?type[]=float&type[]=integer``
+    * ``?type=float&type=integer``
 
     If unspecified, parameters of all types will be included.
 

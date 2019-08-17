@@ -24,7 +24,7 @@ import org.yamcs.yarch.YarchException;
 
 public class ArchiveTagRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ListTags")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListTags")
     public void listTags(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -52,7 +52,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "StreamArchive.GetTag")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetTag")
     public void getTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -78,7 +78,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Adds a new tag. The newly added tag is returned as a response so the user knows the assigned id.
      */
-    @Route(rpc = "StreamArchive.CreateTag")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.CreateTag")
     public void createTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -118,7 +118,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Updates an existing tag. Returns the updated tag
      */
-    @Route(rpc = "StreamArchive.UpdateTag")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.UpdateTag")
     public void updateTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
@@ -178,7 +178,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
-    @Route(rpc = "StreamArchive.DeleteTag")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.DeleteTag")
     public void deleteTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);

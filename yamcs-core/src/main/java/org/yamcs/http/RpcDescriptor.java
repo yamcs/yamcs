@@ -1,17 +1,20 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import org.yamcs.api.HttpRoute;
 
-public class RouteDescriptor {
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+
+public class RpcDescriptor {
 
     private String service;
     private String method;
-    private String inputType;
-    private String outputType;
+    private DescriptorProto inputType;
+    private DescriptorProto outputType;
 
     private HttpRoute proto;
 
-    public RouteDescriptor(String service, String method, String inputType, String outputType, HttpRoute proto) {
+    public RpcDescriptor(String service, String method, DescriptorProto inputType, DescriptorProto outputType,
+            HttpRoute proto) {
         this.service = service;
         this.method = method;
         this.inputType = inputType;
@@ -27,11 +30,11 @@ public class RouteDescriptor {
         return method;
     }
 
-    public String getInputType() {
+    public DescriptorProto getInputType() {
         return inputType;
     }
 
-    public String getOutputType() {
+    public DescriptorProto getOutputType() {
         return outputType;
     }
 

@@ -34,7 +34,7 @@ import io.netty.buffer.ByteBufUtil;
 public class RocksDbMaintenanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RocksDbMaintenanceRestHandler.class);
 
-    @Route(rpc = "RocksDB.ListTablespaces")
+    @Route(rpc = "yamcs.protobuf.archive.RocksDB.ListTablespaces")
     public void listTablespaces(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
@@ -58,7 +58,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "RocksDB.ListDatabases")
+    @Route(rpc = "yamcs.protobuf.archive.RocksDB.ListDatabases")
     public void listDatabases(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
@@ -122,7 +122,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "RocksDB.CompactDatabase", offThread = true)
+    @Route(rpc = "yamcs.protobuf.archive.RocksDB.CompactDatabase", offThread = true)
     public void compactDatabase(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
@@ -180,7 +180,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         completeOK(req, MediaType.PLAIN_TEXT, buf);
     }
 
-    @Route(rpc = "RocksDB.BackupTablespace")
+    @Route(rpc = "yamcs.protobuf.archive.RocksDB.BackupTablespace")
     public void doBackup(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 

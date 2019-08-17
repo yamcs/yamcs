@@ -43,7 +43,7 @@ import io.netty.buffer.ByteBuf;
 
 public class ArchivePacketRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ListPacketNames")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListPacketNames")
     public void listPacketNames(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -70,7 +70,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "StreamArchive.ListPackets")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListPackets")
     public void listPackets(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -178,7 +178,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         }
     }
 
-    @Route(rpc = "StreamArchive.GetPacket")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetPacket")
     public void getPacket(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         long gentime = req.getDateRouteParam("gentime");

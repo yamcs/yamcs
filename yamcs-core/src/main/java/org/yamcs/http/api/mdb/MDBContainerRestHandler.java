@@ -27,7 +27,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class MDBContainerRestHandler extends RestHandler {
 
-    @Route(rpc = "MDB.GetContainer")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.GetContainer")
     public void getContainer(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
@@ -62,7 +62,7 @@ public class MDBContainerRestHandler extends RestHandler {
         completeOK(req, cinfo);
     }
 
-    @Route(rpc = "MDB.ListContainers")
+    @Route(rpc = "yamcs.protobuf.mdb.MDB.ListContainers")
     public void listContainers(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
         String instance = verifyInstance(req, req.getRouteParam("instance"));

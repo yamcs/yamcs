@@ -61,7 +61,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 
 public class ArchiveTableRestHandler extends RestHandler {
 
-    @Route(rpc = "StreamArchive.ListTables")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListTables")
     public void listTables(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
@@ -77,7 +77,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "StreamArchive.GetTable")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetTable")
     public void getTable(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
@@ -89,7 +89,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         completeOK(req, response);
     }
 
-    @Route(rpc = "StreamArchive.GetTableData")
+    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetTableData")
     public void getTableData(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 

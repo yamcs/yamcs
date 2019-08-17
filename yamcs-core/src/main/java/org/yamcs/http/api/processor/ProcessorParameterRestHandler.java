@@ -69,7 +69,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(rpc = "ProcessingAPI.BatchSetParameterValues")
+    @Route(rpc = "yamcs.protobuf.processing.ProcessingAPI.BatchSetParameterValues")
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         ParameterRequestManager prm = processor.getParameterRequestManager();
@@ -115,7 +115,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(rpc = "ProcessingAPI.GetParameterValue")
+    @Route(rpc = "yamcs.protobuf.processing.ProcessingAPI.GetParameterValue")
     public void getParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
@@ -145,7 +145,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req, pval);
     }
 
-    @Route(rpc = "ProcessingAPI.BatchGetParameterValues")
+    @Route(rpc = "yamcs.protobuf.processing.ProcessingAPI.BatchGetParameterValues")
     public void getParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 

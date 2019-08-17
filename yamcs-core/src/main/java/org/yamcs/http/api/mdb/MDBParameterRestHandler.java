@@ -14,12 +14,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
-import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.mdb.XtceToGpbAssembler.DetailLevel;
@@ -28,6 +25,8 @@ import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
 import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.GetParameterRequest;
+import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
@@ -49,15 +48,14 @@ import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Handles incoming requests related to parameter info from the MDB
  */
-public class MDBParameterRestHandler extends RestHandler {
-    final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class);
+public class MDBParameterRestHandler extends AbstractMdbHandler {
 
-    @Route(rpc = "MDB.GetParameter")
-    public void getParameterInfo(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
+    @Override
+    void getParameter(RestRequest req, GetParameterRequest request) throws HttpException {
+        String instance = verifyInstance(req, request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        Parameter p = verifyParameter(req, mdb, request.getName());
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, DetailLevel.FULL);
         List<ParameterEntry> parameterEntries = mdb.getParameterEntries(p);
@@ -85,14 +83,13 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
-    @Route(rpc = "MDB.BatchGetParameters")
-    public void batchGetParameterInfo(RestRequest req) throws HttpException {
+    @Override
+    void batchGetParameters(RestRequest req, BatchGetParametersRequest request) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        String instance = verifyInstance(req, request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        BatchGetParametersRequest request = req.bodyAsMessage(BatchGetParametersRequest.newBuilder()).build();
         BatchGetParametersResponse.Builder responseb = BatchGetParametersResponse.newBuilder();
         for (NamedObjectId id : request.getIdList()) {
             Parameter p = mdb.getParameter(id);
@@ -114,35 +111,23 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(rpc = "MDB.ListParameters")
-    public void listParameters(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
+    @Override
+    public void listParameters(RestRequest req, ListParametersRequest request) throws HttpException {
+        String instance = verifyInstance(req, request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         // Should eventually be replaced in a generic mdb search operation
         NameDescriptionSearchMatcher matcher = null;
-        if (req.hasQueryParameter("q")) {
-            matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
+        if (request.hasQ()) {
+            matcher = new NameDescriptionSearchMatcher(request.getQ());
         }
 
-        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        boolean details = req.getQueryParameterAsBoolean("details", false);
-
-        // Support both type[]=float&type[]=integer and type=float,integer
-        Set<String> types = new HashSet<>();
-        if (req.hasQueryParameter("type")) {
-            for (String type : req.getQueryParameterList("type")) {
-                for (String t : type.split(",")) {
-                    if (!"all".equalsIgnoreCase(t)) {
-                        types.add(t.toLowerCase());
-                    }
-                }
-            }
-        }
+        boolean recurse = request.hasRecurse() && request.getRecurse();
+        boolean details = request.hasDetails() && request.getDetails();
 
         List<Parameter> matchedParameters = new ArrayList<>();
-        if (req.hasQueryParameter("namespace")) {
-            String namespace = req.getQueryParameter("namespace");
+        if (request.hasNamespace()) {
+            String namespace = request.getNamespace();
             for (Parameter p : mdb.getParameters()) {
                 if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
@@ -153,7 +138,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    if (parameterTypeMatches(p, types)) {
+                    if (parameterTypeMatches(p, request.getTypeList())) {
                         matchedParameters.add(p);
                     }
                 }
@@ -166,7 +151,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(p)) {
                     continue;
                 }
-                if (parameterTypeMatches(p, types)) {
+                if (parameterTypeMatches(p, request.getTypeList())) {
                     matchedParameters.add(p);
                 }
             }
@@ -178,9 +163,9 @@ public class MDBParameterRestHandler extends RestHandler {
 
         int totalSize = matchedParameters.size();
 
-        String next = req.getQueryParameter("next", null);
-        int pos = req.getQueryParameterAsInt("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
+        String next = request.hasNext() ? request.getNext() : null;
+        int pos = request.hasPos() ? request.getPos() : 0;
+        int limit = request.hasLimit() ? request.getLimit() : 100;
         if (next != null) {
             NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
             matchedParameters = matchedParameters.stream().filter(p -> {
@@ -209,7 +194,7 @@ public class MDBParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    private boolean parameterTypeMatches(Parameter p, Set<String> types) {
+    private boolean parameterTypeMatches(Parameter p, List<String> types) {
         if (types.isEmpty()) {
             return true;
         }
