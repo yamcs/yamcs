@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
@@ -78,7 +77,7 @@ import org.yamcs.client.YamcsConnector;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.tctm.IssPacketPreprocessor;
@@ -541,9 +540,9 @@ public class PacketViewer extends JFrame implements ActionListener,
         log("Loading remote XTCE db for yamcs instance " + connectionParams.getInstance());
         RestClient restClient = new RestClient(connectionParams);
         try {
-            restClient.setAcceptMediaType(MediaType.JAVA_SERIALIZED_OBJECT);
             restClient.setMaxResponseLength(10 * 1024 * 1024);// TODO make this configurable
-            byte[] serializedMdb = restClient.doRequest("/mdb/" + connectionParams.getInstance(), HttpMethod.GET).get();
+            byte[] serializedMdb = restClient
+                    .doRequest("/mdb/" + connectionParams.getInstance() + ":exportJava", HttpMethod.GET).get();
             ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
             Object o = ois.readObject();
             xtcedb = (XtceDb) o;

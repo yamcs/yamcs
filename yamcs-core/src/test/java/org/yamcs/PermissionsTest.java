@@ -18,11 +18,12 @@ import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest.KeyValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ValueHelper;
 
@@ -180,7 +181,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
                 .setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(
-                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, toJson(updateHistoryRequest.build()))

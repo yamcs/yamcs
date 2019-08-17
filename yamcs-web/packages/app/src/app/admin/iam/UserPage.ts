@@ -41,7 +41,7 @@ export class UserPage {
     if (confirm(`Are you sure you want to delete the ${identity.provider} identity?`)) {
       const username = this.user$.value!.name;
       this.yamcs.yamcsClient.deleteIdentity(username, identity.provider)
-        .then(user => this.user$.next(user))
+        .then(() => this.changeUser(username))
         .catch(err => this.messageService.showError(err));
     }
   }

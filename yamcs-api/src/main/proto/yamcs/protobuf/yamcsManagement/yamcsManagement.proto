@@ -13,61 +13,55 @@ import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
 
-service YamcsManagement {
+service ManagementApi {
 
   // Get system info
   rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/sysinfo"
+      get: "/api/sysinfo"
     };
   }
   
   // Get UTC leap seconds
   rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/leap-seconds"
+      get: "/api/leap-seconds"
     };
   }
   
   // List instance templates
   rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/instance-templates"
+      get: "/api/instance-templates"
     };
   }
   
   // Get an instance template
-  rpc GetInstanceTemplate(google.protobuf.Empty) returns (InstanceTemplate) {
+  rpc GetInstanceTemplate(GetInstanceTemplateRequest) returns (InstanceTemplate) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/instance-templates/{template}"
+      get: "/api/instance-templates/{template}"
     };
   }
   
   // List instances
-  rpc ListInstances(google.protobuf.Empty) returns (ListInstancesResponse) {
+  rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/instances"
+      get: "/api/instances"
     };
   }
   
   // Get an instance
-  rpc GetInstance(google.protobuf.Empty) returns (YamcsInstance) {
+  rpc GetInstance(GetInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/instances/{instance}"
+      get: "/api/instances/{instance}"
     };
   }
   
   // Update an instance
   rpc UpdateInstance(EditInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/instances/{instance}"
+      patch: "/api/instances/{instance}"
+      body: "*"
       deprecated: true
     };
   }
@@ -75,73 +69,88 @@ service YamcsManagement {
   // Create an instance
   rpc CreateInstance(CreateInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/instances"
+      post: "/api/instances"
+      body: "*"
     };
   }
   
   // Start an instance
-  rpc StartInstance(google.protobuf.Empty) returns (YamcsInstance) {
+  rpc StartInstance(StartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/instances/{instance}:start"
+      post: "/api/instances/{instance}:start"
     };
   }
   
   // Stop an instance
-  rpc StopInstance(google.protobuf.Empty) returns (YamcsInstance) {
+  rpc StopInstance(StopInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/instances/{instance}:stop"
+      post: "/api/instances/{instance}:stop"
     };
   }
   
   // Restart an instance
-  rpc RestartInstance(google.protobuf.Empty) returns (YamcsInstance) {
+  rpc RestartInstance(RestartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/instances/{instance}:restart"
+      post: "/api/instances/{instance}:restart"
     };
   }
   
   // List services
-  rpc ListServices(google.protobuf.Empty) returns (ListServicesResponse) {
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/services/{instance?}"
+      get: "/api/services/{instance}"
     };
   }
   
   // Get a service
-  rpc GetService(google.protobuf.Empty) returns (ServiceInfo) {
+  rpc GetService(GetServiceRequest) returns (ServiceInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/services/{instance}/{name}"
+      get: "/api/services/{instance}/{name}"
     };
   }
   
   // Start a service
-  rpc StartService(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc StartService(StartServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/services/{instance}/{name}:start"
+      post: "/api/services/{instance}/{name}:start"
     };
   }
   
   // Stop a service
-  rpc StopService(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc StopService(StopServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/services/{instance}/{name}:stop"
+      post: "/api/services/{instance}/{name}:stop"
     };
   }
   
   // Update a service
   rpc UpdateService(EditServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/services/{instance}/{name}"
+      patch: "/api/services/{instance}/{name}"
+      body: "*"
       deprecated: true
+    };
+  }
+  
+  // List links
+  rpc ListLinks(ListLinksRequest) returns (ListLinksResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/links/{instance?}"
+    };
+  }
+  
+  // Get a link
+  rpc GetLink(GetLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/links/{instance}/{name}"
+    };
+  }
+
+  // Update a link
+  rpc UpdateLink(EditLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      patch: "/api/links/{instance}/{name}"
+      body: "*"
     };
   }
 }
@@ -350,12 +359,37 @@ message RootDirectory {
   optional int64 usableSpace = 5;
 }
 
+message ListServicesRequest {
+  optional string instance = 1;
+}
+
+message GetServiceRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message StartServiceRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message StopServiceRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
 message ListServicesResponse {
   repeated ServiceInfo services = 1;
 }
 
 message EditServiceRequest {
-  optional string state = 1;
+  optional string instance = 1;
+  optional string name = 2;
+  optional string state = 3;
+}
+
+message ListInstancesRequest {
+  repeated string filter = 1;
 }
 
 message ListInstancesResponse {
@@ -374,7 +408,8 @@ message ListInstanceTemplatesResponse {
 }
 
 message EditInstanceRequest {
-  optional string state = 1;
+  optional string instance = 1;
+  optional string state = 2;
 }
 
 message LeapSecondsTable {
@@ -385,4 +420,44 @@ message LeapSecondsTable {
     optional int32 taiDifference = 4;
   }
   repeated ValidityRange ranges = 1;      
+}
+
+message GetInstanceTemplateRequest {
+  optional string template = 1;
+}
+
+message GetInstanceRequest {
+  optional string instance = 1;
+}
+
+message StartInstanceRequest {
+  optional string instance = 1;
+}
+
+message StopInstanceRequest {
+  optional string instance = 1;
+}
+
+message RestartInstanceRequest {
+  optional string instance = 1;
+}
+
+message ListLinksRequest {
+  optional string instance = 1;
+}
+
+message ListLinksResponse {
+  repeated LinkInfo links = 1;
+}
+
+message GetLinkRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message EditLinkRequest {
+  optional string instance = 3;
+  optional string name = 4;
+  optional string state = 1;
+  optional bool resetCounters = 2;
 }

@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package yamcs.api;
+
+option java_multiple_files = true;
+option java_outer_classname = "HttpBodyProto";
+option java_package = "org.yamcs.api";
+
+message HttpBody {
+
+  // The Content-Type header value for this body.
+  // If unspecified, defaults to application/octet-stream
+  optional string content_type = 1;
+  
+  // If set, a Content-Disposition header is added
+  // to the response. Weg agents use this to trigger
+  // a download.
+  optional string filename = 2;
+  
+  // The body as raw binary
+  optional bytes data = 3;
+}

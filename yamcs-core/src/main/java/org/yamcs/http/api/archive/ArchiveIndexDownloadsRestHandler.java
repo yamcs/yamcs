@@ -16,13 +16,12 @@ import org.yamcs.archive.IndexServer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
-import org.yamcs.http.HttpRequestHandler.ChunkedTransferStats;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.Route;
-import org.yamcs.protobuf.Rest.BatchGetIndexRequest;
+import org.yamcs.protobuf.BatchGetIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
@@ -51,8 +50,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
      */
     @Route(path = "/api/archive/{instance}/indexes", method = { "GET", "POST" })
     public void downloadIndexes(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -118,8 +117,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/{instance}/indexes/packets", method = { "GET", "POST" })
     public void downloadPacketIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -151,8 +150,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/{instance}/indexes/pp", method = { "GET", "POST" })
     public void downloadPpIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -174,8 +173,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/{instance}/indexes/commands", method = { "GET", "POST" })
     public void downloadCommandHistoryIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -197,8 +196,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/{instance}/indexes/events", method = { "GET", "POST" })
     public void downloadEventIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -220,8 +219,8 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/{instance}/indexes/completeness", method = { "GET", "POST" })
     public void downloadCompletenessIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -253,7 +252,6 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         private ByteBuf buf;
         private ByteBufOutputStream bufOut;
         private ChannelFuture lastChannelFuture;
-        private ChunkedTransferStats stats;
 
         private boolean first;
         private IndexResult.Builder indexResult;
@@ -288,7 +286,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
             if (first) {
                 lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(),
                         req.getHttpRequest(), contentType, null);
-                stats = req.getChannelHandlerContext().channel().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
+                req.reportStatusCode(200);
                 first = false;
             }
             if (unpack) {
@@ -374,15 +372,13 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         private void writeChunk() throws IOException {
             int txSize = buf.readableBytes();
             req.addTransferredSize(txSize);
-            stats.totalBytes += buf.readableBytes();
-            stats.chunkCount++;
             lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
         }
 
     }
 
-    private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
-        verifyInstance(req, instance);
+    private IndexServer verifyIndexServer(String instance) throws HttpException {
+        verifyInstance(instance);
         List<IndexServer> services = yamcsServer.getServices(instance, IndexServer.class);
         if (services.isEmpty()) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");

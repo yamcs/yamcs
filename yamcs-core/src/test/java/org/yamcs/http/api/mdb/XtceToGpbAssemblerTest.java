@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.http.api.mdb.XtceToGpbAssembler;
-import org.yamcs.http.api.mdb.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.http.api.XtceToGpbAssembler;
+import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;

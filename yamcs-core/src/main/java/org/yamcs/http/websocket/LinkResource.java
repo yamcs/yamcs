@@ -6,7 +6,7 @@ import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.LinkEvent;
 import org.yamcs.protobuf.LinkInfo;
-import org.yamcs.protobuf.Web.LinkSubscriptionRequest;
+import org.yamcs.protobuf.LinkSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 /**

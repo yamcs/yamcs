@@ -91,7 +91,7 @@ export class EditGroupPage implements OnDestroy {
     const formValue = this.form.value;
 
     const options: EditGroupRequest = {
-      name: formValue.name,
+      newName: formValue.name,
       description: formValue.description,
       memberInfo: {
         users: this.memberItems$.value.filter(item => item.user).map(item => item.user!.name),

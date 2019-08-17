@@ -9,52 +9,89 @@ option java_multiple_files = true;
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
 
-service Buckets {
+// Implements object storage
+service BucketsApi {
 
   // List buckets
-  rpc ListBuckets(google.protobuf.Empty) returns (ListBucketsResponse) {
+  rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/buckets/{instance}"
+      get: "/api/buckets/{instance}"
     };
   }
   
   // Create a bucket
-  rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
+  rpc CreateBucket(CreateBucketRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/buckets/{instance}"
+      post: "/api/buckets/{instance}"
+      body: "*"
     };
   }
   
   // Delete a bucket
-  rpc DeleteBucket(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc DeleteBucket(DeleteBucketRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/buckets/{instance}/{bucketName}"
+      delete: "/api/buckets/{instance}/{bucketName}"
+    };
+  }
+  
+  // Get an object
+  rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+    };
+  }
+  
+  // Upload an object
+  rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
+      maxBodySize: 5242880
     };
   }
   
   // List objects
-  rpc ListObjects(google.protobuf.Empty) returns (ListObjectsResponse) {
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/buckets/{instance}/{bucketName}"
+      get: "/api/buckets/{instance}/{bucketName}/objects"
     };
   }
   
   // Delete an object
-  rpc DeleteObject(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc DeleteObject(DeleteObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/buckets/{instance}/{bucketName}/{objectName*}"
+      delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
     };
   }
 }
 
 message CreateBucketRequest {
-  optional string name = 1;
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message DeleteBucketRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+}
+
+message GetObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
+}
+
+message DeleteObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
+}
+
+message UploadObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
 }
 
 message BucketInfo {
@@ -70,8 +107,19 @@ message ObjectInfo {
   map<string, string> metadata = 4;
 }
 
+message ListBucketsRequest {
+  optional string instance = 1;
+}
+
 message ListBucketsResponse {
   repeated BucketInfo buckets = 1;
+}
+
+message ListObjectsRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string delimiter = 3;
+  optional string prefix = 4;
 }
 
 message ListObjectsResponse {

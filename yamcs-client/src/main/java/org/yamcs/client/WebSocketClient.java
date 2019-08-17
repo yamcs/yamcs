@@ -19,9 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.protobuf.Web.ConnectionInfo;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;

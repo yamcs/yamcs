@@ -79,19 +79,20 @@ public class ServiceGenerator {
         String javaPackage = file.getOptions().getJavaPackage();
         String javaName = "Abstract" + service.getName();
 
-        SourceBuilder jsource = new SourceBuilder(javaName);
+        SourceBuilder jsource = new SourceBuilder(javaName + "<T>");
         jsource.setAbstract(true);
         jsource.setJavadoc(serviceComments.get(service));
         jsource.setPackage(javaPackage);
-        jsource.setImplements("Api");
+        jsource.setImplements("Api<T>");
         String className = ServiceGenerator.class.getName();
-        jsource.addAnnotation("@Generated(value = \"" + className + "\", date = \"" + Instant.now() + "\")");
+        // Uncomment when dropping java 8 (this annotation is only available as of java 9.
+        jsource.addAnnotation("// @javax.annotation.processing.Generated(value = \"" + className + "\", date = \""
+                + Instant.now() + "\")");
         jsource.addImport("com.google.protobuf.Message");
         jsource.addImport("com.google.protobuf.Descriptors.MethodDescriptor");
         jsource.addImport("com.google.protobuf.Descriptors.ServiceDescriptor");
-        jsource.addImport("java.util.concurrent.CompletableFuture");
-        jsource.addImport("javax.annotation.Generated");
         jsource.addImport("org.yamcs.api.Api");
+        jsource.addImport("org.yamcs.api.Observer");
 
         for (MethodDescriptorProto method : service.getMethodList()) {
             String javaMethodName = Introspector.decapitalize(method.getName());
@@ -111,8 +112,9 @@ public class ServiceGenerator {
             MethodBuilder msource = jsource.addMethod(javaMethodName);
             msource.setJavadoc(methodComments.get(method));
             msource.setAbstract(true);
+            msource.addArg("T", "ctx");
             msource.addArg(inputType.getName(), "request");
-            msource.addArg("CompletableFuture<" + outputType.getName() + ">", "future");
+            msource.addArg("Observer<" + outputType.getName() + ">", "observer");
         }
 
         // Implement "ServiceDescriptor getDescriptorForType();"
@@ -163,14 +165,15 @@ public class ServiceGenerator {
         msource.body().append("    throw new IllegalStateException();\n");
         msource.body().append("}\n");
 
-        // Implement "void callMethod(MethodDescriptor method, Message request, CompletableFuture<Message> future)"
+        // Implement "void callMethod(MethodDescriptor method, Message request, Observer<Message> observer)"
         msource = jsource.addMethod("callMethod");
         msource.setFinal(true);
         msource.addAnnotation("@Override");
         msource.addAnnotation("@SuppressWarnings(\"unchecked\")");
         msource.addArg("MethodDescriptor", "method");
+        msource.addArg("T", "ctx");
         msource.addArg("Message", "request");
-        msource.addArg("CompletableFuture<Message>", "future");
+        msource.addArg("Observer<Message>", "future");
         msource.body().append("if (method.getService() != getDescriptorForType()) {\n");
         msource.body().append("    throw new IllegalArgumentException(\"Method not contained by this service.\");\n");
         msource.body().append("}\n");
@@ -180,8 +183,8 @@ public class ServiceGenerator {
             String javaMethodName = Introspector.decapitalize(method.getName());
             DescriptorProto inputType = messageTypes.get(method.getInputType().substring(1));
             DescriptorProto outputType = messageTypes.get(method.getOutputType().substring(1));
-            String callArgs = "(" + inputType.getName() + ") request";
-            callArgs += ", (CompletableFuture<" + outputType.getName() + ">)(Object) future";
+            String callArgs = "ctx, (" + inputType.getName() + ") request";
+            callArgs += ", (Observer<" + outputType.getName() + ">)(Object) future";
             msource.body().append("case ").append(i).append(":\n");
             msource.body().append("    ").append(javaMethodName).append("(").append(callArgs).append(");\n");
             msource.body().append("    return;\n");

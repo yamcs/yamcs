@@ -1127,6 +1127,7 @@ public class YamcsServer {
         } else {
             cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
         }
+        Files.createDirectories(cacheDir);
 
         Path globalDir = dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);

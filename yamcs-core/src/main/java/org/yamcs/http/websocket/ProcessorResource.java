@@ -7,9 +7,9 @@ import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorSubscriptionRequest;
+import org.yamcs.protobuf.ProcessorSubscriptionResponse;
 import org.yamcs.protobuf.Statistics;
-import org.yamcs.protobuf.Web.ProcessorSubscriptionRequest;
-import org.yamcs.protobuf.Web.ProcessorSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 /**

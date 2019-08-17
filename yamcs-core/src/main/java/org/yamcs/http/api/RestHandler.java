@@ -1,6 +1,5 @@
 package org.yamcs.http.api;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -10,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
@@ -25,15 +22,17 @@ import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.RouteHandler;
+import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.LinkInfo;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
+import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
@@ -44,9 +43,6 @@ import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
@@ -56,7 +52,6 @@ import com.google.protobuf.util.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -64,14 +59,13 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * Contains utility methods for REST handlers. May eventually refactor this out.
  */
 public abstract class RestHandler extends RouteHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
+    private static final Log log = new Log(RestHandler.class);
 
     protected final YamcsServer yamcsServer = YamcsServer.getServer();
     protected final SecurityStore securityStore = yamcsServer.getSecurityStore();
@@ -82,14 +76,10 @@ public abstract class RestHandler extends RouteHandler {
         completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends Message> void completeOK(RestRequest restRequest, T responseMsg) {
+    public static <T extends Message> void completeOK(RestRequest restRequest, T responseMsg) {
         sendMessageResponse(restRequest, OK, responseMsg).addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
-    }
-
-    protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        completeOK(restRequest, contentType.toString(), body);
     }
 
     protected static void completeOK(RestRequest restRequest, String contentType, ByteBuf body) {
@@ -106,18 +96,15 @@ public abstract class RestHandler extends RouteHandler {
         completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends Message> void completeCREATED(RestRequest restRequest, T responseMsg) {
-        sendMessageResponse(restRequest, CREATED, responseMsg).addListener(l -> {
-            restRequest.getCompletableFuture().complete(null);
-        });
-    }
-
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
         restRequest.reportStatusCode(httpResponse.status().code());
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
+            if (!l.isSuccess()) {
+                log.error("Network error", l.cause());
+            }
         });
     }
 
@@ -135,7 +122,6 @@ public abstract class RestHandler extends RouteHandler {
                 contentType = MediaType.JSON;
                 String str = JsonFormat.printer().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
-                // body.writeBytes(HttpRequestHandler.NEWLINE_BYTES); // For curl comfort
             } catch (IOException e) {
                 status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
                 restRequest.reportStatusCode(status.code());
@@ -169,11 +155,10 @@ public abstract class RestHandler extends RouteHandler {
         ChannelFuture cf = sendRestError(req, e.getStatus(), e);
         cf.addListener(l -> {
             req.getCompletableFuture().completeExceptionally(e);
+            if (!l.isSuccess()) {
+                log.error("Network error", l.cause());
+            }
         });
-    }
-
-    protected static void abortRequest(RestRequest req) {
-        req.getCompletableFuture().complete(null);
     }
 
     private static RestExceptionMessage.Builder toException(Throwable t) {
@@ -194,30 +179,23 @@ public abstract class RestHandler extends RouteHandler {
         return exceptionb;
     }
 
-    static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
+    static String verifyInstance(String instance, boolean allowGlobal)
             throws NotFoundException {
         if (allowGlobal && YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             return instance;
         }
-        return verifyInstance(req, instance);
+        return verifyInstance(instance);
     }
 
-    protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
+    public static String verifyInstance(String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException("No instance named '" + instance + "'");
         }
         return instance;
     }
 
-    protected static String verifyInstanceTemplate(RestRequest req, String template) throws NotFoundException {
-        if (!YamcsServer.hasInstanceTemplate(template)) {
-            throw new NotFoundException("No template named '" + template + "'");
-        }
-        return template;
-    }
-
-    protected static LinkInfo verifyLink(RestRequest req, String instance, String linkName) throws NotFoundException {
-        verifyInstance(req, instance);
+    protected static LinkInfo verifyLink(String instance, String linkName) throws NotFoundException {
+        verifyInstance(instance);
         LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
         if (linkInfo == null) {
             throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
@@ -234,9 +212,9 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static Processor verifyProcessor(RestRequest req, String instance, String processorName)
+    protected static Processor verifyProcessor(String instance, String processorName)
             throws NotFoundException {
-        verifyInstance(req, instance);
+        verifyInstance(instance);
         Processor processor = Processor.getInstance(instance, processorName);
         if (processor == null) {
             throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
@@ -245,7 +223,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static String verifyNamespace(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static String verifyNamespace(XtceDb mdb, String pathName) throws NotFoundException {
         if (mdb.getNamespaces().contains(pathName)) {
             return pathName;
         }
@@ -258,8 +236,7 @@ public abstract class RestHandler extends RouteHandler {
         throw new NotFoundException("No such namespace");
     }
 
-    protected static SpaceSystem verifySpaceSystem(RestRequest req, XtceDb mdb, String pathName)
-            throws NotFoundException {
+    protected static SpaceSystem verifySpaceSystem(XtceDb mdb, String pathName) throws NotFoundException {
         String namespace;
         String name;
         int lastSlash = pathName.lastIndexOf('/');
@@ -288,16 +265,16 @@ public abstract class RestHandler extends RouteHandler {
         throw new NotFoundException("No such space system");
     }
 
-    protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)
+    protected static NamedObjectId verifyParameterId(User user, XtceDb mdb, String pathName)
             throws HttpException {
-        return verifyParameterWithId(req, mdb, pathName).getId();
+        return verifyParameterWithId(user, mdb, pathName).getId();
     }
 
-    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws HttpException {
-        return verifyParameterWithId(req, mdb, pathName).getParameter();
+    public static Parameter verifyParameter(User user, XtceDb mdb, String pathName) throws HttpException {
+        return verifyParameterWithId(user, mdb, pathName).getParameter();
     }
 
-    protected static ParameterWithId verifyParameterWithId(RestRequest req, XtceDb mdb,
+    protected static ParameterWithId verifyParameterWithId(User user, XtceDb mdb,
             String pathName) throws HttpException {
         int aggSep = AggregateUtil.findSeparator(pathName);
 
@@ -331,7 +308,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(namespace, name);
         }
 
-        if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+        if (p != null && !hasObjectPrivilege(user, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
             throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
         if (p == null) {
@@ -347,33 +324,6 @@ public abstract class RestHandler extends RouteHandler {
 
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
         return new ParameterWithId(p, id, aggPath);
-    }
-
-    protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName)
-            throws NotFoundException {
-        Stream stream = ydb.getStream(streamName);
-
-        if (stream != null && !hasObjectPrivilege(req, ObjectPrivilegeType.Stream, streamName)) {
-            log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
-                    streamName);
-            stream = null;
-        }
-
-        if (stream == null) {
-            throw new NotFoundException("No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
-        } else {
-            return stream;
-        }
-    }
-
-    protected static TableDefinition verifyTable(YarchDatabaseInstance ydb, String tableName)
-            throws NotFoundException {
-        TableDefinition table = ydb.getTable(tableName);
-        if (table == null) {
-            throw new NotFoundException("No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
-        } else {
-            return table;
-        }
     }
 
     protected static MetaCommand verifyCommand(XtceDb mdb, String pathName) throws NotFoundException {
@@ -522,38 +472,32 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    public static void completeChunkedTransfer(RestRequest req) {
-        req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                .addListener(ChannelFutureListener.CLOSE)
-                .addListener(l -> req.getCompletableFuture().complete(null));
-    }
-
-    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege privilege) throws ForbiddenException {
-        if (!req.getUser().hasSystemPrivilege(privilege)) {
+    public static void checkSystemPrivilege(User user, SystemPrivilege privilege) throws ForbiddenException {
+        if (!user.hasSystemPrivilege(privilege)) {
             throw new ForbiddenException("No system privilege '" + privilege + "'");
         }
     }
 
-    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, Collection<String> objects)
+    public static void checkObjectPrivileges(User user, ObjectPrivilegeType type, Collection<String> objects)
             throws ForbiddenException {
-        checkObjectPrivileges(req, type, objects.toArray(new String[objects.size()]));
+        checkObjectPrivileges(user, type, objects.toArray(new String[objects.size()]));
     }
 
-    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, String... objects)
+    public static void checkObjectPrivileges(User user, ObjectPrivilegeType type, String... objects)
             throws ForbiddenException {
         for (String object : objects) {
-            if (!req.getUser().hasObjectPrivilege(type, object)) {
+            if (!user.hasObjectPrivilege(type, object)) {
                 throw new ForbiddenException("No " + type + " authorization for '" + object + "'");
             }
         }
     }
 
-    protected static boolean hasSystemPrivilege(RestRequest req, SystemPrivilege privilege) {
-        return req.getUser().hasSystemPrivilege(privilege);
+    public static boolean hasSystemPrivilege(User user, SystemPrivilege privilege) {
+        return user.hasSystemPrivilege(privilege);
     }
 
-    protected static boolean hasObjectPrivilege(RestRequest req, ObjectPrivilegeType type, String privilege) {
-        return req.getUser().hasObjectPrivilege(type, privilege);
+    public static boolean hasObjectPrivilege(User user, ObjectPrivilegeType type, String privilege) {
+        return user.hasObjectPrivilege(type, privilege);
     }
 
     protected Object convertToFieldValue(RestRequest req, FieldDescriptor field, String parameter)

@@ -20,7 +20,7 @@ import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
-import org.yamcs.protobuf.Web.AuthInfo;
+import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
 
 import com.google.gson.Gson;

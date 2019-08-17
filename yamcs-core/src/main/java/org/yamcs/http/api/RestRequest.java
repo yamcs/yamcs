@@ -58,6 +58,10 @@ public class RestRequest {
         this.requestId = counter.incrementAndGet();
     }
 
+    RouteMatch getRouteMatch() {
+        return routeMatch;
+    }
+
     void setRouteMatch(RouteMatch routeMatch) {
         this.routeMatch = routeMatch;
     }
@@ -437,6 +441,11 @@ public class RestRequest {
         private long stop;
         private boolean inclusiveStart = true;
         private boolean inclusiveStop = false;
+
+        public IntervalResult(long start, long stop) {
+            this.start = start;
+            this.stop = stop;
+        }
 
         IntervalResult(RestRequest req) throws BadRequestException {
             start = req.getQueryParameterAsDate("start", TimeEncoding.INVALID_INSTANT);

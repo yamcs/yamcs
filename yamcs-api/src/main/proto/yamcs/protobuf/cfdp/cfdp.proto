@@ -10,38 +10,36 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
-
-service CFDP {
+ 
+service CfdpApi {
 
   // List transfers
-  rpc ListTransfers(google.protobuf.Empty) returns (ListTransfersResponse) {
+  rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/cfdp/{instance}/transfers"
+      get: "/api/cfdp/{instance}/transfers"
     };
   }
   
   // Get a transfer
-  rpc GetTransfer(google.protobuf.Empty) returns (TransferInfo) {
+  rpc GetTransfer(GetTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/cfdp/{instance}/transfers/{id}"
+      get: "/api/cfdp/{instance}/transfers/{id}"
     };
   }
   
   // Create a transfer
   rpc CreateTransfer(CreateTransferRequest) returns (TransferInfo) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/cfdp/{instance}/transfers"
+      post: "/api/cfdp/{instance}/transfers"
+      body: "*"
     };
   }
   
   // Update a transfer
   rpc UpdateTransfer(EditTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/cfdp/{instance}/transfers/{id}"
+      patch: "/api/cfdp/{instance}/transfers/{id}"
+      body: "*"
     };
   }
 }
@@ -89,16 +87,28 @@ message CreateTransferRequest {
   message DownloadOptions {
   }
 
-  optional TransferDirection direction = 1;
-  optional string bucket = 2;
-  optional string objectName = 3;
-  optional string remotePath = 4;
-  optional DownloadOptions downloadOptions = 5;
-  optional UploadOptions uploadOptions = 6;
+  optional string instance = 1;
+  optional TransferDirection direction = 2;
+  optional string bucket = 3;
+  optional string objectName = 4;
+  optional string remotePath = 5;
+  optional DownloadOptions downloadOptions = 6;
+  optional UploadOptions uploadOptions = 7;
 }
 
 message EditTransferRequest {
-  optional string operation = 1;
+  optional string instance = 1;
+  optional int64 id = 2;
+  optional string operation = 3;
+}
+
+message ListTransfersRequest {
+  optional string instance = 1;
+}
+
+message GetTransferRequest {
+  optional string instance = 1;
+  optional int64 id = 2;
 }
 
 //message sent as the response to the transfer listing

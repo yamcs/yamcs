@@ -2,7 +2,7 @@ package org.yamcs.http.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;

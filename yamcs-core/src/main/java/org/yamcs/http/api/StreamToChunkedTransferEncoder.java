@@ -9,7 +9,6 @@ import org.yamcs.api.MediaType;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.http.HttpRequestHandler.ChunkedTransferStats;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -17,6 +16,8 @@ import org.yamcs.yarch.Tuple;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger than the treshold size for
@@ -35,7 +36,6 @@ public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber
 
     protected MediaType contentType;
     protected boolean failed = false;
-    private ChunkedTransferStats stats;
 
     public StreamToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
         this(req, contentType, null);
@@ -49,7 +49,7 @@ public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber
         resetBuffer();
         HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType,
                 filename);
-        stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
+        req.statusCode = 200;
     }
 
     protected void resetBuffer() {
@@ -78,7 +78,7 @@ public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber
             log.info("R{}: Closing stream due to client closing connection", req.getRequestId());
             failed = true;
             stream.close();
-            RestHandler.abortRequest(req);
+            req.getCompletableFuture().complete(null);
         } catch (IOException e) {
             log.error("R{}: Closing stream due to IO error", req.getRequestId(), e);
             failed = true;
@@ -104,7 +104,9 @@ public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber
             if (buf.readableBytes() > 0) {
                 writeChunk();
             }
-            RestHandler.completeChunkedTransfer(req);
+            req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    .addListener(ChannelFutureListener.CLOSE)
+                    .addListener(l -> req.getCompletableFuture().complete(null));
         } catch (IOException e) {
             log.error("R{}: Could not write final chunk of data", req.getRequestId(), e);
             RestHandler.completeWithError(req, new InternalServerErrorException(e));
@@ -114,8 +116,6 @@ public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber
     private void writeChunk() throws IOException {
         int txSize = buf.readableBytes();
         req.addTransferredSize(txSize);
-        stats.totalBytes += txSize;
-        stats.chunkCount++;
         HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
     }
 }

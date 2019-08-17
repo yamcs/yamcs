@@ -72,11 +72,11 @@ export interface ProcessorsWrapper {
 }
 
 export interface StreamsWrapper {
-  stream: Stream[];
+  streams: Stream[];
 }
 
 export interface TablesWrapper {
-  table: Table[];
+  tables: Table[];
 }
 
 export interface RecordsWrapper {
@@ -108,5 +108,5 @@ export interface BucketsWrapper {
 }
 
 export interface RocksDbDatabasesWrapper {
-  database: RocksDbDatabase[];
+  databases: RocksDbDatabase[];
 }

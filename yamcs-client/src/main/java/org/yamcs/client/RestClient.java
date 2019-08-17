@@ -170,27 +170,29 @@ public class RestClient {
         return cf;
     }
 
+    public CompletableFuture<Void> doBulkRequest(HttpMethod method, String resource, BulkRestDataReceiver receiver) {
+        return doBulkRequest(method, resource, new byte[0], receiver);
+    }
+
     /**
      * Performs a bulk request and provides the result piece by piece to the receiver.
      * 
      * The potentially large result is split into messages based on the VarInt size preceding each message. The maximum
      * size of each individual message is limited to {@value #MAX_MESSAGE_LENGTH}
      * 
+     * @param method
      * @param resource
      * @param receiver
      * @return future that is completed when the request is finished
      * @throws RuntimeException
-     *             - thrown if the uri + resource does not form a correct URL
+     *             if the uri + resource does not form a correct URL
      */
-    public CompletableFuture<Void> doBulkGetRequest(String resource, BulkRestDataReceiver receiver) {
-        return doBulkGetRequest(resource, new byte[0], receiver);
-    }
-
-    public CompletableFuture<Void> doBulkGetRequest(String resource, byte[] body, BulkRestDataReceiver receiver) {
+    public CompletableFuture<Void> doBulkRequest(HttpMethod method, String resource, byte[] body,
+            BulkRestDataReceiver receiver) {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, HttpMethod.POST,
+            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, method,
                     body, connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
         } catch (URISyntaxException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);

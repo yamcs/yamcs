@@ -1,16 +1,14 @@
 package org.yamcs.api;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.Message;
 
-public interface Api {
+public interface Api<T> {
 
     ServiceDescriptor getDescriptorForType();
 
-    void callMethod(MethodDescriptor method, Message request, CompletableFuture<Message> future);
+    void callMethod(MethodDescriptor method, T ctx, Message request, Observer<Message> observer);
 
     Message getRequestPrototype(MethodDescriptor method);
 

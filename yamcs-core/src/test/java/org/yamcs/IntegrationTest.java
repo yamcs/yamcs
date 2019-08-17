@@ -29,6 +29,7 @@ import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.http.RouteHandler;
+import org.yamcs.protobuf.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
@@ -38,6 +39,8 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueReques
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -56,20 +59,17 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.ServiceState;
-import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
-import org.yamcs.protobuf.Web.SubscribedParameter;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.SubscribedParameter;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -998,12 +998,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         // insert two values in the command history
         CommandId commandId = commandResponse.getCommandQueueEntry().getCmdId();
-        Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder()
+        UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
                 .setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(
-                Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
         updateHistoryRequest.addHistoryEntry(
-                Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
+                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
         doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST,
                 updateHistoryRequest.build());
 

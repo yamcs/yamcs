@@ -3,123 +3,115 @@ syntax="proto2";
 package yamcs.protobuf.mdb;
 option java_package = "org.yamcs.protobuf";
 
-import "google/protobuf/empty.proto";
-
 import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/yamcs.proto";
 
-service MDB {
+service MdbApi {
 
   // Get a mission database
-  rpc GetMissionDatabase(google.protobuf.Empty) returns (MissionDatabase) {
+  rpc GetMissionDatabase(GetMissionDatabaseRequest) returns (MissionDatabase) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}"
+      get: "/api/mdb/{instance}"
+    };
+  }
+  
+  // Export a java serialized dump of the mission database
+  rpc ExportJavaMissionDatabase(ExportJavaMissionDatabaseRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:exportJava"
     };
   }
   
   // List space systems
-  rpc ListSpaceSystems(google.protobuf.Empty) returns (ListSpaceSystemsResponse) {
+  rpc ListSpaceSystems(ListSpaceSystemsRequest) returns (ListSpaceSystemsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/space-systems"
+      get: "/api/mdb/{instance}/space-systems"
     };
   }
   
   // Get a space system
-  rpc GetSpaceSystem(google.protobuf.Empty) returns (SpaceSystemInfo) {
+  rpc GetSpaceSystem(GetSpaceSystemRequest) returns (SpaceSystemInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/space-systems/{name*}"
+      get: "/api/mdb/{instance}/space-systems/{name*}"
     };
   }
   
   // List parameters
   rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/parameters"
+      get: "/api/mdb/{instance}/parameters"
     };
   }
   
   // Get a parameter
   rpc GetParameter(GetParameterRequest) returns (ParameterInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/parameters/{name*}"
+      get: "/api/mdb/{instance}/parameters/{name*}"
     };
   }
   
   // Batch get of multiple parameters
   rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/mdb/{instance}/parameters:batchGet"
+      post: "/api/mdb/{instance}/parameters:batchGet"
       body: "*"
     };
   }
   
   // List parameter types
-  rpc ListParameterTypes(google.protobuf.Empty) returns (ListParameterTypesResponse) {
+  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/parameter-types"
+      get: "/api/mdb/{instance}/parameter-types"
     };
   }
   
   // Get a parameter type
-  rpc GetParameterType(google.protobuf.Empty) returns (ParameterTypeInfo) {
+  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/parameter-types/{name*}"
+      get: "/api/mdb/{instance}/parameter-types/{name*}"
     };
   }
   
   // List containers
-  rpc ListContainers(google.protobuf.Empty) returns (ListContainersResponse) {
+  rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/containers"
+      get: "/api/mdb/{instance}/containers"
     };
   }
   
   // Get a container
-  rpc GetContainer(google.protobuf.Empty) returns (ContainerInfo) {
+  rpc GetContainer(GetContainerRequest) returns (ContainerInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/containers/{name*}"
+      get: "/api/mdb/{instance}/containers/{name*}"
     };
   }
   
   // List commands
-  rpc ListCommands(google.protobuf.Empty) returns (ListCommandsResponse) {
+  rpc ListCommands(ListCommandsRequest) returns (ListCommandsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/commands"
+      get: "/api/mdb/{instance}/commands"
     };
   }
   
   // Get a command
-  rpc GetCommand(google.protobuf.Empty) returns (CommandInfo) {
+  rpc GetCommand(GetCommandRequest) returns (CommandInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/commands/{name*}"
+      get: "/api/mdb/{instance}/commands/{name*}"
     };
   }
   
   // List algorithms
-  rpc ListAlgorithms(google.protobuf.Empty) returns (ListAlgorithmsResponse) {
+  rpc ListAlgorithms(ListAlgorithmsRequest) returns (ListAlgorithmsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/algorithms"
+      get: "/api/mdb/{instance}/algorithms"
     };
   }
   
   // Get an algorithm
-  rpc GetAlgorithm(google.protobuf.Empty) returns (AlgorithmInfo) {
+  rpc GetAlgorithm(GetAlgorithmRequest) returns (AlgorithmInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/mdb/{instance}/algorithms/{name*}"
+      get: "/api/mdb/{instance}/algorithms/{name*}"
     };
   }
 }
@@ -268,6 +260,16 @@ message ParameterTypeInfo {
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
+}
+
+message GetParameterTypeRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetContainerRequest {
+  optional string instance = 1;
+  optional string name = 2;
 }
 
 message AbsoluteTimeInfo {
@@ -487,6 +489,58 @@ message AlgorithmInfo {
   repeated int64 onPeriodicRate = 12;
 }
 
+message ListSpaceSystemsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListParameterTypesRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListContainersRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListAlgorithmsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListCommandsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
 message GetParameterRequest {
   optional string instance = 1;
   optional string name = 2;
@@ -547,10 +601,33 @@ message ListAlgorithmsResponse {
   optional int32 totalSize = 3;
 }
 
+message GetAlgorithmRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetMissionDatabaseRequest {
+  optional string instance = 1;
+}
+
+message ExportJavaMissionDatabaseRequest {
+  optional string instance = 1;
+}
+
 message ListSpaceSystemsResponse {
   repeated SpaceSystemInfo spaceSystems = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
+}
+
+message GetSpaceSystemRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetCommandRequest {
+  optional string instance = 1;
+  optional string name = 2;
 }
 
 message SpaceSystemInfo {
@@ -559,10 +636,6 @@ message SpaceSystemInfo {
   optional string shortDescription = 3;
   optional string longDescription = 4;
   optional string version = 5;
-  optional int32 parameterCount = 6;
-  optional int32 containerCount = 7;
-  optional int32 commandCount = 8;
-  optional int32 algorithmCount = 9;
   repeated HistoryInfo history = 14;
   repeated SpaceSystemInfo sub = 15;
 }

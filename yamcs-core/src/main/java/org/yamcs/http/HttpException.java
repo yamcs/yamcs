@@ -3,9 +3,10 @@ package org.yamcs.http;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
- * Default HTTP exception. Makes it easier for handlers to just throw errors upwards
+ * Default HTTP exception.
  */
-public abstract class HttpException extends Exception {
+public abstract class HttpException extends RuntimeException {
+
     private static final long serialVersionUID = 1L;
 
     public HttpException() {

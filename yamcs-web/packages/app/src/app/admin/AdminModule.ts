@@ -5,11 +5,11 @@ import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
-import { EndpointDetail } from './endpoints/EndpointDetail';
-import { MessageNamePipe } from './endpoints/MessageNamePipe';
 import { AddMembersDialog } from './iam/AddMembersDialog';
 import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
 import { UsersTable } from './iam/UsersTable';
+import { MessageNamePipe } from './routes/MessageNamePipe';
+import { RouteDetail } from './routes/RouteDetail';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 
@@ -35,7 +35,7 @@ const pipes = [
     routingComponents,
     dialogComponents,
     pipes,
-    EndpointDetail,
+    RouteDetail,
     ServiceState,
     ServicesTable,
     UsersTable,

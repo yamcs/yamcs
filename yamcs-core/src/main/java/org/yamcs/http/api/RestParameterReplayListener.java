@@ -3,7 +3,6 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.Value;
@@ -15,16 +14,13 @@ import org.yamcs.utils.ValueUtility;
 public abstract class RestParameterReplayListener extends RestReplayListener {
     private boolean noRepeat;
     private Value lastValue;
-    final protected RestRequest req;
 
-    public RestParameterReplayListener(RestRequest req) {
+    public RestParameterReplayListener() {
         super();
-        this.req = req;
     }
 
-    public RestParameterReplayListener(long pos, int limit, RestRequest req) {
+    public RestParameterReplayListener(long pos, int limit) {
         super(pos, limit);
-        this.req = req;
     }
 
     public void setNoRepeat(boolean noRepeat) {
@@ -62,10 +58,5 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
         } else {
             return pvwid;
         }
-    }
-
-    @Override
-    public void replayFailed(Throwable t) {
-        RestHandler.completeWithError(req, new InternalServerErrorException(t));
     }
 }

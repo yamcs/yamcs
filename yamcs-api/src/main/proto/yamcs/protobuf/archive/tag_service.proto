@@ -1,0 +1,92 @@
+syntax = "proto2";
+
+package yamcs.protobuf.web;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "TagServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service TagApi {
+
+  // List tags
+  rpc ListTags(ListTagsRequest) returns (ListTagsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/tags"
+    };
+  }
+  
+  // Get a tag
+  rpc GetTag(GetTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+    };
+  }
+  
+  // Create a tag
+  rpc CreateTag(CreateTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/tags"
+    };
+  }
+  
+  // Update a tag
+  rpc UpdateTag(EditTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      patch: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+    };
+  }
+  
+  // Delete a tag
+  rpc DeleteTag(DeleteTagRequest) returns (ArchiveTag) {
+    option (yamcs.api.route) = {
+      delete: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+    };
+  } 
+}
+
+message ListTagsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message ListTagsResponse {
+  repeated ArchiveTag tag = 1;
+}
+
+message GetTagRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp tagTime = 2;
+  optional int32 tagId = 3;
+}
+
+message CreateTagRequest {
+  optional string instance = 1;
+  optional string name = 2;
+  optional string start = 3;
+  optional string stop = 4;
+  optional string description = 5;
+  optional string color = 6;
+}
+
+message EditTagRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp tagTime = 2;
+  optional int32 tagId = 3;
+  optional string name = 4;
+  optional string start = 5;
+  optional string stop = 6;
+  optional string description = 7;
+  optional string color = 8;
+}
+
+message DeleteTagRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp tagTime = 2;
+  optional int32 tagId = 3;
+}

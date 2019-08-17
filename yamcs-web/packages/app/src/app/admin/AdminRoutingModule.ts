@@ -8,7 +8,6 @@ import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
-import { EndpointsPage } from './endpoints/EndpointsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
@@ -22,6 +21,7 @@ import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
 import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
+import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
 
 const routes: Routes = [
@@ -57,8 +57,8 @@ const routes: Routes = [
         component: ClientsPage,
       },
       {
-        path: 'endpoints',
-        component: EndpointsPage,
+        path: 'routes',
+        component: RoutesPage,
       },
       {
         path: 'leap-seconds',
@@ -157,11 +157,11 @@ export const routingComponents = [
   CreateUserPage,
   EditGroupPage,
   EditUserPage,
-  EndpointsPage,
   GroupsPage,
   GroupPage,
   LeapSecondsPage,
   PluginsPage,
+  RoutesPage,
   ServiceAccountsPage,
   ServicesPage,
   UsersPage,

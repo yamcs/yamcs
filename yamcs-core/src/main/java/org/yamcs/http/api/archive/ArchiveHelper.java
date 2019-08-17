@@ -7,8 +7,6 @@ import java.util.Map.Entry;
 
 import org.yamcs.http.HttpException;
 import org.yamcs.http.ProtobufRegistry;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.http.api.archive.ParameterRanger.Range;
 import org.yamcs.http.api.archive.RestDownsampler.Sample;
 import org.yamcs.http.api.processor.ProcessorHelper;
@@ -16,18 +14,18 @@ import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmType;
 import org.yamcs.protobuf.Alarms.ParameterAlarmData;
-import org.yamcs.protobuf.Archive.ColumnData;
-import org.yamcs.protobuf.Archive.ColumnInfo;
-import org.yamcs.protobuf.Archive.EnumValue;
-import org.yamcs.protobuf.Archive.PartitioningInfo;
-import org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType;
-import org.yamcs.protobuf.Archive.RocksDbDatabaseInfo;
-import org.yamcs.protobuf.Archive.StreamData;
-import org.yamcs.protobuf.Archive.StreamInfo;
-import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.RocksDbDatabaseInfo;
+import org.yamcs.protobuf.Table.ColumnData;
+import org.yamcs.protobuf.Table.ColumnInfo;
+import org.yamcs.protobuf.Table.EnumValue;
+import org.yamcs.protobuf.Table.PartitioningInfo;
+import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
+import org.yamcs.protobuf.Table.StreamData;
+import org.yamcs.protobuf.Table.StreamInfo;
+import org.yamcs.protobuf.Table.TableInfo;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -51,7 +49,6 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 
@@ -60,7 +57,7 @@ import com.google.protobuf.MessageLite;
  */
 public final class ArchiveHelper {
 
-    final static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
+    public final static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
         RocksDbDatabaseInfo.Builder databaseb = RocksDbDatabaseInfo.newBuilder()
                 .setTablespace(tablespace.getName())
                 .setDataDir(tablespace.getDataDir())
@@ -68,7 +65,7 @@ public final class ArchiveHelper {
         return databaseb.build();
     }
 
-    final static TableInfo toTableInfo(TableDefinition def) {
+    public final static TableInfo toTableInfo(TableDefinition def) {
         TableInfo.Builder infob = TableInfo.newBuilder();
         infob.setName(def.getName());
         infob.setCompressed(def.isCompressed());
@@ -146,7 +143,7 @@ public final class ArchiveHelper {
         return infob.build();
     }
 
-    final static StreamInfo toStreamInfo(Stream stream) {
+    public final static StreamInfo toStreamInfo(Stream stream) {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
         infob.setDataCount(stream.getDataCount());
@@ -183,7 +180,7 @@ public final class ArchiveHelper {
         return builder.build();
     }
 
-    final static List<ColumnData> toColumnDataList(Tuple tuple) {
+    public final static List<ColumnData> toColumnDataList(Tuple tuple) {
         List<ColumnData> result = new ArrayList<>();
         int i = 0;
         for (Object column : tuple.getColumns()) {
@@ -270,25 +267,24 @@ public final class ArchiveHelper {
         return tuple;
     }
 
-    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId parameterId,
-            boolean descendByDefault)
-            throws HttpException {
+    public final static ReplayRequest toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
+            boolean descend) throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            rrb.setStart(ir.getStart());
+
+        if (start != TimeEncoding.INVALID_INSTANT) {
+            rrb.setStart(start);
         }
-        if (ir.hasStop()) {
-            rrb.setStop(ir.getStop());
+        if (stop != TimeEncoding.INVALID_INSTANT) {
+            rrb.setStop(stop);
         }
         rrb.setEndAction(EndAction.QUIT);
-        rrb.setReverse(req.asksDescending(descendByDefault));
+        rrb.setReverse(descend);
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId));
         return rrb.build();
     }
 
-    final static TimeSeries.Sample toGPBSample(Sample sample) {
+    public final static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
         b.setTime(TimeEncoding.toString(sample.t));
         b.setN(sample.n);
@@ -302,7 +298,7 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static Ranges.Range toGPBRange(Range r) {
+    public final static Ranges.Range toGPBRange(Range r) {
         Ranges.Range.Builder b = Ranges.Range.newBuilder();
         b.setTimeStart(TimeEncoding.toString(r.start));
         b.setTimeStop(TimeEncoding.toString(r.stop));
@@ -311,40 +307,7 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static String[] getEventCSVHeader(ProtobufRegistry protobufRegistry) {
-        List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-        String[] rec = new String[5 + extensionFields.size()];
-        int i = 0;
-        rec[i++] = "Source";
-        rec[i++] = "Generation Time";
-        rec[i++] = "Reception Time";
-        rec[i++] = "Event Type";
-        rec[i++] = "Event Text";
-        for (ExtensionInfo extension : extensionFields) {
-            rec[i++] = "" + extension.descriptor.getName();
-        }
-        return rec;
-    }
-
-    final static String[] tupleToCSVEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
-        Event event = tupleToEvent(tuple, protobufRegistry);
-
-        List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-
-        String[] rec = new String[5 + extensionFields.size()];
-        int i = 0;
-        rec[i++] = event.getSource();
-        rec[i++] = event.getGenerationTimeUTC();
-        rec[i++] = event.getReceptionTimeUTC();
-        rec[i++] = event.getType();
-        rec[i++] = event.getMessage();
-        for (ExtensionInfo extension : extensionFields) {
-            rec[i++] = "" + event.getField(extension.descriptor);
-        }
-        return rec;
-    }
-
-    final static Event tupleToEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
+    public final static Event tupleToEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
         Event incoming = (Event) tuple.getColumn("body");
         Event event;
         try {
@@ -377,7 +340,7 @@ public final class ArchiveHelper {
         return alarmb.build();
     }
 
-    final static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+    public final static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);

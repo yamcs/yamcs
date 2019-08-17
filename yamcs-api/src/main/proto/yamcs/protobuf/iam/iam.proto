@@ -10,133 +10,123 @@ import "yamcs/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-service IAM {
+// Handles incoming requests related to Identity and Access Management (IAM)
+service IamApi {
 
   // List privileges
   rpc ListPrivileges(google.protobuf.Empty) returns (ListPrivilegesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/privileges"
+      get: "/api/privileges"
     };
   }
 
   // List users
   rpc ListUsers(google.protobuf.Empty) returns (ListUsersResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/users"
+      get: "/api/users"
     };
   }
 
   // Get a user
-  rpc GetUser(google.protobuf.Empty) returns (UserInfo) {
+  rpc GetUser(GetUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/users/{username}"
+      get: "/api/users/{name}"
     };
   }
   
   // Create a user
   rpc CreateUser(CreateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/users"
+      post: "/api/users"
+      body: "*"
     };
   }
   
   // Update a user
   rpc UpdateUser(UpdateUserRequest) returns (UserInfo) {
     option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/users/{username}"
+      patch: "/api/users/{name}"
+      body: "*"
     };
   }
   
   // Get own user
   rpc GetOwnUser(google.protobuf.Empty) returns (UserInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/user"
+      get: "/api/user"
     };
   }
   
   // Delete an external identity
-  rpc DeleteIdentity(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc DeleteIdentity(DeleteIdentityRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/users/{username}/identities/{provider}"
+      delete: "/api/users/{name}/identities/{provider}"
     };
   }
   
   // List groups
   rpc ListGroups(google.protobuf.Empty) returns (ListGroupsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/groups"
+      get: "/api/groups"
     };
   }
   
   // Get a group
-  rpc GetGroup(google.protobuf.Empty) returns (GroupInfo) {
+  rpc GetGroup(GetGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/groups/{name}"
+      get: "/api/groups/{name}"
     };
   }
   
   // Create a group
   rpc CreateGroup(CreateGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/groups"
+      post: "/api/groups"
+      body: "*"
     };
   }
   
   // Update a group
   rpc UpdateGroup(UpdateGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/groups/{name}"
+      patch: "/api/groups/{name}"
+      body: "*"
     };
   }
   
   // Delete a group
-  rpc DeleteGroup(google.protobuf.Empty) returns (GroupInfo) {
+  rpc DeleteGroup(DeleteGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/groups/{name}"
+      delete: "/api/groups/{name}"
     };
   }
 
   // List service accounts
   rpc ListServiceAccounts(google.protobuf.Empty) returns (ListServiceAccountsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/service-accounts"
+      get: "/api/service-accounts"
     };
   }
   
   // Get a service account
-  rpc GetServiceAccount(google.protobuf.Empty) returns (ServiceAccountInfo) {
+  rpc GetServiceAccount(GetServiceAccountRequest) returns (ServiceAccountInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/service-accounts/{name}"
+      get: "/api/service-accounts/{name}"
     };
   }
   
   // Delete a service account
-  rpc DeleteServiceAccount(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc DeleteServiceAccount(DeleteServiceAccountRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/service-accounts/{name}"
+      delete: "/api/service-accounts/{name}"
     };
   }
   
   // Create a service account
   rpc CreateServiceAccount(CreateServiceAccountRequest) returns (CreateServiceAccountResponse) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/service-accounts"
+      post: "/api/service-accounts"
+      body: "*"
     };
   }
 }
@@ -156,18 +146,31 @@ message CreateGroupRequest {
   repeated string serviceAccounts = 4;
 }
 
+message GetGroupRequest {
+  optional string name  = 1;
+}
+
+message DeleteGroupRequest {
+  optional string name  = 1;
+}
+
 message UpdateGroupRequest {
   message MemberInfo {
     repeated string users = 1;
     repeated string serviceAccounts = 2;
   }
   optional string name = 1;
-  optional string description = 2;
-  optional MemberInfo memberInfo = 3;
+  optional string newName = 2;
+  optional string description = 3;
+  optional MemberInfo memberInfo = 4;
 }
 
 message ListServiceAccountsResponse {
   repeated ServiceAccountInfo serviceAccounts = 1;
+}
+
+message GetServiceAccountRequest {
+  optional string name  = 1;
 }
 
 message CreateServiceAccountRequest {
@@ -180,6 +183,14 @@ message CreateServiceAccountResponse {
   optional string applicationSecret = 3;
 }
 
+message DeleteServiceAccountRequest {
+  optional string name = 1;
+}
+
+message GetUserRequest {
+  optional string name  = 1;
+}
+
 message CreateUserRequest {
   optional string name = 1;
   optional string displayName = 2;
@@ -188,11 +199,12 @@ message CreateUserRequest {
 }
 
 message UpdateUserRequest {
-  optional string displayName = 1;
-  optional string email = 2;
-  optional bool active = 3;
-  optional bool superuser = 4;
-  optional string password = 5;
+  optional string name = 1;
+  optional string displayName = 2;
+  optional string email = 3;
+  optional bool active = 4;
+  optional bool superuser = 5;
+  optional string password = 6;
 }
 
 message UserInfo {
@@ -210,6 +222,11 @@ message UserInfo {
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
   repeated GroupInfo groups = 22;
   repeated ExternalIdentityInfo identities = 23;
+}
+
+message DeleteIdentityRequest {
+  optional string name = 1;
+  optional string provider = 2;
 }
 
 message ExternalIdentityInfo {

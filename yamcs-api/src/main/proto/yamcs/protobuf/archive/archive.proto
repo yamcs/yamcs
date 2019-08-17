@@ -1,318 +1,159 @@
 syntax="proto2";
 
 package yamcs.protobuf.archive;
+
 option java_package = "org.yamcs.protobuf";
 
-import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
 
-service RocksDB {
-
-  // List tablespaces
-  rpc ListTablespaces(google.protobuf.Empty) returns (ListRocksDbTablespacesResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/rocksdb/tablespaces"
-    };
-  }
-  
-  // Backup tablespace
-  rpc BackupTablespace(google.protobuf.Empty) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/rocksdb/backup/{dbpath*}"
-    };
-  }
-  
-  // List databases
-  rpc ListDatabases(google.protobuf.Empty) returns (ListRocksDbDatabasesResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/rocksdb/databases"
-    };
-  }
-  
-  // Compact database
-  rpc CompactDatabase(google.protobuf.Empty) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/rocksdb/{tablespace}/compact/{dbpath**}"
-    };
-  }
-}
-
-service ParameterArchive {
-
-  // Rebuild range
-  rpc RebuildRange(google.protobuf.Empty) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/{instance}/parameterArchive:rebuild"
-    };
-  }
-
-  // Delete partitions
-  rpc DeletePartitions(google.protobuf.Empty) returns (StringMessage) {
-    option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/{instance}/parameterArchive:deletePartitions"
-    };
-  }
-  
-  // Get parameter info
-  rpc GetArchiveInfo(google.protobuf.Empty) returns (StringMessage) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameterArchive/info/parameter/{name*}"
-    };
-  }
-  
-  // Get parameter samples
-  rpc GetParameterSamples(google.protobuf.Empty) returns (pvalue.TimeSeries) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameters/{name*}/samples"
-    };
-  }
-  
-  // Get parameter ranges
-  rpc GetParameterRanges(google.protobuf.Empty) returns (pvalue.Ranges) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameters/{name*}/ranges"
-    };
-  }
-  
-  // List parameter history
-  rpc ListParameterHistory(google.protobuf.Empty) returns (ListParameterValuesResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameters/{name*}"
-    };
-  }
-}
-
-service StreamArchive {
-
-  // Execute SQL
-  rpc ExecuteSql(ExecuteSqlRequest) returns (ExecuteSqlResponse) {
-    option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/{instance}:executeSql"
-    };
-  }
+service StreamArchiveApi {
 
   // List events
-  rpc ListEvents(google.protobuf.Empty) returns (ListEventsResponse) {
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/events"
+      get: "/api/archive/{instance}/events"
     };
   }
 
   // Create an event
   rpc CreateEvent(CreateEventRequest) returns (Event) {
     option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/{instance}/events"
+      post: "/api/archive/{instance}/events"
+      body: "*"
     };
   }
   
   // List event sources
-  rpc ListEventSources(google.protobuf.Empty) returns (EventSourceInfo) {
+  rpc ListEventSources(ListEventSourcesRequest) returns (ListEventSourcesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/events/sources"
+      get: "/api/archive/{instance}/events/sources"
     };
   }
   
   // List alarms
-  rpc ListAlarms(google.protobuf.Empty) returns (ListAlarmsResponse) {
+  rpc ListAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/alarms"
+      get: "/api/archive/{instance}/alarms"
     };
   }
   
-  // List parameter alarms
-  rpc ListParameterAlarms(google.protobuf.Empty) returns (ListAlarmsResponse) {
+  // List alarms for a specific parameter
+  rpc ListParameterAlarms(ListParameterAlarmsRequest) returns (ListAlarmsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/alarms/{parameter*}"
+      get: "/api/archive/{instance}/alarms/{parameter*}"
     };
   }
   
   // List parameter groups
-  rpc ListParameterGroups(google.protobuf.Empty) returns (ParameterGroupInfo) {
+  rpc ListParameterGroups(ListParameterGroupsRequest) returns (ParameterGroupInfo) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameter-groups"
+      get: "/api/archive/{instance}/parameter-groups"
     };
   }
   
   // List parameter history
-  rpc ListParameterHistory(google.protobuf.Empty) returns (ListParameterValuesResponse) {
+  rpc ListParameterHistory(ListParameterHistoryRequest) returns (ListParameterHistoryResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/stream-archive/{instance}/parameters/{name*}"
+      get: "/api/stream-archive/{instance}/parameters/{name*}"
+    };
+  }
+  
+  // Streams back parameter values
+  rpc StreamParameterValues(StreamParameterValuesRequest) returns (stream pvalue.ParameterData) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamParameterValues"
+      body: "*"
     };
   }
   
   // Get parameter samples
-  rpc GetParameterSamples(google.protobuf.Empty) returns (pvalue.TimeSeries) {
+  rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/stream-archive/{instance}/parameters/{name*}/samples"
-    };
-  }
-  
-  // List streams
-  rpc ListStreams(google.protobuf.Empty) returns (ListStreamsResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/streams"
-    };
-  }
-  
-  // Get a stream
-  rpc GetStream(google.protobuf.Empty) returns (StreamInfo) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/streams/{name}"
-    };
-  }
-  
-  // List tables
-  rpc ListTables(google.protobuf.Empty) returns (ListTablesResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/tables"
-    };
-  }
-  
-  // Get a table
-  rpc GetTable(google.protobuf.Empty) returns (TableInfo) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/tables/{name}"
-    };
-  }
-  
-  // Get table data
-  rpc GetTableData(google.protobuf.Empty) returns (TableData) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/tables/{name}/data"
+      get: "/api/stream-archive/{instance}/parameters/{name*}/samples"
     };
   }
   
   // List command history index
-  rpc ListCommandHistoryIndex(google.protobuf.Empty) returns (IndexResult) {
+  rpc ListCommandHistoryIndex(ListCommandHistoryIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/command-index"
+      get: "/api/archive/{instance}/command-index"
     };
   }
   
   // List event index
-  rpc ListEventIndex(google.protobuf.Empty) returns (IndexResult) {
+  rpc ListEventIndex(ListEventIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/event-index"
+      get: "/api/archive/{instance}/event-index"
     };
   }
   
   // List packet index
-  rpc ListPacketIndex(google.protobuf.Empty) returns (IndexResult) {
+  rpc ListPacketIndex(ListPacketIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/packet-index"
+      get: "/api/archive/{instance}/packet-index"
     };
   }
   
   // List parameter index
-  rpc ListParameterIndex(google.protobuf.Empty) returns (IndexResult) {
+  rpc ListParameterIndex(ListParameterIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/parameter-index"
+      get: "/api/archive/{instance}/parameter-index"
     };
   }
   
   // List completeness index
-  rpc ListCompletenessIndex(google.protobuf.Empty) returns (IndexResult) {
+  rpc ListCompletenessIndex(ListCompletenessIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/completeness-index"
-    };
-  }
-  
-  // List tags
-  rpc ListTags(google.protobuf.Empty) returns (ListTagsResponse) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/tags"
-    };
-  }
-  
-  // Get a tag
-  rpc GetTag(google.protobuf.Empty) returns (ArchiveTag) {
-    option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
-    };
-  }
-  
-  // Create a tag
-  rpc CreateTag(CreateTagRequest) returns (ArchiveTag) {
-    option (yamcs.api.route) = {
-      method: "POST"
-      path: "/api/archive/{instance}/tags"
-    };
-  }
-  
-  // Update a tag
-  rpc UpdateTag(EditTagRequest) returns (ArchiveTag) {
-    option (yamcs.api.route) = {
-      method: "PATCH"
-      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
-    };
-  }
-  
-  // Delete a tag
-  rpc DeleteTag(google.protobuf.Empty) returns (ArchiveTag) {
-    option (yamcs.api.route) = {
-      method: "DELETE"
-      path: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+      get: "/api/archive/{instance}/completeness-index"
     };
   }
   
   // List packet names
-  rpc ListPacketNames(google.protobuf.Empty) returns (GetPacketNamesResponse) {
+  rpc ListPacketNames(ListPacketNamesRequest) returns (ListPacketNamesResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/packet-names"
+      get: "/api/archive/{instance}/packet-names"
     };
   }
   
   // List packets
-  rpc ListPackets(google.protobuf.Empty) returns (ListPacketsResponse) {
+  rpc ListPackets(ListPacketsRequest) returns (ListPacketsResponse) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/packets/{gentime?}"
+      get: "/api/archive/{instance}/packets/{gentime?}"
     };
   }
   
   // Get a packet
-  rpc GetPacket(google.protobuf.Empty) returns (TmPacketData) {
+  rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
     option (yamcs.api.route) = {
-      method: "GET"
-      path: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
     };
   }
+}
+
+message StreamParameterValuesRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated NamedObjectId ids = 4;
+  optional string namespace = 5; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
+}
+
+message ListEventsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional string order = 4;
+  optional string severity = 5;
+  repeated string source = 6;
+  optional string next = 7;
+  optional google.protobuf.Timestamp start = 8;
+  optional google.protobuf.Timestamp stop = 9;
+  optional string q = 10;
 }
 
 message ListEventsResponse {
@@ -321,93 +162,97 @@ message ListEventsResponse {
 }
 
 message CreateEventRequest {
-  optional string type = 1;
-  optional string message = 2;
-  optional string severity = 3;
-  optional string time = 4;
-  optional string source = 5;
-  optional int32 sequenceNumber = 6;
+  optional string instance = 1;
+  optional string type = 2;
+  optional string message = 3;
+  optional string severity = 4;
+  optional string time = 5;
+  optional string source = 6;
+  optional int32 sequenceNumber = 7;
+}
+
+message ListAlarmsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string order = 6;
 }
 
 message ListAlarmsResponse {
   repeated alarms.AlarmData alarm = 1;
 }
 
-message ListTablesResponse {
-  repeated TableInfo table = 1;
+message ListParameterAlarmsRequest {
+  optional string instance = 1;
+  optional string parameter = 2;
+  optional int64 pos = 3;
+  optional int32 limit = 4;
+  optional google.protobuf.Timestamp start = 5;
+  optional google.protobuf.Timestamp stop = 6;
+  optional string order = 7;
+  optional bool detail = 8;
 }
 
-message ListStreamsResponse {
-  repeated StreamInfo stream = 1;
+message ListEventSourcesRequest {
+  optional string instance = 1; 
 }
 
-message ColumnData {
-  optional string name = 1;
-  optional Value value = 2;
-}
-
-message StreamData {
-  optional string stream = 1;
-  repeated ColumnData column = 2;
-}
-
-message TableData {
-  message TableRecord {
-    repeated ColumnData column = 1;
-  }
-  repeated TableRecord record = 1;
-}
-
-message ColumnInfo {
-  optional string name = 1;
-  optional string type = 2;
-  repeated EnumValue enumValue = 3;
-}
-
-message EnumValue {
-  optional int32 value = 1;
-  optional string label = 2;
-}
-
-message TableInfo {
-  optional string name = 1;
-  repeated ColumnInfo keyColumn = 2;
-  repeated ColumnInfo valueColumn = 3;
-  optional string script = 4;
-  repeated string histogramColumn = 5;
-  optional string storageEngine = 6;
-  optional int32 formatVersion = 7;
-  optional string tablespace = 8;
-  optional bool compressed = 9;
-  optional PartitioningInfo partitioningInfo = 10;
-}
-
-message PartitioningInfo {
-  enum PartitioningType {
-    TIME = 1;
-    VALUE = 2;
-    TIME_AND_VALUE = 3;
-  }
-  optional PartitioningType type = 1;
-  optional string timeColumn = 2;
-  optional string timePartitionSchema = 3;
-  optional string valueColumn = 4;
-  optional string valueColumnType = 5;
-}
-
-message StreamInfo {
-  optional string name = 1;
-  repeated ColumnInfo column = 2;
-  optional string script = 3;
-  optional int64 dataCount = 4;
-}
-
-message EventSourceInfo {
+message ListEventSourcesResponse {
   repeated string source = 1;
 }
 
 message ParameterGroupInfo {
   repeated string group = 1;
+}
+
+message ListCommandHistoryIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string name = 7;
+}
+
+message ListEventIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string source = 7;
+}
+
+message ListPacketIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string name = 7;
+}
+
+message ListParameterIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string group = 7;
+}
+
+message ListCompletenessIndexRequest {
+  optional string instance = 1;
+  optional int32 limit = 2;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp stop = 4;
+  optional string next = 5;
 }
 
 message IndexResponse {
@@ -428,64 +273,66 @@ message IndexEntry {
   optional int64 seqStop = 5;
 }
 
-message GetPacketNamesResponse {
+message ListPacketNamesRequest {
+  optional string instance = 1;
+}
+
+message ListPacketNamesResponse {
   repeated string name = 1;
 }
 
-message ExecuteSqlRequest {
-  optional string statement = 1;
+message ListParameterGroupsRequest {
+  optional string instance = 1;
 }
 
-message ExecuteSqlResponse {
-  optional string result = 1;
+message ListParameterHistoryRequest {
+  optional string instance = 1;
+  optional string name = 2;
+  optional int64 pos = 3;
+  optional int32 limit = 4;
+  optional bool norepeat = 5;
+  optional google.protobuf.Timestamp start = 6;
+  optional google.protobuf.Timestamp stop = 7;
+  optional string order = 8;
+  optional bool norealtime = 9;
+  optional string processor = 10;
+  optional string source = 11;
 }
 
-message ListParameterValuesResponse {
+message ListParameterHistoryResponse {
   repeated pvalue.ParameterValue parameter = 1;
   optional string continuationToken = 2;
 }
 
-message ListRocksDbTablespacesResponse {
-  repeated RocksDbTablespaceInfo tablespace = 1;
-}
-
-message RocksDbTablespaceInfo {
-  optional string name = 1;
-  optional string dataDir = 2;
-  repeated RocksDbDatabaseInfo database = 3;
-}
-
-message ListRocksDbDatabasesResponse {
-  repeated RocksDbDatabaseInfo database = 1;
-}
-
-message RocksDbDatabaseInfo {
-  optional string tablespace = 1;
-  optional string dataDir = 2;
-  optional string dbPath = 3;
-}
-
-message ListTagsResponse {
-  repeated ArchiveTag tag = 1;
-}
-
-message CreateTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
-message EditTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
+message ListPacketsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional string order = 4;
+  repeated string name = 5;
+  optional string next = 6;
+  optional google.protobuf.Timestamp start = 7;
+  optional google.protobuf.Timestamp stop = 8;
 }
 
 message ListPacketsResponse {
   repeated TmPacketData packet = 1;
   optional string continuationToken = 2;
+}
+
+message GetPacketRequest {
+  optional string instance = 1;
+  optional int64 gentime = 2;
+  optional int32 seqnum = 3;
+}
+
+message GetParameterSamplesRequest {
+  optional string instance = 1;
+  optional string name = 2;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp stop = 4;
+  optional int32 count = 5;
+  optional bool norealtime = 6;
+  optional string processor = 7;
+  optional string source = 8;
 }

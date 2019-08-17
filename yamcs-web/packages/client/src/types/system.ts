@@ -22,14 +22,14 @@ export interface GeneralInfo {
   yamcsVersion: string;
   revision: string;
   serverId: string;
-  plugin: PluginInfo[];
+  plugins: PluginInfo[];
 }
 
-export interface ListEndpointsResponse {
-  endpoints: Endpoint[];
+export interface ListRoutesResponse {
+  routes: Route[];
 }
 
-export interface Endpoint {
+export interface Route {
   service: string;
   method: string;
   inputType: string;
@@ -185,7 +185,7 @@ export interface GroupMemberInfo {
 }
 
 export interface EditGroupRequest {
-  name?: string;
+  newName?: string;
   description?: string;
   memberInfo?: GroupMemberInfo;
 }

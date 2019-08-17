@@ -42,15 +42,16 @@ public class RestReplays {
         }
 
         try {
-            Processor yproc = ProcessorFactory.create(instance, "RestReplays" + count.incrementAndGet(),
+            Processor processor = ProcessorFactory.create(instance, "RestReplays" + count.incrementAndGet(),
                     "ArchiveRetrieval", "internal", replayRequest);
-            ReplayWrapper wrapper = new ReplayWrapper(l, yproc);
+            ReplayWrapper wrapper = new ReplayWrapper(l, processor);
 
-            ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(),
+            ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(
+                    processor.getParameterRequestManager(),
                     wrapper);
             pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), user);
-            yproc.startAsync();
-            yproc.addListener(new Listener() {
+            processor.startAsync();
+            processor.addListener(new Listener() {
                 @Override
                 public void terminated(State from) {
                     concurrentCount.decrementAndGet();
@@ -71,12 +72,12 @@ public class RestReplays {
 
     private static class ReplayWrapper implements ParameterWithIdConsumer {
         RestReplayListener wrappedListener;
-        Processor yproc;
+        Processor processor;
 
-        ReplayWrapper(RestReplayListener l, Processor yproc) {
+        ReplayWrapper(RestReplayListener l, Processor processor) {
             this.wrappedListener = l;
-            this.yproc = yproc;
-            yproc.addListener(l, MoreExecutors.directExecutor());
+            this.processor = processor;
+            processor.addListener(l, MoreExecutors.directExecutor());
         }
 
         @Override
@@ -84,7 +85,7 @@ public class RestReplays {
             if (!wrappedListener.isReplayAbortRequested()) {
                 wrappedListener.update(subscriptionId, params);
             } else {
-                yproc.quit();
+                processor.quit();
             }
         }
     }

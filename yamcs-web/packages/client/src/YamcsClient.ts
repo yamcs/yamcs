@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListEndpointsResponse, ListInstancesOptions, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -132,10 +132,10 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as UserInfo;
   }
 
-  async getEndpoints() {
-    const url = `${this.apiUrl}/endpoints`;
+  async getRoutes() {
+    const url = `${this.apiUrl}/routes`;
     const response = await this.doFetch(url);
-    return await response.json() as ListEndpointsResponse;
+    return await response.json() as ListRoutesResponse;
   }
 
   async getLeapSeconds() {
@@ -339,18 +339,20 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/archive/rocksdb/databases`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as RocksDbDatabasesWrapper;
-    return wrapper.database || [];
+    return wrapper.databases || [];
   }
 
   async getRocksDbDatabaseProperties(tablespace: string, dbPath='') {
-    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/properties/${dbPath}`;
+    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:describe`;
     const response = await this.doFetch(url);
     return await response.text();
   }
 
   async compactRocksDbDatabase(tablespace: string, dbPath='') {
-    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/compact/${dbPath}`;
-    return await this.doFetch(url);
+    const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:compact`;
+    return await this.doFetch(url, {
+      method: 'POST',
+    });
   }
 
   async editClient(clientId: number, options: EditClientRequest) {

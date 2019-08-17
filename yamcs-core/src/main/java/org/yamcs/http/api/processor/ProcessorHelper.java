@@ -2,8 +2,8 @@ package org.yamcs.http.api.processor;
 
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.EventId;
-import org.yamcs.http.api.mdb.XtceToGpbAssembler;
-import org.yamcs.http.api.mdb.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.http.api.XtceToGpbAssembler;
+import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;

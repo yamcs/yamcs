@@ -533,7 +533,7 @@ public class CcsdsTmIndex implements TmIndex {
     public class CcsdsTmIndexRestHandler extends RestHandler {
         @Route(path = "/api/ccsdstmindex/{instance}/rebuild", method = { "PUT", "POST" })
         public void rebuildIndex(RestRequest req) throws HttpException {
-            checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
+            checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlArchiving);
 
             TimeInterval interval = req.scanForInterval().asTimeInterval();
             try {

@@ -19,7 +19,7 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.http.HttpServer;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public class LongWebsocketFrameTest {

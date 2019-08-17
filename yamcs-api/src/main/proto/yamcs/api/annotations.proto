@@ -13,17 +13,44 @@ extend google.protobuf.MethodOptions {
 }
 
 message HttpRoute {
-  optional string method = 1;
-  optional string path = 2;
-  optional bool deprecated = 3;
+
+  oneof pattern {
+    // Maps to HTTP GET. Used for listing and getting information about
+    // resources.
+    string get = 1;
+
+    // Maps to HTTP PUT. Used for replacing a resource.
+    string put = 2;
+
+    // Maps to HTTP POST. Used for creating a resource or performing an action.
+    string post = 3;
+
+    // Maps to HTTP DELETE. Used for deleting a resource.
+    string delete = 4;
+
+    // Maps to HTTP PATCH. Used for updating a resource.
+    string patch = 5;
+  }
+  optional bool deprecated = 6;
 
   // Name of the field in the request message that maps to the request body
   // The special value "*" indicates that the request message as a whole
   // represents the body (excepting route params).
-  optional string body = 4;
-}
-
-message HttpBody {
-  optional string content_type = 1;
-  optional bytes data = 2;
+  optional string body = 7;
+  
+  optional int32 maxBodySize = 8;
+  
+  // Set true if the execution of the route is expected to take a long time
+  // (more than 0.5 seconds). It will be offloaded to a worker thread.
+  // Leave false if the route uses its own threading mechanism (most of the
+  // routes should do that).
+  optional bool offThread = 9;
+  
+  // Data load routes expect to receive a large body piece by piece in
+  // HttpContent objects.
+  // 
+  // If false or unset, a small default is used, sufficient for standard use.
+  optional bool dataLoad = 10;
+  
+  repeated HttpRoute additional_bindings = 11;
 }

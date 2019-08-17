@@ -22,8 +22,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.MediaType;
 import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Table;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

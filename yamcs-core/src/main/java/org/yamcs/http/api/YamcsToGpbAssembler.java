@@ -4,7 +4,6 @@ import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.http.api.mdb.XtceToGpbAssembler;
 import org.yamcs.http.api.processor.ProcessorRestHandler;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.ClientInfo.ClientState;
@@ -17,7 +16,7 @@ import org.yamcs.xtce.XtceDb;
 
 public class YamcsToGpbAssembler {
 
-    public static MissionDatabase toMissionDatabase(RestRequest req, String instanceName, XtceDb mdb) {
+    public static MissionDatabase toMissionDatabase(String instanceName, XtceDb mdb) {
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         MissionDatabase.Builder b = MissionDatabase.newBuilder(instanceInfo.getMissionDatabase());
@@ -28,24 +27,24 @@ public class YamcsToGpbAssembler {
         b.setParameterTypeCount(mdb.getParameterTypes().size());
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, sub));
+            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(sub));
         }
         return b.build();
     }
 
-    public static YamcsInstance enrichYamcsInstance(RestRequest req, YamcsInstance yamcsInstance) {
+    public static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
 
         // Override MDB with a version that has URLs too
         if (yamcsInstance.hasMissionDatabase()) {
             XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {
-                instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
+                instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(yamcsInstance.getName(), mdb));
             }
         }
 
         for (Processor processor : Processor.getProcessors(instanceb.getName())) {
-            instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, req, false));
+            instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, false));
         }
 
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());

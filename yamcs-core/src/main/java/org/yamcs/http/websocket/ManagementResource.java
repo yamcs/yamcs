@@ -10,9 +10,9 @@ import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.ManagementSubscriptionRequest;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Statistics;
-import org.yamcs.protobuf.Web.ManagementSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 /**

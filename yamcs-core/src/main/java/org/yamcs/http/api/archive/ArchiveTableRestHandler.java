@@ -20,21 +20,14 @@ import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.RestStreams;
 import org.yamcs.http.api.Route;
 import org.yamcs.http.api.Router.RouteMatch;
-import org.yamcs.http.api.SqlBuilder;
-import org.yamcs.protobuf.Archive.ListTablesResponse;
-import org.yamcs.protobuf.Archive.TableData;
-import org.yamcs.protobuf.Archive.TableData.TableRecord;
-import org.yamcs.protobuf.Archive.TableInfo;
+import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Table;
-import org.yamcs.protobuf.Table.Cell;
-import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.Row.Cell;
+import org.yamcs.protobuf.Table.Row.ColumnInfo;
 import org.yamcs.protobuf.Table.TableLoadResponse;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.yarch.ColumnDefinition;
@@ -43,7 +36,6 @@ import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DataType._type;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -60,87 +52,6 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 
 public class ArchiveTableRestHandler extends RestHandler {
-
-    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.ListTables")
-    public void listTables(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ReadTables);
-
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-
-        ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
-        List<TableDefinition> defs = new ArrayList<>(ydb.getTableDefinitions());
-        defs.sort((d1, d2) -> d1.getName().compareToIgnoreCase(d2.getName()));
-        for (TableDefinition def : defs) {
-            responseb.addTable(ArchiveHelper.toTableInfo(def));
-        }
-        completeOK(req, responseb.build());
-    }
-
-    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetTable")
-    public void getTable(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ReadTables);
-
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        TableDefinition table = verifyTable(ydb, req.getRouteParam("name"));
-
-        TableInfo response = ArchiveHelper.toTableInfo(table);
-        completeOK(req, response);
-    }
-
-    @Route(rpc = "yamcs.protobuf.archive.StreamArchive.GetTableData")
-    public void getTableData(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ReadTables);
-
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        TableDefinition table = verifyTable(ydb, req.getRouteParam("name"));
-
-        List<String> cols = null;
-        if (req.hasQueryParameter("cols")) {
-            cols = new ArrayList<>(); // Order, and non-unique
-            for (String para : req.getQueryParameterList("cols")) {
-                for (String col : para.split(",")) {
-                    cols.add(col.trim());
-                }
-            }
-        }
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-
-        List<Object> args = new ArrayList<>();
-        SqlBuilder sqlb = new SqlBuilder(table.getName());
-        if (cols != null) {
-            if (cols.isEmpty()) {
-                throw new BadRequestException("No columns were specified");
-            } else {
-                cols.forEach(col -> {
-                    sqlb.select("?");
-                    args.add(col);
-                });
-            }
-        }
-        sqlb.descend(req.asksDescending(true));
-        sqlb.limit(pos, limit);
-
-        String sql = sqlb.toString();
-        TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.stream(instance, sql, args, new StreamSubscriber() {
-
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                TableRecord.Builder rec = TableRecord.newBuilder();
-                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
-                responseb.addRecord(rec); // TODO estimate byte size
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-                completeOK(req, responseb.build());
-            }
-        });
-    }
 
     AtomicInteger count = new AtomicInteger();
 

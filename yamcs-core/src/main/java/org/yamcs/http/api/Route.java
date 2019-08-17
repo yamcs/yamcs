@@ -17,12 +17,7 @@ public @interface Route {
      * Currently must be an absolute path. Specify route params by preceding them with a colon, followed by their
      * identifying name.
      */
-    String path() default "";
-
-    /**
-     * Reference to a Protobuf rpc service method in the format SERVICE.METHOD.
-     */
-    String rpc() default "";
+    String path();
 
     /**
      * HTTP method or methods by which this rule is available. By default set to "GET".
