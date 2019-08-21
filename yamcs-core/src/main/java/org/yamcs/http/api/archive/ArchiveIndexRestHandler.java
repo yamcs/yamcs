@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.http.BadRequestException;
@@ -218,9 +217,12 @@ public class ArchiveIndexRestHandler extends RestHandler {
                         groupb = IndexGroup.newBuilder().setId(rec.getId());
                         groupBuilders.put(rec.getId(), groupb);
                     }
+                    long first = TimeEncoding.fromProtobufTimestamp(rec.getFirst());
+                    long last1 = TimeEncoding.fromProtobufTimestamp(rec.getLast());
+                    
                     IndexEntry.Builder ieb = IndexEntry.newBuilder()
-                            .setStart(TimeEncoding.toString(rec.getFirst()))
-                            .setStop(TimeEncoding.toString(rec.getLast()))
+                            .setStart(TimeEncoding.toString(first))
+                            .setStop(TimeEncoding.toString(last1))
                             .setCount(rec.getNum());
                     if (rec.hasSeqFirst()) {
                         ieb.setSeqStart(rec.getSeqFirst());
@@ -229,7 +231,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                         ieb.setSeqStop(rec.getSeqLast());
                     }
                     groupb.addEntry(ieb);
-                    last = Math.max(last, rec.getLast());
+                    last = Math.max(last, last1);
                 }
 
                 @Override

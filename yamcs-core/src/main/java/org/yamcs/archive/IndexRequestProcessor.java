@@ -30,6 +30,9 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.TimeUtil;
+import com.google.protobuf.util.Timestamps;
 
 /**
  * Performs histogram and completeness index retrievals.
@@ -118,7 +121,7 @@ class IndexRequestProcessor implements Runnable {
             hreq[1] = new HistoRequest(EventRecorder.TABLE_NAME, "source", mergeTime, eventSources);
         }
 
-        if (req.getCmdNameCount() > 0) {
+        if (req.getSendAllCmd() || req.getCmdNameCount() > 0) {
             commands = new HashMap<>();
             for (NamedObjectId id : req.getCmdNameList()) {
                 commands.put(id.getName(), id);
@@ -228,6 +231,7 @@ class IndexRequestProcessor implements Runnable {
     }
 
     boolean sendHistogramData(HistoRequest hreq) {
+        System.out.println("sending histogram");
         log.debug("Sending histogram data for table {} column {}", hreq.tblName, hreq.columnName);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -266,7 +270,9 @@ class IndexRequestProcessor implements Runnable {
                 }
 
                 ArchiveRecord ar = ArchiveRecord.newBuilder().setId(id)
-                        .setFirst(hr.getStart()).setLast(hr.getStop()).setNum(hr.getNumTuples()).build();
+                        .setFirst(TimeEncoding.toProtobufTimestamp(hr.getStart())).setLast(TimeEncoding.toProtobufTimestamp(hr.getStop()))
+                        .setYamcsFirst(hr.getStart()).setYamcsLast(hr.getStop())
+                        .setNum(hr.getNumTuples()).build();
                 sendData(ar);
                 if (limit > 0 && count >= limit) {
                     return false;
@@ -307,7 +313,7 @@ class IndexRequestProcessor implements Runnable {
             sendData(ar);
             if (tokenData != null) {
                 tokenData.lastId = ar.getId();
-                tokenData.lastTime = ar.getLast();
+                tokenData.lastTime = TimeEncoding.fromProtobufTimestamp(ar.getLast());
             }
             if (limit > 0 && count >= limit) {
                 return false;
@@ -338,7 +344,8 @@ class IndexRequestProcessor implements Runnable {
                 res.put(ar.getId(), ar);
                 return null;
             }
-            if (ar.getFirst() - ar1.getLast() < mergeTime) {
+            long tdelta = Durations.toMillis(Timestamps.between(ar.getFirst(), ar.getLast()));
+            if (tdelta < mergeTime) {
                 ArchiveRecord ar2 = ArchiveRecord.newBuilder().setFirst(ar1.getFirst())
                         .setLast(ar.getLast()).setNum(ar1.getNum() + ar.getNum())
                         .setId(ar.getId()).build();

@@ -346,7 +346,9 @@ public class CcsdsTmIndex implements TmIndex {
                     String pn = "apid_" + apid;
                     NamedObjectId id = NamedObjectId.newBuilder().setName(pn).build();
                     ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
-                            .setFirst(r.firstTime()).setLast(r.lastTime())
+                            .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime())).setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
+                            .setYamcsFirst(r.firstTime()).setYamcsLast(r.lastTime())
+                            
                             .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
                     // WARN: this string is parsed in the CompletenessGUI
                     // TODO: remove it

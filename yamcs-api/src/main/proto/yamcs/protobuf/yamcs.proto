@@ -106,12 +106,15 @@ message IndexRequest {
 //contains histogram data
 message ArchiveRecord {
   optional NamedObjectId id = 1;
-  optional int64 first = 2;
-  optional int64 last = 3;
+  optional int64 yamcsFirst = 2 [deprecated=true];
+  optional int64 yamcsLast = 3 [deprecated=true];
   optional int32 num = 4;
   optional string info = 5;
   optional int64 seqFirst = 6;
   optional int64 seqLast = 7;
+  optional google.protobuf.Timestamp first = 8;
+  optional google.protobuf.Timestamp last = 9;
+
 }
 
 message IndexResult {

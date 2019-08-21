@@ -170,11 +170,9 @@ public class InstanceRestHandler extends RestHandler {
         });
 
         cf.whenComplete((v, error) -> {
-            System.out.println("complete... ");
             if (error == null) {
                 YamcsInstance instanceInfo = v.getInstanceInfo();
                 YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, instanceInfo);
-                System.out.println(enriched);
                 completeOK(req, enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
