@@ -103,9 +103,9 @@ public class ArchivePacketRestHandler extends RestHandler {
         // (because the gentime/seqnum condition used further down is unoptimized)
         if (nextToken != null) {
             if (desc) {
-                ir.setStop(TimeEncoding.fromProtobufTimestamp(nextToken.gentime), true);
+                ir.setStop(nextToken.gentime, true);
             } else {
-                ir.setStart(TimeEncoding.fromProtobufTimestamp(nextToken.gentime), true);
+                ir.setStart(nextToken.gentime, true);
             }
         }
         if (ir.hasInterval()) {
@@ -168,7 +168,7 @@ public class ArchivePacketRestHandler extends RestHandler {
                         @Override
                         public void streamClosed(Stream stream) {
                             if (count > limit) {
-                                PacketPageToken token = new PacketPageToken(last.getGenerationTime(),
+                                PacketPageToken token = new PacketPageToken(TimeEncoding.fromProtobufTimestamp(last.getGenerationTime()),
                                         last.getSequenceNumber());
                                 responseb.setContinuationToken(token.encodeAsString());
                             }
