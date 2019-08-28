@@ -12,11 +12,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
-import org.yamcs.protobuf.Rest.ListInstancesResponse;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.ListInstancesResponse;
+import org.yamcs.protobuf.YamcsInstance;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -82,7 +81,7 @@ public class RestClient {
         CompletableFuture<byte[]> future = doRequest("/instances", HttpMethod.GET);
         return future.thenApply(b -> {
             try {
-                return ListInstancesResponse.parseFrom(b).getInstanceList();
+                return ListInstancesResponse.parseFrom(b).getInstancesList();
             } catch (Exception e) {
                 throw new CompletionException(e);
             }
@@ -124,11 +123,12 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body.getBytes(),
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
-                                         // unlikely to have this exception thrown
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
+                                                                                  // since if the code is not buggy it's
+            // unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
-        
+
         if (autoclose) {
             cf.whenComplete((v, t) -> {
                 close();
@@ -157,7 +157,8 @@ public class RestClient {
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body,
                     connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead since if the code is not buggy it's
+        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
+                                                                                  // since if the code is not buggy it's
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -169,28 +170,30 @@ public class RestClient {
         return cf;
     }
 
+    public CompletableFuture<Void> doBulkRequest(HttpMethod method, String resource, BulkRestDataReceiver receiver) {
+        return doBulkRequest(method, resource, new byte[0], receiver);
+    }
+
     /**
      * Performs a bulk request and provides the result piece by piece to the receiver.
      * 
      * The potentially large result is split into messages based on the VarInt size preceding each message. The maximum
      * size of each individual message is limited to {@value #MAX_MESSAGE_LENGTH}
      * 
+     * @param method
      * @param resource
      * @param receiver
      * @return future that is completed when the request is finished
      * @throws RuntimeException
-     *             - thrown if the uri + resource does not form a correct URL
+     *             if the uri + resource does not form a correct URL
      */
-    public CompletableFuture<Void> doBulkGetRequest(String resource, BulkRestDataReceiver receiver) {
-        return doBulkGetRequest(resource, new byte[0], receiver);
-    }
-
-    public CompletableFuture<Void> doBulkGetRequest(String resource, byte[] body, BulkRestDataReceiver receiver) {
+    public CompletableFuture<Void> doBulkRequest(HttpMethod method, String resource, byte[] body,
+            BulkRestDataReceiver receiver) {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, HttpMethod.GET, body,
-                    connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
+            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, method,
+                    body, connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
         } catch (URISyntaxException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
@@ -213,9 +216,9 @@ public class RestClient {
         }
 
         @Override
-        public void receiveData(byte[] data) throws YamcsApiException {
+        public void receiveData(byte[] data) throws ClientException {
             if (data.length > MAX_MESSAGE_LENGTH) {
-                throw new YamcsApiException(
+                throw new ClientException(
                         "Message too long: received " + data.length + " max length: " + MAX_MESSAGE_LENGTH);
             }
 
@@ -228,7 +231,7 @@ public class RestClient {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
                 if (msgLength > MAX_MESSAGE_LENGTH) {
-                    throw new YamcsApiException("Message too long: decodedMessagLength: " + msgLength + " max length: "
+                    throw new ClientException("Message too long: decodedMessagLength: " + msgLength + " max length: "
                             + MAX_MESSAGE_LENGTH);
                 }
                 if (msgLength > writeOffset - bb.position()) {
@@ -258,12 +261,12 @@ public class RestClient {
 
     }
 
-    public static int readVarInt32(ByteBuffer bb) throws YamcsApiException {
+    public static int readVarInt32(ByteBuffer bb) throws ClientException {
         byte b = bb.get();
         int v = b & 0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
             if (shift > 28) {
-                throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
+                throw new ClientException("Invalid VarInt32: more than 5 bytes!");
             }
 
             if (!bb.hasRemaining()) {
@@ -323,6 +326,7 @@ public class RestClient {
             throw new RuntimeException(e);
         }
     }
+
     public boolean isInsecureTls() {
         return httpClient.isInsecureTls();
     }
@@ -335,17 +339,17 @@ public class RestClient {
     public void setInsecureTls(boolean insecureTls) {
         httpClient.setInsecureTls(insecureTls);
     }
-    
+
     /**
      * In case of https connections, this file contains the CA certificates that are used to verify server certificate.
      * 
-     * If this is not set, java will use the default mechanism with the trustStore that can be configured 
-     * via the javax.net.ssl.trustStore system property.
-     *  
+     * If this is not set, java will use the default mechanism with the trustStore that can be configured via the
+     * javax.net.ssl.trustStore system property.
+     * 
      * @param caCertFile
      */
     public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
         httpClient.setCaCertFile(caCertFile);
     }
-    
+
 }

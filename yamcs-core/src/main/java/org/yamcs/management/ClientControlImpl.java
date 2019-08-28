@@ -6,6 +6,7 @@ import javax.management.StandardMBean;
 import org.yamcs.ConnectedClient;
 
 public class ClientControlImpl extends StandardMBean implements ClientControl {
+
     ConnectedClient client;
 
     public ClientControlImpl(ConnectedClient client) throws NotCompliantMBeanException {

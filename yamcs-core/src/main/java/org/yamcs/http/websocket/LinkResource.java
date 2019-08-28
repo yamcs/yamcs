@@ -4,10 +4,10 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.LinkSubscriptionRequest;
+import org.yamcs.protobuf.LinkEvent;
+import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.LinkSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.LinkEvent;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 
 /**
  * Provides realtime data-link subscription via web.

@@ -19,10 +19,8 @@ import java.util.regex.MatchResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.http.MethodNotAllowedException;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.RouteHandler;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.Route;
-import org.yamcs.http.api.Router;
 import org.yamcs.http.api.Router.RouteMatch;
 
 import io.netty.channel.ChannelFuture;
@@ -34,34 +32,34 @@ public class RouterTest {
 
     @Before
     public void before() {
-        router = new Router(Executors.newSingleThreadExecutor(), null);
+        router = new Router(Executors.newSingleThreadExecutor(), null, new ProtobufRegistry());
 
         router.registerRouteHandler(null, new RouteHandler() {
 
             // Some simple routes
-            @Route(path = "/a/:adjective/path")
+            @Route(path = "/a/{adjective}/path")
             public void pathA() {
             }
 
-            @Route(path = "/b/:adjective?/path")
+            @Route(path = "/b/{adjective?}/path")
             public void pathB() {
             }
 
-            @Route(path = "/c/:adjective*/path")
+            @Route(path = "/c/{adjective*}/path")
             public void pathC() {
             }
 
             // Identical paths, but different HTTP methods
-            @Route(path = "/d/:adjective/path", method = { "POST", "PATCH" })
+            @Route(path = "/d/{adjective}/path", method = { "POST", "PATCH" })
             public void pathM() {
             }
 
-            @Route(path = "/d/:adjective/path", method = "GET")
+            @Route(path = "/d/{adjective}/path", method = "GET")
             public void pathN() {
             }
 
             // Multiple paths, same java method
-            @Route(path = "/e/:adjective/path")
+            @Route(path = "/e/{adjective}/path")
             @Route(path = "/f/different/path")
             public void pathS() {
             }
@@ -69,26 +67,29 @@ public class RouterTest {
             // A more complicated set of rules sharing partial paths.
             // Route order is in principle non-deterministic, due to java reflection limitations.
             // Our algorithm is designed to stop on the first match by descending
-            // string length. In addition, we have a flag to indicate priority, but
-            // try to architect paths differently
-            @Route(path = "/g/archive/:instance")
+            // string length.
+            @Route(path = "/g/archive/{instance}")
             public void pathU() {
             }
 
-            @Route(path = "/g/archive/:instance/parameters")
+            @Route(path = "/g/archive/{instance}/parameters")
             public void pathV() {
             }
 
-            @Route(path = "/g/archive/:instance/parameters/bulk", priority = true)
+            @Route(path = "/g/archive/{instance}/parameters:batchGet")
             public void pathW() {
             }
 
-            @Route(path = "/g/archive/:instance/parameters/:name*")
+            @Route(path = "/g/archive/{instance}/parameters/{name*}")
             public void pathY() {
             }
 
-            @Route(path = "/g/archive/:instance/parameters/:name*/series")
+            @Route(path = "/g/archive/{instance}/parameters/{name*}/series")
             public void pathX() {
+            }
+
+            @Route(path = "/h/archive/{name**}")
+            public void pathZ() {
             }
         });
     }
@@ -190,7 +191,7 @@ public class RouterTest {
         assertEquals("simulator", res.group(1));
         assertEquals("YSS/SIMULATOR/BatteryVoltage1", res.group(2));
 
-        res = router.matchURI(GET, "/g/archive/simulator/parameters/bulk").regexMatch;
+        res = router.matchURI(GET, "/g/archive/simulator/parameters:batchGet").regexMatch;
         assertEquals(1, res.groupCount());
         assertEquals("simulator", res.group(1));
 
@@ -201,10 +202,25 @@ public class RouterTest {
     }
 
     @Test
+    public void testOneOrMoreMatching() throws MethodNotAllowedException {
+        MatchResult res = router.matchURI(GET, "/h/archive/bla/bloe").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals("bla/bloe", res.group(1));
+
+        res = router.matchURI(GET, "/h/archive/bla").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals("bla", res.group(1));
+
+        res = router.matchURI(GET, "/h/archive").regexMatch;
+        assertEquals(1, res.groupCount());
+        assertEquals(null, res.group(1));
+    }
+
+    @Test
     public void testRouteParams() throws MethodNotAllowedException {
         MockRestRouter router = new MockRestRouter();
         router.registerRouteHandler(null, new RouteHandler() {
-            @Route(path = "/h/archive/:bla?/:instance")
+            @Route(path = "/h/archive/{bla?}/{instance}")
             public ChannelFuture abc(RestRequest req) {
                 return null;
             }
@@ -227,7 +243,7 @@ public class RouterTest {
     private static final class MockRestRouter extends Router {
 
         public MockRestRouter() {
-            super(Executors.newSingleThreadScheduledExecutor(), null);
+            super(Executors.newSingleThreadScheduledExecutor(), null, new ProtobufRegistry());
         }
 
         RestRequest observedRestRequest;

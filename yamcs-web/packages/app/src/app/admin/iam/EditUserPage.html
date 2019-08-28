@@ -1,0 +1,69 @@
+<app-admin-page *ngIf="user$ | async as user">
+  <app-admin-toolbar>
+    Edit User: {{ user.displayName || user.name }}
+  </app-admin-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <label>
+        Username<br>
+        <input disabled type="text" [value]="user.name">
+      </label>
+      <br>
+      <label>
+        Display name<br>
+        <input formControlName="displayName" type="text">
+        <span *ngIf="user.identities && user.identities.length > 0" class="hint">
+            This user has an external identity. Changes to this field may get overwritten on next login.
+        </span>
+      </label>
+      <br>
+      <label>
+        Email<br>
+        <input formControlName="email" type="text">
+        <span *ngIf="user.identities && user.identities.length > 0" class="hint">
+          This user has an external identity. Changes to this field may get overwritten on next login.
+        </span>
+      </label>
+      <br>
+      <label>
+        Active<br>
+        <mat-slide-toggle formControlName="active"></mat-slide-toggle><br>
+        <span class="hint">Inactive users are considered "blocked". They are not or no longer able to login.</span>
+      </label>
+      <br>
+      <label>
+        Superuser<br>
+        <mat-slide-toggle formControlName="superuser"></mat-slide-toggle><br>
+        <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators only.</span>
+      </label>
+      <p>&nbsp;</p>
+      <ng-container *ngIf="!user.identities || !user.identities.length">
+        <div class="section-divider">
+          <mat-divider></mat-divider>
+        </div>
+        <h4>Account</h4>
+        <label>
+          Password<br>
+          <input formControlName="password" type="password">
+          <span class="hint">Leave empty if you do not wish to change this user's password.</span>
+        </label>
+        <br>
+        <label>
+          Password confirmation<br>
+          <input formControlName="passwordConfirmation" type="password">
+        </label>
+      </ng-container>
+    </form>
+
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="submit" (click)="onConfirm()"
+              mat-raised-button
+              [disabled]="!form.valid || form.pristine"
+              color="primary">SAVE CHANGES</button>
+    </mat-toolbar>
+  </div>
+</app-admin-page>

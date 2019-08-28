@@ -1,10 +1,7 @@
 HTTP Server
 ===========
 
-Embedded HTTP server that provides these functionalities:
-
-* Serve HTTP API (REST and WebSocket)
-* Serve the Yamcs web interface
+Embedded HTTP server that supports static file serving, authentication and API requests.
 
 The HTTP Server is tightly integrated with the security system of Yamcs and serves as the default interface for external tooling wanting to integrate. This covers both server-to-server and server-to-user communication patterns.
 
@@ -20,7 +17,7 @@ Class Name
 Configuration
 -------------
 
-This is a global service defined in ``etc/yamcs.yaml``. Example from a typical deployment:
+This is a global service defined in ``etc/yamcs.yaml``. Example:
 
 .. code-block:: yaml
 
@@ -36,18 +33,18 @@ This is a global service defined in ``etc/yamcs.yaml``. Example from a typical d
           cors:
             allowOrigin: "*"
             allowCredentials: false
-          website:
-            tag: DEMO
 
 
 Configuration Options
 ---------------------
 
 port (integer)
-    The port at which Yamcs web services may be reached. Default: ``8090``
+    The port at which Yamcs may be reached. Default: ``8090``
 
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
+    
+    Use this property only as a last resort. For multi-hosting situations, it is preferable to serve Yamcs from the root of its own subdomain.
 
 zeroCopyEnabled (boolean)
     Indicates whether zero-copy can be used to optimize non-SSL static file serving. Default: ``true``
@@ -57,9 +54,6 @@ webSocket (map)
 
 cors (map)
     Configure cross-origin resource sharing for the HTTP API. Detailed below. If unset, CORS is not supported.
-
-website (map)
-    Configure properties of the Yamcs website. Detailed below. If unset, Yamcs uses sensible defaults.
 
 
 WebSocket sub-configuration
@@ -89,10 +83,3 @@ allowOrigin (string)
 
 allowCredentials (boolean)
     Whether the ``Access-Control-Allow-Credentials`` header of the preflight response is set to true. Default: ``false``
-
-
-Website sub-configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tag (string)
-    Tag to show in the top right of the application bar. This allows quickly identifying a particular deployment of Yamcs.

@@ -24,32 +24,32 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.client.BulkRestDataReceiver;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Archive.StreamData;
+import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
+import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.LinkEvent;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Web.ConnectionInfo;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.Table.StreamData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.LinkEvent;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
@@ -88,7 +88,7 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws InterruptedException, SSLException, GeneralSecurityException {
-        if (YamcsServer.getServer().getSecurityStore().isAuthenticationEnabled()) {
+        if (!YamcsServer.getServer().getSecurityStore().getGuestUser().isActive()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
         parameterProvider = ParameterProvider.instance;
@@ -115,7 +115,6 @@ public abstract class AbstractIntegrationTest {
 
         YConfiguration.setupTest("IntegrationTest");
         Map<String, Object> options = new HashMap<>();
-        options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9190);
         HttpServer httpServer = new HttpServer();
         options = httpServer.getSpec().validate(options);
@@ -124,7 +123,10 @@ public abstract class AbstractIntegrationTest {
         httpServer.startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();
-        YamcsServer.setupYamcsServer();
+
+        YamcsServer yamcs = YamcsServer.getServer();
+        yamcs.prepareStart();
+        yamcs.start();
     }
 
     IssueCommandRequest getCommand(int seq, String... args) {
@@ -498,8 +500,8 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void receiveData(byte[] data) throws YamcsApiException {
+        public void receiveData(byte[] data) throws ClientException {
             dist.add(data);
         }
-    };
+    }
 }

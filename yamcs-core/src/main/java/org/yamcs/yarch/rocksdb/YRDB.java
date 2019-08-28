@@ -202,7 +202,7 @@ public class YRDB {
         return path;
     }
 
-    public String getProperites() throws RocksDBException {
+    public String getProperties() throws RocksDBException {
         if (isClosed) {
             throw new IllegalStateException("Database is closed");
         }

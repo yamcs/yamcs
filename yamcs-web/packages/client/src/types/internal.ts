@@ -1,6 +1,6 @@
 import { SpaceSystem } from './mdb';
 import { Alarm, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, Service, Stream, Table, UserInfo } from './system';
+import { Bucket, ClientInfo, CommandQueue, GroupInfo, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, Service, Stream, Table, UserInfo } from './system';
 
 
 export type WebSocketClientMessage = [
@@ -28,11 +28,11 @@ export interface EventsWrapper {
 }
 
 export interface InstancesWrapper {
-  instance: Instance[];
+  instances: Instance[];
 }
 
 export interface InstanceTemplatesWrapper {
-  template: InstanceTemplate[];
+  templates: InstanceTemplate[];
 }
 
 export interface LinksWrapper {
@@ -40,7 +40,7 @@ export interface LinksWrapper {
 }
 
 export interface ServicesWrapper {
-  service: Service[];
+  services: Service[];
 }
 
 export interface SpaceSystemsWrapper {
@@ -53,6 +53,10 @@ export interface AlarmsWrapper {
 
 export interface UsersWrapper {
   users: UserInfo[];
+}
+
+export interface GroupsWrapper {
+  groups: GroupInfo[];
 }
 
 export interface ClientsWrapper {
@@ -68,11 +72,11 @@ export interface ProcessorsWrapper {
 }
 
 export interface StreamsWrapper {
-  stream: Stream[];
+  streams: Stream[];
 }
 
 export interface TablesWrapper {
-  table: Table[];
+  tables: Table[];
 }
 
 export interface RecordsWrapper {
@@ -100,9 +104,9 @@ export interface PacketNameWrapper {
 }
 
 export interface BucketsWrapper {
-  bucket: Bucket[];
+  buckets: Bucket[];
 }
 
 export interface RocksDbDatabasesWrapper {
-  database: RocksDbDatabase[];
+  databases: RocksDbDatabase[];
 }

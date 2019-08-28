@@ -35,9 +35,8 @@ import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.cfdp.pdu.TLV;
-import org.yamcs.protobuf.Cfdp;
-import org.yamcs.protobuf.Cfdp.TransferDirection;
-import org.yamcs.protobuf.Cfdp.TransferState;
+import org.yamcs.protobuf.TransferDirection;
+import org.yamcs.protobuf.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
@@ -107,7 +106,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
         acknowledged = request.isAcknowledged();
 
         currentState = CfdpTransferState.START;
-        state = Cfdp.TransferState.RUNNING;
+        state = TransferState.RUNNING;
     }
 
     @Override
@@ -195,7 +194,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                         // resend attempts exceeded the limit
                         // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
                         // appropriate sender FaultHandler. See 4.1.7.1.d
-                        this.state = Cfdp.TransferState.FAILED;
+                        this.state = TransferState.FAILED;
                     }
                 } // else, we wait some more
             } else {
@@ -221,7 +220,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
             this.currentState = CfdpTransferState.CANCELED;
             break;
         case CANCELED:
-            this.state = Cfdp.TransferState.FAILED;
+            this.state = TransferState.FAILED;
             scheduledFuture.cancel(true);
             break;
         default:
@@ -383,7 +382,7 @@ public class CfdpOutgoingTransfer extends CfdpTransaction {
                 FinishedPacket p = (FinishedPacket) packet;
                 if (p.getConditionCode() != ConditionCode.NoError) {
                     // TODO, Ideally we log the Condition Code (or even call an appropriate sender FaultHandler)?
-                    this.state = Cfdp.TransferState.FAILED;
+                    this.state = TransferState.FAILED;
                 } else {
                     if (currentState == CfdpTransferState.EOF_ACK_RECEIVED ||
                             currentState == CfdpTransferState.RESENDING) {

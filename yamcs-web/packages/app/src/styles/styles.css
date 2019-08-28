@@ -67,6 +67,17 @@ body {
   padding: 24px;
 }
 
+.form-content {
+  padding: 24px;
+  max-width: 600px;
+}
+
+.form-content mat-toolbar {
+  background-color: #fff;
+  font-size: 12px;
+  padding: 0;
+}
+
 .ya-data-table tr.mat-header-row {
   height: auto;
 }
@@ -80,12 +91,26 @@ body {
 }
 
 .ya-data-table td.mat-cell,
-.ya-data-table th.mat-cell {
+.ya-data-table th.mat-cell,
+.ya-data-table-placeholder {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
   padding: 7px 8px 8px 0;
 }
+
+dd, dt {
+  font-size: 12px;
+  color: rgba(0, 0, 0, .654);
+}
+
+dt {
+  font-weight: bold;
+}
+
+/*.ya-data-table-placeholder {
+  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+}*/
 
 .ya-data-table th.mat-header-cell {
   padding-right: 8px;
@@ -199,6 +224,7 @@ a.ya-link.ya-header-link {
 
 .ya-form label,
 .ya-form label input[type="text"],
+.ya-form label input[type="password"],
 .ya-form label textarea,
 .ya-form label select {
   margin: 5px 0 0;
@@ -206,7 +232,7 @@ a.ya-link.ya-header-link {
   width: 100%;
 }
 
-.ya-form input[type="text"], .ya-input {
+.ya-form input[type="text"], .ya-form input[type="password"], .ya-input {
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;
@@ -322,4 +348,18 @@ button.expandable {
 
 .hide {
   display: none;
+}
+
+.section-divider {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.mat-toolbar.top {
+  min-height: 48px;
+}
+
+.mat-toolbar.top .mat-toolbar-row {
+  height: 48px;
+  font-weight: 400;
 }

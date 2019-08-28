@@ -3,10 +3,10 @@
 <mat-sidenav-container class="mat-typography"
                        [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
-    <mat-toolbar class="module-title">
+    <mat-toolbar class="top module-title">
       <mat-toolbar-row>
         <mat-icon class="icon32" style="margin-right: 16px">security</mat-icon>
-        Admin CP
+        Admin Area
       </mat-toolbar-row>
     </mat-toolbar>
 
@@ -19,12 +19,26 @@
         <mat-icon class="item-icon">pages</mat-icon>
         Plugins
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/users">
-        Users
-      </app-sidebar-nav-item>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="userManagementActive"
+                     (click)="toggleUserManagementGroup()">
+        <mat-icon class="item-icon">supervised_user_circle</mat-icon>
+        Access control
+      </mat-list-item>
+      <div *ngIf="userManagementExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
+          Users
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
+          Service accounts
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
+          Groups
+        </app-sidebar-nav-item>
+      </div>
       <app-sidebar-nav-item routerLink="/admin/clients">
         <mat-icon class="item-icon">devices</mat-icon>
-        Connected Clients
+        Connected clients
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/admin/services">
         <mat-icon class="item-icon">traffic</mat-icon>
@@ -42,9 +56,17 @@
       </mat-list-item>
       <div *ngIf="rocksDbExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
-          Open Databases
+          Open databases
         </app-sidebar-nav-item>
       </div>
+      <app-sidebar-nav-item routerLink="/admin/routes">
+        <mat-icon class="item-icon">http</mat-icon>
+        API routes
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/leap-seconds">
+        <mat-icon class="item-icon">access_time</mat-icon>
+        Leap seconds
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

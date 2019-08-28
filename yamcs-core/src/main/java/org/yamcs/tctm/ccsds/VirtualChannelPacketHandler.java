@@ -6,8 +6,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
@@ -43,6 +43,7 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         log = new Log(this.getClass(), yamcsInstance);
+        log.setContext(name);
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);

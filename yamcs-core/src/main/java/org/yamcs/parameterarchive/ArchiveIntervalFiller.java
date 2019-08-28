@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.rocksdb.RocksDBException;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.TimeEncoding;
 
 /**

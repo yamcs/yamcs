@@ -5,8 +5,12 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-import org.yamcs.api.YamcsLogRecord;
-
+/**
+ * @deprecated This class used to be used by both client tools and the server. These code bases are gradually being
+ *             split from each other. For server logging use org.yamcs.logging.CompactFormatter from yamcs-core. For
+ *             client logging use org.yamcs.ui.LogFormatter from yamcs-client.
+ */
+@Deprecated
 public class CompactFormatter extends Formatter {
 
     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss.SSS");
@@ -19,25 +23,8 @@ public class CompactFormatter extends Formatter {
         d.setTime(r.getMillis());
         sb.append(sdf.format(d)).append(" ");
 
-        String yamcsInstance = "_global";
-        if (r instanceof YamcsLogRecord) {
-            YamcsLogRecord yRec = (YamcsLogRecord) r;
-            if (yRec.getYamcsInstance() != null) {
-                yamcsInstance = yRec.getYamcsInstance();
-            }
-        }
-        sb.append(yamcsInstance).append(" ");
-
         String name = r.getLoggerName();
         sb.append(name).append(" [").append(r.getThreadID()).append("] ");
-
-        if (r instanceof YamcsLogRecord) {
-            YamcsLogRecord yRec = (YamcsLogRecord) r;
-            if (yRec.getContext() != null) {
-                sb.append(yRec.getContext()).append(" ");
-            }
-        }
-
         sb.append("[").append(r.getLevel()).append("] ").append(r.getMessage());
 
         Throwable t = r.getThrown();

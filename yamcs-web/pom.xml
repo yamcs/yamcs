@@ -10,6 +10,10 @@
   <packaging>jar</packaging>
   <name>Yamcs :: Web Interface</name>
 
+  <properties>
+    <webdir>${basedir}/packages/app/dist</webdir>
+  </properties>
+
   <!--
     This maven module is used to publish a compiled version of the webapp during
     release. It does not actually compile the webapp. We don't use Maven for that.
@@ -32,28 +36,60 @@
         <directory>${basedir}/target/webapp</directory>
       </resource>
     </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/webapp/static</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>packages/app/dist</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <activation>
+        <file>
+          <exists>${webdir}</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-resources</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/webapp/static</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${webdir}</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-manifest</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <fileset id="webfiles" dir="${basedir}/target/webapp/static" />
+                    <property name="prop.webfiles" refid="webfiles" />
+                    <echo file="${basedir}/target/webapp/static/manifest.txt">${prop.webfiles}</echo>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

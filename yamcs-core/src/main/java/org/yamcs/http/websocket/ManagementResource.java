@@ -8,12 +8,12 @@ import org.yamcs.ProcessorException;
 import org.yamcs.http.api.YamcsToGpbAssembler;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.ManagementSubscriptionRequest;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.ManagementSubscriptionRequest;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 /**
  * Provides access to any Processor/Client info over web socket

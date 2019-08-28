@@ -1,17 +1,7 @@
 package org.yamcs.security;
 
 /**
- * Created by msc on 05/05/15.
+ * Tag interface that represent any kind of token submitted during login for identifying an application or user.
  */
 public interface AuthenticationToken {
-    /**
-     * Returns the account identity submitted during the authentication process.
-     *
-     * <p>
-     * Ultimately, the object returned is application specific and can represent any account identity (user id, X.509
-     * certificate, etc).
-     *
-     * @return the account identity submitted during the authentication process.
-     */
-    String getPrincipal();
 }

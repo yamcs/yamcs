@@ -3,8 +3,8 @@ package org.yamcs.management;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.Statistics;
 
 import com.google.common.util.concurrent.Service;
 

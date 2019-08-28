@@ -1,7 +1,7 @@
 package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.artemis.ArtemisApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.cmdhistory.Util;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -19,9 +19,9 @@ public class CmdHistoryTupleTranslator implements TupleTranslator {
     @Override
     public Tuple buildTuple(ClientMessage msg) {
         try {
-            CommandHistoryEntry che=(CommandHistoryEntry)Protocol.decode(msg, CommandHistoryEntry.newBuilder());
+            CommandHistoryEntry che = (CommandHistoryEntry) Protocol.decode(msg, CommandHistoryEntry.newBuilder());
             return Util.transform(che);
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             throw new IllegalArgumentException(e.toString(), e);
         }
     }

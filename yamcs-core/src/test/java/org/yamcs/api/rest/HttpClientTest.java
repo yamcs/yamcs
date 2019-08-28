@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.yamcs.AbstractIntegrationTest;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.HttpClient;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -43,7 +43,7 @@ public class HttpClientTest extends AbstractIntegrationTest {
         }
         assertNotNull(t);
 
-        assertTrue(t instanceof YamcsApiException);
+        assertTrue(t instanceof ClientException);
 
         assertTrue(t.getMessage().contains("404"));
     }

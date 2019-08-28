@@ -74,13 +74,13 @@ export class DisplayFolderPage implements OnDestroy {
   private changedir(dir: ListObjectsResponse) {
     this.selection.clear();
     const items: BrowseItem[] = [];
-    for (const prefix of dir.prefix || []) {
+    for (const prefix of dir.prefixes || []) {
       items.push({
         folder: true,
         name: prefix,
       });
     }
-    for (const object of dir.object || []) {
+    for (const object of dir.objects || []) {
       items.push({
         folder: false,
         name: object.name,
@@ -154,7 +154,7 @@ export class DisplayFolderPage implements OnDestroy {
         findObjectPromises.push(this.storageClient.listObjects('_global', 'displays', {
           prefix: item.name,
         }).then(response => {
-          const objects = response.object || [];
+          const objects = response.objects || [];
           deletableObjects.push(...objects.map(o => o.name));
         }));
       } else {

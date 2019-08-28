@@ -18,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsService;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
+import org.yamcs.YamcsService;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -34,6 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class AbstractArtemisTranslatorService extends AbstractService implements YamcsService {
+
     final private TupleTranslator translator;
     YamcsSession yamcsSession;
 
@@ -43,7 +46,7 @@ public class AbstractArtemisTranslatorService extends AbstractService implements
     public static final int UNIQUEID = new Random().nextInt();
     public static final String ARTEMIS_URL_KEY = "artemisUrl";
 
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(getClass());
     String instance;
     ServerLocator locator;
 
@@ -138,13 +141,16 @@ public class AbstractArtemisTranslatorService extends AbstractService implements
     public static ServerLocator getServerLocator(String instance) {
         String artemisUrl = "vm:///"; // for compatibility with old yamcs
 
-        YConfiguration yc = YConfiguration.getConfiguration("yamcs." + instance);
-        if (yc.containsKey(ARTEMIS_URL_KEY)) {
-            artemisUrl = yc.getString(ARTEMIS_URL_KEY);
+        YamcsServer yamcs = YamcsServer.getServer();
+        YamcsServerInstance yamcsInstance = yamcs.getInstance(instance);
+
+        YConfiguration config = yamcsInstance.getConfig();
+        if (config.containsKey(ARTEMIS_URL_KEY)) {
+            artemisUrl = config.getString(ARTEMIS_URL_KEY);
         } else {
-            yc = YConfiguration.getConfiguration("yamcs");
-            if (yc.containsKey(ARTEMIS_URL_KEY)) {
-                artemisUrl = yc.getString(ARTEMIS_URL_KEY);
+            config = yamcs.getConfig();
+            if (config.containsKey(ARTEMIS_URL_KEY)) {
+                artemisUrl = config.getString(ARTEMIS_URL_KEY);
             }
         }
 

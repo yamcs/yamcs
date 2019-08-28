@@ -1,0 +1,38 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Leap seconds
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table">
+
+      <ng-container matColumnDef="period">
+        <th mat-header-cell *matHeaderCellDef width="200">Valid period (at 0h UTC)</th>
+        <td mat-cell *matCellDef="let range">
+          {{ range.start | date:'y-MM-dd' }} &ndash;
+          {{ range.stop | date:'y-MM-dd' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="leap-seconds">
+        <th mat-header-cell *matHeaderCellDef width="100">Leap seconds</th>
+        <td mat-cell *matCellDef="let range">{{ range.leapSeconds }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tai-utc">
+        <th mat-header-cell *matHeaderCellDef width="100">TAI - UTC</th>
+        <td mat-cell *matCellDef="let range">{{ range.taiDifference }} s</td>
+      </ng-container>
+
+      <ng-container matColumnDef="utc-tai">
+        <th mat-header-cell *matHeaderCellDef width="100">UTC - TAI</th>
+        <td mat-cell *matCellDef="let range">{{ -range.taiDifference }} s</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</app-admin-page>

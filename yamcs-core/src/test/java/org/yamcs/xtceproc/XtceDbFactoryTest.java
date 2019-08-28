@@ -2,13 +2,19 @@ package org.yamcs.xtceproc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.xtce.*;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtceproc.XtceDbFactory.ResolvedReference;
@@ -29,7 +35,12 @@ public class XtceDbFactoryTest {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
 
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        Map<String, Object> mdbConfig = new HashMap<>();
+        mdbConfig.put("type", "sheet");
+        mdbConfig.put("spec", "mdb/refmdb.xls");
+
+        List<Object> mdbConfigs = Arrays.asList(mdbConfig);
+        XtceDb db = XtceDbFactory.createInstance(mdbConfigs, true, true);
 
         SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
         assertNotNull(pkt1);
@@ -127,18 +138,5 @@ public class XtceDbFactoryTest {
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("p2", Type.PARAMETER), a_b2);
         assertNull(rr);
-    }
-
-    @Test
-    public void testInstantiation() throws Exception {
-        YConfiguration.setupTest("XtceDbFactoryTest");
-        XtceDbFactory.reset();
-        XtceDb db1 = XtceDbFactory.getInstance("refmdb-a");
-        XtceDb db2 = XtceDbFactory.getInstance("refmdb-a");
-        assertSame(db1, db2);
-
-        db1 = XtceDbFactory.getInstance("refmdb-a");
-        db2 = XtceDbFactory.getInstance("refmdb-b");
-        assertNotSame("Even if it's the same DB, require different instantiations per instance", db1, db2);
     }
 }

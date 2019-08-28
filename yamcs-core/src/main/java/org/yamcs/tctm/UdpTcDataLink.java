@@ -15,9 +15,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -36,9 +36,9 @@ import com.google.common.util.concurrent.RateLimiter;
  */
 public class UdpTcDataLink extends AbstractService implements TcDataLink, SystemParametersProducer {
 
-    protected DatagramSocket socket = null;
+    protected DatagramSocket socket;
     protected String host;
-    protected int port = 10003;
+    protected int port;
     protected CommandHistoryPublisher commandHistoryListener;
     SelectionKey selectionKey;
 
@@ -64,7 +64,8 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
     final YConfiguration config;
 
     public UdpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        log = new Log(this.getClass(), yamcsInstance);
+        log = new Log(getClass(), yamcsInstance);
+        log.setContext(name);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
         this.config = config;
@@ -94,7 +95,6 @@ public class UdpTcDataLink extends AbstractService implements TcDataLink, System
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
-
     }
 
     protected long getCurrentTime() {

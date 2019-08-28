@@ -1,11 +1,15 @@
 package org.yamcs.security;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import org.yamcs.security.protobuf.AccountRecord;
+import org.yamcs.security.protobuf.ExternalIdentity;
+import org.yamcs.security.protobuf.UserAccountRecordDetail;
 
 /**
  * A user contains identifying information and a convenient set of methods to perform access control.
@@ -20,36 +24,59 @@ import java.util.Set;
  * Additionally a special attribute <tt>superuser</tt> may have been granted to a user. Users with this attribute are
  * not subjected to privilege checking (i.e. they are allowed everything, even without being assigned privileges).
  */
-public class User {
+public class User extends Account {
 
-    private String username;
+    private String email;
+    private String hash; // Password hash, only for internal users
 
-    /**
-     * May contain contextual security information of use to a specific AuthModule. (e.g. expiration of an externally
-     * issued token)
-     */
-    private AuthenticationInfo authenticationInfo;
+    private boolean superuser;
 
-    private boolean superuser = false;
+    private Map<String, String> identitiesByProvider = new HashMap<>();
 
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
-    public User(AuthenticationInfo authenticationInfo) {
-        this.authenticationInfo = authenticationInfo;
-        this.username = authenticationInfo.getPrincipal();
+    public User(String username, User createdBy) {
+        super(username, createdBy);
     }
 
-    public User(String username) {
-        this.username = username;
+    User(AccountRecord record) {
+        super(record);
+        UserAccountRecordDetail userDetail = record.getUserDetail();
+        if (userDetail.hasHash()) {
+            hash = userDetail.getHash();
+        }
+        if (userDetail.hasEmail()) {
+            email = userDetail.getEmail();
+        }
+        superuser = userDetail.getSuperuser();
+        for (ExternalIdentity identity : userDetail.getIdentitiesList()) {
+            identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
+        }
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public AuthenticationInfo getAuthenticationInfo() {
-        return authenticationInfo;
+    public String getHash() {
+        return hash;
+    }
+
+    public boolean isExternallyManaged() {
+        return !identitiesByProvider.isEmpty();
+    }
+
+    public void addIdentity(String provider, String identity) {
+        identitiesByProvider.put(provider, identity);
+    }
+
+    public Set<Entry<String, String>> getIdentityEntrySet() {
+        return identitiesByProvider.entrySet();
+    }
+
+    public void deleteIdentity(String provider) {
+        identitiesByProvider.remove(provider);
     }
 
     public boolean isSuperuser() {
@@ -58,6 +85,14 @@ public class User {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     public Set<SystemPrivilege> getSystemPrivileges() {
@@ -108,31 +143,21 @@ public class User {
         return false;
     }
 
-    public Map<String, Object> serialize() {
-        Map<String, Object> props = new HashMap<>();
-        props.put("username", username);
-        // props.put("hash", password);
-        props.put("superuser", superuser);
-        props.put("roles", new ArrayList<>());
-        return props;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof User)) {
-            return false;
+    AccountRecord toRecord() {
+        UserAccountRecordDetail.Builder userDetailb = UserAccountRecordDetail.newBuilder();
+        if (hash != null) {
+            userDetailb.setHash(hash);
         }
-        User other = (User) obj;
-        return username.equals(other.username);
-    }
+        if (email != null) {
+            userDetailb.setEmail(email);
+        }
+        userDetailb.setSuperuser(superuser);
+        identitiesByProvider.forEach((provider, identity) -> {
+            userDetailb.addIdentities(ExternalIdentity.newBuilder()
+                    .setProvider(provider)
+                    .setIdentity(identity));
+        });
 
-    @Override
-    public int hashCode() {
-        return username.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return username;
+        return newRecordBuilder().setUserDetail(userDetailb).build();
     }
 }

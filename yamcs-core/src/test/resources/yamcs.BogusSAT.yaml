@@ -1,7 +1,10 @@
 services:
   - class: org.yamcs.YarchChannel
 
-mdb: BogusSAT
+mdb:
+  - type: xtce
+    args:
+      file: "src/test/resources/xtce/BogusSAT-1.xml"
 
 streamConfig:
   tm: ["tm_realtime"]

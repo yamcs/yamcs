@@ -1,0 +1,94 @@
+syntax="proto2";
+
+package yamcs.protobuf.archive;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "RocksDbServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+service RocksDbApi {
+
+  // List tablespaces
+  rpc ListTablespaces(google.protobuf.Empty) returns (ListRocksDbTablespacesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/rocksdb/tablespaces"
+    };
+  }
+  
+  // Backup database
+  rpc BackupDatabase(BackupDatabaseRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/rocksdb/{tablespace}/{dbpath*}:backup"
+    };
+  }
+  
+  // List databases
+  rpc ListDatabases(google.protobuf.Empty) returns (ListRocksDbDatabasesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/rocksdb/databases"
+    };
+  }
+  
+  // Compact database
+  rpc CompactDatabase(CompactDatabaseRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/rocksdb/{tablespace}/{dbpath**}:compact"
+      offThread: true
+    };
+  }
+  
+  // Get a text-dump with general RocksDB info
+  rpc DescribeRocksDb(google.protobuf.Empty) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/rocksdb:describe"
+    };
+  }
+  
+  // Get a text-dump describing a database
+  rpc DescribeDatabase(DescribeDatabaseRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/rocksdb/{tablespace}/{dbpath**}:describe"
+    };
+  }
+}
+
+message ListRocksDbTablespacesResponse {
+  repeated RocksDbTablespaceInfo tablespaces = 1;
+}
+
+message RocksDbTablespaceInfo {
+  optional string name = 1;
+  optional string dataDir = 2;
+  repeated RocksDbDatabaseInfo databases = 3;
+}
+
+message ListRocksDbDatabasesResponse {
+  repeated RocksDbDatabaseInfo databases = 1;
+}
+
+message RocksDbDatabaseInfo {
+  optional string tablespace = 1;
+  optional string dataDir = 2;
+  optional string dbPath = 3;
+}
+
+message BackupDatabaseRequest {
+  optional string tablespace = 1;
+  optional string dbpath = 2;
+  optional string backupDir = 3;
+}
+
+message CompactDatabaseRequest {
+  optional string tablespace = 1;
+  optional string dbpath = 2;
+}
+
+message DescribeDatabaseRequest {
+  optional string tablespace = 1;
+  optional string dbpath = 2;
+}

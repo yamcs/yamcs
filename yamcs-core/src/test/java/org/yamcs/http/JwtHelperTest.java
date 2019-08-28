@@ -6,18 +6,24 @@ import static org.junit.Assert.assertTrue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.http.JwtHelper;
 import org.yamcs.http.JwtHelper.JwtDecodeException;
 import org.yamcs.security.User;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.gson.JsonObject;
 
 public class JwtHelperTest {
 
+    @BeforeClass()
+    public static void beforeClass() {
+        TimeEncoding.setUp();
+    }
+
     @Test()
     public void testUnsigned() throws JwtDecodeException {
-        User testUser = new User("someUser");
+        User testUser = new User("someUser", null);
         String unsignedToken = JwtHelper.generateUnsignedToken(testUser, 1000);
 
         JsonObject claims = JwtHelper.decodeUnverified(unsignedToken);
@@ -30,7 +36,7 @@ public class JwtHelperTest {
     public void testHS256() throws InvalidKeyException, NoSuchAlgorithmException, JwtDecodeException {
         byte[] secret = "secret".getBytes();
 
-        User testUser = new User("someUser");
+        User testUser = new User("someUser", null);
         String signedToken = JwtHelper.generateHS256Token(testUser, secret, 1000);
 
         JsonObject unverifiedClaims = JwtHelper.decodeUnverified(signedToken);

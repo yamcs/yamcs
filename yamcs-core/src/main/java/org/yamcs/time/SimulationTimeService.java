@@ -9,7 +9,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
-import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
+import org.yamcs.protobuf.SetSimulationTimeRequest;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -65,13 +65,13 @@ public class SimulationTimeService implements TimeService {
      */
     public static class SimTimeRestHandler extends RestHandler {
 
-        @Route(path = "/api/time/:instance", method = { "PUT", "POST" })
+        @Route(path = "/api/time/{instance}", method = { "PUT", "POST" })
         public void setSimTime(RestRequest req) throws HttpException {
-            String instance = verifyInstance(req, req.getRouteParam("instance"));
+            String instance = verifyInstance(req.getRouteParam("instance"));
             TimeService ts = yamcsServer.getInstance(instance).getTimeService();
             if (!(ts instanceof SimulationTimeService)) {
                 log.warn("Simulation time service requested for a non-simulation TimeService {}", ts);
-                throw new NotFoundException(req);
+                throw new NotFoundException();
             }
 
             SimulationTimeService sts = (SimulationTimeService) ts;

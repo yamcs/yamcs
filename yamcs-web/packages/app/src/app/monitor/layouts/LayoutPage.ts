@@ -47,7 +47,7 @@ export class LayoutPage implements OnDestroy {
     screenfull.on('change', this.fullscreenListener);
 
     this.layoutState$ = new Promise<LayoutState>((resolve, reject) => {
-      const username = authService.getUser()!.getUsername();
+      const username = authService.getUser()!.getName();
       const objectName = 'layouts/' + this.layoutName;
       this.storageClient.getObject('_global', `user.${username}` /* FIXME */, objectName).then(response => {
         response.json().then(layoutState => resolve(layoutState)).catch(err => reject(err));
@@ -56,7 +56,7 @@ export class LayoutPage implements OnDestroy {
   }
 
   saveLayout() {
-    const username = this.authService.getUser()!.getUsername();
+    const username = this.authService.getUser()!.getName();
     const state = this.layout.getLayoutState();
     const objectName = `layouts/${this.layoutName}`;
     const objectValue = new Blob([JSON.stringify(state, undefined, 2)], {
@@ -69,7 +69,7 @@ export class LayoutPage implements OnDestroy {
 
   removeLayout() {
     if (confirm('Do you want to permanently delete this layout?')) {
-      const username = this.authService.getUser()!.getUsername();
+      const username = this.authService.getUser()!.getName();
       const objectName = `layouts/${this.layoutName}`;
       this.storageClient.deleteObject('_global', `user.${username}`, objectName).then(() => {
         this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);

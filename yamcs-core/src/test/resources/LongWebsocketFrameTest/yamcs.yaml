@@ -1,5 +1,7 @@
 instances:
- - LongWebsocketFrameTest
+  - LongWebsocketFrameTest
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-LongWebsocketFrameTest-data
+
+secretKey: testtest

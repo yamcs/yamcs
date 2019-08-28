@@ -1,43 +1,37 @@
-<mat-sidenav-container class="mat-typography">
-  <mat-sidenav mode="side" opened="true">
-    <mat-toolbar class="module-title">
-      <mat-toolbar-row>&nbsp;</mat-toolbar-row>
-    </mat-toolbar>
-  </mat-sidenav>
+<mat-toolbar class="main">
+  <mat-toolbar-row>
+    <a mat-icon-button routerLink="/" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create an instance
+  </mat-toolbar-row>
+</mat-toolbar>
 
-  <mat-sidenav-content>
-    <mat-toolbar class="main">
-      <mat-toolbar-row>
-        <a mat-icon-button routerLink="/" color="primary">
-          <mat-icon>arrow_back</mat-icon>
-        </a> Create an instance
-      </mat-toolbar-row>
-    </mat-toolbar>
+<mat-toolbar class="sub">
+  <mat-toolbar-row>
+    <app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
+  </mat-toolbar-row>
+</mat-toolbar>
 
-    <mat-toolbar class="sub">
-      <mat-toolbar-row>
-        <app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
-      </mat-toolbar-row>
-    </mat-toolbar>
-
-    <div *ngIf="template$ | async as template" class="panel-content ya-form">
-      <form [formGroup]="form" novalidate>
-        <label>
-          Instance name<br>
-          <input formControlName="name">
-        </label>
-        <ng-container *ngIf="template.variable">
-          <label *ngFor="let v of template.variable">
-            {{ v.description || v.name }}<br>
-            <input [formControlName]="v.name">
-          </label>
-        </ng-container>
-      </form>
-      <p>&nbsp;</p>
-      <button type="submit" (click)="onConfirm()"
-              mat-raised-button
-              [disabled]="!form.valid"
-              color="primary">CREATE</button>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<div *ngIf="template$ | async as template" class="form-content ya-form mat-typography">
+  <form [formGroup]="form" novalidate>
+    <label>
+      Instance name<br>
+      <input formControlName="name" type="text">
+    </label>
+    <ng-container *ngIf="template.variable">
+      <label *ngFor="let v of template.variable">
+        {{ v.description || v.name }}<br>
+        <input [formControlName]="v.name" type="text">
+      </label>
+    </ng-container>
+  </form>
+  <p>&nbsp;</p>
+  <mat-toolbar>
+    <span style="flex: 1 1 auto"></span>
+    <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    <button type="submit" (click)="onConfirm()"
+            mat-raised-button
+            [disabled]="!form.valid"
+            color="primary">CREATE</button>
+  </mat-toolbar>
+</div>

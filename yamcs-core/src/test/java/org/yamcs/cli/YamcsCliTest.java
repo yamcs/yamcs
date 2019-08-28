@@ -7,7 +7,6 @@ import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.cli.YamcsAdminCli;
 
 public class YamcsCliTest {
     ByteArrayOutputStream outStream;

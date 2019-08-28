@@ -36,6 +36,6 @@ public class JwtToken {
 
     @Override
     public String toString() {
-        return getSubject().toString();
+        return getSubject();
     }
 }

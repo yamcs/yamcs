@@ -9,14 +9,12 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
-import org.yamcs.security.SecurityStore;
+import org.yamcs.logging.Log;
 import org.yamcs.security.User;
 
 import com.google.protobuf.Message;
@@ -78,11 +76,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final String STATIC_PATH = "static";
     private static final String WEBSOCKET_PATH = "_websocket";
 
-    public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
-            .valueOf("chunkedTransferStats");
     public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
 
-    private static final Logger log = LoggerFactory.getLogger(HttpRequestHandler.class);
+    private static final Log log = new Log(HttpRequestHandler.class);
 
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
@@ -93,18 +89,19 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
 
-    private static HttpAuthorizationChecker authChecker = new HttpAuthorizationChecker();
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
 
+    private static TokenStore tokenStore = new TokenStore();
+
     private HttpServer httpServer;
     private String contextPath;
     private Router apiRouter;
-    private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
     private AuthHandler authHandler;
+    private HttpAuthorizationChecker authChecker;
     private boolean contentExpected = false;
 
     YConfiguration wsConfig;
@@ -114,11 +111,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         this.apiRouter = apiRouter;
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
-        authHandler = new AuthHandler(contextPath);
-    }
-
-    public static HttpAuthorizationChecker getAuthorizationChecker() {
-        return authChecker;
+        authHandler = new AuthHandler(tokenStore, contextPath);
+        authChecker = new HttpAuthorizationChecker(tokenStore);
     }
 
     @Override
@@ -165,17 +159,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         } catch (HttpException e) {
             sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
-        }
-    }
-
-    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
-            throws HttpException {
-        if (securityStore.isAuthenticationEnabled()) {
-            User user = authChecker.verifyAuth(ctx, req);
-            ctx.channel().attr(CTX_USER).set(user);
-        } else {
-            User user = securityStore.getUnauthenticatedUser();
-            ctx.channel().attr(CTX_USER).set(user);
         }
     }
 
@@ -249,6 +232,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         sendPlainTextError(ctx, req, NOT_FOUND);
     }
 
+    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        User user = authChecker.verifyAuth(ctx, req);
+        ctx.channel().attr(CTX_USER).set(user);
+    }
+
     /**
      * Adapts Netty's pipeline for allowing WebSocket upgrade
      *
@@ -284,9 +272,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof NotSslRecordException) {
-            log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing the channel");
+            log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing channel");
         } else {
-            log.error("Will close channel due to exception", cause);
+            log.error("Closing channel: {}", cause.getMessage());
         }
         ctx.close();
     }
@@ -408,7 +396,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
             String filename) {
         log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
-        ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);

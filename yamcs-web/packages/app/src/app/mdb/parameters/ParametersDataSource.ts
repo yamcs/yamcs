@@ -22,7 +22,7 @@ export class ParametersDataSource extends DataSource<Parameter> {
     this.yamcs.getInstanceClient()!.getParameters(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
-      this.parameters$.next(page.parameter || []);
+      this.parameters$.next(page.parameters || []);
     });
   }
 

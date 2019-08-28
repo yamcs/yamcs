@@ -56,7 +56,6 @@ ln -fs $YAMCS_HOME/yamcs-artemis/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/dependency/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 
 # Sets up a development environment for an example Yamcs configuration
 if [ $YSS_CONFIGURATION -eq "1" ]; then
@@ -80,18 +79,3 @@ else
     echo "   ./run-simulation.sh"
     echo "-----------------------------------------------------"
 fi
-
-# Add sample config (if not already present)
-for f in $YAMCS_HOME/yamcs-core/etc/* ; do
-    case "$f" in
-        *.sample)
-            FILENAME=$(basename "$f")
-            cp -an "$f" $TARGET/etc/${FILENAME%.*}
-            ;;
-        *)
-            cp -an "$f" $TARGET/etc/
-            ;;
-    esac
-done
-
-

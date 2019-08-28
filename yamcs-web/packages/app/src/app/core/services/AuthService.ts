@@ -50,7 +50,11 @@ export class AuthService {
           await this.loginAutomatically();
         }
       } catch (err) {
-        this.logout(true);
+        if (err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
+          this.router.navigate(['/down'], { queryParams: { next: '/' } });
+        } else {
+          this.logout(true);
+        }
         throw err;
       }
 

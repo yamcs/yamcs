@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { GeneralInfo, Parameter } from '@yamcs/client';
+import { Parameter } from '@yamcs/client';
 import { AuthService } from '../core/services/AuthService';
+import { ConfigService } from '../core/services/ConfigService';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { DyDataSource } from '../shared/widgets/DyDataSource';
@@ -14,8 +15,6 @@ import { DyDataSource } from '../shared/widgets/DyDataSource';
 })
 export class SystemPage implements OnDestroy {
 
-  info$: Promise<GeneralInfo>;
-
   jvmMemoryUsedParameter$: Promise<Parameter | null>;
   jvmTotalMemoryParameter$: Promise<Parameter | null>;
   jvmThreadCountParameter$: Promise<Parameter | null>;
@@ -23,19 +22,19 @@ export class SystemPage implements OnDestroy {
   jvmMemoryUsedDataSource: DyDataSource;
   jvmThreadCountDataSource: DyDataSource;
 
-  constructor(yamcs: YamcsService, title: Title, private authService: AuthService, synchronizer: Synchronizer) {
+  constructor(
+    yamcs: YamcsService,
+    title: Title,
+    private authService: AuthService,
+    synchronizer: Synchronizer,
+    configService: ConfigService,
+  ) {
     title.setTitle('System');
-    this.info$ = yamcs.yamcsClient.getGeneralInfo();
-
-    this.jvmMemoryUsedParameter$ = this.info$.then(info => {
-       return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmMemoryUsed`);
-    });
-    this.jvmTotalMemoryParameter$ = this.info$.then(info => {
-      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmTotalMemory`);
-    });
-    this.jvmThreadCountParameter$ = this.info$.then(info => {
-      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmThreadCount`);
-    });
+    const instanceClient = yamcs.getInstanceClient()!;
+    const serverId = configService.getServerId();
+    this.jvmMemoryUsedParameter$ = instanceClient.getParameter(`/yamcs/${serverId}/jvmMemoryUsed`);
+    this.jvmTotalMemoryParameter$ = instanceClient.getParameter(`/yamcs/${serverId}/jvmTotalMemory`);
+    this.jvmThreadCountParameter$ = instanceClient.getParameter(`/yamcs/${serverId}/jvmThreadCount`);
 
     Promise.all([this.jvmMemoryUsedParameter$, this.jvmTotalMemoryParameter$]).then(results => {
       if (results[0] && results[1]) {

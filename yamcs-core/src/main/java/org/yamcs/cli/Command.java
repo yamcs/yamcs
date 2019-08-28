@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.yamcs.Plugin;
 import org.yamcs.YamcsVersion;
-import org.yamcs.api.Plugin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;

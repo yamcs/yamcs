@@ -57,6 +57,10 @@ export class InstancePage implements OnInit, OnDestroy {
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe((evt: any) => {
       const url = evt.url as string;
+      this.mdbActive = false;
+      this.commandingActive = false;
+      this.archiveActive = false;
+      this.monitoringActive = false;
       this.collapseAllGroups();
       if (url.match(/\/mdb.*/)) {
         this.mdbActive = true;
@@ -85,10 +89,10 @@ export class InstancePage implements OnInit, OnDestroy {
         if (val) {
           return this.yamcs.getInstanceClient()!.getParameters({ q: val, limit: 25 });
         } else {
-          return of({ parameter: [] });
+          return of({ parameters: [] });
         }
       }),
-      map(page => page.parameter || []),
+      map(page => page.parameters || []),
     );
   }
 

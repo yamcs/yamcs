@@ -2,6 +2,7 @@ package org.yamcs.logging;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -21,7 +22,8 @@ import java.util.logging.LogRecord;
  */
 public class SyslogHandler extends Handler {
 
-    private static final String TAG = "yamcsd";
+    private static final String TAG = "yamcs";
+    private int pid;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss", Locale.US);
     private Date d = new Date();
@@ -38,6 +40,9 @@ public class SyslogHandler extends Handler {
         sdf.setTimeZone(TimeZone.getDefault()); // emit local time as per RFC 3164
         socket = new DatagramSocket();
         hostname = InetAddress.getLocalHost().getHostName();
+
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        pid = Integer.parseInt(jvmName.split("@")[0]);
 
         String host = getProperty("host", null);
         if (host == null) {
@@ -101,7 +106,7 @@ public class SyslogHandler extends Handler {
         buf.append(hostname);
         buf.append(' ');
 
-        buf.append(TAG); // TODO add pid when leaving jdk8: "yamcsd[PID]"
+        buf.append(TAG).append("[").append(pid).append("]");
 
         if (record.getMessage() != null) {
             buf.append(": ");

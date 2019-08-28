@@ -16,16 +16,10 @@ Get data on a the Mission Database for the given Yamcs instance::
         "name" : "YSS",
         "qualifiedName" : "/YSS",
         "version" : "1.2",
-        "parameterCount" : 3,
-        "containerCount" : 1,
-        "commandCount" : 1,
         "sub" : [ {
           "name" : "SIMULATOR",
           "qualifiedName" : "/YSS/SIMULATOR",
           "version" : "1.0",
-          "parameterCount" : 59,
-          "containerCount" : 9,
-          "commandCount" : 8,
           "history" : [ {
             "version" : "1.3",
             "date" : "21-June-2020",

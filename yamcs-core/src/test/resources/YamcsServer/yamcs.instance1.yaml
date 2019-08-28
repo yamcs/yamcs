@@ -1,2 +1,7 @@
-mdb: refmdb
 services: []
+
+mdb:
+  - type: "sheet"
+    args: 
+      file: "mdb/refmdb.xls"
+      enableAliasReferences: false

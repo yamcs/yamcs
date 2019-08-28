@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.time.TimeService;
@@ -44,7 +43,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
 
     ParameterSink parameterSink;
 
-    private Logger log = LoggerFactory.getLogger(getClass().getName());
+    private Log log;
     int MAX_LENGTH = 10 * 1024;
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
@@ -64,6 +63,8 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
             throws ConfigurationException {
         this.config = config;
         this.name = name;
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         timeService = YamcsServer.getTimeService(instance);
         port = config.getInt("port");
         defaultRecordingGroup = config.getString("recordingGroup", "DEFAULT");

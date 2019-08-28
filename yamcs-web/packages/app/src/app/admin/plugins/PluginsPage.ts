@@ -22,7 +22,7 @@ export class PluginsPage {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Plugins');
     yamcs.yamcsClient.getGeneralInfo().then(info => {
-      this.dataSource.data = info.plugin || [];
+      this.dataSource.data = info.plugins || [];
     });
   }
 }

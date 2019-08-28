@@ -13,7 +13,6 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 
 public class YamcsSession {
@@ -70,7 +69,7 @@ public class YamcsSession {
         }
     }
 
-    private void init() throws YamcsApiException {
+    private void init() throws ArtemisApiException {
         try {
             String username = null;
             String password = null;
@@ -110,7 +109,7 @@ public class YamcsSession {
                 close();
             } catch (ActiveMQException e1) {
             }
-            throw new YamcsApiException(e.getMessage(), e);
+            throw new ArtemisApiException(e.getMessage(), e);
         } catch (Exception e) {
             // Pass Exception's cause as our cause.
             // close everything
@@ -118,7 +117,7 @@ public class YamcsSession {
                 close();
             } catch (ActiveMQException e1) {
             }
-            throw new YamcsApiException(e.getMessage(), e.getCause());
+            throw new ArtemisApiException(e.getMessage(), e.getCause());
         }
     }
 
@@ -166,7 +165,7 @@ public class YamcsSession {
             return this;
         }
 
-        public YamcsSession build() throws YamcsApiException {
+        public YamcsSession build() throws ArtemisApiException {
             result.init();
             return result;
         }

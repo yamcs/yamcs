@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.artemis.ArtemisApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
@@ -72,7 +72,7 @@ public class PpTupleTranslator implements TupleTranslator {
             }
 
             t = new Tuple(tupleDef, columns);
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             throw new IllegalArgumentException(e.toString());
         }
         return t;

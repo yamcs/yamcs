@@ -6,14 +6,13 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
@@ -30,7 +29,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     protected volatile long packetcount = 0;
     protected volatile boolean disabled = false;
 
-    protected Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    protected Log log;
     private TmSink tmSink;
     final TimeService timeService;
     final String artemisAddress;
@@ -44,6 +43,8 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         this.artemisAddress = artemisAddress;
         this.linkName = name;
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         timeService = YamcsServer.getTimeService(instance);
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
 

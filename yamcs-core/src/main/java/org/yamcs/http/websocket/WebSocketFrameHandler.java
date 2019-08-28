@@ -175,7 +175,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn("Will close channel due to error", cause);
+        log.warn("Closing channel due to error", cause);
         ctx.close();
     }
 

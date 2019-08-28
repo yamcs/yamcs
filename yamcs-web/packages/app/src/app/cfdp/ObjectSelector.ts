@@ -74,13 +74,13 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
   private changedir(dir: ListObjectsResponse) {
     this.selectedObject$.next(null);
     const items: BrowseItem[] = [];
-    for (const prefix of dir.prefix || []) {
+    for (const prefix of dir.prefixes || []) {
       items.push({
         folder: true,
         name: prefix,
       });
     }
-    for (const object of dir.object || []) {
+    for (const object of dir.objects || []) {
       items.push({
         folder: false,
         name: object.name,

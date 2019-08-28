@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
@@ -41,16 +42,18 @@ public class DataLinkInitialiser extends AbstractYamcsService {
     private YarchDatabaseInstance ydb;
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) throws InitException {
-        super.init(yamcsInstance, config);
+    public void init(String instanceName, YConfiguration config) throws InitException {
+        super.init(instanceName, config);
 
-        YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
-        ydb = YarchDatabase.getInstance(yamcsInstance);
+        ydb = YarchDatabase.getInstance(instanceName);
 
-        if (c.containsKey("dataLinks")) {
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
+        YConfiguration instanceConfig = instance.getConfig();
+
+        if (instanceConfig.containsKey("dataLinks")) {
             try {
-                List<YConfiguration> links = c.getConfigList("dataLinks");
-                for (YConfiguration linkConfig : links) {
+                List<YConfiguration> linkConfigs = instanceConfig.getConfigList("dataLinks");
+                for (YConfiguration linkConfig : linkConfigs) {
                     createDataLink(linkConfig);
                 }
             } catch (IOException e) {

@@ -18,7 +18,7 @@ type (array of strings)
     The parameter types to be included in the result. Valid types are ``boolean``, ``binary``, ``enumeration``, ``float``, ``integer`` or ``string``. Both these notations are accepted:
 
     * ``?type=float,integer``
-    * ``?type[]=float&type[]=integer``
+    * ``?type=float&type=integer``
 
     If unspecified, parameters of all types will be included.
 
@@ -36,7 +36,7 @@ limit (integer)
 .. code-block:: json
 
     {
-      "parameter" : [ {
+      "parameters" : [ {
         "name": "ccsds-apid",
         "qualifiedName" : "/YSS/ccsds-apid",
         "alias" : [ {
@@ -58,6 +58,6 @@ limit (integer)
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListParameterInfoResponse {
-      repeated mdb.ParameterInfo parameter = 1;
+    message ListParametersResponse {
+      repeated mdb.ParameterInfo parameters = 1;
     }

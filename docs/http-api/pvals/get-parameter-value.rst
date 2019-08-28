@@ -70,15 +70,11 @@ timeout (number)
     }
 
 
-.. rubric:: Multi-get
+.. rubric:: Batch Get
 
 Get the values of multiple parameters in one and the same request using this address::
 
-    GET /api/processors/:instance/:processor/parameters/mget
-
-    .. note::
-
-        POST requests are also allowed, because some HTTP clients do not support GET with a request body.
+    POST /api/processors/:instance/:processor/parameters:batchGet
 
 The same options as in the query string can be specified in the request body. Parameter IDs are added to a list:
 
@@ -119,19 +115,19 @@ The same options as in the query string can be specified in the request body. Pa
     }
 
 
-.. rubric:: Bulk Request Schema (protobuf)
+.. rubric:: Batch Get Request Schema (protobuf)
 .. code-block:: proto
 
-    message BulkGetParameterValueRequest {
+    message BatchGetParameterValueRequest {
       repeated yamcs.NamedObjectId id = 1;
       optional bool fromCache = 2;
       optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
     }
 
 
-.. rubric:: Bulk Response Schema (protobuf)
+.. rubric:: Batch Get Response Schema (protobuf)
 .. code-block:: proto
 
-    message BulkGetParameterValueResponse {
+    message BatchGetParameterValueResponse {
       repeated pvalue.ParameterValue value = 1;
     }

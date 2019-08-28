@@ -13,7 +13,7 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 

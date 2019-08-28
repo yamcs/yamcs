@@ -1,15 +1,14 @@
 package org.yamcs.http.api;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
@@ -23,15 +22,17 @@ import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.RouteHandler;
+import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithId;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
+import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
@@ -42,17 +43,15 @@ import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -60,14 +59,13 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * Contains utility methods for REST handlers. May eventually refactor this out.
  */
 public abstract class RestHandler extends RouteHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
+    private static final Log log = new Log(RestHandler.class);
 
     protected final YamcsServer yamcsServer = YamcsServer.getServer();
     protected final SecurityStore securityStore = yamcsServer.getSecurityStore();
@@ -78,14 +76,10 @@ public abstract class RestHandler extends RouteHandler {
         completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends Message> void completeOK(RestRequest restRequest, T responseMsg) {
+    public static <T extends Message> void completeOK(RestRequest restRequest, T responseMsg) {
         sendMessageResponse(restRequest, OK, responseMsg).addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
-    }
-
-    protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        completeOK(restRequest, contentType.toString(), body);
     }
 
     protected static void completeOK(RestRequest restRequest, String contentType, ByteBuf body) {
@@ -102,17 +96,15 @@ public abstract class RestHandler extends RouteHandler {
         completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends Message> void completeCREATED(RestRequest restRequest, T responseMsg) {
-        sendMessageResponse(restRequest, CREATED, responseMsg).addListener(l -> {
-            restRequest.getCompletableFuture().complete(null);
-        });
-    }
-
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
+        restRequest.reportStatusCode(httpResponse.status().code());
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
+            if (!l.isSuccess()) {
+                log.error("Network error", l.cause());
+            }
         });
     }
 
@@ -123,22 +115,24 @@ public abstract class RestHandler extends RouteHandler {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
         MediaType contentType = restRequest.deriveTargetContentType();
         if (contentType != MediaType.JSON) {
+            restRequest.reportStatusCode(status.code());
             return HttpRequestHandler.sendMessageResponse(ctx, req, status, responseMsg);
         } else {
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
                 contentType = MediaType.JSON;
                 String str = JsonFormat.printer().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
-                // body.writeBytes(HttpRequestHandler.NEWLINE_BYTES); // For curl comfort
             } catch (IOException e) {
-                return HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                        e.toString());
+                status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+                restRequest.reportStatusCode(status.code());
+                return HttpRequestHandler.sendPlainTextError(ctx, req, status, e.toString());
             }
             HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
             HttpUtils.setContentTypeHeader(response, contentType);
 
             int txSize = body.readableBytes();
             HttpUtil.setContentLength(response, txSize);
+            restRequest.reportStatusCode(status.code());
             return HttpRequestHandler.sendResponse(ctx, req, response, true);
         }
 
@@ -147,6 +141,7 @@ public abstract class RestHandler extends RouteHandler {
     protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         RestExceptionMessage msg = toException(t).build();
+        req.reportStatusCode(status.code());
         return HttpRequestHandler.sendMessageResponse(ctx, req.getHttpRequest(), status, msg);
     }
 
@@ -160,11 +155,10 @@ public abstract class RestHandler extends RouteHandler {
         ChannelFuture cf = sendRestError(req, e.getStatus(), e);
         cf.addListener(l -> {
             req.getCompletableFuture().completeExceptionally(e);
+            if (!l.isSuccess()) {
+                log.error("Network error", l.cause());
+            }
         });
-    }
-
-    protected static void abortRequest(RestRequest req) {
-        req.getCompletableFuture().complete(null);
     }
 
     private static RestExceptionMessage.Builder toException(Throwable t) {
@@ -185,33 +179,26 @@ public abstract class RestHandler extends RouteHandler {
         return exceptionb;
     }
 
-    static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
+    static String verifyInstance(String instance, boolean allowGlobal)
             throws NotFoundException {
         if (allowGlobal && YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             return instance;
         }
-        return verifyInstance(req, instance);
+        return verifyInstance(instance);
     }
 
-    protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
+    public static String verifyInstance(String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
-            throw new NotFoundException(req, "No instance named '" + instance + "'");
+            throw new NotFoundException("No instance named '" + instance + "'");
         }
         return instance;
     }
 
-    protected static String verifyInstanceTemplate(RestRequest req, String template) throws NotFoundException {
-        if (!YamcsServer.hasInstanceTemplate(template)) {
-            throw new NotFoundException(req, "No template named '" + template + "'");
-        }
-        return template;
-    }
-
-    protected static LinkInfo verifyLink(RestRequest req, String instance, String linkName) throws NotFoundException {
-        verifyInstance(req, instance);
+    protected static LinkInfo verifyLink(String instance, String linkName) throws NotFoundException {
+        verifyInstance(instance);
         LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
         if (linkInfo == null) {
-            throw new NotFoundException(req, "No link named '" + linkName + "' within instance '" + instance + "'");
+            throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
         }
         return linkInfo;
     }
@@ -219,24 +206,24 @@ public abstract class RestHandler extends RouteHandler {
     protected static ConnectedClient verifyClient(RestRequest req, int clientId) throws NotFoundException {
         ConnectedClient client = ManagementService.getInstance().getClient(clientId);
         if (client == null) {
-            throw new NotFoundException(req, "No such client");
+            throw new NotFoundException("No such client");
         } else {
             return client;
         }
     }
 
-    protected static Processor verifyProcessor(RestRequest req, String instance, String processorName)
+    protected static Processor verifyProcessor(String instance, String processorName)
             throws NotFoundException {
-        verifyInstance(req, instance);
+        verifyInstance(instance);
         Processor processor = Processor.getInstance(instance, processorName);
         if (processor == null) {
-            throw new NotFoundException(req, "No processor '" + processorName + "' within instance '" + instance + "'");
+            throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
         } else {
             return processor;
         }
     }
 
-    protected static String verifyNamespace(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static String verifyNamespace(XtceDb mdb, String pathName) throws NotFoundException {
         if (mdb.getNamespaces().contains(pathName)) {
             return pathName;
         }
@@ -246,11 +233,10 @@ public abstract class RestHandler extends RouteHandler {
             return rooted;
         }
 
-        throw new NotFoundException(req, "No such namespace");
+        throw new NotFoundException("No such namespace");
     }
 
-    protected static SpaceSystem verifySpaceSystem(RestRequest req, XtceDb mdb, String pathName)
-            throws NotFoundException {
+    protected static SpaceSystem verifySpaceSystem(XtceDb mdb, String pathName) throws NotFoundException {
         String namespace;
         String name;
         int lastSlash = pathName.lastIndexOf('/');
@@ -276,19 +262,19 @@ public abstract class RestHandler extends RouteHandler {
             return spaceSystem;
         }
 
-        throw new NotFoundException(req, "No such space system");
+        throw new NotFoundException("No such space system");
     }
 
-    protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)
+    protected static NamedObjectId verifyParameterId(User user, XtceDb mdb, String pathName)
             throws HttpException {
-        return verifyParameterWithId(req, mdb, pathName).getId();
+        return verifyParameterWithId(user, mdb, pathName).getId();
     }
 
-    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws HttpException {
-        return verifyParameterWithId(req, mdb, pathName).getParameter();
+    public static Parameter verifyParameter(User user, XtceDb mdb, String pathName) throws HttpException {
+        return verifyParameterWithId(user, mdb, pathName).getParameter();
     }
 
-    protected static ParameterWithId verifyParameterWithId(RestRequest req, XtceDb mdb,
+    protected static ParameterWithId verifyParameterWithId(User user, XtceDb mdb,
             String pathName) throws HttpException {
         int aggSep = AggregateUtil.findSeparator(pathName);
 
@@ -299,7 +285,7 @@ public abstract class RestHandler extends RouteHandler {
             try {
                 aggPath = AggregateUtil.parseReference(pathName.substring(aggSep));
             } catch (IllegalArgumentException e) {
-                throw new NotFoundException(req, "Invalid array/aggregate path in name " + pathName);
+                throw new NotFoundException("Invalid array/aggregate path in name " + pathName);
             }
         }
 
@@ -307,7 +293,7 @@ public abstract class RestHandler extends RouteHandler {
         // }
         int lastSlash = nwa.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == nwa.length() - 1) {
-            throw new NotFoundException(req, "No such parameter (missing namespace?)");
+            throw new NotFoundException("No such parameter (missing namespace?)");
         }
 
         String _namespace = nwa.substring(0, lastSlash);
@@ -322,16 +308,16 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(namespace, name);
         }
 
-        if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+        if (p != null && !hasObjectPrivilege(user, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
             throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
         if (p == null) {
-            throw new NotFoundException(req, "No parameter named " + pathName);
+            throw new NotFoundException("No parameter named " + pathName);
         }
 
         if (aggPath != null) {
             if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {
-                throw new NotFoundException(req, "Nonexistent array/aggregate path in name " + pathName);
+                throw new NotFoundException("Nonexistent array/aggregate path in name " + pathName);
             }
             name += AggregateUtil.toString(aggPath);
         }
@@ -340,38 +326,10 @@ public abstract class RestHandler extends RouteHandler {
         return new ParameterWithId(p, id, aggPath);
     }
 
-    protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName)
-            throws NotFoundException {
-        Stream stream = ydb.getStream(streamName);
-
-        if (stream != null && !hasObjectPrivilege(req, ObjectPrivilegeType.Stream, streamName)) {
-            log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
-                    streamName);
-            stream = null;
-        }
-
-        if (stream == null) {
-            throw new NotFoundException(req,
-                    "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
-        } else {
-            return stream;
-        }
-    }
-
-    protected static TableDefinition verifyTable(RestRequest req, YarchDatabaseInstance ydb, String tableName)
-            throws NotFoundException {
-        TableDefinition table = ydb.getTable(tableName);
-        if (table == null) {
-            throw new NotFoundException(req, "No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");
-        } else {
-            return table;
-        }
-    }
-
-    protected static MetaCommand verifyCommand(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static MetaCommand verifyCommand(XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such command (missing namespace?)");
+            throw new NotFoundException("No such command (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -387,16 +345,16 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         if (cmd == null) {
-            throw new NotFoundException(req, "No such command");
+            throw new NotFoundException("No such command");
         } else {
             return cmd;
         }
     }
 
-    protected static Algorithm verifyAlgorithm(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static Algorithm verifyAlgorithm(XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such algorithm (missing namespace?)");
+            throw new NotFoundException("No such algorithm (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -416,14 +374,14 @@ public abstract class RestHandler extends RouteHandler {
             return algorithm;
         }
 
-        throw new NotFoundException(req, "No such algorithm");
+        throw new NotFoundException("No such algorithm");
     }
 
-    protected static ParameterType verifyParameterType(RestRequest req, XtceDb mdb, String pathName)
+    protected static ParameterType verifyParameterType(XtceDb mdb, String pathName)
             throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such parameter type (missing namespace?)");
+            throw new NotFoundException("No such parameter type (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -443,14 +401,14 @@ public abstract class RestHandler extends RouteHandler {
             return type;
         }
 
-        throw new NotFoundException(req, "No such parameter type");
+        throw new NotFoundException("No such parameter type");
     }
 
-    protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName)
+    protected static SequenceContainer verifyContainer(XtceDb mdb, String pathName)
             throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
-            throw new NotFoundException(req, "No such container (missing namespace?)");
+            throw new NotFoundException("No such container (missing namespace?)");
         }
 
         String namespace = pathName.substring(0, lastSlash);
@@ -470,7 +428,7 @@ public abstract class RestHandler extends RouteHandler {
             return container;
         }
 
-        throw new NotFoundException(req, "No such container");
+        throw new NotFoundException("No such container");
     }
 
     protected static AlarmServer<Parameter, ParameterValue> verifyParameterAlarmServer(Processor processor)
@@ -514,37 +472,62 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    public static void completeChunkedTransfer(RestRequest req) {
-        req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                .addListener(ChannelFutureListener.CLOSE)
-                .addListener(l -> req.getCompletableFuture().complete(null));
-    }
-
-    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege privilege) throws ForbiddenException {
-        if (!req.getUser().hasSystemPrivilege(privilege)) {
+    public static void checkSystemPrivilege(User user, SystemPrivilege privilege) throws ForbiddenException {
+        if (!user.hasSystemPrivilege(privilege)) {
             throw new ForbiddenException("No system privilege '" + privilege + "'");
         }
     }
 
-    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, Collection<String> objects)
+    public static void checkObjectPrivileges(User user, ObjectPrivilegeType type, Collection<String> objects)
             throws ForbiddenException {
-        checkObjectPrivileges(req, type, objects.toArray(new String[objects.size()]));
+        checkObjectPrivileges(user, type, objects.toArray(new String[objects.size()]));
     }
 
-    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, String... objects)
+    public static void checkObjectPrivileges(User user, ObjectPrivilegeType type, String... objects)
             throws ForbiddenException {
         for (String object : objects) {
-            if (!req.getUser().hasObjectPrivilege(type, object)) {
+            if (!user.hasObjectPrivilege(type, object)) {
                 throw new ForbiddenException("No " + type + " authorization for '" + object + "'");
             }
         }
     }
 
-    protected static boolean hasSystemPrivilege(RestRequest req, SystemPrivilege privilege) {
-        return req.getUser().hasSystemPrivilege(privilege);
+    public static boolean hasSystemPrivilege(User user, SystemPrivilege privilege) {
+        return user.hasSystemPrivilege(privilege);
     }
 
-    protected static boolean hasObjectPrivilege(RestRequest req, ObjectPrivilegeType type, String privilege) {
-        return req.getUser().hasObjectPrivilege(type, privilege);
+    public static boolean hasObjectPrivilege(User user, ObjectPrivilegeType type, String privilege) {
+        return user.hasObjectPrivilege(type, privilege);
+    }
+
+    protected Object convertToFieldValue(RestRequest req, FieldDescriptor field, String parameter)
+            throws HttpException {
+        if (field.isRepeated()) {
+            if (field.getJavaType() != JavaType.STRING) {
+                throw new UnsupportedOperationException(
+                        "No query parameter conversion for repeated type " + field.getJavaType());
+            }
+            List<Object> values = new ArrayList<>();
+            for (String value : req.getQueryParameterList(field.getJsonName())) {
+                for (String item : value.split(",")) { // Support both repeated query params and comma-separated
+                    values.add(item);
+                }
+            }
+            return values;
+        } else {
+            switch (field.getJavaType()) {
+            case BOOLEAN:
+                return req.getQueryParameterAsBoolean(field.getJsonName());
+            case INT:
+                return req.getQueryParameterAsInt(field.getJsonName());
+            case LONG:
+                return req.getQueryParameterAsLong(field.getJsonName());
+            case STRING:
+                return req.getQueryParameter(field.getJsonName());
+            default:
+                throw new UnsupportedOperationException(
+                        "No query parameter conversion for type " + field.getJavaType());
+            }
+        }
     }
 }

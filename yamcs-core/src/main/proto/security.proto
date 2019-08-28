@@ -1,0 +1,78 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.security.protobuf";
+option java_outer_classname = "SecurityProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+// These collections use surrogate ids. They make it more
+// convenient to do things like renaming a user. Internal storage
+// that references a user "should" make use of the id, although
+// it's true this is not yet the case everywhere.
+
+message AccountCollection {
+  optional int32 seq = 1;
+  repeated AccountRecord records = 2;
+}
+
+message AccountRecord {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string displayName = 3;
+  optional bool active = 4;
+  optional int32 createdBy = 5;
+  optional google.protobuf.Timestamp creationTime = 6;
+  optional google.protobuf.Timestamp confirmationTime = 7;
+  optional google.protobuf.Timestamp lastLoginTime = 8;
+  
+  oneof accountType {
+    UserAccountRecordDetail userDetail = 9;
+    ServiceAccountRecordDetail serviceDetail = 10;
+  }
+}
+
+message UserAccountRecordDetail {
+  optional string email = 1;
+  optional string hash = 2;
+  optional bool superuser = 3;
+  repeated ExternalIdentity identities = 4;
+}
+
+message ServiceAccountRecordDetail {
+  optional string applicationId = 1;
+  optional string applicationHash = 2;
+}
+
+message ExternalIdentity {
+  optional string identity = 1;
+  optional string provider = 2;
+}
+
+message GroupCollection {
+  optional int32 seq = 1;
+  repeated GroupRecord records = 2;
+}
+
+message GroupRecord {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  repeated int32 members = 4;
+}
+
+message ApplicationCollection {
+  optional int32 seq = 1;
+  repeated ApplicationRecord records = 2;
+}
+
+message ApplicationRecord {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string clientId = 3;
+  optional string clientHash = 4;
+  repeated string scopes = 5;
+  optional int32 createdBy = 6;
+  optional google.protobuf.Timestamp creationTime = 7;
+  optional google.protobuf.Timestamp lastLoginTime = 8;
+}

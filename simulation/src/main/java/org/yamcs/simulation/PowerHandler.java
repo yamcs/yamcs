@@ -15,8 +15,8 @@ public class PowerHandler {
 
     private Vector<PowerData> entries = new Vector<>(100, 100);
     private int currentEntry = 0;
-    boolean batOnOff[] = { false, true, true, true}; //battery number is from 1 to 3, [0] is not used
-    
+    boolean batOnOff[] = { false, true, true, true }; // battery number is from 1 to 3, [0] is not used
+
     public PowerHandler() {
         try (BufferedReader in = new BufferedReader(
                 new InputStreamReader(PowerHandler.class.getResourceAsStream("/landing_data/power.csv")))) {
@@ -52,7 +52,7 @@ public class PowerHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have {} power data records", entries.size());
+        log.debug("have {} power data records", entries.size());
     }
 
     public void fillPacket(CCSDSPacket packet) {
@@ -67,20 +67,22 @@ public class PowerHandler {
         PowerData entry = entries.elementAt(currentEntry++);
         entry.fillPacket(packet, 0);
         ByteBuffer buffer = packet.getUserDataBuffer();
-        for(int i = 1; i< 4; i++) {
-            if(!batOnOff[i]) {
-                buffer.put(4*i-1, (byte)0);
+        for (int i = 1; i < 4; i++) {
+            if (!batOnOff[i]) {
+                buffer.put(4 * i - 1, (byte) 0);
             }
         }
-        
+
     }
+
     public void setBatteryOn(int batNum) {
         batOnOff[batNum] = true;
     }
+
     public void setBatteryOff(int batNum) {
         batOnOff[batNum] = false;
     }
-    
+
     public float getBattery1Voltage() {
         PowerData data = entries.elementAt(currentEntry);
         return data.batteryVoltage1;
