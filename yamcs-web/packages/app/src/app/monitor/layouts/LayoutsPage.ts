@@ -37,11 +37,11 @@ export class LayoutsPage {
   }
 
   private loadLayouts() {
-    const username = this.authService.getUser()!.getUsername();
+    const username = this.authService.getUser()!.getName();
     this.storageClient.listObjects('_global', `user.${username}`, {
       prefix: 'layouts',
     }).then(response => {
-      this.dataSource.data = response.object || [];
+      this.dataSource.data = response.objects || [];
     });
   }
 
@@ -71,7 +71,7 @@ export class LayoutsPage {
   }
 
   deleteSelectedLayouts() {
-    const username = this.authService.getUser()!.getUsername();
+    const username = this.authService.getUser()!.getName();
     const bucket = `user.${username}`;
     if (confirm('Are you sure you want to delete the selected layouts?')) {
       const deletePromises = [];
@@ -87,7 +87,7 @@ export class LayoutsPage {
   }
 
   renameLayout(layout: ObjectInfo) {
-    const username = this.authService.getUser()!.getUsername();
+    const username = this.authService.getUser()!.getName();
     const dialogRef = this.dialog.open(RenameLayoutDialog, {
       width: '400px',
       data: {

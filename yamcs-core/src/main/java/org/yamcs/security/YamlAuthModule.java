@@ -1,25 +1,19 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
 import org.yamcs.utils.YObjectLoader;
 
 public class YamlAuthModule implements AuthModule {
-
-    private static final Logger log = LoggerFactory.getLogger(YamlAuthModule.class);
 
     private boolean required;
     private PasswordHasher passwordHasher;
@@ -74,25 +68,20 @@ public class YamlAuthModule implements AuthModule {
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         if (token instanceof UsernamePasswordToken) {
-            String username = token.getPrincipal();
+            String username = ((UsernamePasswordToken) token).getPrincipal();
             char[] password = ((UsernamePasswordToken) token).getPassword();
 
             Map<String, Object> userDef = userDefs.get(username);
             if (userDef == null || !userDef.containsKey("password")
                     || YConfiguration.getString(userDef, "password").trim().isEmpty()) {
-                log.debug("User does not exist");
                 return null;
             }
 
             // Verify password
             String expected = YConfiguration.getString(userDef, "password");
             if (passwordHasher != null) {
-                try {
-                    if (!passwordHasher.validatePassword(password, expected)) {
-                        throw new AuthenticationException("Password does not match");
-                    }
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new AuthenticationException(e);
+                if (!passwordHasher.validatePassword(password, expected)) {
+                    throw new AuthenticationException("Password does not match");
                 }
             } else {
                 if (!Arrays.equals(expected.toCharArray(), password)) {
@@ -108,7 +97,7 @@ public class YamlAuthModule implements AuthModule {
     @Override
     @SuppressWarnings("unchecked")
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
-        String principal = authenticationInfo.getPrincipal();
+        String principal = authenticationInfo.getUsername();
 
         AuthorizationInfo authz = new AuthorizationInfo();
 
@@ -149,7 +138,7 @@ public class YamlAuthModule implements AuthModule {
     }
 
     @Override
-    public boolean verifyValidity(User user) {
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         return true;
     }
 }

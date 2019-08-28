@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.yamcs.api.artemis.ArtemisApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -22,7 +23,7 @@ public class RealtimeParameterTest {
     final SimpleString rpcAddr;
     final String namespace = "MDB:OPS Name";
 
-    RealtimeParameterTest() throws YamcsApiException, URISyntaxException, ActiveMQException {
+    RealtimeParameterTest() throws ArtemisApiException, URISyntaxException, ActiveMQException {
         ysession = YamcsSession.newBuilder().setConnectionParams("yamcs://aces-test:5445").build();
         yclient = ysession.newClientBuilder()
                 .setRpc(true)
@@ -86,7 +87,7 @@ public class RealtimeParameterTest {
                 // System.out.println(pv);
             }
             System.out.println();
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             System.out.println("cannot decode message: " + e);
         }
     }

@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
-import org.yamcs.api.Log;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;

@@ -9,9 +9,20 @@ import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
 import { ClientsPage } from './clients/ClientsPage';
 import { AdminHomePage } from './home/AdminHomePage';
+import { CreateGroupPage } from './iam/CreateGroupPage';
+import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
+import { CreateUserPage } from './iam/CreateUserPage';
+import { EditGroupPage } from './iam/EditGroupPage';
+import { EditUserPage } from './iam/EditUserPage';
+import { GroupPage } from './iam/GroupPage';
+import { GroupsPage } from './iam/GroupsPage';
+import { ServiceAccountsPage } from './iam/ServiceAccountsPage';
+import { UserPage } from './iam/UserPage';
+import { UsersPage } from './iam/UsersPage';
+import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
+import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
-import { UsersPage } from './users/UsersPage';
 
 const routes: Routes = [
   {
@@ -46,6 +57,14 @@ const routes: Routes = [
         component: ClientsPage,
       },
       {
+        path: 'routes',
+        component: RoutesPage,
+      },
+      {
+        path: 'leap-seconds',
+        component: LeapSecondsPage,
+      },
+      {
         path: 'plugins',
         component: PluginsPage,
       },
@@ -58,10 +77,65 @@ const routes: Routes = [
         loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
       },
       {
-        path: 'users',
+        path: 'iam/service-accounts',
+        pathMatch: 'full',
+        component: ServiceAccountsPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/service-accounts/create',
+        pathMatch: 'full',
+        component: CreateServiceAccountPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/users',
+        pathMatch: 'full',
         component: UsersPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
-      }
+      },
+      {
+        path: 'iam/users/create',
+        pathMatch: 'full',
+        component: CreateUserPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/users/:username',
+        pathMatch: 'full',
+        component: UserPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/users/:username/edit',
+        pathMatch: 'full',
+        component: EditUserPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/groups',
+        pathMatch: 'full',
+        component: GroupsPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/groups/create',
+        pathMatch: 'full',
+        component: CreateGroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/groups/:name',
+        pathMatch: 'full',
+        component: GroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/groups/:name/edit',
+        pathMatch: 'full',
+        component: EditGroupPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
     ]
   }
 ];
@@ -74,11 +148,22 @@ export class AdminRoutingModule { }
 
 export const routingComponents = [
   AdminHomePage,
-  ClientsPage,
   BucketsPage,
   BucketPage,
   BucketPlaceholderPage,
+  ClientsPage,
+  CreateGroupPage,
+  CreateServiceAccountPage,
+  CreateUserPage,
+  EditGroupPage,
+  EditUserPage,
+  GroupsPage,
+  GroupPage,
+  LeapSecondsPage,
   PluginsPage,
+  RoutesPage,
+  ServiceAccountsPage,
   ServicesPage,
   UsersPage,
+  UserPage,
 ];

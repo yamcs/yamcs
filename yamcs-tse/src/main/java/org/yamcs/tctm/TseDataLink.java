@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.Value;
 import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommand;
@@ -63,6 +63,7 @@ public class TseDataLink extends AbstractService implements Link {
     private XtceDb xtcedb;
     private String host;
     private int port;
+    private long initialDelay;
 
     private Stream ppStream;
 
@@ -89,12 +90,14 @@ public class TseDataLink extends AbstractService implements Link {
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
 
         log = new Log(getClass(), yamcsInstance);
+        log.setContext(name);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         host = config.getString("host");
         port = config.getInt("port");
+        initialDelay = config.getLong("initialDelay", 0);
 
         String tcStreamName = config.getString("tcStream", "tc_tse");
         Stream tcStream = ydb.getStream(tcStreamName);
@@ -226,7 +229,7 @@ public class TseDataLink extends AbstractService implements Link {
     @Override
     protected void doStart() {
         eventLoopGroup = new NioEventLoopGroup();
-        createBootstrap();
+        eventLoopGroup.schedule(() -> createBootstrap(), initialDelay, TimeUnit.MILLISECONDS);
         notifyStarted();
     }
 

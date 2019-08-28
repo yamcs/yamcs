@@ -22,11 +22,11 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
 
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
 import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
@@ -78,7 +78,7 @@ public class HttpServer extends AbstractYamcsService {
     private CorsConfig corsConfig;
 
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
-    private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
+    private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -117,7 +117,8 @@ public class HttpServer extends AbstractYamcsService {
                 .withDeprecationMessage("This property is automatically set by the yamcs-web jar/plugin.");
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
-        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec);
+        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec)
+                .withDeprecationMessage("Define website options under a key 'yamcs-web' in yamcs.yaml");
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
 
         spec.requireOneOf("port", "tlsPort");
@@ -148,12 +149,6 @@ public class HttpServer extends AbstractYamcsService {
 
         zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
 
-        // this is used to execute the routes marked as offThread
-        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
-        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor, contextPath);
-
         if (config.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = config.getList("gpbExtensions");
             try {
@@ -162,12 +157,18 @@ public class HttpServer extends AbstractYamcsService {
                     String fieldName = YConfiguration.getString(conf, "field");
                     Class<?> extensionClass = Class.forName(className);
                     Field field = extensionClass.getField(fieldName);
-                    gpbExtensionRegistry.installExtension(extensionClass, field);
+                    protobufRegistry.installExtension(extensionClass, field);
                 }
             } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
                 throw new InitException("Could not load GPB extensions", e);
             }
         }
+
+        // this is used to execute the routes marked as offThread
+        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
+        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(), tf);
+        apiRouter = new Router(executor, contextPath, protobufRegistry);
 
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
@@ -333,8 +334,8 @@ public class HttpServer extends AbstractYamcsService {
         return webSocketExtensions;
     }
 
-    public GpbExtensionRegistry getGpbExtensionRegistry() {
-        return gpbExtensionRegistry;
+    public ProtobufRegistry getProtobufRegistry() {
+        return protobufRegistry;
     }
 
     public CorsConfig getCorsConfig() {

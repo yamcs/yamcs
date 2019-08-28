@@ -22,7 +22,7 @@ q (string)
 .. code-block:: json
 
     {
-      "container" : [ {
+      "containers" : [ {
         "name": "DHS",
         "qualifiedName" : "/YSS/SIMULATOR/DHS",
         "alias" : [ {
@@ -74,6 +74,6 @@ q (string)
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListContainerInfoResponse {
-      repeated mdb.ContainerInfo container = 1;
+    message ListContainersResponse {
+      repeated mdb.ContainerInfo containers = 1;
     }

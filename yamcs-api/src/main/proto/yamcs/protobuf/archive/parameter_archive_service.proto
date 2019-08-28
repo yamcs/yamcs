@@ -1,0 +1,92 @@
+syntax="proto2";
+
+package yamcs.protobuf.archive;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ParameterArchiveServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/archive/archive.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service ParameterArchiveApi {
+
+  // Rebuild range
+  rpc RebuildRange(RebuildRangeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/parameterArchive:rebuild"
+      body: "*"
+      offThread: true
+    };
+  }
+
+  // Delete partitions
+  rpc DeletePartitions(DeletePartitionsRequest) returns (StringMessage) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/parameterArchive:deletePartitions"
+      body: "*"
+    };
+  }
+  
+  // Get parameter info
+  rpc GetArchivedParameterInfo(GetArchivedParameterInfoRequest) returns (StringMessage) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameterArchive/info/parameter/{name*}"
+    };
+  }
+  
+  // Get parameter samples
+  rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameters/{name*}/samples"
+    };
+  }
+  
+  // Get parameter ranges
+  rpc GetParameterRanges(GetParameterRangesRequest) returns (pvalue.Ranges) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameters/{name*}/ranges"
+    };
+  }
+  
+  // List parameter history
+  rpc ListParameterHistory(ListParameterHistoryRequest) returns (ListParameterHistoryResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameters/{name*}"
+    };
+  }
+}
+
+message RebuildRangeRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message DeletePartitionsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message GetArchivedParameterInfoRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetParameterRangesRequest {
+  optional string instance = 1;
+  optional string name = 2;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp stop = 4;
+  optional int64 minGap = 5;
+  optional int64 maxGap = 6;
+  optional bool norealtime = 7;
+  optional string processor = 8;
+  optional string source = 9;
+}

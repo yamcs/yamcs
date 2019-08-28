@@ -22,7 +22,7 @@ export class ContainersDataSource extends DataSource<Container> {
     this.yamcs.getInstanceClient()!.getContainers(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
-      this.containers$.next(page.container || []);
+      this.containers$.next(page.containers || []);
     });
   }
 

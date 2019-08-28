@@ -56,4 +56,6 @@ public interface StorageEngine {
             TimeInterval interval) throws YarchException;
 
     public BucketDatabase getBucketDatabase(YarchDatabaseInstance yarchDatabaseInstance) throws YarchException;
+
+    public ProtobufDatabase getProtobufDatabase(YarchDatabaseInstance ydb) throws YarchException;
 }

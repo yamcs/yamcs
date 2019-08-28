@@ -8,7 +8,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class CertUtil {
-    static public KeyStore loadCertFile(String caCertFile) throws IOException, GeneralSecurityException {
+
+    public static KeyStore loadCertFile(String caCertFile) throws IOException, GeneralSecurityException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         KeyStore caKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         caKeyStore.load(null, null);
@@ -18,8 +19,8 @@ public class CertUtil {
                 X509Certificate cer = (X509Certificate) cf.generateCertificate(fis);
                 caKeyStore.setCertificateEntry("cacert" + (i++), cer);
             }
-            if(i==0) {
-                throw new IOException("No certificate could be loaded from '"+caCertFile+"'");
+            if (i == 0) {
+                throw new IOException("No certificate could be loaded from '" + caCertFile + "'");
             }
         }
         return caKeyStore;

@@ -1,0 +1,52 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Users
+    &nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="create">
+      <mat-icon>add</mat-icon>
+      CREATE USER
+    </a>
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <div style="margin-bottom: 12px;">
+      <input #filter
+              class="ya-input"
+              type="text"
+              placeholder="Filter users"
+              style="width: 400px">
+    </div>
+    <mat-tab-group animationDuration="0ms">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          ACTIVE ({{ activeUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="activeUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          SUPERUSERS ({{ superUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="superUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          INTERNAL ({{ internalUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="internalUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          BLOCKED ({{ blockedUserCount$ | async }})
+        </ng-template>
+        <br>
+        <app-users-table [users]="blockedUsers$ | async" [filter]="filterValue$ | async"></app-users-table>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</app-admin-page>

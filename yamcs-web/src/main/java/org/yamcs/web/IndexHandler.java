@@ -14,12 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
-import org.yamcs.protobuf.Web.AuthInfo;
+import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
 
 import com.google.gson.Gson;
@@ -42,77 +43,78 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @Sharable
 public class IndexHandler extends Handler {
 
+    private YConfiguration config;
     private HttpServer httpServer;
     private Path indexFile;
 
-    private String html;
+    private String cachedHtml;
     private FileTime cacheTime;
 
-    public IndexHandler(HttpServer httpServer, Path webRoot) {
+    public IndexHandler(YConfiguration config, HttpServer httpServer, Path webRoot) {
+        this.config = config;
         this.httpServer = httpServer;
         indexFile = webRoot.resolve("index.html");
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
-        if (req.method() == HttpMethod.GET) {
-            if (!Files.exists(indexFile)) {
-                HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            }
-
-            try {
-                FileTime lastModified = Files.getLastModifiedTime(indexFile);
-                if (!lastModified.equals(cacheTime)) {
-                    html = processTemplate();
-                    cacheTime = lastModified;
-                }
-            } catch (IOException e) {
-                HttpRequestHandler.sendPlainTextError(ctx, req, INTERNAL_SERVER_ERROR);
-                return;
-            }
-
-            ByteBuf body = ctx.alloc().buffer();
-            body.writeCharSequence(html, StandardCharsets.UTF_8);
-
-            HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML);
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
-
-            // Recommend clients to not cache this file. We hash all of our
-            // web files, and this reduces likelihood of attempting to load
-            // the app from an outdated index.html.
-            response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
-
-            HttpRequestHandler.sendResponse(ctx, req, response, true);
-        } else {
+        if (req.method() != HttpMethod.GET) {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
+            return;
         }
+        if (!Files.exists(indexFile)) {
+            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+            return;
+        }
+
+        String html = null;
+        try {
+            html = getHtml();
+        } catch (IOException e) {
+            HttpRequestHandler.sendPlainTextError(ctx, req, INTERNAL_SERVER_ERROR);
+            return;
+        }
+
+        ByteBuf body = ctx.alloc().buffer();
+        body.writeCharSequence(html, StandardCharsets.UTF_8);
+
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML);
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+
+        // Recommend clients to not cache this file. We hash all of our
+        // web files, and this reduces likelihood of attempting to load
+        // the app from an outdated index.html.
+        response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
+
+        HttpRequestHandler.sendResponse(ctx, req, response, true);
+    }
+
+    private synchronized String getHtml() throws IOException {
+        FileTime lastModified = Files.getLastModifiedTime(indexFile);
+        if (!lastModified.equals(cacheTime)) {
+            cachedHtml = processTemplate();
+            cacheTime = lastModified;
+        }
+        return cachedHtml;
     }
 
     @SuppressWarnings("unchecked")
     private String processTemplate() throws IOException {
         String template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
-        Map<String, Object> args = new HashMap<>(2);
-        args.put("contextPath", httpServer.getContextPath());
 
-        YConfiguration httpConfig = httpServer.getConfig();
-
-        Map<String, Object> webConfig = new HashMap<>();
-
-        if (httpConfig.containsKey("website")) {
-            YConfiguration yconf = httpConfig.getConfig("website");
-            webConfig.putAll(yconf.toMap());
-        }
+        Map<String, Object> webConfig = new HashMap<>(config.toMap());
 
         AuthInfo authInfo = AuthHandler.createAuthInfo();
         String authJson = JsonFormat.printer().print(authInfo);
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
         webConfig.put("auth", authMap);
+        webConfig.put("serverId", YamcsServer.getServer().getServerId());
 
+        Map<String, Object> args = new HashMap<>(4);
+        args.put("contextPath", httpServer.getContextPath());
         args.put("config", webConfig);
         args.put("configJson", new Gson().toJson(webConfig));
-
         return TemplateProcessor.process(template, args);
     }
 }

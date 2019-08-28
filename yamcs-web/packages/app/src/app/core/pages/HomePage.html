@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar class="top">
   <mat-toolbar-row>
     Instances
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -6,7 +6,7 @@
         color="primary"
         routerLink="create-instance"
         *ngIf="mayCreateInstances()">
-      <mat-icon>add_box</mat-icon>
+      <mat-icon>add</mat-icon>
       CREATE INSTANCE
     </a>
     <a mat-button

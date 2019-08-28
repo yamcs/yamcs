@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { GetParameterValuesOptions, DownloadParameterValuesOptions } from '@yamcs/client';
-import { ActivatedRoute } from '@angular/router';
-import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject } from 'rxjs';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
 const defaultInterval = 'PT1H';
@@ -100,7 +100,7 @@ export class ParameterDataTab {
     }
 
     const dlOptions: DownloadParameterValuesOptions = {
-      format: 'csv',
+      parameters: [this.qualifiedName]
     };
     if (this.validStart) {
       dlOptions.start = this.validStart.toISOString();
@@ -111,7 +111,7 @@ export class ParameterDataTab {
 
     const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadParameterValues(options).then(pvals => {
-      const downloadURL = instanceClient.getParameterValuesDownloadURL(this.qualifiedName, dlOptions);
+      const downloadURL = instanceClient.getParameterValuesDownloadURL(dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

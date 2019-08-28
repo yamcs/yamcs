@@ -3,15 +3,15 @@ Upload Object
 
 Upload an object::
 
-    POST /api/archive/:instance/:bucketName/:objectName
-    POST /api/archive/:instance/:bucketName
+    POST /api/archive/:instance/:bucketName/objects/:objectName
+    POST /api/archive/:instance/:bucketName/objects
 
 ``_global`` can be used as instance name to upload to a bucket at the global level.
 
 If the bucketName is ``user.username`` the bucket will be created automatically if it does not exist. Otherwise the bucket must exist before being used.
 
 
-.. rubric:: Simple Upload
+.. rubric:: Simple upload
 
 In case of simple upload, the objectName has to be specified as part of the URL and the Content-Type header has to be set to the type of the object. The body of the request is the object data.
 

@@ -4,3 +4,5 @@ instances:
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-data
+
+secretKey: testtest

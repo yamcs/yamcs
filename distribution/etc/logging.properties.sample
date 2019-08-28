@@ -1,0 +1,13 @@
+handlers = java.util.logging.ConsoleHandler, java.util.logging.FileHandler
+
+java.util.logging.ConsoleHandler.level = INFO
+java.util.logging.ConsoleHandler.formatter = org.yamcs.logging.JournalFormatter
+java.util.logging.ConsoleHandler.filter = org.yamcs.logging.GlobalFilter
+
+java.util.logging.FileHandler.level = ALL
+java.util.logging.FileHandler.pattern = /opt/yamcs/log/yamcs-server.log
+java.util.logging.FileHandler.limit = 20000000
+java.util.logging.FileHandler.count = 50
+java.util.logging.FileHandler.formatter = org.yamcs.logging.CompactFormatter
+
+org.yamcs.level = FINE

@@ -1,6 +1,6 @@
 package org.yamcs.artemis;
 
-import org.yamcs.api.Plugin;
+import org.yamcs.Plugin;
 
 public class ArtemisPlugin implements Plugin {
 
@@ -8,9 +8,7 @@ public class ArtemisPlugin implements Plugin {
 
     public ArtemisPlugin() {
         Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
+        version = (pkg != null) ? pkg.getImplementationVersion() : null;
     }
 
     @Override

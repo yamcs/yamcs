@@ -23,17 +23,25 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.client.ClientException;
 import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.http.RouteHandler;
+import org.yamcs.protobuf.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
+import org.yamcs.protobuf.BatchGetParameterValuesRequest;
+import org.yamcs.protobuf.BatchGetParameterValuesResponse;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.IssueCommandResponse;
+import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -51,23 +59,17 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Rest.IssueCommandResponse;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.Web.AlarmSubscriptionRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
-import org.yamcs.protobuf.Web.SubscribedParameter;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.ServiceInfo;
+import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.SubscribedParameter;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -75,8 +77,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 
@@ -523,11 +523,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
         ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/InvalidParaName");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(invalidSubscrList.getIdList()).build();
 
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
+            restClient
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
@@ -541,38 +542,40 @@ public class IntegrationTest extends AbstractIntegrationTest {
         /////// gets parameters from cache via REST - second attempt with valid parameters
         ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
+        req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
                 .build();
 
         String response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req)).get();
-        BulkGetParameterValueResponse bulkPvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
+                .get();
+        BatchGetParameterValuesResponse bulkPvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
                 .build();
         checkPvals(bulkPvals.getValueList(), packetGenerator);
 
         /////// gets parameters from via REST - waiting for update - first test the timeout in case no update is coming
         long t0 = System.currentTimeMillis();
-        req = BulkGetParameterValueRequest.newBuilder()
+        req = BatchGetParameterValuesRequest.newBuilder()
                 .setFromCache(false)
                 .setTimeout(2000).addAllId(validSubscrList.getIdList()).build();
 
-        Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
-                HttpMethod.GET, toJson(req));
+        Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
+                HttpMethod.POST, toJson(req));
 
-        bulkPvals = fromJson(responseFuture.get(), BulkGetParameterValueResponse.newBuilder()).build();
+        bulkPvals = fromJson(responseFuture.get(), BatchGetParameterValuesResponse.newBuilder()).build();
         long t1 = System.currentTimeMillis();
         assertEquals(2000, t1 - t0, 200);
         assertEquals(0, bulkPvals.getValueCount());
         //////// gets parameters from via REST - waiting for update - now with some parameters updated
         packetGenerator.pIntegerPara1_1_6 = 10;
         packetGenerator.pIntegerPara1_1_7 = 5;
-        responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET,
+        responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
+                HttpMethod.POST,
                 toJson(req));
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
         packetGenerator.generate_PKT1_1();
 
-        bulkPvals = fromJson(new String(responseFuture.get()), BulkGetParameterValueResponse.newBuilder()).build();
+        bulkPvals = fromJson(new String(responseFuture.get()), BatchGetParameterValuesResponse.newBuilder()).build();
 
         checkPvals(bulkPvals.getValueList(), packetGenerator);
     }
@@ -584,14 +587,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         /////// gets parameters from cache via REST
         ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/aggregate_para1.member1",
                 "/REFMDB/SUBSYS1/aggregate_para1.member3", "/REFMDB/SUBSYS1/array_para1[105].member2");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(subscrList.getIdList())
                 .build();
 
         String response = restClient
-                .doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req)).get();
+                .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
+                .get();
 
-        BulkGetParameterValueResponse bulkPvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+        BatchGetParameterValuesResponse bulkPvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
                 .build();
 
         assertEquals(3, bulkPvals.getValueCount());
@@ -604,19 +608,19 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(210, pv.getRawValue().getUint32Value());
 
         /////// gets parameters from via REST - waiting for update
-        req = BulkGetParameterValueRequest.newBuilder()
+        req = BatchGetParameterValuesRequest.newBuilder()
                 .setFromCache(false)
                 .setTimeout(2000).addAllId(subscrList.getIdList()).build();
 
-        Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
-                HttpMethod.GET, toJson(req));
+        Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
+                HttpMethod.POST, toJson(req));
 
         Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
 
         packetGenerator.generate_PKT7();
         packetGenerator.generate_PKT8();
 
-        bulkPvals = fromJson(new String(responseFuture.get()), BulkGetParameterValueResponse.newBuilder()).build();
+        bulkPvals = fromJson(new String(responseFuture.get()), BatchGetParameterValuesResponse.newBuilder()).build();
         assertEquals(3, bulkPvals.getValueCount());
         pv = bulkPvals.getValue(1);
         assertEquals("/REFMDB/SUBSYS1/aggregate_para1.member3", pv.getId().getName());
@@ -637,13 +641,13 @@ public class IntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generate_PKT8();
 
         ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/array_para1");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(subscrList.getIdList())
                 .build();
 
-        String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
-                HttpMethod.GET, toJson(req)).get();
-        BulkGetParameterValueResponse pvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+        String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet",
+                HttpMethod.POST, toJson(req)).get();
+        BatchGetParameterValuesResponse pvals = fromJson(response, BatchGetParameterValuesResponse.newBuilder())
                 .build();
         assertEquals(1, pvals.getValueCount());
         ParameterValue pv = pvals.getValue(0);
@@ -659,47 +663,47 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetInvalidParam() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6"));
         requestb.setValue(ValueHelper.newValue(3.14));
         bulkb.addRequest(requestb);
 
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                     toJson(bulkb.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
     }
 
     @Test
     public void testRestParameterSetInvalidType() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"));
         requestb.setValue(ValueHelper.newValue("blablab"));
         bulkb.addRequest(requestb);
 
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                     toJson(bulkb.build())).get();
             fail("Should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
     }
 
     @Test
     public void testRestParameterSet() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"));
         requestb.setValue(ValueHelper.newValue(5));
         bulkb.addRequest(requestb);
 
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                 toJson(bulkb.build())).get();
         assertNotNull(resp);
 
@@ -729,7 +733,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetAggregate_Invalid() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
 
@@ -738,10 +742,10 @@ public class IntegrationTest extends AbstractIntegrationTest {
         requestb.setValue(ValueHelper.newArrayValue(v0));
         bulkb.addRequest(requestb);
         try {
-            restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+            restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                     toJson(bulkb.build())).get();
         } catch (ExecutionException e) {
-            YamcsApiException e1 = (YamcsApiException) e.getCause();
+            ClientException e1 = (ClientException) e.getCause();
             assertTrue(e1.getMessage().contains("members don't match"));
             return;
         }
@@ -751,7 +755,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetArray() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalArray1"));
 
@@ -762,7 +766,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         requestb.setValue(ValueHelper.newArrayValue(v0, v0));
         bulkb.addRequest(requestb);
 
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                 toJson(bulkb.build())).get();
         assertNotNull(resp);
 
@@ -776,7 +780,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetAggregate() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalAggregate1"));
 
@@ -787,7 +791,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
 
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                 toJson(bulkb.build())).get();
         assertNotNull(resp);
 
@@ -801,7 +805,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetAggregateElement() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue6.member1"));
 
@@ -810,7 +814,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
 
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                 toJson(bulkb.build())).get();
         assertNotNull(resp);
 
@@ -826,7 +830,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestParameterSetArrayElement() throws Exception {
-        BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkb = BatchSetParameterValuesRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
         requestb.setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalParaWithInitialValue8[2]"));
 
@@ -835,7 +839,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         requestb.setValue(v0);
         bulkb.addRequest(requestb);
 
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                 toJson(bulkb.build())).get();
         assertNotNull(resp);
 
@@ -994,12 +998,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         // insert two values in the command history
         CommandId commandId = commandResponse.getCommandQueueEntry().getCmdId();
-        Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder()
+        UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
                 .setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(
-                Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
         updateHistoryRequest.addHistoryEntry(
-                Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
+                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
         doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST,
                 updateHistoryRequest.build());
 
@@ -1118,36 +1122,36 @@ public class IntegrationTest extends AbstractIntegrationTest {
         String serviceClass = "org.yamcs.archive.CommandHistoryRecorder";
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        ListServiceInfoResponse r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        assertEquals(10, r.getServiceList().size());
+        ListServicesResponse r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        assertEquals(10, r.getServicesList().size());
 
-        ServiceInfo servInfo = r.getServiceList().stream()
+        ServiceInfo servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=STOPPED", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":stop", HttpMethod.POST, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream()
+        r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=running", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + ":start", HttpMethod.POST, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
-        r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream()
+        r = fromJson(resp, ListServicesResponse.newBuilder()).build();
+        servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))
                 .findFirst()
                 .orElse(null);
@@ -1233,12 +1237,12 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
-        YamcsApiException e1 = null;
+        ClientException e1 = null;
         try {
             httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
                     adminUsername, adminPassword, httpHeaders).get();
         } catch (ExecutionException e) {
-            e1 = (YamcsApiException) e.getCause();
+            e1 = (ClientException) e.getCause();
         }
         assertNotNull(e1);
         assertTrue(e1.toString().contains("304"));

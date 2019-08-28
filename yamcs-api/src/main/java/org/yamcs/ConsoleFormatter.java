@@ -6,8 +6,6 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import org.yamcs.api.YamcsLogRecord;
-
 /**
  * Specifically intended for short-term console output. It contains the bare minimum of information. Memory optimization
  * is 'good enough' for console output.
@@ -19,7 +17,12 @@ import org.yamcs.api.YamcsLogRecord;
  * <li>Hides the method name
  * <li>Supports minimal colors
  * </ul>
+ * 
+ * @deprecated This class used to be used by both client tools and the server. These code bases are gradually being
+ *             split from each other. For server logging use org.yamcs.logging.ConsoleFormatter from yamcs-core. For
+ *             client logging use org.yamcs.ui.LogFormatter from yamcs-client.
  */
+@Deprecated
 public class ConsoleFormatter extends Formatter {
 
     private static final String COLOR_PREFIX = "\033[";
@@ -45,15 +48,6 @@ public class ConsoleFormatter extends Formatter {
         d.setTime(r.getMillis());
         sb.append(sdf.format(d)).append(" ");
 
-        String yamcsInstance = "_global";
-        if (r instanceof YamcsLogRecord) {
-            YamcsLogRecord yRec = (YamcsLogRecord) r;
-            if (yRec.getYamcsInstance() != null) {
-                yamcsInstance = yRec.getYamcsInstance();
-            }
-        }
-        sb.append(yamcsInstance).append(" ");
-
         String name = r.getLoggerName();
         if (name.lastIndexOf('.') != -1) {
             name = name.substring(name.lastIndexOf('.') + 1);
@@ -66,18 +60,6 @@ public class ConsoleFormatter extends Formatter {
         }
 
         sb.append("[").append(r.getThreadID()).append("]: ");
-
-        if (r instanceof YamcsLogRecord) {
-            YamcsLogRecord yRec = (YamcsLogRecord) r;
-            if (yRec.getContext() != null) {
-                if (enableAnsiColors) {
-                    colorize(sb, yRec.getContext(), 0, 35);
-                } else {
-                    sb.append(yRec.getContext());
-                }
-                sb.append(" ");
-            }
-        }
 
         if (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE) {
             if (enableAnsiColors) {

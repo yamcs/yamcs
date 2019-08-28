@@ -63,8 +63,8 @@ export class Layout implements OnInit, OnDestroy {
     }).then(response => {
       this.currentFolder$.next({
         location: '',
-        prefixes: response.prefix || [],
-        objects: response.object || [],
+        prefixes: response.prefixes || [],
+        objects: response.objects || [],
       });
     });
 
@@ -107,8 +107,8 @@ export class Layout implements OnInit, OnDestroy {
     this.storageClient.listObjects('_global', 'displays', options).then(response => {
       this.currentFolder$.next({
         location: path,
-        prefixes: response.prefix || [],
-        objects: response.object || [],
+        prefixes: response.prefixes || [],
+        objects: response.objects || [],
       });
     });
   }

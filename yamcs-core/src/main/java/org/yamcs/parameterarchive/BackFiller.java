@@ -18,7 +18,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
@@ -101,7 +101,6 @@ public class BackFiller implements StreamSubscriber {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void parseConfig(YConfiguration config) {
         warmupTime = 1000L * config.getInt("warmupTime", 60);
         maxSegmentSize = config.getInt("maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
@@ -156,7 +155,7 @@ public class BackFiller implements StreamSubscriber {
             ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
             aft.setCollectionSegmentStart(start);
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
-            log.info("Starting an parameter archive fillup for interval {}", timePeriod);
+            log.info("Starting parameter archive fillup for interval {}", timePeriod);
 
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder()
                     .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -176,7 +175,7 @@ public class BackFiller implements StreamSubscriber {
                 log.warn("Parameter archive fillup for interval {} aborted", timePeriod);
             } else {
                 aft.flush();
-                log.info("Parameter archive fillup for interval {} finished, number of processed parameter samples: {}",
+                log.info("Parameter archive fillup for interval {} finished, processed samples: {}",
                         timePeriod, aft.getNumProcessedParameters());
             }
         } catch (Exception e) {

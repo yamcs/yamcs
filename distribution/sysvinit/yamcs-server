@@ -48,14 +48,14 @@ case "$1" in
             for i in 4 3 2 1 0; do
                if [ -f $OUTERR.$i ] ; then mv $OUTERR.$i $OUTERR.$((i+1)) ; fi
             done
-            su -s /bin/sh -c "nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
+            su -s /bin/sh -c "nohup $YAMCS_BIN --no-stream-redirect >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
             pid=`cat $PID_FILE`
             i=0
             #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded
             while [ $i -lt $WAIT_FOR_START ] ; do
                 sleep 1
                 if is_running $pid ; then
-                    if [ $(grep -c 'Yamcs started successfully' $OUTERR.0) -eq 1 ]; then
+                    if [ $(grep -c 'Yamcs started in' $OUTERR.0) -eq 1 ]; then
                         echo done
                         break
                     fi
@@ -66,7 +66,7 @@ case "$1" in
                 fi
             done
             if [ $i -eq $WAIT_FOR_START ] ; then 
-                echo "Yamcs did not finish initializing in $WAIT_FOR_START seconds"
+                echo "Yamcs did not finish starting in under $WAIT_FOR_START seconds"
             fi
         fi
 

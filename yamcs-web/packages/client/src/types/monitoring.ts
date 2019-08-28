@@ -322,8 +322,6 @@ export interface DownloadEventsOptions {
   q?: string;
   severity?: EventSeverity;
   source?: string | string[];
-  format?: 'csv';
-  order?: 'asc' | 'desc';
 }
 
 export interface GetParameterValuesOptions {
@@ -337,19 +335,10 @@ export interface GetParameterValuesOptions {
 }
 
 export interface DownloadParameterValuesOptions {
-  start?: string;
-  stop?: string;
-  norepeat?: boolean;
-  format?: 'csv';
-  order?: 'asc' | 'desc';
-}
-
-export interface BatchDownloadParameterValuesOptions {
   parameters?: string | string[];
   start?: string;
   stop?: string;
-  format?: 'csv';
-  order?: 'asc' | 'desc';
+  norepeat?: boolean;
 }
 
 export interface GetParameterSamplesOptions {

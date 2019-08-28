@@ -12,12 +12,10 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.YamcsInstance;
 
 import io.netty.channel.ChannelFuture;
 
@@ -124,7 +122,7 @@ public class YamcsConnector implements WebSocketClientCallback {
                         // the connected callback will handle that
 
                         return;
-                    } catch (YamcsApiException e) {
+                    } catch (ClientException e) {
                         for (ConnectionListener cl : connectionListeners) {
                             cl.log("Connection to " + connectionParams.getHost() + ":" + connectionParams.getPort()
                                     + " failed: " + e.getMessage());
@@ -148,12 +146,12 @@ public class YamcsConnector implements WebSocketClientCallback {
                 for (ConnectionListener cl : connectionListeners) {
                     cl.log(maxAttempts + " connection attempts failed, giving up.");
                     cl.connectionFailed(connectingTo,
-                            new YamcsException(maxAttempts + " connection attempts failed, giving up."));
+                            new ClientException(maxAttempts + " connection attempts failed, giving up."));
                 }
                 log.warn(maxAttempts + " connection attempts failed, giving up.");
             } catch (InterruptedException e) {
                 for (ConnectionListener cl : connectionListeners) {
-                    cl.connectionFailed(connectingTo, new YamcsException("Thread interrupted", e));
+                    cl.connectionFailed(connectingTo, new ClientException("Thread interrupted", e));
                 }
             }
         }, connectionParams);

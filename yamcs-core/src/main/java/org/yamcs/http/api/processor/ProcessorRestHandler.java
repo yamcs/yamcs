@@ -24,28 +24,28 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.api.ManagementApi;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
-import org.yamcs.http.api.ServiceHelper;
 import org.yamcs.http.api.YamcsToGpbAssembler;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
-import org.yamcs.protobuf.Rest.CreateProcessorRequest;
-import org.yamcs.protobuf.Rest.EditAlarmRequest;
-import org.yamcs.protobuf.Rest.EditProcessorRequest;
-import org.yamcs.protobuf.Rest.ListAlarmsResponse;
-import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.Alarms.EditAlarmRequest;
+import org.yamcs.protobuf.Archive.ListAlarmsResponse;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.EditProcessorRequest;
+import org.yamcs.protobuf.ListClientsResponse;
+import org.yamcs.protobuf.ListProcessorsResponse;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
@@ -70,35 +70,35 @@ public class ProcessorRestHandler extends RestHandler {
     public void listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (Processor processor : Processor.getProcessors()) {
-            response.addProcessor(toProcessorInfo(processor, req, true));
+            response.addProcessor(toProcessorInfo(processor, true));
         }
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance", method = "GET")
+    @Route(path = "/api/processors/{instance}", method = "GET")
     public void listProcessorsForInstance(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        String instance = verifyInstance(req.getRouteParam("instance"));
 
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (Processor processor : Processor.getProcessors(instance)) {
-            response.addProcessor(toProcessorInfo(processor, req, true));
+            response.addProcessor(toProcessorInfo(processor, true));
         }
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}", method = "GET")
     public void getProcessor(RestRequest req) throws HttpException {
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
 
-        ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
+        ProcessorInfo pinfo = toProcessorInfo(processor, true);
         completeOK(req, pinfo);
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
+    @Route(path = "/api/processors/{instance}/{processor}", method = "DELETE")
     public void deleteProcessor(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlProcessor);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot delete a non-replay processor");
         }
@@ -107,11 +107,11 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/processors/{instance}/{processor}", method = "PATCH")
     public void editProcessor(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlProcessor);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
@@ -185,9 +185,9 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/clients", method = "GET")
     public void listClientsForProcessor(RestRequest req) throws HttpException {
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
 
         Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
@@ -199,9 +199,9 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/alarms", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/alarms", method = "GET")
     public void listAlarmsForProcessor(RestRequest req) throws HttpException {
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
             AlarmServer<Parameter, ParameterValue> alarmServer = processor.getParameterRequestManager()
@@ -220,17 +220,16 @@ public class ProcessorRestHandler extends RestHandler {
     }
 
     @Deprecated
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT",
-            "POST" })
+    @Route(path = "/api/processors/{instance}/{processor}/parameters/{name*}/alarms/{seqnum}", method = "PATCH")
     public void patchParameterAlarm(RestRequest req) throws HttpException {
-        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        log.warn("Deprecated endpoint. Use /api/processors/{instance}/{processor}/alarms/{name*}/{seqnum} instead");
         patchAlarm(req);
     }
 
     @Deprecated
-    @Route(path = "/api/processors/:instance/:processor/events/:name*/alarms/:seqnum", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/events/{name*}/alarms/{seqnum}", method = "PATCH")
     public void patchEventAlarm(RestRequest req) throws HttpException {
-        log.warn("Deprecated endpoint. Use /api/processors/:instance/:processor/alarms/:name*/:seqnum instead");
+        log.warn("Deprecated endpoint. Use /api/processors/{instance}/{processor}/alarms/{name*}/{seqnum} instead");
         patchAlarm(req);
     }
 
@@ -267,15 +266,15 @@ public class ProcessorRestHandler extends RestHandler {
                 }
             }
         } catch (AlarmSequenceException e) {
-            throw new NotFoundException(req, "Subject is in state of alarm, but alarm id does not match");
+            throw new NotFoundException("Subject is in state of alarm, but alarm id does not match");
         }
 
-        throw new NotFoundException(req, "No active alarm named '" + alarmName + "'");
+        throw new NotFoundException("No active alarm named '" + alarmName + "'");
     }
 
-    @Route(path = "/api/processors/:instance/:processor/alarms/:name*/:seqnum", method = "PATCH")
+    @Route(path = "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}", method = "PATCH")
     public void patchAlarm(RestRequest req) throws HttpException {
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         String alarmName = req.getRouteParam("name");
         if (!alarmName.startsWith("/")) {
             alarmName = "/" + alarmName;
@@ -294,7 +293,7 @@ public class ProcessorRestHandler extends RestHandler {
             comment = request.getComment();
         }
 
-        // URI can override body
+        // URI can override body (legacy)
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
         }
@@ -306,7 +305,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
 
         // TODO permissions on AlarmServer
-        String username = req.getUser().getUsername();
+        String username = req.getUser().getName();
 
         switch (state.toLowerCase()) {
         case "acknowledged":
@@ -336,10 +335,10 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-    @Route(path = "/api/processors/:instance", method = "POST")
+    @Route(path = "/api/processors/{instance}", method = "POST")
     public void createProcessorForInstance(RestRequest restReq) throws HttpException {
         CreateProcessorRequest request = restReq.bodyAsMessage(CreateProcessorRequest.newBuilder()).build();
-        String yamcsInstance = verifyInstance(restReq, restReq.getRouteParam("instance"));
+        String yamcsInstance = verifyInstance(restReq.getRouteParam("instance"));
 
         if (!request.hasName()) {
             throw new BadRequestException("No processor name was specified");
@@ -369,7 +368,7 @@ public class ProcessorRestHandler extends RestHandler {
         reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), restReq.getUser().getUsername());
+            mservice.createProcessor(reqb.build(), restReq.getUser().getName());
             completeOK(restReq);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
@@ -378,7 +377,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
             throws ForbiddenException {
-        String username = user.getUsername();
+        String username = user.getName();
         if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
@@ -405,7 +404,7 @@ public class ProcessorRestHandler extends RestHandler {
                 log.warn("Invalid client id {} specified, ignoring", id);
                 it.remove();
             } else {
-                if (!username.equals(client.getUser().getUsername())) {
+                if (!username.equals(client.getUser().getName())) {
                     log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
                     throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }
@@ -413,7 +412,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-    public static ProcessorInfo toProcessorInfo(Processor processor, RestRequest req, boolean detail) {
+    public static ProcessorInfo toProcessorInfo(Processor processor, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {
             ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
@@ -426,7 +425,7 @@ public class ProcessorRestHandler extends RestHandler {
         String name = processor.getName();
 
         for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
-            b.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, name));
+            b.addService(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
         }
         return b.build();
     }

@@ -1,0 +1,128 @@
+syntax="proto2";
+  
+package yamcs.protobuf.buckets;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "BucketsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+// Implements object storage
+service BucketsApi {
+
+  // List buckets
+  rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}"
+    };
+  }
+  
+  // Create a bucket
+  rpc CreateBucket(CreateBucketRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/buckets/{instance}"
+      body: "*"
+    };
+  }
+  
+  // Delete a bucket
+  rpc DeleteBucket(DeleteBucketRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/buckets/{instance}/{bucketName}"
+    };
+  }
+  
+  // Get an object
+  rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+    };
+  }
+  
+  // Upload an object
+  rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
+      maxBodySize: 5242880
+    };
+  }
+  
+  // List objects
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}/{bucketName}/objects"
+    };
+  }
+  
+  // Delete an object
+  rpc DeleteObject(DeleteObjectRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+    };
+  }
+}
+
+message CreateBucketRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message DeleteBucketRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+}
+
+message GetObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
+}
+
+message DeleteObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
+}
+
+message UploadObjectRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string objectName = 3;
+}
+
+message BucketInfo {
+  optional string name = 1;
+  optional uint64 size = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint32 numObjects = 3; //number of objects in the bucket
+}
+
+message ObjectInfo {
+  optional string name = 1;
+  optional string created = 2; //time in UTC format
+  optional uint64 size = 3; //size in bytes
+  map<string, string> metadata = 4;
+}
+
+message ListBucketsRequest {
+  optional string instance = 1;
+}
+
+message ListBucketsResponse {
+  repeated BucketInfo buckets = 1;
+}
+
+message ListObjectsRequest {
+  optional string instance = 1;
+  optional string bucketName = 2;
+  optional string delimiter = 3;
+  optional string prefix = 4;
+}
+
+message ListObjectsResponse {
+  repeated string prefixes = 1;
+  repeated ObjectInfo objects = 2;
+}

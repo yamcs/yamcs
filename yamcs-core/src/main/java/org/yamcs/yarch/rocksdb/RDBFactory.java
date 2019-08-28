@@ -40,6 +40,7 @@ public class RDBFactory implements Runnable {
     ScheduledThreadPoolExecutor scheduler;
     final String dataDir;
     public static FlushOptions flushOptions = new FlushOptions();
+    static boolean registerShutdownHooks = true;
 
     public static synchronized RDBFactory getInstance(String dataDir) {
         return instances.computeIfAbsent(dataDir, k -> new RDBFactory(k));
@@ -80,7 +81,9 @@ public class RDBFactory implements Runnable {
             return t;
         });
         scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
-        Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
+        if (registerShutdownHooks) {
+            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
+        }
     }
 
     private synchronized YRDB rdb(String relativePath, boolean readonly) throws IOException {
@@ -177,6 +180,13 @@ public class RDBFactory implements Runnable {
         if (db != null) {
             db.close();
         }
+    }
+
+    /**
+     * Set whether shutdown hooks are registered on each created {@link RDBFactory}. By default this is enabled.
+     */
+    public static void setRegisterShutdownHooks(boolean registerShutdownHooks) {
+        RDBFactory.registerShutdownHooks = registerShutdownHooks;
     }
 
     /**

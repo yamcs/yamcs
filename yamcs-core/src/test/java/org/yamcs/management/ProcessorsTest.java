@@ -24,26 +24,27 @@ import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.ProcessorListener;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.ProcessorControlClient;
+import org.yamcs.client.ProcessorListener;
 import org.yamcs.client.YamcsConnector;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Statistics;
 import org.yamcs.security.User;
 
 import com.google.common.util.concurrent.AbstractService;
 
 public class ProcessorsTest {
-    // static EmbeddedActiveMQ artemisServer;
+
     @BeforeClass
     public static void setup() throws Exception {
         YConfiguration.setupTest("ProcessorsTest");
-        YamcsServer.setupYamcsServer();
+        YamcsServer.getServer().prepareStart();
+        YamcsServer.getServer().start();
     }
 
     @AfterClass
@@ -63,7 +64,7 @@ public class ProcessorsTest {
             ccc.createProcessor("yproctest0", "test1", "dummy", null, false, new int[] { 10, 14 }).get();
             assertTrue("YamcsException was expected", false);
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("createProcessor invoked with a list full of invalid client ids", excData.getMessage());
         }
         yconnector.disconnect();
@@ -83,7 +84,8 @@ public class ProcessorsTest {
 
         client1.createProcessor("yproctest1", "yproc1", "dummy", null, true, new int[] {}).get();
 
-        ConnectedClient client = new ConnectedClient(new User("random-test-user"), "random-app-name", "random-address");
+        ConnectedClient client = new ConnectedClient(new User("random-test-user", null), "random-app-name",
+                "random-address");
         Processor processor1 = Processor.getInstance("yproctest1", "yproc1");
         assertNotNull(processor1);
 
@@ -140,7 +142,7 @@ public class ProcessorsTest {
 
         assertEquals(4, ml.clientUpdatedList.size());
         // first one is from the ProcessorControlClient
-        assertCEquals("yproctest1", "realtime", clientId - 1, "admin", "ProcessorTest-randname1",
+        assertCEquals("yproctest1", "realtime", clientId - 1, "guest", "ProcessorTest-randname1",
                 ml.clientUpdatedList.get(0));
 
         assertCEquals("yproctest1", "yproc1", clientId, "random-test-user", "random-app-name",
@@ -256,5 +258,4 @@ public class ProcessorsTest {
             proc.setPacketProvider(this);
         }
     }
-
 }

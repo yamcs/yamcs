@@ -1,16 +1,16 @@
 package org.yamcs.artemis;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -24,13 +24,11 @@ public class ArtemisServer extends AbstractYamcsService {
 
     private static EmbeddedActiveMQ broker;
 
-    private String configFile; // Must be on classpath (note that etc folder is usually added to Yamcs classpath)
     private ActiveMQSecurityManager securityManager;
 
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("configFile", OptionType.STRING).withDefault("artemis.xml");
         spec.addOption("securityManager", OptionType.ANY);
         return spec;
     }
@@ -42,14 +40,6 @@ public class ArtemisServer extends AbstractYamcsService {
         // Divert artemis logging
         System.setProperty("org.jboss.logging.provider", "slf4j");
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
-
-        configFile = config.getString("configFile");
-
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        if (yconf.containsKey("artemisConfigFile")) {
-            log.warn("Deprecation: migrate 'artemisConfigFile' setting to arg 'configFile' of ArtemisServer");
-            configFile = yconf.getString("artemisConfigFile");
-        }
 
         if (config.containsKey("securityManager")) {
             try {
@@ -75,18 +65,21 @@ public class ArtemisServer extends AbstractYamcsService {
             throw new UnsupportedOperationException("This service cannot be instantiated more than once");
         }
 
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
 
         if (securityManager != null) {
             artemisServer.setSecurityManager(securityManager);
-        } else if (securityStore.isAuthenticationEnabled()) {
-            log.warn("Artemis security is unconfigured. All connections are given full permissions");
         } else {
-            log.debug("Artemis security is unconfigured. All connections are given full permissions");
+            log.warn("Artemis security is unconfigured. All connections are given full permissions");
         }
 
-        artemisServer.setConfigResourcePath(configFile);
+        // We are supposed to pass a "classpath resource", however the called code also accepts
+        // any string that can be used to construct a java.net.URL.
+        Path configDirectory = YamcsServer.getServer().getConfigDirectory();
+        Path configFile = configDirectory.resolve("artemis.xml").toAbsolutePath();
+        String configResource = configFile.toUri().toURL().toString();
+        artemisServer.setConfigResourcePath(configResource);
+
         artemisServer.start();
 
         return artemisServer;

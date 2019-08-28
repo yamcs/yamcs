@@ -4,8 +4,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.protobuf.Cfdp.TransferDirection;
-import org.yamcs.protobuf.Cfdp.TransferState;
+import org.yamcs.protobuf.TransferDirection;
+import org.yamcs.protobuf.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 

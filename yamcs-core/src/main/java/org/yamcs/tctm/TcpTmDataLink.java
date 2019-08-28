@@ -11,16 +11,17 @@ import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.Log;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
 
 public class TcpTmDataLink extends AbstractTmDataLink {
 
     protected Socket tmSocket;
-    protected String host = "localhost";
-    protected int port = 10031;
+    protected String host;
+    protected int port;
+    protected long initialDelay;
     protected volatile boolean disabled = false;
 
     protected final Log log;
@@ -40,7 +41,8 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
-        log = new Log(this.getClass(), instance);
+        log = new Log(getClass(), instance);
+        log.setContext(name);
         if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
             host = config.getString("tmHost");
             port = config.getInt("tmPort");
@@ -48,6 +50,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
             host = config.getString("host");
             port = config.getInt("port");
         }
+        initialDelay = config.getLong("initialDelay", 0);
         if (config.containsKey("packetInputStreamClassName")) {
             this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
         } else {
@@ -84,6 +87,13 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     @Override
     public void run() {
         setupSysVariables();
+        try {
+            Thread.sleep(initialDelay);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+
         while (isRunning()) {
             PacketWithTime pwrt = getNextPacket();
             if (pwrt == null) {
@@ -110,7 +120,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
             try {
                 if (tmSocket == null) {
                     openSocket();
-                    log.info("TM connection established to {}:{}", host, port);
+                    log.info("Link established to {}:{}", host, port);
                 }
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
@@ -119,7 +129,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                     break;
                 }
             } catch (EOFException e) {
-                log.warn("Tm Connection closed");
+                log.warn("TM Connection closed");
                 tmSocket = null;
             } catch (IOException e) {
                 String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
@@ -129,11 +139,16 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 } catch (Exception e2) {
                 }
                 tmSocket = null;
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e1) {
-                    Thread.currentThread().interrupt();
-                    return null;
+                for (int i = 0; i < 10; i++) {
+                    if (!isRunning()) {
+                        break;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
                 }
             } catch (PacketTooLongException e) {
                 log.warn(e.toString());
@@ -208,5 +223,4 @@ public class TcpTmDataLink extends AbstractTmDataLink {
             return String.format("OK, connected to %s:%d, received %d packets", host, port, packetcount);
         }
     }
-
 }

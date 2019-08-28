@@ -3,3 +3,5 @@ instances:
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-IntegrationTest-data
+
+secretKey: testtest

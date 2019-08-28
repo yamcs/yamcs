@@ -3,9 +3,10 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.protobuf.LinkInfo;
 
 public class LinkControlImpl extends StandardMBean implements LinkControl {
+
     LinkInfo linkInfo;
 
     public LinkControlImpl(LinkInfo linkInfo) throws NotCompliantMBeanException {
@@ -13,7 +14,7 @@ public class LinkControlImpl extends StandardMBean implements LinkControl {
         this.linkInfo = linkInfo;
     }
 
-    LinkInfo getLinkInfo(){
+    LinkInfo getLinkInfo() {
         return linkInfo;
     }
 

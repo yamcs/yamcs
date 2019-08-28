@@ -1,8 +1,9 @@
 package org.yamcs.utils;
 
-import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,8 +25,8 @@ import com.csvreader.CsvWriter;
  * @author nm
  *
  */
-public class ParameterFormatter {
-    protected BufferedWriter writer;
+public class ParameterFormatter implements Closeable {
+    protected Writer writer;
     protected boolean printTime = true;
     protected boolean printRaw = false;
     protected boolean printMonitoring = false;
@@ -47,11 +48,11 @@ public class ParameterFormatter {
     CsvWriter csvWriter;
     char columnSeparator = DEFAULT_COLUMN_SEPARATOR;
 
-    public ParameterFormatter(BufferedWriter writer, Collection<NamedObjectId> paramList) {
+    public ParameterFormatter(Writer writer, Collection<NamedObjectId> paramList) {
         this(writer, paramList, DEFAULT_COLUMN_SEPARATOR);
     }
 
-    public ParameterFormatter(BufferedWriter writer, Collection<NamedObjectId> paramList, char columnSeparator) {
+    public ParameterFormatter(Writer writer, Collection<NamedObjectId> paramList, char columnSeparator) {
         this.writer = writer;
         for (NamedObjectId id : paramList) {
             subscribedParameters.put(id, null);
@@ -225,6 +226,7 @@ public class ParameterFormatter {
         csvWriter.flush();
     }
 
+    @Override
     public void close() throws IOException {
         writeParameters();// write the remaining parameters
         csvWriter.close();

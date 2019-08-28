@@ -83,7 +83,7 @@ public class TcTmServer extends AbstractService {
 
         try {
             b.bind(port).sync();
-            log.info("TM/TC Server listening for clients on port " + port);
+            log.debug("TM/TC Server listening for clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

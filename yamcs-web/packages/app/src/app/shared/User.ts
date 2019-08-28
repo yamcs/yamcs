@@ -1,20 +1,24 @@
-import { ClientInfo, ObjectPrivilege, UserInfo } from '@yamcs/client';
+import { ObjectPrivilege, UserInfo } from '@yamcs/client';
 
 export class User {
 
   constructor(private userInfo: UserInfo) {
   }
 
-  getUsername() {
-    return this.userInfo.login;
+  getName() {
+    return this.userInfo.name;
+  }
+
+  getEmail() {
+    return this.userInfo.email;
+  }
+
+  getDisplayName() {
+    return this.userInfo.displayName;
   }
 
   isSuperuser() {
     return this.userInfo.superuser || false;
-  }
-
-  getClientConnections(): ClientInfo[] {
-    return this.userInfo.clientInfo || [];
   }
 
   getSystemPrivileges() {

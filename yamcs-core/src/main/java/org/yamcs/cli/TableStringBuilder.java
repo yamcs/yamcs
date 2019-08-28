@@ -21,6 +21,10 @@ public class TableStringBuilder {
         }
     }
 
+    public TableStringBuilder(int cols) {
+        widths = new int[cols];
+    }
+
     public void addLine(Object... data) {
         String[] dataStrings = new String[data.length];
         for (int i = 0; i < data.length; i++) {
@@ -48,12 +52,16 @@ public class TableStringBuilder {
     public String toString() {
         String fm = buildStringFormat();
 
-        String hline = String.format(fm, (Object[]) header);
+        String hline = header != null ? String.format(fm, (Object[]) header) + "\n" : "";
         StringBuilder buf = new StringBuilder(hline);
-
+        boolean first = true;
         for (String[] row : rows) {
+            if (!first) {
+                buf.append("\n");
+            }
             String line = String.format(fm, (Object[]) row);
-            buf.append("\n").append(line);
+            buf.append(line);
+            first = false;
         }
 
         return buf.toString();

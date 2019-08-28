@@ -1,12 +1,12 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.parameter.ValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
@@ -26,8 +26,8 @@ public class TestUtils {
         pv.setEngineeringValue(v);
         return pv;
     }
-    
-    public static void checkEquals( ParameterValue pv1, ParameterValue pv2) {
+
+    public static void checkEquals(ParameterValue pv1, ParameterValue pv2) {
         assertEquals(pv1.getParameter(), pv2.getParameter());
         assertEquals(pv1.getGenerationTime(), pv2.getGenerationTime());
         assertEquals(pv1.getAcquisitionTime(), pv2.getAcquisitionTime());
@@ -35,35 +35,38 @@ public class TestUtils {
         assertEquals(pv1.getEngValue(), pv2.getEngValue());
         assertEquals(pv1.getStatus(), pv2.getStatus());
     }
-    public static void checkEquals( ParameterValueArray pva, ParameterValue...pvs) {
+
+    public static void checkEquals(ParameterValueArray pva, ParameterValue... pvs) {
         checkEquals(true, true, true, pva, pvs);
     }
-    public static void checkEquals(boolean shouldHaveEngValues, boolean shouldHaveRawValues, boolean shouldHaveParameterStatus, ParameterValueArray actualPva, ParameterValue...expectedPvs) {
+
+    public static void checkEquals(boolean shouldHaveEngValues, boolean shouldHaveRawValues,
+            boolean shouldHaveParameterStatus, ParameterValueArray actualPva, ParameterValue... expectedPvs) {
         assertEquals(expectedPvs.length, actualPva.timestamps.length);
-        for(int i=0; i<expectedPvs.length; i++) {
+        for (int i = 0; i < expectedPvs.length; i++) {
             ParameterValue pv = expectedPvs[i];
             assertEquals(pv.getGenerationTime(), actualPva.timestamps[i]);
         }
-        if(shouldHaveEngValues) {
-            for(int i=0; i<expectedPvs.length; i++) {
-                assertEquals( expectedPvs[i].getEngValue(), actualPva.getEngValues().getValue(i));
-            }   
+        if (shouldHaveEngValues) {
+            for (int i = 0; i < expectedPvs.length; i++) {
+                assertEquals(expectedPvs[i].getEngValue(), actualPva.getEngValues().getValue(i));
+            }
         } else {
             assertNull(actualPva.engValues);
         }
-        if(shouldHaveRawValues) {
-            for(int i=0; i<expectedPvs.length; i++) {
-                if(expectedPvs[i].getRawValue()!=null) {
-                    assertEquals( expectedPvs[i].getRawValue(), actualPva.getRawValues().getValue(i));
+        if (shouldHaveRawValues) {
+            for (int i = 0; i < expectedPvs.length; i++) {
+                if (expectedPvs[i].getRawValue() != null) {
+                    assertEquals(expectedPvs[i].getRawValue(), actualPva.getRawValues().getValue(i));
                 }
-            }        
+            }
         } else {
             assertNull(actualPva.rawValues);
         }
-        if(shouldHaveParameterStatus) {
+        if (shouldHaveParameterStatus) {
             assertNotNull(actualPva.paramStatus);
             assertEquals(expectedPvs.length, actualPva.paramStatus.length);
-            for(int i=0; i<expectedPvs.length; i++) {
+            for (int i = 0; i < expectedPvs.length; i++) {
                 checkEquals(expectedPvs[i], actualPva.paramStatus[i]);
             }
         } else {
@@ -71,35 +74,31 @@ public class TestUtils {
         }
     }
 
-
-
-
-    private static void checkEquals(ParameterValue parameterValue,    ParameterStatus parameterStatus) {
+    private static void checkEquals(ParameterValue parameterValue, ParameterStatus parameterStatus) {
         assertEquals(ParameterStatusSegment.getStatus(parameterValue, null), parameterStatus);
     }
 
     public static void checkEquals(ParameterIdValueList plist, long expectedTime, ParameterValue... expectedPv) {
         assertEquals(expectedTime, plist.instant);
         assertEquals(expectedPv.length, plist.values.size());
-        for(int i=0; i<expectedPv.length; i++) {
+        for (int i = 0; i < expectedPv.length; i++) {
             ParameterValue pv = expectedPv[i];
             Value v = plist.values.get(i).getEngValue();
             Value rv = plist.values.get(i).getRawValue();
             assertEquals(pv.getEngValue(), v);
-            if(pv.getRawValue()!=null) {
+            if (pv.getRawValue() != null) {
                 assertEquals(pv.getRawValue(), rv);
             }
         }
     }
 
-    static void checkEquals(MyValueConsummer c, ParameterValue...pvs) {
+    static void checkEquals(MyValueConsumer c, ParameterValue... pvs) {
         assertEquals(pvs.length, c.times.size());
-        for(int i=0; i<pvs.length; i++) {
+        for (int i = 0; i < pvs.length; i++) {
             ParameterValue pv = pvs[i];
-            assertEquals(pv.getAcquisitionTime(), (long)c.times.get(i));
+            assertEquals(pv.getAcquisitionTime(), (long) c.times.get(i));
             assertEquals(pv.getEngValue(), c.values.get(i));
         }
     }
-    
-    
+
 }

@@ -2,14 +2,11 @@ package org.yamcs.http;
 
 import java.util.Base64;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.http.JwtHelper.JwtDecodeException;
 import org.yamcs.security.AuthenticationException;
+import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
@@ -23,30 +20,21 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 
 /**
- * Checks the HTTP Authorization header for supported types. It also allows scanning bearer tokens from the Cookie
- * header specifically to support web socket requests coming from a browser (browsers do not allow setting custom
- * authorization headers on websocket requests).
- * <p>
- * This class maintains a cache from a JWT bearer token to the authenticated User object. This allows skipping the login
- * process as long as the bearer is valid.
+ * Checks the HTTP Authorization or Cookie header for supported types.
  */
 public class HttpAuthorizationChecker {
 
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
-    private static final Logger log = LoggerFactory.getLogger(HttpAuthorizationChecker.class);
 
     private SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-    private final ConcurrentHashMap<String, User> jwtTokens = new ConcurrentHashMap<>();
-    private int cleaningCounter = 0;
+    private TokenStore tokenStore;
+
+    public HttpAuthorizationChecker(TokenStore tokenStore) {
+        this.tokenStore = tokenStore;
+    }
 
     public User verifyAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        cleaningCounter++;
-        if (cleaningCounter == 1000) {
-            cleaningCounter = 0;
-            cleanupCache();
-        }
-
         if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
             String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
             if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
@@ -56,15 +44,35 @@ public class HttpAuthorizationChecker {
             } else {
                 throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
             }
-        } else if (req.headers().contains(HttpHeaderNames.COOKIE)) {
-            return handleCookie(ctx, req);
+        }
+
+        // There may be an access token in the cookie. This use case is added because
+        // of web socket requests coming from the browser where it is not possible to
+        // set custom authorization headers. It'd be interesting if we communicate the
+        // access token via the websocket subprotocol instead (e.g. via temp. route).
+        String accessToken = getAccessTokenFromCookie(req);
+        if (accessToken != null) {
+            return handleAccessToken(ctx, req, accessToken);
+        }
+
+        if (securityStore.getGuestUser().isActive()) {
+            return securityStore.getGuestUser();
         } else {
             throw new UnauthorizedException("Missing 'Authorization' or 'Cookie' header");
         }
     }
 
-    public void storeTokenToUserMapping(String jwtToken, User user) {
-        jwtTokens.put(jwtToken, user);
+    private String getAccessTokenFromCookie(HttpRequest req) {
+        HttpHeaders headers = req.headers();
+        if (headers.contains(HttpHeaderNames.COOKIE)) {
+            Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
+            for (Cookie c : cookies) {
+                if ("access_token".equalsIgnoreCase(c.name())) {
+                    return c.value();
+                }
+            }
+        }
+        return null;
     }
 
     private User handleBasicAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
@@ -85,7 +93,8 @@ public class HttpAuthorizationChecker {
 
         try {
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
-            return securityStore.login(token).get();
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
@@ -101,63 +110,18 @@ public class HttpAuthorizationChecker {
     private User handleBearerAuth(ChannelHandlerContext ctx, HttpRequest req)
             throws UnauthorizedException {
         String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
-        String jwt = header.substring(AUTH_TYPE_BEARER.length());
-        return handleAccessToken(ctx, req, jwt);
+        String accessToken = header.substring(AUTH_TYPE_BEARER.length());
+        return handleAccessToken(ctx, req, accessToken);
     }
 
-    private User handleCookie(ChannelHandlerContext ctx, HttpRequest req) throws UnauthorizedException {
-        HttpHeaders headers = req.headers();
-        String jwt = null;
-        Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
-        for (Cookie c : cookies) {
-            if ("access_token".equalsIgnoreCase(c.name())) {
-                jwt = c.value();
-                break;
-            }
-        }
-
-        if (jwt == null) {
-            throw new UnauthorizedException("Missing 'Authorization' or 'Cookie' header");
-        }
-
-        return handleAccessToken(ctx, req, jwt);
-    }
-
-    private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String jwt)
+    private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String accessToken)
             throws UnauthorizedException {
-        try {
-            JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getServer().getSecretKey());
-            if (jwtToken.isExpired()) {
-                jwtTokens.remove(jwt);
-                throw new UnauthorizedException("Token expired");
-            }
-            User cachedUser = jwtTokens.get(jwt);
-            if (cachedUser == null) {
-                log.warn("Got an invalid JWT token");
-                throw new UnauthorizedException("Invalid JWT token");
-            }
-
-            if (!securityStore.verifyValidity(cachedUser)) {
-                jwtTokens.remove(jwt);
-                throw new UnauthorizedException("Could not verify token");
-            }
-
-            return cachedUser;
-        } catch (JwtDecodeException e) {
-            throw new UnauthorizedException("Failed to decode JWT: " + e.getMessage());
+        AuthenticationInfo authenticationInfo = tokenStore.verifyAccessToken(accessToken);
+        if (!securityStore.verifyValidity(authenticationInfo)) {
+            tokenStore.revokeAccessToken(accessToken);
+            throw new UnauthorizedException("Could not verify token");
         }
-    }
 
-    private void cleanupCache() {
-        for (String jwt : jwtTokens.keySet()) {
-            try {
-                JwtToken jwtToken = new JwtToken(jwt, YamcsServer.getServer().getSecretKey());
-                if (jwtToken.isExpired()) {
-                    jwtTokens.remove(jwt);
-                }
-            } catch (JwtDecodeException e) {
-                jwtTokens.remove(jwt);
-            }
-        }
+        return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
     }
 }

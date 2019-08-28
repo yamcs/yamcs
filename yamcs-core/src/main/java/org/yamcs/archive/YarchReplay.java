@@ -1,6 +1,5 @@
 package org.yamcs.archive;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -9,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -61,7 +59,7 @@ public class YarchReplay implements StreamSubscriber {
     ReplayListener listener;
 
     public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener, XtceDb xtceDb)
-            throws IOException, YamcsException, YamcsApiException {
+            throws YamcsException {
         this.listener = listener;
         this.replayServer = replayServer;
         this.xtceDb = xtceDb;

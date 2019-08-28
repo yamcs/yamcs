@@ -98,14 +98,14 @@ public class TmTcLink extends AbstractExecutionThreadService {
             }
         }
         try {
-            log.info("Waiting for {} connection from server on port {}", name, port);
+            log.debug("Waiting for {} connection from server on port {}", name, port);
             serverSocket = new ServerSocket(port);
             socket = serverSocket.accept();
             inputStream = new DataInputStream(socket.getInputStream());
             connected = true;
-            log.info("Connected: {}:{}", socket.getInetAddress(), socket.getPort());
+            log.debug("Connected: {}:{}", socket.getInetAddress(), socket.getPort());
         } catch (Exception e) {
-            if(isRunning()) {
+            if (isRunning()) {
                 e.printStackTrace();
             }
         }
@@ -127,8 +127,8 @@ public class TmTcLink extends AbstractExecutionThreadService {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
             int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if(remaining < MIN_TC_LENGTH - 6) {
-                throw new IOException("Command too short: " + (remaining+6) + " minimum required " + MIN_TC_LENGTH);
+            if (remaining < MIN_TC_LENGTH - 6) {
+                throw new IOException("Command too short: " + (remaining + 6) + " minimum required " + MIN_TC_LENGTH);
             }
             if (remaining > maxTcLength - 6) {
                 throw new IOException(
@@ -140,7 +140,7 @@ public class TmTcLink extends AbstractExecutionThreadService {
             CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
             return packet;
         } catch (EOFException e) {
-            log.error(name+" Connection lost");
+            log.error(name + " Connection lost");
             connected = false;
         } catch (Exception e) {
             connected = false;
@@ -148,13 +148,14 @@ public class TmTcLink extends AbstractExecutionThreadService {
         }
         return null;
     }
-    
+
+    @Override
     protected void triggerShutdown() {
-        if(serverSocket!=null) {
+        if (serverSocket != null) {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                //ignore error
+                // ignore error
             }
         }
     }

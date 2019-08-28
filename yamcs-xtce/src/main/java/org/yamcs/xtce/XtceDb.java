@@ -110,10 +110,31 @@ public class XtceDb implements Serializable {
     public Parameter getParameter(String qualifiedName) {
         rwLock.readLock().lock();
         try {
-            return parameters.get(qualifiedName);
+            int idx = qualifiedName.indexOf('/');
+            if (idx == 0) {
+                return parameters.get(qualifiedName);
+            } else if (idx > 0) {
+                String namespace = qualifiedName.substring(0, idx);
+                String name = qualifiedName.substring(idx + 1);
+                return getParameter(namespace, name);
+            }
+            return null;
         } finally {
             rwLock.readLock().unlock();
         }
+    }
+
+    public static NamedObjectId toNamedObjectId(String qualifiedName) {
+        int idx = qualifiedName.indexOf('/');
+        if (idx == 0) {
+            return NamedObjectId.newBuilder().setName(qualifiedName).build();
+        } else if (idx > 0) {
+            return NamedObjectId.newBuilder()
+                    .setNamespace(qualifiedName.substring(0, idx))
+                    .setName(qualifiedName.substring(idx + 1))
+                    .build();
+        }
+        throw new IllegalArgumentException("Invalid parameter id " + qualifiedName);
     }
 
     public Parameter getParameter(String namespace, String name) {
@@ -554,8 +575,8 @@ public class XtceDb implements Serializable {
     }
 
     /**
-     * Creates and returns a system parameter with the given qualified name.
-     * If the parameter already exists it is returned.
+     * Creates and returns a system parameter with the given qualified name. If the parameter already exists it is
+     * returned.
      * 
      * 
      * @param parameterQualifiedNamed
@@ -571,7 +592,7 @@ public class XtceDb implements Serializable {
                 throw new IllegalArgumentException(
                         "The parameter qualified name must start with " + YAMCS_SPACESYSTEM_NAME);
             }
-            
+
             SystemParameter p = (SystemParameter) parameters.get(parameterQualifiedNamed);
             if (p == null) {
                 p = SystemParameter.getForFullyQualifiedName(parameterQualifiedNamed);
@@ -702,8 +723,8 @@ public class XtceDb implements Serializable {
     }
 
     /**
-     * Checks if a fully qualified name is the name of a system parameter.
-     * That is if <code>fqn</code> starts with {@link XtceDb#YAMCS_SPACESYSTEM_NAME}
+     * Checks if a fully qualified name is the name of a system parameter. That is if <code>fqn</code> starts with
+     * {@link XtceDb#YAMCS_SPACESYSTEM_NAME}
      * 
      * @param fqn
      * @return

@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.client.WebSocketClient.RequestResponsePair;
-import org.yamcs.protobuf.Web.WebSocketServerMessage;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.WebSocketServerMessage;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

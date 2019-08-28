@@ -304,7 +304,6 @@ export class EventsPage {
     }
 
     const dlOptions: DownloadEventsOptions = {
-      format: 'csv',
       severity: this.severity as any,
     };
     if (this.validStart) {

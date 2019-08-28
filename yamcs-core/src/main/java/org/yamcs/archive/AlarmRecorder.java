@@ -2,14 +2,14 @@ package org.yamcs.archive;
 
 import java.util.List;
 
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;

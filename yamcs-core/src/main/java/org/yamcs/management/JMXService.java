@@ -5,30 +5,31 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConnectedClient;
+import org.yamcs.InitException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorListener;
+import org.yamcs.YConfiguration;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.management.StreamControlImpl;
 import org.yamcs.yarch.management.TableControlImpl;
 
-import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
-public class JMXService extends AbstractService
+public class JMXService extends AbstractYamcsService
         implements ManagementListener, LinkListener, ProcessorListener, TableStreamListener, CommandQueueListener {
-    final MBeanServer mbeanServer;
-    static Logger log = LoggerFactory.getLogger(JMXService.class.getName());
+
+    private MBeanServer mbeanServer;
     private static final String TOP_LEVEL_NAME = "yamcs";
 
     // keep track of registered services
@@ -36,7 +37,9 @@ public class JMXService extends AbstractService
 
     Map<ObjectName, LinkControlImpl> links = new HashMap<>();
 
-    public JMXService() {
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
         mbeanServer = ManagementFactory.getPlatformMBeanServer();
         ManagementService mgmSrv = ManagementService.getInstance();
         mgmSrv.addCommandQueueListener(this);
@@ -132,8 +135,10 @@ public class JMXService extends AbstractService
             TableControlImpl tci = new TableControlImpl(table);
             mbeanServer.registerMBean(tci,
                     ObjectName.getInstance(TOP_LEVEL_NAME + "." + instance + ":type=tables,name=" + table.getName()));
+        } catch (InstanceAlreadyExistsException e) {
+            // Ignore. This happens when restarting a yamcs instance. (tables don't get dropped)
         } catch (Exception e) {
-            log.warn("Got exception when registering a stream: ", e);
+            log.warn("Got exception when registering a table: ", e);
         }
     }
 
@@ -143,7 +148,7 @@ public class JMXService extends AbstractService
             mbeanServer.unregisterMBean(
                     ObjectName.getInstance(TOP_LEVEL_NAME + "." + instance + ":type=tables,name=" + tableName));
         } catch (Exception e) {
-            log.warn("Got exception when unregistering a stream: ", e);
+            log.warn("Got exception when unregistering a table: ", e);
         }
     }
 
@@ -170,7 +175,7 @@ public class JMXService extends AbstractService
         }
     }
 
-    ObjectName getLinkObjectName(LinkInfo linkInfo) throws MalformedObjectNameException, NullPointerException {
+    ObjectName getLinkObjectName(LinkInfo linkInfo) throws MalformedObjectNameException {
         return ObjectName
                 .getInstance(TOP_LEVEL_NAME + "." + linkInfo.getInstance() + ":type=links,name=" + linkInfo.getName());
     }
@@ -229,8 +234,7 @@ public class JMXService extends AbstractService
     @Override
     public void commandQueueUnregistered(String instance, String processorName, CommandQueue q) {
         try {
-            CommandQueueControlImpl cqci = new CommandQueueControlImpl(instance, processorName, q);
-            mbeanServer.registerMBean(cqci, getCommandQueueObjectName(instance, processorName, q));
+            mbeanServer.unregisterMBean(getCommandQueueObjectName(instance, processorName, q));
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
         }
@@ -274,9 +278,14 @@ public class JMXService extends AbstractService
 
     ObjectName getClientInfoObjectName(ConnectedClient client) throws MalformedObjectNameException {
         int clientId = client.getId();
-        String instance = client.getProcessor().getInstance();
-        String processor = client.getProcessor().getName();
+        Processor processor = client.getProcessor();
+        String instance = null;
+        String processorName = null;
+        if (processor != null) {
+            instance = processor.getInstance();
+            processorName = processor.getName();
+        }
         return ObjectName.getInstance(
-                TOP_LEVEL_NAME + "." + instance + ":type=clients,processor=" + processor + ",id=" + clientId);
+                TOP_LEVEL_NAME + "." + instance + ":type=clients,processor=" + processorName + ",id=" + clientId);
     }
 }

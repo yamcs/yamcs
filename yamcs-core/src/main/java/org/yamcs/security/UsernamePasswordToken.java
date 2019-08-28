@@ -3,7 +3,7 @@ package org.yamcs.security;
 import java.util.Objects;
 
 /**
- * Created by msc on 05/05/15.
+ * A token using to login as a standard user with a password.
  */
 public class UsernamePasswordToken implements AuthenticationToken {
 
@@ -15,7 +15,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
         this.password = password;
     }
 
-    @Override
     public String getPrincipal() {
         return username;
     }

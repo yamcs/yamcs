@@ -30,11 +30,11 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.protobuf.Archive.StreamInfo;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorManagementRequest;
+import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.TimestampUtil;
 import org.yamcs.xtceproc.ProcessingStatistics;
@@ -410,7 +410,7 @@ public class ManagementService implements ProcessorListener {
     public Set<ConnectedClient> getClients(String username) {
         synchronized (clients) {
             return clients.values().stream()
-                    .filter(client -> client.getUser().getUsername().equals(username))
+                    .filter(client -> client.getUser().getName().equals(username))
                     .collect(Collectors.toSet());
         }
     }
@@ -538,7 +538,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void unregisterStream(String instance, String name) {
-        tableStreamListeners.forEach(l -> l.tableUnregistered(instance, name));
+        tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
     }
 
     static class LinkWithInfo {

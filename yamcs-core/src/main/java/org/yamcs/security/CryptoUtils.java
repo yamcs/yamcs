@@ -16,6 +16,15 @@ public class CryptoUtils {
 
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
 
+    private static final String PASSWORD_CHARS;
+    static {
+        String lower = "abcdefghijklmnopqrstuvwxyz";
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String number = "0123456789";
+        String misc = "!@#$%&*()_+-=[]?";
+        PASSWORD_CHARS = lower + upper + number + misc;
+    }
+
     /**
      * Generates a difficult to guess random key via SecureRandom using the HmacSHA1 algorithm
      */
@@ -29,6 +38,18 @@ public class CryptoUtils {
             // Should not happen. HmacSHA1 is available in any JDK
             throw new UnsupportedOperationException(e);
         }
+    }
+
+    /**
+     * Generates a random strong password.
+     */
+    public static String generateRandomPassword(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int idx = RNG.nextInt(PASSWORD_CHARS.length());
+            sb.append(PASSWORD_CHARS.charAt(idx));
+        }
+        return sb.toString();
     }
 
     /**

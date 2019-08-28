@@ -1,9 +1,48 @@
 syntax="proto2";
   
 package yamcs.protobuf.cfdp;
+
 option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "CfdpProto";
+option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+ 
+service CfdpApi {
+
+  // List transfers
+  rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/cfdp/{instance}/transfers"
+    };
+  }
+  
+  // Get a transfer
+  rpc GetTransfer(GetTransferRequest) returns (TransferInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/cfdp/{instance}/transfers/{id}"
+    };
+  }
+  
+  // Create a transfer
+  rpc CreateTransfer(CreateTransferRequest) returns (TransferInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/cfdp/{instance}/transfers"
+      body: "*"
+    };
+  }
+  
+  // Update a transfer
+  rpc UpdateTransfer(EditTransferRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/cfdp/{instance}/transfers/{id}"
+      body: "*"
+    };
+  }
+}
 
 enum TransferDirection {
   UPLOAD = 1;
@@ -48,16 +87,28 @@ message CreateTransferRequest {
   message DownloadOptions {
   }
 
-  optional TransferDirection direction = 1;
-  optional string bucket = 2;
-  optional string objectName = 3;
-  optional string remotePath = 4;
-  optional DownloadOptions downloadOptions = 5;
-  optional UploadOptions uploadOptions = 6;
+  optional string instance = 1;
+  optional TransferDirection direction = 2;
+  optional string bucket = 3;
+  optional string objectName = 4;
+  optional string remotePath = 5;
+  optional DownloadOptions downloadOptions = 6;
+  optional UploadOptions uploadOptions = 7;
 }
 
 message EditTransferRequest {
-  optional string operation = 1;
+  optional string instance = 1;
+  optional int64 id = 2;
+  optional string operation = 3;
+}
+
+message ListTransfersRequest {
+  optional string instance = 1;
+}
+
+message GetTransferRequest {
+  optional string instance = 1;
+  optional int64 id = 2;
 }
 
 //message sent as the response to the transfer listing

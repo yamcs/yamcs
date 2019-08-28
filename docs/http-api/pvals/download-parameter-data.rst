@@ -37,15 +37,12 @@ extra (array of strings)
 The response is a stream of individual parameters.
 
 
-.. rubric:: Multi-get
+.. rubric:: Batch Get
 
 Get the value history of multiple parameters in one and the same request using this address::
 
-    GET /api/archive/:instance/downloads/parameters
+    POST /api/archive/:instance/downloads/parameters:batchGet
 
-    .. note::
-
-        POST requests are also allowed, because some HTTP clients do not support GET with a request body.
 
 In addition to the parameters for the single parameter retrieval you can specify these:
 
@@ -79,10 +76,10 @@ The response is a stream of self-standing ``VarInt`` delimited messages of type:
     }
 
 
-.. rubric:: Bulk Request Schema (protobuf)
+.. rubric:: Batch Get Request Schema (protobuf)
 .. code-block:: proto
 
-    message BulkDownloadParameterValueRequest {
+    message BatchDownloadParameterValueRequest {
       optional string start = 1;
       optional string stop = 2;
       repeated yamcs.NamedObjectId id = 3;

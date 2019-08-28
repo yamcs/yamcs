@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
       await this.authService.loginAutomatically();
       return true;
     } catch (err) {
-      if (err.name === 'NetworkError') {
+      if (err.name === 'NetworkError' || err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
         this.router.navigate(['/down'], { queryParams: { next: state.url } });
         return false;
       } else {
