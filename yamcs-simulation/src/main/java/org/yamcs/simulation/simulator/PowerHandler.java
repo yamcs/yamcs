@@ -45,7 +45,7 @@ public class PowerHandler {
 
                 entry.batteryVoltage3 = new Float(parts[11]).floatValue();
                 entry.batteryTemp3 = new Float(parts[12]).floatValue();
-                // entry.batteryCapacity3 = new Float(parts[13]).floatValue();
+                entry.batteryCapacity3 = new Float(parts[13]).floatValue();
 
                 entries.add(entry);
             }
@@ -69,7 +69,7 @@ public class PowerHandler {
         ByteBuffer buffer = packet.getUserDataBuffer();
         for(int i = 1; i< 4; i++) {
             if(!batOnOff[i]) {
-                buffer.put(4*i-1, (byte)0);
+                buffer.put(4*i, (byte)0);
             }
         }
         
