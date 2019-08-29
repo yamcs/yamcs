@@ -289,23 +289,23 @@ public class Simulator extends AbstractService {
     }
 
     private void switchBatteryOn(CCSDSPacket commandPacket) {
-        tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(1);
         int batNum = commandPacket.getUserDataBuffer().get(0);
         executor.schedule(() -> powerDataHandler.setBatteryOn(batNum), 500, TimeUnit.MILLISECONDS);
-        tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void switchBatteryOff(CCSDSPacket commandPacket) {
-        tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(2);
         int batNum = commandPacket.getUserDataBuffer().get(0);
         executor.schedule(() -> powerDataHandler.setBatteryOff(batNum), 500, TimeUnit.MILLISECONDS);
-        tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void listRecordings(CCSDSPacket commandPacket) {
-        tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
 
         CCSDSPacket packet = new CCSDSPacket(0, 2, 9, false);
         String[] dumps = losRecorder.listRecordings();
@@ -316,11 +316,11 @@ public class Simulator extends AbstractService {
         packet.appendUserDataBuffer(new byte[1]); // terminate with \0
 
         transmitRealtimeTM(packet);
-        tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void dumpRecording(CCSDSPacket commandPacket) {
-        tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         int indexStartOfString = 16;
         int indexEndOfString = indexStartOfString;
@@ -333,16 +333,16 @@ public class Simulator extends AbstractService {
         String fileName1 = new String(fileNameArray, indexStartOfString, indexEndOfString - indexStartOfString);
         log.info("Command DUMP_RECORDING for file {}", fileName1);
         dumpLosDataFile(fileName1);
-        tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void deleteRecording(CCSDSPacket commandPacket) {
-        tmLink.ackPacketSend(ackPacket(commandPacket, 1, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
         log.info("Command DELETE_RECORDING for file {}", fileName);
         deleteLosDataFile(fileName);
-        tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     public void setTmLink(TmTcLink tmLink) {
@@ -357,7 +357,7 @@ public class Simulator extends AbstractService {
         if (tc.getApid() == CFDP_APID) {
             cfdpReceiver.processCfdp(tc.getUserDataBuffer());
         } else {
-            tmLink.ackPacketSend(ackPacket(tc, 0, 0));
+            transmitRealtimeTM(ackPacket(tc, 0, 0));
             try {
                 pendingCommands.put(tc);
             } catch (InterruptedException e) {
