@@ -1,0 +1,103 @@
+<table mat-table
+       [dataSource]="dataSource"
+       [trackBy]="tableTrackerFn"
+       class="ya-data-table"
+       [class.hide]="dataSource.isEmpty()">
+
+  <ng-container matColumnDef="system">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">System</th>
+    <td mat-cell *matCellDef="let alarm">
+      {{ alarm.id.namespace | shortName }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="source">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">Source</th>
+    <td mat-cell *matCellDef="let alarm">
+      {{ alarm.id.name }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="state">
+    <th mat-header-cell *matHeaderCellDef class="status">State</th>
+    <td mat-cell *matCellDef="let alarm" class="status">
+      <app-alarm-state-icon [alarm]="alarm"></app-alarm-state-icon>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="time">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">Alarm Time</th>
+    <td mat-cell *matCellDef="let alarm">
+      <span [matTooltip]="alarm.triggerTime | datetime">
+        <app-ago [time]="alarm.triggerTime"></app-ago>
+      </span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="severity">
+    <th mat-header-cell *matHeaderCellDef class="status">Severity</th>
+    <td mat-cell *matCellDef="let alarm" class="status">
+      <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="trip_value">
+    <th mat-header-cell *matHeaderCellDef style="width: 90px">Trip Value</th>
+    <td mat-cell *matCellDef="let alarm">
+      <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
+        {{ parameterDetail.triggerValue.engValue | value }}
+        <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
+        <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="live_value">
+    <th mat-header-cell *matHeaderCellDef style="width: 90px">Live Value</th>
+    <td mat-cell *matCellDef="let alarm">
+      <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
+        {{ parameterDetail.triggerValue.engValue | value }}
+        <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
+        <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="violations">
+    <th mat-header-cell *matHeaderCellDef style="width: 90px">Violations</th>
+    <td mat-cell *matCellDef="let alarm" style="text-align: right">
+      {{ alarm.violations | number }}
+      ({{ ((alarm.violations / alarm.count) * 100) | number: '1.2-2' }}%)
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let alarm" style="text-align: right">
+      <mat-menu #alarmMenu="matMenu" overlapTrigger="false" class="ya-menu">
+        <button mat-menu-item (click)="acknowledgeAlarm.emit(alarm)"
+                [disabled]="alarm.shelveInfo || alarm.acknowledged">
+          Acknowledge...
+        </button>
+        <button mat-menu-item (click)="shelveAlarm.emit(alarm)"
+                [disabled]="alarm.shelveInfo">
+          Shelve...
+        </button>
+        <button mat-menu-item (click)="unshelveAlarm.emit(alarm)"
+                [disabled]="!alarm.shelveInfo">
+          Unshelve
+        </button>
+      </mat-menu>
+      <button mat-button [matMenuTriggerFor]="alarmMenu" class="icon">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+      (click)="toggleOne(row)"
+      [class.selected]="selection.isSelected(row)"
+      [class.hide]="hideAlarm(row)">
+  </tr>
+</table>

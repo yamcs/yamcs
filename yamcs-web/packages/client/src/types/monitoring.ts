@@ -197,9 +197,13 @@ export interface CommandHistoryPage {
 export type AlarmNotificationType = 'ACTIVE'
   | 'TRIGGERED'
   | 'SEVERITY_INCREASED'
-  | 'UPDATED'
+  | 'VALUE_UPDATED'
   | 'ACKNOWLEDGED'
   | 'CLEARED'
+  | 'RTN'
+  | 'SHELVED'
+  | 'UNSHELVED'
+  | 'RESET'
   ;
 
 export type AlarmSeverity = 'WATCH'
@@ -218,7 +222,14 @@ export interface Alarm {
   violations: number;
   count: number;
   acknowledgeInfo: AcknowledgeInfo;
+  shelveInfo: ShelveInfo;
+  clearInfo: ClearInfo;
   severity: AlarmSeverity;
+
+  latching: boolean;
+  processOK: boolean;
+  triggered: boolean;
+  acknowledged: boolean;
 
   parameterDetail?: ParameterAlarmData;
   eventDetail?: EventAlarmData;
@@ -243,6 +254,19 @@ export interface AcknowledgeInfo {
   acknowledgeTime: string;
 }
 
+export interface ShelveInfo {
+  shelvedBy: string;
+  shelveMessage: string;
+  shelveTime: string;
+  shelveExpiration: string;
+}
+
+export interface ClearInfo {
+  clearedBy: string;
+  clearTime: string;
+  clearMessage: string;
+}
+
 export interface GetAlarmsOptions {
   start?: string;
   stop?: string;
@@ -252,8 +276,9 @@ export interface GetAlarmsOptions {
 }
 
 export interface EditAlarmOptions {
-  state: 'acknowledged' | 'unacknowledged';
+  state: 'acknowledged' | 'shelved' | 'unshelved' | 'cleared';
   comment?: string;
+  shelveDuration?: number;
 }
 
 export interface GetCommandHistoryOptions {

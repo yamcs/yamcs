@@ -1,5 +1,7 @@
-<mat-toolbar>
-  Profile
+<mat-toolbar class="top">
+  <mat-toolbar-row>
+    Profile
+  </mat-toolbar-row>
 </mat-toolbar>
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">

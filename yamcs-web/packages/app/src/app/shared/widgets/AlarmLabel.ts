@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Alarm, Instance, InstanceClient } from '@yamcs/client';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -14,6 +15,11 @@ export class AlarmLabel implements OnDestroy {
 
   instance$ = new BehaviorSubject<Instance | null>(null);
   alarms$ = new BehaviorSubject<Alarm[]>([]);
+
+  acknowledgedAlarms$: Observable<Alarm[]>;
+  unacknowledgedAlarms$: Observable<Alarm[]>;
+  hasActiveUnacknowledged$: Observable<boolean>;
+  hasActiveAcknowledged$: Observable<boolean>;
 
   private alarmsByName: { [key: string]: Alarm } = {};
 
@@ -33,6 +39,36 @@ export class AlarmLabel implements OnDestroy {
         this.instance$.next(null);
       }
     });
+    this.acknowledgedAlarms$ = this.alarms$.pipe(
+      map(alarms => {
+        return alarms.filter(alarm => !alarm.shelveInfo && alarm.acknowledged);
+      }),
+    );
+    this.unacknowledgedAlarms$ = this.alarms$.pipe(
+      map(alarms => {
+        return alarms.filter(alarm => !alarm.shelveInfo && !alarm.acknowledged);
+      }),
+    );
+    this.hasActiveAcknowledged$ = this.acknowledgedAlarms$.pipe(
+      map(alarms => {
+        for (const alarm of alarms) {
+          if (!alarm.processOK) {
+            return true;
+          }
+        }
+        return false;
+      })
+    );
+    this.hasActiveUnacknowledged$ = this.unacknowledgedAlarms$.pipe(
+      map(alarms => {
+        for (const alarm of alarms) {
+          if (!alarm.processOK) {
+            return true;
+          }
+        }
+        return false;
+      })
+    );
   }
 
   private setupAlarmSubscription() {
@@ -55,19 +91,11 @@ export class AlarmLabel implements OnDestroy {
 
   private processAlarm(alarm: Alarm) {
     const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-    switch (alarm.notificationType) {
-      case 'ACTIVE':
-      case 'TRIGGERED':
-      case 'SEVERITY_INCREASED':
-      case 'UPDATED':
-      case 'ACKNOWLEDGED':
-        this.alarmsByName[alarmId] = alarm;
-        break;
-      case 'CLEARED':
-        delete this.alarmsByName[alarmId];
-        break;
-      default:
-        console.warn('Unexpected alarm event of type', alarm.type);
+    const normal = alarm.processOK && !alarm.triggered && alarm.acknowledged;
+    if (normal || alarm.shelveInfo) {
+      delete this.alarmsByName[alarmId];
+    } else {
+      this.alarmsByName[alarmId] = alarm;
     }
   }
 

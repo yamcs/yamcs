@@ -2,15 +2,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
-import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { InstancePage } from '../shared/template/InstancePage';
-import { AlarmsPage } from './alarms/AlarmsPage';
 import { DisplayFilePage } from './displays/DisplayFilePage';
 import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard';
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
 import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
-import { EventsPage } from './events/EventsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
@@ -32,10 +29,6 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'home',
-      },
-      {
-        path: 'alarms',
-        component: AlarmsPage,
       },
       {
         path: 'displays',
@@ -62,10 +55,6 @@ const routes: Routes = [
             canDeactivate: [DisplayFilePageDirtyGuard],
           }
         ]
-      }, {
-        path: 'events',
-        component: EventsPage,
-        canActivate: [MayReadEventsGuard],
       }, {
         path: 'layouts',
         pathMatch: 'full',
@@ -114,12 +103,10 @@ const routes: Routes = [
 export class MonitorRoutingModule { }
 
 export const routingComponents = [
-  AlarmsPage,
   DisplaysPage,
   DisplayFilePage,
   DisplayFolderPage,
   DisplayPage,
-  EventsPage,
   ExtensionPage,
   LayoutsPage,
   LayoutPage,

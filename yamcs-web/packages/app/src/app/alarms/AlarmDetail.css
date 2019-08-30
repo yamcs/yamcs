@@ -10,3 +10,7 @@ h6 {
   font-weight: normal;
   font-size: 12px;
 }
+
+.mat-raised-button {
+  margin-right: 10px;
+}

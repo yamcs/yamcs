@@ -36,7 +36,7 @@ export interface InstanceTemplatesWrapper {
 }
 
 export interface LinksWrapper {
-  link: Link[];
+  links: Link[];
 }
 
 export interface ServicesWrapper {

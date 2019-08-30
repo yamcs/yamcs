@@ -136,7 +136,10 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
   restartInstance(instance: Instance) {
     this.yamcs.yamcsClient.restartInstance(instance.name)
-      .catch(err => this.messageService.showError(err));
+      .catch(err => {
+        console.log('got error', err);
+        this.messageService.showError(err);
+      });
   }
 
   stopSelectedInstances() {

@@ -1,0 +1,110 @@
+<app-instance-page>
+  <app-instance-toolbar [hasDetailPane]="true">
+    Alarms
+    <app-help>
+      An alarm can be in these states:
+      <table class="ya-data-table">
+        <tr>
+          <td width="1">
+            <mat-icon class="shake icon16" style="vertical-align: middle">notifications</mat-icon>
+          </td>
+          <td>
+            The alarm is unacknowledged and the cause of the alarm still exists.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <mat-icon class="shake icon16" style="vertical-align: middle">notifications_none</mat-icon>
+          </td>
+          <td>
+            The alarm is unacknowledged and the cause that generated the alarm no longer exists.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
+          </td>
+          <td>
+            The alarm is acknowledged and the cause of the alarm still exists.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <mat-icon class="icon16" style="vertical-align: middle">check_circle_outline</mat-icon>
+          </td>
+          <td>
+            The alarm is acknowledged and the cause that generated the alarm no longer exists.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
+          </td>
+          <td>
+            The alarm was shelved.
+          </td>
+        </tr>
+      </table>
+    </app-help>
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="acknowledgeAlarms(selection.selected)"
+            [disabled]="!selection.hasValue()">
+      <mat-icon>notifications_off</mat-icon>
+      ACKNOWLEDGE
+    </button>
+    <button mat-button
+            color="primary"
+            (click)="shelveAlarms(selection.selected)"
+            [disabled]="!selection.hasValue()">
+      <mat-icon>timer</mat-icon>
+      SHELVE
+    </button>
+  </app-instance-toolbar>
+
+  <app-detail-pane>
+    <ng-container *ngIf="detailAlarm$ | async as detailAlarm; else noDetail">
+      <app-detail-toolbar>
+        Alarm Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-alarm-detail [alarm]="detailAlarm"
+                          [instance]="instance"
+                          (acknowledgeAlarm)="acknowledgeAlarms([$event])"
+                          (shelveAlarm)="shelveAlarms([$event])"
+                          (unshelveAlarm)="unshelveAlarms([$event])">
+        </app-alarm-detail>
+      </div>
+    </ng-container>
+    <ng-template #noDetail>
+      <app-detail-toolbar>
+        Select an alarm
+      </app-detail-toolbar>
+    </ng-template>
+  </app-detail-pane>
+
+  <div class="table-wrapper">
+    <div class="panel-content" *ngIf="dataSource">
+      <form [formGroup]="filterForm">
+        <div class="filter-bar">
+          <input formControlName="filter"
+                 class="ya-input"
+                 type="text"
+                 placeholder="Filter by text search"
+                 style="width: 300px">
+          &nbsp;&nbsp;
+          <app-select [options]="viewOptions" (change)="updateView($event)"></app-select>
+        </div>
+      </form>
+      <app-alarms-table [instance]="instance"
+                        [dataSource]="dataSource"
+                        [selection]="selection"
+                        [view]="view$ | async"
+                        (acknowledgeAlarm)="acknowledgeAlarms([$event])"
+                        (shelveAlarm)="shelveAlarms([$event])"
+                        (unshelveAlarm)="unshelveAlarms([$event])">
+      </app-alarms-table>
+    </div>
+  </div>
+</app-instance-page>

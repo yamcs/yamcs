@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Alarm, Instance } from '@yamcs/client';
 
 @Component({
@@ -14,4 +14,13 @@ export class AlarmDetail {
 
   @Input()
   instance: Instance;
+
+  @Output()
+  acknowledgeAlarm = new EventEmitter<Alarm>();
+
+  @Output()
+  shelveAlarm = new EventEmitter<Alarm>();
+
+  @Output()
+  unshelveAlarm = new EventEmitter<Alarm>();
 }

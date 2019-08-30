@@ -97,7 +97,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/links/${this.instance}`
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as LinksWrapper;
-    return wrapper.link || [];
+    return wrapper.links || [];
   }
 
   /**

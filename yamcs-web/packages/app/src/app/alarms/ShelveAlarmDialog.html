@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>Shelve</h2>
+
+<mat-dialog-content class="mat-typography">
+  <p>
+    <ng-container *ngIf="data.alarms.length === 1">
+      {{ data.alarms[0].id.namespace }}/{{ data.alarms[0].id.name }}
+    </ng-container>
+    <ng-container *ngIf="data.alarms.length !== 1">
+      {{ data.alarms.length }} selected alarms.
+    </ng-container>
+  </p>
+  <form [formGroup]="formGroup" class="ya-form">
+    <label>
+      Duration<br>
+      <select formControlName="duration">
+        <option value="PT15M">15 minutes</option>
+        <option value="PT30M">30 minutes</option>
+        <option value="PT1H">1 hour</option>
+        <option value="PT2H">2 hours</option>
+        <option value="P1D">1 day</option>
+        <option value="UNLIMITED">unlimited</option>
+      </select>
+    </label>
+    <label>
+      Comment
+      <textarea formControlName="comment" rows="5" style="resize: none"></textarea>
+    </label>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button
+          (click)="shelve()"
+          color="primary"
+          [disabled]="!formGroup.valid">OK</button>
+</mat-dialog-actions>

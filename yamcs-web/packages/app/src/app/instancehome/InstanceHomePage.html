@@ -16,9 +16,9 @@
           <mat-card>
             <mat-card-subtitle>Alarms</mat-card-subtitle>
             <div class="table-wrapper">
-              <ng-container *ngIf="unacknowledgedAlarms$ | async as alarms">
+              <ng-container *ngIf="alarmsDataSource.unacknowledgedAlarms$ | async as alarms">
                 <ng-container *ngIf="alarms.length">
-                  Requiring acknowledgment:<br>
+                  Unacknowledged:<br>
                   <table yaDataTable>
                     <tr *ngFor="let alarm of alarms">
                       <td><app-alarm-level [level]="alarm.severity"></app-alarm-level></td>
@@ -40,13 +40,36 @@
               </ng-container>
               <div class="fade"></div>
             </div>
-            <p style="margin-top: 1em">
-              Total active alarms: <strong>{{ alarmsDataSource.getActiveAlarmCount() }}</strong>
-            </p>
+            <dl class="dl-horizontal">
+              <dt>Unacknowledged alarms:</dt>
+              <dd>
+                <a routerLink="/alarms"
+                   class="ya-link"
+                   [queryParams]="{instance: instance.name, view: 'unacknowledged'}">
+                  <strong>{{ (alarmsDataSource.unacknowledgedAlarms$ | async).length }}</strong>
+                </a><br>
+              </dd>
+              <dt>Acknowledged alarms:</dt>
+              <dd>
+                <a routerLink="/alarms"
+                   class="ya-link"
+                   [queryParams]="{instance: instance.name, view: 'acknowledged'}">
+                  <strong>{{ (alarmsDataSource.acknowledgedAlarms$ | async).length }}</strong>
+                </a>
+              </dd>
+              <dt>Shelved alarms:</dt>
+              <dd>
+                <a routerLink="/alarms"
+                   class="ya-link"
+                   [queryParams]="{instance: instance.name, view: 'shelved'}">
+                  <strong>{{ (alarmsDataSource.shelvedAlarms$ | async).length }}</strong>
+                </a>
+              </dd>
+            </dl>
             <div class="actions">
               <a mat-button
                  color="primary"
-                 routerLink="/monitor/alarms"
+                 routerLink="/alarms"
                  [queryParams]="{instance: instance.name}">VIEW ALARMS &gt;</a>
             </div>
           </mat-card>

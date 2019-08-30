@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { AcknowledgeAlarmDialog } from './alarms/AcknowledgeAlarmDialog';
-import { AlarmDetail } from './alarms/AlarmDetail';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
 import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
@@ -19,8 +17,6 @@ import { UssDisplayViewer } from './displays/UssDisplayViewer';
 import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
-import { CreateEventDialog } from './events/CreateEventDialog';
-import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateLayoutDialog } from './layouts/CreateLayoutDialog';
 import { DisplayNavigator } from './layouts/DisplayNavigator';
@@ -41,10 +37,8 @@ import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
 
 const dialogComponents = [
-  AcknowledgeAlarmDialog,
   CompareParameterDialog,
   CreateDisplayDialog,
-  CreateEventDialog,
   CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
   ExportArchiveDataDialog,
@@ -89,11 +83,9 @@ const viewers = [
     directives,
     pipes,
     viewers,
-    AlarmDetail,
     ColorPalette,
     DisplayNavigator,
     Frame,
-    EventSeverity,
     Layout,
     MultipleParameterTable,
     ParameterDetail,

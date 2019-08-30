@@ -51,6 +51,35 @@ export function subtractDuration(date: Date, isoDuration: string) {
   return dt;
 }
 
+/**
+ * Converts an ISO duration string to the equivalent number of milliseconds.
+ * This only works with seconds, minutes, hours and days.
+ */
+export function convertDurationToMillis(isoDuration: string) {
+  // tslint:disable-next-line:max-line-length
+  const regex = /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
+
+  const matchResult = isoDuration.match(regex);
+  if (!matchResult) {
+    throw new Error(`Invalid ISO 8601 duration: ${isoDuration}`);
+  }
+
+  let millis = 0;
+  if (matchResult[9]) { // e.g. P1D
+    millis += parseFloat(matchResult[9]) * 86400000;
+  }
+  if (matchResult[12]) { // e.g. PT1H
+    millis += parseFloat(matchResult[12]) * 3600000;
+  }
+  if (matchResult[14]) { // e.g. PT1M
+    millis += parseFloat(matchResult[14]) * 60000;
+  }
+  if (matchResult[16]) { // e.g. PT1S
+    millis += parseFloat(matchResult[16]) * 1000;
+  }
+  return millis;
+}
+
 export function convertValueToNumber(value: Value) {
   switch (value.type) {
     case 'FLOAT':
