@@ -59,6 +59,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
+        spec.addOption("tablespace", OptionType.STRING);
 
         // Detailed validation on these is done
         // in DataLinkInitialiser, XtceDbFactory, and StreamInitializer
@@ -71,6 +72,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
          */
         // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("mdb", OptionType.ANY);
+
+        spec.addOption("timeService", OptionType.ANY);
 
         try {
             this.config = spec.validate(config);
