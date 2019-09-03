@@ -88,7 +88,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                     lastSubscriptionId.incrementAndGet());
         }
         if (yproc.hasAlarmServer()) {
-            parameterAlarmServer = new AlarmServer<>(yproc.getInstance());
+            parameterAlarmServer = new AlarmServer<>(yproc.getInstance(), yproc.getTimer());
             alarmChecker.enableServer(parameterAlarmServer);
         }
 

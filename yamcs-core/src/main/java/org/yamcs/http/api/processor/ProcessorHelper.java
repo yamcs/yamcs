@@ -10,8 +10,10 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Alarms.AlarmSeverity;
 import org.yamcs.protobuf.Alarms.AlarmType;
+import org.yamcs.protobuf.Alarms.ClearInfo;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Alarms.ParameterAlarmData;
+import org.yamcs.protobuf.Alarms.ShelveInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -70,11 +72,19 @@ public class ProcessorHelper {
     public static final <T> AlarmData toAlarmData(AlarmNotificationType notificationType,
             ActiveAlarm<T> activeAlarm, boolean detail) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
-
+        
         alarmb.setNotificationType(notificationType);
-        alarmb.setSeqNum(activeAlarm.id);
+        alarmb.setSeqNum(activeAlarm.getId());
+        
+        
+        alarmb.setAcknowledged(activeAlarm.isAcknowledged());
+        alarmb.setProcessOK(activeAlarm.isProcessOK());
+        alarmb.setTriggered(activeAlarm.isTriggered());
+        
         alarmb.setViolations(activeAlarm.violations);
         alarmb.setCount(activeAlarm.valueCount);
+        
+        
         if (activeAlarm.mostSevereValue instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);
             ParameterValue pv = (ParameterValue) activeAlarm.mostSevereValue;
@@ -104,19 +114,43 @@ public class ProcessorHelper {
             }
         }
 
-        if (activeAlarm.acknowledged) {
+        if (activeAlarm.isAcknowledged()) {
             AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
             String username = activeAlarm.usernameThatAcknowledged;
-            if (activeAlarm.autoAcknowledge) {
+            if (activeAlarm.isAutoAcknowledge()) {
                 username = "autoAcknowledged";
             }
 
             acknowledgeb.setAcknowledgedBy(username);
-            if (activeAlarm.message != null) {
-                acknowledgeb.setAcknowledgeMessage(activeAlarm.message);
+            if (activeAlarm.getAckMessage() != null) {
+                acknowledgeb.setAcknowledgeMessage(activeAlarm.getAckMessage());
             }
             acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
             alarmb.setAcknowledgeInfo(acknowledgeb.build());
+        }
+        
+        if(activeAlarm.isShelved()) {
+          ShelveInfo.Builder sib = ShelveInfo.newBuilder();
+          long exp = activeAlarm.getShelveExpiration();
+          if(exp!=-1) {
+              sib.setShelveExpiration(TimeEncoding.toProtobufTimestamp(exp));
+          }
+          sib.setShelveTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getShelveTime()));
+          sib.setShelveMessage(activeAlarm.getShelveMessage());
+          
+          alarmb.setShelveInfo(sib.build());
+        }
+        
+        if(activeAlarm.isNormal()) {
+            long ct = activeAlarm.getClearTime();
+            if(ct!=TimeEncoding.INVALID_INSTANT) {
+                ClearInfo.Builder cib = ClearInfo.newBuilder();
+                cib.setClearTime(TimeEncoding.toProtobufTimestamp(ct));
+                if(activeAlarm.getClearMessage()!=null) {
+                    cib.setClearMessage(activeAlarm.getClearMessage());
+                }
+                alarmb.setClearInfo(cib.build());
+            }
         }
         return alarmb.build();
 

@@ -497,10 +497,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setMessage("event1").build();
         sep.sendEvent(e1);
 
-        Event e2 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
-                .setSeverity(EventSeverity.ERROR).setSeqNumber(2)
+        Event e2 = e1.toBuilder().setSeverity(EventSeverity.CRITICAL).setSeqNumber(2)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
-                .setMessage("event1").build();
+                .setMessage("event2").build();
         sep.sendEvent(e2);
 
         String resp = restClient.doRequest(
@@ -508,6 +507,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 HttpMethod.GET, "").get();
 
         ListAlarmsResponse listalarm = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
+        System.out.println("listalarm: "+listalarm);
         assertEquals(1, listalarm.getAlarmCount());
         AlarmData alarm = listalarm.getAlarm(0);
         assertEquals(AlarmType.EVENT, alarm.getType());

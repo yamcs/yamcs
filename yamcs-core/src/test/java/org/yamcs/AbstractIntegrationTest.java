@@ -107,6 +107,8 @@ public abstract class AbstractIntegrationTest {
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
         packetGenerator2 = PacketProvider.instance[1].mdbPacketGenerator;
         packetGenerator2.setGenerationTime(TimeEncoding.INVALID_INSTANT);
+        
+        Processor.getInstance(yamcsInstance, "realtime").getParameterRequestManager().getAlarmServer().clearAll();
     }
 
     private static void setupYamcs() throws Exception {

@@ -17,13 +17,33 @@ message AcknowledgeInfo {
   optional google.protobuf.Timestamp acknowledgeTime = 5;
 }
 
+message ShelveInfo {
+  optional string shelvedBy = 1;
+  optional string shelveMessage = 2;
+  optional google.protobuf.Timestamp shelveTime = 3;
+  //when the shelving will expire (can be unset which means that it will never expire)
+  optional google.protobuf.Timestamp shelveExpiration = 4; 
+}
+
+message ClearInfo {
+  optional string clearedBy = 1;
+  optional google.protobuf.Timestamp clearTime = 2;
+  //if the alarm has been manually cleared, this is the message provided by the operator
+  optional string clearMessage = 3;
+}
+
 enum AlarmNotificationType {
   ACTIVE = 1;  // Initial active alarms at the moment of request
   TRIGGERED = 2;  // Whenever a new alarm triggers
   SEVERITY_INCREASED = 3;  // Whenever an alarm jumps severity
-  UPDATED = 4;  // Whenever a value is updated (even if that value is not a violation by itself)
+  VALUE_UPDATED = 4;  // Whenever a value is updated (even if that value is not a violation by itself)
   ACKNOWLEDGED = 5;  // Whenever somebody acknowledged an alarm (it could be that it is still OOL)
   CLEARED = 6; // When the alarm was really cleared by the server (acknowledged && not OOL)
+  RTN = 7; // When the parameter that triggered the alarm has returned to normal (the alarm may still be triggered if it has not been acknowledged)
+  SHELVED = 8; //when the alarm has been shelved
+  UNSHELVED = 9; //when the alarm has been unshelved (either by operator request or automatically at timer expiration)
+  RESET = 10; //when a latching alarm has been reset
+  
 }
 enum AlarmType {
   PARAMETER = 1;
@@ -65,6 +85,23 @@ message AlarmData {
 
   optional ParameterAlarmData parameterDetail = 10;
   optional EventAlarmData eventDetail = 11;
+
+  //latching means that the alarm will stay triggered even when the process is OK
+  optional bool latching = 12;
+ 
+
+  // if the process that generated the alarm is ok (i.e. parameter is within limits)
+  optional bool processOK = 13;
+  // triggered is same with processOK except when the alarm is latching
+  optional bool triggered = 14;
+  // if the operator has acknowledged the alarm
+  optional bool acknowledged = 15;
+
+  //if the alarm is shelved, then this will be filled in with the shelving information
+  optional ShelveInfo shelveInfo = 16;
+
+  optional ClearInfo clearInfo = 17;
+  
 }
 
 message ParameterAlarmData {
@@ -83,4 +120,7 @@ message EventAlarmData {
 message EditAlarmRequest {
   optional string state = 1;
   optional string comment = 2;
+  //shelve time in milliseconds (if the state = shelved)
+  //can be left out which means it is shelved indefinitely
+  optional uint64 shelveDuration = 3;
 }

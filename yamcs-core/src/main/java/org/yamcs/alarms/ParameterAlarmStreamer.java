@@ -7,20 +7,22 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 
-public class ParameterAlarmStreamer implements AlarmListener<ParameterValue> {
+public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
     static public final DataType PARAMETER_DATA_TYPE = DataType
             .protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
 
     Stream stream;
 
+    static public final String CNAME_TRIGGER = "triggerPV";
+    static public final String CNAME_CLEAR = "clearPV";
+    static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedPV";
+    
     public ParameterAlarmStreamer(Stream s) {
-        this.stream = s;
+        super(s, PARAMETER_DATA_TYPE, StandardTupleDefinitions.PARAMETER_ALARM);
     }
 
-    private ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm, AlarmNotificationType e) {
+    protected ArrayList<Object> getTupleKey(ActiveAlarm<ParameterValue> activeAlarm, AlarmNotificationType e) {
         ArrayList<Object> al = new ArrayList<>(7);
 
         // triggerTime
@@ -28,7 +30,7 @@ public class ParameterAlarmStreamer implements AlarmListener<ParameterValue> {
         // parameter
         al.add(activeAlarm.triggerValue.getParameter().getQualifiedName());
         // seqNum
-        al.add(activeAlarm.id);
+        al.add(activeAlarm.getId());
         // event
         al.add(e.name());
 
@@ -36,73 +38,24 @@ public class ParameterAlarmStreamer implements AlarmListener<ParameterValue> {
     }
 
     @Override
-    public void notifyTriggered(ActiveAlarm<ParameterValue> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.TRIGGERED);
-
-        tdef.addColumn("triggerPV", PARAMETER_DATA_TYPE);
-        NamedObjectId id = NamedObjectId.newBuilder()
-                .setName(activeAlarm.triggerValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.triggerValue.toGpb(id));
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+    protected Object getYarchValue(ParameterValue pv) {
+        NamedObjectId id = NamedObjectId.newBuilder().setName(pv.getParameter().getQualifiedName()).build();
+        return pv.toGpb(id);
+    }
+    
+    @Override
+    protected String getColNameClear() {
+        return CNAME_CLEAR;
     }
 
     @Override
-    public void notifySeverityIncrease(ActiveAlarm<ParameterValue> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.SEVERITY_INCREASED);
-
-        tdef.addColumn("severityIncreasedPV", PARAMETER_DATA_TYPE);
-        NamedObjectId id = NamedObjectId.newBuilder()
-                .setName(activeAlarm.mostSevereValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.mostSevereValue.toGpb(id));
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+    protected String getColNameTrigger() {
+        return CNAME_TRIGGER;
     }
 
     @Override
-    public void notifyValueUpdate(ActiveAlarm<ParameterValue> activeAlarm) {
-        // do not send parameter updates
+    protected String getColNameSeverityIncreased() {
+        return CNAME_SEVERITY_INCREASED;
     }
 
-    @Override
-    public void notifyAcknowledged(ActiveAlarm<ParameterValue> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.ACKNOWLEDGED);
-
-        tdef.addColumn("acknowledgedBy", DataType.STRING);
-        String username = activeAlarm.usernameThatAcknowledged;
-        if (activeAlarm.autoAcknowledge) {
-            username = "autoAcknowledged";
-        }
-        al.add(username);
-
-        if (activeAlarm.message != null) {
-            tdef.addColumn("acknowledgeMessage", DataType.STRING);
-            al.add(activeAlarm.message);
-        }
-
-        tdef.addColumn("acknowledgeTime", DataType.TIMESTAMP);
-        al.add(activeAlarm.acknowledgeTime);
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
-    }
-
-    @Override
-    public void notifyCleared(ActiveAlarm<ParameterValue> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.CLEARED);
-
-        tdef.addColumn("clearedPV", PARAMETER_DATA_TYPE);
-        NamedObjectId id = NamedObjectId.newBuilder()
-                .setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.currentValue.toGpb(id));
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
-    }
 }

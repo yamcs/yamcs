@@ -126,6 +126,8 @@ public class ParameterAlarmChecker {
         AlarmType alarmType = null;
         AlarmRanges staticAlarmRanges = null;
         int minViolations = 1;
+        boolean autoAck = false;
+        boolean latching = false;
         if (ipt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
                 if (nca.getContextMatch().isMet(criteriaEvaluator)) {
@@ -133,15 +135,20 @@ public class ParameterAlarmChecker {
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
                     minViolations = nca.getMinViolations();
+                    autoAck = nca.isAutoAck();
+                    latching = nca.isLatching();
                     break;
                 }
             }
         }
+       
         NumericAlarm defaultAlarm = ipt.getDefaultAlarm();
         if (!mon && defaultAlarm != null) {
             alarmType = defaultAlarm;
             staticAlarmRanges = defaultAlarm.getStaticAlarmRanges();
             minViolations = defaultAlarm.getMinViolations();
+            autoAck = defaultAlarm.isAutoAck();
+            latching = defaultAlarm.isLatching();
         }
 
         // Set MonitoringResult
@@ -156,7 +163,7 @@ public class ParameterAlarmChecker {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
         if (alarmServer != null) {
-            alarmServer.update(pv, minViolations);
+            alarmServer.update(pv, minViolations, autoAck, latching);
         }
     }
 
@@ -175,7 +182,10 @@ public class ParameterAlarmChecker {
         boolean mon = false;
         AlarmType alarmType = null;
         AlarmRanges staticAlarmRanges = null;
+        
         int minViolations = 1;
+        boolean autoAck = false;
+        boolean latching = false;
         if (fpt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
                 
@@ -184,15 +194,20 @@ public class ParameterAlarmChecker {
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
                     minViolations = nca.getMinViolations();
+                    autoAck = nca.isAutoAck();
+                    latching = nca.isLatching();
                     break;
                 }
             }
         }
+       
         NumericAlarm defaultAlarm = fpt.getDefaultAlarm();
         if (!mon && defaultAlarm != null) {
             alarmType = defaultAlarm;
             staticAlarmRanges = defaultAlarm.getStaticAlarmRanges();
             minViolations = defaultAlarm.getMinViolations();
+            autoAck = defaultAlarm.isAutoAck();
+            latching = defaultAlarm.isLatching();
         }
 
         // Set MonitoringResult
@@ -207,7 +222,7 @@ public class ParameterAlarmChecker {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
         if (alarmServer != null) {
-            alarmServer.update(pv, minViolations);
+            alarmServer.update(pv, minViolations, autoAck, latching);
         }
     }
 
@@ -275,6 +290,9 @@ public class ParameterAlarmChecker {
                 }
             }
         }
+        boolean autoAck = false;
+        boolean latching = false;
+                
         if (alarm != null) {
             AlarmLevels level = alarm.getDefaultAlarmLevel();
             for (EnumerationAlarmItem eai : alarm.getAlarmList()) {
@@ -307,10 +325,12 @@ public class ParameterAlarmChecker {
             if (alarmReporter != null) {
                 alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
             }
+            autoAck = alarm.isAutoAck();
+            latching = alarm.isLatching();
         }
 
         if (alarmServer != null) {
-            alarmServer.update(pv, minViolations);
+            alarmServer.update(pv, minViolations, autoAck, latching);
         }
     }
 

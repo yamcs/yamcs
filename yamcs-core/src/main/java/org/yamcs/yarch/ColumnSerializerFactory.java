@@ -77,6 +77,7 @@ public class ColumnSerializerFactory {
         case DOUBLE:
             return DOUBLE_CS;
         case TIMESTAMP:
+        case LONG:  //intentional fall through
             return LONG_CS;
         case STRING:
             return STRING_CS;

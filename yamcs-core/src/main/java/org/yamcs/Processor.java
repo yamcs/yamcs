@@ -293,7 +293,7 @@ public class Processor extends AbstractService {
         eventAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("eventServer", null));
 
         if (eventAlarmServerEnabled) {
-            eventAlarmServer = new EventAlarmServer(yamcsInstance, alarmConfig);
+            eventAlarmServer = new EventAlarmServer(yamcsInstance, alarmConfig, timer);
         }
     }
 

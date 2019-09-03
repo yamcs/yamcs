@@ -16,7 +16,6 @@ import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
-import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.alarms.EventId;
 import org.yamcs.http.BadRequestException;
@@ -307,31 +306,38 @@ public class ProcessorRestHandler extends RestHandler {
         // TODO permissions on AlarmServer
         String username = req.getUser().getName();
 
-        switch (state.toLowerCase()) {
-        case "acknowledged":
-            try {
-                if (activeAlarm.triggerValue instanceof ParameterValue) {
-                    AlarmServer<Parameter, ParameterValue> alarmServer = verifyParameterAlarmServer(processor);
-                    @SuppressWarnings("unchecked")
-                    ActiveAlarm<ParameterValue> alarm = (ActiveAlarm<ParameterValue>) activeAlarm;
-                    alarmServer.acknowledge(alarm, username, processor.getCurrentTime(), comment);
-                    completeOK(req);
-                } else if (activeAlarm.triggerValue instanceof Event) {
-                    EventAlarmServer alarmServer = verifyEventAlarmServer(processor);
-                    @SuppressWarnings("unchecked")
-                    ActiveAlarm<Event> alarm = (ActiveAlarm<Event>) activeAlarm;
-                    alarmServer.acknowledge(alarm, username, processor.getCurrentTime(), comment);
-                    completeOK(req);
-                } else {
-                    throw new InternalServerErrorException("Can't find alarm server for alarm instance");
-                }
-            } catch (CouldNotAcknowledgeAlarmException e) {
-                log.debug("Did not acknowledge alarm {}. {}", seqNum, e.getMessage());
-                throw new BadRequestException(e.getMessage());
+        AlarmServer alarmServer;
+
+        try {
+            if (activeAlarm.triggerValue instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.triggerValue instanceof Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
             }
-            break;
-        default:
-            throw new BadRequestException("Unsupported state '" + state + "'");
+            switch (state.toLowerCase()) {
+            case "acknowledged":
+                alarmServer.acknowledge(activeAlarm, username, processor.getCurrentTime(), comment);
+                break;
+            case "shelved":
+                long shelveDuration = request.hasShelveDuration()?request.getShelveDuration():-1;
+                alarmServer.shelve(activeAlarm, username, comment, shelveDuration);
+                break;
+            case "unshelved":
+                alarmServer.unshelve(activeAlarm, username);
+                break;
+            case "cleared":
+                alarmServer.clear(activeAlarm, username, processor.getCurrentTime(), comment);
+                break;
+            default:
+                throw new BadRequestException("Unsupported state '" + state + "'");
+            }
+            completeOK(req);
+
+        } catch (IllegalStateException e) {
+            log.debug("Could not modify the alarm {}. {}", seqNum, e.getMessage());
+            throw new BadRequestException(e.getMessage());
         }
     }
 

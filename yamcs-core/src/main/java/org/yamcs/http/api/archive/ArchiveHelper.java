@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+
+import org.yamcs.alarms.EventAlarmStreamer;
+import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.archive.ParameterRanger.Range;
@@ -13,7 +16,9 @@ import org.yamcs.http.api.processor.ProcessorHelper;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmType;
+import org.yamcs.protobuf.Alarms.ClearInfo;
 import org.yamcs.protobuf.Alarms.ParameterAlarmData;
+import org.yamcs.protobuf.Alarms.ShelveInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
@@ -52,6 +57,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 
+import static org.yamcs.alarms.AlarmStreamer.*;
 /**
  * Collects all archive-related conversions performed in the web api (x towards archive.proto)
  */
@@ -325,16 +331,12 @@ public final class ArchiveHelper {
     final static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
         ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
 
-        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+        ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
         alarmb.setTriggerValue(pval);
 
-        if (tuple.hasColumn("severityIncreasedPV")) {
-            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+        if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+            pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             alarmb.setMostSevereValue(pval);
-        }
-        if (tuple.hasColumn("updatedPV")) {
-            pval = (ParameterValue) tuple.getColumn("updatedPV");
-            alarmb.setCurrentValue(pval);
         }
 
         return alarmb.build();
@@ -347,12 +349,12 @@ public final class ArchiveHelper {
 
         if (tuple.hasColumn("parameter")) {
             alarmb.setType(AlarmType.PARAMETER);
-            ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+            ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
             alarmb.setId(pval.getId());
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
 
-            if (tuple.hasColumn("severityIncreasedPV")) {
-                pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+            if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
 
@@ -362,14 +364,15 @@ public final class ArchiveHelper {
             }
         } else {
             alarmb.setType(AlarmType.EVENT);
-            Event ev = (Event) tuple.getColumn("triggerEvent");
+            Event ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
             alarmb.setId(ProcessorHelper.getAlarmId(ev));
 
-            if (tuple.hasColumn("severityIncreasedEvent")) {
-                ev = (Event) tuple.getColumn("severityIncreasedEvent");
+            if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
+            
         }
 
         return alarmb.build();
@@ -386,5 +389,41 @@ public final class ArchiveHelper {
             ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));
             alarmb.setAcknowledgeInfo(ackb);
         }
+    }
+    
+    static void setClearInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_CLEARED_TIME)) { 
+            return;
+        }
+        ClearInfo.Builder clib = ClearInfo.newBuilder();
+        clib.setClearTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_CLEARED_TIME)));
+       
+        if (tuple.hasColumn(CNAME_CLEARED_BY)) {
+            clib.setClearedBy((String) tuple.getColumn(CNAME_CLEARED_BY));
+        }
+        
+        
+        if (tuple.hasColumn(CNAME_CLEAR_MSG)) {
+            clib.setClearMessage((String) tuple.getColumn(CNAME_CLEAR_MSG));
+        }
+        alarmb.setClearInfo(clib.build());
+    }
+    
+    static void setShelveInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_SHELVED_TIME)) { 
+            return;
+        }
+        ShelveInfo.Builder clib = ShelveInfo.newBuilder();
+        clib.setShelveTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_SHELVED_TIME)));
+       
+        if (tuple.hasColumn(CNAME_SHELVED_BY)) {
+            clib.setShelvedBy((String) tuple.getColumn(CNAME_SHELVED_BY));
+        }
+        
+        if (tuple.hasColumn(CNAME_SHELVED_MSG)) {
+            clib.setShelveMessage((String) tuple.getColumn(CNAME_SHELVED_MSG));
+        }
+        
+        alarmb.setShelveInfo(clib.build());
     }
 }

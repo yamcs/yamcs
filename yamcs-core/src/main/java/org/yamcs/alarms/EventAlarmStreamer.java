@@ -6,8 +6,6 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 
 /**
  * Receives event alarms from the {@link AlarmServer} and sends them to the events_alarms stream to be recorded
@@ -15,27 +13,28 @@ import org.yamcs.yarch.TupleDefinition;
  * @author nm
  *
  */
-public class EventAlarmStreamer implements AlarmListener<Event> {
+public class EventAlarmStreamer extends AlarmStreamer<Event> {
 
     static public final DataType EVENT_DATA_TYPE = DataType
             .protobuf(Event.class.getName());
-
-    Stream stream;
-
+    static public final String CNAME_TRIGGER = "triggerEvent";
+    static public final String CNAME_CLEAR = "clearEvent";
+    static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedEvent";
+    
     public EventAlarmStreamer(Stream s) {
-        this.stream = s;
+       super(s, EVENT_DATA_TYPE, StandardTupleDefinitions.EVENT_ALARM);
     }
 
-    private ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm, AlarmNotificationType e) {
+    protected ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm, AlarmNotificationType e) {
         ArrayList<Object> al = new ArrayList<>(7);
         Event triggerValue = activeAlarm.triggerValue;
 
         // triggerTime
         al.add(triggerValue.getGenerationTime());
-        // event source 
+        // event source
         al.add(triggerValue.getSource());
         // seqNum
-        al.add(activeAlarm.id);
+        al.add(activeAlarm.getId());
         // event
         al.add(e.name());
 
@@ -43,67 +42,23 @@ public class EventAlarmStreamer implements AlarmListener<Event> {
     }
 
     @Override
-    public void notifyTriggered(ActiveAlarm<Event> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.EVENT_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.TRIGGERED);
-
-        tdef.addColumn("triggerEvent", EVENT_DATA_TYPE);
-        al.add(activeAlarm.triggerValue);
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+    protected Object getYarchValue(Event currentValue) {
+        return currentValue;
     }
 
     @Override
-    public void notifySeverityIncrease(ActiveAlarm<Event> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.EVENT_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.SEVERITY_INCREASED);
-
-        tdef.addColumn("severityIncreasedEvent", EVENT_DATA_TYPE);
-        al.add(activeAlarm.mostSevereValue);
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+    protected String getColNameClear() {
+        return CNAME_CLEAR;
     }
 
     @Override
-    public void notifyValueUpdate(ActiveAlarm<Event> activeAlarm) {
-        // do not send parameter updates
+    protected String getColNameTrigger() {
+        return CNAME_TRIGGER;
     }
 
     @Override
-    public void notifyAcknowledged(ActiveAlarm<Event> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.EVENT_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.ACKNOWLEDGED);
-
-        tdef.addColumn("acknowledgedBy", DataType.STRING);
-        String username = activeAlarm.usernameThatAcknowledged;
-        if (activeAlarm.autoAcknowledge) {
-            username = "autoAcknowledged";
-        }
-        al.add(username);
-
-        if (activeAlarm.message != null) {
-            tdef.addColumn("acknowledgeMessage", DataType.STRING);
-            al.add(activeAlarm.message);
-        }
-
-        tdef.addColumn("acknowledgeTime", DataType.TIMESTAMP);
-        al.add(activeAlarm.acknowledgeTime);
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+    protected String getColNameSeverityIncreased() {
+        return CNAME_SEVERITY_INCREASED;
     }
 
-    @Override
-    public void notifyCleared(ActiveAlarm<Event> activeAlarm) {
-        TupleDefinition tdef = StandardTupleDefinitions.EVENT_ALARM.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmNotificationType.CLEARED);
-
-        tdef.addColumn("clearedEvent", EVENT_DATA_TYPE);
-        al.add(activeAlarm.currentValue);
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
-    }
 }
