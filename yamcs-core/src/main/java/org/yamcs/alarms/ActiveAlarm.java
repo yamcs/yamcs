@@ -189,7 +189,6 @@ public class ActiveAlarm<T> {
     
     /**
      * Called when the operator resets a latching alarm
-     * @return
      */
     public synchronized void reset() {
         triggered = processOK;

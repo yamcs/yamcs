@@ -155,8 +155,6 @@ public class AlarmServer<S, T> extends AbstractService {
      *            the alarm to clear
      * @param username
      *            the user that cleared the alarm
-     * @param ackTime
-     *            the time associated with the clear
      * @param message
      *            reason message. Leave <code>null</code> when no reason is given.
      * @return the updated alarm instance or null if the alarm was not found
@@ -217,7 +215,6 @@ public class AlarmServer<S, T> extends AbstractService {
      * 
      * @param alarm
      * @param username
-     * @param message
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> unshelve(ActiveAlarm<T> alarm, String username) {
