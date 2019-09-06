@@ -8,7 +8,6 @@ bin/
 .idea/
 *.iml
 
-/live/
 target/
 server.lock
 testDispose/
