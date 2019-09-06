@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramIterator;

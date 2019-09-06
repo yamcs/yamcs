@@ -1,0 +1,138 @@
+syntax = "proto2";
+
+package yamcs.protobuf.web;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "RestProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+
+// Handles incoming requests related to api routes
+service GeneralApi {
+
+  // Get general info
+  rpc GetGeneralInfo(google.protobuf.Empty) returns (GetGeneralInfoResponse) {
+    option (yamcs.api.route) = {
+      get: "/api"
+    };
+  }
+
+  // List routes
+  rpc ListRoutes(google.protobuf.Empty) returns (ListRoutesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/routes"
+    };
+  }
+}
+
+message ListRoutesResponse {
+  repeated RouteInfo routes = 1;
+}
+
+message RouteInfo {
+  optional string service = 1;
+  optional string method = 2;
+  optional string description = 3;
+  optional string httpMethod = 4;
+  optional string url = 5;
+  optional string inputType = 6;
+  optional string outputType = 7;
+  optional bool deprecated = 8;
+  optional int64 requestCount = 9;
+  optional int64 errorCount = 10;
+}
+
+message GetGeneralInfoResponse {
+  message PluginInfo {
+    optional string name = 1;
+    optional string description = 2;
+    optional string version = 3;
+    optional string vendor = 4;
+  }
+  optional string yamcsVersion = 1;
+  optional string revision = 6;
+  optional string serverId = 2;
+  optional string defaultYamcsInstance = 3;
+  repeated PluginInfo plugins = 5;
+}
+
+message ListCommandsResponse {
+  repeated commanding.CommandHistoryEntry entry = 1;
+  optional string continuationToken = 2;
+}
+
+message EditCommandQueueRequest {
+  optional string state = 1;
+}
+
+message ListClientsResponse {
+  repeated yamcsManagement.ClientInfo client = 1;
+}
+
+message EditClientRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message ListProcessorsResponse {
+  repeated yamcsManagement.ProcessorInfo processor = 1;
+}
+
+message ListCommandQueuesResponse {
+  repeated commanding.CommandQueueInfo queue = 1;
+}
+
+message ListCommandQueueEntries {
+  repeated commanding.CommandQueueEntry entry = 1;
+}
+
+message EditCommandQueueEntryRequest {
+  optional string state = 1;
+}
+
+message CreateProcessorRequest {
+  optional string name = 1;
+  repeated int32 clientId = 6;
+  optional bool persistent = 11;
+  optional string type = 12;
+  optional string config = 13;
+}
+
+message EditProcessorRequest {
+  optional string state = 1;
+  optional string seek = 2;
+  optional string speed = 3;
+}
+
+message StreamSubscribeRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
+message SetSimulationTimeRequest {
+  optional int64 yamcsTime0 = 1 [deprecated = true];
+  optional string time0UTC = 2 [deprecated = true];
+  optional int64 simElapsedTime = 3;
+  optional double simSpeed = 4;
+  optional google.protobuf.Timestamp time0 = 5;
+}
+
+message BatchGetIndexRequest {
+  optional string start = 1;
+  optional string stop = 2;
+  repeated string filter = 3;
+  repeated string packetname = 4;
+}
+
+// Generic holder for an exception
+message RestExceptionMessage {
+  optional string type = 1;
+  optional string msg = 2;
+  extensions 100 to 200;
+}

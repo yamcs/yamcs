@@ -7,3 +7,5 @@ dataDir: /tmp/yamcs-cfdp-data/
 
 instances:
   - cfdp-test-inst
+
+secretKey: testtest

@@ -6,7 +6,7 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance;
 
 /**
  * Provides lifecycle updates on one or all instances.

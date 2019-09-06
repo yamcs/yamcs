@@ -13,6 +13,14 @@ public abstract class AlarmType implements Serializable {
     private AlarmReportType reportType = DEFAULT_REPORT_TYPE; // When alarms should be reported (not in XTCE)
     private int minViolations = 1;
     
+    
+    //if true it means that when the parameter is back within limits (RTN = return to normal) the alarm is cleared and does not need an acknowledgement
+    //FIXME: not supported by the excel or by XTCE
+    private boolean autoAck;
+    //if true it means that the alarm will stay triggered even when the parameter is back within limits.
+    //FIXME: not supported by the excel or by XTCE
+    private boolean latching;
+    
     public int getMinViolations() {
         return minViolations;
     }
@@ -32,5 +40,12 @@ public abstract class AlarmType implements Serializable {
     @Override
     public String toString() {
         return "AlarmType[reportType="+reportType+",minViolations="+minViolations+"]";
+    }
+    
+    public boolean isLatching() {
+        return latching;
+    }
+    public boolean isAutoAck() {
+        return autoAck;
     }
 }

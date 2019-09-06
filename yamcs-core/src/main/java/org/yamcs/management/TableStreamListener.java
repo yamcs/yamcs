@@ -1,6 +1,6 @@
 package org.yamcs.management;
 
-import org.yamcs.protobuf.Archive.StreamInfo;
+import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 

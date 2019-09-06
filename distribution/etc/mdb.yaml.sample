@@ -1,0 +1,14 @@
+refmdb:
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/refmdb-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/refmdb-subsys1.xls"
+
+simulator:
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/simulator-tmtc.xls"

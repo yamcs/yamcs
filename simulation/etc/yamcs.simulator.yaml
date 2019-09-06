@@ -62,6 +62,8 @@ dataLinks:
       stream: tm_realtime
       host: localhost
       port: 10015
+      # Give the embedded simulator some time to boot up
+      initialDelay: 2000
   - name: tm2_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
@@ -69,6 +71,8 @@ dataLinks:
       stream: tm2_realtime
       host: localhost
       port: 10016
+      # Give the embedded simulator some time to boot up
+      initialDelay: 2000
       # the packet input stream is responsible for chunking the stream into packets (this is not required for UDP links where one datagram = one packet)
       # for historical reasons the default packet input stream (used for the tm_realtime link above) is CcsdsPacketInputStream which chunks the packets based on 
       # CCSDS Space Packet definition (i.e. the packet length is in the 5th and 6th bytes of the primary header)
@@ -99,12 +103,16 @@ dataLinks:
       stream: tm_dump
       host: localhost
       port: 10115
+      # Give the embedded simulator some time to boot up
+      initialDelay: 2000
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
     args:
       stream: tc_sim
       host: localhost
       port: 10025
+      # Give the embedded simulator smoe time to boot up
+      initialDelay: 2000
       commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
       commandPostprocessorArgs:
         errorDetection:
@@ -115,6 +123,8 @@ dataLinks:
     args:
       host: localhost
       port: 8135
+      # Give the embedded simulator some time to boot up
+      initialDelay: 2000
   # The link below receives AOS frames (CCSDS 732.0-B-3) on three virtual channels and
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 

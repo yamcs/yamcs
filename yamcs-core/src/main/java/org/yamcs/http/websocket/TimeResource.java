@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.protobuf.Web.TimeSubscriptionResponse;
+import org.yamcs.protobuf.TimeSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.utils.TimeEncoding;

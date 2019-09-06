@@ -20,19 +20,19 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest;
-import org.yamcs.protobuf.Rest.EditCommandQueueRequest;
-import org.yamcs.protobuf.Rest.ListCommandQueueEntries;
-import org.yamcs.protobuf.Rest.ListCommandQueuesResponse;
+import org.yamcs.protobuf.EditCommandQueueEntryRequest;
+import org.yamcs.protobuf.EditCommandQueueRequest;
+import org.yamcs.protobuf.ListCommandQueueEntries;
+import org.yamcs.protobuf.ListCommandQueuesResponse;
 import org.yamcs.security.SystemPrivilege;
 
 public class ProcessorCommandQueueRestHandler extends RestHandler {
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
@@ -42,11 +42,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, response.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}", method = "GET")
     public void getQueue(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
 
@@ -54,11 +54,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, info);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}", method = "PATCH")
     public void editQueue(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
 
@@ -91,11 +91,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, qinfo);
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{name}/entries", method = "GET")
     public void listQueueEntries(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
 
@@ -107,12 +107,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT",
-            "POST" })
+    @Route(path = "/api/processors/{instance}/{processor}/cqueues/{cqueue}/entries/{uuid}", method = "PATCH")
     public void editQueueEntry(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         UUID entryId = UUID.fromString(req.getRouteParam("uuid"));
 
@@ -133,7 +132,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 mgr.sendCommand(entryId, false);
                 break;
             case "rejected":
-                String username = req.getUser().getUsername();
+                String username = req.getUser().getName();
                 mgr.rejectCommand(entryId, username);
                 break;
             default:
@@ -179,7 +178,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         if (queue == null) {
             String processorName = mgr.getChannelName();
             String instance = mgr.getInstance();
-            throw new NotFoundException(req,
+            throw new NotFoundException(
                     "No queue named '" + queueName + "' (processor: '" + instance + "/" + processorName + "')");
         } else {
             return queue;

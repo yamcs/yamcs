@@ -3,7 +3,118 @@ syntax="proto2";
 package yamcs.protobuf.mdb;
 option java_package = "org.yamcs.protobuf";
 
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/yamcs.proto";
+
+service MdbApi {
+
+  // Get a mission database
+  rpc GetMissionDatabase(GetMissionDatabaseRequest) returns (MissionDatabase) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}"
+    };
+  }
+  
+  // Export a java serialized dump of the mission database
+  rpc ExportJavaMissionDatabase(ExportJavaMissionDatabaseRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:exportJava"
+    };
+  }
+  
+  // List space systems
+  rpc ListSpaceSystems(ListSpaceSystemsRequest) returns (ListSpaceSystemsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/space-systems"
+    };
+  }
+  
+  // Get a space system
+  rpc GetSpaceSystem(GetSpaceSystemRequest) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+  
+  // List parameters
+  rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameters"
+    };
+  }
+  
+  // Get a parameter
+  rpc GetParameter(GetParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameters/{name*}"
+    };
+  }
+  
+  // Batch get of multiple parameters
+  rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters:batchGet"
+      body: "*"
+    };
+  }
+  
+  // List parameter types
+  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types"
+    };
+  }
+  
+  // Get a parameter type
+  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+  
+  // List containers
+  rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/containers"
+    };
+  }
+  
+  // Get a container
+  rpc GetContainer(GetContainerRequest) returns (ContainerInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/containers/{name*}"
+    };
+  }
+  
+  // List commands
+  rpc ListCommands(ListCommandsRequest) returns (ListCommandsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/commands"
+    };
+  }
+  
+  // Get a command
+  rpc GetCommand(GetCommandRequest) returns (CommandInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/commands/{name*}"
+    };
+  }
+  
+  // List algorithms
+  rpc ListAlgorithms(ListAlgorithmsRequest) returns (ListAlgorithmsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/algorithms"
+    };
+  }
+  
+  // Get an algorithm
+  rpc GetAlgorithm(GetAlgorithmRequest) returns (AlgorithmInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/algorithms/{name*}"
+    };
+  }
+}
 
 message MissionDatabase {
   optional string configName = 1; //this is the config section in mdb.yaml
@@ -149,6 +260,16 @@ message ParameterTypeInfo {
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
+}
+
+message GetParameterTypeRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetContainerRequest {
+  optional string instance = 1;
+  optional string name = 2;
 }
 
 message AbsoluteTimeInfo {
@@ -368,52 +489,145 @@ message AlgorithmInfo {
   repeated int64 onPeriodicRate = 12;
 }
 
+message ListSpaceSystemsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListParameterTypesRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListContainersRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListAlgorithmsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message ListCommandsRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
+message GetParameterRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message ListParametersRequest {
+  optional string instance = 1;
+  optional string q = 2;
+  optional bool recurse = 3;
+  optional bool details = 4;
+  repeated string type = 5;
+  optional string namespace = 6;
+  optional string next = 7;
+  optional int32 pos = 8;
+  optional int32 limit = 9;
+}
+
 message ListParametersResponse {
-  repeated ParameterInfo parameter = 1;
+  repeated ParameterInfo parameters = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListParameterTypesResponse {
-  repeated ParameterTypeInfo type = 1;
+  repeated ParameterTypeInfo types = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
-message BulkGetParameterInfoRequest {
+message BatchGetParametersRequest {
+  optional string instance = 2;
   repeated NamedObjectId id = 1;
 }
 
-message BulkGetParameterInfoResponse {
-  message GetParameterInfoResponse {
+message BatchGetParametersResponse {
+  message GetParameterResponse {
     optional NamedObjectId id = 1;
     optional ParameterInfo parameter = 2;
   }
-  repeated GetParameterInfoResponse response = 1;
+  repeated GetParameterResponse response = 1;
 }
 
 message ListContainersResponse {
-  repeated ContainerInfo container = 1;
+  repeated ContainerInfo containers = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListCommandsResponse {
-  repeated CommandInfo command = 1;
+  repeated CommandInfo commands = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListAlgorithmsResponse {
-  repeated AlgorithmInfo algorithm = 1;
+  repeated AlgorithmInfo algorithms = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
+message GetAlgorithmRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetMissionDatabaseRequest {
+  optional string instance = 1;
+}
+
+message ExportJavaMissionDatabaseRequest {
+  optional string instance = 1;
+}
+
 message ListSpaceSystemsResponse {
-  repeated SpaceSystemInfo spaceSystem = 1;
+  repeated SpaceSystemInfo spaceSystems = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
+}
+
+message GetSpaceSystemRequest {
+  optional string instance = 1;
+  optional string name = 2;
+}
+
+message GetCommandRequest {
+  optional string instance = 1;
+  optional string name = 2;
 }
 
 message SpaceSystemInfo {
@@ -422,10 +636,6 @@ message SpaceSystemInfo {
   optional string shortDescription = 3;
   optional string longDescription = 4;
   optional string version = 5;
-  optional int32 parameterCount = 6;
-  optional int32 containerCount = 7;
-  optional int32 commandCount = 8;
-  optional int32 algorithmCount = 9;
   repeated HistoryInfo history = 14;
   repeated SpaceSystemInfo sub = 15;
 }

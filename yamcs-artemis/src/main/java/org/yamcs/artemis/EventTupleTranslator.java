@@ -2,7 +2,7 @@ package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.artemis.ArtemisApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.Tuple;
@@ -24,7 +24,7 @@ public class EventTupleTranslator implements TupleTranslator {
             Event event = (Event) Protocol.decode(msg, Event.newBuilder());
             return new Tuple(tdef, new Object[] { event.getGenerationTime(),
                     event.getSource(), event.getSeqNumber(), event });
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             throw new IllegalArgumentException(e.toString(), e);
         }
     }

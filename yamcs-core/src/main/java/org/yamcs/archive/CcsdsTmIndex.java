@@ -14,13 +14,13 @@ import org.yamcs.NotThreadSafe;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
@@ -346,7 +346,9 @@ public class CcsdsTmIndex implements TmIndex {
                     String pn = "apid_" + apid;
                     NamedObjectId id = NamedObjectId.newBuilder().setName(pn).build();
                     ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
-                            .setFirst(r.firstTime()).setLast(r.lastTime())
+                            .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime())).setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
+                            .setYamcsFirst(r.firstTime()).setYamcsLast(r.lastTime())
+                            
                             .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
                     // WARN: this string is parsed in the CompletenessGUI
                     // TODO: remove it
@@ -529,9 +531,9 @@ public class CcsdsTmIndex implements TmIndex {
     }
 
     public class CcsdsTmIndexRestHandler extends RestHandler {
-        @Route(path = "/api/ccsdstmindex/:instance/rebuild", method = { "PUT", "POST" })
+        @Route(path = "/api/ccsdstmindex/{instance}/rebuild", method = { "PUT", "POST" })
         public void rebuildIndex(RestRequest req) throws HttpException {
-            checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
+            checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlArchiving);
 
             TimeInterval interval = req.scanForInterval().asTimeInterval();
             try {

@@ -13,7 +13,9 @@ Each instance has a name and a directory where all data from that instance is st
 .. toctree::
     :maxdepth: 1
 
-    list-instances
-    get-instance-detail
-    create-instance
-    edit-instance
+    list
+    get
+    create
+    start
+    stop
+    restart

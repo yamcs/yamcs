@@ -72,6 +72,7 @@
     <module>yamcs-tse</module>
     <module>yamcs-web</module>
     <module>yamcs-xtce</module>
+    <module>yamcs-protoc-plugin</module>
   </modules>
 
   <dependencies>
@@ -217,6 +218,11 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
@@ -299,13 +305,20 @@
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.6.0</version>
+          <configuration>
+            <!-- Trick exec-maven-plugin into suppressing useless Maven stacktraces
+                 when Yamcs exits with a non-zero return code (e.g. validation
+                 error) -->
+            <successCodes>
+              <successCode>0</successCode>
+              <successCode>1</successCode>
+              <successCode>134</successCode> <!--  JVM crash -->
+              <successCode>143</successCode> <!-- SIGTERM -->
+              <successCode>255</successCode>
+            </successCodes>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>

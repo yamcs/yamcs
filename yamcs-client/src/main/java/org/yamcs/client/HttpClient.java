@@ -21,10 +21,9 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
+import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Table;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -143,8 +142,8 @@ public class HttpClient {
         return cf;
     }
 
-    static YamcsApiException decodeException(HttpObject httpObj) throws IOException {
-        YamcsApiException exception;
+    static ClientException decodeException(HttpObject httpObj) throws IOException {
+        ClientException exception;
 
         if (httpObj instanceof HttpResponse) {
             if (httpObj instanceof FullHttpResponse) {
@@ -165,7 +164,7 @@ public class HttpClient {
                             excData.addDetail(entry.getKey(), entry.getValue());
                         }
                     }
-                    exception = new YamcsApiException(excData);
+                    exception = new ClientException(excData);
                 } else if (MediaType.PROTOBUF.is(contentType)) {
                     RestExceptionMessage msg = RestExceptionMessage.parseFrom(data, exceptionRegistry);
                     RestExceptionData excData = new RestExceptionData(msg.getType(), msg.getMsg());
@@ -175,9 +174,9 @@ public class HttpClient {
                             excData.addDetail(key, msg.getExtension(extension));
                         }
                     }
-                    exception = new YamcsApiException(excData);
+                    exception = new ClientException(excData);
                 } else {
-                    exception = new YamcsApiException(fullResp.status() + ": " + new String(data));
+                    exception = new ClientException(fullResp.status() + ": " + new String(data));
                 }
             } else {
                 exception = getInvalidHttpResponseException(((HttpResponse) httpObj).status().toString());
@@ -194,8 +193,8 @@ public class HttpClient {
         return new Gson().fromJson(json, gsonType);
     }
 
-    static private YamcsApiException getInvalidHttpResponseException(String resp) {
-        return new YamcsApiException("Received http response: " + resp);
+    static private ClientException getInvalidHttpResponseException(String resp) {
+        return new ClientException("Received http response: " + resp);
     }
 
     /**
@@ -470,7 +469,7 @@ public class HttpClient {
                 HttpContent content = (HttpContent) msg;
                 try {
                     receiver.receiveData(getByteArray(content.content()));
-                } catch (YamcsApiException e) {
+                } catch (ClientException e) {
                     exceptionCaught(ctx, e);
                 }
                 if (content instanceof LastHttpContent) {

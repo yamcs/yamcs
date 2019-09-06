@@ -4,22 +4,19 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.yamcs.YamcsException;
-import org.yamcs.api.ProcessorListener;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.protobuf.Rest.CreateProcessorRequest;
-import org.yamcs.protobuf.Rest.EditClientRequest;
-import org.yamcs.protobuf.Rest.EditProcessorRequest;
-import org.yamcs.protobuf.Rest.ListProcessorsResponse;
-import org.yamcs.protobuf.Web.ProcessorSubscriptionRequest;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.EditProcessorRequest;
+import org.yamcs.protobuf.ListProcessorsResponse;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorSubscriptionRequest;
+import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
-import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -46,13 +43,13 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         this.yamcsMonitor = yamcsMonitor;
     }
 
-    public void destroyProcessor(String name) throws YamcsApiException {
+    public void destroyProcessor(String name) throws ClientException {
         // TODO Auto-generated method stub
 
     }
 
     public CompletableFuture<byte[]> createProcessor(String instance, String name, String type,
-            ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException {
+            ReplayRequest spec, boolean persistent, int[] clients) throws ClientException {
         CreateProcessorRequest.Builder cprb = CreateProcessorRequest.newBuilder().setName(name).setType(type);
         cprb.setPersistent(persistent);
         for (int cid : clients) {
@@ -64,7 +61,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
                 String json = JsonFormat.printer().print(spec);
                 cprb.setConfig(json);
             } catch (IOException e) {
-                throw new YamcsApiException("Error encoding the request to json", e);
+                throw new ClientException("Error encoding the request to json", e);
             }
         }
 
@@ -81,8 +78,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     @SuppressWarnings("unchecked")
-    public CompletableFuture<Void> connectToProcessor(String instance, String processorName, int[] clients)
-            throws YamcsException, YamcsApiException {
+    public CompletableFuture<Void> connectToProcessor(String instance, String processorName, int[] clients) {
         RestClient restClient = yconnector.getRestClient();
         CompletableFuture<byte[]>[] cfs = new CompletableFuture[clients.length];
 
@@ -102,7 +98,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         return CompletableFuture.allOf(cfs);
     }
 
-    public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
+    public void pauseArchiveReplay(String instance, String name) {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
@@ -115,7 +111,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         });
     }
 
-    public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
+    public void resumeArchiveReplay(String instance, String name) {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
@@ -128,8 +124,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         });
     }
 
-    public void seekArchiveReplay(String instance, String name, long newPosition)
-            throws YamcsApiException, YamcsException {
+    public void seekArchiveReplay(String instance, String name, long newPosition) {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
@@ -202,7 +197,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     @Override
-    public void connectionFailed(String url, YamcsException exception) {
+    public void connectionFailed(String url, ClientException exception) {
     }
 
     @Override

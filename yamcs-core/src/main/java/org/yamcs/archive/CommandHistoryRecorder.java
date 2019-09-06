@@ -2,8 +2,8 @@ package org.yamcs.archive;
 
 import java.util.Arrays;
 
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.api.AbstractYamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;

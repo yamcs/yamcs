@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.protobuf.Rest.CreateEventRequest;
+import org.yamcs.protobuf.Archive.CreateEventRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
@@ -64,9 +64,6 @@ public class RestEventProducer extends AbstractEventProducer {
         restClient.close();
     }
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
-     */
     @Override
     public synchronized void sendEvent(Event event) {
         logger.debug("Sending Event: {}", event.getMessage());

@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Log;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -40,8 +40,9 @@ import com.google.common.util.concurrent.RateLimiter;
 public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
 
     protected SocketChannel socketChannel;
-    protected String host = "whirl";
-    protected int port = 10003;
+    protected String host;
+    protected int port;
+    protected long initialDelay;
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector;
     SelectionKey selectionKey;
@@ -68,7 +69,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     final YConfiguration config;
 
     public TcpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        log = new Log(this.getClass(), yamcsInstance);
+        log = new Log(getClass(), yamcsInstance);
+        log.setContext(name);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
         this.config = config;
@@ -88,6 +90,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             host = config.getString("host");
             port = config.getInt("port");
         }
+        initialDelay = config.getLong("initialDelay", 0);
         initPostprocessor(yamcsInstance, config);
 
         if (config.containsKey("tcQueueSize")) {
@@ -98,7 +101,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
-
     }
 
     protected long getCurrentTime() {
@@ -115,7 +117,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         this.timer = new ScheduledThreadPoolExecutor(2);
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
-        timer.scheduleAtFixedRate(this, 10L, 10L, TimeUnit.SECONDS);
+        timer.scheduleAtFixedRate(this, initialDelay, 10000, TimeUnit.MILLISECONDS);
         notifyStarted();
     }
 
@@ -163,11 +165,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             socketChannel.configureBlocking(false);
             socketChannel.socket().setKeepAlive(true);
             selectionKey = socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
-            log.info("TC connection established to {}:{}", host, port);
+            log.info("Link established to {}:{}", host, port);
             return true;
         } catch (IOException e) {
             String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-            log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
+            log.info("Cannot connect to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
             try {
                 socketChannel.close();
             } catch (Exception e1) {
@@ -199,7 +201,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      * 
      * @return
      */
-    private boolean isSocketOpen() {
+    private synchronized boolean isSocketOpen() {
         if (socketChannel == null) {
             return false;
         }

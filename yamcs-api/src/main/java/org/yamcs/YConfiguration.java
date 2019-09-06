@@ -29,12 +29,12 @@ import org.yaml.snakeyaml.error.YAMLException;
  * This class loads yamcs configurations. There are a number of "subsystems", each using a corresponding subsystem.yaml
  * file
  *
- * There are three places where a configuration file is looked up in order:
- * <ul>
+ * Configuration files are looked up in this order:
+ * <ol>
  * <li>in the prefix/file.yaml via the classpath if the prefix is set in the setup method (used in the unittests)
  * <li>in the userConfigDirectory .yamcs/etc/file.yaml
- * <li>in the file.yaml via the classpath.
- * </ul>
+ * <li>in the file.yaml via the classpath..
+ * </ol>
  *
  * @author nm
  */
@@ -807,9 +807,12 @@ public class YConfiguration {
     private static void buildPath(YConfiguration c, StringBuilder sb) {
         if (c.parent != null) {
             buildPath(c.parent, sb);
+            if (c.parent.parent != null) {
+                sb.append(".");
+            }
             sb.append(c.parentKey);
         } else {
-            sb.append(c.rootLocation).append(":");
+            sb.append(c.rootLocation).append(": ");
         }
     }
 

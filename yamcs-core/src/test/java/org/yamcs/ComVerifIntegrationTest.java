@@ -12,9 +12,11 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Rest.IssueCommandResponse;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.IssueCommandResponse;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.tctm.TcDataLink;
+import org.yamcs.utils.TimeEncoding;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -77,6 +79,15 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
+
+        // check commands histogram
+        String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);
+        String stop = TimeEncoding.toString(TimeEncoding.getWallclockTime());
+        resp = restClient.doRequest("/archive/IntegrationTest/indexes/commands?start=" + start + "&stop=" + stop,
+                HttpMethod.GET, "").get();
+        ArchiveRecord ar = fromJson(resp, ArchiveRecord.newBuilder()).build();
+        assertEquals(1, ar.getNum());
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());
     }
 
     @Test

@@ -34,23 +34,4 @@
       <artifactId>jcommander</artifactId>
     </dependency>
   </dependencies>
-  
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <configuration>
-            <!-- This trick allows to suppress the Maven stacktrace when Yamcs
-                 exits with a non-zero return code (e.g. validation error) -->
-            <successCodes>
-              <successCode>0</successCode>
-              <successCode>255</successCode>
-            </successCodes>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>

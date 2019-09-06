@@ -1,5 +1,7 @@
 package org.yamcs.alarms;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.EventRecorder;
@@ -29,8 +31,8 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
     Stream eventStream;
     static final String EVENT_ALARMS_REALTIME_STREAM = "event_alarms_realtime";
 
-    public EventAlarmServer(String yamcsInstance, YConfiguration alarmConfig) {
-        super(yamcsInstance);
+    public EventAlarmServer(String yamcsInstance, YConfiguration alarmConfig, ScheduledThreadPoolExecutor timer) {
+        super(yamcsInstance, timer);
         eventAlarmMinViolations = alarmConfig.getInt("eventAlarmMinViolations", 1);
     }
 

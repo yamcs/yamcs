@@ -3,9 +3,9 @@
 * Website: https://www.yamcs.org
 * Mailing list: [Google Groups](https://groups.google.com/group/yamcs/)
 
-Yamcs is an open source mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom java classes.
+Yamcs is a mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom Java classes.
 
-To start developing your own Yamcs application, we recommend the [Yamcs Maven Plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
+To start developing your own Yamcs application, we recommend the [yamcs-maven-plugin](https://www.yamcs.org/yamcs-maven/yamcs-maven-plugin).
 
 
 ## Documentation
@@ -16,14 +16,14 @@ To start developing your own Yamcs application, we recommend the [Yamcs Maven Pl
 
 ## License
 
-Yamcs is licensed under Affero GPLv3. You are free to use it for your own purposes. When you distribute Yamcs or a derivative you must do so under the same terms and provide your end-users with access to the source code. For commercial licensing please contact [Space Applications Services](https://www.spaceapplications.com) with your use case.
+Yamcs is licensed under Affero GPLv3.
 
-Remark that the yamcs-client and yamcs-api modules are licensed under LGPLv3.
+For commercial licensing please contact [Space Applications Services](https://www.spaceapplications.com) with your use case.
 
 
 ## Development Setup
 
-To work on Yamcs itself you need JDK8, Maven and yarn.
+To work on the core components of Yamcs you need JDK8, Maven and yarn.
 
 Build Java jars:
 
@@ -44,7 +44,7 @@ For demo and development purposes we work with an all-in-one simulation environm
 
 This configuration stores data to `/storage/yamcs-data`. Ensure this folder exists and that you can write to it.
 
-When you see `Server running... press ctrl-c to stop` your server has fully started. If you built the web files you can now visit the built-in web interface by navigating to `http://localhost:8090`.
+When Yamcs started successfully, you can visit the built-in web interface by navigating to `http://localhost:8090`.
 
 
 ## Contributions

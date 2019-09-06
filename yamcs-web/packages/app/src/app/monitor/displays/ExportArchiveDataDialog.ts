@@ -55,11 +55,10 @@ export class ExportArchiveDataDialog implements OnDestroy {
   }
 
   private updateURL() {
-    const url = this.yamcs.getInstanceClient()!.getBatchParameterValuesDownloadURL({
+    const url = this.yamcs.getInstanceClient()!.getParameterValuesDownloadURL({
       start: this.start.value,
       stop: this.stop.value,
       parameters: this.data.parameterIds,
-      format: 'csv',
     });
     this.downloadURL$.next(url);
   }

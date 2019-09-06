@@ -3,17 +3,16 @@ package org.yamcs.http.api.archive;
 import java.util.Base64;
 
 import com.google.gson.Gson;
-import com.google.protobuf.Timestamp;
 
 /**
  * Stateless continuation token for paged requests on the tm table
  */
 public class PacketPageToken {
 
-    public Timestamp gentime;
+    public long gentime;
     public int seqNum;
 
-    public PacketPageToken(Timestamp timestamp, int seqNum) {
+    public PacketPageToken(long timestamp, int seqNum) {
         this.gentime = timestamp;
         this.seqNum = seqNum;
     }

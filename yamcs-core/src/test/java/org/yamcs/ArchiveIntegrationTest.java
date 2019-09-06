@@ -18,28 +18,27 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.client.BulkRestDataSender;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmSeverity;
 import org.yamcs.protobuf.Alarms.AlarmType;
 import org.yamcs.protobuf.Archive.IndexResponse;
-import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.Archive.ListAlarmsResponse;
+import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
+import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.CreateProcessorRequest;
-import org.yamcs.protobuf.Rest.EditClientRequest;
-import org.yamcs.protobuf.Rest.ListAlarmsResponse;
-import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
-import org.yamcs.protobuf.Table.Cell;
-import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.Row.Cell;
+import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableLoadResponse;
-import org.yamcs.protobuf.Web.ConnectionInfo;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -273,7 +272,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue1?start=" + fmg.toString()
                         + "&source=replay&limit=3",
                 HttpMethod.GET, "").get();
-        ListParameterValuesResponse pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        ListParameterHistoryResponse pdata = fromJson(respDl, ListParameterHistoryResponse.newBuilder()).build();
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pv = pdata.getParameter(0);
         assertEquals(3.14, pv.getEngValue().getFloatValue(), 1e-5);
@@ -289,13 +288,12 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/LocalParaWithInitialValue1?start=" + fmg.toString()
                         + "&source=replay&limit=3&order=asc",
                 HttpMethod.GET, "").get();
-        pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        pdata = fromJson(respDl, ListParameterHistoryResponse.newBuilder()).build();
         assertEquals(2, pdata.getParameterCount());
         pv = pdata.getParameter(0);
         assertEquals(3.14, pv.getEngValue().getFloatValue(), 1e-5);
         pv = pdata.getParameter(1);
         assertEquals(6.62, pv.getEngValue().getFloatValue(), 1e-5);
-
     }
 
     @Test
@@ -312,14 +310,14 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
         MyBulkReceiver mbr = new MyBulkReceiver();
-        restClient.doBulkGetRequest(
+        restClient.doBulkRequest(HttpMethod.POST,
                 "/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00",
                 mbr).get();
 
         assertEquals(4, mbr.dist.size());
 
         mbr = new MyBulkReceiver();
-        restClient.doBulkGetRequest(
+        restClient.doBulkRequest(HttpMethod.POST,
                 "/archive/IntegrationTest/indexes/pp?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", mbr)
                 .get();
 
@@ -333,7 +331,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3",
                 HttpMethod.GET, "").get();
 
-        ListParameterValuesResponse pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        ListParameterHistoryResponse pdata = fromJson(respDl, ListParameterHistoryResponse.newBuilder()).build();
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pv = pdata.getParameter(0);
         assertEquals(995, pv.getEngValue().getUint32Value());
@@ -341,7 +339,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         respDl = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3",
                 HttpMethod.GET, "").get();
-        pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
+        pdata = fromJson(respDl, ListParameterHistoryResponse.newBuilder()).build();
         assertEquals(3, pdata.getParameterCount());
     }
 
@@ -455,7 +453,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
-        RestExceptionData excData = ((YamcsApiException) t1).getRestData();
+        RestExceptionData excData = ((ClientException) t1).getRestData();
         assertTrue(excData.hasDetail("rowsLoaded"));
         assertEquals(50, excData.getDetail("rowsLoaded"));
         verifyRecords("table1", 50);
@@ -481,8 +479,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
-        assertTrue(t1 instanceof YamcsApiException);
-        RestExceptionData excData = ((YamcsApiException) t1).getRestData();
+        assertTrue(t1 instanceof ClientException);
+        RestExceptionData excData = ((ClientException) t1).getRestData();
 
         assertTrue(excData.hasDetail("rowsLoaded"));
         int numRowsLoaded = (int) excData.getDetail("rowsLoaded");
@@ -499,10 +497,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setMessage("event1").build();
         sep.sendEvent(e1);
 
-        Event e2 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
-                .setSeverity(EventSeverity.ERROR).setSeqNumber(2)
+        Event e2 = e1.toBuilder().setSeverity(EventSeverity.CRITICAL).setSeqNumber(2)
                 .setGenerationTime(TimeEncoding.parse("2019-05-12T11:15:00"))
-                .setMessage("event1").build();
+                .setMessage("event2").build();
         sep.sendEvent(e2);
 
         String resp = restClient.doRequest(
@@ -510,6 +507,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 HttpMethod.GET, "").get();
 
         ListAlarmsResponse listalarm = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
+        System.out.println("listalarm: "+listalarm);
         assertEquals(1, listalarm.getAlarmCount());
         AlarmData alarm = listalarm.getAlarm(0);
         assertEquals(AlarmType.EVENT, alarm.getType());
@@ -524,8 +522,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     private Row getRecord(int i) {
         // the column info is only required for the first record actually
         Row tr = Row.newBuilder()
-                .addColumn(ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build())
-                .addColumn(ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
+                .addColumn(Row.ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build())
+                .addColumn(Row.ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
                 .addCell(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))).build())
                 .addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test " + i)))
                         .build())
@@ -534,26 +532,17 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void verifyRecords(String tblName, int n) throws Exception {
-        List<TableRecord> trList = new ArrayList<>();
-        CompletableFuture<Void> cf1 = restClient
-                .doBulkGetRequest("/archive/IntegrationTest/downloads/tables/" + tblName, (data) -> {
-                    TableRecord tr;
-                    try {
-                        tr = TableRecord.parseFrom(data);
-                        trList.add(tr);
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        cf1.get();
-        assertEquals(n, trList.size());
+        CompletableFuture<byte[]> cf1 = restClient
+                .doRequest("/archive/IntegrationTest/tables/" + tblName + "/data", HttpMethod.GET);
+        byte[] data = cf1.get();
+        TableData tableData = TableData.parseFrom(data);
+        assertEquals(n, tableData.getRecordCount());
     }
 
     private void verifyRecordsDumpFormat(String tblName, int n) throws Exception {
         List<Row> trList = new ArrayList<>();
         CompletableFuture<Void> cf1 = restClient
-                .doBulkGetRequest("/archive/IntegrationTest/downloads/tables/" + tblName + "?format=dump", (data) -> {
+                .doBulkRequest(HttpMethod.POST, "/archive/IntegrationTest/tables/" + tblName + ":readRows", (data) -> {
                     Row tr;
                     try {
                         tr = Row.parseFrom(data);

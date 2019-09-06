@@ -5,29 +5,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.yamcs.http.GpbExtensionRegistry;
+
+import org.yamcs.alarms.EventAlarmStreamer;
+import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.http.HttpException;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.RestRequest.IntervalResult;
+import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.archive.ParameterRanger.Range;
 import org.yamcs.http.api.archive.RestDownsampler.Sample;
 import org.yamcs.http.api.processor.ProcessorHelper;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmType;
+import org.yamcs.protobuf.Alarms.ClearInfo;
 import org.yamcs.protobuf.Alarms.ParameterAlarmData;
-import org.yamcs.protobuf.Archive.ColumnData;
-import org.yamcs.protobuf.Archive.ColumnInfo;
-import org.yamcs.protobuf.Archive.EnumValue;
-import org.yamcs.protobuf.Archive.PartitioningInfo;
-import org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType;
-import org.yamcs.protobuf.Archive.RocksDbDatabaseInfo;
-import org.yamcs.protobuf.Archive.StreamData;
-import org.yamcs.protobuf.Archive.StreamInfo;
-import org.yamcs.protobuf.Archive.TableInfo;
+import org.yamcs.protobuf.Alarms.ShelveInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.RocksDbDatabaseInfo;
+import org.yamcs.protobuf.Table.ColumnData;
+import org.yamcs.protobuf.Table.ColumnInfo;
+import org.yamcs.protobuf.Table.EnumValue;
+import org.yamcs.protobuf.Table.PartitioningInfo;
+import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
+import org.yamcs.protobuf.Table.StreamData;
+import org.yamcs.protobuf.Table.StreamInfo;
+import org.yamcs.protobuf.Table.TableInfo;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -51,15 +54,16 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 
+import static org.yamcs.alarms.AlarmStreamer.*;
 /**
  * Collects all archive-related conversions performed in the web api (x towards archive.proto)
  */
 public final class ArchiveHelper {
 
-    final static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
+    public final static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
         RocksDbDatabaseInfo.Builder databaseb = RocksDbDatabaseInfo.newBuilder()
                 .setTablespace(tablespace.getName())
                 .setDataDir(tablespace.getDataDir())
@@ -67,7 +71,7 @@ public final class ArchiveHelper {
         return databaseb.build();
     }
 
-    final static TableInfo toTableInfo(TableDefinition def) {
+    public final static TableInfo toTableInfo(TableDefinition def) {
         TableInfo.Builder infob = TableInfo.newBuilder();
         infob.setName(def.getName());
         infob.setCompressed(def.isCompressed());
@@ -145,7 +149,7 @@ public final class ArchiveHelper {
         return infob.build();
     }
 
-    final static StreamInfo toStreamInfo(Stream stream) {
+    public final static StreamInfo toStreamInfo(Stream stream) {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
         infob.setDataCount(stream.getDataCount());
@@ -182,7 +186,7 @@ public final class ArchiveHelper {
         return builder.build();
     }
 
-    final static List<ColumnData> toColumnDataList(Tuple tuple) {
+    public final static List<ColumnData> toColumnDataList(Tuple tuple) {
         List<ColumnData> result = new ArrayList<>();
         int i = 0;
         for (Object column : tuple.getColumns()) {
@@ -269,25 +273,24 @@ public final class ArchiveHelper {
         return tuple;
     }
 
-    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId parameterId,
-            boolean descendByDefault)
-            throws HttpException {
+    public final static ReplayRequest toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
+            boolean descend) throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            rrb.setStart(ir.getStart());
+
+        if (start != TimeEncoding.INVALID_INSTANT) {
+            rrb.setStart(start);
         }
-        if (ir.hasStop()) {
-            rrb.setStop(ir.getStop());
+        if (stop != TimeEncoding.INVALID_INSTANT) {
+            rrb.setStop(stop);
         }
         rrb.setEndAction(EndAction.QUIT);
-        rrb.setReverse(req.asksDescending(descendByDefault));
+        rrb.setReverse(descend);
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId));
         return rrb.build();
     }
 
-    final static TimeSeries.Sample toGPBSample(Sample sample) {
+    public final static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
         b.setTime(TimeEncoding.toString(sample.t));
         b.setN(sample.n);
@@ -301,7 +304,7 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static Ranges.Range toGPBRange(Range r) {
+    public final static Ranges.Range toGPBRange(Range r) {
         Ranges.Range.Builder b = Ranges.Range.newBuilder();
         b.setTimeStart(TimeEncoding.toString(r.start));
         b.setTimeStop(TimeEncoding.toString(r.stop));
@@ -310,42 +313,14 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static String[] getEventCSVHeader(GpbExtensionRegistry extensionRegistry) {
-        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
-        String[] rec = new String[5 + extensionFields.size()];
-        int i = 0;
-        rec[i++] = "Source";
-        rec[i++] = "Generation Time";
-        rec[i++] = "Reception Time";
-        rec[i++] = "Event Type";
-        rec[i++] = "Event Text";
-        for (ExtensionInfo extension : extensionFields) {
-            rec[i++] = "" + extension.descriptor.getName();
-        }
-        return rec;
-    }
-
-    final static String[] tupleToCSVEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
-        Event event = tupleToEvent(tuple, extensionRegistry);
-
-        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
-
-        String[] rec = new String[5 + extensionFields.size()];
-        int i = 0;
-        rec[i++] = event.getSource();
-        rec[i++] = event.getGenerationTimeUTC();
-        rec[i++] = event.getReceptionTimeUTC();
-        rec[i++] = event.getType();
-        rec[i++] = event.getMessage();
-        for (ExtensionInfo extension : extensionFields) {
-            rec[i++] = "" + event.getField(extension.descriptor);
-        }
-        return rec;
-    }
-
-    final static Event tupleToEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
+    public final static Event tupleToEvent(Tuple tuple, ProtobufRegistry protobufRegistry) {
         Event incoming = (Event) tuple.getColumn("body");
-        Event event = extensionRegistry.getExtendedEvent(incoming);
+        Event event;
+        try {
+            event = Event.parseFrom(incoming.toByteArray(), protobufRegistry.getExtensionRegistry());
+        } catch (InvalidProtocolBufferException e) {
+            throw new UnsupportedOperationException(e);
+        }
 
         Event.Builder eventb = Event.newBuilder(event);
         eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
@@ -356,34 +331,30 @@ public final class ArchiveHelper {
     final static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
         ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
 
-        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+        ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
         alarmb.setTriggerValue(pval);
 
-        if (tuple.hasColumn("severityIncreasedPV")) {
-            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+        if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+            pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             alarmb.setMostSevereValue(pval);
-        }
-        if (tuple.hasColumn("updatedPV")) {
-            pval = (ParameterValue) tuple.getColumn("updatedPV");
-            alarmb.setCurrentValue(pval);
         }
 
         return alarmb.build();
     }
 
-    final static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+    public final static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);
 
         if (tuple.hasColumn("parameter")) {
             alarmb.setType(AlarmType.PARAMETER);
-            ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+            ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
             alarmb.setId(pval.getId());
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
 
-            if (tuple.hasColumn("severityIncreasedPV")) {
-                pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+            if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
 
@@ -393,14 +364,15 @@ public final class ArchiveHelper {
             }
         } else {
             alarmb.setType(AlarmType.EVENT);
-            Event ev = (Event) tuple.getColumn("triggerEvent");
+            Event ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
             alarmb.setId(ProcessorHelper.getAlarmId(ev));
 
-            if (tuple.hasColumn("severityIncreasedEvent")) {
-                ev = (Event) tuple.getColumn("severityIncreasedEvent");
+            if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
+            
         }
 
         return alarmb.build();
@@ -417,5 +389,41 @@ public final class ArchiveHelper {
             ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));
             alarmb.setAcknowledgeInfo(ackb);
         }
+    }
+    
+    static void setClearInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_CLEARED_TIME)) { 
+            return;
+        }
+        ClearInfo.Builder clib = ClearInfo.newBuilder();
+        clib.setClearTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_CLEARED_TIME)));
+       
+        if (tuple.hasColumn(CNAME_CLEARED_BY)) {
+            clib.setClearedBy((String) tuple.getColumn(CNAME_CLEARED_BY));
+        }
+        
+        
+        if (tuple.hasColumn(CNAME_CLEAR_MSG)) {
+            clib.setClearMessage((String) tuple.getColumn(CNAME_CLEAR_MSG));
+        }
+        alarmb.setClearInfo(clib.build());
+    }
+    
+    static void setShelveInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_SHELVED_TIME)) { 
+            return;
+        }
+        ShelveInfo.Builder clib = ShelveInfo.newBuilder();
+        clib.setShelveTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_SHELVED_TIME)));
+       
+        if (tuple.hasColumn(CNAME_SHELVED_BY)) {
+            clib.setShelvedBy((String) tuple.getColumn(CNAME_SHELVED_BY));
+        }
+        
+        if (tuple.hasColumn(CNAME_SHELVED_MSG)) {
+            clib.setShelveMessage((String) tuple.getColumn(CNAME_SHELVED_MSG));
+        }
+        
+        alarmb.setShelveInfo(clib.build());
     }
 }

@@ -26,7 +26,11 @@ dataLinks:
     args:
       stream: tc_realtime
 
-mdb: refmdb
+mdb:
+  - type: "sheet"
+    args: 
+      file: "mdb/refmdb.xls"
+      enableAliasReferences: false
 
 streamConfig:
   tm: ["tm_realtime", "tm_dump"]

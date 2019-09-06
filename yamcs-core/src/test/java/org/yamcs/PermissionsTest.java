@@ -9,20 +9,21 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.client.ClientException;
+import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketRequest;
+import org.yamcs.protobuf.BatchGetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
-import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.UpdateCommandHistoryRequest.KeyValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ValueHelper;
 
@@ -98,7 +99,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     HttpMethod.POST, toJson(cmdreq)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof YamcsApiException);
+            assertTrue(e.getCause() instanceof ClientException);
         }
 
     }
@@ -110,21 +111,22 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Allowed to subscribe to Integer parameter from cache
         ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+        BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(validSubscrList.getIdList()).build();
-        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
+        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                 .get();
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
-        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
+        req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList())
                 .build();
         try {
-            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
+            restClient1
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -134,16 +136,16 @@ public class PermissionsTest extends AbstractIntegrationTest {
     public void testPermissionSetParameter() throws Exception {
         RestClient restClient1 = getRestClient("operator", "password");
 
-        BulkSetParameterValueRequest.Builder bulkPvals = BulkSetParameterValueRequest.newBuilder();
+        BatchSetParameterValuesRequest.Builder bulkPvals = BatchSetParameterValuesRequest.newBuilder();
         bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setValue(ValueHelper.newValue(5)));
         try {
-            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST,
+            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
                     toJson(bulkPvals.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            YamcsApiException e1 = (YamcsApiException) e.getCause();
+            ClientException e1 = (ClientException) e.getCause();
             RestExceptionData excData = e1.getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
@@ -158,13 +160,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
         try {
             updateCommandHistory(getRestClient("operator", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((YamcsApiException) e.getCause()).getRestData();
+            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("ForbiddenException", excData.getType());
         }
 
@@ -179,7 +181,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
                 .setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(
-                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, toJson(updateHistoryRequest.build()))

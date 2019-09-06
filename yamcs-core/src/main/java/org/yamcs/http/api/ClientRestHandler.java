@@ -13,13 +13,13 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.EditClientRequest;
-import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.ClientInfo.ClientState;
+import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.ListClientsResponse;
+import org.yamcs.protobuf.ProcessorManagementRequest;
+import org.yamcs.protobuf.ProcessorManagementRequest.Operation;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 
 /**
@@ -39,14 +39,27 @@ public class ClientRestHandler extends RestHandler {
         completeOK(req, responseb.build());
     }
 
-    @Route(path = "/api/clients/:id", method = "GET")
+    @Route(path = "/api/instances/{instance}/clients", method = "GET")
+    public void listClientsForInstance(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req.getRouteParam("instance"));
+        Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
+        ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
+        for (ConnectedClient client : clients) {
+            if (client.getProcessor() != null && instance.equals(client.getProcessor().getInstance())) {
+                responseb.addClient(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
+            }
+        }
+        completeOK(req, responseb.build());
+    }
+
+    @Route(path = "/api/clients/{id}", method = "GET")
     public void getClient(RestRequest req) throws HttpException {
         ConnectedClient client = verifyClient(req, req.getIntegerRouteParam("id"));
         ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
         completeOK(req, clientInfo);
     }
 
-    @Route(path = "/api/clients/:id", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/clients/{id}", method = "PATCH")
     public void patchClient(RestRequest restReq) throws HttpException {
         ConnectedClient client = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 
@@ -97,12 +110,12 @@ public class ClientRestHandler extends RestHandler {
 
     private void verifyPermission(Processor processor, int clientId, RestRequest req)
             throws HttpException {
-        if (hasSystemPrivilege(req, SystemPrivilege.ControlProcessor)) {
+        if (hasSystemPrivilege(req.getUser(), SystemPrivilege.ControlProcessor)) {
             // With this privilege, everything is allowed
             return;
         }
 
-        String username = req.getUser().getUsername();
+        String username = req.getUser().getName();
 
         // other users can only connect clients to the processor they own
         if (!(processor.isPersistent() || processor.getCreator().equals(username))) {
@@ -115,7 +128,7 @@ public class ClientRestHandler extends RestHandler {
         if (client == null) {
             throw new BadRequestException("Invalid client id " + clientId);
         }
-        if (!client.getUser().getUsername().equals(username)) {
+        if (!client.getUser().getName().equals(username)) {
             log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }

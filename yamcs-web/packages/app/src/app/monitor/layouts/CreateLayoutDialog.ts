@@ -37,7 +37,7 @@ export class CreateLayoutDialog {
     const objectValue = new Blob([JSON.stringify(newLayout, undefined, 2)], {
       type: 'application/json',
     });
-    const username = this.authService.getUser()!.getUsername();
+    const username = this.authService.getUser()!.getName();
     this.storageClient.uploadObject('_global', `user.${username}`, objectName, objectValue).then(() => {
       this.dialogRef.close();
       this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);

@@ -7,7 +7,7 @@ import org.yamcs.ConfigurationException;
 public interface YConfigurationResolver {
 
     /**
-     * Searches configuration with name
+     * Searches configuration by name
      * 
      * @param name
      * @return

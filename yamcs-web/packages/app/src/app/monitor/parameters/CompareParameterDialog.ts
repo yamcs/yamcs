@@ -39,7 +39,7 @@ export class CompareParameterDialog implements OnInit {
         q: val,
         limit: 10,
       })),
-      map(page => page.parameter || []),
+      map(page => page.parameters || []),
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {

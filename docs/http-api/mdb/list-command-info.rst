@@ -22,7 +22,7 @@ q (string)
 .. code-block:: json
 
     {
-      "command" : [ {
+      "commands" : [ {
         "name": "SWITCH_VOLTAGE_ON",
         "qualifiedName" : "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
         "alias" : [ {
@@ -56,6 +56,6 @@ q (string)
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListCommandInfoResponse {
-      repeated mdb.CommandInfo command = 1;
+    message ListCommandsResponse {
+      repeated mdb.CommandInfo commands = 1;
     }

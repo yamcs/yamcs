@@ -1,6 +1,6 @@
 package org.yamcs.simulation;
 
-import org.yamcs.api.Plugin;
+import org.yamcs.Plugin;
 
 public class SimulationPlugin implements Plugin {
 
@@ -8,9 +8,7 @@ public class SimulationPlugin implements Plugin {
 
     public SimulationPlugin() {
         Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
+        version = (pkg != null) ? pkg.getImplementationVersion() : null;
     }
 
     @Override

@@ -46,8 +46,8 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
             }
             packets[i] = packet;
         }
-        int numParamChanging = packetSize/40; //10% of parameters are changing with each packet
-        
+        int numParamChanging = packetSize / 40; // 10% of parameters are changing with each packet
+
         while (isRunning()) {
             while (true) {
                 for (int i = 0; i < numPackets; i++) {

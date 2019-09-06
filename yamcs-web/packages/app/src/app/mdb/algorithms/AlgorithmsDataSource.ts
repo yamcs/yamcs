@@ -22,7 +22,7 @@ export class AlgorithmsDataSource extends DataSource<Algorithm> {
     this.yamcs.getInstanceClient()!.getAlgorithms(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
-      this.algorithms$.next(page.algorithm || []);
+      this.algorithms$.next(page.algorithms || []);
     });
   }
 

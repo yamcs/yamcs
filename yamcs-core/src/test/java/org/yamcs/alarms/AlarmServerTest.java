@@ -7,21 +7,28 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 
 public class AlarmServerTest {
     Parameter p1 = new Parameter("p1");
     Parameter p2 = new Parameter("p2");
-
+    AlarmServer<Parameter, ParameterValue> alarmServer;
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    
+    
     @BeforeClass
     static public void setupBeforeClass() {
         EventProducerFactory.setMockup(true);
+        TimeEncoding.setUp();
     }
 
     ParameterValue getParameterValue(Parameter p, MonitoringResult mr) {
@@ -30,14 +37,18 @@ public class AlarmServerTest {
 
         return pv;
     }
+    
+    @Before
+    public void before() {
+        alarmServer = new AlarmServer<>("toto", timer);
+    }
 
     @Test
-    public void test1() throws CouldNotAcknowledgeAlarmException {
-        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
+    public void test1() {
         MyListener l = new MyListener();
-        as.addAlarmListener(l);
+        alarmServer.addAlarmListener(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
-        as.update(pv1_0, 1);
+        alarmServer.update(pv1_0, 1);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
@@ -45,47 +56,46 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.triggerValue);
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.WARNING);
-        as.update(pv1_1, 1);
+        alarmServer.update(pv1_1, 1);
         assertTrue(l.triggered.isEmpty());
-        aa = l.updated.remove();
+        aa = l.valueUpdates.remove();
         assertEquals(pv1_1, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
         ParameterValue pv1_2 = getParameterValue(p1, MonitoringResult.CRITICAL);
-        as.update(pv1_2, 1);
+        alarmServer.update(pv1_2, 1);
         assertTrue(l.triggered.isEmpty());
-        assertFalse(l.updated.isEmpty());
+        assertFalse(l.valueUpdates.isEmpty());
         aa = l.severityIncreased.remove();
         assertEquals(pv1_2, aa.currentValue);
         assertEquals(pv1_2, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
         long ackTime = 123L;
-        as.acknowledge(aa, "test1", ackTime, "bla");
+        alarmServer.acknowledge(aa, "test1", ackTime, "bla");
         assertTrue(l.cleared.isEmpty());
 
         assertEquals(1, l.acknowledged.size());
         assertEquals(aa, l.acknowledged.remove());
 
         ParameterValue pv1_3 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
-        as.update(pv1_3, 1);
+        alarmServer.update(pv1_3, 1);
         aa = l.cleared.remove();
         assertEquals(pv1_3, aa.currentValue);
         assertEquals(pv1_2, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
         assertEquals("test1", aa.usernameThatAcknowledged);
         assertEquals(ackTime, aa.acknowledgeTime);
-        assertEquals("bla", aa.message);
+        assertEquals("bla", aa.getAckMessage());
     }
 
     @Test
-    public void test2() throws CouldNotAcknowledgeAlarmException {
-        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
+    public void test2() {
         MyListener l = new MyListener();
-        as.addAlarmListener(l);
+        alarmServer.addAlarmListener(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
-        as.update(pv1_0, 1);
+        alarmServer.update(pv1_0, 1);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
@@ -93,18 +103,18 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.triggerValue);
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
-        as.update(pv1_1, 1);
+        alarmServer.update(pv1_1, 1);
         assertTrue(l.cleared.isEmpty());
-        aa = l.updated.remove();
+        aa = l.valueUpdates.remove();
         assertEquals(pv1_1, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
+        assertEquals(1, l.rtn.size());
+        
         long ackTime = 123L;
-        as.acknowledge(aa, "test2", ackTime, "bla");
+        alarmServer.acknowledge(aa, "test2", ackTime, "bla");
 
-        assertEquals(1, l.acknowledged.size());
-        assertEquals(aa, l.acknowledged.remove());
 
         aa = l.cleared.remove();
         assertEquals(pv1_1, aa.currentValue);
@@ -112,16 +122,38 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.triggerValue);
         assertEquals("test2", aa.usernameThatAcknowledged);
         assertEquals(ackTime, aa.acknowledgeTime);
-        assertEquals("bla", aa.message);
+        assertEquals("bla", aa.getAckMessage());
+    }
+
+    
+    @Test
+    public void testShelve() throws InterruptedException {
+        MyListener l = new MyListener();
+        alarmServer.addAlarmListener(l);
+        ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
+        alarmServer.update(pv1_0, 1);
+
+        ActiveAlarm<ParameterValue> aa = l.triggered.remove();
+        assertEquals(pv1_0, aa.currentValue);
+        assertEquals(pv1_0, aa.mostSevereValue);
+        assertEquals(pv1_0, aa.triggerValue);
+
+        alarmServer.shelve(aa, "cucu", "looking at it later", 500);
+        assertEquals(1, l.shelved.size());
+        assertEquals(aa, l.shelved.remove());
+        
+        Thread.sleep(1000);
+        assertEquals(1, l.unshelved.size());
+        assertEquals(aa, l.unshelved.remove());
+        assertFalse(aa.isShelved());
     }
 
     @Test
     public void testAutoAck() {
-        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.addAlarmListener(l);
+        alarmServer.addAlarmListener(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
-        as.update(pv1_0, 1, true);
+        alarmServer.update(pv1_0, 1, true, false);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
@@ -129,7 +161,7 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.triggerValue);
 
         ParameterValue pv1_1 = getParameterValue(p1, MonitoringResult.IN_LIMITS);
-        as.update(pv1_1, 1, true);
+        alarmServer.update(pv1_1, 1, true, false);
 
         aa = l.cleared.remove();
         assertEquals(pv1_1, aa.currentValue);
@@ -139,27 +171,26 @@ public class AlarmServerTest {
 
     @Test
     public void testGetActiveAlarmWithNoAlarm() throws AlarmSequenceException {
-        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
+       
         MyListener l = new MyListener();
-        as.addAlarmListener(l);
+        alarmServer.addAlarmListener(l);
 
-        assertNull(as.getActiveAlarm(p1, 1));
+        assertNull(alarmServer.getActiveAlarm(p1, 1));
     }
 
     @Test(expected = AlarmSequenceException.class)
     public void testGetActiveAlarmWithInvalidId() throws AlarmSequenceException {
-        AlarmServer<Parameter, ParameterValue> as = new AlarmServer<>("toto");
         MyListener l = new MyListener();
-        as.addAlarmListener(l);
+        alarmServer.addAlarmListener(l);
         ParameterValue pv1_0 = getParameterValue(p1, MonitoringResult.WARNING);
-        as.update(pv1_0, 1, true);
+        alarmServer.update(pv1_0, 1, true, false);
 
         ActiveAlarm<ParameterValue> aa = l.triggered.remove();
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
-        as.getActiveAlarm(p1, 123 /* wrong id */);
+        alarmServer.getActiveAlarm(p1, 123 /* wrong id */);
     }
 
     @Test
@@ -170,20 +201,19 @@ public class AlarmServerTest {
     }
 
     class MyListener implements AlarmListener<ParameterValue> {
-        Queue<ActiveAlarm<ParameterValue>> triggered = new LinkedList<>();
-        Queue<ActiveAlarm<ParameterValue>> updated = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> valueUpdates = new LinkedList<>();
         Queue<ActiveAlarm<ParameterValue>> severityIncreased = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> triggered = new LinkedList<>();
         Queue<ActiveAlarm<ParameterValue>> acknowledged = new LinkedList<>();
         Queue<ActiveAlarm<ParameterValue>> cleared = new LinkedList<>();
-
-        @Override
-        public void notifyTriggered(ActiveAlarm<ParameterValue> activeAlarm) {
-            triggered.add(activeAlarm);
-        }
+        Queue<ActiveAlarm<ParameterValue>> rtn = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> shelved = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> unshelved = new LinkedList<>();
+        Queue<ActiveAlarm<ParameterValue>> reset = new LinkedList<>();
 
         @Override
         public void notifyValueUpdate(ActiveAlarm<ParameterValue> activeAlarm) {
-            updated.add(activeAlarm);
+            valueUpdates.add(activeAlarm);
         }
 
         @Override
@@ -192,13 +222,32 @@ public class AlarmServerTest {
         }
 
         @Override
-        public void notifyAcknowledged(ActiveAlarm<ParameterValue> activeAlarm) {
-            acknowledged.add(activeAlarm);
-        }
-
-        @Override
-        public void notifyCleared(ActiveAlarm<ParameterValue> activeAlarm) {
-            cleared.add(activeAlarm);
+        public void notifyUpdate(AlarmNotificationType notificationType, ActiveAlarm<ParameterValue> activeAlarm) {
+            switch (notificationType) {
+            case TRIGGERED:
+                triggered.add(activeAlarm);
+                break;
+            case ACKNOWLEDGED:
+                acknowledged.add(activeAlarm);
+                break;
+            case CLEARED:
+                cleared.add(activeAlarm);
+                break;
+            case RTN:
+                rtn.add(activeAlarm);
+                break;
+            case RESET:
+                rtn.add(activeAlarm);
+                break;
+            case SHELVED:
+                shelved.add(activeAlarm);
+                break;
+            case UNSHELVED:
+                unshelved.add(activeAlarm);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
         }
     }
 }

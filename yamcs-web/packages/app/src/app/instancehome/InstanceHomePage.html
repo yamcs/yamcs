@@ -69,16 +69,16 @@
                 </p>
               </mat-list-item>
 
-              <mat-list-item *ngIf="info.plugin">
+              <mat-list-item *ngIf="info.plugins">
                 <h3 matLine>Plugins</h3>
               </mat-list-item>
 
-              <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px">
+              <table *ngIf="info.plugins" yaDataTable style="margin-left: 16px">
                 <tr>
                   <th>Name</th>
                   <th>Version</th>
                 </tr>
-                <tr *ngFor="let plugin of info.plugin">
+                <tr *ngFor="let plugin of info.plugins">
                   <td>{{ plugin.name }}</td>
                   <td>{{ plugin.version || '-' }}</td>
                 </tr>

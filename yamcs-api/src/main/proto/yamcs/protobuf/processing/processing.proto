@@ -1,0 +1,142 @@
+syntax="proto2";
+  
+package yamcs.protobuf.processing;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ProcessingProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service ProcessingApi {
+
+  // Get a parameter's value
+  rpc GetParameterValue(GetParameterValueRequest) returns (pvalue.ParameterValue) {
+    option (yamcs.api.route) = {
+      get: "/api/processors/{instance}/{processor}/parameters/{name*}"
+    };
+  }
+  
+  // Set a parameter's value
+  rpc SetParameterValue(SetParameterValueRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/processors/{instance}/{processor}/parameters/{name*}"
+      body: "value"
+      additional_bindings {
+        post: "/api/processors/{instance}/{processor}/parameters/{name*}"
+        body: "value"
+      }
+    };
+  }
+  
+  // Batch get the value of multiple parameters
+  rpc BatchGetParameterValues(BatchGetParameterValuesRequest) returns (BatchGetParameterValuesResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/parameters:batchGet"
+      body: "*"
+    };
+  }
+  
+  // Batch set the value of multiple parameters
+  rpc BatchSetParameterValues(BatchSetParameterValuesRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/parameters:batchSet"
+      body: "*"
+    };
+  }
+  
+  // Issue a command
+  rpc IssueCommand(IssueCommandRequest) returns (IssueCommandResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/commands/{name*}"
+      body: "*"
+    };
+  }
+
+  // Update command history
+  rpc UpdateCommandHistory(UpdateCommandHistoryRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors/{instance}/{processor}/commandhistory/{name*}"
+      body: "*"
+    };
+  }
+}
+
+message GetParameterValueRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+  optional string name = 3;
+  optional bool fromCache = 4;
+  
+  // if not fromCache, wait this time (in milliseconds) to receive the parameter
+  optional uint64 timeout = 5;
+}
+
+message SetParameterValueRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+  optional string name = 3;
+  optional Value value = 4;
+}
+
+message BatchGetParameterValuesRequest {
+  optional string instance = 4;
+  optional string processor = 5;
+  repeated NamedObjectId id = 1;
+  optional bool fromCache = 2;
+  
+  // if not fromCache, wait this time (in milliseconds) to receive the parameter
+  optional uint64 timeout = 3;
+}
+
+message BatchGetParameterValuesResponse {
+  repeated pvalue.ParameterValue value = 1;
+}
+
+message BatchSetParameterValuesRequest {
+  message SetParameterValueRequest {
+    optional NamedObjectId id = 1;
+    optional Value value = 2;
+  }
+  optional string instance = 2;
+  optional string processor = 3;
+  repeated SetParameterValueRequest request = 1;
+}
+
+message IssueCommandRequest {
+  message Assignment {
+    optional string name = 1;
+    optional string value = 2;
+  }
+  optional string instance = 6;
+  optional string processor = 7;
+  optional string name = 8;
+  repeated Assignment assignment = 1;
+  optional string origin = 2;
+  optional int32 sequenceNumber = 3;
+  optional bool dryRun = 4;
+  optional string comment = 5;
+}
+
+message IssueCommandResponse {
+  optional commanding.CommandQueueEntry commandQueueEntry = 1;
+  optional string source = 2;
+  optional string hex = 3;
+  optional bytes binary = 4;
+}
+
+message UpdateCommandHistoryRequest {
+  message KeyValue {
+    optional string key = 1;
+    optional string value = 2;
+  }
+  optional string instance = 1;
+  optional string processor = 2;
+  optional commanding.CommandId cmdId = 3;
+  repeated KeyValue historyEntry = 4;
+}

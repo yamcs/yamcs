@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -46,7 +46,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
-        log = new Log(this.getClass(), parameterArchive.getYamcsInstance());
+        log = new Log(getClass(), parameterArchive.getYamcsInstance());
         this.maxSegmentSize = maxSegmentSize;
         log.debug("Archive filler task maxSegmentSize: {} ", maxSegmentSize);
     }

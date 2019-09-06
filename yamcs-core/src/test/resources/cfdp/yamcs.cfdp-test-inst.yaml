@@ -1,20 +1,15 @@
 services:   
-   - class: org.yamcs.cfdp.CfdpService
-     args: 
-         inStream: cfdp_in
-         outStream: cfdp_out
-         sourceId: 12
-         destinationId: 15
-         sleepBetweenPdusMs: 10
-
+  - class: org.yamcs.cfdp.CfdpService
+    args: 
+      inStream: cfdp_in
+      outStream: cfdp_out
+      sourceId: 12
+      destinationId: 15
+      sleepBetweenPdusMs: 10
 
 mdb:
   - type: "emptyNode"
     spec: "CFDP"
-    
-
-
 
 streamConfig:
   sqlFile: "src/test/resources/cfdp/cfdp-streams.sql"
-                                  

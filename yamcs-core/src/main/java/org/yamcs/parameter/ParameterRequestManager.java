@@ -17,7 +17,7 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
@@ -74,7 +74,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      */
     public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.processor = yproc;
-        log = new Log(this.getClass(), yproc.getInstance());
+        log = new Log(getClass(), yproc.getInstance());
         log.setContext(yproc.getName());
         cacheConfig = yproc.getPameterCacheConfig();
         shouldSubcribeAllParameters = yproc.isSubscribeAll();
@@ -88,7 +88,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                     lastSubscriptionId.incrementAndGet());
         }
         if (yproc.hasAlarmServer()) {
-            parameterAlarmServer = new AlarmServer<>(yproc.getInstance());
+            parameterAlarmServer = new AlarmServer<>(yproc.getInstance(), yproc.getTimer());
             alarmChecker.enableServer(parameterAlarmServer);
         }
 

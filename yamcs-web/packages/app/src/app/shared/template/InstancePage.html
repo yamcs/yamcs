@@ -4,7 +4,7 @@
                        [class.message-bar-visible]="messageBar.show$ | async"
                        *ngIf="instance$ | async as instance">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
-    <mat-toolbar class="module-title" (click)="searchInput.focus()" style="cursor: text">
+    <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">
       <mat-toolbar-row style="cursor: text">
         <mat-icon style="cursor: text">search</mat-icon>
         <input #searchInput

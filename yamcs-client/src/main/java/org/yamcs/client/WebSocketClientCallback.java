@@ -1,6 +1,6 @@
 package org.yamcs.client;
 
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 
 public interface WebSocketClientCallback {
 

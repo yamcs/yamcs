@@ -18,7 +18,7 @@ export class StorageClient {
   async getBuckets(instance: string): Promise<Bucket[]> {
     const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}`);
     const wrapper = await response.json() as BucketsWrapper;
-    return wrapper.bucket || [];
+    return wrapper.buckets || [];
   }
 
   async deleteBucket(instance: string, name: string) {
@@ -29,7 +29,7 @@ export class StorageClient {
   }
 
   async listObjects(instance: string, bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`;
+    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     return await response.json() as ListObjectsResponse;
   }
@@ -39,11 +39,11 @@ export class StorageClient {
   }
 
   getObjectURL(instance: string, bucket: string, name: string) {
-    return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/${name}`;
+    return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${name}`;
   }
 
   async uploadObject(instance: string, bucket: string, name: string, value: Blob | File) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`;
+    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects`;
     const formData = new FormData();
     formData.set(name, value, name);
     return await this.yamcs.doFetch(url, {
@@ -53,7 +53,7 @@ export class StorageClient {
   }
 
   async deleteObject(instance: string, bucket: string, name: string) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/${name}`;
+    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${name}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });

@@ -55,7 +55,7 @@ public class TelnetServer extends AbstractService {
 
         try {
             b.bind(port).sync();
-            log.info("Listening for Telnet clients on port " + port);
+            log.debug("Listening for Telnet clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

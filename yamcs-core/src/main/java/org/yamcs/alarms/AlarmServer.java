@@ -3,6 +3,8 @@ package org.yamcs.alarms;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.ParameterAlarmChecker;
 
@@ -34,13 +37,11 @@ public class AlarmServer<S, T> extends AbstractService {
     static private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
 
     private CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
+    final private ScheduledThreadPoolExecutor timer;
 
-    /**
-     * 
-     * @param yamcsInstance
-     */
-    public AlarmServer(String yamcsInstance) {
+    public AlarmServer(String yamcsInstance, ScheduledThreadPoolExecutor timer) {
         this.yamcsInstance = yamcsInstance;
+        this.timer = timer;
     }
 
     /**
@@ -78,8 +79,8 @@ public class AlarmServer<S, T> extends AbstractService {
     public ActiveAlarm<T> getActiveAlarm(S subject, int id) throws AlarmSequenceException {
         ActiveAlarm<T> alarm = activeAlarms.get(subject);
         if (alarm != null) {
-            if (alarm.id != id) {
-                throw new AlarmSequenceException(alarm.id, id);
+            if (alarm.getId() != id) {
+                throw new AlarmSequenceException(alarm.getId(), id);
             }
             return alarm;
         }
@@ -109,26 +110,118 @@ public class AlarmServer<S, T> extends AbstractService {
      *            the time associated with the acknowledgment
      * @param message
      *            reason message. Leave <code>null</code> when no reason is given.
-     * @return the updated alarm instance
-     * @throws CouldNotAcknowledgeAlarmException
+     * @return the updated alarm instance or null if the alarm was not found
      */
-    public ActiveAlarm<T> acknowledge(ActiveAlarm<T> alarm, String username, long ackTime, String message)
-            throws CouldNotAcknowledgeAlarmException {
+    public ActiveAlarm<T> acknowledge(ActiveAlarm<T> alarm, String username, long ackTime, String message) {
         if (!activeAlarms.containsValue(alarm)) {
-            throw new CouldNotAcknowledgeAlarmException("Alarm is not active");
+            return null;
         }
 
-        alarm.acknowledged = true;
-        alarm.usernameThatAcknowledged = username;
-        alarm.acknowledgeTime = ackTime;
-        alarm.message = message;
-        alarmListeners.forEach(l -> l.notifyAcknowledged(alarm));
-        if (isOkNoAlarm(alarm.currentValue)) {
+        alarm.acknowledge(username, ackTime, message);
+        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm));
+
+        if (alarm.isNormal()) {
             S subject = getSubject(alarm.triggerValue);
             activeAlarms.remove(subject);
-            alarmListeners.forEach(l -> l.notifyCleared(alarm));
+            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
         }
 
+        return alarm;
+    }
+
+    /**
+     * Reset a latched alarm
+     * 
+     * @param alarm
+     * @param username
+     * @param resetTime
+     * @param message
+     * @return the updated alarm instance or null if the alarm was not found
+     */
+    public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message)
+            throws CouldNotAcknowledgeAlarmException {
+        if (!activeAlarms.containsValue(alarm)) {
+            return null;
+        }
+        alarm.reset();
+        return alarm;
+    }
+
+    /**
+     * Acknowledges an active alarm instance. If the alarm state is no longer applicable, the alarm is also cleared,
+     * otherwise the alarm will remain active.
+     * 
+     * @param alarm
+     *            the alarm to clear
+     * @param username
+     *            the user that cleared the alarm
+     * @param message
+     *            reason message. Leave <code>null</code> when no reason is given.
+     * @return the updated alarm instance or null if the alarm was not found
+     */
+    public ActiveAlarm<T> clear(ActiveAlarm<T> alarm, String username, long clearTime, String message) {
+        if (!activeAlarms.containsValue(alarm)) {
+            return null;
+        }
+        alarm.clear(username, clearTime, message);
+
+        S subject = getSubject(alarm.triggerValue);
+        activeAlarms.remove(subject);
+        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
+
+        return alarm;
+    }
+
+    /**
+     * Shelve an alarm
+     * 
+     * @param alarm
+     * @param username
+     * @param message
+     * @param shelveDuration
+     * @return the updated alarm instance or null if the alarm was not found
+     */
+    public ActiveAlarm<T> shelve(ActiveAlarm<T> alarm, String username, String message,
+            long shelveDuration) {
+        if (!activeAlarms.containsValue(alarm)) {
+            return null;
+        }
+        alarm.shelve(username, message, shelveDuration);
+        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.SHELVED, alarm));
+        timer.schedule(() -> checkShelved(), shelveDuration, TimeUnit.MILLISECONDS);
+
+        return alarm;
+    }
+
+    private void checkShelved() {
+        long t = TimeEncoding.getWallclockTime();
+
+        for (ActiveAlarm<T> aa : activeAlarms.values()) {
+            if (aa.isShelved()) {
+                long exp = aa.getShelveExpiration();
+                if (exp == -1) {
+                    continue;
+                }
+                if (exp < t) {
+                    aa.unshelve();
+                    alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, aa));
+                }
+            }
+        }
+    }
+
+    /**
+     * Un-shelve an alarm
+     * 
+     * @param alarm
+     * @param username
+     * @return the updated alarm instance or null if the alarm was not found
+     */
+    public ActiveAlarm<T> unshelve(ActiveAlarm<T> alarm, String username) {
+        if (!activeAlarms.containsValue(alarm)) {
+            return null;
+        }
+        alarm.unshelve();
         return alarm;
     }
 
@@ -138,10 +231,10 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     public void update(T pv, int minViolations) {
-        update(pv, minViolations, false);
+        update(pv, minViolations, false, false);
     }
 
-    public void update(T value, int minViolations, boolean autoAck) {
+    public void update(T value, int minViolations, boolean autoAck, boolean latching) {
         S alarmId = getSubject(value);
 
         ActiveAlarm<T> activeAlarm = activeAlarms.get(alarmId);
@@ -152,43 +245,53 @@ public class AlarmServer<S, T> extends AbstractService {
             if (activeAlarm == null) {
                 return;
             }
-
-            if (activeAlarm.violations < minViolations) {
+            if (activeAlarm.isNormal()) {
                 log.debug("Clearing glitch for {}", getName(alarmId));
                 activeAlarms.remove(alarmId);
                 return;
             }
+            boolean updated = activeAlarm.processRTN();
 
             activeAlarm.currentValue = value;
-            if ((activeAlarm.acknowledged) || (activeAlarm.autoAcknowledge)) {
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyCleared(activeAlarm);
-                }
-                activeAlarms.remove(alarmId);
-            } else {
-                activeAlarm.valueCount++;
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyValueUpdate(activeAlarm);
-                }
+            activeAlarm.valueCount++;
+            for (AlarmListener<T> l : alarmListeners) {
+                l.notifyValueUpdate(activeAlarm);
             }
 
+            if (updated) {
+                for (AlarmListener<T> l : alarmListeners) {
+                    l.notifyUpdate(AlarmNotificationType.RTN, activeAlarm);
+                }
+                if (activeAlarm.isNormal()) {
+                    activeAlarms.remove(alarmId);
+                    if (activeAlarm.isNormal()) {
+                        for (AlarmListener<T> l : alarmListeners) {
+                            l.notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
+                        }
+                    }
+                }
+            }
         } else { // alarm
+            boolean newAlarm;
             if (activeAlarm == null) {
-                activeAlarm = new ActiveAlarm<>(value, autoAck);
+                activeAlarm = new ActiveAlarm<>(value, autoAck, latching);
                 activeAlarms.put(alarmId, activeAlarm);
+                newAlarm = true;
             } else {
                 activeAlarm.currentValue = value;
                 activeAlarm.violations++;
                 activeAlarm.valueCount++;
+                newAlarm = false;
             }
             if (activeAlarm.violations < minViolations) {
                 return;
             }
+            activeAlarm.trigger();
 
-            if (!activeAlarm.triggered) {
-                activeAlarm.triggered = true;
+            if (newAlarm) {
+                activeAlarms.put(alarmId, activeAlarm);
                 for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyTriggered(activeAlarm);
+                    l.notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
                 }
             } else {
                 if (moreSevere(value, activeAlarm.mostSevereValue)) {
@@ -201,8 +304,6 @@ public class AlarmServer<S, T> extends AbstractService {
                     l.notifyValueUpdate(activeAlarm);
                 }
             }
-
-            activeAlarms.put(alarmId, activeAlarm);
         }
     }
 
@@ -265,5 +366,13 @@ public class AlarmServer<S, T> extends AbstractService {
     @Override
     public void doStop() {
         notifyStopped();
+    }
+
+    /**
+     * Removes all active alarms without acknowledgement
+     * !use only for unit tests!
+     */
+    public void clearAll() {
+        activeAlarms.clear();
     }
 }

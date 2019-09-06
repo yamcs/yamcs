@@ -1,9 +1,6 @@
 package org.yamcs;
 
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.security.SecurityStore;
 
 /**
@@ -47,10 +44,10 @@ public class ProcessorCreatorService extends AbstractYamcsService {
                 processorType);
         try {
             SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-            String systemUser = securityStore.getSystemUser().getUsername();
+            String systemUser = securityStore.getSystemUser().getName();
             processor = ProcessorFactory.create(yamcsInstance, processorName, processorType, systemUser,
                     processorConfig);
-        } catch (ProcessorException e) {
+        } catch (ProcessorException | ValidationException e) {
             throw new InitException(e);
         }
         processor.setPersistent(true);

@@ -15,6 +15,10 @@ yamcsadmin
 
 **OPTIONS**
 
+    .. option:: --log LEVEL
+
+       Level of verbosity. From 0 (off) to 5 (all). Default: 2.
+
     .. option:: --etc-dir DIR
 
         Override default Yamcs configuration directory.
@@ -40,6 +44,8 @@ yamcsadmin
         Generate password hash for use in users.yaml
     :doc:`rocksdb <yamcsadmin_rocksdb>`
         Provides low-level RocksDB data operations
+    :doc:`users <yamcsadmin_users>`
+        User operations
     :doc:`xtcedb <yamcsadmin_xtcedb>`
         Provides information about the XTCE database
 
@@ -52,4 +58,5 @@ yamcsadmin
     parchive <yamcsadmin_parchive>
     password-hash <yamcsadmin_password-hash>
     rocksdb <yamcsadmin_rocksdb>
+    users <yamcsadmin_users>
     xtcedb <yamcsadmin_xtcedb>

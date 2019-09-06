@@ -1,7 +1,5 @@
 package org.yamcs;
 
-import org.yamcs.api.YamcsService;
-
 /**
  * This interface has to be implemented by all services that run as part of a processor.
  * 

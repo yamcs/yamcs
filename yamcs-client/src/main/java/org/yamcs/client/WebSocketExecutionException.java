@@ -1,6 +1,6 @@
 package org.yamcs.client;
 
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
 
 /**
  * Use by the WebSocketClient for the exceptions received via the websocket interface

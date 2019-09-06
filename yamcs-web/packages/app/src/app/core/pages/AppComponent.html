@@ -41,7 +41,7 @@
           <mat-divider></mat-divider>
           <a mat-menu-item routerLink="admin">
             <mat-icon>security</mat-icon>
-            Admin CP
+            Admin Area
           </a>
         </ng-container>
         <mat-divider></mat-divider>
@@ -54,7 +54,7 @@
               [matMenuTriggerFor]="userMenu"
               matTooltipPosition="left">
         <mat-icon>person</mat-icon>
-        {{ user.getUsername() }}
+        {{ user.getDisplayName() || user.getName() }}
       </button>
     </ng-container>
   </mat-toolbar-row>

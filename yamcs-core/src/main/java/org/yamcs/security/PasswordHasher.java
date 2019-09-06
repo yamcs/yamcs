@@ -1,11 +1,8 @@
 package org.yamcs.security;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
 public interface PasswordHasher {
 
-    String createHash(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException;
+    String createHash(char[] password);
 
     /**
      * Validates a password using a hash.
@@ -16,6 +13,5 @@ public interface PasswordHasher {
      *            the hash of the valid password
      * @return true if the password is correct, false if not
      */
-    boolean validatePassword(char[] password, String expectedHash)
-            throws NoSuchAlgorithmException, InvalidKeySpecException;
+    boolean validatePassword(char[] password, String expectedHash);
 }

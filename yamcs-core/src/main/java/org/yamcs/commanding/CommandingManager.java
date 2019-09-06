@@ -72,7 +72,7 @@ public class CommandingManager extends AbstractService {
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
         pc.setBinary(cbr.getCmdPacket());
-        pc.setUsername(user.getUsername());
+        pc.setUsername(user.getName());
 
         Set<String> userAssignedArgumentNames = argAssignmentList.stream()
                 .map(a -> a.getArgumentName())

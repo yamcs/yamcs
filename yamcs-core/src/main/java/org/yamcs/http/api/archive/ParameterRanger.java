@@ -11,7 +11,6 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * builds ranges of parameters
@@ -41,7 +40,7 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         this.minGap = minGap;
         this.maxGap = maxGap;
     }
-    
+
     @Override
     public void accept(ParameterValueArray pva) {
         if (ranges.size() >= MAX_RANGES) {
@@ -59,8 +58,7 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             ranges.add(curRange);
             curRange = null;
         }
-        
-        
+
         for (int i = 0; i < n; i++) {
             Value v = va.getValue(i);
             ParameterStatus status = statuses[i];
@@ -69,15 +67,15 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             if (curRange == null) {
                 curRange = new Range(timestamp, v);
             } else {
-                long stop  = checkDataInterruption(prevTimestamp, timestamp, prevStatus);
-                if(stop != Long.MIN_VALUE) {
+                long stop = checkDataInterruption(prevTimestamp, timestamp, prevStatus);
+                if (stop != Long.MIN_VALUE) {
                     curRange.stop = stop;
-                    
+
                     ranges.add(curRange);
                     curRange = new Range(timestamp, v);
                 } else if (!v.equals(prevValue)) {
                     curRange.stop = timestamp;
-                    
+
                     ranges.add(curRange);
                     curRange = new Range(timestamp, v);
                 } else {
@@ -91,7 +89,8 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         }
     }
 
-    //check for data interruption and return Long.MIN_VALUE if not or the timestamp when the value was last valid if yes
+    // check for data interruption and return Long.MIN_VALUE if not or the timestamp when the value was last valid if
+    // yes
     private long checkDataInterruption(long prevTimestamp, long timestamp, ParameterStatus prevStatus) {
         long delta = timestamp - prevTimestamp;
 
@@ -100,11 +99,11 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         }
 
         if (prevStatus.hasExpireMillis() && delta > prevStatus.getExpireMillis()) {
-            return prevTimestamp+prevStatus.getExpireMillis();
+            return prevTimestamp + prevStatus.getExpireMillis();
         }
-        
-        if(delta > maxGap) {
-            return prevTimestamp+maxGap;
+
+        if (delta > maxGap) {
+            return prevTimestamp + maxGap;
         }
         return Long.MIN_VALUE;
     }
@@ -114,6 +113,7 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         long start;
         long stop;
         int count;
+
         Range(long start, Value v) {
             this.start = start;
             this.stop = start;
@@ -121,10 +121,9 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             this.count = 1;
         }
     }
-    
-    
+
     public List<Range> getRanges() {
-        if(curRange!=null) {
+        if (curRange != null) {
             ranges.add(curRange);
             curRange = null;
         }

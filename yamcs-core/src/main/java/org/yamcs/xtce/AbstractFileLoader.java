@@ -8,9 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.logging.Log;
 
 /**
  * Abstract class for MDB loaders that load data from files (or directories with files)
@@ -19,13 +18,13 @@ import org.yamcs.ConfigurationException;
  *
  */
 public abstract class AbstractFileLoader implements SpaceSystemLoader {
-    protected final Logger log;
+    protected final Log log;
     protected String configName, path;
 
     public AbstractFileLoader(String path) throws ConfigurationException {
         this.path = path;
         this.configName = new File(path).getName() + "-" + path.hashCode();
-        log = LoggerFactory.getLogger(getClass());
+        log = new Log(getClass());
     }
 
     @Override

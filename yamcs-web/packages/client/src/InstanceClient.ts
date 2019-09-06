@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { CreateTransferRequest, Transfer, TransfersPage } from './types/cfdp';
 import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
@@ -45,7 +45,7 @@ export class InstanceClient {
   }
 
   getEventsDownloadURL(options: DownloadEventsOptions = {}) {
-    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/events`;
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}:exportEvents`;
     return url + this.queryString(options);
   }
 
@@ -253,7 +253,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/services/${this.instance}`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ServicesWrapper;
-    return wrapper.service || [];
+    return wrapper.services || [];
   }
 
   async getService(name: string): Promise<Service> {
@@ -263,22 +263,14 @@ export class InstanceClient {
   }
 
   async startService(name: string) {
-    const body = JSON.stringify({
-      state: 'running'
-    })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}:start`, {
+      method: 'POST',
     });
   }
 
   async stopService(name: string) {
-    const body = JSON.stringify({
-      state: 'stopped'
-    })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
-      body,
-      method: 'PATCH',
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}:stop`, {
+      method: 'POST',
     });
   }
 
@@ -323,7 +315,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/streams`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as StreamsWrapper;
-    return await wrapper.stream || [];
+    return await wrapper.streams || [];
   }
 
   async getStream(name: string) {
@@ -341,7 +333,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tables`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as TablesWrapper;
-    return wrapper.table || [];
+    return wrapper.tables || [];
   }
 
   async getTable(name: string) {
@@ -400,7 +392,7 @@ export class InstanceClient {
   }
 
   getPacketsDownloadURL(options: DownloadPacketsOptions = {}) {
-    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/packets`;
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}:exportPackets`;
     return url + this.queryString(options);
   }
 
@@ -454,13 +446,8 @@ export class InstanceClient {
     return wrapper.parameter || [];
   }
 
-  getParameterValuesDownloadURL(qualifiedName: string, options: DownloadParameterValuesOptions = {}) {
-    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/parameters${qualifiedName}`;
-    return url + this.queryString(options);
-  }
-
-  getBatchParameterValuesDownloadURL(options: BatchDownloadParameterValuesOptions = {}) {
-    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/parameters`;
+  getParameterValuesDownloadURL(options: DownloadParameterValuesOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}:exportParameterValues`;
     return url + this.queryString(options);
   }
 

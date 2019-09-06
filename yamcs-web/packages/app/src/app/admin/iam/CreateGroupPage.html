@@ -1,0 +1,57 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    <a mat-icon-button routerLink=".." color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create group
+  </app-admin-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate>
+      <label>
+        Group name<br>
+        <input formControlName="name" type="text">
+      </label>
+      <br>
+      <label>
+        Description
+        <textarea formControlName="description" rows="5"></textarea>
+      </label>
+    </form>
+    <p>&nbsp;</p>
+    <button mat-stroked-button (click)="showAddMembersDialog()">
+      <mat-icon>add</mat-icon>
+      ADD MEMBERS
+    </button>
+
+    <p>&nbsp;</p>
+    <table yaDataTable style="width: 100%" *ngIf="memberItems$ | async as memberItems">
+      <tr>
+        <th width="1">Type</th>
+        <th>Member</th>
+        <th></th>
+      </tr>
+      <tr *ngIf="!memberItems.length">
+        <td colspan="3">No rows to display</td>
+      </tr>
+      <tr *ngFor="let item of memberItems">
+        <td>
+          <mat-icon matTooltip="User" style="vertical-align: middle">person</mat-icon>
+        </td>
+        <td>{{ item.label }}</td>
+        <td style="text-align: right">
+          <app-text-action icon="delete" (click)="deleteItem(item)">DELETE</app-text-action>
+        </td>
+      </tr>
+    </table>
+
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="submit" (click)="onConfirm()"
+              mat-raised-button
+              [disabled]="!form.valid"
+              color="primary">CREATE</button>
+    </mat-toolbar>
+  </div>
+</app-admin-page>

@@ -7,12 +7,12 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ServerUnavailablePage implements OnInit {
 
-  page: string | null;
+  next: string | null;
 
   constructor(private route: ActivatedRoute) {
   }
 
   ngOnInit() {
-    this.page = this.route.snapshot.queryParamMap.get('page');
+    this.next = this.route.snapshot.queryParamMap.get('next');
   }
 }

@@ -7,11 +7,11 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 
 import com.google.common.util.concurrent.Monitor;
-import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Monitor.Guard;
+import com.google.common.util.concurrent.Service;
 
 /**
  * Inspired from Guava services, this class offers the following states:
@@ -25,7 +25,7 @@ import com.google.common.util.concurrent.Monitor.Guard;
  * <li>FAILED</li>
  * </ul>
  * 
- *  transitions are allowed back to OFFLINE from all steady states
+ * transitions are allowed back to OFFLINE from all steady states
  * 
  * @author nm
  *
@@ -39,7 +39,6 @@ public abstract class YamcsInstanceService {
     private final Guard hasReachedRunning = new HasReachedRunningGuard();
     private final Guard hasReachedOffline = new HasReachedOfflineGuard();
     private final Guard hasReachedInitialized = new HasReachedInitializedGuard();
-    
 
     private volatile StateSnapshot snapshot = new StateSnapshot(InstanceState.OFFLINE);
 
@@ -77,7 +76,7 @@ public abstract class YamcsInstanceService {
         if (monitor.enterIf(isStartable)) {
             try {
                 InstanceState previous = state();
-                if(previous == InstanceState.INITIALIZING) {
+                if (previous == InstanceState.INITIALIZING) {
                     snapshot = new StateSnapshot(InstanceState.STARTING, true, false, null);
                 } else {
                     snapshot = new StateSnapshot(InstanceState.STARTING);
@@ -144,7 +143,7 @@ public abstract class YamcsInstanceService {
             monitor.leave();
         }
     }
-    
+
     public final void awaitRunning() {
         monitor.enterWhenUninterruptibly(hasReachedRunning);
         try {
@@ -170,10 +169,9 @@ public abstract class YamcsInstanceService {
     public void removeStateListener(InstanceStateListener listener) {
         stateListeners.remove(listener);
     }
-    
-    
+
     /**
-     * Implementing classes should invoke this method once their service has been initialized. 
+     * Implementing classes should invoke this method once their service has been initialized.
      *
      * @throws IllegalStateException
      *             if the service is not {@link InstanceState#STARTING}.
@@ -208,10 +206,9 @@ public abstract class YamcsInstanceService {
         }
     }
 
-
     /**
-     * Implementing classes should invoke this method once their service has started. It will cause
-     * the service to transition from {@link InstanceState#STARTING} to {@link InstanceState#RUNNING}.
+     * Implementing classes should invoke this method once their service has started. It will cause the service to
+     * transition from {@link InstanceState#STARTING} to {@link InstanceState#RUNNING}.
      *
      * @throws IllegalStateException
      *             if the service is not {@link InstanceState#STARTING}.
@@ -248,12 +245,11 @@ public abstract class YamcsInstanceService {
     }
 
     /**
-     * Implementing classes should invoke this method once their service has stopped. It will cause
-     * the service to transition from {@link InstanceState#STOPPING} to {@link InstanceState#OFFLINE}.
+     * Implementing classes should invoke this method once their service has stopped. It will cause the service to
+     * transition from {@link InstanceState#STOPPING} to {@link InstanceState#OFFLINE}.
      *
      * @throws IllegalStateException
-     *             if the service is neither {@link InstanceState#STOPPING} nor
-     *             {@link InstanceState#RUNNING}.
+     *             if the service is neither {@link InstanceState#STOPPING} nor {@link InstanceState#RUNNING}.
      */
     protected final void notifyStopped() {
         monitor.enter();
@@ -293,9 +289,9 @@ public abstract class YamcsInstanceService {
     }
 
     /**
-     * Invoke this method to transition the service to the {@link InstanceState#FAILED}. The service will
-     * <b>not be stopped</b> if it is running. Invoke this method when a service has failed critically
-     * or otherwise cannot be started nor stopped.
+     * Invoke this method to transition the service to the {@link InstanceState#FAILED}. The service will <b>not be
+     * stopped</b> if it is running. Invoke this method when a service has failed critically or otherwise cannot be
+     * started nor stopped.
      */
     protected final void notifyFailed(Throwable cause) {
         checkNotNull(cause);
@@ -347,33 +343,27 @@ public abstract class YamcsInstanceService {
     }
 
     /**
-     * An immutable snapshot of the current state of the service. This class represents a consistent
-     * snapshot of the state and therefore it can be used to answer simple queries without needing to
-     * grab a lock.
+     * An immutable snapshot of the current state of the service. This class represents a consistent snapshot of the
+     * state and therefore it can be used to answer simple queries without needing to grab a lock.
      */
     private static final class StateSnapshot {
         /**
-         * The internal state, which equals external state unless
-         * shutdownWhenStartupFinishes is true.
+         * The internal state, which equals external state unless shutdownWhenStartupFinishes is true.
          */
         final InstanceState state;
-        
+
         /**
-         * If true, the user requested a start while the service was still initializing
-         * up.
+         * If true, the user requested a start while the service was still initializing up.
          */
         final boolean runWhenInitFinishes;
 
-
         /**
-         * If true, the user requested a shutdown while the service was still starting or initializing
-         * up.
+         * If true, the user requested a shutdown while the service was still starting or initializing up.
          */
         final boolean shutdownWhenStartupOrInitFinishes;
 
         /**
-         * The exception that caused this service to fail. This will be {@code null}
-         * unless the service has failed.
+         * The exception that caused this service to fail. This will be {@code null} unless the service has failed.
          */
         final Throwable failure;
 
@@ -382,7 +372,8 @@ public abstract class YamcsInstanceService {
         }
 
         StateSnapshot(
-                InstanceState internalState, boolean runWhenInitFinishes, boolean shutdownWhenStartupFinishes, Throwable failure) {
+                InstanceState internalState, boolean runWhenInitFinishes, boolean shutdownWhenStartupFinishes,
+                Throwable failure) {
             checkArgument(!shutdownWhenStartupFinishes || internalState == InstanceState.STARTING,
                     "shudownWhenStartupFinishes can only be set if state is STARTING. Got %s instead.",
                     internalState);
@@ -432,7 +423,7 @@ public abstract class YamcsInstanceService {
         @Override
         public boolean isSatisfied() {
             InstanceState cs = state();
-            return cs.compareTo(InstanceState.RUNNING) <= 0 || cs==InstanceState.FAILED;
+            return cs.compareTo(InstanceState.RUNNING) <= 0 || cs == InstanceState.FAILED;
         }
     }
 
@@ -468,7 +459,7 @@ public abstract class YamcsInstanceService {
             return state() == InstanceState.OFFLINE;
         }
     }
-    
+
     private final class HasReachedInitializedGuard extends Guard {
         HasReachedInitializedGuard() {
             super(monitor);

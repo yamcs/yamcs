@@ -79,14 +79,6 @@
         <directory>${basedir}/target/generated-resources/version</directory>
       </resource>
     </resources>
-    <testResources>
-      <testResource>
-        <directory>${basedir}/src/test/resources</directory>
-      </testResource>
-      <testResource>
-        <directory>${basedir}/etc</directory>
-      </testResource>
-    </testResources>
 
     <plugins>
       <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf plugin) -->
@@ -98,6 +90,7 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <executions>
           <execution>
+            <id>protoc-core</id>
             <goals>
               <goal>compile</goal>
             </goals>
@@ -115,7 +108,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <tasks>
+              <target>
                 <exec executable="git" outputproperty="revision">
                   <arg value="rev-parse" />
                   <arg value="HEAD" />
@@ -125,7 +118,7 @@
                   version = ${project.version}
                   revision = ${revision}
                 </echo>
-              </tasks>
+              </target>
             </configuration>
           </execution>
         </executions>

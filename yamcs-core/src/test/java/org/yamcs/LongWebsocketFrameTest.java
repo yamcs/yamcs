@@ -19,7 +19,7 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.http.HttpServer;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public class LongWebsocketFrameTest {
@@ -34,7 +34,6 @@ public class LongWebsocketFrameTest {
         // avoid printing stack traces in the unit tests run
         YConfiguration.setupTest("LongWebsocketFrameTest");
         Map<String, Object> options = new HashMap<>();
-        options.put("webRoot", "/tmp/yamcs-web");
         options.put("port", 9191);
         Map<String, Object> wsOptions = new HashMap<>();
         wsOptions.put("maxFrameLength", 1048576);
@@ -43,8 +42,9 @@ public class LongWebsocketFrameTest {
         options = httpServer.getSpec().validate(options);
         httpServer.init(null, YConfiguration.wrap(options));
         httpServer.startServer();
-        YamcsServer.setupYamcsServer();
-        Logger.getLogger("org.yamcs.api.ws.WebSocketClientHandler").setLevel(Level.OFF);
+        YamcsServer.getServer().prepareStart();
+        YamcsServer.getServer().start();
+        Logger.getLogger("org.yamcs.client.WebSocketClientHandler").setLevel(Level.OFF);
     }
 
     @AfterClass

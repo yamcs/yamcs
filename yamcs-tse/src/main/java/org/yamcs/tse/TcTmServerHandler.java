@@ -19,7 +19,7 @@ public class TcTmServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TM/TC client connected: " + ctx.channel().remoteAddress());
+        log.debug("TM/TC client connected: " + ctx.channel().remoteAddress());
     }
 
     @Override
@@ -35,6 +35,6 @@ public class TcTmServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TM/TC client disconnected: " + ctx.channel().remoteAddress());
+        log.debug("TM/TC client disconnected: " + ctx.channel().remoteAddress());
     }
 }

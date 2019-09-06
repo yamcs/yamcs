@@ -22,7 +22,22 @@ export interface GeneralInfo {
   yamcsVersion: string;
   revision: string;
   serverId: string;
-  plugin: PluginInfo[];
+  plugins: PluginInfo[];
+}
+
+export interface ListRoutesResponse {
+  routes: Route[];
+}
+
+export interface Route {
+  service: string;
+  method: string;
+  inputType: string;
+  outputType: string;
+  deprecated: boolean;
+  url: string;
+  httpMethod: string;
+  requestCount: number;
 }
 
 export interface PluginInfo {
@@ -100,13 +115,79 @@ export interface ClientSubscriptionResponse {
   client$: Observable<ClientInfo>;
 }
 
+export interface CreateUserRequest {
+  name: string;
+  displayName: string;
+  email: string;
+  password?: string;
+}
+
+export interface EditUserRequest {
+  displayName?: string;
+  email?: string;
+  active?: boolean;
+  superuser?: boolean;
+  password?: string;
+}
+
 export interface UserInfo {
-  login: string;
-  clientInfo: ClientInfo[];
+  name: string;
+  displayName: string;
+  email: string;
+  active: boolean;
   superuser: boolean;
+  createdBy: UserInfo;
+  creationTime: string;
+  confirmationTime: string;
+  lastLoginTime: string;
+  groups: GroupInfo[];
+  clientInfo: ClientInfo[];
+  identities: ExternalIdentity[];
 
   systemPrivilege: string[];
   objectPrivilege: ObjectPrivilege[];
+}
+
+export interface ExternalIdentity {
+  identity: string;
+  provider: string;
+}
+
+export interface ListServiceAccountsResponse {
+  serviceAccounts: ServiceAccount[];
+}
+
+export interface CreateServiceAccountRequest {
+  name: string;
+}
+
+export interface CreateServiceAccountResponse {
+  name: string;
+  applicationId: string;
+  applicationSecret: string;
+}
+
+export interface ServiceAccount {
+  name: string;
+  active: boolean;
+}
+
+export interface GroupInfo {
+  name: string;
+  description: string;
+  users: UserInfo[];
+  serviceAccounts: ServiceAccount[];
+}
+
+export interface GroupMemberInfo {
+  users?: string[];
+  serviceAccounts?: string[];
+}
+
+export interface EditGroupRequest {
+  newName?: string;
+  description?: string;
+  memberInfo?: GroupMemberInfo;
 }
 
 export interface ObjectPrivilege {
@@ -294,10 +375,6 @@ export interface EditLinkOptions {
   resetCounters?: boolean;
 }
 
-export interface EditInstanceOptions {
-  state: 'stopped' | 'restarted' | 'running';
-}
-
 export interface EditCommandQueueOptions {
   state: 'enabled' | 'disabled' | 'blocked';
 }
@@ -322,8 +399,8 @@ export interface Bucket {
 }
 
 export interface ListObjectsResponse {
-  prefix: string[];
-  object: ObjectInfo[];
+  prefixes: string[];
+  objects: ObjectInfo[];
 }
 
 export interface ObjectInfo {
@@ -349,8 +426,58 @@ export interface CreateInstanceRequest {
   labels?: { [key: string]: string };
 }
 
+export interface CreateGroupRequest {
+  name: string;
+  description?: string;
+  users?: string[];
+  serviceAccounts?: string[];
+}
+
 export interface RocksDbDatabase {
   tablespace: string;
   dbPath: string;
   dataDir: string;
+}
+
+export interface SystemInfo {
+  yamcsVersion: string;
+  revision: string;
+  serverId: string;
+  uptime: number;
+  jvm: string;
+  workingDirectory: string;
+  configDirectory: string;
+  dataDirectory: string;
+  cacheDirectory: string;
+  os: string;
+  arch: string;
+  availableProcessors: number;
+  loadAverage: number;
+  heapMemory: number;
+  usedHeapMemory: number;
+  maxHeapMemory: number;
+  nonHeapMemory: number;
+  usedNonHeapMemory: number;
+  usedMaxHeapMemory: number;
+  jvmThreadCount: number;
+  rootDirectories: RootDirectory[];
+}
+
+export interface RootDirectory {
+  directory: string;
+  type: string;
+  totalSpace: number;
+  unallocatedSpace: number;
+  usableSpace: number;
+}
+
+export interface LeapSecondsTable {
+  ranges: ValidityRange[];
+}
+
+export interface ValidityRange {
+  start: string;
+  stop: string;
+  leapSeconds: number;
+  taiDifference: number;
 }

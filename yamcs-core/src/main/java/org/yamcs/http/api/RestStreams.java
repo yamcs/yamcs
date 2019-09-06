@@ -6,13 +6,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.http.HttpException;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.http.HttpException;
-import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class RestStreams {

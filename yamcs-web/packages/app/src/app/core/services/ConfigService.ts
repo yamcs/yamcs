@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AuthInfo } from '@yamcs/client';
 
 export interface WebsiteConfig {
+  serverId: string;
   auth: AuthInfo;
   tag: string;
 }
@@ -14,6 +15,10 @@ export class ConfigService {
   async loadWebsiteConfig() {
     const el = document.getElementById('appConfig')!;
     this.websiteConfig = JSON.parse(el.innerText);
+  }
+
+  getServerId() {
+    return this.websiteConfig.serverId;
   }
 
   getAuthInfo() {

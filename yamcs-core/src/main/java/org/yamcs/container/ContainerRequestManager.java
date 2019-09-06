@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
-import org.yamcs.api.Log;
+import org.yamcs.logging.Log;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerListener;

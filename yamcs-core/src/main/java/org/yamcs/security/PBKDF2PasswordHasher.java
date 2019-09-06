@@ -55,7 +55,7 @@ public class PBKDF2PasswordHasher implements PasswordHasher {
      * @return a salted PBKDF2 hash of the password
      */
     @Override
-    public String createHash(char[] password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public String createHash(char[] password) {
         // Generate a random salt
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_BYTE_SIZE];
@@ -77,8 +77,7 @@ public class PBKDF2PasswordHasher implements PasswordHasher {
      * @return true if the password is correct, false if not
      */
     @Override
-    public boolean validatePassword(char[] password, String correctHash)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public boolean validatePassword(char[] password, String correctHash) {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
@@ -123,11 +122,17 @@ public class PBKDF2PasswordHasher implements PasswordHasher {
      *            the length of the hash to compute in bytes
      * @return the PBDKF2 hash of the password
      */
-    private static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
-        return skf.generateSecret(spec).getEncoded();
+    private static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes) {
+        try {
+            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
+            SecretKeyFactory skf;
+            skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            return skf.generateSecret(spec).getEncoded();
+        } catch (NoSuchAlgorithmException e) {
+            throw new UnsupportedOperationException(e);
+        } catch (InvalidKeySpecException e) {
+            throw new UnsupportedOperationException(e);
+        }
     }
 
     /**

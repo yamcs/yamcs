@@ -27,11 +27,11 @@ Return the data for the given parameter::
     }
 
 
-.. rubric:: Bulk
+.. rubric:: Batch Get
 
 Combine multiple parameter queries in one and the same request using this address::
 
-    GET /api/mdb/:instance/parameters/bulk
+    POST /api/mdb/:instance/parameters:batchGet
 
 Specify the parameter IDs in the request body:
 
@@ -47,8 +47,6 @@ Specify the parameter IDs in the request body:
       } ]
     }
 
-
-POST requests are also allowed, because some HTTP clients do not support GET with a request body.
 
 In the response the requested parameter ID is returned for every match. Example:
 
@@ -94,18 +92,18 @@ In the response the requested parameter ID is returned for every match. Example:
     }
 
 
-.. rubric:: Bulk Request Schema (protobuf)
+.. rubric:: Batch Get Request Schema (protobuf)
 .. code-block:: proto
 
-    message BulkGetParameterRequest {
+    message BatchGetParameterRequest {
       repeated yamcs.NamedObjectId id = 1;
     }
 
 
-.. rubric:: Bulkd Response Schema (protobuf)
+.. rubric:: Batch Get Response Schema (protobuf)
 .. code-block:: proto
 
-    message BulkGetParameterResponse {
+    message BatchGetParameterResponse {
       message GetParameterResponse {
         optional yamcs.NamedObjectId id = 1;
         optional mdb.ParameterInfo parameter = 2;

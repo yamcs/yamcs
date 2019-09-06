@@ -1,229 +1,252 @@
 package org.yamcs.security;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Set;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
+import org.yamcs.logging.Log;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 public class LdapAuthModule implements AuthModule {
 
-    private String tmParaPrivPath;
-    private String tmParaSetPrivPath;
-    private String tmPacketPrivPath;
-    private String tcPrivPath;
-    private String systemPrivPath;
-    private String streamPrivPath;
-    private String cmdHistoryPrivPath;
-    private String rolePath;
-    private String userPath;
+    private Log log = new Log(LdapAuthModule.class);
 
-    private static final Hashtable<String, String> contextEnv = new Hashtable<>();
-    private static final Logger log = LoggerFactory.getLogger(LdapAuthModule.class);
+    private boolean tls;
+    private String providerUrl;
+    private Hashtable<String, String> yamcsEnv;
+
+    private String userBase;
+    private String nameAttribute;
+    private String[] displayNameAttributes;
+    private String[] emailAttributes;
+    private String[] searchAttributes;
+
+    private Cache<String, LdapUserInfo> infoCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(24, TimeUnit.HOURS)
+            .build();
 
     @Override
     public Spec getSpec() {
+        Spec attributesSpec = new Spec();
+        attributesSpec.addOption("name", OptionType.STRING)
+                .withDefault("uid");
+        attributesSpec.addOption("email", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.STRING)
+                .withDefault(Arrays.asList("mail", "email", "userPrincipalName"));
+        attributesSpec.addOption("displayName", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.STRING)
+                .withDefault("cn");
+
         Spec spec = new Spec();
         spec.addOption("host", OptionType.STRING).withRequired(true);
-        spec.addOption("userPath", OptionType.STRING).withRequired(true);
-        spec.addOption("rolePath", OptionType.STRING).withRequired(true);
-        spec.addOption("systemPath", OptionType.STRING);
-        spec.addOption("tmParameterPath", OptionType.STRING);
-        spec.addOption("tmParameterSetPath", OptionType.STRING);
-        spec.addOption("tmPacketPath", OptionType.STRING);
-        spec.addOption("tcPath", OptionType.STRING);
-        spec.addOption("streamPath", OptionType.STRING);
-        spec.addOption("cmdHistoryPath", OptionType.STRING);
+        spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("user", OptionType.STRING);
+        spec.addOption("password", OptionType.STRING).withSecret(true);
+        spec.addOption("tls", OptionType.BOOLEAN);
+        spec.addOption("userBase", OptionType.STRING).withRequired(true);
+        spec.addOption("attributes", OptionType.MAP).withSpec(attributesSpec)
+                .withApplySpecDefaults(true);
+        spec.requireTogether("user", "password");
         return spec;
     }
 
     @Override
     public void init(YConfiguration args) throws InitException {
         String host = args.getString("host");
-        userPath = args.getString("userPath");
-        rolePath = args.getString("rolePath");
 
-        if (args.containsKey("systemPath")) {
-            systemPrivPath = args.getString("systemPath");
+        tls = args.getBoolean("tls", false);
+        if (tls) {
+            int port = args.getInt("port", 636);
+            providerUrl = String.format("ldaps://%s:%s", host, port);
+        } else {
+            int port = args.getInt("port", 389);
+            providerUrl = String.format("ldap://%s:%s", host, port);
         }
-        if (args.containsKey("tmParameterPath")) {
-            tmParaPrivPath = args.getString("tmParameterPath");
+
+        userBase = args.getString("userBase");
+
+        YConfiguration attributesArgs = args.getConfig("attributes");
+        nameAttribute = attributesArgs.getString("name");
+
+        displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
+        emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
+
+        List<String> concat = new ArrayList<>();
+        concat.add(nameAttribute);
+        concat.addAll(attributesArgs.getList("displayName"));
+        concat.addAll(attributesArgs.getList("email"));
+        searchAttributes = concat.toArray(new String[0]);
+
+        yamcsEnv = new Hashtable<>();
+        yamcsEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        yamcsEnv.put(Context.PROVIDER_URL, providerUrl);
+        yamcsEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+        yamcsEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+        if (args.containsKey("user")) {
+            yamcsEnv.put(Context.SECURITY_PRINCIPAL, args.getString("user"));
         }
-        if (args.containsKey("tmParameterSetPath")) {
-            tmParaSetPrivPath = args.getString("tmParameterSetPath");
+        if (args.containsKey("password")) {
+            yamcsEnv.put(Context.SECURITY_CREDENTIALS, args.getString("password"));
         }
-        if (args.containsKey("tmPacketPath")) {
-            tmPacketPrivPath = args.getString("tmPacketPath");
+        if (tls) {
+            yamcsEnv.put(Context.SECURITY_PROTOCOL, "ssl");
         }
-        if (args.containsKey("tcPath")) {
-            tcPrivPath = args.getString("tcPath");
-        }
-        if (args.containsKey("streamPath")) {
-            streamPrivPath = args.getString("streamPath");
-        }
-        if (args.containsKey("cmdHistoryPath")) {
-            cmdHistoryPrivPath = args.getString("cmdHistoryPath");
-        }
-        contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        contextEnv.put(Context.PROVIDER_URL, "ldap://" + host);
-        contextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
     }
 
-    /*
-     * Currently this method does not follow our conventions very well. Namely, it does not distinguish between a user
-     * that cannot be found, or a user that could not provide correct credentials. Therefore we return null in both,
-     * cases to not stop the login process, and allow other AuthModules to try to identify the user.
-     * 
-     * A proper solution would likely require binding with an administrative account, such that user existence
-     * can be verified prior to verifying credentials.
-     */
     @Override
     public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getPrincipal();
             char[] password = ((UsernamePasswordToken) token).getPassword();
-            DirContext ctx = null;
+
+            LdapUserInfo info;
             try {
-                String userDn = "uid=" + username + "," + userPath;
-                Hashtable<String, String> localContextEnv = new Hashtable<>();
-                localContextEnv.put(Context.INITIAL_CONTEXT_FACTORY, contextEnv.get(Context.INITIAL_CONTEXT_FACTORY));
-                localContextEnv.put(Context.PROVIDER_URL, contextEnv.get(Context.PROVIDER_URL));
-                localContextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
-                localContextEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
-                localContextEnv.put(Context.SECURITY_PRINCIPAL, userDn);
-                if (password != null) {
-                    localContextEnv.put(Context.SECURITY_CREDENTIALS, new String(password));
-                }
-                ctx = new InitialDirContext(localContextEnv);
-                ctx.close();
-            } catch (javax.naming.AuthenticationException e) {
-                log.debug("User cannot bind", e);
-                return null;
+                info = searchUserInfo(username);
             } catch (NamingException e) {
-                throw new AuthenticationException(e);
+                log.warn("Failed to search LDAP for user {}", username, e);
+                return null;
             }
-            return new AuthenticationInfo(this, username);
+
+            if (info == null) {
+                return null;
+            }
+
+            bindUser(info.dn, password);
+            AuthenticationInfo authenticationInfo = new AuthenticationInfo(this, info.uid);
+            authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
+            authenticationInfo.setDisplayName(info.cn);
+            authenticationInfo.setEmail(info.email);
+            return authenticationInfo;
         } else {
             return null;
         }
     }
 
     @Override
-    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
-        String principal = authenticationInfo.getPrincipal();
-        AuthorizationInfo authz = new AuthorizationInfo();
-
-        DirContext context = null;
-        try {
-            context = new InitialDirContext(contextEnv);
-            String dn = "uid=" + principal + "," + userPath;
-            Set<String> ldapRoles = loadRoles(context, dn);
-            if (systemPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, systemPrivPath)) {
-                    authz.addSystemPrivilege(new SystemPrivilege(privilege));
-                }
-            }
-
-            if (tmParaPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, tmParaPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.ReadParameter, object));
-                }
-            }
-            if (tmPacketPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, tmPacketPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.ReadPacket, object));
-                }
-            }
-            if (tcPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, tcPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.Command, object));
-                }
-            }
-            if (tmParaSetPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, tmParaSetPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.WriteParameter, object));
-                }
-            }
-            if (streamPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, streamPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.Stream, object));
-                }
-            }
-            if (cmdHistoryPrivPath != null) {
-                for (String object : loadPrivileges(context, ldapRoles, cmdHistoryPrivPath)) {
-                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.CommandHistory, object));
-                }
-            }
-        } catch (NamingException e) {
-            throw new ConfigurationException(e);
-        } finally {
+    public void authenticationSucceeded(AuthenticationInfo authenticationInfo) {
+        AuthModule authenticator = authenticationInfo.getAuthenticator();
+        if (authenticator instanceof KerberosAuthModule || authenticator instanceof SpnegoAuthModule) {
+            // Note to future self: If we ever want to support multiple LDAP and
+            // kerberos modules, then it may become useful to compare the user dn
+            // with the kerberos realm before querying LDAP.
+            String username = authenticationInfo.getUsername();
             try {
-                context.close();
+                LdapUserInfo info = searchUserInfo(username);
+                authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
+                authenticationInfo.setDisplayName(info.cn);
+                authenticationInfo.setEmail(info.email);
             } catch (NamingException e) {
-                log.error("Failed to close LDAP context", e);
+                log.warn("Failed to search LDAP for user {}", username, e);
             }
         }
-
-        return authz;
     }
 
-    private Set<String> loadRoles(DirContext context, String dn) throws NamingException {
-        SearchControls cons = new SearchControls();
-        cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        cons.setReturningAttributes(new String[] { "cn" });
-        NamingEnumeration<SearchResult> results = context.search(rolePath, "member={0}", new String[] { dn }, cons);
-
-        if (!results.hasMore()) {
-            return null;
+    private LdapUserInfo searchUserInfo(String username) throws NamingException {
+        LdapUserInfo info = infoCache.getIfPresent(username);
+        if (info != null) {
+            return info;
         }
 
-        HashSet<String> roles = new HashSet<>();
+        DirContext ctx = null;
+        try {
+            ctx = new InitialDirContext(yamcsEnv);
+            SearchControls controls = new SearchControls();
+            controls.setReturningAttributes(searchAttributes);
+            controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            String filter = nameAttribute + "=" + username;
+            SearchResult result = getSingleResult(ctx, userBase, filter, controls);
+            if (result == null) {
+                return null;
+            }
+            info = new LdapUserInfo();
+            // Use the uid from LDAP, just to prevent case sensitivity issues.
+            info.uid = (String) result.getAttributes().get(nameAttribute).get();
+            info.dn = result.getNameInNamespace();
+            info.cn = findAttribute(result, displayNameAttributes);
+            info.email = findAttribute(result, emailAttributes);
 
-        while (results.hasMore()) {
-            SearchResult r = results.next();
-            roles.add(r.getNameInNamespace());
+            infoCache.put(username, info);
+            return info;
+        } finally {
+            if (ctx != null) {
+                ctx.close();
+            }
         }
-        return roles;
     }
 
-    private Set<String> loadPrivileges(DirContext context, Set<String> roles, String privPath)
-            throws NamingException {
-        Set<String> privs = new HashSet<>();
-        StringBuilder sb = new StringBuilder();
-        SearchControls cons = new SearchControls();
-        cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        cons.setReturningAttributes(new String[] { "cn" });
-
-        sb.append("(&(objectClass=groupOfNames)(|");
-        for (int i = 0; i < roles.size(); i++) {
-            sb.append("(member={" + i + "})");
+    private void bindUser(String dn, char[] password) throws AuthenticationException {
+        Hashtable<String, String> env = new Hashtable<>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, providerUrl);
+        env.put("com.sun.jndi.ldap.connect.pool", "true");
+        env.put(Context.SECURITY_AUTHENTICATION, "simple");
+        env.put(Context.SECURITY_PRINCIPAL, dn);
+        env.put(Context.SECURITY_CREDENTIALS, new String(password));
+        if (tls) {
+            env.put(Context.SECURITY_PROTOCOL, "ssl");
         }
-        sb.append("))");
-        NamingEnumeration<SearchResult> results = context.search(privPath, sb.toString(), roles.toArray(), cons);
-        while (results.hasMore()) {
-            SearchResult r = results.next();
-            privs.add((String) r.getAttributes().get("cn").get());
+        try {
+            DirContext ctx = new InitialDirContext(env);
+            ctx.close();
+        } catch (javax.naming.AuthenticationException e) {
+            log.warn("Bind failed for dn '{}'", dn, e);
+            throw new AuthenticationException("Invalid password");
+        } catch (NamingException e) {
+            throw new AuthenticationException(e);
         }
-
-        return privs;
     }
 
     @Override
-    public boolean verifyValidity(User user) {
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
+        return new AuthorizationInfo();
+    }
+
+    @Override
+    public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         return true;
+    }
+
+    private SearchResult getSingleResult(DirContext ctx, String searchBase, String filter,
+            SearchControls controls)
+            throws NamingException {
+        NamingEnumeration<SearchResult> answer = ctx.search(searchBase, filter, controls);
+        if (answer.hasMore()) {
+            return answer.next();
+        }
+        return null;
+    }
+
+    private String findAttribute(SearchResult result, String[] possibleNames) throws NamingException {
+        for (String attrId : possibleNames) {
+            Attribute attr = result.getAttributes().get(attrId);
+            if (attr != null) {
+                return (String) attr.get();
+            }
+        }
+        return null;
+    }
+
+    private static final class LdapUserInfo {
+        String uid;
+        String dn;
+        String cn;
+        String email;
     }
 }

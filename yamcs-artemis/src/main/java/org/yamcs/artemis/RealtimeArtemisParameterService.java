@@ -14,11 +14,11 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
-import org.yamcs.api.Log;
-import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.artemis.ArtemisApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -51,7 +51,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
 
-    public RealtimeArtemisParameterService(Processor proc) throws ActiveMQException, YamcsApiException {
+    public RealtimeArtemisParameterService(Processor proc) throws ActiveMQException, ArtemisApiException {
         this.processor = proc;
         prh = new ParameterWithIdRequestHelper(proc.getParameterRequestManager(), this);
 
@@ -71,7 +71,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
 
     }
 
-    private void processRequest(ClientMessage msg) throws YamcsApiException {
+    private void processRequest(ClientMessage msg) throws ArtemisApiException {
         SimpleString replyto = msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
 
         if (replyto == null) {
@@ -101,11 +101,12 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
 
     }
 
-    private void subscribe(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws YamcsApiException {
+    private void subscribe(SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
+            throws ArtemisApiException {
         List<NamedObjectId> paraList = null;
         try {
             paraList = ((NamedObjectList) Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             log.warn("Could not decode the parameter list", e);
             return;
         }
@@ -133,11 +134,11 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
     private void unsubscribe(SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
-            throws YamcsApiException {
+            throws ArtemisApiException {
         List<NamedObjectId> paraList = null;
         try {
             paraList = ((NamedObjectList) Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             log.warn("Could not decode the parameter list");
             return;
         }
@@ -159,12 +160,12 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
     private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
-            throws YamcsApiException {
+            throws ArtemisApiException {
 
         String namespace = null;
         try {
             namespace = ((StringMessage) Protocol.decode(msg, StringMessage.newBuilder())).getMessage();
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             log.warn("Could not decode the namespace");
             return;
         }
@@ -184,7 +185,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
     private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
-            throws YamcsApiException {
+            throws ArtemisApiException {
         if (!subscriptions.containsValue(dataAddress)) {
             yclient.sendErrorReply(replyto, "not subscribed for this address");
             return;
@@ -212,7 +213,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         }
         try {
             yclient.sendData(addr, ProtoDataType.PARAMETER, pd.build());
-        } catch (YamcsApiException e) {
+        } catch (ArtemisApiException e) {
             subscriptions.remove(addr);
             log.warn("got error when sending parameter updates, removing any subscription of " + addr, e);
         }

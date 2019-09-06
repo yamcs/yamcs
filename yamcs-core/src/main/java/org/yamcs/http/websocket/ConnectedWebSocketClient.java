@@ -15,10 +15,10 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.ConnectionInfo;
+import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 

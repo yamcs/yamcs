@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { GeneralInfo } from '@yamcs/client';
+import { SystemInfo } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -9,10 +10,14 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class AdminHomePage {
 
-  info$: Promise<GeneralInfo>;
+  info$ = new BehaviorSubject<SystemInfo | null>(null);
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Admin CP');
-    this.info$ = yamcs.yamcsClient.getGeneralInfo();
+    title.setTitle('Admin Area');
+    this.refresh();
+  }
+
+  refresh() {
+    this.yamcs.yamcsClient.getSystemInfo().then(info => this.info$.next(info));
   }
 }

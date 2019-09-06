@@ -5,18 +5,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.AbstractYamcsService;
-import org.yamcs.api.InitException;
-import org.yamcs.api.Spec;
-import org.yamcs.api.Spec.OptionType;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
@@ -116,7 +116,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     }
 
     static String getTimePartitioningSchemaSql() {
-        YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
+        YConfiguration yconfig = YamcsServer.getServer().getConfig();
         String partSchema = "";
         if (yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
             partSchema = "('" + yconfig.getSubString("archiveConfig", "timePartitioningSchema") + "')";
