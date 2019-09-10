@@ -1,25 +1,28 @@
 <ng-container *ngIf="instance$ | async as instance">
-  <ng-container *ngIf="alarms$ | async as alarms">
-    <app-slanted-label *ngIf="alarms.length"
-                       color="#ff4100"
-                       icon="notifications_active"
-                       iconColor="black"
-                       shake="true"
-                       highlight="true"
-                       selectable="true"
-                       routerLink="/monitor/alarms"
-                       [queryParams]="{instance: instance.name}">
-      {{ alarms.length }} alarms
-    </app-slanted-label>
-
-    <app-slanted-label *ngIf="!alarms.length"
-                       color="lime"
-                       iconColor="black"
-                       icon="check"
-                       selectable="true"
-                       routerLink="/monitor/alarms"
-                       [queryParams]="{instance: instance.name}">
-      0 alarms
-    </app-slanted-label>
+  <ng-container *ngIf="acknowledgedAlarms$ | async as acknowledgedAlarms">
+    <ng-container *ngIf="unacknowledgedAlarms$ | async as unacknowledgedAlarms">
+      <app-slanted-label *ngIf="unacknowledgedAlarms.length"
+                         color="#ff4100"
+                         [icon]="(hasActiveUnacknowledged$ | async) ? 'notifications' : 'notifications_none'"
+                         iconColor="black"
+                         [shake]="true"
+                         [highlight]="true"
+                         [selectable]="true"
+                         routerLink="/alarms"
+                         [queryParams]="{instance: instance.name}">
+        {{ unacknowledgedAlarms.length }} Unacked
+      </app-slanted-label>
+      <app-slanted-label *ngIf="!unacknowledgedAlarms.length && acknowledgedAlarms.length"
+                         color="#ff4100"
+                         [icon]="(hasActiveAcknowledged$ | async) ? 'check_circle' : 'check_circle_outline'"
+                         iconColor="black"
+                         [shake]="false"
+                         [highlight]="false"
+                         [selectable]="true"
+                         routerLink="/alarms"
+                         [queryParams]="{instance: instance.name}">
+        {{ acknowledgedAlarms.length }} Acked
+      </app-slanted-label>
+    </ng-container>
   </ng-container>
 </ng-container>

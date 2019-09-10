@@ -1,7 +1,7 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { YamcsService } from '../../core/services/YamcsService';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   selector: 'app-create-event-dialog',

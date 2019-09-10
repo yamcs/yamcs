@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Alarm, GeneralInfo, Instance, MissionDatabase, TmStatistics } from '@yamcs/client';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { GeneralInfo, Instance, MissionDatabase, TmStatistics } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { AlarmsDataSource } from '../alarms/AlarmsDataSource';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
-import { AlarmsDataSource } from '../monitor/alarms/AlarmsDataSource';
 import { User } from '../shared/User';
 
 @Component({
@@ -22,7 +22,6 @@ export class InstanceHomePage implements OnDestroy {
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
 
-  unacknowledgedAlarms$: Observable<Alarm[]>;
   alarmsDataSource: AlarmsDataSource;
 
   info$: Promise<GeneralInfo>;
@@ -44,11 +43,6 @@ export class InstanceHomePage implements OnDestroy {
 
     this.alarmsDataSource = new AlarmsDataSource(yamcs);
     this.alarmsDataSource.loadAlarms('realtime');
-    this.unacknowledgedAlarms$ = this.alarmsDataSource.alarms$.pipe(
-      map(alarms => {
-        return alarms.filter(alarm => alarm.notificationType !== 'CLEARED' && alarm.notificationType !== 'ACKNOWLEDGED');
-      }),
-    );
 
     if (this.showMDB()) {
       this.mdb$ = yamcs.getInstanceClient()!.getMissionDatabase();

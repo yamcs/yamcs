@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
@@ -10,6 +10,7 @@ import { LoginPage } from './core/pages/LoginPage';
 import { NotFoundPage } from './core/pages/NotFoundPage';
 import { ProfilePage } from './core/pages/ProfilePage';
 import { ServerUnavailablePage } from './core/pages/ServerUnavailablePage';
+import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
 
 /*
  * Notice that nested modules also have AuthGuards.
@@ -47,6 +48,11 @@ const routes: Routes = [
         data: { 'hasSidebar': false }
       },
       {
+        path: 'alarms',
+        loadChildren: () => import('src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'archive',
         loadChildren: () => import('src/app/archive/ArchiveModule').then(m => m.ArchiveModule),
         canActivate: [AuthGuard],
@@ -67,9 +73,15 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
+        path: 'events',
+        loadChildren: () => import('src/app/events/EventsModule').then(m => m.EventsModule),
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'instance',
         loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
         canActivate: [AuthGuard],
+        data: {preload: true},
       },
       {
         path: 'links',
@@ -80,6 +92,7 @@ const routes: Routes = [
         path: 'monitor',
         loadChildren: () => import('src/app/monitor/MonitorModule').then(m => m.MonitorModule),
         canActivate: [AuthGuard],
+        data: {preload: true},
       },
       {
         path: 'mdb',
@@ -123,7 +136,7 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       onSameUrlNavigation: 'reload',  // See MonitorPage.ts for documentation
-      preloadingStrategy: PreloadAllModules,
+      preloadingStrategy: CustomPreloadingStrategy,
     }),
   ],
   exports: [ RouterModule ],

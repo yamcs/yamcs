@@ -6,7 +6,7 @@ const slopeWidth = 10;
 @Component({
   selector: 'app-slanted-label',
   host: {
-    '[class.shake]': 'shake',
+    '[class.shakeIcon]': 'shake',
     '[class.highlight]': 'highlight',
     '[class.selectable]': 'selectable',
   },

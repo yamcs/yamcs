@@ -72,19 +72,17 @@ public class ProcessorHelper {
     public static final <T> AlarmData toAlarmData(AlarmNotificationType notificationType,
             ActiveAlarm<T> activeAlarm, boolean detail) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
-        
+
         alarmb.setNotificationType(notificationType);
         alarmb.setSeqNum(activeAlarm.getId());
-        
-        
+
         alarmb.setAcknowledged(activeAlarm.isAcknowledged());
         alarmb.setProcessOK(activeAlarm.isProcessOK());
         alarmb.setTriggered(activeAlarm.isTriggered());
-        
+
         alarmb.setViolations(activeAlarm.violations);
         alarmb.setCount(activeAlarm.valueCount);
-        
-        
+
         if (activeAlarm.mostSevereValue instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);
             ParameterValue pv = (ParameterValue) activeAlarm.mostSevereValue;
@@ -128,25 +126,28 @@ public class ProcessorHelper {
             acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
             alarmb.setAcknowledgeInfo(acknowledgeb.build());
         }
-        
-        if(activeAlarm.isShelved()) {
-          ShelveInfo.Builder sib = ShelveInfo.newBuilder();
-          long exp = activeAlarm.getShelveExpiration();
-          if(exp!=-1) {
-              sib.setShelveExpiration(TimeEncoding.toProtobufTimestamp(exp));
-          }
-          sib.setShelveTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getShelveTime()));
-          sib.setShelveMessage(activeAlarm.getShelveMessage());
-          
-          alarmb.setShelveInfo(sib.build());
+
+        if (activeAlarm.isShelved()) {
+            ShelveInfo.Builder sib = ShelveInfo.newBuilder();
+            long exp = activeAlarm.getShelveExpiration();
+            if (exp != -1) {
+                sib.setShelveExpiration(TimeEncoding.toProtobufTimestamp(exp));
+            }
+            sib.setShelvedBy(activeAlarm.getShelveUsername());
+            sib.setShelveTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getShelveTime()));
+            if (activeAlarm.getShelveMessage() != null) {
+                sib.setShelveMessage(activeAlarm.getShelveMessage());
+            }
+            alarmb.setShelveInfo(sib.build());
         }
-        
-        if(activeAlarm.isNormal()) {
+
+        if (activeAlarm.isNormal()) {
             long ct = activeAlarm.getClearTime();
-            if(ct!=TimeEncoding.INVALID_INSTANT) {
+            if (ct != TimeEncoding.INVALID_INSTANT) {
                 ClearInfo.Builder cib = ClearInfo.newBuilder();
                 cib.setClearTime(TimeEncoding.toProtobufTimestamp(ct));
-                if(activeAlarm.getClearMessage()!=null) {
+                cib.setClearedBy(activeAlarm.getUsernameThatCleared());
+                if (activeAlarm.getClearMessage() != null) {
                     cib.setClearMessage(activeAlarm.getClearMessage());
                 }
                 alarmb.setClearInfo(cib.build());

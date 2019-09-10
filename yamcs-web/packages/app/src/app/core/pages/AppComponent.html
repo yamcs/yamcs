@@ -23,7 +23,8 @@
                          style="margin-top: 8px"></app-connected-label>
 
     <app-alarm-label *ngIf="connectionInfo$ | async"
-                     style="margin-top: 8px"></app-alarm-label>
+                     style="margin-top: 8px"
+                     matTooltip="Alarm State"></app-alarm-label>
 
     <ng-container *ngIf="user$ | async as user">
       <mat-menu #userMenu="matMenu" overlapTrigger="false">

@@ -179,6 +179,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     switch (evt.type) {
       case 'REGISTERED':
       case 'UPDATED':
+        // console.log('got ' + evt.linkInfo.name);
         this.itemsByName[evt.linkInfo.name].link = evt.linkInfo;
         this.updateDataSource();
         break;

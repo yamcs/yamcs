@@ -35,7 +35,6 @@ public class ActiveAlarm<T> {
      */
     private final int id;
 
-
     /**
      * If the process that generates the alarm is OK or not (i.e. if the latest value of the parameter is within limits)
      */
@@ -44,14 +43,12 @@ public class ActiveAlarm<T> {
      * If the alarm is latching triggered will stay true even when processOK becomes true
      */
     boolean triggered = false;
-    
+
     /**
      * If a user has acknowledged the alarm
      */
     boolean acknowledged = true;
 
-    
-    
     public long acknowledgeTime = TimeEncoding.INVALID_INSTANT;
 
     public long clearTime = TimeEncoding.INVALID_INSTANT;
@@ -77,18 +74,14 @@ public class ActiveAlarm<T> {
     public String usernameThatAcknowledged;
 
     public String usernameThatCleared;
-    
+
     boolean shelved;
     private String usernameThatShelved;
-    
-    
+
     private long shelveTime;
     private String shelveMessage;
     private long shelveDuration;
-    
-  
 
-    
     public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
         this.autoAcknowledge = autoAck;
         this.latching = latching;
@@ -143,12 +136,12 @@ public class ActiveAlarm<T> {
      * 
      */
     public synchronized void trigger() {
-       if(!triggered) {
-           processOK = false;
-           triggered = true;
-           acknowledged = false;
-       }
-    }   
+        if (!triggered) {
+            processOK = false;
+            triggered = true;
+            acknowledged = false;
+        }
+    }
 
     /**
      * Acknowledge the alarm. This method does nothing if the alarm is already acknowledged.
@@ -164,37 +157,37 @@ public class ActiveAlarm<T> {
         this.usernameThatAcknowledged = username;
         this.acknowledgeTime = ackTime;
     }
-    
+
     /**
      * Called when the process returns to normal (i.e. parameter is back in limits)
+     * 
      * @return true if the alarm has been updated
      */
     public synchronized boolean processRTN() {
-        if(processOK) {
+        if (processOK) {
             return false;
         }
-        
+
         processOK = true;
-        
-        if(!latching) {
+
+        if (!latching) {
             triggered = false;
         }
-        if(autoAcknowledge) {
+        if (autoAcknowledge) {
             acknowledgeTime = TimeEncoding.getWallclockTime();
             acknowledgeMessage = "auto-acknowledged";
             acknowledged = true;
         }
         return true;
     }
-    
+
     /**
      * Called when the operator resets a latching alarm
      */
     public synchronized void reset() {
         triggered = processOK;
     }
-    
-   
+
     public synchronized void shelve(String username, String message, long shelveDuration) {
         this.shelved = true;
         this.usernameThatShelved = username;
@@ -202,6 +195,7 @@ public class ActiveAlarm<T> {
         this.shelveMessage = message;
         this.shelveDuration = shelveDuration;
     }
+
     public boolean isShelved() {
         return shelved;
     }
@@ -243,17 +237,17 @@ public class ActiveAlarm<T> {
     }
 
     public long getShelveExpiration() {
-        if(shelveDuration == -1 ) {
+        if (shelveDuration == -1) {
             return -1;
         } else {
-            return shelveTime + shelveDuration;    
+            return shelveTime + shelveDuration;
         }
     }
 
     public boolean isProcessOK() {
         return processOK;
     }
-    
+
     public boolean isTriggered() {
         return triggered;
     }
@@ -272,5 +266,9 @@ public class ActiveAlarm<T> {
 
     public void setUsernameThatShelved(String usernameThatShelved) {
         this.usernameThatShelved = usernameThatShelved;
+    }
+
+    public String getUsernameThatCleared() {
+        return usernameThatCleared;
     }
 }

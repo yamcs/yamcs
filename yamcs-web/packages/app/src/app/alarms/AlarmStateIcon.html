@@ -1,0 +1,12 @@
+<mat-icon *ngIf="alarm.shelveInfo"
+          matTooltip="Shelved">timer</mat-icon>
+<mat-icon *ngIf="!alarm.shelveInfo && !alarm.processOK && alarm.acknowledged"
+          matTooltip="Active, acknowledged">check_circle</mat-icon>
+<mat-icon *ngIf="!alarm.shelveInfo && !alarm.processOK && !alarm.acknowledged"
+          class="shake"
+          matTooltip="Active, unacknowledged">notifications</mat-icon>
+<mat-icon *ngIf="!alarm.shelveInfo && alarm.processOK && alarm.acknowledged"
+          matTooltip="RTN, acknowledged">check_circle_outline</mat-icon>
+<mat-icon *ngIf="!alarm.shelveInfo && alarm.processOK && !alarm.acknowledged"
+          class="shake"
+          matTooltip="RTN, unacknowledged">notifications_none</mat-icon>

@@ -1,8 +1,8 @@
 import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Synchronizer } from '../../core/services/Synchronizer';
-import { YamcsService } from '../../core/services/YamcsService';
+import { Synchronizer } from '../core/services/Synchronizer';
+import { YamcsService } from '../core/services/YamcsService';
 import { EventBuffer } from './EventBuffer';
 
 export interface AnimatableEvent extends Event {

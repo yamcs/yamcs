@@ -222,6 +222,7 @@ public class AlarmServer<S, T> extends AbstractService {
             return null;
         }
         alarm.unshelve();
+        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, alarm));
         return alarm;
     }
 
@@ -369,8 +370,7 @@ public class AlarmServer<S, T> extends AbstractService {
     }
 
     /**
-     * Removes all active alarms without acknowledgement
-     * !use only for unit tests!
+     * Removes all active alarms without acknowledgement !use only for unit tests!
      */
     public void clearAll() {
         activeAlarms.clear();

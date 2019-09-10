@@ -18,8 +18,8 @@
 
 <h6>Severity</h6>
 <div class="block">
-    <app-alarm-level [level]="alarm.severity"></app-alarm-level>
-    {{ alarm.severity }}
+  <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+  {{ alarm.severity }}
 </div>
 
 <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
@@ -71,4 +71,51 @@
       </blockquote>
     </ng-container>
   </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.shelveInfo">
+  <br>
+  <mat-divider></mat-divider>
+
+  <h6>Shelved by {{ alarm.shelveInfo.shelvedBy }}</h6>
+  <div class="block">
+    On {{ alarm.shelveInfo.shelveTime | datetime }}
+    <ng-container *ngIf="alarm.shelveInfo.shelveMessage">
+      <blockquote style="border-left: 4px solid #eee; padding-left: 1em; font-style: italic">
+        {{ alarm.shelveInfo.shelveMessage }}
+      </blockquote>
+    </ng-container>
+  </div>
+
+  <ng-container *ngIf="alarm.shelveInfo.shelveExpiration">
+    <h6>Shelve Expiration</h6>
+    <div class="block">
+      {{ alarm.shelveInfo.shelveExpiration | datetime }}
+    </div>
+  </ng-container>
+</ng-container>
+
+<ng-container>
+  <br>
+  <mat-divider></mat-divider>
+  <br>
+
+  <button mat-raised-button
+          (click)="acknowledgeAlarm.emit(alarm)"
+          *ngIf="!alarm.shelveInfo && !alarm.acknowledged">
+    <mat-icon>notifications_off</mat-icon>
+    ACKNOWLEDGE
+  </button>
+  <button mat-raised-button
+          (click)="shelveAlarm.emit(alarm)"
+          *ngIf="!alarm.shelveInfo">
+    <mat-icon>timer</mat-icon>
+    SHELVE
+  </button>
+  <button mat-raised-button
+          (click)="unshelveAlarm.emit(alarm)"
+          *ngIf="alarm.shelveInfo">
+    <mat-icon>timer_off</mat-icon>
+    UNSHELVE
+  </button>
 </ng-container>

@@ -6,6 +6,7 @@ import { HelpDialog } from '../dialogs/HelpDialog';
 @Component({
   selector: 'app-help',
   templateUrl: './Help.html',
+  styleUrls: ['./Help.css'],
 })
 export class Help {
 
