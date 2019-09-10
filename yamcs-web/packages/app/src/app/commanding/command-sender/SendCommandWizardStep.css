@@ -1,0 +1,11 @@
+span {
+  cursor: default;
+}
+
+span span {
+  opacity: 0.3;
+}
+
+span span.active {
+  opacity: 1;
+}

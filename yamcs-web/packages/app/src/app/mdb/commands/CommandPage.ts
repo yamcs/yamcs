@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Command, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { IssueCommandDialog } from './IssueCommandDialog';
 
 @Component({
   templateUrl: './CommandPage.html',
@@ -20,7 +18,6 @@ export class CommandPage {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private title: Title,
-    private dialog: MatDialog,
   ) {
     this.instance = yamcs.getInstance();
 
@@ -36,13 +33,6 @@ export class CommandPage {
     this.yamcs.getInstanceClient()!.getCommand(qualifiedName).then(command => {
       this.command$.next(command);
       this.title.setTitle(command.name);
-    });
-  }
-
-  issueCommand() {
-    this.dialog.open(IssueCommandDialog, {
-      width: '400px',
-      data: { command: this.command$.value! },
     });
   }
 }

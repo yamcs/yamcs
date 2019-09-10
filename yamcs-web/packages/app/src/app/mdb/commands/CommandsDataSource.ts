@@ -19,7 +19,7 @@ export class CommandsDataSource extends DataSource<Command> {
 
   loadCommands(options: GetCommandsOptions) {
     this.loading$.next(true);
-    this.yamcs.getInstanceClient()!.getCommands(options).then(page => {
+    return this.yamcs.getInstanceClient()!.getCommands(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       this.commands$.next(page.commands || []);

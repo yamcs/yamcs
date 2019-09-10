@@ -1,0 +1,30 @@
+.hasInitial {
+  display: none;
+}
+
+.showAll .hasInitial {
+  display: block;
+}
+
+.ya-data-table td {
+  cursor: pointer;
+}
+
+mat-toolbar.sub {
+  border-bottom: 1px solid #d3d3d3;
+  background-color: #fff;
+  font-size: 12px;
+}
+
+h6 {
+  font-weight: 500;
+  font-size: 12px;
+  padding-bottom: 0;
+  padding-top: 1em;
+  margin: 0;
+}
+
+.block {
+  font-weight: normal;
+  font-size: 12px;
+}

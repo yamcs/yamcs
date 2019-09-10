@@ -539,6 +539,7 @@ message ListCommandsRequest {
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
+  optional bool noAbstract = 10;
 }
 
 message GetParameterRequest {

@@ -552,6 +552,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         boolean details = request.getDetails();
         boolean recurse = request.getRecurse();
+        boolean noAbstract = request.getNoAbstract();
 
         DetailLevel detailLevel = details ? DetailLevel.FULL : DetailLevel.SUMMARY;
 
@@ -565,6 +566,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 if (matcher != null && !matcher.matches(cmd)) {
                     continue;
                 }
+                if (cmd.isAbstract() && noAbstract) {
+                    continue;
+                }
 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
@@ -574,6 +578,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
         } else { // List all
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (matcher != null && !matcher.matches(cmd)) {
+                    continue;
+                }
+                if (cmd.isAbstract() && noAbstract) {
                     continue;
                 }
                 matchedCommands.add(cmd);
