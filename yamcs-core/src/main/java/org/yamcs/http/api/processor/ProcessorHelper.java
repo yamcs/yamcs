@@ -112,35 +112,6 @@ public class ProcessorHelper {
             }
         }
 
-        if (activeAlarm.isAcknowledged()) {
-            AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
-            String username = activeAlarm.usernameThatAcknowledged;
-            if (activeAlarm.isAutoAcknowledge()) {
-                username = "autoAcknowledged";
-            }
-
-            acknowledgeb.setAcknowledgedBy(username);
-            if (activeAlarm.getAckMessage() != null) {
-                acknowledgeb.setAcknowledgeMessage(activeAlarm.getAckMessage());
-            }
-            acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
-            alarmb.setAcknowledgeInfo(acknowledgeb.build());
-        }
-
-        if (activeAlarm.isShelved()) {
-            ShelveInfo.Builder sib = ShelveInfo.newBuilder();
-            long exp = activeAlarm.getShelveExpiration();
-            if (exp != -1) {
-                sib.setShelveExpiration(TimeEncoding.toProtobufTimestamp(exp));
-            }
-            sib.setShelvedBy(activeAlarm.getShelveUsername());
-            sib.setShelveTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getShelveTime()));
-            if (activeAlarm.getShelveMessage() != null) {
-                sib.setShelveMessage(activeAlarm.getShelveMessage());
-            }
-            alarmb.setShelveInfo(sib.build());
-        }
-
         if (activeAlarm.isNormal()) {
             long ct = activeAlarm.getClearTime();
             if (ct != TimeEncoding.INVALID_INSTANT) {
@@ -151,6 +122,35 @@ public class ProcessorHelper {
                     cib.setClearMessage(activeAlarm.getClearMessage());
                 }
                 alarmb.setClearInfo(cib.build());
+            }
+        } else {
+            if (activeAlarm.isAcknowledged()) {
+                AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
+                String username = activeAlarm.usernameThatAcknowledged;
+                if (activeAlarm.isAutoAcknowledge()) {
+                    username = "autoAcknowledged";
+                }
+
+                acknowledgeb.setAcknowledgedBy(username);
+                if (activeAlarm.getAckMessage() != null) {
+                    acknowledgeb.setAcknowledgeMessage(activeAlarm.getAckMessage());
+                }
+                acknowledgeb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(activeAlarm.acknowledgeTime));
+                alarmb.setAcknowledgeInfo(acknowledgeb.build());
+            }
+
+            if (activeAlarm.isShelved()) {
+                ShelveInfo.Builder sib = ShelveInfo.newBuilder();
+                long exp = activeAlarm.getShelveExpiration();
+                if (exp != -1) {
+                    sib.setShelveExpiration(TimeEncoding.toProtobufTimestamp(exp));
+                }
+                sib.setShelvedBy(activeAlarm.getShelveUsername());
+                sib.setShelveTime(TimeEncoding.toProtobufTimestamp(activeAlarm.getShelveTime()));
+                if (activeAlarm.getShelveMessage() != null) {
+                    sib.setShelveMessage(activeAlarm.getShelveMessage());
+                }
+                alarmb.setShelveInfo(sib.build());
             }
         }
         return alarmb.build();

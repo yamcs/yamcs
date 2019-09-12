@@ -82,10 +82,10 @@
         Commanding
       </mat-list-item>
       <div *ngIf="commandingExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/commanding/command-sender"
+        <app-sidebar-nav-item routerLink="/commanding/send"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
-          Command Sender
+          Send a Command
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
                               routerLink="/commanding/command-queues"

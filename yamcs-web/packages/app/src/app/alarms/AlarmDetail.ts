@@ -23,4 +23,7 @@ export class AlarmDetail {
 
   @Output()
   unshelveAlarm = new EventEmitter<Alarm>();
+
+  @Output()
+  clearAlarm = new EventEmitter<Alarm>();
 }

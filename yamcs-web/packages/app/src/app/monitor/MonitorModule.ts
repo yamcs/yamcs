@@ -28,6 +28,7 @@ import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule'
 import { ColorPalette } from './parameters/ColorPalette';
 import { CompareParameterDialog } from './parameters/CompareParameterDialog';
 import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
+import { ParameterAlarmsTable } from './parameters/ParameterAlarmsTable';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 import { SelectRangeDialog } from './parameters/SelectRangeDialog';
@@ -89,6 +90,7 @@ const viewers = [
     Layout,
     MultipleParameterTable,
     ParameterDetail,
+    ParameterAlarmsTable,
     ParameterValuesTable,
     ScrollingParameterTable,
     SeverityMeter,

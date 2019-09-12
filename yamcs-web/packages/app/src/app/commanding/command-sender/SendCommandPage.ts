@@ -10,11 +10,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
 
 @Component({
-  templateUrl: './CommandSenderPage.html',
-  styleUrls: ['./CommandSenderPage.css'],
+  templateUrl: './SendCommandPage.html',
+  styleUrls: ['./SendCommandPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandSenderPage implements AfterViewInit {
+export class SendCommandPage implements AfterViewInit {
 
   pageSize = 10;
 
@@ -48,7 +48,7 @@ export class CommandSenderPage implements AfterViewInit {
     private yamcs: YamcsService,
     private messageService: MessageService,
   ) {
-    title.setTitle('Command Sender');
+    title.setTitle('Send a command');
     this.dataSource = new CommandsDataSource(yamcs);
   }
 

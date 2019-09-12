@@ -1,6 +1,6 @@
 <app-instance-page *ngIf="step$ | async as step">
   <app-instance-toolbar>
-    Command Sender
+    Send a command
   </app-instance-toolbar>
 
   <mat-toolbar class="sub">
@@ -13,10 +13,10 @@
     <div [class.hide]="step !== 1">
       <div style="margin-bottom: 12px">
         <input #filter
-               class="ya-input"
-               type="text"
-               placeholder="Filter by text search"
-               style="width: 400px">
+                class="ya-input"
+                type="text"
+                placeholder="Filter by text search"
+                style="width: 400px">
       </div>
       <div style="display: inline-block">
         <table mat-table
