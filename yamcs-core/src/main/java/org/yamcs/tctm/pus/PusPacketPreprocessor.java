@@ -1,7 +1,6 @@
 package org.yamcs.tctm.pus;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,8 @@ import static org.yamcs.tctm.pus.Constants.*;
  * 
  * The header structure is:
  *
- * <p>Primary header (specified by CCSDS 133.0-B-1)
+ * <p>
+ * Primary header (specified by CCSDS 133.0-B-1)
  * <ul>
  * <li>packet version number (3 bits)</li>
  * <li>packet type (1 bit)</li>
@@ -30,10 +30,11 @@ import static org.yamcs.tctm.pus.Constants.*;
  * <li>application process ID (11 bits)</li>
  * <li>sequence flags (2 bits)</li>
  * <li>packet sequence count (14 bits)</li>
- *</ul>
+ * </ul>
  *
- *<p>Secondary header (PUS specific)
- *<ul> 
+ * <p>
+ * Secondary header (PUS specific)
+ * <ul>
  * <li>TM packet PUS version number (4 bits)</li>
  * <li>spacecraft time reference status (4 bits)</li>
  * <li>service type ID (8 bits)</li>
@@ -43,8 +44,12 @@ import static org.yamcs.tctm.pus.Constants.*;
  * <li>time (absolute time) variable</li>
  * <li>spare optional</li>
  * </ul>
+ * <p>
+ * The time packets have no secondary header and the apid set to 0. The data part consist of the current onboard time in
+ * the same encoding like in the normal packets.
  * 
- * <p>In this class we are interested in the time and the sequence count.
+ * <p>
+ * In this class we are interested in the time and the sequence count.
  *
  * @author nm
  *
@@ -52,10 +57,13 @@ import static org.yamcs.tctm.pus.Constants.*;
 public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     final static Logger log = LoggerFactory.getLogger(PusPacketPreprocessor.class);
 
-    //where to look for time in the telemetry
+    // where to look for time in the telemetry
     int pktTimeOffset;
 
     CcsdsTimeDecoder timeDecoder = null;
+
+    // if true, do not extract time from packets
+    boolean useLocalGenerationTime;
 
     // time code ids as per CCSDS 301.0-B-4
     final static int PFIELD_TCID_TAI = 1;// 001 1-Jan-1958 epoch
@@ -68,23 +76,27 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         this(yamcsInstance, null);
     }
 
-    public PusPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+    public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         configureTimeDecoder(config);
     }
 
+    void configureTimeDecoder(YConfiguration config) {
+        if (config != null) {
+            useLocalGenerationTime = config.getBoolean("useLocalGenerationTime", false);
+        }
 
-    void configureTimeDecoder(Map<String, Object> config) {
-        if (config != null && config.containsKey(Constants.CONFIG_KEY_TIME_ENCODING)) {
-            Map<String, Object> c = YConfiguration.getMap(config, Constants.CONFIG_KEY_TIME_ENCODING);
-            String type = YConfiguration.getString(c, "type", "CUC");
+        if (!useLocalGenerationTime && config != null && config.containsKey(Constants.CONFIG_KEY_TIME_ENCODING)) {
+            YConfiguration c = config.getConfig(Constants.CONFIG_KEY_TIME_ENCODING);
+            String type = c.getString("type", "CUC");
             if ("CUC".equals(type)) {
-                int implicitPField = YConfiguration.getInt(config, "implicitPField", DEFAULT_IMPLICIT_PFIELD);
+                int implicitPField = c.getInt("implicitPField", DEFAULT_IMPLICIT_PFIELD);
                 timeDecoder = new CucTimeDecoder(implicitPField);
             } else {
-                throw new ConfigurationException("Time encoding of type '" + type + " not supported. Supported: CUC");
+                throw new ConfigurationException("Time encoding of type '" + type
+                        + " not supported. Supported: CUC=CCSDS unsegmented time");
             }
-            pktTimeOffset = YConfiguration.getInt(c, "pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
+            pktTimeOffset = c.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
         } else {
             pktTimeOffset = DEFAULT_PKT_TIME_OFFSET;
             timeDecoder = new CucTimeDecoder(DEFAULT_IMPLICIT_PFIELD);
@@ -94,10 +106,20 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
 
     @Override
     public PacketWithTime process(byte[] packet) {
+        if (packet.length < 6) {
+            eventProducer.sendWarning(
+                    "Short packet received, length: " + packet.length + "; minimum required length is 6 bytes.");
+            return null;
+        }
         boolean secondaryHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(packet);
 
-        if (!secondaryHeaderFlag) {// TODO PUS does actually allow the time packets without the secondary header
-            eventProducer.sendWarning("Packet without secondary header received, ignoring.");
+        if (!secondaryHeaderFlag) {// in PUS only time packets are allowed without secondary header and they should have
+                                   // apid = 0
+            int apid = CcsdsPacket.getAPID(packet);
+            if (apid == 0) {
+                return processTimePacket(packet);
+            }
+            eventProducer.sendWarning("Packet with apid=" + apid + " and without secondary header received, ignoring.");
             return null;
         }
 
@@ -107,11 +129,10 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
             return null;
         }
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
-        boolean checksumIndicator = CcsdsPacket.getChecksumIndicator(packet);
 
         boolean corrupted = false;
 
-        if (checksumIndicator) {
+        if (errorDetectionCalculator != null) {
             int n = packet.length;
             int computedCheckword;
             try {
@@ -130,21 +151,46 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
 
         long rectime = timeService.getMissionTime();
         long gentime;
-        try {
-            gentime = timeDecoder.decode(packet, pktTimeOffset);
-        } catch (Exception e) {
-            eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
-            corrupted = true;
+        if (useLocalGenerationTime) {
             gentime = rectime;
+        } else {
+            try {
+                gentime = timeDecoder.decode(packet, pktTimeOffset);
+            } catch (Exception e) {
+                eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
+                corrupted = true;
+                gentime = rectime;
+            }
         }
-        
+
         if (log.isTraceEnabled()) {
             log.trace("Recevied packet length: {}, apid: {}, seqcount: {}, gentime: {}, corrupted: {}", packet.length,
                     CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet), TimeEncoding.toString(gentime),
                     corrupted);
         }
 
-        PacketWithTime pwt = new PacketWithTime(gentime, CcsdsPacket.getInstant(packet), apidseqcount, packet);
+        PacketWithTime pwt = new PacketWithTime(rectime, gentime, apidseqcount, packet);
+        pwt.setCorrupted(corrupted);
+        return pwt;
+    }
+
+    private PacketWithTime processTimePacket(byte[] packet) {
+        long rectime = timeService.getMissionTime();
+        boolean corrupted = false;
+        long gentime;
+        if (useLocalGenerationTime) {
+            gentime = rectime;
+        } else {
+            try {
+                gentime = timeDecoder.decode(packet, 6);
+            } catch (Exception e) {
+                eventProducer.sendWarning("Failed to extract time from packet: " + e.getMessage());
+                corrupted = true;
+                gentime = rectime;
+            }
+        }
+        int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
+        PacketWithTime pwt = new PacketWithTime(rectime, gentime, apidseqcount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;
     }

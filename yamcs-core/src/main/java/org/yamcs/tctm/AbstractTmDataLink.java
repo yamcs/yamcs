@@ -25,7 +25,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     DataRateMeter dataRateMeter = new DataRateMeter();
 
     String packetPreprocessorClassName;
-    Object packetPreprocessorArgs;
+    YConfiguration packetPreprocessorArgs;
     protected PacketPreprocessor packetPreprocessor;
 
     final Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -54,7 +54,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             } else {
                 this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             }
-            this.packetPreprocessorArgs = config.get("packetPreprocessorArgs");
+            this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
         } else {
             this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             this.packetPreprocessorArgs = null;

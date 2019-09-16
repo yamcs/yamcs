@@ -11,12 +11,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,6 +69,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.archive.PacketWithTime;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.RestClient;
@@ -80,11 +82,13 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.tctm.CcsdsPacketInputStream;
 import org.yamcs.tctm.IssPacketPreprocessor;
+import org.yamcs.tctm.PacketInputStream;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -92,7 +96,7 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
-import com.google.protobuf.ByteString;
+import com.google.common.io.CountingInputStream;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -138,20 +142,26 @@ public class PacketViewer extends JFrame implements ActionListener,
     private String defaultNamespace;
     PacketPreprocessor packetPreprocessor;
 
+    Object packetInputStreamArgs;
+    private String packetInputStreamClassName;
+
+    final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
+
     public PacketViewer(int maxLines) throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
-        if (YConfiguration.isDefined("yamcs-ui")) {
-            YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-            if (config.containsKey("defaultNamespace")) {
-                defaultNamespace = config.getString("defaultNamespace");
-            }
+        YConfiguration config = null;
+        if (YConfiguration.isDefined("packet-viewer")) {
+            config = YConfiguration.getConfiguration("packet-viewer");
         }
-
-        packetPreprocessor = new IssPacketPreprocessor(null);
-        // packetPreprocessor = new CfsPacketPreprocessor(null);
+        if (config != null) {
+            defaultNamespace = config.getString("defaultNamespace", null);
+            readConfig(null, config);
+        } else {
+            packetPreprocessor = new IssPacketPreprocessor(null);
+        }
 
         packetPreprocessor.checkForSequenceDiscontinuity(false);
 
@@ -488,25 +498,6 @@ public class PacketViewer extends JFrame implements ActionListener,
         updateRecentFiles(lastFile, xtceDb);
     }
 
-    @SuppressWarnings("serial")
-    private static class ShortReadException extends Exception {
-        public ShortReadException(long needed, long read, long offset) {
-            super();
-            this.needed = needed;
-            this.offset = offset;
-            this.read = read;
-        }
-
-        long needed;
-        long read;
-        long offset;
-
-        @Override
-        public String toString() {
-            return String.format("short seek %d/%d at offset %d", read, needed, offset);
-        }
-    }
-
     private boolean loadLocalXtcedb(String configName) {
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
@@ -566,21 +557,15 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     void loadFile() {
-        new SwingWorker<Void, TmPacketData>() {
+        new SwingWorker<Void, PacketWithTime>() {
             ProgressMonitor progress;
             int packetCount = 0;
 
             @Override
             protected Void doInBackground() throws Exception {
-                boolean isPacts = false;
-                long r;
-
-                try (FileInputStream reader = new FileInputStream(lastFile)) {
-                    byte[] fourb = new byte[4];
-                    TmPacketData packet;
-                    ByteBuffer buf;
-                    int res;
-                    int len, offset = 0;
+                try (CountingInputStream reader = new CountingInputStream(new FileInputStream(lastFile))) {
+                    PacketInputStream packetInputStream = getPacketInputStream(reader);
+                    PacketWithTime packet;
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int) (lastFile.length() >> 10) : maxLines;
@@ -588,100 +573,27 @@ public class PacketViewer extends JFrame implements ActionListener,
                             progressMax);
 
                     while (!progress.isCanceled()) {
-                        res = reader.read(fourb, 0, 4);
-                        if (res != 4) {
+                        byte[] p = packetInputStream.readPacket();
+                        if (p == null) {
                             break;
                         }
-                        buf = ByteBuffer.allocate(16);
-                        long gentime = TimeEncoding.INVALID_INSTANT;
-                        int seqcount = -1;
-                        if (true || (fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                            buf.put(fourb, 0, 4);
-                            if ((r = reader.read(buf.array(), 4, 12)) != 12) {
-                                throw new ShortReadException(16, r, offset);
-                            }
-                            gentime = CcsdsPacket.getInstant(buf);
-                            seqcount = CcsdsPacket.getSequenceCount(buf);
-                        } else if ((fourb[2] == 0) && (fourb[3] == 0)) { // hrdp packet - first 4 bytes are packet size
-                                                                         // in little endian
-                            if ((r = reader.skip(6)) != 6) {
-                                throw new ShortReadException(6, r, offset);
-                            }
-                            offset += 10;
-                            if ((r = reader.read(buf.array())) != 16) {
-                                throw new ShortReadException(16, r, offset);
-                            }
-                            gentime = CcsdsPacket.getInstant(buf);
-                            seqcount = CcsdsPacket.getSequenceCount(buf);
-                        } else {// pacts packet
-                            isPacts = true;
-                            // read ASCII header up to the second blank
-                            int i, j;
-                            StringBuffer hdr = new StringBuffer();
-                            j = 0;
-                            for (i = 0; i < 4; i++) {
-                                hdr.append((char) fourb[i]);
-                                if (fourb[i] == 32) {
-                                    ++j;
-                                }
-                            }
-                            offset += 4;
-                            while ((j < 2) && (i < 20)) {
-                                int c = reader.read();
-                                if (c == -1) {
-                                    throw new ShortReadException(1, 0, offset);
-                                }
-                                offset++;
-                                hdr.append((char) c);
-                                if (c == 32) {
-                                    ++j;
-                                }
-                                i++;
-                            }
-                            if ((r = reader.read(buf.array())) != 16) {
-                                // throw new ShortReadException(16, r, offset);
+                        packet = packetPreprocessor.process(p);
+                        
+                        if (packet != null) {
+                            publish(packet);
+                            packetCount++;
+                            if (packetCount == maxLines) {
                                 break;
                             }
+                        } else {
+                            log("preprocessor returned null packet");
                         }
-                        len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
-                        if (len < 16) {
-                            log("Short packet read: length: " + len);
-                            break;
-                        }
-                        byte[] bufn = new byte[len];
-                        System.arraycopy(buf.array(), 0, bufn, 0, 16);
-                        r = reader.read(bufn, 16, len - 16);
-                        if (r != len - 16) {
-                            // throw new ShortReadException(len - 16, r, offset);
-                            break;
-                        }
-
-                        TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
-                                .setYamcsReceptionTime(TimeEncoding.getWallclockTime());
-                        if (gentime != TimeEncoding.INVALID_INSTANT) {
-                            packetb.setYamcsGenerationTime(gentime);
-                        }
-                        if (seqcount >= 0) {
-                            packetb.setSequenceNumber(seqcount);
-                        }
-                        packet = packetb.build();
-
-                        offset += len;
-                        if (isPacts) {
-                            if (reader.skip(1) != 1) {
-                                throw new ShortReadException(1, 0, offset);
-                            }
-                            offset += 1;
-                        }
-                        publish(packet);
-
-                        packetCount++;
-                        if (packetCount == maxLines) {
-                            break;
-                        }
-                        progress.setProgress((maxLines == -1) ? (int) (offset >> 10) : packetCount);
+                        progress.setProgress((maxLines == -1) ? (int) (reader.getCount() >> 10) : packetCount);
                     }
                     reader.close();
+                } catch (EOFException x) {
+                    final String msg = String.format("Encountered end of file while loading %s", lastFile.getName());
+                    log(msg);
                 } catch (Exception x) {
                     x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
@@ -694,15 +606,15 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
 
             @Override
-            protected void process(final List<TmPacketData> chunks) {
-                for (TmPacketData packet : chunks) {
+            protected void process(final List<PacketWithTime> chunks) {
+                for (PacketWithTime packet : chunks) {
+                   
                     packetsTable.packetReceived(packet);
                 }
             }
 
             @Override
             protected void done() {
-                System.out.println("lastFile : " + lastFile);
                 if (progress != null) {
                     if (progress.isCanceled()) {
                         clearWindow();
@@ -957,7 +869,10 @@ public class PacketViewer extends JFrame implements ActionListener,
     public void onMessage(WebSocketSubscriptionData data) {
         if (data.hasTmPacket()) {
             TmPacketData tm = data.getTmPacket();
-            packetsTable.packetReceived(tm);
+            PacketWithTime pwt = new PacketWithTime(TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime()),
+                    TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
+                    tm.getSequenceNumber(), tm.getPacket().toByteArray());
+            packetsTable.packetReceived(pwt);
         }
     }
 
@@ -1144,4 +1059,42 @@ public class PacketViewer extends JFrame implements ActionListener,
     public String getDefaultNamespace() {
         return defaultNamespace;
     }
+
+    protected void readConfig(String instance, YConfiguration config) {
+        String packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS, IssPacketPreprocessor.class.getName());
+        YConfiguration packetPreprocessorArgs = null;
+        packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
+
+        try {
+            if (packetPreprocessorArgs != null) {
+                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                        packetPreprocessorArgs);
+            } else {
+                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+            }
+        } catch (ConfigurationException e) {
+            log.error("Cannot instantiate the packet preprocessor", e);
+            throw e;
+        } catch (IOException e) {
+            log.error("Cannot instantiate the packet preprocessor", e);
+            throw new ConfigurationException(e);
+        }
+
+        if (config.containsKey("packetInputStreamClassName")) {
+            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
+        } else {
+            this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+        }
+        this.packetInputStreamArgs = config.get("packetInputStreamArgs");
+    }
+
+    private PacketInputStream getPacketInputStream(InputStream inputStream) throws IOException {
+        if (packetInputStreamArgs != null) {
+            return YObjectLoader.loadObject(packetInputStreamClassName, inputStream,
+                    packetInputStreamArgs);
+        } else {
+            return YObjectLoader.loadObject(packetInputStreamClassName, inputStream);
+        }
+    }
+
 }

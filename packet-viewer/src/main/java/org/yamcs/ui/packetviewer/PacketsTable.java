@@ -35,6 +35,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
@@ -49,7 +50,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 
-public class PacketsTable extends JTable implements ListSelectionListener, PacketListener {
+public class PacketsTable extends JTable implements ListSelectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final String MARK_PACKET = "Mark Packet";
@@ -500,12 +501,11 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         tableModel.removeRow(0);
     }
 
-    @Override
-    public void packetReceived(TmPacketData data) {
-        byte[] buf = data.getPacket().toByteArray();
+    public void packetReceived(PacketWithTime data) {
+        byte[] buf = data.getPacket();
         int len = buf.length;
         final ListPacket packet = new ListPacket(buf, len);
-        long gentime = TimeEncoding.fromProtobufTimestamp(data.getGenerationTime());
+        long gentime = data.getGenerationTime();
         packet.setGenerationTime(gentime);
         tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime());
         ParameterValueList pvlist = tmExtractor.getParameterResult();
@@ -650,20 +650,8 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         configureRowSorting();
     }
 
-    @Override
     public void exception(final Exception e) {
         packetViewer.log(e.toString());
-    }
-
-    @Override
-    public boolean isCanceled() {
-        // never called in this app
-        return false;
-    }
-
-    @Override
-    public void replayFinished() {
-        // TODO Auto-generated method stub
     }
 
     private class PopupListener extends MouseAdapter {
