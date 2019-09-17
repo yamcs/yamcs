@@ -86,6 +86,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
                 tdef.addColumn(CNAME_CLEAR_MSG, DataType.STRING);
                 al.add(activeAlarm.clearMessage);
             }
+            
             break;
         case SHELVED:
             tdef.addColumn(CNAME_SHELVED_BY, DataType.STRING);

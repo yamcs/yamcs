@@ -151,11 +151,19 @@ public class ActiveAlarm<T> {
      * @param message
      */
     public synchronized void acknowledge(String username, long ackTime, String message) {
+        if(acknowledged) {
+            return;
+        }
         this.acknowledged = true;
 
         this.acknowledgeMessage = message;
         this.usernameThatAcknowledged = username;
         this.acknowledgeTime = ackTime;
+        
+        if(isNormal()) {
+            clearTime = TimeEncoding.getWallclockTime();
+        }
+        
     }
 
     /**
@@ -169,15 +177,19 @@ public class ActiveAlarm<T> {
         }
 
         processOK = true;
-
+        long time = TimeEncoding.getWallclockTime();
         if (!latching) {
             triggered = false;
         }
         if (autoAcknowledge) {
-            acknowledgeTime = TimeEncoding.getWallclockTime();
+            acknowledgeTime = time;
             acknowledgeMessage = "auto-acknowledged";
             acknowledged = true;
         }
+        if(!triggered && acknowledged) {
+            clearTime = time;
+        }
+        
         return true;
     }
 
