@@ -69,7 +69,7 @@ cd $clonedir
 cd yamcs-web
 yarn install --network-timeout 100000
 yarn build
-rm -rf `find . -maxdepth 3 -name node_modules`
+rm -rf `find . -name node_modules -maxdepth 3`
 cd ..
 
 mvn package -P yamcs-release -DskipTests
