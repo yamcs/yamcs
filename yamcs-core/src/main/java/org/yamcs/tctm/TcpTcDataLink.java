@@ -8,72 +8,29 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.logging.Log;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
-import org.yamcs.parameter.SystemParametersProducer;
-import org.yamcs.time.TimeService;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.YObjectLoader;
-
-import com.google.common.util.concurrent.AbstractService;
-import com.google.common.util.concurrent.RateLimiter;
 
 /**
- * Sends raw packets on Tcp socket.
+ * Sends raw packets on TCP socket.
  * 
  * @author nm
  *
  */
-public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
-
+public class TcpTcDataLink extends AbstractTcDataLink {
     protected SocketChannel socketChannel;
     protected String host;
     protected int port;
-    protected long initialDelay;
-    protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector;
     SelectionKey selectionKey;
 
-    protected ScheduledThreadPoolExecutor timer;
-    protected volatile boolean disabled = false;
-
-    protected BlockingQueue<PreparedCommand> commandQueue;
-    RateLimiter rateLimiter;
-
-    protected volatile long tcCount;
-
-    private String sv_linkStatus_id, sp_dataCount_id;
-
-    private SystemParametersCollector sysParamCollector;
-    protected final Log log;
-    private final String yamcsInstance;
-    private final String name;
-    TimeService timeService;
-    static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
-    TcDequeueAndSend tcSender;
-
-    CommandPostprocessor cmdPostProcessor;
-    final YConfiguration config;
-
     public TcpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        log = new Log(getClass(), yamcsInstance);
-        log.setContext(name);
-        this.yamcsInstance = yamcsInstance;
-        this.name = name;
-        this.config = config;
+        super(yamcsInstance, name, config);
         configure(yamcsInstance, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
@@ -90,63 +47,22 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             host = config.getString("host");
             port = config.getInt("port");
         }
-        initialDelay = config.getLong("initialDelay", 0);
-        initPostprocessor(yamcsInstance, config);
-
-        if (config.containsKey("tcQueueSize")) {
-            commandQueue = new LinkedBlockingQueue<>(config.getInt("tcQueueSize"));
-        } else {
-            commandQueue = new LinkedBlockingQueue<>();
-        }
-        if (config.containsKey("tcMaxRate")) {
-            rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
-        }
-    }
-
-    protected long getCurrentTime() {
-        if (timeService != null) {
-            return timeService.getMissionTime();
-        } else {
-            return TimeEncoding.getWallclockTime();
-        }
-    }
-
-    @Override
-    protected void doStart() {
-        setupSysVariables();
-        this.timer = new ScheduledThreadPoolExecutor(2);
-        tcSender = new TcDequeueAndSend();
-        timer.execute(tcSender);
-        timer.scheduleAtFixedRate(this, initialDelay, 10000, TimeUnit.MILLISECONDS);
-        notifyStarted();
     }
 
     protected void initPostprocessor(String instance, YConfiguration config) {
-        String commandPostprocessorClassName = IssCommandPostprocessor.class.getName();
-        Object commandPostprocessorArgs = null;
-
-        if (config != null) {
-            commandPostprocessorClassName = config.getString("commandPostprocessorClassName",
-                    IssCommandPostprocessor.class.getName());
-            if (config.containsKey("commandPostprocessorArgs")) {
-                commandPostprocessorArgs = config.getMap("commandPostprocessorArgs");
-            }
+        // traditionally this has used by default the ISS post-processor
+        Map<String, Object> m = null;
+        if (config == null) {
+            m = new HashMap<>();
+            config = YConfiguration.wrap(m);
+        } else if (!config.containsKey("commandPostprocessorClassName")) {
+            m = config.getRoot();
         }
-
-        try {
-            if (commandPostprocessorArgs != null) {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
-                        commandPostprocessorArgs);
-            } else {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
-            }
-        } catch (ConfigurationException e) {
-            log.error("Cannot instantiate the command postprocessor", e);
-            throw e;
-        } catch (IOException e) {
-            log.error("Cannot instantiate the command postprocessor", e);
-            throw new ConfigurationException(e);
+        if (m != null) {
+            log.warn("Please set the commandPostprocessorClassName for the TcpTcDataLink; in the future versions it will default to GenericCommandPostprocessor");
+            m.put("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
         }
+        super.initPostprocessor(instance, config);
     }
 
     /**
@@ -234,27 +150,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         return connected;
     }
 
-    /**
-     * Sends
-     */
-    @Override
-    public void sendTc(PreparedCommand pc) {
-        if (disabled) {
-            log.warn("TC disabled, ignoring command {}", pc.getCommandId());
-            return;
-        }
-        if (!commandQueue.offer(pc)) {
-            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
-            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
-        }
-    }
-
-    @Override
-    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
-        this.commandHistoryListener = commandHistoryListener;
-        cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
-    }
-
     @Override
     public Status getLinkStatus() {
         if (disabled) {
@@ -281,154 +176,73 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public void disable() {
-        disabled = true;
+        super.disable();
         if (isRunning()) {
             disconnect();
         }
     }
 
     @Override
-    public void enable() {
-        disabled = false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    @Override
-    public void run() {
-        if (!isRunning() || disabled) {
-            return;
-        }
+    protected void startUp() throws Exception {
+        super.startUp();
         openSocket();
     }
 
     @Override
-    public void doStop() {
+    public void shutDown() throws Exception {
+        super.shutDown();
         disconnect();
-        commandQueue.clear();
-        commandQueue.offer(SIGNAL_QUIT);
-        timer.shutdownNow();
-        notifyStopped();
     }
 
-    private class TcDequeueAndSend implements Runnable {
-        PreparedCommand pc;
+    public void uplinkCommand(PreparedCommand pc) {
+        byte[] binary = cmdPostProcessor.process(pc);
 
-        @Override
-        public void run() {
-            while (true) {
+        int retries = 5;
+        boolean sent = false;
+
+        ByteBuffer bb = ByteBuffer.wrap(binary);
+        bb.rewind();
+        while (!sent && (retries > 0)) {
+            if (openSocket()) {
                 try {
-                    pc = commandQueue.take();
-                    if (pc == SIGNAL_QUIT) {
-                        break;
-                    }
-
-                    if (rateLimiter != null) {
-                        rateLimiter.acquire();
-                    }
-                    send();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.warn("Send command interrupted while waiting for the queue.", e);
-                    return;
-                } catch (Exception e) {
-                    log.error("Error when sending command: ", e);
-                    throw e;
-                }
-            }
-        }
-
-        public void send() {
-            byte[] binary = cmdPostProcessor.process(pc);
-
-            int retries = 5;
-            boolean sent = false;
-
-            ByteBuffer bb = ByteBuffer.wrap(binary);
-            bb.rewind();
-            while (!sent && (retries > 0)) {
-                if (openSocket()) {
+                    socketChannel.write(bb);
+                    dataCount++;
+                    sent = true;
+                } catch (IOException e) {
+                    log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
                     try {
-                        socketChannel.write(bb);
-                        tcCount++;
-                        sent = true;
-                    } catch (IOException e) {
-                        log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
-                        try {
-                            if (socketChannel.isOpen()) {
-                                socketChannel.close();
-                            }
-                            selector.close();
-                            socketChannel = null;
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        if (socketChannel.isOpen()) {
+                            socketChannel.close();
                         }
-                    }
-                }
-                retries--;
-                if (!sent && (retries > 0)) {
-                    try {
-                        log.warn("Command not sent, retrying in 2 seconds");
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        log.warn("exception {} thrown when sleeping 2 sec", e.toString());
-                        Thread.currentThread().interrupt();
+                        selector.close();
+                        socketChannel = null;
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
                     }
                 }
             }
-            if (sent) {
-                commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "OK");
-            } else {
-                commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
+            retries--;
+            if (!sent && (retries > 0)) {
+                try {
+                    log.warn("Command not sent, retrying in 2 seconds");
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    log.warn("exception {} thrown when sleeping 2 sec", e.toString());
+                    Thread.currentThread().interrupt();
+                }
             }
         }
-    }
-
-    @Override
-    public long getDataInCount() {
-        return 0;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return tcCount;
-    }
-
-    @Override
-    public void resetCounters() {
-        tcCount = 0;
-    }
-
-    protected void setupSysVariables() {
-        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if (sysParamCollector != null) {
-            sysParamCollector.registerProducer(this);
-            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
-
+        if (sent) {
+            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "OK");
         } else {
-            log.info("System variables collector not defined for instance {} ", yamcsInstance);
+            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
         }
     }
 
-    @Override
-    public Collection<ParameterValue> getSystemParameters() {
-        long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
-        return Arrays.asList(linkStatus, dataCount);
-    }
-
-    @Override
-    public YConfiguration getConfig() {
-        return config;
-    }
-
-    @Override
-    public String getName() {
-        return name;
+    protected void doHousekeeping() {
+        if (!isRunning() || disabled) {
+            return;
+        }
+        openSocket();
     }
 }
