@@ -1,10 +1,16 @@
 package org.yamcs.http.api.archive;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEAR_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-
 
 import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
@@ -57,7 +63,6 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 
-import static org.yamcs.alarms.AlarmStreamer.*;
 /**
  * Collects all archive-related conversions performed in the web api (x towards archive.proto)
  */
@@ -346,6 +351,7 @@ public final class ArchiveHelper {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);
+        setClearInfo(alarmb, tuple);
 
         if (tuple.hasColumn("parameter")) {
             alarmb.setType(AlarmType.PARAMETER);
@@ -372,7 +378,7 @@ public final class ArchiveHelper {
                 ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
             alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
-            
+
         }
 
         return alarmb.build();
@@ -390,40 +396,39 @@ public final class ArchiveHelper {
             alarmb.setAcknowledgeInfo(ackb);
         }
     }
-    
+
     static void setClearInfo(AlarmData.Builder alarmb, Tuple tuple) {
-        if (!tuple.hasColumn(CNAME_CLEARED_TIME)) { 
+        if (!tuple.hasColumn(CNAME_CLEARED_TIME)) {
             return;
         }
         ClearInfo.Builder clib = ClearInfo.newBuilder();
-        clib.setClearTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_CLEARED_TIME)));
-       
+        clib.setClearTime(TimeEncoding.toProtobufTimestamp((Long) tuple.getColumn(CNAME_CLEARED_TIME)));
+
         if (tuple.hasColumn(CNAME_CLEARED_BY)) {
             clib.setClearedBy((String) tuple.getColumn(CNAME_CLEARED_BY));
         }
-        
-        
+
         if (tuple.hasColumn(CNAME_CLEAR_MSG)) {
             clib.setClearMessage((String) tuple.getColumn(CNAME_CLEAR_MSG));
         }
         alarmb.setClearInfo(clib.build());
     }
-    
+
     static void setShelveInfo(AlarmData.Builder alarmb, Tuple tuple) {
-        if (!tuple.hasColumn(CNAME_SHELVED_TIME)) { 
+        if (!tuple.hasColumn(CNAME_SHELVED_TIME)) {
             return;
         }
         ShelveInfo.Builder clib = ShelveInfo.newBuilder();
-        clib.setShelveTime(TimeEncoding.toProtobufTimestamp((Long)tuple.getColumn(CNAME_SHELVED_TIME)));
-       
+        clib.setShelveTime(TimeEncoding.toProtobufTimestamp((Long) tuple.getColumn(CNAME_SHELVED_TIME)));
+
         if (tuple.hasColumn(CNAME_SHELVED_BY)) {
             clib.setShelvedBy((String) tuple.getColumn(CNAME_SHELVED_BY));
         }
-        
+
         if (tuple.hasColumn(CNAME_SHELVED_MSG)) {
             clib.setShelveMessage((String) tuple.getColumn(CNAME_SHELVED_MSG));
         }
-        
+
         alarmb.setShelveInfo(clib.build());
     }
 }

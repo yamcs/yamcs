@@ -7,7 +7,7 @@ const PREVIEW_LENGTH = 5;
  */
 export function structuredClone(obj: {}) {
   return new Promise(resolve => {
-    const {port1, port2} = new MessageChannel();
+    const { port1, port2 } = new MessageChannel();
     port2.onmessage = ev => resolve(ev.data);
     port1.postMessage(obj);
   });
@@ -205,5 +205,21 @@ export function printDateTime(date: Date | string, addTimezone = true): string {
   } else {
     const dateString = date.toISOString();
     return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+  }
+}
+
+export function toDate(obj: any): Date {
+  if (!obj) {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return obj;
+  } else if (typeof obj === 'number') {
+    return new Date(obj);
+  } else if (typeof obj === 'string') {
+    return new Date(Date.parse(obj));
+  } else {
+    throw new Error(`Cannot convert '${obj}' to Date`);
   }
 }

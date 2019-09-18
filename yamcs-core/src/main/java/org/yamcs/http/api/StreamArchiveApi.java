@@ -534,7 +534,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 observer.completeExceptionally(t);
             }
         };
-        observer.setCancelHandler(replayListener::requestReplayAbortion);
 
         RestReplays.replay(instance, ctx.user, rr.build(), replayListener);
     }
@@ -800,7 +799,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             @Override
             public void streamClosed(Stream stream) {
                 if (count > limit) {
-                    PacketPageToken token = new PacketPageToken(TimeEncoding.fromProtobufTimestamp(last.getGenerationTime()),
+                    PacketPageToken token = new PacketPageToken(
+                            TimeEncoding.fromProtobufTimestamp(last.getGenerationTime()),
                             last.getSequenceNumber());
                     responseb.setContinuationToken(token.encodeAsString());
                 }

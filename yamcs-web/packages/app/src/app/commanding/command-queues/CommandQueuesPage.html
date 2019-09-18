@@ -2,17 +2,23 @@
   <app-instance-toolbar>
     Command Queues
     <app-help>
-      A command queue can be in three states:
-      <dl>
-        <dt><mat-icon class="success icon16" style="vertical-align: middle">check_circle</mat-icon> Enabled</dt>
-        <dd>The queue accepts and releases commands.</dd>
-
-        <dt><mat-icon class="success icon16" style="vertical-align: middle">pan_tool</mat-icon>Blocked</dt>
-        <dd>The queue accepts commands but does not release them. These commands may be released manually, or automatically as soon as the queue moves to the <em>enabled</em> state.</dd>
-
-        <dt><mat-icon class="down icon16" style="vertical-align: middle">lens</mat-icon>Disabled</dt>
-        <dd>The queue does not accept commands. Any attempt to issue a command linked to a disabled queue will fail immediately.</dd>
-      </dl>
+      A command queue can be in these states:
+      <table class="ya-data-table">
+        <tr>
+          <td>
+            <mat-icon class="success icon16" style="vertical-align: middle">check_circle</mat-icon>
+          </td>
+          <td><strong>Enabled.</strong> The queue accepts and releases commands.</td>
+        </tr>
+        <tr>
+          <td><mat-icon class="success icon16" style="vertical-align: middle">pan_tool</mat-icon></td>
+          <td><strong>Blocked.</strong> The queue accepts commands but does not release them. These commands may be released manually, or automatically as soon as the queue moves to the <em>enabled</em> state.</td>
+        </tr>
+        <tr>
+          <td><mat-icon class="down icon16" style="vertical-align: middle">lens</mat-icon></td>
+          <td><strong>Disabled.</strong> The queue does not accept commands. Any attempt to issue a command linked to a disabled queue will fail immediately.</td>
+        </tr>
+      </table>
     </app-help>
   </app-instance-toolbar>
 

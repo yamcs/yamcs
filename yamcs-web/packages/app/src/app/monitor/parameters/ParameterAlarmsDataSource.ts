@@ -31,7 +31,6 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(alarms => {
       this.loading$.next(false);
-      console.log('got alarms', alarms);
       this.alarms$.next(alarms);
     });
   }

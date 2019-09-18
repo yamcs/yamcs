@@ -23,7 +23,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     public final static String CNAME_SHELVED_MSG = "shelvedMessage";
     public final static String CNAME_SHELVED_TIME = "shelvedTime";
     public final static String CNAME_SHELVE_DURATION = "shelvedDuration";
-    
+
     public AlarmStreamer(Stream s, DataType dataType, TupleDefinition tdefTemplate) {
         this.stream = s;
         this.dataType = dataType;
@@ -86,7 +86,9 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
                 tdef.addColumn(CNAME_CLEAR_MSG, DataType.STRING);
                 al.add(activeAlarm.clearMessage);
             }
-            
+
+            tdef.addColumn(CNAME_CLEARED_TIME, DataType.TIMESTAMP);
+            al.add(activeAlarm.clearTime);
             break;
         case SHELVED:
             tdef.addColumn(CNAME_SHELVED_BY, DataType.STRING);
@@ -97,7 +99,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
                 tdef.addColumn(CNAME_SHELVED_MSG, DataType.STRING);
                 al.add(activeAlarm.getShelveMessage());
             }
-            if(activeAlarm.getShelveDuration()!=-1) {
+            if (activeAlarm.getShelveDuration() != -1) {
                 tdef.addColumn(CNAME_SHELVE_DURATION, DataType.LONG);
                 al.add(activeAlarm.getShelveDuration());
             }

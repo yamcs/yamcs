@@ -310,7 +310,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         responseb.setTokenType("bearer");
         responseb.setAccessToken(jwt);
         responseb.setExpiresIn(ttl);
-        responseb.setUser(IamApi.toUserInfo(user, false));
+        responseb.setUser(IamApi.toUserInfo(user, true));
 
         if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);

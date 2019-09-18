@@ -93,9 +93,7 @@ public class ReplayService extends AbstractService
     List<String> excludeParameterGroups = null;
 
     public ReplayService(String yamcsInstance) throws ConfigurationException {
-        this.yamcsInstance = yamcsInstance;
-        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
-        securityStore = YamcsServer.getServer().getSecurityStore();
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     /**

@@ -2,8 +2,8 @@
   <h6>Parameter</h6>
   <div class="block">
     <a [routerLink]="['/monitor/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
-      [queryParams]="{instance: instance.name}"
-      class="ya-link">
+       [queryParams]="{instance: instance.name}"
+       class="ya-link">
       {{ alarm.id.namespace }}/{{ alarm.id.name }}
     </a>
   </div>
@@ -37,7 +37,7 @@
   <br>
   <mat-divider></mat-divider>
 
-  <h6>Current value</h6>
+  <h6>Live value</h6>
   <div class="block">
     <app-expirable [pval]="parameterDetail.currentValue">
       <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
