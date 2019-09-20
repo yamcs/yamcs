@@ -40,8 +40,10 @@ public class YObjectLoader<T> {
                     if ((args[i] != null) && !params[i].isAssignableFrom(args[i].getClass())) {
                         if (args[i] instanceof YConfiguration) {
                             YConfiguration yc = (YConfiguration) args[i];
-                            if (params[i].isAssignableFrom(yc.getRoot().getClass())) {
-                                log.warn("The class {} uses  a Map<String, Object> in the constructor; please replace it with the YConfiguration", className);
+                            boolean isDeprecated = c.getDeclaredAnnotation(Deprecated.class) != null;
+                            if (params[i].isAssignableFrom(yc.getRoot().getClass()) && !isDeprecated) {
+                                log.warn("Class {} uses a Map<String, Object> in the constructor. "
+                                        + "Use YConfiguration instead", className);
                                 args[i] = yc.getRoot();
                                 continue;
                             }
@@ -97,15 +99,10 @@ public class YObjectLoader<T> {
     }
 
     /**
-     * loads an object defined like this:
-     * class: org.yamcs....
-     * args:
-     * key1: value1
-     * key2: value2
+     * loads an object defined like this: class: org.yamcs.... args: key1: value1 key2: value2
      * 
-     * "args" can also be called "config" or can be missing.
-     * The value of args can also be a list or a scalar type.
-     * args can also be called config or spec.
+     * "args" can also be called "config" or can be missing. The value of args can also be a list or a scalar type. args
+     * can also be called config or spec.
      * 
      * If args is present, then a constructor with the given type is invoked otherwise the constructor without any
      * argument is invoked.

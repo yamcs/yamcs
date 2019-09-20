@@ -10,10 +10,8 @@ import org.yamcs.tctm.ErrorDetectionWordCalculator;
  *
  * 1 + x + x^5 + x^12 + x^16
  * 
- * Also specified in:
- * CCSDS RECOMMENDED STANDARD FOR TC SPACE DATA LINK PROTOCOL
- * CCSDS 232.0-B-3 September 2015
- * 4.1.4 FRAME ERROR CONTROL FIELD
+ * Also specified in: CCSDS RECOMMENDED STANDARD FOR TC SPACE DATA LINK PROTOCOL CCSDS 232.0-B-3 September 2015 4.1.4
+ * FRAME ERROR CONTROL FIELD
  * 
  *
  */
@@ -26,14 +24,19 @@ public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
         initialValue = 0xFFFF;
     }
 
+    @Deprecated
     public CrcCciitCalculator(Map<String, Object> c) {
-        initialValue = YConfiguration.getInt(c, "initialValue", 0xFFFF);
+        this(YConfiguration.wrap(c));
+    }
+
+    public CrcCciitCalculator(YConfiguration c) {
+        initialValue = c.getInt("initialValue", 0xFFFF);
     }
 
     @Override
     public int compute(byte[] data, int offset, int length) {
         return cc.compute(data, offset, length, initialValue);
-       
+
     }
 
 }

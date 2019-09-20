@@ -29,14 +29,19 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         errorDetectionCalculator = new Running16BitChecksumCalculator();
     }
 
-    public IssCommandPostprocessor(String yamcsInstance, Map<String, Object> config) {
-        minimumTcPacketLength = YConfiguration.getInt(config, "minimumTcPacketLength", -1);
-        enforceEvenNumberOfBytes = YConfiguration.getBoolean(config, "enforceEvenNumberOfBytes", false);
+    public IssCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+        minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
+        enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
         if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = GenericPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {
             errorDetectionCalculator = new Running16BitChecksumCalculator();
         }
+    }
+
+    @Deprecated
+    public IssCommandPostprocessor(String yamcsInstance, Map<String, Object> config) {
+        this(yamcsInstance, YConfiguration.wrap(config));
     }
 
     @Override
@@ -66,11 +71,11 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // fix packet length
         int seqCount = seqFiller.fill(binary);
-        
+
         GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());
         bb.putInt(6, gpsTime.coarseTime);
         bb.put(10, gpsTime.fineTime);
-        
+
         commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if (checksumIndicator) {
             int pos = binary.length - 2;

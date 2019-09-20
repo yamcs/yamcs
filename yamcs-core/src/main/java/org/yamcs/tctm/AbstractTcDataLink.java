@@ -59,7 +59,7 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
     protected long housekeepingInterval = 10000;
-    
+
     public AbstractTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         log = new Log(getClass(), yamcsInstance);
         log.setContext(name);
@@ -109,6 +109,7 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
                         commandPostprocessorArgs);
             } else {
+                System.out.println("bb");
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
             }
         } catch (ConfigurationException e) {
@@ -135,7 +136,6 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
         }
     }
 
-  
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
         this.commandHistoryListener = commandHistoryListener;
@@ -206,7 +206,8 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
     public void resetCounters() {
         dataCount = 0;
     }
-    
+
+    @Override
     public void run() throws Exception {
         if (initialDelay > 0) {
             Thread.sleep(initialDelay);
@@ -215,9 +216,9 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
         while (isRunning()) {
             try {
                 PreparedCommand pc = commandQueue.poll(housekeepingInterval, TimeUnit.MILLISECONDS);
-                if(pc==null) {
-                   doHousekeeping();
-                   continue;
+                if (pc == null) {
+                    doHousekeeping();
+                    continue;
                 }
                 if (pc == SIGNAL_QUIT) {
                     return;
@@ -239,10 +240,10 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
 
     protected abstract void uplinkCommand(PreparedCommand pc) throws IOException;
 
+    @Override
     protected void triggerShutdown() {
         commandQueue.clear();
         commandQueue.offer(SIGNAL_QUIT);
     }
-    
 
 }
