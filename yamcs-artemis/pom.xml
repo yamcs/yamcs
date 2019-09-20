@@ -22,29 +22,4 @@
       <artifactId>artemis-server</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-              <excludeGroupIds>org.yamcs,org.yaml,org.codehaus.janino,net.sourceforge.jdatepicker,net.sourceforge.jexcelapi,com.google.guava,org.rocksdb,com.beust,
-                io.netty,net.sourceforge.javacsv,com.google.code.gson,com.google.protobuf,org.slf4j
-              </excludeGroupIds>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

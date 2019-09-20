@@ -40,7 +40,7 @@
       <mat-list-item class="nav-item-group"
                      [class.active]="monitoringActive"
                      (click)="toggleMonitoringGroup()">
-        <mat-icon class="item-icon">dashboard</mat-icon>
+        <mat-icon class="item-icon">speed</mat-icon>
         Telemetry
       </mat-list-item>
       <div *ngIf="monitoringExpanded" class="nav-item-group-items">
@@ -82,11 +82,10 @@
         Commanding
       </mat-list-item>
       <div *ngIf="commandingExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/commanding/command-stack"
+        <app-sidebar-nav-item routerLink="/commanding/send"
                               [queryParams]="{instance: instance.name}"
-                              [subitem]="true"
-                              *ngIf="false">
-          Command Stack
+                              [subitem]="true">
+          Send a Command
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
                               routerLink="/commanding/command-queues"

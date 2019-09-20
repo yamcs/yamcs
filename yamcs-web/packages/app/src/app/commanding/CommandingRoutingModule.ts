@@ -6,7 +6,7 @@ import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQue
 import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandQueuesPage } from './command-queues/CommandQueuesPage';
-import { CommandStackPage } from './command-stack/CommandStackPage';
+import { SendCommandPage as SendCommandPage } from './command-sender/SendCommandPage';
 
 const routes: Routes = [
   {
@@ -17,8 +17,9 @@ const routes: Routes = [
     component: InstancePage,
     children: [
       {
-        path: 'command-stack',
-        component: CommandStackPage,
+        path: 'send',
+        pathMatch: 'full',
+        component: SendCommandPage,
       },
       {
         path: 'command-history',
@@ -40,7 +41,7 @@ const routes: Routes = [
 export class CommandingRoutingModule { }
 
 export const routingComponents = [
-  CommandStackPage,
   CommandHistoryPage,
   CommandQueuesPage,
+  SendCommandPage,
 ];

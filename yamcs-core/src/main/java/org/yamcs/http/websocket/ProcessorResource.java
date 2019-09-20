@@ -147,6 +147,6 @@ public class ProcessorResource implements WebSocketResource, ManagementListener 
     private boolean isCurrentProcessor(ProcessorInfo processorInfo) {
         return processor != null &&
                 processorInfo.getInstance().equals(processor.getInstance()) &&
-                processorInfo.getInstance().equals(processor.getName());
+                processorInfo.getName().equals(processor.getName());
     }
 }

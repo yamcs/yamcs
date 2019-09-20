@@ -42,6 +42,13 @@
       Chart
     </a>
     <a mat-tab-link
+        routerLink="alarms"
+        routerLinkActive #rlc="routerLinkActive"
+        [active]="rlc.isActive"
+        [queryParams]="{instance: instance.name}">
+      Alarm History
+    </a>
+    <a mat-tab-link
         routerLink="data"
         routerLinkActive #rld="routerLinkActive"
         [active]="rld.isActive"

@@ -1,0 +1,46 @@
+<table mat-table
+       *ngIf="dataSource"
+       class="ya-data-table"
+       [dataSource]="dataSource">
+
+  <ng-container matColumnDef="severity">
+    <th mat-header-cell *matHeaderCellDef style="width: 80px">Severity</th>
+    <td mat-cell *matCellDef="let alarm">
+      <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="triggerTime">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Time</th>
+    <td mat-cell *matCellDef="let alarm">{{ (alarm.triggerTime | datetime) || '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="triggerValue">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Trip value</th>
+    <td mat-cell *matCellDef="let alarm">
+      <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
+        {{ parameterDetail.triggerValue.engValue | value }}
+        <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
+        <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="duration">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Duration</th>
+    <td mat-cell *matCellDef="let alarm">
+      <ng-container *ngIf="alarm.clearInfo?.clearTime">
+        {{ printDuration(alarm) || '-' }}
+        <ng-container *ngIf="alarm.clearInfo?.clearedBy">
+          (cleared by {{ alarm.clearInfo?.clearedBy }})
+          <mat-icon *ngIf="alarm.clearInfo?.clearMessage"
+                    [matTooltip]="alarm.clearInfo?.clearMessage">comment</mat-icon>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="!alarm.clearInfo?.clearTime">-</ng-container>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

@@ -274,13 +274,13 @@ public class Processor extends AbstractService {
     private void configureAlarms(YConfiguration alarmConfig) {
         if (alarmConfig.containsKey("check")) {
             log.warn(
-                    "Deprectiation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
+                    "Deprecation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
             checkParameterAlarms = alarmConfig.getBoolean("check");
         }
         checkParameterAlarms = alarmConfig.getBoolean("parameterCheck", checkParameterAlarms);
         if (alarmConfig.containsKey("server")) {
             log.warn(
-                    "Deprectiation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
+                    "Deprecation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
             parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
         }
         if (alarmConfig.containsKey("parameterServer")) {

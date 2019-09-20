@@ -73,7 +73,8 @@
                           [instance]="instance"
                           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                           (shelveAlarm)="shelveAlarms([$event])"
-                          (unshelveAlarm)="unshelveAlarms([$event])">
+                          (unshelveAlarm)="unshelveAlarms([$event])"
+                          (clearAlarm)="clearAlarms([$event])">
         </app-alarm-detail>
       </div>
     </ng-container>
@@ -103,7 +104,8 @@
                         [view]="view$ | async"
                         (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                         (shelveAlarm)="shelveAlarms([$event])"
-                        (unshelveAlarm)="unshelveAlarms([$event])">
+                        (unshelveAlarm)="unshelveAlarms([$event])"
+                        (clearAlarm)="clearAlarms([$event])">
       </app-alarms-table>
     </div>
   </div>

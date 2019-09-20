@@ -11,6 +11,7 @@ import { DisplaysPage } from './displays/DisplaysPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
+import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterPage } from './parameters/ParameterPage';
@@ -83,6 +84,9 @@ const routes: Routes = [
           }, {
             path: 'data',
             component: ParameterDataTab,
+          }, {
+            path: 'alarms',
+            component: ParameterAlarmsTab,
           }
         ]
       }, {
@@ -112,6 +116,7 @@ export const routingComponents = [
   LayoutPage,
   ParametersPage,
   ParameterPage,
+  ParameterAlarmsTab,
   ParameterDataTab,
   ParameterChartTab,
   ParameterSummaryTab,

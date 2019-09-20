@@ -327,6 +327,7 @@ export interface ContainersPage {
 export interface GetCommandsOptions {
   namespace?: string;
   recurse?: boolean;
+  noAbstract?: boolean;
   q?: string;
   pos?: number;
   limit?: number;

@@ -7,14 +7,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
 
-
 /**
- * This implements CCSDS packets as used in ISS (International Space Station).
- * <br>
+ * This implements CCSDS packets as used in ISS (International Space Station). <br>
  * Primary header (specified by CCSDS 133.0-B-1):
  * <ul>
  * <li>packet version number (3 bits)</li>
@@ -36,15 +35,15 @@ import org.yamcs.utils.CcsdsPacket;
  * <li>packet ID(32 bits)</li>
  * </ul>
  *
- *If the checksum indicator is 1, the packet is terminated by a two bytes checksum.
- *<br>
- * This class is effectively making use of the following fields (all the other ones are ignored): 
+ * If the checksum indicator is 1, the packet is terminated by a two bytes checksum. <br>
+ * This class is effectively making use of the following fields (all the other ones are ignored):
  * <ul>
- * <li>application process ID(APID) and packet sequence count: used to detect the discontinuity in packets as well as to form the unique key (used to not store duplicates)</li>
+ * <li>application process ID(APID) and packet sequence count: used to detect the discontinuity in packets as well as to
+ * form the unique key (used to not store duplicates)</li>
  * <li>coarse time and fine time: used to derive the timestamp of the packet</li>
  * <li>checksum indicator: used to know to compute and verify or not the checksum</li>
  * </ul>
- * The checksum used can be one of 
+ * The checksum used can be one of
  * <ul>
  * <li>16-SUM (default): running sum on each two bytes - the packet has to contain an even number of bytes</li>
  * <li>CRC-16-CCIIT: CRC with the generator polynomial x^16 + x^12 + x^5 + 1</li>
@@ -54,19 +53,25 @@ import org.yamcs.utils.CcsdsPacket;
  *
  */
 public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
+
     ErrorDetectionWordCalculator errorDetectionCalculator;
-    private Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
+    private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(IssPacketPreprocessor.class);
     private boolean checkForSequenceDiscontinuity = true;
-    
+
     public IssPacketPreprocessor(String yamcsInstance) {
-        this(yamcsInstance, null);
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
+    @Deprecated
     public IssPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+        this(yamcsInstance, YConfiguration.wrap(config));
+    }
+
+    public IssPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
 
-        if (errorDetectionCalculator==null) {
+        if (errorDetectionCalculator == null) {
             errorDetectionCalculator = new Running16BitChecksumCalculator();
         }
     }
@@ -83,11 +88,11 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         int seq = (apidseqcount) & 0x3FFF;
         AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
         int oldseq = ai.getAndSet(seq);
-        
-        if(log.isTraceEnabled()) {
+
+        if (log.isTraceEnabled()) {
             log.trace("processing packet apid: {}, seqCount:{}, length: {}", apid, seq, packet.length);
         }
-        
+
         boolean checksumIndicator = CcsdsPacket.getChecksumIndicator(packet);
         boolean corrupted = false;
 
@@ -111,14 +116,11 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
 
-        
         if (checkForSequenceDiscontinuity && ((seq - oldseq) & 0x3FFF) != 1) {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
-                    "Sequence count jump for apid: "+apid+" old seq: "+oldseq+" newseq: "+seq);
+                    "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
-        
 
-      
         PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
                 apidseqcount, packet);
         pwt.setCorrupted(corrupted);
@@ -129,6 +131,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         return checkForSequenceDiscontinuity;
     }
 
+    @Override
     public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
         this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
     }

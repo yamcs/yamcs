@@ -1,0 +1,163 @@
+<app-instance-page *ngIf="step$ | async as step">
+  <app-instance-toolbar>
+    Send a command
+  </app-instance-toolbar>
+
+  <mat-toolbar class="sub">
+    <mat-toolbar-row>
+      <app-send-command-wizard-step [step]="step"></app-send-command-wizard-step>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <div class="form-content">
+    <div [class.hide]="step !== 1">
+      <div style="margin-bottom: 12px">
+        <input #filter
+                class="ya-input"
+                type="text"
+                placeholder="Filter by text search"
+                style="width: 400px">
+      </div>
+      <div style="display: inline-block">
+        <table mat-table
+               [dataSource]="dataSource"
+               class="ya-data-table">
+
+          <ng-container matColumnDef="significance">
+            <th mat-header-cell *matHeaderCellDef style="width: 1px">Significance</th>
+            <td mat-cell *matCellDef="let command">
+              <app-significance-level [significance]="command.significance"></app-significance-level>
+            </td>
+          </ng-container>
+
+          <ng-container cdkColumnDef="name">
+            <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+            <td mat-cell *cdkCellDef="let command">
+              {{ command.qualifiedName }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="shortDescription">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let command">
+              {{ command.shortDescription || '-' }}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row
+              *cdkRowDef="let row; columns: displayedColumns;"
+              [ngClass]="{selected: (row === (selectedCommand$ | async))}"
+              (click)="selectCommand(row)"></tr>
+        </table>
+
+        <div style="text-align: right">
+          <mat-paginator [pageSize]="pageSize"
+                         [hidePageSize]="true"
+                         [showFirstLastButtons]="true"
+                         [length]="dataSource.totalSize$ | async">
+          </mat-paginator>
+        </div>
+        <mat-toolbar>
+          <span style="flex: 1 1 auto"></span>
+          <button mat-raised-button
+                  [disabled]="!(selectedCommand$ | async)"
+                  color="primary"
+                  (click)="goToConfigureCommand()">
+            Next
+            <mat-icon>navigate_next</mat-icon>
+          </button>
+        </mat-toolbar>
+      </div>
+    </div>
+
+    <div [class.hide]="step !== 2">
+      <h3>Options for command {{ (selectedCommand$ | async)?.qualifiedName }}</h3>
+      <form [formGroup]="commandConfigurationForm"
+            class="ya-form"
+            [class.showAll]="showAll$ | async">
+        <ng-container *ngFor="let argument of arguments">
+          <ng-container [ngSwitch]="argument.type?.engType">
+
+            <label *ngSwitchCase="'enumeration'" [class.hasInitial]="argument.initialValue !== undefined">
+              {{ argument.name }}
+              <select [formControlName]="argument.name">
+                <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+              </select>
+            </label>
+
+            <label *ngSwitchCase="'boolean'" [class.hasInitial]="argument.initialValue !== undefined">
+              {{ argument.name }}<br>
+              <input type="radio" [formControlName]="argument.name" value="true"> true
+              <input type="radio" [formControlName]="argument.name" value="false"> false
+            </label>
+
+            <label *ngSwitchDefault [class.hasInitial]="argument.initialValue !== undefined">
+              {{ argument.name }}
+              <input type="text" [formControlName]="argument.name">
+            </label>
+
+          </ng-container>
+        </ng-container>
+        <app-text-action (click)="showAll$.next(true)"
+                          *ngIf="initialValueCount && !(showAll$ | async)"
+                          icon="double_arrow">
+          Show {{ initialValueCount }} argument<ng-container *ngIf="initialValueCount !== 1">s</ng-container> with defaults
+        </app-text-action>
+        <ng-container *ngIf="arguments.length">
+          <br>
+          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+        </ng-container>
+        <label>
+          Comment <span class="hint">(optional)</span>
+          <textarea formControlName="_comment" rows="3" style="width: 100%; resize: none"></textarea>
+        </label>
+      </form>
+      <p>&nbsp;</p>
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-raised-button
+                (click)="goToPage1()">
+          Cancel
+        </button>
+        &nbsp;&nbsp;
+        <button mat-raised-button color="primary"
+                [disabled]="!commandConfigurationForm.valid"
+                (click)="sendCommand()">
+          <mat-icon>send</mat-icon>
+          Send
+        </button>
+      </mat-toolbar>
+    </div>
+
+    <div [class.hide]="step !== 3" *ngIf="issueCommandResponse$ | async as response">
+
+      <h6>Command</h6>
+      <div class="block">
+        {{ response.source || '-' }}
+      </div>
+
+      <h6>Binary</h6>
+      <div class="block">
+        <app-hex [base64String]="response.binary"></app-hex>
+      </div>
+
+      <h6>Assigned queue</h6>
+      <div class="block">
+        {{ response.commandQueueEntry.queueName }}
+      </div>
+
+      <h6>Time</h6>
+      <div class="block">
+        {{ response.commandQueueEntry.generationTime | datetime }}
+      </div>
+
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-raised-button (click)="goToPage1()">
+          Prepare another command
+        </button>
+      </mat-toolbar>
+    </div>
+  </div>
+</app-instance-page>

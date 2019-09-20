@@ -20,19 +20,29 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected EventProducer eventProducer;
     protected TimeService timeService;
 
+    @Deprecated
     protected AbstractPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+        this(yamcsInstance, YConfiguration.wrap(config));
+    }
+
+    protected AbstractPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
+    @Deprecated
     static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(Map<String, Object> config) {
+        return getErrorDetectionWordCalculator(YConfiguration.wrap(config));
+    }
+
+    static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(YConfiguration config) {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             return null;
         }
 
-        Map<String, Object> c = YConfiguration.getMap(config, CONFIG_KEY_ERROR_DETECTION);
-        String type = YConfiguration.getString(c, "type");
+        YConfiguration c = config.getConfig(CONFIG_KEY_ERROR_DETECTION);
+        String type = c.getString("type");
         if ("16-SUM".equalsIgnoreCase(type)) {
             return new Running16BitChecksumCalculator();
         } else if ("CRC-16-CCIIT".equalsIgnoreCase(type)) {

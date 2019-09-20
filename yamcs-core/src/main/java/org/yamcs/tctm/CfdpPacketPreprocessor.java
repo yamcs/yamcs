@@ -1,5 +1,6 @@
 package org.yamcs.tctm;
 
+import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.CfdpUtils;
 
@@ -12,7 +13,7 @@ import org.yamcs.utils.CfdpUtils;
 public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CfdpPacketPreprocessor(String yamcsInstance) {
-        super(yamcsInstance, null);
+        super(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     @Override

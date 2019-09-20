@@ -270,6 +270,7 @@ export interface ClearInfo {
 export interface GetAlarmsOptions {
   start?: string;
   stop?: string;
+  detail?: boolean;
   pos?: number;
   limit?: number;
   order?: 'asc' | 'desc';

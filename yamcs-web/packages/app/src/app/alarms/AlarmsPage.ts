@@ -160,6 +160,17 @@ export class AlarmsPage implements OnDestroy {
     }
   }
 
+  clearAlarms(alarms: Alarm[]) {
+    for (const alarm of alarms) {
+      const processor = this.yamcs.getProcessor();
+      const options: EditAlarmOptions = {
+        state: 'cleared',
+      };
+      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
+      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+    }
+  }
+
   private updateURL() {
     this.router.navigate([], {
       relativeTo: this.route,

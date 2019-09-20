@@ -3,12 +3,8 @@ import { SharedModule } from '../shared/SharedModule';
 import { CommandCompletion } from './command-history/CommandCompletion';
 import { CommandQueuesTable } from './command-queues/CommandQueuesTable';
 import { QueuedCommandsTable } from './command-queues/QueuedCommandsTable';
-import { AddStackedCommandDialog } from './command-stack/AddStackedCommandDialog';
+import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
-
-const dialogComponents = [
-  AddStackedCommandDialog,
-];
 
 @NgModule({
   imports: [
@@ -17,14 +13,11 @@ const dialogComponents = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
     CommandCompletion,
     CommandQueuesTable,
     QueuedCommandsTable,
+    SendCommandWizardStep,
   ],
-  entryComponents: [
-    dialogComponents,
-  ]
 })
 export class CommandingModule {
 }

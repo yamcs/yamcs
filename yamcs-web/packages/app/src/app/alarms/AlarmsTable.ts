@@ -21,18 +21,6 @@ export class AlarmsTable {
     'actions',
   ];
 
-  shelvedColumns = [
-    'state',
-    'severity',
-    'time',
-    'system',
-    'source',
-    'trip_value',
-    'live_value',
-    'shelve_time',
-    'actions',
-  ];
-
   @Input()
   instance: Instance;
 
