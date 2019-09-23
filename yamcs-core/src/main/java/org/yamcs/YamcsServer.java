@@ -1245,10 +1245,15 @@ public class YamcsServer {
         }
 
         // If started through systemd with Type=notify, Yamcs will have NOTIFY_SOCKET
-        // env set. We use systemd-notify to report success which will inherit our env.
-        if (System.getenv("NOTIFY_SOCKET") != null) {
+        // env set.
+
+        // Normally we would use systemd-notify to report success, but it suffers from
+        // a race condition. See https://www.lukeshu.com/blog/x11-systemd.html
+        String notifySocket = System.getenv("NOTIFY_SOCKET");
+        if (notifySocket != null) {
             try {
-                new ProcessBuilder("systemd-notify", "--ready").inheritIO().start();
+                String cmd = String.format("socat STDIO UNIX-SENDTO:%s <<< READY=1", notifySocket);
+                new ProcessBuilder("sh", "-c", cmd).inheritIO().start();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
