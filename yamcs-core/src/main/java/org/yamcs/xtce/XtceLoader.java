@@ -103,7 +103,12 @@ public class XtceLoader implements SpaceSystemLoader {
     }
 
     @Override
-    public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
+    public SpaceSystem load(){
+        return load(null);
+    }
+
+    @Override
+    public SpaceSystem load(SpaceSystem loadingRoot) throws ConfigurationException, DatabaseLoadException {
         try {
             xtceReader = new XtceStaxReader();
             if(excludedContainers!=null) {
