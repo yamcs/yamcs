@@ -51,7 +51,7 @@ else
 fi
 
 if [[ -n $(git status -s) ]]; then
-    git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare release yamcs-${version}" || :
+    git commit . -v -em"Prepare release yamcs-${version}" || :
     if [ $snapshot -eq 0 ]; then
         git tag yamcs-$version
     fi
