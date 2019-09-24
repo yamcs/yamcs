@@ -118,6 +118,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     @Override
     public SpaceSystem load() {
+        return load(null);
+    }
+
+
+    @Override
+    public SpaceSystem load(SpaceSystem loadingRoot) {
         log.info("Loading spreadsheet {}", path);
 
         try {
@@ -134,7 +140,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
 
         try {
-            loadSheets();
+            loadSheets(loadingRoot);
         } catch(SpreadsheetLoadException e) {
             throw e;
         } catch (Exception e) {
@@ -144,7 +150,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return rootSpaceSystem;
     }
 
-    protected void loadSheets() throws SpreadsheetLoadException {
+    protected void loadSheets(SpaceSystem loadingRoot) throws SpreadsheetLoadException {
         loadGeneralSheet(true);
         loadChangelogSheet(false);
 
@@ -169,10 +175,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
         }
 
-        loadSpaceSystem("", rootSpaceSystem);
+        loadSpaceSystem("", rootSpaceSystem, loadingRoot);
     }
 
-    protected void loadSpaceSystem(String sheetNamePrefix, SpaceSystem spaceSystem) {
+    protected void loadSpaceSystem(String sheetNamePrefix, SpaceSystem spaceSystem, SpaceSystem loadingRoot) {
 
         loadCalibrationSheet(spaceSystem, sheetNamePrefix + SHEET_CALIBRATION);
         loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
@@ -182,12 +188,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         loadAlgorithmsSheet(spaceSystem, sheetNamePrefix + SHEET_ALGORITHMS);
         loadAlarmsSheet(spaceSystem, sheetNamePrefix + SHEET_ALARMS);
         loadCommandSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDS);
-        loadCommandOptionsSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDOPTIONS);
+        loadCommandOptionsSheet(spaceSystem, loadingRoot,sheetNamePrefix + SHEET_COMMANDOPTIONS);
         loadCommandVerificationSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDVERIFICATION);
 
         for(SpaceSystem ss: spaceSystem.getSubSystems()) {
             String prefix = sheetNamePrefix.isEmpty()?ss.getName()+"|": sheetNamePrefix+ss.getName()+"|";
-            loadSpaceSystem(prefix, ss);
+            loadSpaceSystem(prefix, ss, loadingRoot);
         }
     }
 
@@ -1217,9 +1223,24 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
     }
 
+    // look for commands in current SpaceSystem and children SpaceSystems
+    MetaCommand findCommand(SpaceSystem spaceSystem, String cmdName){
+        if(spaceSystem == null)
+            return null;
+        MetaCommand command = spaceSystem.getMetaCommand(cmdName);
+        if(command == null)
+        {
+            for(SpaceSystem sub : spaceSystem.getSubSystems()){
+                command = findCommand(sub, cmdName);
+                if (command != null)
+                    return command;
+            }
+        }
+        return command;
+    }
 
 
-    protected void loadCommandOptionsSheet(SpaceSystem spaceSystem, String sheetName) {
+    protected void loadCommandOptionsSheet(SpaceSystem spaceSystem, SpaceSystem loadingRoot, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null) {
             return;
@@ -1243,7 +1264,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             String cmdName = cells[IDX_CMDOPT_NAME].getContents();
             MetaCommand cmd = spaceSystem.getMetaCommand(cmdName);
             if(cmd == null) {
-                throw new SpreadsheetLoadException(ctx, "Could not find a command named '"+cmdName+"'");
+                // look into the already loaded root spaceSystem
+                cmd = findCommand(loadingRoot, cmdName);
+                if(cmd == null) {
+                    throw new SpreadsheetLoadException(ctx, "Could not find a command named '"+cmdName+"'");
+                }
             }
 
 
@@ -1275,7 +1300,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
                 if(hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
                     if(cmd.getDefaultSignificance()!=null) {
-                        throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
+                        //throw new SpreadsheetLoadException(ctx,  "The command "+cmd.getName()+ " has already a default significance");
+                        log.warn("The command "+cmd.getName()+ " has already a default significance. Overriding.");
                     }
                     String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
                     Significance.Levels slevel;

@@ -131,7 +131,7 @@ public class XtceDbFactory {
 
         if (db == null) {
             //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
-            SpaceSystem rootSs = loaderTree.load();
+            SpaceSystem rootSs = loaderTree.load(null);
             SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
@@ -639,12 +639,19 @@ public class XtceDbFactory {
             return false;
         }
 
-        public SpaceSystem load() throws ConfigurationException {
+        public SpaceSystem load(SpaceSystem loadingRoot) throws ConfigurationException {
             try {
-                SpaceSystem rss=root.load();
+                SpaceSystem rss;
+                try {
+                    rss = root.load(loadingRoot);
+                }
+                catch (AbstractMethodError ame)
+                {
+                    rss = root.load();
+                }
                 if(children!=null) {
                     for(LoaderTree lt:children) {
-                        SpaceSystem ss=lt.load();
+                        SpaceSystem ss=lt.load(rss);
                         rss.addSpaceSystem(ss);
                         ss.setParent(rss);
                     }
@@ -684,6 +691,11 @@ public class XtceDbFactory {
 
         @Override
         public SpaceSystem load() throws ConfigurationException,  DatabaseLoadException {
+            return load(null);
+        }
+
+        @Override
+        public SpaceSystem load(SpaceSystem loadingRoot) throws ConfigurationException,  DatabaseLoadException {
             SpaceSystem rootSs = new SpaceSystem("");
             rootSs.setParent(rootSs);
             return rootSs;

@@ -17,4 +17,5 @@ public interface SpaceSystemLoader extends DatabaseLoader {
 	 * @throws DatabaseLoadException 
 	 */
 	SpaceSystem load() throws ConfigurationException,  DatabaseLoadException;
+	SpaceSystem load(SpaceSystem loadingRoot) throws ConfigurationException,  DatabaseLoadException;
 }
