@@ -170,7 +170,7 @@ if [ $snapshot -eq 0 ]; then
     if [[ $version =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
         developmentVersion=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))-SNAPSHOT
         mvn versions:set -DnewVersion=$developmentVersion versions:commit
-        git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare next development iteration"
+        git commit . -v -em"Prepare next development iteration"
     else
         echo 'Failed to set development version'
         exit 1
