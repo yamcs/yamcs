@@ -33,6 +33,11 @@ if [[ -n $(git status -s) ]]; then
 fi
 
 pomversion=`mvn -q help:evaluate -Dexpression=project.version -DforceStdout`
+read -p "Enter the new version to set [$pomversion] " newVersion
+if [[ -n $newVersion ]]; then
+    pomversion=$newVersion
+    mvn versions:set -DnewVersion=$newVersion versions:commit
+fi
 
 if [[ $pomversion == *-SNAPSHOT ]]; then
     snapshot=1
@@ -45,15 +50,11 @@ else
     release=1  # Incremental release number for a specific version
 fi
 
-if [ $snapshot -eq 0 ]; then
-    # This will pop-up a prompt to interactively set the version number
-    mvn versions:set versions:commit
-
-    if [[ -n $(git status -s) ]]; then
-        git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare release yamcs-${version}"
+if [[ -n $(git status -s) ]]; then
+    git commit `find . -name pom.xml -maxdepth 3` -v -em"Prepare release yamcs-${version}" || :
+    if [ $snapshot -eq 0 ]; then
+        git tag yamcs-$version
     fi
-
-    git tag yamcs-$version
 fi
 
 mvn -q clean
