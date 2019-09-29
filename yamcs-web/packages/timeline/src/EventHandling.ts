@@ -379,9 +379,9 @@ export default class EventHandling {
     const mouseX = this.mousePosition(event).x;
     const hoverX = mouseX - this.translation.x;
     if (event.deltaY > 0) {
-      this.timeline.zoomIn(hoverX);
-    } else if (event.deltaY < 0) {
       this.timeline.zoomOut(hoverX);
+    } else if (event.deltaY < 0) {
+      this.timeline.zoomIn(hoverX);
     }
 
     // Cascade further
