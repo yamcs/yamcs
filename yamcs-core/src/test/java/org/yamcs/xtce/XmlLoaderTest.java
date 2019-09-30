@@ -3,6 +3,7 @@ package org.yamcs.xtce;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -204,8 +205,12 @@ public class XmlLoaderTest {
         assertEquals("CRC", (String)ptype.getInitialValue());
         
         Parameter p = db.getParameter("/BogusSAT/LOG_MSGS/RECORDFLAG");
-        System.out.println("p: "+p);
+      
         assertEquals(3735928559L, ((Long)p.getInitialValue()).longValue());
-     
+        IntegerParameterType itype = (IntegerParameterType) db.getParameterType("/BogusSAT/LittleEndianInteger1");
+        assertEquals(ByteOrder.LITTLE_ENDIAN, itype.getEncoding().getByteOrder());
+        
+        FloatParameterType ftype = (FloatParameterType) db.getParameterType("/BogusSAT/LittleEndianFloat1");
+        assertEquals(ByteOrder.LITTLE_ENDIAN, ftype.getEncoding().getByteOrder());
     }
 }
