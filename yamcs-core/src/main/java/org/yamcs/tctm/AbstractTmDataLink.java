@@ -26,7 +26,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
 
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
-    PacketPreprocessor packetPreprocessor;
+    protected PacketPreprocessor packetPreprocessor;
 
     final Logger log = LoggerFactory.getLogger(this.getClass().getName());
     protected SystemParametersCollector sysParamCollector;
