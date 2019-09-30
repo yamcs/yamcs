@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.yamcs.xtce.xml;
 
@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1252,7 +1253,20 @@ public class XtceStaxReader {
                             + " specified for integer data encoding. Supported are between 0 and 64.",
                     xmlEvent.getLocation());
         }
-        integerDataEncoding = new IntegerDataEncoding(sizeInBits);
+
+        String byteOrderStr = readAttribute("byteOrder", xmlEvent.asStartElement(), "mostSignificantByteFirst");
+        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+        if ("mostSignificantByteFirst".equals(byteOrderStr)) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else if ("leastSignificantByteFirst".equals(byteOrderStr)) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else {
+            throw new XMLStreamException(
+                "Invalid byteOrder " + byteOrderStr
+	                + " specified for integer data encoding. Must be mostSignificantByteFirst or leastSignificantByteFirst.",
+                xmlEvent.getLocation());
+        }
+        integerDataEncoding = new IntegerDataEncoding(sizeInBits, byteOrder);
 
         // encoding attribute
         String value = readAttribute("encoding", xmlEvent.asStartElement(), null);
