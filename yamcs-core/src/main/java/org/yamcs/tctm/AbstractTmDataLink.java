@@ -54,7 +54,9 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             } else {
                 this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             }
-            this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
+            if(config.containsKey("packetPreprocessorArgs")) {
+                this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
+            }
         } else {
             this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             this.packetPreprocessorArgs = null;

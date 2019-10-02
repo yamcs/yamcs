@@ -19,7 +19,7 @@ public class VcManagedParameters {
     // if service = M_PDU
     int maxPacketLength;
     String packetPreprocessorClassName;
-    Map<String, Object> packetPreprocessorArgs;
+    YConfiguration packetPreprocessorArgs;
     final YConfiguration config;
     
     public VcManagedParameters(YConfiguration config) {
@@ -36,7 +36,7 @@ public class VcManagedParameters {
 
         packetPreprocessorClassName = config.getString("packetPreprocessorClassName");
         if (config.containsKey("packetPreprocessorArgs")) {
-            packetPreprocessorArgs = config.getMap("packetPreprocessorArgs");
+            packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
         }
         stripEncapsulationHeader = config.getBoolean("stripEncapsulationHeader", false);
     }
