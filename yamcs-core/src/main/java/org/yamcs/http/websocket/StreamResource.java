@@ -96,5 +96,6 @@ public class StreamResource implements StreamSubscriber, WebSocketResource {
         for (Stream subscribedStream : subscribedStreams) {
             subscribedStream.removeSubscriber(this);
         }
+        subscribedStreams.clear();
     }
 }

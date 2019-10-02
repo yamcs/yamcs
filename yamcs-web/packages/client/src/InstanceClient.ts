@@ -54,6 +54,10 @@ export class InstanceClient {
     return this.webSocketClient!.getEventUpdates();
   }
 
+  async unsubscribeEventUpdates() {
+    return this.webSocketClient!.unsubscribeEventUpdates();
+  }
+
   async createEvent(options: CreateEventRequest) {
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events`, {
@@ -126,6 +130,10 @@ export class InstanceClient {
     return this.webSocketClient!.getLinkUpdates(this.instance);
   }
 
+  async unsubscribeLinkUpdates() {
+    return this.webSocketClient!.unsubscribeLinkUpdates();
+  }
+
   async enableLink(name: string) {
     return this.editLink(name, { state: 'enabled' })
   }
@@ -145,6 +153,10 @@ export class InstanceClient {
   async getStreamEventUpdates(): Promise<StreamEventSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient!.getStreamEventUpdates(this.instance);
+  }
+
+  async unsubscribeStreamEventUpdates() {
+    return this.webSocketClient!.unsubscribeStreamEventUpdates();
   }
 
   async getProcessors() {
@@ -214,7 +226,7 @@ export class InstanceClient {
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
       body,
-      method: 'POST',
+      method: 'PATCH',
     });
     return await response.json() as CommandQueue;
   }
@@ -462,6 +474,14 @@ export class InstanceClient {
     return this.webSocketClient!.getParameterValueUpdates(options);
   }
 
+  async unsubscribeParameterValueUpdates(options: ParameterSubscriptionRequest) {
+    return this.webSocketClient!.unsubscribeParameterValueUpdates(options);
+  }
+
+  async unsubscribeStreamUpdates() {
+    return this.webSocketClient!.unsubscribeStreamUpdates();
+  }
+
   async setParameterValue(processorName: string, qualifiedName: string, value: Value) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/parameters${qualifiedName}`;
     return this.yamcs.doFetch(url, {
@@ -556,7 +576,7 @@ export class InstanceClient {
     }
   }
 
-  private queryString(options: {[key: string]: any}) {
+  private queryString(options: { [key: string]: any }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');

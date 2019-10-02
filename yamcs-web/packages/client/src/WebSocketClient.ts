@@ -1,7 +1,6 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, first, map, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
 import { AlarmSubscriptionRequest, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
@@ -20,7 +19,6 @@ export class WebSocketClient {
 
   readonly connected$ = new BehaviorSubject<boolean>(false);
 
-  private subscriptionModel: SubscriptionModel;
   private webSocket: WebSocketSubject<{}>;
 
   private webSocketConnection$: Observable<{}>;
@@ -43,7 +41,6 @@ export class WebSocketClient {
       url += `/${instance}`;
     }
 
-    this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
       url,
       protocol: 'json',
@@ -81,7 +78,6 @@ export class WebSocketClient {
   }
 
   async getEventUpdates() {
-    this.subscriptionModel.events = true;
     const requestId = this.emit({ events: 'subscribe' });
 
     return new Promise<EventSubscriptionResponse>((resolve, reject) => {
@@ -107,8 +103,27 @@ export class WebSocketClient {
     });
   }
 
+  async unsubscribeEventUpdates() {
+    const requestId = this.emit({ events: 'unsubscribe' });
+
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getTimeUpdates() {
-    this.subscriptionModel.time = true;
     const requestId = this.emit({ time: 'subscribe' });
 
     return new Promise<TimeSubscriptionResponse>((resolve, reject) => {
@@ -156,7 +171,6 @@ export class WebSocketClient {
   }
 
   async getLinkUpdates(instance?: string) {
-    this.subscriptionModel.links = true;
     const requestId = this.emit({ links: 'subscribe' });
 
     return new Promise<LinkSubscriptionResponse>((resolve, reject) => {
@@ -185,8 +199,27 @@ export class WebSocketClient {
     });
   }
 
+  async unsubscribeLinkUpdates() {
+    const requestId = this.emit({ links: 'unsubscribe' });
+
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getStreamEventUpdates(instance: string) {
-    this.subscriptionModel.streams = true;
     const requestId = this.emit({
       streams: 'subscribe',
       data: { instance },
@@ -215,8 +248,29 @@ export class WebSocketClient {
     });
   }
 
+  async unsubscribeStreamEventUpdates() {
+    const requestId = this.emit({
+      streams: 'unsubscribe',
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getAlarmUpdates(options?: AlarmSubscriptionRequest) {
-    this.subscriptionModel.alarms = true;
     const requestId = this.emit({ alarms: 'subscribe', data: options });
 
     return new Promise<AlarmSubscriptionResponse>((resolve, reject) => {
@@ -243,7 +297,6 @@ export class WebSocketClient {
   }
 
   async getClientUpdates(instance?: string) {
-    this.subscriptionModel.management = true;
     const requestId = this.emit({
       management: 'subscribe',
     });
@@ -274,9 +327,28 @@ export class WebSocketClient {
     });
   }
 
+  async unsubscribeStreamUpdates() {
+    const requestId = this.emit({
+      stream: 'unsubscribe',
+    });
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getStreamUpdates(stream: string) {
-    this.subscriptionModel.stream = true;
-    this.subscriptionModel.streamName = stream;
     const requestId = this.emit({
       stream: 'subscribe',
       data: { stream },
@@ -307,7 +379,6 @@ export class WebSocketClient {
   }
 
   async getInstanceUpdates() {
-    this.subscriptionModel.instance = true;
     const requestId = this.emit({ instance: 'subscribe' });
 
     return new Promise<InstanceSubscriptionResponse>((resolve, reject) => {
@@ -334,7 +405,6 @@ export class WebSocketClient {
   }
 
   async getProcessorUpdates(options?: ProcessorSubscriptionRequest) {
-    this.subscriptionModel.processor = true;
     const requestId = this.emit({ processor: 'subscribe', data: options });
 
     return new Promise<ProcessorSubscriptionResponse>((resolve, reject) => {
@@ -361,7 +431,6 @@ export class WebSocketClient {
   }
 
   async getProcessorStatistics(instance?: string) {
-    this.subscriptionModel.management = true;
     const requestId = this.emit({
       management: 'subscribe',
     });
@@ -393,7 +462,6 @@ export class WebSocketClient {
   }
 
   async getCommandQueueUpdates(instance?: string, processor?: string) {
-    this.subscriptionModel.commandQueues = true;
     const requestId = this.emit({ cqueues: 'subscribe' });
 
     return new Promise<CommandQueueSubscriptionResponse>((resolve, reject) => {
@@ -426,7 +494,6 @@ export class WebSocketClient {
   }
 
   async getCommandQueueEventUpdates(instance?: string, processor?: string) {
-    this.subscriptionModel.commandQueues = true;
     const requestId = this.emit({ cqueues: 'subscribe' });
 
     return new Promise<CommandQueueEventSubscriptionResponse>((resolve, reject) => {
@@ -459,7 +526,6 @@ export class WebSocketClient {
   }
 
   async getParameterValueUpdates(options: ParameterSubscriptionRequest) {
-    this.subscriptionModel.parameters = options;
     const requestId = this.emit({
       parameter: 'subscribe',
       data: options,
@@ -490,6 +556,29 @@ export class WebSocketClient {
             map(pdata => pdata.parameter),
           );
           resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
+  async unsubscribeParameterValueUpdates(options: ParameterSubscriptionRequest) {
+    const requestId = this.emit({
+      parameter: 'unsubscribe',
+      data: options,
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           reject(msg[3].et);
         } else {

@@ -6,6 +6,7 @@ import { GetParametersOptions, Instance } from '@yamcs/client';
 import { fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ParametersDataSource } from './ParametersDataSource';
@@ -33,16 +34,15 @@ export class ParametersPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'type', label: 'Type' },
-    { id: 'units', label: 'Units' },
+    { id: 'rawValue', label: 'Raw Value' },
+    { id: 'engValue', label: 'Value' },
     { id: 'dataSource', label: 'Data Source' },
     { id: 'shortDescription', label: 'Description' },
   ];
 
   displayedColumns = [
     'name',
-    'type',
-    'units',
+    'engValue',
     'dataSource',
   ];
 
@@ -52,6 +52,7 @@ export class ParametersPage implements AfterViewInit {
     private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
+    synchronizer: Synchronizer,
   ) {
     title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
@@ -59,7 +60,7 @@ export class ParametersPage implements AfterViewInit {
     if (cols.length) {
       this.displayedColumns = cols;
     }
-    this.dataSource = new ParametersDataSource(yamcs);
+    this.dataSource = new ParametersDataSource(yamcs, synchronizer);
   }
 
   ngAfterViewInit() {

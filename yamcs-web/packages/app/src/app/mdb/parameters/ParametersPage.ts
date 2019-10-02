@@ -55,7 +55,7 @@ export class ParametersPage implements AfterViewInit {
   ) {
     title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('parameters');
+    const cols = preferenceStore.getVisibleColumns('mdb-parameters');
     if (cols.length) {
       this.displayedColumns = cols;
     }
@@ -113,6 +113,6 @@ export class ParametersPage implements AfterViewInit {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('parameters', displayedColumns);
+    this.preferenceStore.setVisibleColumns('mdb-parameters', displayedColumns);
   }
 }

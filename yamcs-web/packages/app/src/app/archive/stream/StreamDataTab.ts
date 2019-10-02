@@ -57,5 +57,8 @@ export class StreamDataTab implements AfterViewInit, OnDestroy {
     if (this.columnDefinitionsSubscription) {
       this.columnDefinitionsSubscription.unsubscribe();
     }
+    if (this.dataSource) {
+      this.dataSource.stopStreaming();
+    }
   }
 }

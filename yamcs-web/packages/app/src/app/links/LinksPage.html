@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar [hasDetailPane]="true">
     Links
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
             *ngIf="mayControlLinks()"
@@ -53,9 +53,9 @@
                             (change)="updateColumns($event)"></app-column-chooser>
       </div>
       <table mat-table
-            [dataSource]="dataSource"
-            [trackBy]="tableTrackerFn"
-            class="ya-data-table">
+             [dataSource]="dataSource"
+             [trackBy]="tableTrackerFn"
+             class="ya-data-table">
 
         <ng-container cdkColumnDef="select">
           <th mat-header-cell *cdkHeaderCellDef class="checkbox">

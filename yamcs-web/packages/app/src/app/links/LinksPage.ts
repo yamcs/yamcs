@@ -245,8 +245,8 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   masterToggle() {
     this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: LinkItem) {
@@ -290,6 +290,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     }
     if (this.linkSubscription) {
       this.linkSubscription.unsubscribe();
+    }
+    const instanceClient = this.yamcs.getInstanceClient();
+    if (instanceClient) {
+      instanceClient.unsubscribeLinkUpdates();
     }
   }
 }

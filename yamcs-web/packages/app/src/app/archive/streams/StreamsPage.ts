@@ -85,5 +85,6 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
     if (this.streamEventSubscription) {
       this.streamEventSubscription.unsubscribe();
     }
+    this.yamcs.getInstanceClient()!.unsubscribeStreamEventUpdates();
   }
 }
