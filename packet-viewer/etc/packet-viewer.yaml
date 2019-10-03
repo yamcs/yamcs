@@ -1,0 +1,15 @@
+#the PacketInputStream is used when the Packet Viewer loads packets from file - it splits the file into packets
+#when the packets are received from the Yamcs server, this is not used
+packetInputStreamClassName: org.yamcs.tctm.CcsdsPacketInputStream
+
+#The preprocessor is used to derive the time of the packet and to do checksum computaion
+#it is used 
+packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+packetPreprocessorArgs:
+        errorDetection:
+                type: CRC-16-CCIIT
+        useLocalGenerationTime: true
+
+
+#namespace used to show the packet names
+defaultNamespace: "MDB:OPS Name"
