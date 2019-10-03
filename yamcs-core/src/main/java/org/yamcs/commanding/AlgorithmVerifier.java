@@ -68,14 +68,20 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             log.trace("Algorithm {} run but did not return a result.", alg.getName());
             return;
         }
+        AlgorithmManager algMgr = cvh.getAlgorithmManager();
+        algMgr.deactivateAlgorithm(alg, algCtx);
+        
+        if(returnValue instanceof Boolean) {
+            finished((Boolean) returnValue, null);
+        } else {
+            finished(false, returnValue.toString());
+        }
+        
         if(!(returnValue instanceof Boolean)) {
             log.warn("Algorithm {} run but returned a {} instead of a Boolean", alg.getName(), returnValue.getClass());
             return;
         }
-        boolean r = (Boolean) returnValue;
-        AlgorithmManager algMgr = cvh.getAlgorithmManager();
-        algMgr.deactivateAlgorithm(alg, algCtx);
-        finished(r);
+       
     }
 
    

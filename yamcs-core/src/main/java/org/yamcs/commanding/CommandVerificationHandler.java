@@ -194,7 +194,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         ,windowStop, TimeUnit.MILLISECONDS);
     }
 
-    void onVerifierFinished(Verifier v) {
+    void onVerifierFinished(Verifier v, String failureReason) {
         Verifier.State state = v.getState();
         log.debug("Command {} verifier finished: {} result: {}", StringConverter.toString(preparedCommand.getCommandId()), v.cv, state);
         CommandVerifier cv = v.cv;
@@ -220,7 +220,11 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             stop();
         } else if(ta==TerminationAction.FAIL) {
             cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-            cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "Verifier "+cv.getStage()+" result: "+state);
+            if(failureReason!=null) {
+                cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, failureReason);
+            } else {
+                cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "Verifier "+cv.getStage()+" result: "+state);
+            }
             stop();
         }
 
