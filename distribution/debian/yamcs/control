@@ -4,6 +4,7 @@ Section: misc
 Priority: optional
 Architecture: amd64
 Maintainer: Space Applications Services <yamcs@spaceapplications.com>
-Homepage: https://www.yamcs.org
+Homepage: https://yamcs.org
 Installed-Size: @@INSTALLEDSIZE@@
 Description: Yamcs Mission Control
+Depends: socat
