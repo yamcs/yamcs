@@ -36,6 +36,7 @@ public class WebPlugin implements Plugin {
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
+        spec.addOption("staticRoot", OptionType.STRING);
         YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
     }
 
@@ -84,10 +85,14 @@ public class WebPlugin implements Plugin {
 
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
 
-        // Deploy the website. First check if a development build is available. Else
-        // deploy from the classpath to a physical directory.
-        Path staticRoot = Paths.get("../yamcs-web/packages/app/dist").toAbsolutePath().normalize();
-        if (!Files.exists(staticRoot)) {
+        // Deploy the website, either from classpath or from a manually
+        // configured directory. The latter is primarily intended for
+        // development work on the web interface.
+        Path staticRoot;
+        if (config.containsKey("staticRoot")) {
+            staticRoot = Paths.get(config.getString("staticRoot"));
+            staticRoot = staticRoot.toAbsolutePath().normalize();
+        } else {
             try {
                 staticRoot = deployWebsiteFromClasspath();
             } catch (IOException e) {

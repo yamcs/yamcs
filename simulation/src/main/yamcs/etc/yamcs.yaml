@@ -1,6 +1,5 @@
 # System-wide services
 services:
-  - class: org.yamcs.management.JMXService
   - class: org.yamcs.http.HttpServer
     args:
       port: 8090
@@ -24,5 +23,9 @@ secretKey: "changeme"
 
 yamcs-web:
   tag: DEMO
-  displayPath: displays
+  displayPath: etc/displays
+
+  # Hook the webapp sources directly to the output of yarn. This
+  # allows running yarn in watch mode without restarting Yamcs.
+  staticRoot: ../../../yamcs-web/packages/app/dist
 
