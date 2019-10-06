@@ -47,15 +47,18 @@ public class ProtobufRegistry {
     public ProtobufRegistry() {
         extensionRegistry.add(AnnotationsProto.route);
 
-        FileDescriptorSet proto;
         try (InputStream in = getClass().getResourceAsStream("/yamcs-api.protobin")) {
             if (in == null) {
                 throw new UnsupportedOperationException("Missing binary protobuf descriptions");
             }
-            proto = FileDescriptorSet.parseFrom(in, extensionRegistry);
+            importDefinitions(in);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public void importDefinitions(InputStream in) throws IOException {
+        FileDescriptorSet proto = FileDescriptorSet.parseFrom(in, extensionRegistry);
 
         // Index all messages by fully-qualified protobuf name
         for (FileDescriptorProto file : proto.getFileList()) {

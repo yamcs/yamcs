@@ -27,6 +27,8 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.Api;
+import org.yamcs.http.api.Context;
 import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
@@ -199,22 +201,16 @@ public class HttpServer extends AbstractYamcsService {
         extraHandlers.put(pathSegment, handlerSupplier);
     }
 
+    public void addApi(Api<Context> api) {
+        apiRouter.addApi(api);
+    }
+
     public void addApiHandler(RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(routeHandler);
     }
 
-    @Deprecated
-    public void addRouteHandler(RouteHandler routeHandler) {
-        addApiHandler(routeHandler);
-    }
-
     public void addApiHandler(String yamcsInstance, RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
-    }
-
-    @Deprecated
-    public void addRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
-        addApiHandler(yamcsInstance, routeHandler);
     }
 
     @Override
