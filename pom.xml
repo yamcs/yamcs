@@ -72,7 +72,6 @@
     <module>yamcs-tse</module>
     <module>yamcs-web</module>
     <module>yamcs-xtce</module>
-    <module>yamcs-protoc-plugin</module>
   </modules>
 
   <dependencies>

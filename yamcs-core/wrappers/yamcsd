@@ -9,6 +9,8 @@
 #               (only temporarily for debugging purposes !)
 #
 # JAVA_OPTS     Java runtime options
+#
+# CLASSPATH     Custom classpath additions
 
 # resolve links - $0 may be a softlink
 PRG="$0"
@@ -30,11 +32,18 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 # cd into YAMCS_HOME to support relative links in configuration files
 cd "$YAMCS_HOME"
 
+# Remove user classpath, but allow custom classpath additions via setenv.sh
+CLASSPATH=
+
 if [ -r bin/setenv.sh ]; then
   . bin/setenv.sh
 fi
 
-export CLASSPATH="$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
+if [ "x$CLASSPATH" != x ]; then
+  CLASSPATH="$CLASSPATH:"
+fi
+
+export CLASSPATH="$CLASSPATH$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
 
 if [ -d "$JAVA_HOME" ]; then
   _RUNJAVA="$JAVA_HOME/bin/java"

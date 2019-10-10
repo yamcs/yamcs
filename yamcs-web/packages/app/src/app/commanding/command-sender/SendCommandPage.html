@@ -13,10 +13,10 @@
     <div [class.hide]="step !== 1">
       <div style="margin-bottom: 12px">
         <input #filter
-                class="ya-input"
-                type="text"
-                placeholder="Filter by text search"
-                style="width: 400px">
+               class="ya-input"
+               type="text"
+               placeholder="Filter by text search"
+               style="width: 400px">
       </div>
       <div style="display: inline-block">
         <table mat-table
@@ -38,7 +38,7 @@
           </ng-container>
 
           <ng-container matColumnDef="shortDescription">
-            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <th mat-header-cell *matHeaderCellDef style="width: 300px">Description</th>
             <td mat-cell *matCellDef="let command">
               {{ command.shortDescription || '-' }}
             </td>
@@ -82,7 +82,8 @@
             <label *ngSwitchCase="'enumeration'" [class.hasInitial]="argument.initialValue !== undefined">
               {{ argument.name }}
               <select [formControlName]="argument.name">
-                <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+                <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
+                  {{ enumValue.label }}</option>
               </select>
             </label>
 
@@ -100,9 +101,10 @@
           </ng-container>
         </ng-container>
         <app-text-action (click)="showAll$.next(true)"
-                          *ngIf="initialValueCount && !(showAll$ | async)"
-                          icon="double_arrow">
-          Show {{ initialValueCount }} argument<ng-container *ngIf="initialValueCount !== 1">s</ng-container> with defaults
+                         *ngIf="initialValueCount && !(showAll$ | async)"
+                         icon="double_arrow">
+          Show {{ initialValueCount }} argument<ng-container *ngIf="initialValueCount !== 1">s</ng-container> with
+          defaults
         </app-text-action>
         <ng-container *ngIf="arguments.length">
           <br>

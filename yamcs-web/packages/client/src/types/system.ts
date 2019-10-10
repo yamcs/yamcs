@@ -211,10 +211,12 @@ export interface Link {
   disabled: boolean;
   dataInCount: number;
   dataOutCount: number;
-  status: string;
+  status: LinkStatus;
   detailedStatus: string;
   parentName?: string;
 }
+
+export type LinkStatus = 'OK' | 'UNAVAIL' | 'DISABLED' | 'FAILED';
 
 export interface Processor {
   instance: string;
