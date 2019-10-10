@@ -96,7 +96,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.timer = yproc.getTimer();
         this.lastValueCache = yproc.getLastValueCache();
 
-        CommandQueue cq = new CommandQueue(yproc, "default", QueueState.BLOCKED);
+        CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
         queues.put("default", cq);
 
         if (YConfiguration.isDefined("command-queue")) {
