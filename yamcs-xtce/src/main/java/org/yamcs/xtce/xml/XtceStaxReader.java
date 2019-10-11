@@ -892,7 +892,7 @@ public class XtceStaxReader {
 
         // sizeInBits attribute
         int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 32);
-
+        ByteOrder byteOrder = readByteOrder();
         // encoding attribute
         String value = readAttribute("encoding", xmlEvent.asStartElement(), null);
         Encoding enc = Encoding.IEEE754_1985;
@@ -905,7 +905,7 @@ public class XtceStaxReader {
                 throwException("Unknown encoding '" + value + "'");
             }
         }
-        floatDataEncoding = new FloatDataEncoding(sizeInBits, enc);
+        floatDataEncoding = new FloatDataEncoding(sizeInBits, byteOrder, enc);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1253,19 +1253,7 @@ public class XtceStaxReader {
                             + " specified for integer data encoding. Supported are between 0 and 64.",
                     xmlEvent.getLocation());
         }
-
-        String byteOrderStr = readAttribute("byteOrder", xmlEvent.asStartElement(), "mostSignificantByteFirst");
-        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
-        if ("mostSignificantByteFirst".equals(byteOrderStr)) {
-            byteOrder = ByteOrder.BIG_ENDIAN;
-        } else if ("leastSignificantByteFirst".equals(byteOrderStr)) {
-            byteOrder = ByteOrder.LITTLE_ENDIAN;
-        } else {
-            throw new XMLStreamException(
-                "Invalid byteOrder " + byteOrderStr
-	                + " specified for integer data encoding. Must be mostSignificantByteFirst or leastSignificantByteFirst.",
-                xmlEvent.getLocation());
-        }
+        ByteOrder byteOrder = readByteOrder();
         integerDataEncoding = new IntegerDataEncoding(sizeInBits, byteOrder);
 
         // encoding attribute
@@ -1303,6 +1291,22 @@ public class XtceStaxReader {
                 logUnknown();
             }
         }
+    }
+
+    private ByteOrder readByteOrder() throws XMLStreamException {
+        String byteOrderStr = readAttribute("byteOrder", xmlEvent.asStartElement(), "mostSignificantByteFirst");
+        ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+        if ("mostSignificantByteFirst".equals(byteOrderStr)) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else if ("leastSignificantByteFirst".equals(byteOrderStr)) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else {
+            throw new XMLStreamException(
+                "Unsupported byteOrder '" + byteOrderStr
+                        + "' specified for integer data encoding. Supported are mostSignificantByteFirst or leastSignificantByteFirst.",
+                xmlEvent.getLocation());
+        }
+        return byteOrder;
     }
 
     private List<ContextCalibrator> readContextCalibratorList(SpaceSystem spaceSystem) throws XMLStreamException {

@@ -29,15 +29,15 @@ abstract class Verifier {
         }
         state = State.TIMEOUT;
         doCancel();
-        cvh.onVerifierFinished(this);
+        cvh.onVerifierFinished(this, null);
     }
     
-    void finished(boolean result) {
+    void finished(boolean result, String failureReason) {
         if(state!=State.RUNNING) {
             return;
         }
         state= result?State.OK:State.NOK;
-        cvh.onVerifierFinished(this);
+        cvh.onVerifierFinished(this, failureReason);
     }
     
     abstract void doStart();

@@ -1,3 +1,10 @@
+Version 4.10.3 release 24-Sep-2019
+- changed the alarms to follow more closely the ISA-18.2 standard
+- added a user management module in the web interface
+- improved validation of yaml configuration files
+- many improvements in the web interface
+- various bugfixes
+
 Version 4.10.2 release 17-Jul-2019
 - various bugfixes 
 

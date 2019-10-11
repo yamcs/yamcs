@@ -1,7 +1,5 @@
 package org.yamcs.tctm;
 
-import java.util.Map;
-
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.ByteArrayUtils;
@@ -44,10 +42,10 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     // where from the packet to read the 4 bytes sequence count
     final int seqCountOffset;
 
-    public GenericPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+    public GenericPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
-        timestampOffset = YConfiguration.getInt(config, "timestampOffset");
-        seqCountOffset = YConfiguration.getInt(config, "seqCountOffset");
+        timestampOffset = config.getInt("timestampOffset");
+        seqCountOffset = config.getInt("seqCountOffset");
     }
 
     @Override

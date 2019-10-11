@@ -28,6 +28,12 @@ WAIT_FOR_START=120
 
 case "$1" in
     start)
+        if [ -d /run/systemd/system ]; then
+            echo "[WARN] Prefer to manage Yamcs as a systemd unit. Example:"
+            echo "[WARN]   - use \"systemctl start yamcs\" instead of \"service yamcs-server start\""
+            echo "[WARN]   - use \"systemctl enable yamcs\" instead of \"chkconfig yamcs-server on\""
+        fi
+
         echo -n "Starting Yamcs...   "
         #set a high open file limit to avoid problems with rocksdb opening too many files
         ulimit -n 10000

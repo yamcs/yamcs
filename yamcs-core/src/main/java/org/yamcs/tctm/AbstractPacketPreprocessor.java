@@ -36,7 +36,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         return getErrorDetectionWordCalculator(YConfiguration.wrap(config));
     }
 
-    static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(YConfiguration config) {
+    public static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(YConfiguration config) {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             return null;
         }

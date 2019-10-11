@@ -225,6 +225,14 @@ limitations under the License.
 			<xtce:Enumeration value="4" label="ECSS_SpacePacket4"/>
 		</xtce:EnumerationList>
 	</xtce:EnumeratedParameterType>
+    <xtce:IntegerParameterType name="LittleEndianInteger1" signed="true">
+         <xtce:LongDescription>This parameter type is used to test the byteOrder attribute</xtce:LongDescription>
+         <xtce:IntegerDataEncoding sizeInBits="16" byteOrder = "leastSignificantByteFirst"/>
+    </xtce:IntegerParameterType>	
+     <xtce:FloatParameterType name="LittleEndianFloat1" signed="true">
+         <xtce:LongDescription>This parameter type is used to test the byteOrder attribute</xtce:LongDescription>
+         <xtce:FloatDataEncoding sizeInBits="64" byteOrder = "leastSignificantByteFirst"/>
+    </xtce:FloatParameterType>	
 </xtce:ParameterTypeSet>
 <xtce:ParameterSet>
 	<xtce:Parameter name="TM_CHECKSUM_TYPE" parameterTypeRef="TM_CHECKSUMType" shortDescription="ECSS PUS Constant">
