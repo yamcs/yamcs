@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar [hasDetailPane]="true">
     Command History
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button mat-button
             matTooltip="Jump to now"
             color="primary"
@@ -32,19 +32,8 @@
 
         <h6>Issuer</h6>
         <div class="block">
-          {{ selectedRecord.username }}<ng-container *ngIf="selectedRecord.origin">@{{ selectedRecord.origin }}</ng-container>
-        </div>
-
-        <h6>
-          Sequence Number
-          <app-help>
-            <p>The <strong>Sequence Number</strong> is a number assigned by the client that issued the command. It is used by Yamcs to establish unicity to other commands with the same time and issuer.</p>
-            <p>Note in particular that this value does not have any correlation with sequence numbers that may be encoded in the telecommand packet (e.g. CCSDS Sequence Number).</p>
-
-          </app-help>
-        </h6>
-        <div class="block">
-          {{ selectedRecord.sequenceNumber }}
+          {{ selectedRecord.username }}<ng-container *ngIf="selectedRecord.origin">@{{ selectedRecord.origin }}
+          </ng-container>
         </div>
 
         <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
@@ -77,9 +66,9 @@
           </div>
         </ng-container>
 
-        <ng-container *ngIf="selectedRecord.stages.length">
+        <ng-container *ngIf="selectedRecord.verifications.length">
           <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Stages</h6>
+          <h6 style="padding-top: 0">Verifications</h6>
           <div class="block">
             <table yaDataTable style="width: 100%">
               <tr>
@@ -88,17 +77,12 @@
                 <th>Status</th>
                 <th>Time</th>
               </tr>
-              <tr *ngFor="let stage of selectedRecord.stages">
+              <tr *ngFor="let ack of selectedRecord.verifications">
                 <td>
-                  <ng-container [ngSwitch]="stage.status">
+                  <ng-container [ngSwitch]="ack.status">
                     <ng-container *ngSwitchCase="'OK'">
                       <mat-icon class="step success" style="margin-right: 8px">
                         check_circle
-                      </mat-icon>
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'TIMEOUT'">
-                      <mat-icon class="step alert" style="margin-right: 8px">
-                        timer_off
                       </mat-icon>
                     </ng-container>
                     <ng-container *ngSwitchDefault>
@@ -108,10 +92,10 @@
                     </ng-container>
                   </ng-container>
                 </td>
-                <td>{{ stage.name }}</td>
-                <td>{{ stage.status }}</td>
+                <td>{{ ack.name }}</td>
+                <td>{{ ack.status }}</td>
                 <td>
-                  <span [matTooltip]="stage.time">{{ stage.time | deltaWith:selectedRecord.generationTime }}</span>
+                  <span [matTooltip]="ack.time">{{ ack.time | deltaWith:selectedRecord.generationTime }}</span>
                 </td>
               </tr>
             </table>
@@ -121,7 +105,11 @@
         <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
         <h6 style="padding-top: 0">Completion</h6>
         <div class="block">
-          <app-command-completion [item]="selectedRecord"></app-command-completion>
+          <ng-container *ngIf="selectedRecord.completed && selectedRecord.success">SUCCESS</ng-container>
+          <ng-container *ngIf="selectedRecord.completed && !selectedRecord.success">
+            FAILURE: {{ selectedRecord.failureMessage }}
+          </ng-container>
+          <ng-container *ngIf="!selectedRecord.completed">-</ng-container>
         </div>
 
         <p>&nbsp;</p>
@@ -271,44 +259,76 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="stages">
-          <th mat-header-cell *matHeaderCellDef style="width: 1px">Stages</th>
-          <td mat-cell *matCellDef="let item" style="white-space: nowrap">
-            <ng-container *ngFor="let step of item.stages">
-              <ng-container [ngSwitch]="step.status">
-                <app-label *ngSwitchCase="'OK'"
-                           icon="check_circle"
-                           matTooltip="OK"
-                           backgroundColor="inherit"
-                           color="green">{{ step.name }}</app-label>
-                <app-label *ngSwitchCase="'TIMEOUT'"
-                           icon="timer_off"
-                           matTooltip="TIMEOUT"
-                           backgroundColor="inherit"
-                           color="red">{{ step.name }}</app-label>
-                <app-label *ngSwitchDefault
-                           icon="highlight_off"
-                           [matTooltip]="step.status"
-                           backgroundColor="inherit"
-                           color="red">{{ step.name }}</app-label>
+        <ng-container matColumnDef="queued">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Queued Acknowledgment">Q
+          </th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-acknowledgment-icon [ack]="item.queued"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="released">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Released Acknowledgment">
+            R</th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-acknowledgment-icon [ack]="item.released"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sent">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Sent Acknowledgment">S
+          </th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-acknowledgment-icon [ack]="item.sent"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="verifications">
+          <th mat-header-cell *matHeaderCellDef
+              class="dense">Verifications</th>
+          <td mat-cell *matCellDef="let item"
+              class="dense" style="text-align: center">
+            <ng-container *ngFor="let ack of item.verifications">
+              <ng-container [ngSwitch]="ack.status">
+                <mat-icon *ngSwitchCase="'OK'"
+                          [matTooltip]="ack.name + ': OK'"
+                          class="icon16"
+                          style="color: green">check_circle</mat-icon>
+                <mat-icon *ngSwitchDefault
+                          [matTooltip]="ack.name + ': ' + ack.status"
+                          class="icon16"
+                          style="color: red">highlight_off</mat-icon>
               </ng-container>
             </ng-container>
-            <ng-container *ngIf="!item.stages.length">-</ng-container>
+            <ng-container *ngIf="!item.verifications.length">-</ng-container>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="completion">
-          <th mat-header-cell *matHeaderCellDef>Completion</th>
-          <td mat-cell *matCellDef="let item">
-            <app-command-completion [item]="item"></app-command-completion>
+          <th mat-header-cell *matHeaderCellDef
+              style="padding-left: 8px">Completion</th>
+          <td mat-cell *matCellDef="let item" class="completion"
+              style="text-align: center; padding-left: 8px">
+            <ng-container *ngIf="item.completed && item.success">SUCCESS</ng-container>
+            <span *ngIf="item.completed && !item.success" [matTooltip]="item.failureMessage">
+              FAILURE
+            </span>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                 (click)="selectRecord(row)"
-                 [@rowAnimation]="row.animate"
-                 [class.selected]="(selectedRecord$ | async) === row">
+            (click)="selectRecord(row)"
+            [@rowAnimation]="row.animate"
+            [class.selected]="(selectedRecord$ | async) === row"
+            [class.success]="row.completed && row.success"
+            [class.failed]="row.completed && !row.success">
         </tr>
       </table>
 

@@ -52,3 +52,23 @@ h6 {
   font-size: 14px !important;
   vertical-align: middle;
 }
+
+tr.failed td {
+  color: red;
+}
+
+tr.success td.completion {
+  background-color: #e6ffed;
+  color: green;
+}
+
+tr.failed td.completion {
+  background-color: #ffeef0;
+  color: red;
+}
+
+th.dense, td.dense {
+  width: 1px;
+  white-space: nowrap;
+  padding-left: 12px;
+}

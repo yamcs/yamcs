@@ -50,12 +50,25 @@ export class PreferenceStore {
     localStorage.setItem(`yamcs.${source}.cols`, JSON.stringify(columns));
   }
 
-  public getVisibleColumns(source: string) {
+  /**
+   * Returns a column preference from local storage.
+   *
+   * To prevent broken or missing renamed columns, the preference
+   * is reset as soon as a deprecated column is detected.
+   */
+  public getVisibleColumns(source: string, deprecated: string[] = []) {
     const item = localStorage.getItem(`yamcs.${source}.cols`);
     if (item) {
-      return JSON.parse(item) as string[];
-    } else {
-      return [];
+      const cols: string[] = JSON.parse(item);
+      for (const col of cols) {
+        for (const deprecatedCol of deprecated) {
+          if (col === deprecatedCol) {
+            localStorage.removeItem(`yamcs.${source}.cols`)
+            return;
+          }
+        }
+      }
+      return cols;
     }
   }
 }

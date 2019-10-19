@@ -16,7 +16,7 @@ import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
 })
 export class SendCommandPage implements AfterViewInit {
 
-  pageSize = 10;
+  pageSize = 100;
 
   @ViewChild(MatPaginator, { static: false })
   paginator: MatPaginator;
@@ -83,19 +83,16 @@ export class SendCommandPage implements AfterViewInit {
     });
   }
 
-  selectCommand(command: Command) {
-    this.selectedCommand$.next(command);
-  }
-
   goToPage1() {
     this.selectedCommand$.next(null);
-    this.filter.nativeElement.value = null;
+    this.filter.nativeElement.value = '';
     this.paginator.pageIndex = 0;
     this.updateDataSource();
     this.step$.next(1);
   }
 
-  goToConfigureCommand() {
+  goToConfigureCommand(selectedCommand: Command) {
+    this.selectedCommand$.next(selectedCommand);
     this.step$.next(2);
 
     // Get command detail
@@ -103,6 +100,7 @@ export class SendCommandPage implements AfterViewInit {
     this.yamcs.getInstanceClient()!.getCommand(qname).then(command => {
 
       // Reset previous state (if any)
+      this.commandConfigurationForm.reset();
       for (const controlName in this.commandConfigurationForm.controls) {
         if (this.commandConfigurationForm.hasOwnProperty(controlName)) {
           if (controlName !== '_comment') {

@@ -50,7 +50,7 @@ export class AlgorithmsPage implements AfterViewInit {
     title.setTitle('Algorithms');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('algorithms');
-    if (cols.length) {
+    if (cols) {
       this.displayedColumns = cols;
     }
     this.dataSource = new AlgorithmsDataSource(yamcs);

@@ -56,7 +56,7 @@ export class ParametersPage implements AfterViewInit {
     title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('mdb-parameters');
-    if (cols.length) {
+    if (cols) {
       this.displayedColumns = cols;
     }
     this.dataSource = new ParametersDataSource(yamcs);

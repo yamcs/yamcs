@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { CommandCompletion } from './command-history/CommandCompletion';
+import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
 import { CommandQueuesTable } from './command-queues/CommandQueuesTable';
 import { QueuedCommandsTable } from './command-queues/QueuedCommandsTable';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
@@ -13,7 +13,7 @@ import { CommandingRoutingModule, routingComponents } from './CommandingRoutingM
   ],
   declarations: [
     routingComponents,
-    CommandCompletion,
+    AcknowledgmentIcon,
     CommandQueuesTable,
     QueuedCommandsTable,
     SendCommandWizardStep,

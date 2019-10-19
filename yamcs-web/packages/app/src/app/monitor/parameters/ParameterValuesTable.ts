@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
+
 
 @Component({
   selector: 'app-parameter-values-table',
