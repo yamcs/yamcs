@@ -100,6 +100,12 @@ export class InstanceClient {
     return wrapper.links || [];
   }
 
+  async getLink(name: string): Promise<Link> {
+    const url = `${this.yamcs.apiUrl}/links/${this.instance}/${name}`
+    const response = await this.yamcs.doFetch(url);
+    return await response.json() as Link;
+  }
+
   /**
    * Returns Connection Info messages whenever a major event on
    * the websocket connection happens. This includes:

@@ -23,7 +23,7 @@ import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
  * @author nm
  *
  */
-public class AosTransferFrame extends AbstractTransferFrame {
+public class AosTransferFrame extends DownlinkTransferFrame {
     static final int MAX_FRAME_SEQ = 0xFFFFFF;
 
     ServiceType serviceType;

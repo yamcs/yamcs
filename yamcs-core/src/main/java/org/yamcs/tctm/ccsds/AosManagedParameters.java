@@ -7,7 +7,7 @@ import java.util.Map;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-public class AosManagedParameters extends ManagedParameters {
+public class AosManagedParameters extends DownlinkManagedParameters {
     enum ServiceType {
         /** Multiplexing Protocol Data Unit */
         PACKET,
@@ -29,10 +29,7 @@ public class AosManagedParameters extends ManagedParameters {
     public boolean frameHeaderErrorControlPresent;
 
     public AosManagedParameters(YConfiguration config) {
-
-        if (config.containsKey("physicalChannelName")) {
-            physicalChannelName = config.getString("physicalChannelName");
-        }
+        super(config);
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
@@ -71,13 +68,13 @@ public class AosManagedParameters extends ManagedParameters {
     }
 
     @Override
-    public Map<Integer, VirtualChannelHandler> createVcHandlers(String yamcsInstance, String linkName) {
-        Map<Integer, VirtualChannelHandler> m = new HashMap<>();
+    public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName) {
+        Map<Integer, VcDownlinkHandler> m = new HashMap<>();
         for (Map.Entry<Integer, AosVcManagedParameters> me : vcParams.entrySet()) {
             AosVcManagedParameters vmp = me.getValue();
             switch (vmp.service) {
             case PACKET:
-                VirtualChannelPacketHandler vcph = new VirtualChannelPacketHandler(yamcsInstance,
+                VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance,
                         linkName + ".vc" + vmp.vcId, vmp);
                 m.put(vmp.vcId, vcph);
                 break;
@@ -91,7 +88,7 @@ public class AosManagedParameters extends ManagedParameters {
         return m;
     }
 
-    static class AosVcManagedParameters extends VcManagedParameters {
+    static class AosVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
         boolean ocfPresent;
         
@@ -118,7 +115,7 @@ public class AosManagedParameters extends ManagedParameters {
         }
     }
 
-    public VcManagedParameters getVcParams(int vcId) {
+    public VcDownlinkManagedParameters getVcParams(int vcId) {
         return vcParams.get(vcId);
     }
 

@@ -6,20 +6,23 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
- * Link implementing the TM frames using
+ * Simulator link implementing the TM frames using one of the three CCSDS specs:
+ * 
  * AOS CCSDS 732.0-B-3
  * TM CCSDS 132.0-B-2
- * USLP CCSDS 732.1-B-1 (TODO)
+ * USLP CCSDS 732.1-B-1
  * 
  * 
  * Sends frames of predefined size at a configured frequency. If there is no data to send, it sends idle frames.
@@ -28,7 +31,7 @@ import com.google.common.util.concurrent.AbstractScheduledService;
  * @author nm
  *
  */
-public class UdpFrameLink extends AbstractScheduledService {
+public class UdpTmFrameLink extends AbstractScheduledService {
     final String frameType;
     final String host;
     final int port;
@@ -42,18 +45,20 @@ public class UdpFrameLink extends AbstractScheduledService {
     VcBuilder[] builders = new VcBuilder[NUM_VC];
     VcBuilder idleFrameBuilder;
 
-    private static final Logger log = LoggerFactory.getLogger(UdpFrameLink.class);
+    private static final Logger log = LoggerFactory.getLogger(UdpTmFrameLink.class);
 
     int lastVcSent; // switches between 0 and 1 so we don't send always from the same vc
 
     InetAddress addr;
+    IntSupplier clcwSupplier;
 
-    public UdpFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec) {
+    public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec, IntSupplier clcwSupplier) {
         this.frameType = frameType;
         this.host = host;
         this.port = port;
         this.frameSize = frameLength;
         this.framesPerSec = framesPerSec;
+        this.clcwSupplier = clcwSupplier;
 
         if ("AOS".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
@@ -123,11 +128,13 @@ public class UdpFrameLink extends AbstractScheduledService {
     }
 
     private void sendData(VcBuilder vcb) throws IOException {
+        vcb.setCLCW(clcwSupplier.getAsInt());
         if (!vcb.isFull()) {
             vcb.fillIdlePacket();
         }
 
         byte[] data = vcb.getFrame();
+
         socket.send(new DatagramPacket(data, data.length, addr, port));
         vcb.reset();
     }
@@ -161,10 +168,16 @@ public class UdpFrameLink extends AbstractScheduledService {
         int firstHeaderPointer = -1;
         int dataEnd;
 
+        protected int clcw;
+
         public VcBuilder(int vcId) {
             this.vcId = vcId;
             this.dataOffset = hdrSize();
            
+        }
+
+        public void setCLCW(int clcw) {
+            this.clcw = clcw;
         }
 
         public int emtySpaceLength() {
@@ -172,7 +185,7 @@ public class UdpFrameLink extends AbstractScheduledService {
         }
 
         public byte[] getFrame() {
-            encodeHeaderAndChecksums();
+            encodeHeaderAndTrailer();
             return data;
         }
 
@@ -254,7 +267,7 @@ public class UdpFrameLink extends AbstractScheduledService {
 
         abstract int hdrSize();
 
-        abstract void encodeHeaderAndChecksums();
+        abstract void encodeHeaderAndTrailer();
 
         abstract public byte[] getIdleFrame();
     }
@@ -291,12 +304,14 @@ public class UdpFrameLink extends AbstractScheduledService {
         }
 
         @Override
-        void encodeHeaderAndChecksums() {
+        void encodeHeaderAndTrailer() {
             // set the frame sequence count
 
             ByteArrayUtils.encode3Bytes((int) vcSeqCount, data, 2);
             data[5] = (byte) (0x60 + ((vcSeqCount >>> 24) & 0xF));
 
+            ByteArrayUtils.encodeInt(clcw, data, data.length-6);
+            
             ByteArrayUtils.encodeShort(firstHeaderPointer, data, 8);
             fillChecksums(data);
 
@@ -316,7 +331,7 @@ public class UdpFrameLink extends AbstractScheduledService {
         @Override
         public byte[] getIdleFrame() {
             vcSeqCount++;
-            encodeHeaderAndChecksums();
+            encodeHeaderAndTrailer();
             return data;
         }
     }
@@ -340,12 +355,14 @@ public class UdpFrameLink extends AbstractScheduledService {
             ByteArrayUtils.encodeShort((SPACECRAFT_ID << 4) + (vcId<<1) +ocfFlag, frameData, 0);
         }
         @Override
-        void encodeHeaderAndChecksums() {
+        void encodeHeaderAndTrailer() {
             // set the frame sequence count
             data[3] = (byte) (vcSeqCount);
 
             // write the first header pointer
             ByteArrayUtils.encodeShort(firstHeaderPointer, data, 4);
+            
+            ByteArrayUtils.encodeInt(clcw, data, data.length-6);
             
             //compute crc
             int x = crc.compute(data, 0, data.length - 2);
@@ -396,13 +413,16 @@ public class UdpFrameLink extends AbstractScheduledService {
         }
 
         @Override
-        void encodeHeaderAndChecksums() {
+        void encodeHeaderAndTrailer() {
             // set the frame sequence count
             ByteArrayUtils.encodeInt((int)vcSeqCount, data, 7);
 
             // write the first header pointer
             ByteArrayUtils.encodeShort(firstHeaderPointer, data, 12);
             
+            if(ocfFlag==1) {
+                ByteArrayUtils.encodeInt(clcw, data, data.length-6);
+            }
             //compute crc
             int x = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeShort(x, data, data.length - 2);
@@ -411,9 +431,8 @@ public class UdpFrameLink extends AbstractScheduledService {
         @Override
         public byte[] getIdleFrame() {
             vcSeqCount++;
-            encodeHeaderAndChecksums();
+            encodeHeaderAndTrailer();
             return data;
         }
     }
-
 }

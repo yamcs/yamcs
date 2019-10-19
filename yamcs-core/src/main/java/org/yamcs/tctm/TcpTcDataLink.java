@@ -15,14 +15,15 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
- * Sends raw packets on TCP socket.
+ * Sends raw command packets on TCP socket.
  * 
  * @author nm
  *
  */
-public class TcpTcDataLink extends AbstractTcDataLink {
+public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     protected SocketChannel socketChannel;
     protected String host;
     protected int port;
@@ -184,13 +185,11 @@ public class TcpTcDataLink extends AbstractTcDataLink {
 
     @Override
     protected void startUp() throws Exception {
-        super.startUp();
         openSocket();
     }
 
     @Override
     public void shutDown() throws Exception {
-        super.shutDown();
         disconnect();
     }
 
@@ -202,6 +201,7 @@ public class TcpTcDataLink extends AbstractTcDataLink {
 
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.rewind();
+        String reason = null;
         while (!sent && (retries > 0)) {
             if (openSocket()) {
                 try {
@@ -209,7 +209,8 @@ public class TcpTcDataLink extends AbstractTcDataLink {
                     dataCount++;
                     sent = true;
                 } catch (IOException e) {
-                    log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
+                    reason = String.format("Error writing to TC socket to %s:%d : %s", host, port, e.getMessage());
+                    log.warn(reason);
                     try {
                         if (socketChannel.isOpen()) {
                             socketChannel.close();
@@ -220,6 +221,8 @@ public class TcpTcDataLink extends AbstractTcDataLink {
                         e1.printStackTrace();
                     }
                 }
+            } else {
+                reason = String.format("Cannot connect to %s:%d : %s", host, port);
             }
             retries--;
             if (!sent && (retries > 0)) {
@@ -233,9 +236,9 @@ public class TcpTcDataLink extends AbstractTcDataLink {
             }
         }
         if (sent) {
-            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "OK");
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), "OK");
         } else {
-            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
+            failedCommand(pc.getCommandId(), reason);
         }
     }
 

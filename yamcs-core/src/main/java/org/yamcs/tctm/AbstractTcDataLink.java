@@ -1,12 +1,11 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
+
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -17,12 +16,12 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
-import com.google.common.util.concurrent.RateLimiter;
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Base implementation for a TC data link that initialises a post processor and provides a queing and rate limiting
@@ -32,16 +31,13 @@ import com.google.common.util.concurrent.RateLimiter;
  * @author nm
  *
  */
-public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
+public abstract class AbstractTcDataLink extends AbstractService
         implements TcDataLink, SystemParametersProducer {
 
-    protected CommandHistoryPublisher commandHistoryListener;
+    protected CommandHistoryPublisher commandHistoryPublisher;
     SelectionKey selectionKey;
 
     protected volatile boolean disabled = false;
-
-    protected BlockingQueue<PreparedCommand> commandQueue;
-    RateLimiter rateLimiter;
 
     protected volatile long dataCount;
 
@@ -49,33 +45,30 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
 
     protected SystemParametersCollector sysParamCollector;
     protected final Log log;
-    private final String yamcsInstance;
-    private final String name;
+    protected final String yamcsInstance;
+    protected final String name;
     TimeService timeService;
 
-    CommandPostprocessor cmdPostProcessor;
+    protected CommandPostprocessor cmdPostProcessor;
     final YConfiguration config;
-    long initialDelay;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
     protected long housekeepingInterval = 10000;
-
-    public AbstractTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
+    private AggregatedDataLink parent = null;
+    
+   
+    protected boolean failCommandOnDisabled;
+    
+    public AbstractTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
+            throws ConfigurationException {
         log = new Log(getClass(), yamcsInstance);
-        log.setContext(name);
+        log.setContext(linkName);
         this.yamcsInstance = yamcsInstance;
-        this.name = name;
+        this.name = linkName;
         this.config = config;
-        if (config.containsKey("tcQueueSize")) {
-            commandQueue = new LinkedBlockingQueue<>(config.getInt("tcQueueSize"));
-        } else {
-            commandQueue = new LinkedBlockingQueue<>();
-        }
-        if (config.containsKey("tcMaxRate")) {
-            rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
-        }
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        initialDelay = config.getLong("initialDelay", 0);
+        
+        failCommandOnDisabled = config.getBoolean("failCommandOnDisabled", false);
         initPostprocessor(yamcsInstance, config);
     }
 
@@ -85,11 +78,6 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
         } else {
             return TimeEncoding.getWallclockTime();
         }
-    }
-
-    @Override
-    protected void startUp() throws Exception {
-        setupSysVariables();
     }
 
     protected void initPostprocessor(String instance, YConfiguration config) {
@@ -109,7 +97,6 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
                         commandPostprocessorArgs);
             } else {
-                System.out.println("bb");
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
             }
         } catch (ConfigurationException e) {
@@ -121,30 +108,23 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
         }
     }
 
-    /**
-     * Sends
-     */
-    @Override
-    public void sendTc(PreparedCommand pc) {
-        if (disabled) {
-            log.warn("TC disabled, ignoring command {}", pc.getCommandId());
-            return;
-        }
-        if (!commandQueue.offer(pc)) {
-            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
-            commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
-        }
-    }
-
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
-        this.commandHistoryListener = commandHistoryListener;
+        this.commandHistoryPublisher = commandHistoryListener;
         cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
+    }
+
+    public String getLinkName() {
+        return name;
     }
 
     @Override
     public Status getLinkStatus() {
-        return Status.OK;
+        if(disabled) {
+            return Status.DISABLED;
+        } else {
+            return Status.OK;
+        }
     }
 
     @Override
@@ -206,44 +186,20 @@ public abstract class AbstractTcDataLink extends AbstractExecutionThreadService
     public void resetCounters() {
         dataCount = 0;
     }
+    @Override
+    public AggregatedDataLink getParent() {
+        return parent ;
+    }
 
     @Override
-    public void run() throws Exception {
-        if (initialDelay > 0) {
-            Thread.sleep(initialDelay);
-        }
-
-        while (isRunning()) {
-            try {
-                PreparedCommand pc = commandQueue.poll(housekeepingInterval, TimeUnit.MILLISECONDS);
-                if (pc == null) {
-                    doHousekeeping();
-                    continue;
-                }
-                if (pc == SIGNAL_QUIT) {
-                    return;
-                }
-
-                if (rateLimiter != null) {
-                    rateLimiter.acquire();
-                }
-                uplinkCommand(pc);
-            } catch (Exception e) {
-                log.error("Error when sending command: ", e);
-                throw e;
-            }
-        }
+    public void setParent(AggregatedDataLink parent) {
+        this.parent = parent;
     }
-
-    protected void doHousekeeping() {
+    
+    /**Send to command history the failed command */
+    protected void failedCommand(CommandId commandId, String reason) {
+        commandHistoryPublisher.publishWithTime(commandId, ACK_SENT_CNAME_PREFIX,
+                getCurrentTime(), "NOK");
+        commandHistoryPublisher.commandFailed(commandId,  reason);
     }
-
-    protected abstract void uplinkCommand(PreparedCommand pc) throws IOException;
-
-    @Override
-    protected void triggerShutdown() {
-        commandQueue.clear();
-        commandQueue.offer(SIGNAL_QUIT);
-    }
-
 }

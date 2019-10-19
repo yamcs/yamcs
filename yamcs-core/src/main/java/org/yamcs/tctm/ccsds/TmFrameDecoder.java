@@ -3,14 +3,14 @@ package org.yamcs.tctm.ccsds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.TcTmException;
-import org.yamcs.tctm.ccsds.ManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.TmManagedParameters.TmVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
- * Decodes frames as per CCSDS 732.0-B-3
+ * Decodes frames as per CCSDS 132.0-B-2 
  * 
  * @author nm
  *

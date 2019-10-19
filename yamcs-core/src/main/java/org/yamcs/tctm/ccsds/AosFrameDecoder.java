@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
-import org.yamcs.tctm.ccsds.ManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr.DecoderResult;

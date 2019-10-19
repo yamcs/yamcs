@@ -18,9 +18,9 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 /**
  * TCP link that can be used both for TM and TC
  */
-public class TmTcLink extends AbstractExecutionThreadService {
+public class TcpTmTcLink extends AbstractExecutionThreadService {
 
-    private static final Logger log = LoggerFactory.getLogger(TmTcLink.class);
+    private static final Logger log = LoggerFactory.getLogger(TcpTmTcLink.class);
     final String name;
     private Simulator simulator;
     int port;
@@ -34,7 +34,7 @@ public class TmTcLink extends AbstractExecutionThreadService {
 
     private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(100);
 
-    public TmTcLink(String name, Simulator simulator, int port) {
+    public TcpTmTcLink(String name, Simulator simulator, int port) {
         this.name = name;
         this.simulator = simulator;
         this.port = port;

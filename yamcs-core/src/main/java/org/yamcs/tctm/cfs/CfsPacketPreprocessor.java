@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
@@ -32,7 +33,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         this(yamcsInstance, null);
     }
 
-    public CfsPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+    public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
     }
 

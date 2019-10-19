@@ -120,7 +120,11 @@ message IssueCommandRequest {
   optional string origin = 2;
   optional int32 sequenceNumber = 3;
   optional bool dryRun = 4;
+  
   optional string comment = 5;
+  
+  //extra command attributes
+  repeated commanding.CommandHistoryAttribute attribute = 9;
 }
 
 message IssueCommandResponse {

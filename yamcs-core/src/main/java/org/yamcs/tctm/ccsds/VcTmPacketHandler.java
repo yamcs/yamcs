@@ -21,7 +21,7 @@ import org.yamcs.utils.YObjectLoader;
  * @author nm
  *
  */
-public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualChannelHandler {
+public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     TmSink tmSink;
     private long numPackets;
     volatile boolean disabled = false;
@@ -33,11 +33,11 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
     long idleFrameCount = 0;
     PacketPreprocessor packetPreprocessor;
     final String name;
-    final VcManagedParameters vmp;
+    final VcDownlinkManagedParameters vmp;
 
     AggregatedDataLink parent;
 
-    public VirtualChannelPacketHandler(String yamcsInstance, String name, VcManagedParameters vmp) {
+    public VcTmPacketHandler(String yamcsInstance, String name, VcDownlinkManagedParameters vmp) {
         this.vmp = vmp;
         this.name = name;
 
@@ -65,7 +65,7 @@ public class VirtualChannelPacketHandler implements TmPacketDataLink, VirtualCha
     }
 
     @Override
-    public void handle(TransferFrame frame) {
+    public void handle(DownlinkTransferFrame frame) {
         if (disabled) {
             log.trace("Dropping frame for VC {} because the link is disabled", frame.getVirtualChannelId());
             return;

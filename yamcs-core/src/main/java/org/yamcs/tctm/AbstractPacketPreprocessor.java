@@ -1,7 +1,5 @@
 package org.yamcs.tctm;
 
-import java.util.Map;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -20,21 +18,12 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected EventProducer eventProducer;
     protected TimeService timeService;
 
-    @Deprecated
-    protected AbstractPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
-        this(yamcsInstance, YConfiguration.wrap(config));
-    }
-
     protected AbstractPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
-    @Deprecated
-    static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(Map<String, Object> config) {
-        return getErrorDetectionWordCalculator(YConfiguration.wrap(config));
-    }
 
     public static ErrorDetectionWordCalculator getErrorDetectionWordCalculator(YConfiguration config) {
         if ((config == null) || !config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {

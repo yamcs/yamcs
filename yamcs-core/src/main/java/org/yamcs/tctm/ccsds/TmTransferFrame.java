@@ -9,7 +9,7 @@ package org.yamcs.tctm.ccsds;
  * CCSDS 132.0-B-2 September 2015 
  *
  */
-public class TmTransferFrame extends AbstractTransferFrame {
+public class TmTransferFrame extends DownlinkTransferFrame {
     private int shStart = -1;
     private int shLength =-1;
     private boolean idle;
@@ -23,18 +23,15 @@ public class TmTransferFrame extends AbstractTransferFrame {
         return idle;
     }
 
-
     @Override
     long getSeqCountWrapArround() {
         return 0xFF;
     }
 
-
     @Override
     int getSeqInterruptionDelta() {
         return 100;
     }
-
     
     /**
      * 
@@ -43,7 +40,6 @@ public class TmTransferFrame extends AbstractTransferFrame {
     public int getShStart() {
         return shStart;
     }
-    
     
     /**
      * Set secondary header start offset. Set to -1 if the frame does not contain a secondary header
@@ -68,7 +64,6 @@ public class TmTransferFrame extends AbstractTransferFrame {
         this.shLength = length;
     }
 
-
     /**
      * Set frame as idle
      * @param idle - if the frame is idle or not
@@ -76,7 +71,6 @@ public class TmTransferFrame extends AbstractTransferFrame {
     void setIdle(boolean idle) {
         this.idle = idle;
     }
-
 
     @Override
     public String toString() {

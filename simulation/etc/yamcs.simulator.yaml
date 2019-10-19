@@ -112,7 +112,7 @@ dataLinks:
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
     args:
-      stream: tc_sim
+      stream: tc_sim2
       host: localhost
       port: 10025
       # Give the embedded simulator smoe time to boot up
@@ -122,6 +122,27 @@ dataLinks:
         errorDetection:
           type: 16-SUM
         enforceEvenNumberOfBytes: true
+  - name: UDP_FRAME_OUT
+    class: org.yamcs.tctm.UdpTcFrameLink
+    args:
+       host: localhost #host and port where to send the frames to
+       port: 10018
+       spacecraftId: 0xAB
+       maxFrameLength: 1024
+       cltu: BCH
+       virtualChannels:
+         - vcId: 0
+           service: "PACKET" 
+           commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+           commandPostprocessorArgs:
+              errorDetection:
+                  type: 16-SUM
+              enforceEvenNumberOfBytes: true
+           stream: "tc_sim" #which yamcs stream to get the data from
+           useFop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
+           clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
+           initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
+
   - name: TSE
     class: org.yamcs.tctm.TseDataLink
     args:
@@ -144,6 +165,7 @@ dataLinks:
        frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
        insertZoneLength: 0
        errorCorrection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+       clcwStream: "clcw" #published the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1 
        virtualChannels:
           - vcId: 0
             ocfPresent: true
@@ -201,5 +223,5 @@ streamConfig:
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime"]
+  tc: ["tc_realtime", "tc_sim2"]
   sqlFile: "etc/extra_streams.sql"

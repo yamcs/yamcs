@@ -172,13 +172,13 @@ public class TcpTcDataLinkTest {
         return pc;
     }
 
-    static class MyPublisher implements CommandHistoryPublisher {
+    public static class MyPublisher implements CommandHistoryPublisher {
         Map<Integer, Long> sentTime = new HashMap<>();
         List<Integer> successful = new ArrayList<>();
         List<Integer> failed = new ArrayList<>();
         Semaphore semaphore;
 
-        MyPublisher(Semaphore semaphore) {
+        public MyPublisher(Semaphore semaphore) {
             this.semaphore = semaphore;
         }
 

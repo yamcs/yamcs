@@ -125,7 +125,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void unregisterLink(String instance, String linkName) {
-        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
         if (o.isPresent()) {
             LinkWithInfo lwi = o.get();
             links.remove(lwi);
@@ -133,11 +133,12 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
-    private Optional<LinkWithInfo> getLink(String instance, String linkName) {
+    public Optional<LinkWithInfo> getLinkWithInfo(String instance, String linkName) {
         return links.stream()
                 .filter(lwi -> instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
                 .findFirst();
     }
+    
 
     public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
         for (int i = 0; i < qmanagers.size(); i++) {
@@ -306,7 +307,7 @@ public class ManagementService implements ProcessorListener {
 
     public void enableLink(String instance, String linkName) {
         log.debug("received enableLink for {}/{}", instance, linkName);
-        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
         if (o.isPresent()) {
             LinkWithInfo lci = o.get();
             lci.link.enable();
@@ -317,7 +318,7 @@ public class ManagementService implements ProcessorListener {
 
     public void disableLink(String instance, String linkName) {
         log.debug("received disableLink for {}/{}", instance, linkName);
-        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
         if (o.isPresent()) {
             LinkWithInfo lci = o.get();
             lci.link.disable();
@@ -327,7 +328,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void resetCounters(String instance, String linkName) {
-        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
         if (o.isPresent()) {
             LinkWithInfo lci = o.get();
             lci.link.resetCounters();
@@ -541,7 +542,7 @@ public class ManagementService implements ProcessorListener {
         tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
     }
 
-    static class LinkWithInfo {
+    public static class LinkWithInfo {
         final Link link;
         LinkInfo linkInfo;
 
@@ -572,6 +573,10 @@ public class ManagementService implements ProcessorListener {
             } else {
                 return false;
             }
+        }
+
+        public Link getLink() {
+            return link;
         }
     }
 

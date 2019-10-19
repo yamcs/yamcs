@@ -34,7 +34,7 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
         byte[] binary = pc.getBinary();
         ByteArrayUtils.encodeShort(binary.length - 7, binary, 4);// set packet length
         int seqCount = seqFiller.fill(binary);
-        commandHistoryPublisher.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        commandHistoryPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
 
         // set the checksum
         binary[CHECKSUM_OFFSET] = 0;

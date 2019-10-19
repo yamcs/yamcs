@@ -111,6 +111,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         addApi(new RocksDbApi());
         addApi(new TableApi());
         addApi(new TagApi());
+        addApi(new Cop1Api());
 
         // Not (yet) converted to Protobuf-style API
         registerRouteHandler(new MdbRestHandler());
