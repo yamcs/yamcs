@@ -2,8 +2,8 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, first, map, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { WebSocketServerMessage } from './types/internal';
-import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { AlarmSubscriptionRequest, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
+import { AlarmSubscriptionRequest, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -450,6 +450,35 @@ export class WebSocketClient {
             filter((statistics: Statistics) => {
               return !instance || (instance === statistics.instance);
             }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
+  async getCommandUpdates(options: CommandSubscriptionRequest = {}) {
+    const requestId = this.emit({
+      cmdhistory: 'subscribe',
+      data: options,
+    });
+
+    return new Promise<CommandSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as CommandSubscriptionResponse;
+          response.command$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'CMD_HISTORY'),
+            map(msg => msg[3].data as CommandHistoryEntry),
           );
           resolve(response);
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {

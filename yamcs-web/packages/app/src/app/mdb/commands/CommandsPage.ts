@@ -54,7 +54,7 @@ export class CommandsPage implements AfterViewInit {
     title.setTitle('Commands');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('commands');
-    if (cols) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
     this.dataSource = new CommandsDataSource(yamcs);

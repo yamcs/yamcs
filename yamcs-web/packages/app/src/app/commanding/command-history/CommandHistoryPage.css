@@ -59,7 +59,7 @@ tr.failed td {
 
 tr.success td.completion {
   background-color: #e6ffed;
-  color: green;
+  color: #00c752;
 }
 
 tr.failed td.completion {

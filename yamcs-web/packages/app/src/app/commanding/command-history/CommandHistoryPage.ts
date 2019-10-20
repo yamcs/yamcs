@@ -17,7 +17,7 @@ import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
 const defaultInterval = 'PT1H';
-const deprecatedCols = ['stages', 'transmissionConstraints', 'release'];
+const deprecatedCols = ['stages', 'transmissionConstraints', 'release', 'sequenceNumber', 'verifications'];
 
 @Component({
   templateUrl: './CommandHistoryPage.html',
@@ -60,11 +60,10 @@ export class CommandHistoryPage {
     { id: 'comment', label: 'Comment' },
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
-    { id: 'sequenceNumber', label: 'Sequence Number' },
     { id: 'queued', label: 'Queued Acknowledgment' },
     { id: 'released', label: 'Released Acknowledgment' },
     { id: 'sent', label: 'Sent Acknowledgment' },
-    { id: 'verifications', label: 'TM Verfications' },
+    { id: 'acknowledgments', label: 'Other Acknowledgments' },
     { id: 'completion', label: 'Completion' },
   ];
 
@@ -76,7 +75,7 @@ export class CommandHistoryPage {
     'queued',
     'released',
     'sent',
-    'verifications',
+    'acknowledgments',
     'completion',
   ];
 
@@ -104,7 +103,7 @@ export class CommandHistoryPage {
     this.instance = yamcs.getInstance();
 
     const cols = preferenceStore.getVisibleColumns('cmdhist', deprecatedCols);
-    if (cols) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
 

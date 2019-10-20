@@ -57,7 +57,7 @@ export class ParametersPage implements AfterViewInit {
     title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('parameters');
-    if (cols) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
     this.dataSource = new ParametersDataSource(yamcs, synchronizer);

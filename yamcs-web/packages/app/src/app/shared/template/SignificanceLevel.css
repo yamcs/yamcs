@@ -34,3 +34,9 @@
   filter: grayscale(100%);
   -webkit-filter: grayscale(100%);
 }
+
+@media print {
+  .none, .watch, .warning, .distress, .critical, .severe {
+    color-adjust: exact;
+  }
+}

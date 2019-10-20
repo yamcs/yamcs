@@ -3,7 +3,7 @@
   <span #top></span>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px">
+    <div class="page-options">
       <input #filter
              class="ya-input"
              type="text"
@@ -17,16 +17,16 @@
     </div>
     <div style="display: inline-block">
       <table mat-table
-            *ngIf="dataSource"
-            class="ya-data-table"
-            style="width: 1000px"
-            [dataSource]="dataSource">
+             *ngIf="dataSource"
+             class="ya-data-table"
+             style="width: 1000px"
+             [dataSource]="dataSource">
 
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let parameter">
             <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-              [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
+               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
             <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
               <button mat-stroked-button class="expandable"
                       (click)="parameter.expanded = !parameter.expanded">
@@ -44,7 +44,8 @@
 
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef style="width: 120px">Type</th>
-          <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}</td>
+          <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="units">

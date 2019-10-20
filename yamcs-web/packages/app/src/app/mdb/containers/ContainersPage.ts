@@ -58,7 +58,7 @@ export class ContainersPage implements AfterViewInit {
     title.setTitle('Containers');
     this.instance = yamcs.getInstance();
     const cols = preferenceStore.getVisibleColumns('containers');
-    if (cols) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
     this.dataSource = new ContainersDataSource(yamcs);

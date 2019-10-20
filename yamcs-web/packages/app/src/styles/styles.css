@@ -4,13 +4,13 @@ html, body {
 }
 
 /* Disable dashed border in menus etc. Only FF does this */
+
 ::-moz-focus-inner {
-  border:0;
+  border: 0;
 }
 
 body {
   background-color: #fff;
-
   /* Without this FF font are too crispy */
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,36 +20,43 @@ body {
   height: 12px !important;
   width: 12px !important;
 }
+
 .material-icons.icon14 {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
 }
+
 .material-icons.icon16 {
   font-size: 16px !important;
   height: 16px !important;
   width: 16px !important;
 }
+
 .material-icons.icon18 {
   font-size: 18px !important;
   height: 18px !important;
   width: 18px !important;
 }
+
 .material-icons.icon24 {
   font-size: 24px !important;
   height: 24px !important;
   width: 24px !important;
 }
+
 .material-icons.icon32 {
   font-size: 32px !important;
   height: 32px !important;
   width: 32px !important;
 }
+
 .material-icons.icon36 {
   font-size: 36px !important;
   height: 36px !important;
   width: 36px !important;
 }
+
 .material-icons.icon48 {
   font-size: 48px !important;
   height: 48px !important;
@@ -90,9 +97,7 @@ body {
   background: #fafafa;
 }
 
-.ya-data-table td.mat-cell,
-.ya-data-table th.mat-cell,
-.ya-data-table-placeholder {
+.ya-data-table td.mat-cell, .ya-data-table th.mat-cell, .ya-data-table-placeholder {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
@@ -126,9 +131,7 @@ dt {
   background-color: #f0f4fd !important;
 }
 
-.ya-data-table .mat-button,
-.ya-data-table .mat-stroked-button,
-.ya-data-table .mat-raised-button {
+.ya-data-table .mat-button, .ya-data-table .mat-stroked-button, .ya-data-table .mat-raised-button {
   line-height: 16px;
   min-width: 0;
 }
@@ -157,8 +160,7 @@ dt {
   text-align: left;
 }
 
-.ya-data-table td.status, .ya-data-table th.status,
-.ya-data-table td.iconcol, .ya-data-table th.iconcol {
+.ya-data-table td.status, .ya-data-table th.status, .ya-data-table td.iconcol, .ya-data-table th.iconcol {
   width: 1px;
   text-align: left;
 }
@@ -175,8 +177,7 @@ dt {
   padding-right: 8px !important;
 }
 
-.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th,
-.ya-data-table td.status+td, .ya-data-table th.status+th {
+.ya-data-table td.checkbox+td, .ya-data-table th.checkbox+th, .ya-data-table td.status+td, .ya-data-table th.status+th {
   padding-left: 4px;
 }
 
@@ -222,11 +223,7 @@ a.ya-link.ya-header-link {
   color: crimson;
 }
 
-.ya-form label,
-.ya-form label input[type="text"],
-.ya-form label input[type="password"],
-.ya-form label textarea,
-.ya-form label select {
+.ya-form label, .ya-form label input[type="text"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select {
   margin: 5px 0 0;
   display: block;
   width: 100%;
@@ -321,7 +318,7 @@ a.ya-link.ya-header-link {
 }
 
 .success {
-  color: green;
+  color: #00c752;
 }
 
 .warning, .WATCH td, .WARNING td {
@@ -336,6 +333,7 @@ a.ya-link.ya-header-link {
  * Fix for scrollbar being invisible on Safari.
  * https://github.com/ajaxorg/ace/issues/2872
  */
+
 .ace_scrollbar-inner {
   background-color: white;
   opacity: 0.01;
@@ -365,25 +363,51 @@ button.expandable {
 }
 
 .shake {
-  animation: yshake 0.82s infinite cubic-bezier(.36,.07,.19,.97) both;
+  animation: yshake 0.82s infinite cubic-bezier(.36, .07, .19, .97) both;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
+}
+
+.page-options {
+  margin-bottom: 12px;
 }
 
 @keyframes yshake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);
   }
-
   20%, 80% {
     transform: translate3d(2px, 0, 0);
   }
-
   30%, 50%, 70% {
     transform: translate3d(-4px, 0, 0);
   }
-
   40%, 60% {
     transform: translate3d(4px, 0, 0);
+  }
+}
+
+@media print {
+  .mat-drawer, .mat-toolbar, .page-options, button.expandable, .filter-bar {
+    display: none !important;
+  }
+  .page-content, .mat-sidenav-container {
+    position: static !important;
+  }
+  .mat-drawer-content {
+    margin: 0 !important;
+  }
+  .panel-content {
+    padding: 0;
+  }
+  .ya-data-table {
+    width: auto !important;
+  }
+  * {
+    overflow: visible !important;
+  }
+  .ya-data-table td.mat-cell, .ya-data-table th.mat-header-cell {
+    padding: 0 7px 0 0;
+    width: auto !important;
   }
 }

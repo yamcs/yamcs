@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { CommandQueue } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  templateUrl: './CommandQueuesPage.html',
+  templateUrl: './QueuesPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandQueuesPage implements OnDestroy {
+export class QueuesPage implements OnDestroy {
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
   cqueueSubscription: Subscription;
@@ -16,9 +17,10 @@ export class CommandQueuesPage implements OnDestroy {
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue } = {};
 
-  constructor(yamcs: YamcsService) {
+  constructor(yamcs: YamcsService, title: Title) {
     const processor = yamcs.getProcessor();
     const instanceClient = yamcs.getInstanceClient()!;
+    title.setTitle('Queues');
 
     instanceClient.getCommandQueues(processor.name).then(cqueues => {
       for (const cqueue of cqueues) {

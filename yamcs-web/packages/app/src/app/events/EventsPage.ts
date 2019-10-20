@@ -145,7 +145,7 @@ export class EventsPage {
         }
       }
     });
-    if (cols) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
 

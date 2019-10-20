@@ -5,8 +5,8 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
-import { CommandQueuesPage } from './command-queues/CommandQueuesPage';
 import { SendCommandPage as SendCommandPage } from './command-sender/SendCommandPage';
+import { QueuesPage } from './queues/QueuesPage';
 
 const routes: Routes = [
   {
@@ -22,12 +22,12 @@ const routes: Routes = [
         component: SendCommandPage,
       },
       {
-        path: 'command-history',
+        path: 'history',
         component: CommandHistoryPage,
       },
       {
-        path: 'command-queues',
-        component: CommandQueuesPage,
+        path: 'queues',
+        component: QueuesPage,
         canActivate: [MayControlCommandQueueGuard],
       },
     ]
@@ -35,13 +35,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class CommandingRoutingModule { }
 
 export const routingComponents = [
   CommandHistoryPage,
-  CommandQueuesPage,
+  QueuesPage,
   SendCommandPage,
 ];

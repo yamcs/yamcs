@@ -88,12 +88,12 @@
           Send a Command
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
-                              routerLink="/commanding/command-queues"
+                              routerLink="/commanding/queues"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
-          Command Queues
+          Queues
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/command-history"
+        <app-sidebar-nav-item routerLink="/commanding/history"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Command History
@@ -108,8 +108,8 @@
 
       <ng-container *ngIf="showMDB()">
         <mat-list-item class="nav-item-group"
-                      [class.active]="mdbActive"
-                      (click)="toggleMdbGroup()">
+                       [class.active]="mdbActive"
+                       (click)="toggleMdbGroup()">
           <mat-icon class="item-icon">style</mat-icon>
           MDB
         </mat-list-item>

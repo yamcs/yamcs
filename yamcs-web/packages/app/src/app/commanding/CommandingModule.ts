@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
-import { CommandQueuesTable } from './command-queues/CommandQueuesTable';
-import { QueuedCommandsTable } from './command-queues/QueuedCommandsTable';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
+import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
+import { QueuesTable } from './queues/QueuesTable';
 
 @NgModule({
   imports: [
@@ -14,8 +14,8 @@ import { CommandingRoutingModule, routingComponents } from './CommandingRoutingM
   declarations: [
     routingComponents,
     AcknowledgmentIcon,
-    CommandQueuesTable,
     QueuedCommandsTable,
+    QueuesTable,
     SendCommandWizardStep,
   ],
 })

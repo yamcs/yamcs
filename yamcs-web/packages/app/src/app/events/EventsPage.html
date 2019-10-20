@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar>
     Events
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button mat-button
             *ngIf="mayWriteEvents()"
             color="primary"
@@ -79,19 +79,16 @@
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>
-        <div style="text-align: right; flex: 1 1 150px">
-          <app-action-link icon="file_download"
-                          [link]="downloadURL$ | async">Download Data</app-action-link>
+        <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
+          Listening for events
+          <app-dots fontSize="16px" color="#1b61b9"></app-dots>
         </div>
       </div>
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
       <div class="message-zone">
-        <span *ngIf="dataSource.streaming$ | async">
-          Listening for events
-          <app-dots fontSize="16px" color="#1b61b9"></app-dots>
-        </span>
+        <app-action-link [link]="downloadURL$ | async">Download events</app-action-link>
       </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
@@ -167,8 +164,8 @@
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-               [@rowAnimation]="row.animate"
-               [ngClass]="row.severity"></tr>
+          [@rowAnimation]="row.animate"
+          [ngClass]="row.severity"></tr>
     </table>
 
     <mat-toolbar>

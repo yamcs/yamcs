@@ -11,12 +11,12 @@
   </app-admin-toolbar>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px;">
+    <div class="page-options">
       <input #filter
-              class="ya-input"
-              type="text"
-              placeholder="Filter groups"
-              style="width: 400px">
+             class="ya-input"
+             type="text"
+             placeholder="Filter groups"
+             style="width: 400px">
     </div>
     <table mat-table
            [dataSource]="dataSource"
@@ -37,7 +37,8 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header width="300">Members</th>
         <td mat-cell *matCellDef="let group">
           <ng-container *ngFor="let user of group.users">
-            <mat-icon class="icon16" style="vertical-align: middle">person</mat-icon> {{ user.displayName || user.name }}
+            <mat-icon class="icon16" style="vertical-align: middle">person</mat-icon>
+            {{ user.displayName || user.name }}
             <br>
           </ng-container>
         </td>

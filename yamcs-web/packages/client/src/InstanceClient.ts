@@ -3,7 +3,7 @@ import { CreateTransferRequest, Transfer, TransfersPage } from './types/cfdp';
 import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
@@ -180,6 +180,11 @@ export class InstanceClient {
   async getProcessorStatistics(): Promise<StatisticsSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient!.getProcessorStatistics(this.instance);
+  }
+
+  async getCommandUpdates(): Promise<CommandSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.getCommandUpdates();
   }
 
   async issueCommand(processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
