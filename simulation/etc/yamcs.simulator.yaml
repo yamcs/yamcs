@@ -129,7 +129,7 @@ dataLinks:
        port: 10018
        spacecraftId: 0xAB
        maxFrameLength: 1024
-       cltu: BCH
+       cltuEncoding: BCH
        virtualChannels:
          - vcId: 0
            service: "PACKET" 
