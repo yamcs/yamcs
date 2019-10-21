@@ -19,13 +19,10 @@
         <mat-icon class="item-icon">pages</mat-icon>
         Plugins
       </app-sidebar-nav-item>
-      <mat-list-item class="nav-item-group"
-                     [class.active]="userManagementActive"
-                     (click)="toggleUserManagementGroup()">
-        <mat-icon class="item-icon">supervised_user_circle</mat-icon>
-        Access control
-      </mat-list-item>
-      <div *ngIf="userManagementExpanded" class="nav-item-group-items">
+      <app-sidebar-nav-group label="Access control" icon="supervised_user_circle"
+                             [active]="userManagementActive"
+                             [expanded]="userManagementExpanded"
+                             (toggle)="toggleUserManagementGroup()">
         <app-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
           Users
         </app-sidebar-nav-item>
@@ -35,7 +32,7 @@
         <app-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
           Groups
         </app-sidebar-nav-item>
-      </div>
+      </app-sidebar-nav-group>
       <app-sidebar-nav-item routerLink="/admin/clients">
         <mat-icon class="item-icon">devices</mat-icon>
         Connected clients
@@ -48,17 +45,14 @@
         <mat-icon class="item-icon">shopping_basket</mat-icon>
         Buckets
       </app-sidebar-nav-item>
-      <mat-list-item class="nav-item-group"
-                     [class.active]="rocksDbActive"
-                     (click)="toggleRocksDbGroup()">
-        <mat-icon class="item-icon" svgIcon="rocksdb"></mat-icon>
-        RocksDB
-      </mat-list-item>
-      <div *ngIf="rocksDbExpanded" class="nav-item-group-items">
+      <app-sidebar-nav-group label="RocksDB" svgIcon="rocksdb"
+                             [active]="rocksDbActive"
+                             [expanded]="rocksDbExpanded"
+                             (toggle)="toggleRocksDbGroup()">
         <app-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
           Open databases
         </app-sidebar-nav-item>
-      </div>
+      </app-sidebar-nav-group>
       <app-sidebar-nav-item routerLink="/admin/routes">
         <mat-icon class="item-icon">http</mat-icon>
         API routes
