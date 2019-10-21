@@ -252,7 +252,7 @@ export class InstanceClient {
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
       body,
-      method: 'POST',
+      method: 'PATCH',
     });
   }
 

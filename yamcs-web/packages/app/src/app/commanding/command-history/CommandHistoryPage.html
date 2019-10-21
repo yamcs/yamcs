@@ -186,7 +186,9 @@
           </th>
           <td mat-cell *matCellDef="let item" class="iconcol dense"
               style="text-align: center">
-            <app-acknowledgment-icon [ack]="item.released"></app-acknowledgment-icon>
+            <app-transmission-constraints-icon *ngIf="!item.released" [command]="item">
+            </app-transmission-constraints-icon>
+            <app-acknowledgment-icon *ngIf="item.released" [ack]="item.released"></app-acknowledgment-icon>
           </td>
         </ng-container>
 

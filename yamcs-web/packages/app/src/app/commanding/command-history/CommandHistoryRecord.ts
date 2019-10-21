@@ -21,6 +21,7 @@ export class CommandHistoryRecord {
 
   source: string;
   binary: string;
+  transmissionConstraints: string;
 
   comment?: string;
 
@@ -60,6 +61,8 @@ export class CommandHistoryRecord {
         this.source = attr.value.stringValue!;
       } else if (attr.name === 'binary') {
         this.binary = attr.value.binaryValue!;
+      } else if (attr.name === 'TransmissionConstraints') {
+        this.transmissionConstraints = attr.value.stringValue!;
       } else if (attr.name === 'CommandFailed') {
         this.failureMessage = attr.value.stringValue!;
       } else if (attr.name === 'CommandComplete') {

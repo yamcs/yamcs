@@ -387,6 +387,17 @@ button.expandable {
   }
 }
 
+@keyframes yspin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
+}
+
 @media print {
   .mat-drawer, .mat-toolbar, .page-options, button.expandable, .filter-bar {
     display: none !important;

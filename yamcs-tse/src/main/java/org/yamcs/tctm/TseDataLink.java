@@ -167,9 +167,11 @@ public class TseDataLink extends AbstractService implements Link {
         channel.writeAndFlush(command).addListener(f -> {
             long missionTime = timeService.getMissionTime();
             if (f.isSuccess()) {
-                cmdhistPublisher.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", missionTime, "OK");
+                cmdhistPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
+                        missionTime, "OK");
             } else {
-                cmdhistPublisher.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", missionTime, "NOK");
+                cmdhistPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
+                        missionTime, "NOK");
             }
         });
         outCount++;

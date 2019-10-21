@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
 import { CommandDetail } from './command-history/CommandDetail';
+import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { CommandIdPipe } from './pipes/CommandIdPipe';
@@ -25,6 +26,7 @@ const pipes = [
     QueuedCommandsTable,
     QueuesTable,
     SendCommandWizardStep,
+    TransmissionConstraintsIcon,
   ],
 })
 export class CommandingModule {

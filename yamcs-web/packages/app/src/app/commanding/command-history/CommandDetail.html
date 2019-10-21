@@ -1,4 +1,4 @@
-<h6>ID</h6>
+<h6 style="padding-top: 0">ID</h6>
 <div class="block">
   {{ command.commandId | commandId }}
 </div>
@@ -54,134 +54,58 @@
 <div class="block">
   <table yaDataTable style="width: 100%">
     <tr>
-      <th style="width: 16px"></th>
-      <th></th>
-      <th>Status</th>
-      <th>Time</th>
-    </tr>
-    <tr>
-      <td>
-        <ng-container *ngIf="command.queued">
-          <ng-container [ngSwitch]="command.queued?.status">
-            <ng-container *ngSwitchCase="'OK'">
-              <mat-icon class="step success" style="margin-right: 8px">
-                check_circle_outline
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngSwitchDefault>
-              <mat-icon class="step alert" style="margin-right: 8px">
-                highlight_off
-              </mat-icon>
-            </ng-container>
-          </ng-container>
-        </ng-container>
-        <ng-container *ngIf="!command.queued">
-          <mat-icon class="step down" style="margin-right: 8px">
-            lens
-          </mat-icon>
-        </ng-container>
+      <td style="width: 16px">
+        <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
       </td>
-      <td>Queued</td>
-      <td>{{ command.queued?.status || '-' }}</td>
+      <td style="width: 150px">Queued</td>
+      <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
       <td>
-        <ng-container *ngIf="command.queued?.time">
-          <span [matTooltip]="command.queued?.time">{{ command.queued?.time | deltaWith:command.generationTime }}</span>
-        </ng-container>
+        <span [matTooltip]="command.queued?.time">
+          {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
       </td>
     </tr>
     <tr>
       <td>
-        <ng-container *ngIf="command.released">
-          <ng-container [ngSwitch]="command.released?.status">
-            <ng-container *ngSwitchCase="'OK'">
-              <mat-icon class="step success" style="margin-right: 8px">
-                check_circle_outline
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngSwitchDefault>
-              <mat-icon class="step alert" style="margin-right: 8px">
-                highlight_off
-              </mat-icon>
-            </ng-container>
-          </ng-container>
-        </ng-container>
-        <ng-container *ngIf="!command.released">
-          <mat-icon class="step down" style="margin-right: 8px">
-            lens
-          </mat-icon>
-        </ng-container>
+        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
+        </app-transmission-constraints-icon>
+        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
       </td>
       <td>Released</td>
-      <td>{{ command.released?.status || '-' }}</td>
       <td>
-        <ng-container *ngIf="command.released?.time">
-          <span
-                [matTooltip]="command.released?.time">{{ command.released?.time | deltaWith:command.generationTime }}</span>
-        </ng-container>
+        {{ command.released?.status || command.transmissionConstraints || '-' }}
+      </td>
+      <td>
+        <span [matTooltip]="command.released?.time">
+          {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
       </td>
     </tr>
     <tr>
       <td>
-        <ng-container *ngIf="command.sent">
-          <ng-container [ngSwitch]="command.sent?.status">
-            <ng-container *ngSwitchCase="'OK'">
-              <mat-icon class="step success" style="margin-right: 8px">
-                check_circle_outline
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngSwitchDefault>
-              <mat-icon class="step alert" style="margin-right: 8px">
-                highlight_off
-              </mat-icon>
-            </ng-container>
-          </ng-container>
-        </ng-container>
-        <ng-container *ngIf="!command.sent">
-          <mat-icon class="step down" style="margin-right: 8px">
-            lens
-          </mat-icon>
-        </ng-container>
+        <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
       </td>
       <td>Sent</td>
       <td>{{ command.sent?.status || '-' }}</td>
       <td>
-        <ng-container *ngIf="command.sent?.time">
-          <span
-                [matTooltip]="command.sent?.time">{{ command.sent?.time | deltaWith:command.generationTime }}</span>
-        </ng-container>
+        <span [matTooltip]="command.sent?.time">
+          {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
       </td>
     </tr>
   </table>
 </div>
 
 <ng-container *ngIf="command.verifications.length">
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <h6 style="padding-top: 0">Extra acknowledgments</h6>
+  <h6>Extra acknowledgments</h6>
   <div class="block">
     <table yaDataTable style="width: 100%">
-      <tr>
-        <th style="width: 16px"></th>
-        <th></th>
-        <th>Status</th>
-        <th>Time</th>
-      </tr>
       <tr *ngFor="let ack of command.verifications">
-        <td>
-          <ng-container [ngSwitch]="ack.status">
-            <ng-container *ngSwitchCase="'OK'">
-              <mat-icon class="step success" style="margin-right: 8px">
-                check_circle_outline
-              </mat-icon>
-            </ng-container>
-            <ng-container *ngSwitchDefault>
-              <mat-icon class="step alert" style="margin-right: 8px">
-                highlight_off
-              </mat-icon>
-            </ng-container>
-          </ng-container>
+        <td style="width: 16px">
+          <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
         </td>
-        <td>{{ ack.name }}</td>
-        <td>{{ ack.status }}</td>
+        <td style="width: 150px">{{ ack.name }}</td>
+        <td style="width: 70px">{{ ack.status }}</td>
         <td>
           <span [matTooltip]="ack.time">{{ ack.time | deltaWith:command.generationTime }}</span>
         </td>
@@ -190,8 +114,7 @@
   </div>
 </ng-container>
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-<h6 style="padding-top: 0">Completion</h6>
+<h6>Completion</h6>
 <div class="block">
   <ng-container *ngIf="command.completed && command.success">SUCCESS</ng-container>
   <ng-container *ngIf="command.completed && !command.success">
