@@ -1,11 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { UserInfo } from '@yamcs/client';
-import { fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export interface MemberItem {
@@ -27,8 +26,7 @@ export class AddMembersDialog implements AfterViewInit {
     'name',
   ];
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
@@ -55,18 +53,14 @@ export class AddMembersDialog implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.filterControl.valueChanges.subscribe(() => {
+      const value = this.filterControl.value || '';
+      this.dataSource.filter = value.toLowerCase();
+    });
     this.dataSource.filterPredicate = (member, filter) => {
       return member.label.toLowerCase().indexOf(filter) >= 0;
     };
     this.dataSource.paginator = this.paginator;
-
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(150), // Keep low -- Client-side filter
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(value => {
-      this.dataSource.filter = value.toLowerCase();
-    });
   }
 
   toggleOne(row: MemberItem) {

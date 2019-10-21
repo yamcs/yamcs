@@ -41,7 +41,7 @@
 
 <ng-container *ngIf="command.extra.length">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <h6 style="padding-top: 0">Extra Attributes</h6>
+  <h6 style="padding-top: 0">Extra attributes</h6>
   <div class="block">
     <ul>
       <li *ngFor="let extra of command.extra">{{ extra.name }}: {{ extra.value }}</li>
@@ -49,9 +49,114 @@
   </div>
 </ng-container>
 
+<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<h6 style="padding-top: 0">Yamcs acknowledgments</h6>
+<div class="block">
+  <table yaDataTable style="width: 100%">
+    <tr>
+      <th style="width: 16px"></th>
+      <th></th>
+      <th>Status</th>
+      <th>Time</th>
+    </tr>
+    <tr>
+      <td>
+        <ng-container *ngIf="command.queued">
+          <ng-container [ngSwitch]="command.queued?.status">
+            <ng-container *ngSwitchCase="'OK'">
+              <mat-icon class="step success" style="margin-right: 8px">
+                check_circle_outline
+              </mat-icon>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              <mat-icon class="step alert" style="margin-right: 8px">
+                highlight_off
+              </mat-icon>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!command.queued">
+          <mat-icon class="step down" style="margin-right: 8px">
+            lens
+          </mat-icon>
+        </ng-container>
+      </td>
+      <td>Queued</td>
+      <td>{{ command.queued?.status || '-' }}</td>
+      <td>
+        <ng-container *ngIf="command.queued?.time">
+          <span [matTooltip]="command.queued?.time">{{ command.queued?.time | deltaWith:command.generationTime }}</span>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <ng-container *ngIf="command.released">
+          <ng-container [ngSwitch]="command.released?.status">
+            <ng-container *ngSwitchCase="'OK'">
+              <mat-icon class="step success" style="margin-right: 8px">
+                check_circle_outline
+              </mat-icon>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              <mat-icon class="step alert" style="margin-right: 8px">
+                highlight_off
+              </mat-icon>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!command.released">
+          <mat-icon class="step down" style="margin-right: 8px">
+            lens
+          </mat-icon>
+        </ng-container>
+      </td>
+      <td>Released</td>
+      <td>{{ command.released?.status || '-' }}</td>
+      <td>
+        <ng-container *ngIf="command.released?.time">
+          <span
+                [matTooltip]="command.released?.time">{{ command.released?.time | deltaWith:command.generationTime }}</span>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <ng-container *ngIf="command.sent">
+          <ng-container [ngSwitch]="command.sent?.status">
+            <ng-container *ngSwitchCase="'OK'">
+              <mat-icon class="step success" style="margin-right: 8px">
+                check_circle_outline
+              </mat-icon>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              <mat-icon class="step alert" style="margin-right: 8px">
+                highlight_off
+              </mat-icon>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!command.sent">
+          <mat-icon class="step down" style="margin-right: 8px">
+            lens
+          </mat-icon>
+        </ng-container>
+      </td>
+      <td>Sent</td>
+      <td>{{ command.sent?.status || '-' }}</td>
+      <td>
+        <ng-container *ngIf="command.sent?.time">
+          <span
+                [matTooltip]="command.sent?.time">{{ command.sent?.time | deltaWith:command.generationTime }}</span>
+        </ng-container>
+      </td>
+    </tr>
+  </table>
+</div>
+
 <ng-container *ngIf="command.verifications.length">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <h6 style="padding-top: 0">Verifications</h6>
+  <h6 style="padding-top: 0">Extra acknowledgments</h6>
   <div class="block">
     <table yaDataTable style="width: 100%">
       <tr>

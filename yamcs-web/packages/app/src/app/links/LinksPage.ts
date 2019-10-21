@@ -1,11 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance, Link, LinkEvent } from '@yamcs/client';
-import { BehaviorSubject, fromEvent, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
 import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
@@ -21,8 +21,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   instance: Instance;
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   // Link to show n detail pane (only on single selection)
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
@@ -88,9 +87,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
-      this.filter.nativeElement.value = queryParams.get('filter');
+      this.filterControl.setValue(queryParams.get('filter'));
       this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
     }
+
+    this.filterControl.valueChanges.subscribe(() => {
+      this.updateURL();
+      const value = this.filterControl.value || '';
+      this.dataSource.filter = value.toLowerCase();
+    });
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
@@ -114,15 +119,6 @@ export class LinksPage implements AfterViewInit, OnDestroy {
           this.processLinkEvent(evt);
         });
       });
-    });
-
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(150), // Keep low -- Client-side filter
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(value => {
-      this.updateURL();
-      this.dataSource.filter = value.toLowerCase();
     });
   }
 
@@ -269,7 +265,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   private updateURL() {
-    const filterValue = this.filter.nativeElement.value.trim();
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

@@ -1,10 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetAlgorithmsOptions, Instance } from '@yamcs/client';
-import { fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
@@ -26,8 +25,7 @@ export class AlgorithmsPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   dataSource: AlgorithmsDataSource;
 
@@ -58,9 +56,13 @@ export class AlgorithmsPage implements AfterViewInit {
 
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('filter')) {
-      this.filter.nativeElement.value = queryParams.get('filter');
-    }
+    this.filterControl.setValue(queryParams.get('filter'));
+
+    this.filterControl.valueChanges.subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.updateDataSource();
+    });
+
     if (queryParams.has('page')) {
       this.paginator.pageIndex = Number(queryParams.get('page'));
     }
@@ -68,15 +70,6 @@ export class AlgorithmsPage implements AfterViewInit {
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
       this.top.nativeElement.scrollIntoView();
-    });
-
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(400),
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(() => {
-      this.paginator.pageIndex = 0;
-      this.updateDataSource();
     });
   }
 
@@ -86,15 +79,15 @@ export class AlgorithmsPage implements AfterViewInit {
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };
-    const filterValue = this.filter.nativeElement.value.trim().toLowerCase();
+    const filterValue = this.filterControl.value;
     if (filterValue) {
-      options.q = filterValue;
+      options.q = filterValue.toLowerCase();
     }
     this.dataSource.loadAlgorithms(options);
   }
 
   private updateURL() {
-    const filterValue = this.filter.nativeElement.value.trim();
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

@@ -12,11 +12,9 @@
 
   <div class="panel-content">
     <div class="page-options">
-      <input #filter
-              class="ya-input"
-              type="text"
-              placeholder="Filter users"
-              style="width: 400px">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter users">
+      </app-search-filter>
     </div>
     <mat-tab-group animationDuration="0ms">
       <mat-tab>

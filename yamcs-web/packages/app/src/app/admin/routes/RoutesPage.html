@@ -29,11 +29,9 @@
   <div class="table-wrapper">
     <div class="panel-content">
       <div class="page-options">
-        <input #filter
-               class="ya-input"
-               type="text"
-               placeholder="Filter routes"
-               style="width: 400px">
+        <app-search-filter [formControl]="filterControl"
+                           placeholder="Filter routes">
+        </app-search-filter>
       </div>
       <table mat-table
              [dataSource]="dataSource"

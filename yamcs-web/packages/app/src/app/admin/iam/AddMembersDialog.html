@@ -2,11 +2,10 @@
 
 <mat-dialog-content class="mat-typography">
   <div class="page-options" style="margin-top: 5px">
-    <input #filter
-           class="ya-input"
-           type="text"
-           placeholder="Filter members"
-           style="width: 100%">
+    <app-search-filter [formControl]="filterControl"
+                       placeholder="Filter users"
+                       width="100%">
+    </app-search-filter>
   </div>
   <table mat-table
          *ngIf="dataSource"

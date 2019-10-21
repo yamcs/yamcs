@@ -1,0 +1,37 @@
+.search-input {
+  position: relative;
+  display: inline-block;
+}
+
+.search-input input {
+  width: 100%;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.filter {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.filter .material-icons {
+  color: darkgrey;
+  padding: 4px;
+}
+
+.clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.clear .material-icons {
+  cursor: pointer;
+  color: darkgrey;
+  padding: 4px;
+}
+
+.clear:hover .material-icons {
+  color: black;
+}

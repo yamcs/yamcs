@@ -94,6 +94,7 @@ import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { SearchFilter } from './widgets/SearchFilter';
 import { SlantedLabel } from './widgets/SlantedLabel';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
@@ -164,6 +165,7 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
+  SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,
   Select,

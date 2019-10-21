@@ -1,9 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { GetCommandsOptions, Instance } from '@yamcs/client';
-import { fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
 
@@ -19,8 +18,7 @@ export class SendCommandPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: false })
   paginator: MatPaginator;
 
-  @ViewChild('filter', { static: false })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   dataSource: CommandsDataSource;
   displayedColumns = [
@@ -39,17 +37,13 @@ export class SendCommandPage implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.updateDataSource();
-    this.paginator.page.subscribe(() => {
+    this.filterControl.valueChanges.subscribe(() => {
+      this.paginator.pageIndex = 0;
       this.updateDataSource();
     });
 
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(400),
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(() => {
-      this.paginator.pageIndex = 0;
+    this.updateDataSource();
+    this.paginator.page.subscribe(() => {
       this.updateDataSource();
     });
   }
@@ -60,9 +54,9 @@ export class SendCommandPage implements AfterViewInit {
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };
-    const filterValue = this.filter.nativeElement.value.trim().toLowerCase();
+    const filterValue = this.filterControl.value;
     if (filterValue) {
-      options.q = filterValue;
+      options.q = filterValue.toLowerCase();
     }
     this.dataSource.loadCommands(options);
   }

@@ -61,10 +61,10 @@ export class CommandHistoryPage {
     { id: 'comment', label: 'Comment' },
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
-    { id: 'queued', label: 'Queued Acknowledgment' },
-    { id: 'released', label: 'Released Acknowledgment' },
-    { id: 'sent', label: 'Sent Acknowledgment' },
-    { id: 'acknowledgments', label: 'Other Acknowledgments' },
+    { id: 'queued', label: 'Queued' },
+    { id: 'released', label: 'Released' },
+    { id: 'sent', label: 'Sent' },
+    { id: 'acknowledgments', label: 'Extra acknowledgments' },
     { id: 'completion', label: 'Completion' },
   ];
 
