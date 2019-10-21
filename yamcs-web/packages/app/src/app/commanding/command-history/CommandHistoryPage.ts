@@ -56,6 +56,7 @@ export class CommandHistoryPage {
   dataSource: CommandHistoryDataSource;
 
   columns: ColumnInfo[] = [
+    { id: 'commandId', label: 'ID' },
     { id: 'generationTimeUTC', label: 'Time', alwaysVisible: true },
     { id: 'comment', label: 'Comment' },
     { id: 'command', label: 'Command', alwaysVisible: true },

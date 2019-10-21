@@ -366,7 +366,7 @@ export interface CommandQueue {
 
 export interface CommandSubscriptionRequest {
   commandId?: CommandId[];
-  ignorePastCommand?: boolean;
+  ignorePastCommands?: boolean;
 }
 
 export interface CommandSubscriptionResponse {

@@ -62,6 +62,8 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
             if (req.hasIgnorePastCommands()) {
                 ignorePastCommands = req.getIgnorePastCommands();
             }
+            client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+
             if (req.getCommandIdCount() > 0) {
                 subscribeAll = false;
                 ignorePastCommands = false;
@@ -91,7 +93,7 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
             allSubscription = requestManager.subscribeCommandHistory(null, since, this);
         }
 
-        return WebSocketReply.ack(ctx.getRequestId());
+        return null;
     }
 
     @Override

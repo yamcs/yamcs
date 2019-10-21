@@ -199,13 +199,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
         RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.Command, cmd.getQualifiedName());
 
-        String origin = "";
+        String origin = ctx.getClientAddress();
         int sequenceNumber = 0;
         boolean dryRun = false;
         String comment = null;
         List<ArgumentAssignment> assignments = new ArrayList<>();
 
-        if (request.hasOrigin()) {
+        if (request.hasOrigin()) { // TODO remove this override?
             origin = request.getOrigin();
         }
         if (request.hasDryRun()) {
@@ -229,8 +229,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             if (comment != null && !comment.trim().isEmpty()) {
                 preparedCommand.setComment(comment);
             }
-            request.getAttributeList().forEach(cha-> preparedCommand.addAttribute(cha));
-            
+            request.getAttributeList().forEach(cha -> preparedCommand.addAttribute(cha));
+
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
             sb.append(cmd.getQualifiedName());

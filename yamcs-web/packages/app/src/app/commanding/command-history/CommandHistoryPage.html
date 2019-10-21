@@ -16,102 +16,7 @@
         Command Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <h6>Command</h6>
-        <div class="block">
-          <a [routerLink]="['/mdb/commands', selectedRecord.commandName]"
-             [queryParams]="{instance: instance.name}"
-             class="ya-link">
-            {{ selectedRecord.commandName }}
-          </a>
-        </div>
-
-        <h6>Time</h6>
-        <div class="block">
-          {{ selectedRecord.generationTime | datetime }}
-        </div>
-
-        <h6>Issuer</h6>
-        <div class="block">
-          {{ selectedRecord.username }}<ng-container *ngIf="selectedRecord.origin">@{{ selectedRecord.origin }}
-          </ng-container>
-        </div>
-
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
-        <h6 style="padding-top: 0">Source</h6>
-        <div class="block">
-          {{ selectedRecord.source || '-' }}
-        </div>
-
-        <h6>Binary</h6>
-        <div class="block">
-          <app-hex [base64String]="selectedRecord.binary"></app-hex>
-        </div>
-
-        <ng-container *ngIf="selectedRecord.comment">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Comment</h6>
-          <div class="block">
-            {{ selectedRecord.comment }}
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="selectedRecord.extra.length">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Extra Attributes</h6>
-          <div class="block">
-            <ul>
-              <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
-            </ul>
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="selectedRecord.verifications.length">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Verifications</h6>
-          <div class="block">
-            <table yaDataTable style="width: 100%">
-              <tr>
-                <th style="width: 16px"></th>
-                <th></th>
-                <th>Status</th>
-                <th>Time</th>
-              </tr>
-              <tr *ngFor="let ack of selectedRecord.verifications">
-                <td>
-                  <ng-container [ngSwitch]="ack.status">
-                    <ng-container *ngSwitchCase="'OK'">
-                      <mat-icon class="step success" style="margin-right: 8px">
-                        check_circle_outline
-                      </mat-icon>
-                    </ng-container>
-                    <ng-container *ngSwitchDefault>
-                      <mat-icon class="step alert" style="margin-right: 8px">
-                        highlight_off
-                      </mat-icon>
-                    </ng-container>
-                  </ng-container>
-                </td>
-                <td>{{ ack.name }}</td>
-                <td>{{ ack.status }}</td>
-                <td>
-                  <span [matTooltip]="ack.time">{{ ack.time | deltaWith:selectedRecord.generationTime }}</span>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </ng-container>
-
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-        <h6 style="padding-top: 0">Completion</h6>
-        <div class="block">
-          <ng-container *ngIf="selectedRecord.completed && selectedRecord.success">SUCCESS</ng-container>
-          <ng-container *ngIf="selectedRecord.completed && !selectedRecord.success">
-            FAILURE: {{ selectedRecord.failureMessage }}
-          </ng-container>
-          <ng-container *ngIf="!selectedRecord.completed">-</ng-container>
-        </div>
-
+        <app-command-detail2 [command]="selectedRecord"></app-command-detail2>
         <p>&nbsp;</p>
       </div>
     </ng-container>
@@ -190,6 +95,13 @@
       <table mat-table
              [dataSource]="dataSource"
              class="ya-data-table">
+
+        <ng-container matColumnDef="commandId">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">ID</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.commandId | commandId }}
+          </td>
+        </ng-container>
 
         <ng-container matColumnDef="generationTimeUTC">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Time</th>

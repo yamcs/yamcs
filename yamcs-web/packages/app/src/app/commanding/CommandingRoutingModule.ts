@@ -5,6 +5,8 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
+import { CommandReportPage } from './command-sender/CommandReportPage';
+import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage as SendCommandPage } from './command-sender/SendCommandPage';
 import { QueuesPage } from './queues/QueuesPage';
 
@@ -20,6 +22,14 @@ const routes: Routes = [
         path: 'send',
         pathMatch: 'full',
         component: SendCommandPage,
+      },
+      {
+        path: 'send/:qualifiedName',
+        component: ConfigureCommandPage,
+      },
+      {
+        path: 'report/:commandId',
+        component: CommandReportPage,
       },
       {
         path: 'history',
@@ -42,6 +52,8 @@ export class CommandingRoutingModule { }
 
 export const routingComponents = [
   CommandHistoryPage,
+  CommandReportPage,
+  ConfigureCommandPage,
   QueuesPage,
   SendCommandPage,
 ];

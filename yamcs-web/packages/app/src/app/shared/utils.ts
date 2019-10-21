@@ -1,4 +1,4 @@
-import { Value } from '@yamcs/client';
+import { CommandId, Value } from '@yamcs/client';
 const PREVIEW_LENGTH = 5;
 
 /**
@@ -197,6 +197,14 @@ function printValueWithoutPreview(value: Value): string {
     default:
       return 'Unsupported data type';
   }
+}
+
+export function printCommandId(commandId: CommandId): string {
+  let id = String(commandId.generationTime);
+  if (commandId.origin) {
+    id += '-' + commandId.origin;
+  }
+  return id + '-' + commandId.sequenceNumber;
 }
 
 export function printDateTime(date: Date | string, addTimezone = true): string {

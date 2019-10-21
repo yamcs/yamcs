@@ -260,11 +260,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         pendingTcCheckers.remove(tcChecker);
 
         if (q.getState() == QueueState.BLOCKED) {
-            log.debug("Command queue for command {} is blocked, leaving command in the queue", pc);
+            log.debug("Queue for command {} is blocked, leaving command in the queue", pc);
             return;
         }
         if (q.getState() == QueueState.DISABLED) {
-            log.debug("Command queue for command {} is disabled, dropping command", pc);
+            log.debug("Queue for command {} is disabled, dropping command", pc);
             q.remove(pc, false);
         }
 

@@ -55,7 +55,7 @@ public class CommandQueue {
         return state;
     }
 
-    public Processor getChannel() {
+    public Processor getProcessor() {
         return processor;
     }
 

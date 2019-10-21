@@ -145,8 +145,8 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
 
     private CommandQueueInfo toCommandQueueInfo(RestRequest req, CommandQueue queue, boolean detail) {
         CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder();
-        b.setInstance(queue.getChannel().getInstance());
-        b.setProcessorName(queue.getChannel().getName());
+        b.setInstance(queue.getProcessor().getInstance());
+        b.setProcessorName(queue.getProcessor().getName());
         b.setName(queue.getName());
         b.setState(queue.getState());
         b.setNbSentCommands(queue.getNbSentCommands());

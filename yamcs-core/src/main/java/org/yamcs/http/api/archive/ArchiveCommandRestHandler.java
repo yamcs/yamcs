@@ -1,8 +1,16 @@
 package org.yamcs.http.api.archive;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
+import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.RestRequest.IntervalResult;
@@ -12,10 +20,6 @@ import org.yamcs.http.api.SqlBuilder;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.ListCommandsResponse;
-import org.yamcs.security.ObjectPrivilegeType;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -24,7 +28,9 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class ArchiveCommandRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/{instance}/commands/{name**}")
+    private static final Pattern PATTERN_COMMAND_ID = Pattern.compile("([0-9]+)(-(.*))?-([0-9]+)");
+
+    @Route(path = "/api/archive/{instance}/commands")
     public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req.getRouteParam("instance"));
 
@@ -49,13 +55,6 @@ public class ArchiveCommandRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (req.hasRouteParam("name")) {
-            XtceDb mdb = XtceDbFactory.getInstance(instance);
-            MetaCommand cmd = verifyCommand(mdb, req.getRouteParam("name"));
-            checkObjectPrivileges(req.getUser(), ObjectPrivilegeType.CommandHistory, cmd.getQualifiedName());
-            sqlb.where("cmdName = ?", cmd.getQualifiedName());
-        }
-
         if (req.hasQueryParameter("q")) {
             sqlb.where("cmdName like ?", "%" + req.getQueryParameter("q") + "%");
         }
@@ -99,6 +98,53 @@ public class ArchiveCommandRestHandler extends RestHandler {
                     responseb.setContinuationToken(token.encodeAsString());
                 }
                 completeOK(req, responseb.build());
+            }
+        });
+    }
+
+    @Route(path = "/api/archive/{instance}/commands/{id}")
+    public void getCommand(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req.getRouteParam("instance"));
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
+            completeOK(req, ListCommandsResponse.newBuilder().build());
+            return;
+        }
+
+        String id = req.getRouteParam("id");
+        Matcher matcher = PATTERN_COMMAND_ID.matcher(id);
+        if (!matcher.matches()) {
+            throw new BadRequestException("Invalid command id");
+        }
+
+        long gentime = Long.parseLong(matcher.group(1));
+        String origin = matcher.group(3) != null ? matcher.group(3) : "";
+        int seqNum = Integer.parseInt(matcher.group(4));
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME)
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum)
+                .where("origin = ?", origin);
+
+        List<CommandHistoryEntry> commands = new ArrayList<>();
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                commands.add(che);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (commands.isEmpty()) {
+                    throw new NotFoundException();
+                } else if (commands.size() > 1) {
+                    throw new InternalServerErrorException("Too many results");
+                } else {
+                    completeOK(req, commands.get(0));
+                }
             }
         });
     }

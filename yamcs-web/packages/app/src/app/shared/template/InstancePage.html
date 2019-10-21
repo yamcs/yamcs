@@ -87,16 +87,16 @@
                               [subitem]="true">
           Send a Command
         </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/commanding/history"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Command History
+        </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
                               routerLink="/commanding/queues"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Queues
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/history"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Command History
         </app-sidebar-nav-item>
       </div>
 

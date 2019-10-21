@@ -66,9 +66,9 @@ public final class ManagementGpbHelper {
     }
 
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
-        Processor c = q.getChannel();
+        Processor c = q.getProcessor();
         CommandQueueEntry.Builder entryb = CommandQueueEntry.newBuilder()
-                .setInstance(q.getChannel().getInstance())
+                .setInstance(q.getProcessor().getInstance())
                 .setProcessorName(c.getName())
                 .setQueueName(q.getName())
                 .setCmdId(pc.getCommandId())
@@ -88,7 +88,7 @@ public final class ManagementGpbHelper {
     }
 
     public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, boolean detail) {
-        Processor c = queue.getChannel();
+        Processor c = queue.getProcessor();
         CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder()
                 .setInstance(c.getInstance())
                 .setProcessorName(c.getName())

@@ -1,8 +1,12 @@
-import { CommandAssignment, CommandHistoryEntry } from '@yamcs/client';
+import { CommandAssignment, CommandHistoryEntry, CommandId } from '@yamcs/client';
 import * as utils from '../../shared/utils';
 import { Acknowledgment } from './Acknowledgment';
 
 export class CommandHistoryRecord {
+
+  private entry: CommandHistoryEntry;
+
+  commandId: CommandId;
 
   generationTime: string;
   origin: string;
@@ -35,6 +39,8 @@ export class CommandHistoryRecord {
   private acksByName: { [key: string]: Acknowledgment } = {};
 
   constructor(entry: CommandHistoryEntry) {
+    this.entry = entry;
+    this.commandId = entry.commandId;
     this.generationTime = entry.generationTimeUTC;
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
@@ -85,6 +91,15 @@ export class CommandHistoryRecord {
         this.extraAcks.push(ack);
       }
     }
+  }
+
+  mergeEntry(entry: CommandHistoryEntry): CommandHistoryRecord {
+    const mergedEntry = { ...this.entry } as CommandHistoryEntry;
+    mergedEntry.attr = [
+      ...this.entry.attr,
+      ...entry.attr,
+    ];
+    return new CommandHistoryRecord(mergedEntry);
   }
 
   private saveAckTime(name: string, time: string) {
