@@ -15,3 +15,12 @@ mat-toolbar.sub {
   background-color: #fff;
   font-size: 12px;
 }
+
+.mat-toolbar-row {
+  height: 32px;
+  padding: 0 24px;
+}
+
+.mat-toolbar-multiple-rows {
+  min-height: 32px;
+}
