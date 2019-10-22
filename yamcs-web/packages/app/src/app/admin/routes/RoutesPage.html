@@ -28,20 +28,18 @@
 
   <div class="table-wrapper">
     <div class="panel-content">
-      <div style="margin-bottom: 12px;">
-        <input #filter
-                class="ya-input"
-                type="text"
-                placeholder="Filter routes"
-                style="width: 400px">
+      <div class="page-options">
+        <app-search-filter [formControl]="filterControl"
+                           placeholder="Filter routes">
+        </app-search-filter>
       </div>
       <table mat-table
-            [dataSource]="dataSource"
-            class="ya-data-table"
-            matSort
-            matSortActive="requestCount"
-            matSortDirection="desc"
-            matSortDisableClear>
+             [dataSource]="dataSource"
+             class="ya-data-table"
+             matSort
+             matSortActive="requestCount"
+             matSortDirection="desc"
+             matSortDisableClear>
 
         <ng-container matColumnDef="service">
           <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">Service</th>

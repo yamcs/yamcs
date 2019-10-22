@@ -15,7 +15,7 @@ recurse (bool)
     If a ``namespace`` is given, specifies whether to list commands of any nested sub systems. Default ``no``.
 
 q (string)
-    The search keywords. This support searching on namespace or name.
+    The search keywords. This supports searching on namespace or name.
 
 
 .. rubric:: Response

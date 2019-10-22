@@ -6,11 +6,11 @@ import { Observable } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  selector: 'app-command-queues-table',
-  templateUrl: './CommandQueuesTable.html',
+  selector: 'app-queues-table',
+  templateUrl: './QueuesTable.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandQueuesTable implements AfterViewInit {
+export class QueuesTable implements AfterViewInit {
 
   @Input()
   cqueues$: Observable<CommandQueue[]>;
@@ -21,9 +21,10 @@ export class CommandQueuesTable implements AfterViewInit {
   dataSource = new MatTableDataSource<CommandQueue>();
 
   displayedColumns = [
+    'order',
     'name',
-    'mode',
-    'queued',
+    'action',
+    'pending',
     'actions',
   ];
 

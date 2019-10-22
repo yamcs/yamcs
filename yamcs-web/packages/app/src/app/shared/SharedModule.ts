@@ -58,6 +58,8 @@ import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
+import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
+import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { ActionLink } from './template/ActionLink';
 import { AdminPage } from './template/AdminPage';
 import { AdminPageTemplate } from './template/AdminPageTemplate';
@@ -77,7 +79,6 @@ import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
 import { MessageBar } from './template/MessageBar';
 import { Select } from './template/Select';
-import { SidebarNavItem } from './template/SidebarNavItem';
 import { SignificanceLevel } from './template/SignificanceLevel';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
 import { StartReplayDialog } from './template/StartReplayDialog';
@@ -94,6 +95,7 @@ import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { SearchFilter } from './widgets/SearchFilter';
 import { SlantedLabel } from './widgets/SlantedLabel';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
@@ -164,10 +166,12 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
+  SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,
   Select,
   SessionExpiredDialog,
+  SidebarNavGroup,
   SidebarNavItem,
   SignificanceLevel,
   SlantedLabel,

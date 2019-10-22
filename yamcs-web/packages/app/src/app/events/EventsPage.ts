@@ -137,7 +137,7 @@ export class EventsPage {
       }
     }
 
-    const cols = preferenceStore.getVisibleColumns('events').filter(el => {
+    const cols = (preferenceStore.getVisibleColumns('events') || []).filter(el => {
       // Filter out extraColumns (maybe from another instance - we should maybe store this per instance)
       for (const column of this.columns) {
         if (column.id === el) {
@@ -145,7 +145,7 @@ export class EventsPage {
         }
       }
     });
-    if (cols.length) {
+    if (cols && cols.length) {
       this.displayedColumns = cols;
     }
 

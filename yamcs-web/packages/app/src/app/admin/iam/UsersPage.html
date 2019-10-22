@@ -11,12 +11,10 @@
   </app-admin-toolbar>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px;">
-      <input #filter
-              class="ya-input"
-              type="text"
-              placeholder="Filter users"
-              style="width: 400px">
+    <div class="page-options">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter users">
+      </app-search-filter>
     </div>
     <mat-tab-group animationDuration="0ms">
       <mat-tab>

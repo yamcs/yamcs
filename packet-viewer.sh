@@ -2,5 +2,5 @@
 
 mvn -q -f packet-viewer/pom.xml exec:exec \
     -Dexec.executable="java" \
-    -Dexec.args="-classpath %classpath org.yamcs.ui.packetviewer.PacketViewer"
+    -Dexec.args="-classpath etc:%classpath org.yamcs.ui.packetviewer.PacketViewer"
 

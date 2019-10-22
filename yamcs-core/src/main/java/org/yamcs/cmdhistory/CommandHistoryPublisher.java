@@ -14,6 +14,9 @@ public interface CommandHistoryPublisher {
     public final static String CommandComplete_KEY = "CommandComplete";
     public final static String CommandFailed_KEY = "CommandFailed";
     public final static String TransmissionContraints_KEY = "TransmissionConstraints";
+    public final static String AcknowledgeQueued_KEY = "Acknowledge_Queued";
+    public final static String AcknowledgeReleased_KEY = "Acknowledge_Released";
+    public final static String AcknowledgeSent_KEY = "Acknowledge_Sent";
     public final static String Verifier_KEY_PREFIX = "Verifier";
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
     

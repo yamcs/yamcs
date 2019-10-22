@@ -8,9 +8,11 @@ Summary: Yamcs Mission Control
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: Affero GPL v3
-URL: https://www.yamcs.org
+URL: https://yamcs.org
 Prefix: /opt/yamcs
 BuildArch: noarch
+
+Requires: socat
 
 
 %description

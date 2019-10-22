@@ -3,12 +3,11 @@
   <span #top></span>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px">
-      <input #filter
-             class="ya-input"
-             type="text"
-             placeholder="Filter containers"
-             style="width: 400px">
+    <div class="page-options">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter containers">
+      </app-search-filter>
+      &nbsp;&nbsp;
 
       <app-column-chooser [columns]="columns"
                           [displayedColumns]="displayedColumns"
@@ -17,16 +16,16 @@
 
     <div style="display: inline-block">
       <table mat-table
-            *ngIf="dataSource"
-            class="ya-data-table"
-            style="width: 1000px"
-            [dataSource]="dataSource">
+             *ngIf="dataSource"
+             class="ya-data-table"
+             style="width: 1000px"
+             [dataSource]="dataSource">
 
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let container">
             <a [routerLink]="['/mdb/containers', container.qualifiedName]"
-              [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance.name}">
               {{ shortName ? container.name : container.qualifiedName }}
             </a>
           </td>
@@ -46,8 +45,9 @@
           <th mat-header-cell *matHeaderCellDef style="width: 300px">Base Container</th>
           <td mat-cell *matCellDef="let container">
             <a *ngIf="container.baseContainer"
-              [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
-              [queryParams]="{instance: instance.name}">
+               [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+               [queryParams]="{instance: instance.name}"
+               class="secundary">
               {{ container.baseContainer?.qualifiedName || '-' }}
             </a>
             <span *ngIf="!container.baseContainer">-</span>
@@ -59,7 +59,8 @@
           <td mat-cell *matCellDef="let container">
             <ng-container *ngFor="let criteria of container.restrictionCriteria">
               <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
-                [queryParams]="{instance: instance.name}">
+                 [queryParams]="{instance: instance.name}"
+                 class="secundary">
                 {{ criteria.parameter.qualifiedName }}
               </a>
               {{ criteria.operator | operator }}

@@ -1,0 +1,16 @@
+<ng-container *ngIf="ack">
+  <ng-container [ngSwitch]="ack.status">
+    <mat-icon *ngSwitchCase="'OK'"
+              [matTooltip]="ack.name! + ': OK'"
+              class="icon16"
+              style="color: #00c752">check_circle_outline</mat-icon>
+    <mat-icon *ngSwitchDefault
+              [matTooltip]="ack.name! + ': ' + ack.status!"
+              class="icon16"
+              style="color: red">highlight_off</mat-icon>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="!ack">
+  <mat-icon [matTooltip]="'Unknown'"
+            class="down icon16">lens</mat-icon>
+</ng-container>

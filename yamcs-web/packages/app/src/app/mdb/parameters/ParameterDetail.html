@@ -47,7 +47,7 @@
       <td>Algorithm</td>
       <td>
         <a [routerLink]="['/mdb/algorithms/', algorithm.qualifiedName]"
-            [queryParams]="{instance: instance.name}">
+           [queryParams]="{instance: instance.name}">
           {{ algorithm.qualifiedName }}
         </a>
       </td>
@@ -56,7 +56,7 @@
       <td>Container</td>
       <td>
         <a [routerLink]="['/mdb/containers/', container.qualifiedName]"
-            [queryParams]="{instance: instance.name}">
+           [queryParams]="{instance: instance.name}">
           {{ container.qualifiedName }}
         </a>
       </td>
@@ -71,28 +71,23 @@
   </div>
 
   <h4>Data Encoding</h4>
-  <table yaDataTable>
-    <tr>
-      <th>Size in Bits</th>
-      <td>{{ parameter.type?.dataEncoding?.sizeInBits | nvl:'-' }}</td>
-    </tr>
-    <tr *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
-      <th>Byte Order</th>
-      <td>
+  <dl class="dl-horizontal no-trail">
+    <dt>Size in Bits</dt>
+    <dd>{{ parameter.type?.dataEncoding?.sizeInBits | nvl:'-' }}</dd>
+    <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
+      <dt>Byte Order</dt>
+      <dd>
         <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian !== undefined">
           {{ parameter.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
         </ng-container>
         <ng-container *ngIf="parameter.type?.dataEncoding?.littleEndian === undefined">
           -
         </ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th>Encoding</th>
-      <td>{{ parameter.type?.dataEncoding?.encoding || '-' }}</td>
-    </tr>
-  </table>
-  <p>&nbsp;</p>
+      </dd>
+    </ng-container>
+    <dt>Encoding</dt>
+    <dd>{{ parameter.type?.dataEncoding?.encoding || '-' }}</dd>
+  </dl>
 </ng-container>
 
 <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
@@ -180,8 +175,8 @@
       <dt>Offset from</dt>
       <dd>
         <a [routerLink]="['/mdb/parameters/', parameter.type?.absoluteTimeInfo.offsetFrom.qualifiedName]"
-            [queryParams]="{instance: instance.name}"
-            class="ya-link">
+           [queryParams]="{instance: instance.name}"
+           class="ya-link">
           {{ parameter.type?.absoluteTimeInfo.offsetFrom.qualifiedName }}
         </a>
       </dd>

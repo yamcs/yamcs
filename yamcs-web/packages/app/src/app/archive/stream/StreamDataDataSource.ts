@@ -59,6 +59,7 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
   stopStreaming() {
     if (this.streamSubscription) {
       this.streamSubscription.unsubscribe();
+      this.yamcs.getInstanceClient()!.unsubscribeStreamUpdates();
     }
     this.streaming$.next(false);
   }

@@ -3,12 +3,10 @@
   <span #top></span>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px">
-      <input #filter
-              class="ya-input"
-              type="text"
-              placeholder="Filter parameters"
-              style="width: 400px">
+    <div class="page-options">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter parameters">
+      </app-search-filter>
       &nbsp;&nbsp;
 
       <app-column-chooser [columns]="columns"
@@ -17,16 +15,16 @@
     </div>
     <div style="display: inline-block">
       <table mat-table
-            *ngIf="dataSource"
-            class="ya-data-table"
-            style="width: 1000px"
-            [dataSource]="dataSource">
+             *ngIf="dataSource"
+             class="ya-data-table"
+             style="width: 1000px"
+             [dataSource]="dataSource">
 
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let parameter">
             <a [routerLink]="['/monitor/parameters', parameter.qualifiedName]"
-              [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
+               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
             <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
               <button mat-stroked-button class="expandable"
                       (click)="parameter.expanded = !parameter.expanded">
@@ -42,14 +40,24 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef style="width: 120px">Type</th>
-          <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}</td>
+        <ng-container matColumnDef="rawValue">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">Raw value</th>
+          <td mat-cell *cdkCellDef="let parameter">
+            {{ (parameter.pval?.rawValue | value) || '-' }}
+          </td>
         </ng-container>
 
-        <ng-container matColumnDef="units">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Units</th>
-          <td mat-cell *matCellDef="let parameter">{{ (parameter.type?.unitSet | units) || '-' }}</td>
+        <ng-container matColumnDef="engValue">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">Value</th>
+          <td mat-cell *matCellDef="let parameter">
+            <app-expirable *ngIf="parameter.pval" [pval]="parameter.pval">
+              {{ (parameter.pval?.engValue | value) || '-' }}
+              <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+              <span *ngIf="parameter.pval?.rangeCondition === 'LOW'">&#8595;</span>
+              <span *ngIf="parameter.pval?.rangeCondition === 'HIGH'">&#8593;</span>
+            </app-expirable>
+            <span *ngIf="!parameter.pval">-</span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="dataSource">
@@ -68,9 +76,9 @@
 
       <div style="text-align: right">
         <mat-paginator [pageSize]="pageSize"
-                        [hidePageSize]="true"
-                        [showFirstLastButtons]="true"
-                        [length]="dataSource.totalSize$ | async">
+                       [hidePageSize]="true"
+                       [showFirstLastButtons]="true"
+                       [length]="dataSource.totalSize$ | async">
         </mat-paginator>
       </div>
     </div>

@@ -45,10 +45,35 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
-
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NA", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -112,10 +137,21 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
-
         assertEquals(1, cmdhist.getAttrCount());
-
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NA", cha.getValue().getStringValue());
 
@@ -128,6 +164,19 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals(5000, cha.getValue().getSint32Value());
 
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);

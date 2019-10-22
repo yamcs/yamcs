@@ -3,12 +3,11 @@
   <span #top></span>
 
   <div class="panel-content">
-    <div style="margin-bottom: 12px">
-      <input #filter
-             class="ya-input"
-             type="text"
-             placeholder="Filter commands"
-             style="width: 400px">
+    <div class="page-options">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter commands">
+      </app-search-filter>
+      &nbsp;&nbsp;
 
       <app-column-chooser [columns]="columns"
                           [displayedColumns]="displayedColumns"
@@ -17,10 +16,10 @@
 
     <div style="display: inline-block">
       <table mat-table
-            *ngIf="dataSource"
-            class="ya-data-table"
-            style="width: 1000px"
-            [dataSource]="dataSource">
+             *ngIf="dataSource"
+             class="ya-data-table"
+             style="width: 1000px"
+             [dataSource]="dataSource">
 
         <ng-container matColumnDef="significance">
           <th mat-header-cell *matHeaderCellDef style="width: 1px">Significance</th>
@@ -33,7 +32,7 @@
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let command">
             <a [routerLink]="['/mdb/commands', command.qualifiedName]"
-              [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance.name}">
               {{ shortName ? command.name : command.qualifiedName }}
             </a>
           </td>

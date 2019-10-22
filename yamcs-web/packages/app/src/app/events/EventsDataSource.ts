@@ -134,22 +134,22 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
             if (event.severity === 'CRITICAL') {
               return false;
             }
-            // fall
+          // fall
           case 'CRITICAL':
             if (event.severity === 'DISTRESS') {
               return false;
             }
-            // fall
+          // fall
           case 'DISTRESS':
             if (event.severity === 'WARNING') {
               return false;
             }
-            // fall
+          // fall
           case 'WARNING':
             if (event.severity === 'WATCH') {
               return false;
             }
-            // fall
+          // fall
           case 'WATCH':
             if (event.severity === 'INFO') {
               return false;
@@ -166,12 +166,14 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
       this.realtimeSubscription.unsubscribe();
     }
     this.streaming$.next(false);
+    const instanceClient = this.yamcs.getInstanceClient();
+    if (instanceClient) {
+      instanceClient.unsubscribeEventUpdates();
+    }
   }
 
   disconnect() {
-    if (this.realtimeSubscription) {
-      this.realtimeSubscription.unsubscribe();
-    }
+    this.stopStreaming();
     if (this.syncSubscription) {
       this.syncSubscription.unsubscribe();
     }

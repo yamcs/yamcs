@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar [hasDetailPane]="true">
     Links
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
             *ngIf="mayControlLinks()"
@@ -41,21 +41,19 @@
 
   <div class="table-wrapper">
     <div class="panel-content">
-      <div style="margin-bottom: 12px;">
-        <input #filter
-               class="ya-input"
-               type="text"
-               placeholder="Filter links"
-               style="width: 400px">
+      <div class="page-options">
+        <app-search-filter [formControl]="filterControl"
+                           placeholder="Filter links">
+        </app-search-filter>
         &nbsp;&nbsp;
         <app-column-chooser [columns]="columns"
                             [displayedColumns]="displayedColumns"
                             (change)="updateColumns($event)"></app-column-chooser>
       </div>
       <table mat-table
-            [dataSource]="dataSource"
-            [trackBy]="tableTrackerFn"
-            class="ya-data-table">
+             [dataSource]="dataSource"
+             [trackBy]="tableTrackerFn"
+             class="ya-data-table">
 
         <ng-container cdkColumnDef="select">
           <th mat-header-cell *cdkHeaderCellDef class="checkbox">

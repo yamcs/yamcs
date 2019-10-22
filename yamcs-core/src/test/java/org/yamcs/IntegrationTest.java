@@ -930,10 +930,35 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
-
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NOK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
+        assertEquals("NOK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -970,8 +995,20 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
-
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("PENDING", cha.getValue().getStringValue());
 
@@ -988,6 +1025,19 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
+        assertEquals("OK", cha.getValue().getStringValue());
+
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
     }
 
     @Test
@@ -1203,8 +1253,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         Event e3 = Event.newBuilder(ea1.getTriggerEvent()).clearReceptionTime().build();
         assertTrue(e2.equals(e3));
-        
-        EditAlarmRequest ear = EditAlarmRequest.newBuilder().setState("shelved").setComment("I will deal with this later")
+
+        EditAlarmRequest ear = EditAlarmRequest.newBuilder().setState("shelved")
+                .setComment("I will deal with this later")
                 .setShelveDuration(500).build();
         restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
                 + a1.getId().getName() + "/" + a1.getSeqNum(), HttpMethod.PATCH, toJson(ear)).get();
@@ -1213,12 +1264,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertTrue(a2.hasShelveInfo());
         assertEquals("I will deal with this later", a2.getShelveInfo().getShelveMessage());
 
-        //after 500 millisec, the shelving has expired
+        // after 500 millisec, the shelving has expired
         AlarmData a3 = wsListener.alarmDataList.poll(2, TimeUnit.SECONDS);
         assertEquals(AlarmNotificationType.UNSHELVED, a3.getNotificationType());
-        
-        
-        //shelve it again
+
+        // shelve it again
         ear = EditAlarmRequest.newBuilder().setState("shelved").setComment("I will deal with this later#2")
                 .build();
         restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
@@ -1227,8 +1277,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(AlarmNotificationType.SHELVED, a2.getNotificationType());
         a3 = wsListener.alarmDataList.poll(2, TimeUnit.SECONDS);
         assertNull(a3);
-        
-       // System.out.println("a1: " + a1);
+
+        // System.out.println("a1: " + a1);
         ear = EditAlarmRequest.newBuilder().setState("acknowledged").setComment("a nice ack explanation")
                 .build();
         restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
@@ -1237,14 +1287,14 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         assertNotNull(a4);
         assertEquals("a nice ack explanation", a4.getAcknowledgeInfo().getAcknowledgeMessage());
-        
-        String resp =  restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET,"").get();
+
+        String resp = restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET, "")
+                .get();
         ListAlarmsResponse lar = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
-       
+
         assertEquals(1, lar.getAlarmCount());
         assertEquals("a nice ack explanation", lar.getAlarm(0).getAcknowledgeInfo().getAcknowledgeMessage());
-        
-        
+
         ear = EditAlarmRequest.newBuilder().setState("cleared").setComment("a nice clear explanation")
                 .build();
         restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms/" + a1.getId().getNamespace() + "/"
@@ -1254,9 +1304,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(a5);
         assertTrue(a5.hasClearInfo());
         assertEquals("a nice clear explanation", a5.getClearInfo().getClearMessage());
-        
-        resp =  restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET,"").get();
-         
+
+        resp = restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET, "").get();
+
         lar = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
         assertEquals(0, lar.getAlarmCount());
     }

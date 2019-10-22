@@ -8,7 +8,8 @@ mat-sidenav-container {
 }
 
 mat-sidenav-container.message-bar-visible {
-  top: 96px; /* 48 + 48 */
+  top: 96px;
+  /* 48 + 48 */
 }
 
 mat-sidenav {
@@ -29,26 +30,6 @@ mat-toolbar {
 
 .mat-toolbar .mat-icon {
   padding-right: 16px;
-}
-
-.nav-item-group {
-  color: rgba(0, 0, 0, .654);
-}
-
-.nav-item-group.active {
-  background-color: rgba(0, 0, 0, .04);
-}
-
-.nav-item-group-items {
-  margin-right: 20px;
-}
-
-.item-icon {
-  padding-right: 16px;
-}
-
-.nav-item-group-items {
-  border-radius: 4px;
 }
 
 .search-input {

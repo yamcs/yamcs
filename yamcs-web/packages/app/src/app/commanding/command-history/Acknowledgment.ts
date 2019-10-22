@@ -1,4 +1,4 @@
-export interface CommandHistoryStage {
+export interface Acknowledgment {
   name?: string;
   status?: string;
   time?: string;

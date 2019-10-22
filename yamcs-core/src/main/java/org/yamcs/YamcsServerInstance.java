@@ -74,6 +74,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("mdb", OptionType.ANY);
 
         spec.addOption("timeService", OptionType.ANY);
+        spec.addOption("tmIndexer", OptionType.ANY);
+        spec.addOption("eventDecoders", OptionType.ANY);
 
         try {
             this.config = spec.validate(config);

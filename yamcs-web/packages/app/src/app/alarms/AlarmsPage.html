@@ -89,11 +89,9 @@
     <div class="panel-content" *ngIf="dataSource">
       <form [formGroup]="filterForm">
         <div class="filter-bar">
-          <input formControlName="filter"
-                 class="ya-input"
-                 type="text"
-                 placeholder="Filter by text search"
-                 style="width: 300px">
+          <app-search-filter formControlName="filter"
+                             placeholder="Filter by text search">
+          </app-search-filter>
           &nbsp;&nbsp;
           <app-select [options]="viewOptions" (change)="updateView($event)"></app-select>
         </div>

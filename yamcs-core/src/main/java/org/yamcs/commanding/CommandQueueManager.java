@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.yamcs.GuardedBy;
 import org.yamcs.Processor;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
@@ -30,6 +32,7 @@ import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
+import org.yamcs.time.TimeService;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
@@ -41,20 +44,21 @@ import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * @author nm Implements the management of the control queues for one processor: - for each command that is sent, based
- *         on the sender it finds the queue where the command should go - depending on the queue state the command can
- *         be immediately sent, stored in the queue or rejected - when the command is immediately sent or rejected, the
- *         command queue monitor is not notified - if the command has transmissionConstraints with timeout &gt; 0, the
- *         command can sit in the queue even if the queue is not blocked
- *
- *         Note: the update of the command monitors is done in the same thread. That means that if the connection to one
- *         of the monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged
- *         users most likely connected in the same LAN, I don't consider this to be an issue.
+ * Implements the management of the control queues for one processor:
+ * <ul>
+ * <li>for each command that is sent, based on the sender it finds the queue where the command should go
+ * <li>depending on the queue state the command can be immediately sent, stored in the queue or rejected
+ * <li>when the command is immediately sent or rejected, the command queue monitor is not notified <i>if the command has
+ * transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
+ * </ul>
+ * Note: the update of the command monitors is done in the same thread. That means that if the connection to one of the
+ * monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users most
+ * likely connected in the same LAN, I don't consider this to be an issue.
  */
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
-    private HashMap<String, CommandQueue> queues = new HashMap<>();
+    private HashMap<String, CommandQueue> queues = new LinkedHashMap<>();
     CommandReleaser commandReleaser;
     CommandHistoryPublisher commandHistoryPublisher;
     CommandingManager commandingManager;
@@ -73,6 +77,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     private final ScheduledThreadPoolExecutor timer;
     private final LastValueCache lastValueCache;
+
+    private TimeService timeService;
 
     /**
      * Constructs a Command Queue Manager.
@@ -95,9 +101,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.processorName = yproc.getName();
         this.timer = yproc.getTimer();
         this.lastValueCache = yproc.getLastValueCache();
-
-        CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
-        queues.put("default", cq);
+        timeService = YamcsServer.getTimeService(yproc.getInstance());
 
         if (YConfiguration.isDefined("command-queue")) {
             YConfiguration config = YConfiguration.getConfiguration("command-queue");
@@ -121,6 +125,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     q.significances = config.getSubList(queueName, "significances");
                 }
             }
+        }
+
+        if (!queues.containsKey("default")) {
+            CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
+            queues.put("default", cq);
         }
 
         // schedule timer update to client
@@ -197,8 +206,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 "'" + state + "' is not a valid queue state. Use one of enabled, disabled or blocked");
     }
 
-    public Collection<CommandQueue> getQueues() {
-        return queues.values();
+    public List<CommandQueue> getQueues() {
+        return new ArrayList<>(queues.values());
     }
 
     public CommandQueue getQueue(String name) {
@@ -206,9 +215,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * Called from the CommandingImpl to add a command to the queue First the command is added to the command history
-     * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history
-     * added to the queue or directly sent using the command releaser
+     * Called from the CommandingImpl to add a command to the queue.
+     * <p>
+     * First the command is added to the command history. Depending on the status of the queue, the command is rejected
+     * by setting the CommandFailed in the command history added to the queue or directly sent using the command
+     * releaser.
      * 
      * @param user
      * @param pc
@@ -221,19 +232,29 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         q.add(pc);
         notifyAdded(q, pc);
 
+        long missionTime = timeService.getMissionTime();
+
         if (q.state == QueueState.DISABLED) {
             q.remove(pc, false);
-            failedCommand(q, pc, "Commanding Queue disabled", true);
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, "NOK");
+            failedCommand(q, pc, "Queue disabled", true);
             notifyUpdateQueue(q);
         } else if (q.state == QueueState.BLOCKED) {
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, "OK");
             // notifyAdded(q, pc);
         } else if (q.state == QueueState.ENABLED) {
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, "OK");
             if (pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
                 addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
                 q.remove(pc, true);
                 releaseCommand(q, pc, true, false);
+                commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
             }
         }
 
@@ -256,15 +277,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         CommandQueue q = tcChecker.queue;
         TCStatus status = tcChecker.aggregateStatus;
         log.info("transmission constraint finished for {} status: {}", pc.getCmdName(), status);
+        long missionTime = timeService.getMissionTime();
 
         pendingTcCheckers.remove(tcChecker);
 
         if (q.getState() == QueueState.BLOCKED) {
-            log.debug("Command queue for command {} is blocked, leaving command in the queue", pc);
+            log.debug("Queue for command {} is blocked, leaving command in the queue", pc);
             return;
         }
         if (q.getState() == QueueState.DISABLED) {
-            log.debug("Command queue for command {} is disabled, dropping command", pc);
+            log.debug("Queue for command {} is disabled, dropping command", pc);
             q.remove(pc, false);
         }
 
@@ -274,8 +296,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if (status == TCStatus.OK) {
             addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
             releaseCommand(q, pc, true, false);
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
         } else if (status == TCStatus.TIMED_OUT) {
             addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
             failedCommand(q, pc, "Transmission constraints check failed", true);
         }
     }
@@ -410,6 +436,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if (pc != null) {
             queue.remove(pc, false);
+            long missionTime = timeService.getMissionTime();
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
             failedCommand(queue, pc, "Rejected by " + username, true);
             notifyUpdateQueue(queue);
         } else {
@@ -452,8 +481,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if (command != null) {
+            long missionTime = timeService.getMissionTime();
             queue.remove(command, true);
             releaseCommand(queue, command, true, rebuild);
+            commandHistoryPublisher.publishWithTime(commandId,
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
         }
         return command;
     }
@@ -505,17 +537,23 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         queue.state = newState;
         if (queue.state == QueueState.ENABLED) {
+            long missionTime = timeService.getMissionTime();
             for (PreparedCommand pc : queue.getCommands()) {
                 if (pc.getMetaCommand().hasTransmissionConstraints()) {
                     startTransmissionConstraintChecker(queue, pc);
                 } else {
                     releaseCommand(queue, pc, true, false);
+                    commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                            CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
                 }
             }
             queue.clear(true);
         }
         if (queue.state == QueueState.DISABLED) {
+            long missionTime = timeService.getMissionTime();
             for (PreparedCommand pc : queue.getCommands()) {
+                commandHistoryPublisher.publishWithTime(pc.getCommandId(),
+                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
                 failedCommand(queue, pc, "Queue disabled", true);
             }
             queue.clear(false);

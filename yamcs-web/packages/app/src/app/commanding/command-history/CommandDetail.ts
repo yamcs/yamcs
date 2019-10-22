@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 @Component({
-  selector: 'app-command-completion',
-  templateUrl: './CommandCompletion.html',
+  selector: 'app-command-detail2',
+  templateUrl: './CommandDetail.html',
+  styleUrls: ['./CommandDetail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandCompletion {
+export class CommandDetail {
 
   @Input()
-  item: CommandHistoryRecord;
+  command: CommandHistoryRecord;
 }
