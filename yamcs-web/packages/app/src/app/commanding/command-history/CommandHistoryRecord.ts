@@ -47,7 +47,7 @@ export class CommandHistoryRecord {
     this.sequenceNumber = entry.commandId.sequenceNumber;
     this.commandName = entry.commandId.commandName;
 
-    for (const assignment of entry.assignment) {
+    for (const assignment of (entry.assignment || [])) {
       this.assignments.push(assignment);
       if (assignment.userInput) {
         this.userAssignments.push(assignment);
@@ -97,11 +97,15 @@ export class CommandHistoryRecord {
   }
 
   mergeEntry(entry: CommandHistoryEntry): CommandHistoryRecord {
-    const mergedEntry = { ...this.entry } as CommandHistoryEntry;
-    mergedEntry.attr = [
+    const mergedAttr = [
       ...this.entry.attr,
       ...entry.attr,
     ];
+    const mergedEntry = {
+      ...entry,
+      ...this.entry,
+      attr: mergedAttr,
+    } as CommandHistoryEntry;
     return new CommandHistoryRecord(mergedEntry);
   }
 

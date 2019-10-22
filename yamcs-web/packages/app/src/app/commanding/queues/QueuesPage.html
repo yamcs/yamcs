@@ -6,26 +6,28 @@
         A queue is a temporary holding location for issued commands that are waiting to enter the next stage of
         processing.
       </p>
-      A queue can be in these states:
+      <p>
+        A queue can perform these actions:
+      </p>
       <table class="ya-data-table">
         <tr>
-          <td>
-            <mat-icon class="success icon16" style="vertical-align: middle">check_circle</mat-icon>
+          <td width="1">
+            ACCEPT
           </td>
-          <td><strong>Enabled.</strong> The queue accepts and releases commands.</td>
+          <td>The queue accepts and releases commands.</td>
         </tr>
         <tr>
           <td>
-            <mat-icon class="success icon16" style="vertical-align: middle">pan_tool</mat-icon>
+            <span class="blink">HOLD</span>
           </td>
-          <td><strong>Blocked.</strong> The queue accepts commands but does not release them. These commands may be
-            released manually, or automatically as soon as the queue moves to the <em>enabled</em> state.</td>
+          <td>The queue accepts commands but does not release them. These commands may be
+            released manually, or automatically as soon as the queue action changes to ACCEPT.</td>
         </tr>
         <tr>
           <td>
-            <mat-icon class="down icon16" style="vertical-align: middle">lens</mat-icon>
+            REJECT
           </td>
-          <td><strong>Disabled.</strong> The queue does not accept commands. Any attempt to issue a command linked to a
+          <td>The queue does not accept commands. Any attempt to issue a command matched to a
             disabled queue will fail immediately.</td>
         </tr>
       </table>

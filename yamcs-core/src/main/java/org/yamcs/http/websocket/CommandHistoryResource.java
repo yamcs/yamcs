@@ -98,7 +98,15 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        return null;
+        if (requestManager != null) {
+            if (allSubscription != null) {
+                requestManager.unsubscribeCommandHistory(allSubscription.subscriptionId);
+            }
+            for (CommandId commandId : subscribedCommands) {
+                requestManager.unsubscribeCommand(commandId, this);
+            }
+        }
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override

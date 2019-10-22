@@ -362,6 +362,7 @@ export interface CommandQueue {
   nbRejectCommands: number;
   stateExpirationTimeS: number;
   entry: CommandQueueEntry[];
+  order: number;
 }
 
 export interface CommandSubscriptionRequest {

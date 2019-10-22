@@ -146,7 +146,7 @@ dt {
   text-decoration: none;
 }
 
-.ya-data-table .mat-row:hover a {
+.ya-data-table .mat-row:hover a:not(.secundary) {
   text-decoration: underline;
 }
 
@@ -395,6 +395,16 @@ button.expandable {
   100% {
     -webkit-transform: rotate(359deg) scaleX(-1);
     transform: rotate(359deg) scaleX(-1);
+  }
+}
+
+.blink {
+  animation: yblink 1s linear infinite;
+}
+
+@keyframes yblink {
+  50% {
+    opacity: 0;
   }
 }
 

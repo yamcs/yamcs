@@ -187,6 +187,10 @@ export class InstanceClient {
     return this.webSocketClient!.getCommandUpdates(options);
   }
 
+  async unsubscribeCommandUpdates() {
+    return this.webSocketClient!.unsubscribeCommandUpdates();
+  }
+
   async issueCommand(processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/commands${qualifiedName}`, {

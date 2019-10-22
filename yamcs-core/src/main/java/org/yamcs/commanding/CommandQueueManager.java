@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -43,20 +44,21 @@ import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * @author nm Implements the management of the control queues for one processor: - for each command that is sent, based
- *         on the sender it finds the queue where the command should go - depending on the queue state the command can
- *         be immediately sent, stored in the queue or rejected - when the command is immediately sent or rejected, the
- *         command queue monitor is not notified - if the command has transmissionConstraints with timeout &gt; 0, the
- *         command can sit in the queue even if the queue is not blocked
- *
- *         Note: the update of the command monitors is done in the same thread. That means that if the connection to one
- *         of the monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged
- *         users most likely connected in the same LAN, I don't consider this to be an issue.
+ * Implements the management of the control queues for one processor:
+ * <ul>
+ * <li>for each command that is sent, based on the sender it finds the queue where the command should go
+ * <li>depending on the queue state the command can be immediately sent, stored in the queue or rejected
+ * <li>when the command is immediately sent or rejected, the command queue monitor is not notified <i>if the command has
+ * transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
+ * </ul>
+ * Note: the update of the command monitors is done in the same thread. That means that if the connection to one of the
+ * monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users most
+ * likely connected in the same LAN, I don't consider this to be an issue.
  */
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
-    private HashMap<String, CommandQueue> queues = new HashMap<>();
+    private HashMap<String, CommandQueue> queues = new LinkedHashMap<>();
     CommandReleaser commandReleaser;
     CommandHistoryPublisher commandHistoryPublisher;
     CommandingManager commandingManager;
@@ -101,9 +103,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.lastValueCache = yproc.getLastValueCache();
         timeService = YamcsServer.getTimeService(yproc.getInstance());
 
-        CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
-        queues.put("default", cq);
-
         if (YConfiguration.isDefined("command-queue")) {
             YConfiguration config = YConfiguration.getConfiguration("command-queue");
             for (String queueName : config.getKeys()) {
@@ -126,6 +125,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     q.significances = config.getSubList(queueName, "significances");
                 }
             }
+        }
+
+        if (!queues.containsKey("default")) {
+            CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
+            queues.put("default", cq);
         }
 
         // schedule timer update to client
@@ -202,8 +206,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 "'" + state + "' is not a valid queue state. Use one of enabled, disabled or blocked");
     }
 
-    public Collection<CommandQueue> getQueues() {
-        return queues.values();
+    public List<CommandQueue> getQueues() {
+        return new ArrayList<>(queues.values());
     }
 
     public CommandQueue getQueue(String name) {

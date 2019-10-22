@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Instance } from '@yamcs/client';
+import { CommandHistoryEntry, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -21,7 +21,7 @@ export class CommandReportPage implements OnDestroy {
 
   constructor(
     route: ActivatedRoute,
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
   ) {
     const id = route.snapshot.paramMap.get('commandId')!;
 
@@ -30,22 +30,34 @@ export class CommandReportPage implements OnDestroy {
     yamcs.getInstanceClient()!.getCommandUpdates({
       ignorePastCommands: false,
     }).then(response => {
-      yamcs.getInstanceClient()!.getCommandHistoryEntry(id).then(command => {
-        this.command$.next(new CommandHistoryRecord(command));
-        this.commandSubscription = response.command$.pipe(
-          filter(entry => printCommandId(entry.commandId) === id),
-        ).subscribe(entry => {
-          const rec = this.command$.value!;
-          const mergedRec = rec.mergeEntry(entry);
-          this.command$.next(mergedRec);
-        });
+
+      this.commandSubscription = response.command$.pipe(
+        filter(entry => printCommandId(entry.commandId) === id),
+      ).subscribe(entry => this.mergeEntry(entry));
+
+      yamcs.getInstanceClient()!.getCommandHistoryEntry(id).then(entry => {
+        this.mergeEntry(entry);
       });
     });
+  }
+
+  private mergeEntry(entry: CommandHistoryEntry) {
+    const rec = this.command$.value;
+    if (rec) {
+      const mergedRec = rec.mergeEntry(entry);
+      this.command$.next(mergedRec);
+    } else {
+      this.command$.next(new CommandHistoryRecord(entry));
+    }
   }
 
   ngOnDestroy() {
     if (this.commandSubscription) {
       this.commandSubscription.unsubscribe();
+      const client = this.yamcs.getInstanceClient();
+      if (client) {
+        client.unsubscribeCommandUpdates();
+      }
     }
   }
 }

@@ -1,7 +1,6 @@
 package org.yamcs.http.api.processor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,9 +35,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
-        List<CommandQueue> queues = new ArrayList<>(mgr.getQueues());
-        Collections.sort(queues, (q1, q2) -> q1.getName().compareTo(q2.getName()));
-        queues.forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
+        List<CommandQueue> queues = new ArrayList<>(mgr.getQueues()); // In definition order
+        for (int i = 0; i < queues.size(); i++) {
+            CommandQueue q = queues.get(i);
+            response.addQueue(toCommandQueueInfo(req, q, i + 1, true));
+        }
         completeOK(req, response.build());
     }
 
@@ -50,7 +51,8 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
 
-        CommandQueueInfo info = toCommandQueueInfo(req, queue, true);
+        int order = mgr.getQueues().indexOf(queue);
+        CommandQueueInfo info = toCommandQueueInfo(req, queue, order, true);
         completeOK(req, info);
     }
 
@@ -87,7 +89,8 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported queue state '" + state + "'");
             }
         }
-        CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, true);
+        int order = mgr.getQueues().indexOf(queue);
+        CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, order, true);
         completeOK(req, qinfo);
     }
 
@@ -143,7 +146,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    private CommandQueueInfo toCommandQueueInfo(RestRequest req, CommandQueue queue, boolean detail) {
+    private CommandQueueInfo toCommandQueueInfo(RestRequest req, CommandQueue queue, int order, boolean detail) {
         CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder();
         b.setInstance(queue.getProcessor().getInstance());
         b.setProcessorName(queue.getProcessor().getName());
@@ -151,6 +154,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         b.setState(queue.getState());
         b.setNbSentCommands(queue.getNbSentCommands());
         b.setNbRejectedCommands(queue.getNbRejectedCommands());
+        b.setOrder(order);
         if (queue.getStateExpirationRemainingS() != -1) {
             b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
         }

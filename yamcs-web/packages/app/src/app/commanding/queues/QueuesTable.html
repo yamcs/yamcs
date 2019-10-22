@@ -3,31 +3,35 @@
        [dataSource]="dataSource"
        class="ya-data-table"
        matSort
-       matSortActive="name"
+       matSortActive="order"
        matSortDirection="asc"
        matSortDisableClear>
 
+  <ng-container matColumnDef="order">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 1px">#</th>
+    <td mat-cell *matCellDef="let queue">
+      {{ queue.order }}
+    </td>
+  </ng-container>
+
   <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Queue name</th>
-    <td mat-cell *matCellDef="let queue" style="width: 200px">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Queue name</th>
+    <td mat-cell *matCellDef="let queue">
       {{ queue.name }}
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="mode">
-    <th mat-header-cell *matHeaderCellDef style="width: 150px">Mode</th>
+  <ng-container matColumnDef="action">
+    <th mat-header-cell *matHeaderCellDef style="width: 150px">Action</th>
     <td mat-cell *matCellDef="let queue">
-      <span *ngIf="queue.state === 'ENABLED'" [matTooltip]="queue.state">
-        <mat-icon class="icon16" style="color: #00c752; vertical-align: middle">check</mat-icon>
-        Accept all
+      <span *ngIf="queue.state === 'ENABLED'">
+        ACCEPT
       </span>
-      <span *ngIf="queue.state === 'BLOCKED'" [matTooltip]="queue.state">
-        <mat-icon class="icon16" style="vertical-align: middle">pause</mat-icon>
-        Block all
+      <span *ngIf="queue.state === 'BLOCKED'" class="blink">
+        HOLD
       </span>
-      <span *ngIf="queue.state === 'DISABLED'" [matTooltip]="queue.state">
-        <mat-icon class="icon16" style="color: red; vertical-align: middle">close</mat-icon>
-        Reject all
+      <span *ngIf="queue.state === 'DISABLED'">
+        REJECT
       </span>
     </td>
   </ng-container>
@@ -45,7 +49,7 @@
       <mat-menu #queueMenu="matMenu" overlapTrigger="false" class="ya-menu">
         <button mat-menu-item
                 [matMenuTriggerFor]="actions">
-          Change mode
+          Change action
         </button>
       </mat-menu>
 
@@ -53,17 +57,17 @@
         <button mat-menu-item
                 (click)="enableQueue(queue)">
           <mat-icon>check</mat-icon>
-          Accept all
+          ACCEPT
         </button>
         <button mat-menu-item
                 (click)="blockQueue(queue)">
           <mat-icon>pause</mat-icon>
-          Block all
+          HOLD
         </button>
         <button mat-menu-item
                 (click)="disableQueue(queue)">
           <mat-icon>close</mat-icon>
-          Reject all
+          REJECT
         </button>
       </mat-menu>
 

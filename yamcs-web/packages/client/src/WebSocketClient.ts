@@ -617,6 +617,28 @@ export class WebSocketClient {
     });
   }
 
+  async unsubscribeCommandUpdates() {
+    const requestId = this.emit({
+      cmdhistory: 'unsubscribe',
+    });
+
+    return new Promise<void>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          resolve();
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   close() {
     this.webSocketConnectionSubscription.unsubscribe();
     this.webSocket.unsubscribe();
