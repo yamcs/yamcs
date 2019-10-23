@@ -48,8 +48,9 @@ import com.google.common.util.concurrent.AbstractService;
  * <ul>
  * <li>for each command that is sent, based on the sender it finds the queue where the command should go
  * <li>depending on the queue state the command can be immediately sent, stored in the queue or rejected
- * <li>when the command is immediately sent or rejected, the command queue monitor is not notified <i>if the command has
- * transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
+ * <li>when the command is immediately sent or rejected, the command queue monitor is not notified
+ * <li>if the command has transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the
+ * queue is not blocked
  * </ul>
  * Note: the update of the command monitors is done in the same thread. That means that if the connection to one of the
  * monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users most
@@ -512,7 +513,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *            the new state of the queue
      * @return the queue whose state has been changed or null if no queue by the name exists
      */
-    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
+    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/* , boolean rebuild */) {
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
             if (q.name.equals(queueName)) {
