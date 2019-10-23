@@ -12,8 +12,8 @@ import org.yamcs.protobuf.Commanding.QueueState;
 public class CommandQueue {
     String name;
     private ConcurrentLinkedQueue<PreparedCommand> commands = new ConcurrentLinkedQueue<>();
-    QueueState defaultState = QueueState.BLOCKED;
-    QueueState state = QueueState.BLOCKED;
+    QueueState defaultState;
+    QueueState state;
     Processor processor;
 
     int nbSentCommands = 0;
@@ -29,10 +29,11 @@ public class CommandQueue {
     String spNumRejectedCommands;
     String spNumCommands;
 
-    CommandQueue(Processor channel, String name, QueueState initialState) {
+    CommandQueue(Processor channel, String name, QueueState state) {
         this.processor = channel;
         this.name = name;
-        this.state = initialState;
+        this.state = state;
+        this.defaultState = state;
     }
 
     void setupSysParameters() {

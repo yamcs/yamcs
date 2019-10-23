@@ -244,7 +244,7 @@ public class Processor extends AbstractService {
         tmPacketProvider = tpp;
     }
 
-    public void setCommandReleaser(CommandReleaser cr) {
+    public void setCommandReleaser(CommandReleaser cr) throws ValidationException {
         if (commandReleaser != null) {
             throw new IllegalStateException("There is already a command releaser");
         }

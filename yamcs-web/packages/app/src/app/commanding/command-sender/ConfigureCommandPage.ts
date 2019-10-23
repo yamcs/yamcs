@@ -7,7 +7,6 @@ import { Argument, ArgumentAssignment, Command, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import * as utils from '../../shared/utils';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
@@ -125,9 +124,7 @@ export class ConfigureCommandPage {
       assignment: assignments,
       comment: comment || undefined,
     }).then(response => {
-      const id = response.commandQueueEntry.cmdId;
-      const idString = utils.printCommandId(id);
-      this.router.navigate(['/commanding/report', idString], {
+      this.router.navigate(['/commanding/report', response.id], {
         queryParams: {
           instance: this.instance.name,
         }

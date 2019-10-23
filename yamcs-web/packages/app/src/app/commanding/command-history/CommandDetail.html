@@ -26,10 +26,12 @@
   {{ command.source || '-' }}
 </div>
 
-<h6>Binary</h6>
-<div class="block">
-  <app-hex [base64String]="command.binary"></app-hex>
-</div>
+<ng-container *ngIf="command.binary">
+  <h6>Binary</h6>
+  <div class="block">
+    <app-hex [base64String]="command.binary"></app-hex>
+  </div>
+</ng-container>
 
 <ng-container *ngIf="command.comment">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>

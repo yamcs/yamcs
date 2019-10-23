@@ -165,10 +165,16 @@ export interface IssueCommandOptions {
 }
 
 export interface IssueCommandResponse {
-  commandQueueEntry: CommandQueueEntry;
+  id: string;
+  generationTime: string;
+  origin: string;
+  sequenceNumber: number;
+  commandName: string;
   source: string;
   hex: string;
   binary: string;
+  username: string;
+  queue?: string;
 }
 
 export interface CommandHistoryAttribute {

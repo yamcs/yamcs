@@ -15,7 +15,10 @@ import java.util.concurrent.TimeUnit;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.Processor;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.ThreadSafe;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -30,7 +33,6 @@ import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
@@ -49,9 +51,8 @@ import com.google.common.util.concurrent.AbstractService;
  * <ul>
  * <li>for each command that is sent, based on the sender it finds the queue where the command should go
  * <li>depending on the queue state the command can be immediately sent, stored in the queue or rejected
- * <li>when the command is immediately sent or rejected, the command queue monitor is not notified
- * <li>if the command has transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the
- * queue is not blocked
+ * <li>when the command is immediately sent or rejected, the command queue monitor is not notified <i>if the command has
+ * transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
  * </ul>
  * Note: the update of the command monitors is done in the same thread. That means that if the connection to one of the
  * monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users most
@@ -74,7 +75,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     ParameterValueList pvList = new ParameterValueList();
 
-    Processor yproc;
+    Processor processor;
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
@@ -88,50 +89,46 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param commandingManager
      *
      * @throws ConfigurationException
-     *             in case there is an error in the configuration file. Note: if the configuration file doesn't exist,
-     *             this exception is not thrown.
+     *             When there is an error in the configuration file. Note: if the configuration file doesn't exist, this
+     *             exception is not thrown.
+     * @throws ValidationException
+     *             When configuration file is incorrect.
      */
-    public CommandQueueManager(CommandingManager commandingManager) throws ConfigurationException {
+    public CommandQueueManager(CommandingManager commandingManager) throws ConfigurationException, ValidationException {
         this.commandingManager = commandingManager;
 
-        yproc = commandingManager.getChannel();
-        log = new Log(this.getClass(), yproc.getInstance());
-        log.setContext(yproc.getName());
-        this.commandHistoryPublisher = yproc.getCommandHistoryPublisher();
-        this.commandReleaser = yproc.getCommandReleaser();
-        this.instance = yproc.getInstance();
-        this.processorName = yproc.getName();
-        this.timer = yproc.getTimer();
-        this.lastValueCache = yproc.getLastValueCache();
-        timeService = YamcsServer.getTimeService(yproc.getInstance());
+        processor = commandingManager.getProcessor();
+        log = new Log(this.getClass(), processor.getInstance());
+        log.setContext(processor.getName());
+        this.commandHistoryPublisher = processor.getCommandHistoryPublisher();
+        this.commandReleaser = processor.getCommandReleaser();
+        this.instance = processor.getInstance();
+        this.processorName = processor.getName();
+        this.timer = processor.getTimer();
+        this.lastValueCache = processor.getLastValueCache();
+        timeService = YamcsServer.getTimeService(processor.getInstance());
 
         if (YConfiguration.isDefined("command-queue")) {
+            Spec queueSpec = getQueueSpec();
             YConfiguration config = YConfiguration.getConfiguration("command-queue");
             for (String queueName : config.getKeys()) {
-                if (queueName.equals("queueNames")) {
-                    log.warn("DEPRECATION: Remove key 'queueNames' from command-queue.yaml. "
-                            + "This property is no longer read.");
-                    continue;
-                }
-                if (!queues.containsKey(queueName)) {
-                    queues.put(queueName, new CommandQueue(yproc, queueName, QueueState.BLOCKED));
-                }
-                CommandQueue q = queues.get(queueName);
-                String state = config.getSubString(queueName, "state");
-                q.state = CommandQueueManager.stringToQueueState(state);
-                q.defaultState = q.state;
-                if (config.containsKey(queueName, "stateExpirationTimeS")) {
-                    q.stateExpirationTimeS = config.getInt(queueName, "stateExpirationTimeS");
-                }
-                if (config.containsKey(queueName, "significances")) {
-                    q.significances = config.getSubList(queueName, "significances");
-                }
-            }
-        }
+                YConfiguration queueConfig = config.getConfig(queueName);
+                queueConfig = queueSpec.validate(queueConfig);
 
-        if (!queues.containsKey("default")) {
-            CommandQueue cq = new CommandQueue(yproc, "default", QueueState.ENABLED);
-            queues.put("default", cq);
+                String stateString = queueConfig.getString("state");
+                QueueState state = stringToQueueState(stateString);
+                CommandQueue q = new CommandQueue(processor, queueName, state);
+                if (queueConfig.containsKey("stateExpirationTimeS")) {
+                    q.stateExpirationTimeS = queueConfig.getInt("stateExpirationTimeS");
+                }
+                if (queueConfig.containsKey("significances")) {
+                    q.significances = queueConfig.getList("significances");
+                }
+                queues.put(queueName, q);
+            }
+        } else {
+            CommandQueue q = new CommandQueue(processor, "default", QueueState.ENABLED);
+            queues.put(q.getName(), q);
         }
 
         // schedule timer update to client
@@ -149,12 +146,21 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }, 1, 1, TimeUnit.SECONDS);
     }
 
+    private Spec getQueueSpec() {
+        Spec spec = new Spec();
+        spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled")
+                .withRequired(true);
+        spec.addOption("stateExpirationTimeS", OptionType.INTEGER);
+        spec.addOption("significances", OptionType.LIST).withElementType(OptionType.STRING);
+        return spec;
+    }
+
     /**
      * called at processor startup, subscribe all parameters required for checking command constraints
      */
     @Override
     public void doStart() {
-        XtceDb xtcedb = yproc.getXtceDb();
+        XtceDb xtcedb = processor.getXtceDb();
         Set<Parameter> paramsToSubscribe = new HashSet<>();
         for (MetaCommand mc : xtcedb.getMetaCommands()) {
             if (mc.hasTransmissionConstraints()) {
@@ -165,13 +171,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if (!paramsToSubscribe.isEmpty()) {
-            ParameterRequestManager prm = yproc.getParameterRequestManager();
+            ParameterRequestManager prm = processor.getParameterRequestManager();
             paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
         } else {
             log.debug("No parameter required for post transmission contraint check");
         }
 
-        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
+        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             for (CommandQueue cq : queues.values()) {
                 cq.setupSysParameters();
@@ -183,12 +189,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     @Override
     public void doStop() {
-        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
+        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             sysParamCollector.unregisterProducer(this);
         }
         if (paramSubscriptionRequestId != -1) {
-            ParameterRequestManager prm = yproc.getParameterRequestManager();
+            ParameterRequestManager prm = processor.getParameterRequestManager();
             prm.removeRequest(paramSubscriptionRequestId);
         }
         notifyStopped();
@@ -230,11 +236,18 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public synchronized CommandQueue addCommand(User user, PreparedCommand pc) {
         commandHistoryPublisher.addCommand(pc);
 
+        long missionTime = timeService.getMissionTime();
+
         CommandQueue q = getQueue(user, pc);
+        if (q == null) {
+            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, "NOK");
+            unhandledCommand(pc);
+            return null;
+        }
+
         q.add(pc);
         notifyAdded(q, pc);
-
-        long missionTime = timeService.getMissionTime();
 
         if (q.state == QueueState.DISABLED) {
             q.remove(pc, false);
@@ -382,7 +395,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         MetaCommand mc = pc.getMetaCommand();
         if (mc.hasCommandVerifiers()) {
             log.debug("Starting command verification for {}", pc);
-            CommandVerificationHandler cvh = new CommandVerificationHandler(yproc, pc);
+            CommandVerificationHandler cvh = new CommandVerificationHandler(processor, pc);
             cvh.start();
         }
 
@@ -393,30 +406,42 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
+    private void unhandledCommand(PreparedCommand pc) {
+        commandHistoryPublisher.commandFailed(pc.getCommandId(), "No matching queue");
+        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
+        for (CommandQueueListener m : monitoringClients) {
+            try {
+                m.commandUnhandled(pc);
+            } catch (Exception e) {
+                log.warn("got exception when notifying a monitor, removing it from the list", e);
+                monitoringClients.remove(m);
+            }
+        }
+    }
+
     /**
      * @param user
      * @param pc
      * @return the queue where the command should be placed.
      */
     public CommandQueue getQueue(User user, PreparedCommand pc) {
-        Set<ObjectPrivilege> queuePrivileges = user.getObjectPrivileges(ObjectPrivilegeType.InsertCommandQueue);
         for (CommandQueue cq : queues.values()) {
-            for (ObjectPrivilege privilege : queuePrivileges) {
-                if (privilege.getObject().equals(cq.getName())) {
-                    if (cq.significances == null
-                            || (pc.getMetaCommand().getDefaultSignificance() == null
-                                    && cq.significances.contains("none"))
-                            || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(
-                                    pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name()))) {
-                        // return first queue that the user can insert into and that matches the significance of the
-                        // command
-                        return cq;
-                    }
-                }
+            if (!user.hasObjectPrivilege(ObjectPrivilegeType.InsertCommandQueue, cq.getName())) {
+                continue;
+            }
+
+            if (cq.significances == null
+                    || (pc.getMetaCommand().getDefaultSignificance() == null
+                            && cq.significances.contains("none"))
+                    || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(
+                            pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name()))) {
+                // return first queue that the user can insert into and that matches the significance of the
+                // command
+                return cq;
             }
         }
 
-        return queues.get("default");
+        return null;
     }
 
     /**
@@ -519,7 +544,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *            the new state of the queue
      * @return the queue whose state has been changed or null if no queue by the name exists
      */
-    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/* , boolean rebuild */) {
+    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
             if (q.name.equals(queueName)) {
@@ -739,7 +764,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     @Override
     public Collection<ParameterValue> getSystemParameters() {
         List<ParameterValue> pvlist = new ArrayList<>();
-        long time = yproc.getCurrentTime();
+        long time = processor.getCurrentTime();
         for (CommandQueue cq : queues.values()) {
             cq.fillInSystemParameters(pvlist, time);
         }

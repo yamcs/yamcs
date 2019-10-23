@@ -107,7 +107,7 @@ message AlarmSubscriptionRequest {
 
 message CommandHistorySubscriptionRequest {
   // if not specified, updates on any command are returned
-  repeated commanding.CommandId commandId = 1;
+  repeated commanding.CommandId commandId = 1 [deprecated=true];
 
   // if set to true (default), incremental updates on commands that were
   // issued before this subscription are not emitted.
