@@ -70,7 +70,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
             switch (vmp.service) {
             case PACKET:
                 VcUplinkHandler vcph;
-                if (vmp.useFop1) {
+                if (vmp.useCop1) {
                     vcph = new Cop1TcPacketHandler(yamcsInstance, linkName, vmp, executor,
                             new Cop1MonitorImpl(yamcsInstance, linkName));
                 } else {
@@ -87,7 +87,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
     public class TcVcManagedParameters extends VcUplinkManagedParameters {
         ServiceType service;
-        boolean useFop1;
+        boolean useCop1;
         int maxFrameLength = -1;
         public boolean blocking;
         public boolean bdAbsolutePriority;
@@ -105,7 +105,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
                 throw new ConfigurationException("Invalid frame length " + maxFrameLength);
             }
             this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
-            this.useFop1 = config.getBoolean("useFop1", false);
+            this.useCop1 = config.getBoolean("useCop1", false);
         }
 
         public TcVcManagedParameters(int vcId, ServiceType service) {
