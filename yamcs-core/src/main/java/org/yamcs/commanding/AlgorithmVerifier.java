@@ -76,12 +76,6 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         } else {
             finished(false, returnValue.toString());
         }
-        
-        if(!(returnValue instanceof Boolean)) {
-            log.warn("Algorithm {} run but returned a {} instead of a Boolean", alg.getName(), returnValue.getClass());
-            return;
-        }
-       
     }
 
    
