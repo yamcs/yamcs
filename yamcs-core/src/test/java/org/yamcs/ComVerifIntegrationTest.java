@@ -60,8 +60,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttr("Verifier_Complete_Status", "OK");
         checkNextCmdHistoryAttr("Verifier_Complete_Time");
         
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY, "OK");
-        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
 
         // check commands histogram
         String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);

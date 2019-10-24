@@ -215,7 +215,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             log.error("Illegal state onVerifierFinished called with state: {}", state);
         }
         if (ta == TerminationAction.SUCCESS) {
-            cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, yproc.getCurrentTime(), AckStatus.OK);
             stop();
         } else if (ta == TerminationAction.FAIL) {
             if(failureReason == null) {
