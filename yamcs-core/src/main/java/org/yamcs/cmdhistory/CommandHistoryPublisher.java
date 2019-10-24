@@ -10,6 +10,13 @@ import org.yamcs.protobuf.Commanding.CommandId;
  *
  */
 public interface CommandHistoryPublisher {
+    /**
+     * provides acknowledgment status during execution of command
+     *
+     */
+    enum AckStatus {
+         NA, PENDING, OK, NOK, TIMEOUT
+    };
 
     public final static String CommandComplete_KEY = "CommandComplete";
     public final static String CommandFailed_KEY = "CommandFailed";
@@ -40,6 +47,33 @@ public interface CommandHistoryPublisher {
     default void publishWithTime(CommandId cmdId, String key, long time, String value) {
         publish(cmdId, key + "_Time", time);
         publish(cmdId, key + "_Status", value);
+    }
+    
+    /**
+     * Publish an acknowledgement status to the command history.
+     * <p>
+     * Three entries (corresponding to command history columns) are created: 
+     * <ul>
+     * <li>key_Time</li>
+     * <li>key_Status</li>
+     * <li>key_Message</li>
+     * </ul>
+     * @param cmdId
+     * @param key
+     * @param time
+     * @param state
+     * @param message
+     */
+    default void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
+        publish(cmdId, key + "_Time", time);
+        publish(cmdId, key + "_Status", state.toString());
+        if(message!=null) {
+            publish(cmdId, key + "_Message", message);
+        }
+    }
+    
+    default void publishAck(CommandId cmdId, String key, long time, AckStatus state) {
+        publishAck(cmdId, key, time, state, null);
     }
     
     default void commandFailed(CommandId commandId, String reason) {

@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Clcw;
@@ -93,7 +94,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     int state = 6;
 
     // _state is seen by external threads
-    volatile int _state = state;
+    volatile int externalState = state;
 
     // V(S) - Transmitter Frame Sequence Number;
     int vS;
@@ -178,14 +179,14 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             }
             return;
         }
-        log.trace("state: {} new TC {}", _state, pc);
+        log.trace("state: {} new TC {}", externalState, pc);
         if (!cop1Active) {
             if (bypassAll) {
                 sendSingleTc(pc, true);
             } else {
                 sendSingleTc(pc, isBypass(pc));
             }
-        } else if ((vmp.bdAbsolutePriority || _state >= 3) && isBypass(pc)) {
+        } else if ((vmp.bdAbsolutePriority || externalState >= 3) && isBypass(pc)) {
             sendSingleTc(pc, true);
         } else {
             executor.submit(() -> {
@@ -212,7 +213,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         TcTransferFrame tf = makeFrame(pc, bypass);
         boolean added = outQueue.offer(new QueuedFrame(tf));
         if (!added) {
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.NOK, "OutQueue on link " + name + " full");
             commandHistoryPublisher.commandFailed(pc.getCommandId(), "OutQueue on link " + name + " full");
         } else {
             signalDataAvailable();
@@ -791,11 +792,12 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private void changeState(int newState) {
-        int old = state;
-        state = newState;
-        if (old != newState) {
-            _state = state;
-            monitor.stateChanged(state);
+        int oldState = state;
+
+        if (oldState != newState) {
+            state = newState;
+            externalState = state;
+            monitor.stateChanged(oldState, newState);
         }
     }
 
@@ -1126,8 +1128,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     private void ackFrame(TcTransferFrame tcf) {
         for (PreparedCommand pc : tcf.commands) {
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(),
-                    "OK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(),
+                    AckStatus.OK);
         }
     }
 

@@ -33,9 +33,10 @@ interface Cop1Monitor {
     void alert(AlertType alert);
 
     /**
-     * Called each time when the state changes. These are the possible FOP1 states:
+     * Called each time when the state changes.
      * 
-     * @param newState
+     * @param oldState
+     * @param newState 
      */
-    void stateChanged(int newState);
+    void stateChanged(int oldState, int newState);
 }

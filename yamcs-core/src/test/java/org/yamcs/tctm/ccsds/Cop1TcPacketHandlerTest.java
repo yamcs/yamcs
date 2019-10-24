@@ -712,7 +712,7 @@ public class Cop1TcPacketHandlerTest {
             //System.out.println("MONITOR: alert: " + alert);
         }
 
-        public void stateChanged(int newState) {
+        public void stateChanged(int oldState, int newState) {
             //System.out.println("MONITOR: Sate changed, new state: " + newState);
             this.state = newState;
         }

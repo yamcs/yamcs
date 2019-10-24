@@ -10,6 +10,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
@@ -126,8 +127,9 @@ public class TseDataLink extends AbstractService implements Link {
     private void sendTc(PreparedCommand pc) {
         if (getLinkStatus() != Status.OK) {
             log.warn("Dropping command (link is not OK)");
-            cmdhistPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-            cmdhistPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, "Link is not OK");
+            long missionTime = timeService.getMissionTime();
+            cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, missionTime, AckStatus.NOK, "Link is not OK");
+            cmdhistPublisher.commandFailed(pc.getCommandId(), "Link is not OK");
             return;
         }
 
@@ -167,11 +169,11 @@ public class TseDataLink extends AbstractService implements Link {
         channel.writeAndFlush(command).addListener(f -> {
             long missionTime = timeService.getMissionTime();
             if (f.isSuccess()) {
-                cmdhistPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
-                        missionTime, "OK");
+                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
+                        missionTime, AckStatus.OK);
             } else {
-                cmdhistPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
-                        missionTime, "NOK");
+                cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
+                        missionTime, AckStatus.NOK);
             }
         });
         outCount++;

@@ -11,6 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
@@ -198,8 +199,8 @@ public abstract class AbstractTcDataLink extends AbstractService
     
     /**Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
-        commandHistoryPublisher.publishWithTime(commandId, ACK_SENT_CNAME_PREFIX,
-                getCurrentTime(), "NOK");
+        commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
+                getCurrentTime(), AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId,  reason);
     }
 }

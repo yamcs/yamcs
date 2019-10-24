@@ -21,7 +21,7 @@ public class Cop1MonitorImpl implements Cop1Monitor {
     };
 
     public Cop1MonitorImpl(String yamcsInstance, String linkName) {
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "FOP1_" + linkName, 10000);
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "COP1_" + linkName, 10000);
     }
 
     @Override
@@ -35,8 +35,8 @@ public class Cop1MonitorImpl implements Cop1Monitor {
     }
 
     @Override
-    public void stateChanged(int newState) {
-        eventProducer.sendInfo("STATE_CHANGE", FOP1_STATE[newState]);
+    public void stateChanged(int oldState, int newState) {
+        eventProducer.sendInfo("STATE_CHANGE", "state changed from "+FOP1_STATE[oldState]+" to "+FOP1_STATE[newState]);
     }
 
 }

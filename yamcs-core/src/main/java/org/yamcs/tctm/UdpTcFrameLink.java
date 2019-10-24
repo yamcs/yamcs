@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
@@ -85,7 +86,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
                 }
                 if(tf.isBypass()) { //the AD frames are acknowledged when the COP1 ack is received
                     for(PreparedCommand pc: tf.getCommands()) {
-                        commandHistoryPublisher.publishWithTime(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), "OK");
+                        commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
                     }
                 }
                 DatagramPacket dtg = new DatagramPacket(data, data.length, address, port);

@@ -52,16 +52,16 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
                 dataAvailableSemaphore.release();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                commandHistoryPublisher.publishWithTime(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
-                        getCurrentTime(), "NOK");
+                commandHistoryPublisher.publishAck(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
+                        getCurrentTime(), AckStatus.NOK, "Interrupted");
                 commandHistoryPublisher.commandFailed(preparedCommand.getCommandId(), "Interrupted");
             }
         } else {
             if (commandQueue.offer(preparedCommand)) {
                 dataAvailableSemaphore.release();
             } else {
-                commandHistoryPublisher.publishWithTime(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
-                        getCurrentTime(), "NOK");
+                commandHistoryPublisher.publishAck(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
+                        getCurrentTime(),  AckStatus.NOK);
             }
         }
     }

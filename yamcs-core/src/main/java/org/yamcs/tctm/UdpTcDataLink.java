@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
@@ -56,6 +57,6 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
         DatagramPacket packet = new DatagramPacket(binary, binary.length, address, port);
         socket.send(packet);
         dataCount++;
-        commandHistoryPublisher.publishWithTime(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), "OK");
+        commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
     }
 }

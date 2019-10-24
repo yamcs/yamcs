@@ -19,6 +19,7 @@ import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
@@ -237,25 +238,25 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         if (q.state == QueueState.DISABLED) {
             q.remove(pc, false);
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
-                    missionTime, "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, AckStatus.NOK, "Queue disabled");
             failedCommand(q, pc, "Queue disabled", true);
             notifyUpdateQueue(q);
         } else if (q.state == QueueState.BLOCKED) {
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
-                    missionTime, "OK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, AckStatus.OK);
             // notifyAdded(q, pc);
         } else if (q.state == QueueState.ENABLED) {
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
-                    missionTime, "OK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
+                    missionTime, AckStatus.OK);
             if (pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
-                addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
                 q.remove(pc, true);
                 releaseCommand(q, pc, true, false);
-                commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
+                commandHistoryPublisher.publishAck(pc.getCommandId(),
+                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
             }
         }
 
@@ -297,12 +298,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if (status == TCStatus.OK) {
             addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
             releaseCommand(q, pc, true, false);
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
             addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Transmission constraints check failed");
             failedCommand(q, pc, "Transmission constraints check failed", true);
         }
     }
@@ -438,8 +439,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if (pc != null) {
             queue.remove(pc, false);
             long missionTime = timeService.getMissionTime();
-            commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Rejected by " + username);
             failedCommand(queue, pc, "Rejected by " + username, true);
             notifyUpdateQueue(queue);
         } else {
@@ -485,8 +486,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             long missionTime = timeService.getMissionTime();
             queue.remove(command, true);
             releaseCommand(queue, command, true, rebuild);
-            commandHistoryPublisher.publishWithTime(commandId,
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
+            commandHistoryPublisher.publishAck(commandId,
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         }
         return command;
     }
@@ -544,8 +545,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                     startTransmissionConstraintChecker(queue, pc);
                 } else {
                     releaseCommand(queue, pc, true, false);
-                    commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                            CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "OK");
+                    commandHistoryPublisher.publishAck(pc.getCommandId(),
+                            CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
                 }
             }
             queue.clear(true);
@@ -553,8 +554,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if (queue.state == QueueState.DISABLED) {
             long missionTime = timeService.getMissionTime();
             for (PreparedCommand pc : queue.getCommands()) {
-                commandHistoryPublisher.publishWithTime(pc.getCommandId(),
-                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, "NOK");
+                commandHistoryPublisher.publishAck(pc.getCommandId(),
+                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Queue disabled");
                 failedCommand(queue, pc, "Queue disabled", true);
             }
             queue.clear(false);
