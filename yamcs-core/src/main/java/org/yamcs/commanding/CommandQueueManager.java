@@ -419,7 +419,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void unhandledCommand(PreparedCommand pc) {
-        commandHistoryPublisher.commandFailed(pc.getCommandId(), "No matching queue");
+        commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), "No matching queue");
         addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
         for (CommandQueueListener m : monitoringClients) {
             try {

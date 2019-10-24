@@ -38,8 +38,8 @@ import org.yamcs.xtce.XtceDb;
  * <p>
  * There is one handler for all the verifiers of a command.
  * <p>
- * This handler collects all command attributes, command arguments and command history events
- * and transforms them to parameters to be given to the verifiers when they run.
+ * This handler collects all command attributes, command arguments and command history events and transforms them to
+ * parameters to be given to the verifiers when they run.
  *
  */
 public class CommandVerificationHandler implements CommandHistoryConsumer {
@@ -135,8 +135,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     /**
-     * collects all the required command verifiers from this command and its parents,
-     * taking care not to add two verifiers for the same stage
+     * collects all the required command verifiers from this command and its parents, taking care not to add two
+     * verifiers for the same stage
      */
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers) {
         for (CommandVerifier cv : cmd.getCommandVerifiers()) {
@@ -169,14 +169,24 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     }
 
     private void scheduleVerifier(final Verifier verifier, long windowStart, long windowStop) {
+        CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
+        String histKey = CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + verifier.cv.getStage();
+
         if (windowStart > 0) {
-            timer.schedule(new Runnable() {
-                @Override
-                public void run() {
+            timer.schedule(() -> {
+                if (verifier.state == State.NEW) {
+                    cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+                            AckStatus.PENDING);
+
                     verifier.start();
                 }
             }, windowStart, TimeUnit.MILLISECONDS);
+
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+                    AckStatus.SCHEDULED);
         } else {
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), histKey, yproc.getCurrentTime(),
+                    AckStatus.PENDING);
             verifier.start();
         }
 
@@ -215,13 +225,14 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             log.error("Illegal state onVerifierFinished called with state: {}", state);
         }
         if (ta == TerminationAction.SUCCESS) {
-            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, yproc.getCurrentTime(), AckStatus.OK);
+            cmdHistPublisher.publishAck(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY,
+                    yproc.getCurrentTime(), AckStatus.OK);
             stop();
         } else if (ta == TerminationAction.FAIL) {
-            if(failureReason == null) {
+            if (failureReason == null) {
                 failureReason = "Verifier " + cv.getStage() + " result: " + state;
             }
-            
+
             cmdHistPublisher.commandFailed(preparedCommand.getCommandId(), yproc.getCurrentTime(), failureReason);
             stop();
         }
@@ -292,8 +303,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 v.updatedCommandHistoryParam(pv);
             }
         }
-        
-        if(key.equals(CommandHistoryPublisher.CommandComplete_KEY+"_Status")) {
+
+        if (key.equals(CommandHistoryPublisher.CommandComplete_KEY + "_Status")) {
             log.trace("Command completed, canceling all pending verifiers");
             for (Verifier v : verifiers) {
                 v.cancel();

@@ -372,6 +372,10 @@ button.expandable {
   margin-bottom: 12px;
 }
 
+.spin {
+  animation: yspin 2s infinite linear;
+}
+
 @keyframes yshake {
   10%, 90% {
     transform: translate3d(-1px, 0, 0);

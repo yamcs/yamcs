@@ -49,4 +49,5 @@ th.dense, td.dense {
   width: 1px;
   white-space: nowrap;
   padding-left: 12px;
+  padding-right: 12px;
 }

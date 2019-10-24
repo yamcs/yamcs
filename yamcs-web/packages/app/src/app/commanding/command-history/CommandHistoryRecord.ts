@@ -21,9 +21,10 @@ export class CommandHistoryRecord {
 
   source: string;
   binary: string;
-  transmissionConstraints: string;
 
   comment?: string;
+
+  transmissionConstraints?: Acknowledgment;
 
   queued?: Acknowledgment;
   released?: Acknowledgment;
@@ -31,11 +32,9 @@ export class CommandHistoryRecord {
   extraAcks: Acknowledgment[] = [];
   verifications: Acknowledgment[] = [];
 
-  extra: { [key: string]: string }[] = [];
+  completed?: Acknowledgment;
 
-  completed = false;
-  success?: boolean;
-  failureMessage?: string;
+  extra: { [key: string]: string }[] = [];
 
   private acksByName: { [key: string]: Acknowledgment } = {};
 
@@ -61,15 +60,11 @@ export class CommandHistoryRecord {
         this.source = attr.value.stringValue!;
       } else if (attr.name === 'binary') {
         this.binary = attr.value.binaryValue!;
-      } else if (attr.name === 'TransmissionConstraints') {
-        this.transmissionConstraints = attr.value.stringValue!;
-      } else if (attr.name === 'CommandFailed') {
-        this.failureMessage = attr.value.stringValue!;
-      } else if (attr.name === 'CommandComplete') {
-        this.completed = true;
-        this.success = attr.value.stringValue === 'OK';
-      } else if (attr.name === 'Comment' || attr.name === 'comment') { // Old versions of Yamcs use "Comment" with capital
+      } else if (attr.name === 'comment') {
         this.comment = attr.value.stringValue;
+      } else if (attr.name.endsWith('_Message')) {
+        const ackName = attr.name.substring(0, attr.name.length - '_Message'.length);
+        this.saveAckMessage(ackName, attr.value.stringValue!);
       } else if (attr.name.endsWith('_Time')) {
         const ackName = attr.name.substring(0, attr.name.length - '_Time'.length);
         this.saveAckTime(ackName, attr.value.stringValue!);
@@ -82,7 +77,11 @@ export class CommandHistoryRecord {
     }
 
     for (const ack of Object.values(this.acksByName)) {
-      if (ack.name === 'Acknowledge_Queued') {
+      if (ack.name === 'CommandComplete') {
+        this.completed = ack;
+      } else if (ack.name === 'TransmissionConstraints') {
+        this.transmissionConstraints = ack;
+      } else if (ack.name === 'Acknowledge_Queued') {
         this.queued = ack;
       } else if (ack.name === 'Acknowledge_Released') {
         this.released = ack;
@@ -137,5 +136,20 @@ export class CommandHistoryRecord {
       this.acksByName[name] = ack;
     }
     ack.status = status;
+  }
+
+  private saveAckMessage(name: string, message: string) {
+    let ack: Acknowledgment | null = null;
+    for (const key in this.acksByName) {
+      if (key === name) {
+        ack = this.acksByName[key];
+        break;
+      }
+    }
+    if (!ack) {
+      ack = { name };
+      this.acksByName[name] = ack;
+    }
+    ack.message = message;
   }
 }

@@ -15,7 +15,7 @@ public interface CommandHistoryPublisher {
      *
      */
     enum AckStatus {
-         NA, PENDING, OK, NOK, TIMEOUT, CANCELLED
+        NA, SCHEDULED, PENDING, OK, NOK, TIMEOUT, CANCELLED
     };
 
     public final static String CommandComplete_KEY = "CommandComplete";
@@ -25,7 +25,7 @@ public interface CommandHistoryPublisher {
     public final static String AcknowledgeSent_KEY = "Acknowledge_Sent";
     public final static String Verifier_KEY_PREFIX = "Verifier";
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
-    
+
     /**
      * Used by the links to add entries in the command history when the command has been sent via the link.
      * <p>
@@ -47,16 +47,17 @@ public interface CommandHistoryPublisher {
         publish(cmdId, key + "_Time", time);
         publish(cmdId, key + "_Status", value);
     }
-    
+
     /**
      * Publish an acknowledgement status to the command history.
      * <p>
-     * Three entries (corresponding to command history columns) are created: 
+     * Three entries (corresponding to command history columns) are created:
      * <ul>
      * <li>key_Time</li>
      * <li>key_Status</li>
      * <li>key_Message</li>
      * </ul>
+     * 
      * @param cmdId
      * @param key
      * @param time
@@ -66,17 +67,17 @@ public interface CommandHistoryPublisher {
     default void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
         publish(cmdId, key + "_Status", state.toString());
         publish(cmdId, key + "_Time", time);
-        if(message!=null) {
+        if (message != null) {
             publish(cmdId, key + "_Message", message);
         }
     }
-    
+
     default void publishAck(CommandId cmdId, String key, long time, AckStatus state) {
         publishAck(cmdId, key, time, state, null);
     }
-    
+
     default void commandFailed(CommandId cmdId, long time, String reason) {
         publishAck(cmdId, CommandComplete_KEY, time, AckStatus.NOK, reason);
     }
-    
+
 }

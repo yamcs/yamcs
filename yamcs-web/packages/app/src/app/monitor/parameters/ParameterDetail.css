@@ -1,6 +1,7 @@
 .meter-size-constrainer {
   display: inline-block;
-  width: 160px; /* about as large as the timestamp */
+  width: 160px;
+  /* about as large as the timestamp */
   position: relative;
 }
 
@@ -13,11 +14,30 @@ span.pval {
   line-height: 20px;
   margin: -8px 0 16px;
   bottom: -5px;
-  color: rgba(0,0,0,.987);
+  color: rgba(0, 0, 0, .987);
   font-weight: 400;
 }
 
 .subtext {
   font-size: smaller;
   white-space: nowrap;
+}
+
+.pval-frame {
+  display: inline-block;
+  min-width: 412px;
+  border: 1px solid #e7e7e7;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.pval-frame .header {
+  border-bottom: 1px solid #d3d3d3;
+  height: 64px;
+  line-height: 64px;
+  padding-left: 24px;
+}
+
+.pval-frame .body {
+  padding: 24px;
 }
