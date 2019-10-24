@@ -553,6 +553,7 @@ message ListParametersRequest {
   optional bool recurse = 3;
   optional bool details = 4;
   repeated string type = 5;
+  optional DataSourceType source = 10;
   optional string namespace = 6;
   optional string next = 7;
   optional int32 pos = 8;

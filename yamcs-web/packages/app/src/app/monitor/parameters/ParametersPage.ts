@@ -41,7 +41,7 @@ export class ParametersPage implements AfterViewInit {
   displayedColumns = [
     'name',
     'engValue',
-    'dataSource',
+    'shortDescription',
   ];
 
   constructor(

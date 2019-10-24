@@ -1,5 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { CommandQueue } from '@yamcs/client';
 import { Observable } from 'rxjs';
@@ -15,14 +14,13 @@ export class QueuesTable implements AfterViewInit {
   @Input()
   cqueues$: Observable<CommandQueue[]>;
 
-  @ViewChild(MatSort, { static: false })
-  sort: MatSort;
-
   dataSource = new MatTableDataSource<CommandQueue>();
 
   displayedColumns = [
     'order',
     'name',
+    'issuer',
+    'level',
     'action',
     'pending',
     'actions',
@@ -32,8 +30,6 @@ export class QueuesTable implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
-
     this.cqueues$.subscribe(cqueues => {
       this.dataSource.data = cqueues;
     });

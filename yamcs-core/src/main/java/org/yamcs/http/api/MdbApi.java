@@ -23,6 +23,7 @@ import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.GetCommandRequest;
@@ -54,6 +55,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -225,7 +227,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     if (parameterTypeMatches(p, request.getTypeList())) {
-                        matchedParameters.add(p);
+                        if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
+                            matchedParameters.add(p);
+                        }
                     }
                 }
             }
@@ -239,7 +243,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     continue;
                 }
                 if (parameterTypeMatches(p, request.getTypeList())) {
-                    matchedParameters.add(p);
+                    if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
+                        matchedParameters.add(p);
+                    }
                 }
             }
         }
@@ -728,5 +734,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
         return p.getParameterType() != null
                 && types.contains(p.getParameterType().getTypeAsString());
+    }
+
+    private boolean parameterSourceMatches(Parameter p, DataSourceType source) {
+        DataSource xtceSource = p.getDataSource();
+        return xtceSource != null && xtceSource.toString().equals(source.toString());
     }
 }

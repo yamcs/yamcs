@@ -3,15 +3,15 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 /**
- *  XTCE: 
- *   Significance provides some cautionary information about the potential consequence of each MetaCommand.
- *   
+ * XTCE: Significance provides some cautionary information about the potential consequence of each MetaCommand.
+ * 
  * @author nm
  *
  */
 public class Significance implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    
+
     public enum Levels {
         none,
         watch,
@@ -19,11 +19,16 @@ public class Significance implements Serializable {
         distress,
         critical,
         severe;
+
+        public boolean isMoreSevere(Levels other) {
+            return ordinal() > other.ordinal();
+        }
     }
-    final private String reasonForWarning;
-    final private Levels consequenceLevel;
-    
-    public Significance( Levels consequenceLevel, String reasonForWarning) {
+
+    private String reasonForWarning;
+    private Levels consequenceLevel;
+
+    public Significance(Levels consequenceLevel, String reasonForWarning) {
         this.reasonForWarning = reasonForWarning;
         this.consequenceLevel = consequenceLevel;
     }
@@ -34,9 +39,10 @@ public class Significance implements Serializable {
 
     public Levels getConsequenceLevel() {
         return consequenceLevel;
-    } 
-    
+    }
+
+    @Override
     public String toString() {
-        return consequenceLevel+"("+reasonForWarning+")";
+        return consequenceLevel + "(" + reasonForWarning + ")";
     }
 }

@@ -33,13 +33,13 @@ import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.CriteriaEvaluatorImpl;
@@ -118,11 +118,18 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 String stateString = queueConfig.getString("state");
                 QueueState state = stringToQueueState(stateString);
                 CommandQueue q = new CommandQueue(processor, queueName, state);
+                if (queueConfig.containsKey("users")) {
+                    q.addUsers(queueConfig.getList("users"));
+                }
+                if (queueConfig.containsKey("groups")) {
+                    q.addGroups(queueConfig.getList("groups"));
+                }
                 if (queueConfig.containsKey("stateExpirationTimeS")) {
                     q.stateExpirationTimeS = queueConfig.getInt("stateExpirationTimeS");
                 }
-                if (queueConfig.containsKey("significances")) {
-                    q.significances = queueConfig.getList("significances");
+                if (queueConfig.containsKey("minLevel")) {
+                    Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel"));
+                    q.setMinLevel(minLevel);
                 }
                 queues.put(queueName, q);
             }
@@ -151,7 +158,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled")
                 .withRequired(true);
         spec.addOption("stateExpirationTimeS", OptionType.INTEGER);
-        spec.addOption("significances", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("minLevel", OptionType.STRING);
+        spec.addOption("users", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("groups", OptionType.LIST).withElementType(OptionType.STRING);
+
+        spec.addOption("significances", OptionType.LIST).withElementType(OptionType.STRING)
+                .withDeprecationMessage("Use 'minLevel' instead");
         return spec;
     }
 
@@ -426,17 +438,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     public CommandQueue getQueue(User user, PreparedCommand pc) {
         for (CommandQueue cq : queues.values()) {
-            if (!user.hasObjectPrivilege(ObjectPrivilegeType.InsertCommandQueue, cq.getName())) {
-                continue;
-            }
-
-            if (cq.significances == null
-                    || (pc.getMetaCommand().getDefaultSignificance() == null
-                            && cq.significances.contains("none"))
-                    || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(
-                            pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name()))) {
-                // return first queue that the user can insert into and that matches the significance of the
-                // command
+            if (cq.matches(user, pc)) {
                 return cq;
             }
         }
@@ -449,7 +451,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * 
      * @param commandId
      * @param username
-     *            - the username rejecting the command
+     *            the username rejecting the command
      * @return the command removed from the queeu
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
@@ -547,7 +549,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
         CommandQueue queue = null;
         for (CommandQueue q : queues.values()) {
-            if (q.name.equals(queueName)) {
+            if (q.getName().equals(queueName)) {
                 queue = q;
                 break;
             }
@@ -592,7 +594,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
 
         if (queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
-            log.info("scheduling expiration state for new state {} for queue {}", newState, queue.name);
+            log.info("scheduling expiration state for new state {} for queue {}", newState, queue.getName());
             scheduleStateExpiration(queue);
         }
 
@@ -610,7 +612,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         Runnable r = () -> {
             log.info("executing epiration state, reverting to {}", queue.defaultState);
-            setQueueState(queue.name, queue.defaultState);
+            setQueueState(queue.getName(), queue.defaultState);
             queue.stateExpirationJob = null;
         };
 

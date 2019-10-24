@@ -208,12 +208,14 @@ export function printCommandId(commandId: CommandId): string {
 }
 
 export function printDateTime(date: Date | string, addTimezone = true): string {
+  let dateString;
   if (typeof date === 'string') {
-    return date.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+    // Convert to date first, this standardizes output (millis precision)
+    dateString = toDate(date).toISOString();
   } else {
-    const dateString = date.toISOString();
-    return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+    dateString = date.toISOString();
   }
+  return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
 }
 
 export function toDate(obj: any): Date {

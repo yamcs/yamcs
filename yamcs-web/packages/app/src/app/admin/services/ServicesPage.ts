@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Service } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/template/Select';
+import { Option } from '../../shared/forms/Select';
 
 @Component({
   templateUrl: './ServicesPage.html',

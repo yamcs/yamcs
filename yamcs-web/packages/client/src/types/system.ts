@@ -358,6 +358,9 @@ export interface CommandQueue {
   processorName: string;
   name: string;
   state: 'BLOCKED' | 'DISABLED' | 'ENABLED';
+  users: string[];
+  groups: string[];
+  minLevel: string;
   nbSentCommands: number;
   nbRejectCommands: number;
   stateExpirationTimeS: number;

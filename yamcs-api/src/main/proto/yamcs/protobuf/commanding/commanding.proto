@@ -24,15 +24,18 @@ enum QueueState {
 }
 
 message CommandQueueInfo {
-  required string instance = 1;
-  required string processorName = 2;
-  required string name = 3;
+  optional string instance = 1;
+  optional string processorName = 2;
+  optional string name = 3;
   optional QueueState state = 4;
-  required int32 nbSentCommands = 5;
-  required int32 nbRejectedCommands = 6;
+  optional int32 nbSentCommands = 5;
+  optional int32 nbRejectedCommands = 6;
   optional int32 stateExpirationTimeS = 7;
   repeated CommandQueueEntry entry = 8;
   optional int32 order = 9;
+  repeated string users = 10;
+  repeated string groups = 11;
+  optional mdb.SignificanceInfo.SignificanceLevelType minLevel = 12;
 }
 
 /*One entry (command) in the command queue*/

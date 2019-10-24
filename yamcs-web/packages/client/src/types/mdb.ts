@@ -246,11 +246,11 @@ export interface Container extends NameDescription {
 }
 
 export type OperatorType = 'EQUAL_TO'
-| 'NOT_EQUAL_TO'
-| 'GREATER_THAN'
-| 'GREATER_THAN_OR_EQUAL_TO'
-| 'SMALLER_THAN'
-| 'SMALLER_THAN_OR_EQUAL_TO';
+  | 'NOT_EQUAL_TO'
+  | 'GREATER_THAN'
+  | 'GREATER_THAN_OR_EQUAL_TO'
+  | 'SMALLER_THAN'
+  | 'SMALLER_THAN_OR_EQUAL_TO';
 
 export interface ComparisonInfo {
   parameter: Parameter;
@@ -285,6 +285,7 @@ export interface GetParametersOptions {
   namespace?: string;
   recurse?: boolean;
   type?: string;
+  source?: string;
   q?: string;
   pos?: number;
   limit?: number;

@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Bucket, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/template/Select';
+import { Option } from '../../shared/forms/Select';
 import { CreateBucketDialog } from './CreateBucketDialog';
 
 @Component({
@@ -101,8 +101,8 @@ export class BucketsPage implements AfterViewInit {
 
   masterToggle() {
     this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Bucket) {

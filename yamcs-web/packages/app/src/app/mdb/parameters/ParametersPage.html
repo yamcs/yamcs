@@ -3,16 +3,27 @@
   <span #top></span>
 
   <div class="panel-content">
-    <div class="page-options">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter parameters">
-      </app-search-filter>
-      &nbsp;&nbsp;
-
-      <app-column-chooser [columns]="columns"
-                          [displayedColumns]="displayedColumns"
-                          (change)="updateColumns($event)"></app-column-chooser>
-    </div>
+    <form [formGroup]="filterForm">
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
+          <app-search-filter formControlName="filter"
+                             placeholder="Filter parameters">
+          </app-search-filter>
+          &nbsp;&nbsp;
+          <app-column-chooser [columns]="columns"
+                              [displayedColumns]="displayedColumns"
+                              (change)="updateColumns($event)"></app-column-chooser>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
+          <app-select [options]="typeOptions" (change)="updateType($event)"></app-select>
+          &nbsp;&nbsp;
+          <app-select [options]="sourceOptions"
+                      (change)="updateSource($event)"></app-select>
+        </div>
+      </div>
+    </form>
     <div style="display: inline-block">
       <table mat-table
              *ngIf="dataSource"

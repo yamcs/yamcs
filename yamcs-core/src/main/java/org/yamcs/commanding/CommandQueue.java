@@ -1,16 +1,29 @@
 package org.yamcs.commanding;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 
 import org.yamcs.Processor;
+import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.security.Directory;
+import org.yamcs.security.Group;
+import org.yamcs.security.User;
+import org.yamcs.xtce.Significance.Levels;
 
 public class CommandQueue {
-    String name;
+
+    private String name;
+    private Set<String> users = new HashSet<>();
+    private Set<String> groups = new HashSet<>();
+    private Levels minLevel = Levels.none;
+
     private ConcurrentLinkedQueue<PreparedCommand> commands = new ConcurrentLinkedQueue<>();
     QueueState defaultState;
     QueueState state;
@@ -23,7 +36,6 @@ public class CommandQueue {
     int stateExpirationRemainingS = -1;
     ScheduledFuture<?> stateExpirationJob = null;
 
-    List<String> significances;
     String spQueueState;
     String spNumSentCommands;
     String spNumRejectedCommands;
@@ -50,6 +62,69 @@ public class CommandQueue {
 
     public String getName() {
         return name;
+    }
+
+    public Set<String> getUsers() {
+        return users;
+    }
+
+    public Set<String> getGroups() {
+        return groups;
+    }
+
+    public Levels getMinLevel() {
+        return minLevel;
+    }
+
+    public void setMinLevel(Levels minLevel) {
+        this.minLevel = minLevel;
+    }
+
+    public void addUsers(Collection<String> users) {
+        this.users.addAll(users);
+    }
+
+    public void addGroups(Collection<String> groups) {
+        this.groups.addAll(groups);
+    }
+
+    public boolean matches(User user, PreparedCommand pc) {
+        if (!isUserMatched(user)) {
+            return false;
+        }
+
+        Levels level = Levels.none;
+        if (pc.getMetaCommand().getDefaultSignificance() != null) {
+            level = pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel();
+        }
+        if (!isLevelMatched(level)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isUserMatched(User user) {
+        if (users.isEmpty() && groups.isEmpty()) {
+            return true;
+        }
+
+        if (users.contains(user.getName())) {
+            return true;
+        }
+
+        Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
+        for (Group group : directory.getGroups(user)) {
+            if (groups.contains(group.getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isLevelMatched(Levels level) {
+        return minLevel == level || level.isMoreSevere(minLevel);
     }
 
     public QueueState getState() {

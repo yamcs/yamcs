@@ -14,6 +14,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.RestHandler;
 import org.yamcs.http.api.RestRequest;
 import org.yamcs.http.api.Route;
+import org.yamcs.http.api.XtceToGpbAssembler;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
@@ -24,6 +25,7 @@ import org.yamcs.protobuf.EditCommandQueueRequest;
 import org.yamcs.protobuf.ListCommandQueueEntries;
 import org.yamcs.protobuf.ListCommandQueuesResponse;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.xtce.Significance.Levels;
 
 public class ProcessorCommandQueueRestHandler extends RestHandler {
 
@@ -155,6 +157,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         b.setNbSentCommands(queue.getNbSentCommands());
         b.setNbRejectedCommands(queue.getNbRejectedCommands());
         b.setOrder(order);
+        b.addAllUsers(queue.getUsers());
+        b.addAllGroups(queue.getGroups());
+        if (queue.getMinLevel() != Levels.none) {
+            b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
+        }
         if (queue.getStateExpirationRemainingS() != -1) {
             b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
         }

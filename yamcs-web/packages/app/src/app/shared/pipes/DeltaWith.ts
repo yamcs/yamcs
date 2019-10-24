@@ -20,7 +20,15 @@ export class DeltaWithPipe implements PipeTransform {
     const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
     const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
     const milliseconds = millis % 1000;
-    if (hours) {
+
+    const days = Math.floor(hours / 24);
+    const years = Math.floor(days / 365);
+
+    if (years) {
+      return years === 1 ? `${sign}1 year` : `${sign}${years} years `;
+    } else if (days) {
+      return days === 1 ? `${sign}1 day` : `${sign}${days} days `;
+    } else if (hours) {
       if (minutes) {
         return `${sign}${hours}h ${minutes}m`;
       } else {

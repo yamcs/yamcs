@@ -8,9 +8,7 @@
 
 supervised:
   state: blocked
-  significances:
-    - critical
-    - severe
+  minLevel: critical
 
 default:
   state: enabled

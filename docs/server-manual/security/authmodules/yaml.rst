@@ -61,7 +61,6 @@ This file defines which privileges belong to which roles.
       WriteParameter: []
       ReadPacket: [".*"]
       Command: [".*"]
-      InsertCommandQueue: ["ops"]
       System:
         - ControlProcessor
         - ModifyCommandHistory

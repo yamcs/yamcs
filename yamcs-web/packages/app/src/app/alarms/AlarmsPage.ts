@@ -8,7 +8,7 @@ import { Alarm, EditAlarmOptions, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/template/Select';
+import { Option } from '../shared/forms/Select';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
 import { AlarmsDataSource } from './AlarmsDataSource';
 import { ShelveAlarmDialog } from './ShelveAlarmDialog';
