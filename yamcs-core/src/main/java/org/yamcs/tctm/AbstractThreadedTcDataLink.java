@@ -77,13 +77,13 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
         if (disabled) {
             log.debug("TC disabled, ignoring command {}", pc.getCommandId());
             if (failCommandOnDisabled) {
-                commandHistoryPublisher.commandFailed(pc.getCommandId(), "Link " + name + " disabled");
+                commandHistoryPublisher.commandFailed(pc.getCommandId(),  getCurrentTime(), "Link " + name + " disabled");
             }
             return;
         }
         if (!commandQueue.offer(pc)) {
             log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
-            commandHistoryPublisher.commandFailed(pc.getCommandId(), "Link " + name + ": queue full");
+            commandHistoryPublisher.commandFailed(pc.getCommandId(), getCurrentTime(), "Link " + name + ": queue full");
         }
     }
 

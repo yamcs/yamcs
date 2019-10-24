@@ -58,7 +58,7 @@ public class Cop1TcPacketHandlerTest {
         tcFrameFactory = new TcFrameFactory(tcParams);
         TimeEncoding.setUp();
 
-        org.yamcs.LoggingUtils.enableLogging();
+        //org.yamcs.LoggingUtils.enableLogging();
     }
 
     @Before
@@ -277,12 +277,10 @@ public class Cop1TcPacketHandlerTest {
         // send the CLCW with the good nR
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
         assertNotNull(fop1ph.getFrame());
-        System.out.println(" aaa 2");
         
         TcTransferFrame tf0 = sendTcInOneFrame(89);
         fop1ph.onCLCW(getCLCW(false, false, false, 4));
 
-        System.out.println(" aaa 1");
         TcTransferFrame tf1 = sendTcInOneFrame(90);
         fop1ph.onCLCW(getCLCW(false, false, false, 5));
 
@@ -293,9 +291,7 @@ public class Cop1TcPacketHandlerTest {
         assertEquals(89, tf0.getCommands().get(0).getCommandId().getSequenceNumber());
         assertEquals(90, tf1.getCommands().get(0).getCommandId().getSequenceNumber());
 
-        System.out.println(" aaa 4");
         fop1ph.terminateAD().get();
-        System.out.println(" aaa 3");
         verifyState(6);
     }
 

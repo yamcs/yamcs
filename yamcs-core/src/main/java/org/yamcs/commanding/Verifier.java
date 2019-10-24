@@ -8,7 +8,7 @@ abstract class Verifier {
     final protected CommandVerificationHandler cvh;
 
     enum State {
-        NEW, RUNNING, OK, NOK, TIMEOUT
+        NEW, RUNNING, OK, NOK, TIMEOUT, CANCELLED
     };
 
     volatile State state;
@@ -25,7 +25,7 @@ abstract class Verifier {
         doStart();
     }
 
-    void cancel() {
+    void timeout() {
         if (state != State.RUNNING) {
             return;
         }
@@ -33,6 +33,16 @@ abstract class Verifier {
         doCancel();
         cvh.onVerifierFinished(this, null);
     }
+    
+    void cancel() {
+        if (state != State.RUNNING) {
+            return;
+        }
+        state = State.CANCELLED;
+        doCancel();
+        cvh.onVerifierFinished(this, null);
+    }
+    
 
     void finished(boolean result, String failureReason) {
         if (state != State.RUNNING) {

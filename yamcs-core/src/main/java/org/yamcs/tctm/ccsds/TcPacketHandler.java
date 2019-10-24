@@ -54,7 +54,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
                 Thread.currentThread().interrupt();
                 commandHistoryPublisher.publishAck(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
                         getCurrentTime(), AckStatus.NOK, "Interrupted");
-                commandHistoryPublisher.commandFailed(preparedCommand.getCommandId(), "Interrupted");
+                commandHistoryPublisher.commandFailed(preparedCommand.getCommandId(), getCurrentTime(), "Interrupted");
             }
         } else {
             if (commandQueue.offer(preparedCommand)) {

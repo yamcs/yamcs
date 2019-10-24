@@ -927,52 +927,19 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("NOK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
-        assertEquals("NOK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
-        assertEquals("Transmission constraints check failed", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
-        assertEquals("NOK", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Message", "Transmission constraints check failed");
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Message", "Transmission constraints check failed");
     }
 
     @Test
@@ -992,52 +959,23 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time", cha.getName());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("PENDING", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "PENDING");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
 
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
         assertNull(cmdhist);
         Value v = ValueHelper.newValue(true);
         restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/AllowCriticalTC2",
                 HttpMethod.POST, toJson(v)).get();
-        cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
 
-        assertEquals(1, cmdhist.getAttrCount());
-
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time", cha.getName());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
     }
 
     @Test

@@ -252,7 +252,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             if (pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
-                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
+                commandHistoryPublisher.publishAck(pc.getCommandId(),
+                        CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
                 q.remove(pc, true);
                 releaseCommand(q, pc, true, false);
                 commandHistoryPublisher.publishAck(pc.getCommandId(),
@@ -271,7 +272,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
-        addToCommandHistory(tcChecker.pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
+        commandHistoryPublisher.publishAck(tcChecker.pc.getCommandId(),
+                CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
     }
 
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
@@ -296,14 +298,17 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             return; // command has been removed in the meanwhile
         }
         if (status == TCStatus.OK) {
-            addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+                    missionTime, AckStatus.OK);
             releaseCommand(q, pc, true, false);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
-            addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+                    missionTime, AckStatus.NOK);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Transmission constraints check failed");
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK,
+                    "Transmission constraints check failed");
             failedCommand(q, pc, "Transmission constraints check failed", true);
         }
     }
@@ -358,8 +363,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      *            notify or not the monitoring clients.
      */
     private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
-        commandHistoryPublisher.commandFailed(pc.getCommandId(), reason);
-        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
+        commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), reason);
         // Notify the monitoring clients
         if (notify) {
             for (CommandQueueListener m : monitoringClients) {
@@ -440,7 +444,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             queue.remove(pc, false);
             long missionTime = timeService.getMissionTime();
             commandHistoryPublisher.publishAck(pc.getCommandId(),
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK, "Rejected by " + username);
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK,
+                    "Rejected by " + username);
             failedCommand(queue, pc, "Rejected by " + username, true);
             notifyUpdateQueue(queue);
         } else {

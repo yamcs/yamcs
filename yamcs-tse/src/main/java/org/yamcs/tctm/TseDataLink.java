@@ -128,8 +128,7 @@ public class TseDataLink extends AbstractService implements Link {
         if (getLinkStatus() != Status.OK) {
             log.warn("Dropping command (link is not OK)");
             long missionTime = timeService.getMissionTime();
-            cmdhistPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, missionTime, AckStatus.NOK, "Link is not OK");
-            cmdhistPublisher.commandFailed(pc.getCommandId(), "Link is not OK");
+            cmdhistPublisher.commandFailed(pc.getCommandId(), missionTime, "Link is not OK");
             return;
         }
 

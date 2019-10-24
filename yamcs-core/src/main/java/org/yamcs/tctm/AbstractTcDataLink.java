@@ -199,8 +199,9 @@ public abstract class AbstractTcDataLink extends AbstractService
     
     /**Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
+        long currentTime = getCurrentTime();
         commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
-                getCurrentTime(), AckStatus.NOK, reason);
-        commandHistoryPublisher.commandFailed(commandId,  reason);
+                currentTime, AckStatus.NOK, reason);
+        commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
     }
 }

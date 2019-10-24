@@ -185,7 +185,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
 
         timer.schedule(() -> {
-            verifier.cancel();
+            verifier.timeout();
         }, windowStop, TimeUnit.MILLISECONDS);
     }
 
@@ -209,6 +209,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         case TIMEOUT:
             ta = cv.getOnTimeout();
             break;
+        case CANCELLED:
+            break;
         default:
             log.error("Illegal state onVerifierFinished called with state: {}", state);
         }
@@ -216,15 +218,11 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
             stop();
         } else if (ta == TerminationAction.FAIL) {
-            cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY,
-                    "NOK");
-            if (failureReason != null) {
-                cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY,
-                        failureReason);
-            } else {
-                cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY,
-                        "Verifier " + cv.getStage() + " result: " + state);
+            if(failureReason == null) {
+                failureReason = "Verifier " + cv.getStage() + " result: " + state;
             }
+            
+            cmdHistPublisher.commandFailed(preparedCommand.getCommandId(), yproc.getCurrentTime(), failureReason);
             stop();
         }
 
@@ -245,6 +243,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             return AckStatus.OK;
         case TIMEOUT:
             return AckStatus.TIMEOUT;
+        case CANCELLED:
+            return AckStatus.CANCELLED;
         default:
             throw new IllegalArgumentException("Unknown state " + state);
         }
@@ -290,6 +290,13 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             cmdParameters.add(pv);
             for (Verifier v : verifiers) {
                 v.updatedCommandHistoryParam(pv);
+            }
+        }
+        
+        if(key.equals(CommandHistoryPublisher.CommandComplete_KEY+"_Status")) {
+            log.trace("Command completed, canceling all pending verifiers");
+            for (Verifier v : verifiers) {
+                v.cancel();
             }
         }
     }

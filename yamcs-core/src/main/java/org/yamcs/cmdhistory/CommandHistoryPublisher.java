@@ -15,11 +15,10 @@ public interface CommandHistoryPublisher {
      *
      */
     enum AckStatus {
-         NA, PENDING, OK, NOK, TIMEOUT
+         NA, PENDING, OK, NOK, TIMEOUT, CANCELLED
     };
 
     public final static String CommandComplete_KEY = "CommandComplete";
-    public final static String CommandFailed_KEY = "CommandFailed";
     public final static String TransmissionContraints_KEY = "TransmissionConstraints";
     public final static String AcknowledgeQueued_KEY = "Acknowledge_Queued";
     public final static String AcknowledgeReleased_KEY = "Acknowledge_Released";
@@ -65,8 +64,8 @@ public interface CommandHistoryPublisher {
      * @param message
      */
     default void publishAck(CommandId cmdId, String key, long time, AckStatus state, String message) {
-        publish(cmdId, key + "_Time", time);
         publish(cmdId, key + "_Status", state.toString());
+        publish(cmdId, key + "_Time", time);
         if(message!=null) {
             publish(cmdId, key + "_Message", message);
         }
@@ -76,7 +75,8 @@ public interface CommandHistoryPublisher {
         publishAck(cmdId, key, time, state, null);
     }
     
-    default void commandFailed(CommandId commandId, String reason) {
-        publish(commandId, CommandFailed_KEY, reason);
+    default void commandFailed(CommandId cmdId, long time, String reason) {
+        publishAck(cmdId, CommandComplete_KEY, time, AckStatus.NOK, reason);
     }
+    
 }

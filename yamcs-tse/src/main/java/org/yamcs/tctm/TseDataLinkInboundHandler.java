@@ -53,9 +53,7 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
         if (cmdResponse.getSuccess()) {
             cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
         } else {
-            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandFailed_KEY,
-                    cmdResponse.getErrorMessage());
+            cmdhistPublisher.commandFailed(cmdResponse.getId(), timeService.getMissionTime(), cmdResponse.getErrorMessage());
         }
     }
 
