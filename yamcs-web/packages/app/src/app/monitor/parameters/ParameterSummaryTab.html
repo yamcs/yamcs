@@ -3,7 +3,7 @@
     <ng-container *ngIf="parameter$ | async as parameter">
       <app-parameter-detail [instance]="instance"
                             [parameter]="parameter"
-                            [currentValue]="parameterValue$ | async">
+                            [pval]="parameterValue$ | async">
       </app-parameter-detail>
     </ng-container>
   </div>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { PreferenceStore } from '../core/services/PreferenceStore';
 
 @Component({
   selector: 'app-admin-toolbar',

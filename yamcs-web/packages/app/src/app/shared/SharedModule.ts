@@ -63,9 +63,6 @@ import { ValuePipe } from './pipes/ValuePipe';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { ActionLink } from './template/ActionLink';
-import { AdminPage } from './template/AdminPage';
-import { AdminPageTemplate } from './template/AdminPageTemplate';
-import { AdminToolbar } from './template/AdminToolbar';
 import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
@@ -140,9 +137,6 @@ const sharedDirectives = [
 
 const sharedComponents = [
   ActionLink,
-  AdminPage,
-  AdminPageTemplate,
-  AdminToolbar,
   Ago,
   AlarmLabel,
   AlarmLevel,

@@ -36,8 +36,19 @@ span.pval {
   height: 64px;
   line-height: 64px;
   padding-left: 24px;
+  position: relative;
+}
+
+.pval-frame .header .action {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .pval-frame .body {
   padding: 24px;
+}
+
+.mat-icon.unchecked {
+  visibility: hidden;
 }

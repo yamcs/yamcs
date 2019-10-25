@@ -5,7 +5,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { PreferenceStore } from '../core/services/PreferenceStore';
 
 @Component({
   templateUrl: './AdminPage.html',
