@@ -37,6 +37,25 @@ public class WebPlugin implements Plugin {
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
         spec.addOption("staticRoot", OptionType.STRING);
+
+        Spec featuresSpec = new Spec();
+        featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
+        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("features", OptionType.MAP)
+                .withSpec(featuresSpec)
+                .withApplySpecDefaults(true);
+
+        Spec extraColumnSpec = new Spec();
+        extraColumnSpec.addOption("id", OptionType.STRING).withRequired(true);
+        extraColumnSpec.addOption("label", OptionType.STRING).withRequired(true);
+        extraColumnSpec.addOption("after", OptionType.STRING).withRequired(true);
+        extraColumnSpec.addOption("width", OptionType.STRING);
+
+        Spec eventsSpec = new Spec();
+        eventsSpec.addOption("displayedColumns", OptionType.LIST).withElementType(OptionType.STRING);
+        eventsSpec.addOption("extraColumns", OptionType.LIST).withElementType(OptionType.MAP).withSpec(extraColumnSpec);
+        spec.addOption("events", OptionType.MAP).withSpec(eventsSpec);
+
         YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
     }
 

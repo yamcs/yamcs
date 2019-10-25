@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
 import { generateRandomName } from '../../shared/utils';
 
@@ -42,7 +42,7 @@ export class StartReplayDialog {
   }
 
   start() {
-    const replayConfig: {[key: string]: any} = {
+    const replayConfig: { [key: string]: any } = {
       utcStart: this.form.value.start
     };
     if (this.form.value.stop) {
@@ -51,7 +51,7 @@ export class StartReplayDialog {
 
     this.dialogRef.close({
       name: this.form.value.name,
-      type: 'Archive', // TODO make configurable via AppConfig?
+      type: 'Archive', // TODO make configurable?
       clientId: [this.yamcs.getClientId()],
       config: JSON.stringify(replayConfig),
     });

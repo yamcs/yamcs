@@ -3,7 +3,6 @@ import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './AppRoutingModule';
-import { APP_CONFIG } from './core/config/AppConfig';
 import { AppComponent } from './core/pages/AppComponent';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
@@ -54,16 +53,12 @@ const appComponents = [
       },
     },
     {
-      provide: APP_CONFIG,
-      useValue: {},
-    },
-    {
       provide: APP_INITIALIZER,
       useFactory: (configService: ConfigService) => {
         return () => configService.loadWebsiteConfig();
       },
       multi: true,
-      deps: [ ConfigService ]
+      deps: [ConfigService]
     }
   ],
   declarations: [
@@ -75,7 +70,7 @@ const appComponents = [
     AppRoutingModule,
     SharedModule,
   ],
-  bootstrap: [ AppComponent ]
+  bootstrap: [AppComponent]
 })
 export class AppModule {
 }

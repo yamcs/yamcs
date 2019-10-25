@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
@@ -7,8 +7,8 @@ import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../animations';
-import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../core/config/AppConfig';
 import { AuthService } from '../core/services/AuthService';
+import { ConfigService, ExtraColumnInfo } from '../core/services/ConfigService';
 import { PreferenceStore } from '../core/services/PreferenceStore';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
@@ -112,7 +112,7 @@ export class EventsPage {
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
-    @Inject(APP_CONFIG) appConfig: AppConfig,
+    configService: ConfigService,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
@@ -121,8 +121,8 @@ export class EventsPage {
     title.setTitle('Events');
 
     // Consider site-specific configuration
-    if (appConfig.events) {
-      const eventConfig = appConfig.events;
+    const eventConfig = configService.getConfig().events;
+    if (eventConfig) {
       this.extraColumns = eventConfig.extraColumns || [];
       for (const extraColumn of this.extraColumns) {
         for (let i = 0; i < this.columns.length; i++) {
