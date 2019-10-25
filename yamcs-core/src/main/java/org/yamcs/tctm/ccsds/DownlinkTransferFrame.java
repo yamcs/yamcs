@@ -1,4 +1,7 @@
 package org.yamcs.tctm.ccsds;
+
+import org.yamcs.utils.TimeEncoding;
+
 /**
  * Transfer frame is an interface covering the three CCSDS transfer frames types:
  * <ul>
@@ -49,6 +52,7 @@ public abstract class DownlinkTransferFrame {
     boolean ocfPresent = false;
     
     int firstHeaderPointer;
+    private long ertime = TimeEncoding.INVALID_INSTANT;
     
     public DownlinkTransferFrame(byte[] data, int spacecraftId, int virtualChannelId) {
         this.data = data;
@@ -176,6 +180,17 @@ public abstract class DownlinkTransferFrame {
      */
     public boolean hasOcf() {
         return ocfPresent;
+    }
+    /**
+     * 
+     * @return the earth reception time of the frame
+     */
+    public long getEarthRceptionTime() {
+        return ertime;
+    }
+
+    public void setEearthRceptionTime(long ertime) {
+        this.ertime = ertime;
     }
     
     abstract long getSeqCountWrapArround();

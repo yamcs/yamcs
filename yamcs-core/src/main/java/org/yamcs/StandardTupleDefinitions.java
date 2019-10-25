@@ -8,6 +8,7 @@ public class StandardTupleDefinitions {
     public static final String GENTIME_COLUMN = "gentime";
     public static final String SEQNUM_COLUMN = "seqNum";
     public static final String TM_RECTIME_COLUMN = "rectime";
+    public static final String TM_ERTIME_COLUMN = "ertime";
     public static final String TM_PACKET_COLUMN = "packet";
     public static final String CMDHIST_TUPLE_COL_CMDNAME = "cmdName";
 
@@ -19,12 +20,17 @@ public class StandardTupleDefinitions {
     public static final String TC_ORIGIN_COLUMN = "origin";
     
     public static final TupleDefinition TM = new TupleDefinition();
+    public static final TupleDefinition TM_WITH_ERT;
     static {
         TM.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
         TM.addColumn(SEQNUM_COLUMN, DataType.INT);
         // reception or recording time (useful in case we import data from other recordings which provide this)
         TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
+        //earth reception time
         TM.addColumn(TM_PACKET_COLUMN, DataType.BINARY);
+        
+        TM_WITH_ERT = TM.copy();
+        TM_WITH_ERT.addColumn(TM_ERTIME_COLUMN, DataType.TIMESTAMP);
     }
 
     public static final TupleDefinition TC = new TupleDefinition();

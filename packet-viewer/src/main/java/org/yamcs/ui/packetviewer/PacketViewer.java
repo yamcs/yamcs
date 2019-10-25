@@ -577,7 +577,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         if (p == null) {
                             break;
                         }
-                        packet = packetPreprocessor.process(p);
+                        packet = packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), p));
                         
                         if (packet != null) {
                             publish(packet);
@@ -789,7 +789,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(packetPreprocessor.process(b));
+            tmProcessor.processPacket(packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), listPacket.buf)));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);

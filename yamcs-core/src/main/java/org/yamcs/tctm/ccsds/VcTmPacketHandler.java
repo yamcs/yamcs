@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.archive.PacketWithTime;
@@ -13,6 +14,7 @@ import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -36,11 +38,14 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     final VcDownlinkManagedParameters vmp;
 
     AggregatedDataLink parent;
+    private TimeService timeService;
+    private long ertime;
 
     public VcTmPacketHandler(String yamcsInstance, String name, VcDownlinkManagedParameters vmp) {
         this.vmp = vmp;
         this.name = name;
-
+        timeService = YamcsServer.getTimeService(yamcsInstance);
+        
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         log = new Log(this.getClass(), yamcsInstance);
         log.setContext(name);
@@ -78,13 +83,13 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
             idleFrameCount++;
             return;
         }
-
+        
         if (log.isTraceEnabled()) {
             log.trace("Processing frame VC {}, SEQ {}, FHP {}, DS {}, DE {}", frame.getVirtualChannelId(),
                     frame.getVcFrameSeq(),
                     frame.getFirstHeaderPointer(), frame.getDataStart(), frame.getDataEnd());
         }
-
+        ertime = frame.getEarthRceptionTime();
         int dataStart = frame.getDataStart();
         int packetStart = frame.getFirstHeaderPointer();
         int dataEnd = frame.getDataEnd();
@@ -126,7 +131,10 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         }
 
         numPackets++;
-        PacketWithTime pwt = packetPreprocessor.process(p);
+        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), p);
+        pwt.setEarthRceptionTime(ertime);
+        
+        pwt = packetPreprocessor.process(pwt);
         if (pwt != null) {
             tmSink.processPacket(pwt);
         }

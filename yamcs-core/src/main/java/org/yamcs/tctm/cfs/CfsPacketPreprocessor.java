@@ -38,7 +38,8 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public PacketWithTime process(PacketWithTime pwt) {
+        byte[] packet = pwt.getPacket();
         if (packet.length < MINIMUM_LENGTH) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is " + MINIMUM_LENGTH
@@ -60,8 +61,9 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
 
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), getTime(packet),
-                apidseqcount, packet);
+        pwt.setGenerationTime(getTime(packet));
+        pwt.setSequenceCount(apidseqcount);
+        
         return pwt;
     }
 

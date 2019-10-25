@@ -141,7 +141,7 @@ public class TmFileReader {
                 throw new IOException("no new line at the end of the PaCTS packet");
             }
         }
-        return packetPreprocessor.process(buffer);
+        return packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), buffer));
     }
 
     public void close() throws IOException {
