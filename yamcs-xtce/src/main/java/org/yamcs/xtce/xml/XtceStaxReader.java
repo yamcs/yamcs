@@ -2938,7 +2938,7 @@ public class XtceStaxReader {
 
         String value = readMandatoryAttribute("name", xmlEvent.asStartElement());
         mc = new MetaCommand(value);
-
+        mc.setAbstract(readBooleanAttribute("abstract", xmlEvent.asStartElement(), false));
         value = readAttribute("shortDescription", xmlEvent.asStartElement(), null);
         if (value != null) {
             mc.setShortDescription(value);
