@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import javax.management.RuntimeErrorException;
+
 import org.yamcs.archive.PacketWithTime;
 
 /**
@@ -31,17 +33,34 @@ public interface PacketPreprocessor {
      * 
      * Can return null if the packet is corrupt
      * 
+     * @deprecated please use {@link #process(PacketWithTime)} instead as it preserves packet properties such as earth reception time set by the frame link
      * @param packet
      * @return
      */
-    public PacketWithTime process(byte[] packet);
+    @Deprecated
+    default PacketWithTime process(byte[] packet) {
+        throw new RuntimeException("Please implement or use the process(PacketWithTime) method instead");
+    }
 
+    /**
+     * Processes the packet and returns it.
+     * <p>What this function does is project depended. However, we expect that the generation time and sequence count are filled in.
+     * <p>
+     * Can return null if the packet is corrupt or is to be ignored.
+     * <p>
+     * Can a
+     * @param packet
+     * @return
+     */
+    default PacketWithTime process(PacketWithTime pwt) {
+        return process(pwt.getPacket());
+    }
     /**
      * The packet preprocessor processes multiple packets that should be in sequence. This flag can be used to check
      * that indeed the packets are in sequence and produce a warning otherwise.
      * 
      * @param checkForSequenceDiscontinuity
      */
-    public default void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
+     default void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
     }
 }

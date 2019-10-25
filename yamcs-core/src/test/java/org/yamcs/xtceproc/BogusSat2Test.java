@@ -16,6 +16,7 @@ import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
 public class BogusSat2Test {
@@ -149,5 +150,11 @@ public class BogusSat2Test {
         pv = pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_onescomp"));
         assertEquals(-6, pv.getRawValue().getSint32Value());
 
+    }
+    
+    @Test
+    public void testAbstractMetaCommand() {
+        MetaCommand mc = db.getMetaCommand("/BogusSAT/CCSDSTelecommand");
+        assertTrue(mc.isAbstract());
     }
 }

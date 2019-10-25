@@ -38,7 +38,9 @@ public interface Link {
     /**
      * @return more detailed status information
      */
-    public String getDetailedStatus();
+    default String getDetailedStatus() {
+        return null;
+    }
 
     /**
      * Reenable the data transit if disabled by the disable() method.

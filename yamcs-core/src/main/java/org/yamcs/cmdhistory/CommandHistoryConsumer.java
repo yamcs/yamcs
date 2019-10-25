@@ -23,5 +23,6 @@ public interface CommandHistoryConsumer {
      *
      */
     void updatedCommand(CommandId cmdId, long changeDate, String key, Value value);
+    
 
 }

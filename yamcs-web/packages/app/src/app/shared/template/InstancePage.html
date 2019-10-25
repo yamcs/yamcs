@@ -37,13 +37,10 @@
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
       </app-sidebar-nav-item>
-      <mat-list-item class="nav-item-group"
-                     [class.active]="monitoringActive"
-                     (click)="toggleMonitoringGroup()">
-        <mat-icon class="item-icon">speed</mat-icon>
-        Telemetry
-      </mat-list-item>
-      <div *ngIf="monitoringExpanded" class="nav-item-group-items">
+      <app-sidebar-nav-group label="Telemetry" icon="speed"
+                             [active]="monitoringActive"
+                             [expanded]="monitoringExpanded"
+                             (toggle)="toggleMonitoringGroup()">
         <app-sidebar-nav-item routerLink="/monitor/parameters"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
@@ -60,7 +57,7 @@
                               [subitem]="true">
           Layouts
         </app-sidebar-nav-item>
-      </div>
+      </app-sidebar-nav-group>
 
       <app-sidebar-nav-item *ngIf="showEventsItem()"
                             routerLink="/events"
@@ -75,30 +72,27 @@
         Alarms
       </app-sidebar-nav-item>
 
-      <mat-list-item class="nav-item-group"
-                     [class.active]="commandingActive"
-                     (click)="toggleCommandingGroup()">
-        <mat-icon class="item-icon">rss_feed</mat-icon>
-        Commanding
-      </mat-list-item>
-      <div *ngIf="commandingExpanded" class="nav-item-group-items">
+      <app-sidebar-nav-group label="Commanding" icon="rss_feed"
+                             [active]="commandingActive"
+                             [expanded]="commandingExpanded"
+                             (toggle)="toggleCommandingGroup()">
         <app-sidebar-nav-item routerLink="/commanding/send"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Send a Command
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
-                              routerLink="/commanding/command-queues"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Command Queues
-        </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/command-history"
+        <app-sidebar-nav-item routerLink="/commanding/history"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Command History
         </app-sidebar-nav-item>
-      </div>
+        <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
+                              routerLink="/commanding/queues"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Queues
+        </app-sidebar-nav-item>
+      </app-sidebar-nav-group>
 
       <app-sidebar-nav-item routerLink="/cfdp"
                             [queryParams]="{instance: instance.name}">
@@ -107,13 +101,10 @@
       </app-sidebar-nav-item>
 
       <ng-container *ngIf="showMDB()">
-        <mat-list-item class="nav-item-group"
-                      [class.active]="mdbActive"
-                      (click)="toggleMdbGroup()">
-          <mat-icon class="item-icon">style</mat-icon>
-          MDB
-        </mat-list-item>
-        <div *ngIf="mdbExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-group label="MDB" icon="style"
+                               [active]="mdbActive"
+                               [expanded]="mdbExpanded"
+                               (toggle)="toggleMdbGroup()">
           <app-sidebar-nav-item routerLink="/mdb/parameters"
                                 [queryParams]="{instance: instance.name}"
                                 [subitem]="true">
@@ -137,16 +128,13 @@
                                 [subitem]="true">
             Algorithms
           </app-sidebar-nav-item>
-        </div>
+        </app-sidebar-nav-group>
       </ng-container>
 
-      <mat-list-item class="nav-item-group"
-                     [class.active]="archiveActive"
-                     (click)="toggleArchiveGroup()">
-        <mat-icon class="item-icon">storage</mat-icon>
-        Archive
-      </mat-list-item>
-      <div *ngIf="archiveExpanded" class="nav-item-group-items">
+      <app-sidebar-nav-group label="Archive" icon="storage"
+                             [active]="archiveActive"
+                             [expanded]="archiveExpanded"
+                             (toggle)="toggleArchiveGroup()">
         <app-sidebar-nav-item routerLink="/archive/overview"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
@@ -166,7 +154,7 @@
                               [subitem]="true">
           Streams
         </app-sidebar-nav-item>
-      </div>
+      </app-sidebar-nav-group>
 
       <app-sidebar-nav-item *ngFor="let extraItem of extraItems"
                             [routerLink]="['/monitor', extraItem.routerLink]"

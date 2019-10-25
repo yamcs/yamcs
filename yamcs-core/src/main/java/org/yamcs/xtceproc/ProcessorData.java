@@ -62,7 +62,8 @@ public class ProcessorData {
      * used to store parameter types which are changed dynamically (so they don't correspond anymore to MDB)
      */
     Map<Parameter, ParameterType> typeOverrides = new HashMap<>();
-
+    String yamcsInstance;
+    
     public ProcessorData(Processor proc, boolean generateEvents) {
         this(proc.getInstance(), proc.getName(), proc.getXtceDb(), generateEvents);
 
@@ -82,7 +83,7 @@ public class ProcessorData {
      *            - generate events in case of errors when processing data
      */
     public ProcessorData(String instance, String procName, XtceDb xtcedb, boolean generateEvents) {
-
+        this.yamcsInstance = instance;
         this.xtcedb = xtcedb;
         if ((instance != null) && generateEvents) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
@@ -348,5 +349,9 @@ public class ProcessorData {
     public void setEnumerationContextAlarm(Parameter p, List<EnumerationContextAlarm> contextAlarmList) {
         EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
         ptype.setContextAlarmList(contextAlarmList);
+    }
+    
+    public String getYamcsInstance() {
+        return yamcsInstance;
     }
 }

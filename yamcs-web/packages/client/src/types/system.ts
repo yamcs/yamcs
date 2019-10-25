@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { CommandQueueEntry, Value } from './monitoring';
+import { CommandHistoryEntry, CommandId, CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -362,6 +362,16 @@ export interface CommandQueue {
   nbRejectCommands: number;
   stateExpirationTimeS: number;
   entry: CommandQueueEntry[];
+  order: number;
+}
+
+export interface CommandSubscriptionRequest {
+  commandId?: CommandId[];
+  ignorePastCommands?: boolean;
+}
+
+export interface CommandSubscriptionResponse {
+  command$: Observable<CommandHistoryEntry>;
 }
 
 export interface CommandQueueSubscriptionResponse {

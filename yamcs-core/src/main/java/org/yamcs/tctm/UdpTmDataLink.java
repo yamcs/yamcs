@@ -110,7 +110,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
         }
 
         if (packet != null) {
-            return packetPreprocessor.process(packet.array());
+            return packetPreprocessor.process(new PacketWithTime(timeService.getMissionTime(), packet.array()));
         } else {
             return null;
         }

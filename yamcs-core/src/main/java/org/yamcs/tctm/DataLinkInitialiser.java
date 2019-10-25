@@ -16,6 +16,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.ServiceUtil;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -34,8 +35,6 @@ import com.google.gson.Gson;
  * @author nm
  */
 public class DataLinkInitialiser extends AbstractYamcsService {
-
-    public static final String REALTIME_TC_STREAM_NAME = "tc_realtime";
 
     private Map<String, Link> linksByName = new HashMap<>();
 
@@ -124,8 +123,16 @@ public class DataLinkInitialiser extends AbstractYamcsService {
                     }
                     long time = pwrt.getGenerationTime();
                     byte[] pkt = pwrt.getPacket();
-                    Tuple t = new Tuple(StandardTupleDefinitions.TM,
-                            new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
+                    long ertime = pwrt.getEarthReceptionTime();
+                    Tuple t = null;
+                    if (ertime == TimeEncoding.INVALID_INSTANT) {
+                        t = new Tuple(StandardTupleDefinitions.TM,
+                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
+                    } else {
+                        t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
+                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(),
+                                        pwrt.getEarthReceptionTime(), pkt, ertime });
+                    }
                     stream.emitTuple(t);
                 });
             }

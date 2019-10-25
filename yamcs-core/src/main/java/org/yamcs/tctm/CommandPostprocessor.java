@@ -13,6 +13,12 @@ import org.yamcs.commanding.PreparedCommand;
  */
 public interface CommandPostprocessor {
 
+    /**
+     * processes the command and returns the binary buffer
+     * 
+     * @param pc
+     * @return
+     */
     public byte[] process(PreparedCommand pc);
 
     /**
@@ -22,6 +28,20 @@ public interface CommandPostprocessor {
      * @param commandHistoryListener
      */
     default void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
+    }
+
+
+    /**
+     * Return the size of the binary packet for this command.
+     * <p>
+     * This is required in the frame links which bundle multiple commands together to know if the command will fit into
+     * the frame before post-processing it.
+     * 
+     * @param pc
+     * @return the size of the binary packet which the method {@link #process(PreparedCommand)} will return.
+     */
+    default int getBinaryLength(PreparedCommand pc) {
+        return pc.getBinary().length;
     }
 
 }

@@ -1,9 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserInfo } from '@yamcs/client';
-import { BehaviorSubject, from, fromEvent, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -12,8 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class UsersPage implements AfterViewInit {
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   filterValue$ = new BehaviorSubject<string | null>(null);
 
@@ -38,9 +38,15 @@ export class UsersPage implements AfterViewInit {
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
-      this.filter.nativeElement.value = queryParams.get('filter');
+      this.filterControl.setValue(queryParams.get('filter'));
       this.filterValue$.next(queryParams.get('filter')!.toLowerCase());
     }
+
+    this.filterControl.valueChanges.subscribe(() => {
+      this.updateURL();
+      const value = this.filterControl.value || '';
+      this.filterValue$.next(value.toLowerCase());
+    });
 
     const users$ = from(this.yamcs.yamcsClient.getUsers());
     this.activeUsers$ = users$.pipe(
@@ -67,19 +73,10 @@ export class UsersPage implements AfterViewInit {
     this.blockedUserCount$ = this.blockedUsers$.pipe(
       map(users => users.length),
     );
-
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(150), // Keep low -- Client-side filter
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(value => {
-      this.updateURL();
-      this.filterValue$.next(value.toLowerCase());
-    });
   }
 
   private updateURL() {
-    const filterValue = this.filter.nativeElement.value.trim();
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

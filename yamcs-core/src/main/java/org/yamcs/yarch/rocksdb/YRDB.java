@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -44,6 +46,10 @@ public class YRDB {
     long lastAccessTime;
 
     private final DBOptions dbOptions;
+
+    // locks used for row locking
+    static final int NUM_LOCKS = 1 << 4;
+    private final Lock[] locks = new Lock[NUM_LOCKS];
 
     /**
      * Create or open a new RocksDb.
@@ -99,6 +105,9 @@ public class YRDB {
         } else {
             // new DB
             db = RocksDB.open(opt, dir);
+        }
+        for (int i = 0; i < NUM_LOCKS; i++) {
+            locks[i] = new ReentrantLock();
         }
     }
 
@@ -328,5 +337,37 @@ public class YRDB {
      */
     public DbIterator newDescendingPrefixIterator(byte[] prefix) {
         return new DescendingPrefixIterator(db.newIterator(), prefix);
+    }
+
+    /**
+     * Lock the key - that is if another thread called this method for that key, wait until someone calls the unlock
+     * on the same key.
+     * <p>
+     * The method is implemented by first selecting a {@link Lock} from an fixed size array based on a
+     * hash of the key and performing the {@link Lock#lock()} operation on it.
+     * 
+     * @param dbKey
+     */
+    public void lock(byte[] dbKey) {
+        Lock l = getLock(dbKey);
+        l.lock();
+    }
+
+    /**
+     * Unlock the key previously locked by {@link #lock(byte[])}
+     * 
+     * @param dbKey
+     */
+    public void unlock(byte[] dbKey) {
+        Lock l = getLock(dbKey);
+        l.unlock();
+    }
+
+    private Lock getLock(byte[] dbKey) {
+        int h = 0;
+        for (int i = 0; i < dbKey.length; i++) {
+            h = 31 * h + dbKey[i];
+        }
+        return locks[h & (NUM_LOCKS - 1)];
     }
 }

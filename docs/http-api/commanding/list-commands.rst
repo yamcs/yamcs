@@ -5,9 +5,6 @@ List the command history of all commands::
 
     GET /api/archive/:instance/commands
 
-List the command history of one specific command::
-
-    GET /api/archive/:instance/commands/:namespace/:name
 
 .. rubric:: Parameters
 
@@ -16,6 +13,9 @@ start (string)
 
 stop (string)
     Filter the upper bound of the command's generation time. Specify a date string in ISO 8601 format. This bound is exclusive.
+
+q (string)
+    Text to search in the name of the command.
 
 pos (integer)
     The zero-based row number at which to start outputting results. Default: ``0``

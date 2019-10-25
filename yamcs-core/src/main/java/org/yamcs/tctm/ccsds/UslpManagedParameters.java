@@ -7,7 +7,7 @@ import java.util.Map;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-public class UslpManagedParameters extends ManagedParameters {
+public class UslpManagedParameters extends DownlinkManagedParameters {
    
     enum COPType {COP_1, COP_P, NONE};
     
@@ -30,6 +30,7 @@ public class UslpManagedParameters extends ManagedParameters {
     
     
     public UslpManagedParameters (YConfiguration config) {
+        super(config);
         errorCorrection = config.getEnum("errorCorrection", FrameErrorCorrection.class);
         
         frameLength = config.getInt("frameLength",-1);
@@ -52,7 +53,7 @@ public class UslpManagedParameters extends ManagedParameters {
         
     }
     
-    static class UslpVcManagedParameters extends VcManagedParameters {
+    static class UslpVcManagedParameters extends VcDownlinkManagedParameters {
     
         ServiceType service;
       
@@ -90,13 +91,13 @@ public class UslpManagedParameters extends ManagedParameters {
         return minFrameLength;
     }
     @Override
-    public Map<Integer, VirtualChannelHandler> createVcHandlers(String yamcsInstance, String linkName) {
-        Map<Integer, VirtualChannelHandler> m = new HashMap<>();
+    public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName) {
+        Map<Integer, VcDownlinkHandler> m = new HashMap<>();
         for (Map.Entry<Integer, UslpVcManagedParameters> me : vcParams.entrySet()) {
             UslpVcManagedParameters vmp = me.getValue();
             switch (vmp.service) {
             case PACKET:
-                VirtualChannelPacketHandler vcph = new VirtualChannelPacketHandler(yamcsInstance,
+                VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance,
                         linkName + ".vc" + vmp.vcId, vmp);
                 m.put(vmp.vcId, vcph);
                 break;

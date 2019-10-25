@@ -1,6 +1,10 @@
 package org.yamcs.parameter;
 
-
+/**
+ * Union like class
+ * @author nm
+ *
+ */
 public abstract class Value {
     public abstract org.yamcs.protobuf.Yamcs.Value.Type getType();
     

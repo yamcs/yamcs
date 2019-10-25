@@ -507,7 +507,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 HttpMethod.GET, "").get();
 
         ListAlarmsResponse listalarm = fromJson(resp, ListAlarmsResponse.newBuilder()).build();
-        System.out.println("listalarm: "+listalarm);
         assertEquals(1, listalarm.getAlarmCount());
         AlarmData alarm = listalarm.getAlarm(0);
         assertEquals(AlarmType.EVENT, alarm.getType());

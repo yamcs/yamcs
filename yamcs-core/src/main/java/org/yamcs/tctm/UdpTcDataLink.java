@@ -5,9 +5,13 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
  * Sends raw packets on UDP socket.
@@ -15,14 +19,17 @@ import org.yamcs.commanding.PreparedCommand;
  * @author nm
  *
  */
-public class UdpTcDataLink extends AbstractTcDataLink {
+public class UdpTcDataLink extends AbstractThreadedTcDataLink {
 
     protected DatagramSocket socket;
     protected String host;
     protected int port;
+    InetAddress address;
 
     public UdpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         super(yamcsInstance, name, config);
+        host = config.getString("host");
+        port = config.getInt("port");
     }
 
     public UdpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
@@ -30,7 +37,8 @@ public class UdpTcDataLink extends AbstractTcDataLink {
     }
 
     @Override
-    protected void startUp() throws SocketException {
+    protected void startUp() throws SocketException, UnknownHostException {
+        address = InetAddress.getByName(host);
         socket = new DatagramSocket();
     }
 
@@ -46,10 +54,9 @@ public class UdpTcDataLink extends AbstractTcDataLink {
 
     public void uplinkCommand(PreparedCommand pc) throws IOException {
         byte[] binary = cmdPostProcessor.process(pc);
-        InetAddress address = InetAddress.getByName(host);
         DatagramPacket packet = new DatagramPacket(binary, binary.length, address, port);
         socket.send(packet);
         dataCount++;
-
+        commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
     }
 }

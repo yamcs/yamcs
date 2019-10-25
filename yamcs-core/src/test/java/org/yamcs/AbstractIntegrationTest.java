@@ -1,5 +1,6 @@
 package org.yamcs;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -35,6 +36,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.ConnectionInfo;
@@ -218,6 +220,23 @@ public abstract class AbstractIntegrationTest {
             packetGenerator.setGenerationTime(t0 + 1000 * i);
             packetGenerator.generate_PKT8();
         }
+    }
+
+    protected void checkNextCmdHistoryAttr(String name) throws InterruptedException {
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(name, cha.getName());
+    }
+
+    protected void checkNextCmdHistoryAttr(String name, String value) throws InterruptedException {
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        assertEquals(name, cha.getName());
+        assertEquals(value, cha.getValue().getStringValue());
     }
 
     static class MyWsListener implements WebSocketClientCallback {

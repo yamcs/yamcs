@@ -231,7 +231,6 @@ class IndexRequestProcessor implements Runnable {
     }
 
     boolean sendHistogramData(HistoRequest hreq) {
-        System.out.println("sending histogram");
         log.debug("Sending histogram data for table {} column {}", hreq.tblName, hreq.columnName);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);

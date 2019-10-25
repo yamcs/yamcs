@@ -12,7 +12,7 @@ import org.yamcs.tctm.ccsds.UslpManagedParameters.ServiceType;
  * @author nm
  * 
  */
-public class UslpTransferFrame extends AbstractTransferFrame {
+public class UslpTransferFrame extends DownlinkTransferFrame {
     private int mapId;
     private long seqCountWrapArround;
     ServiceType serviceType;

@@ -1,11 +1,11 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Route } from '@yamcs/client';
-import { BehaviorSubject, fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -15,8 +15,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class RoutesPage implements AfterViewInit {
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
@@ -48,20 +47,17 @@ export class RoutesPage implements AfterViewInit {
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
-      this.filter.nativeElement.value = queryParams.get('filter');
+      this.filterControl.setValue(queryParams.get('filter'));
       this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
     }
 
-    this.refresh();
-
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(150), // Keep low -- Client-side filter
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(value => {
+    this.filterControl.valueChanges.subscribe(() => {
       this.updateURL();
+      const value = this.filterControl.value || '';
       this.dataSource.filter = value.toLowerCase();
     });
+
+    this.refresh();
 
     this.dataSource.sort = this.sort;
   }
@@ -77,7 +73,7 @@ export class RoutesPage implements AfterViewInit {
   }
 
   private updateURL() {
-    const filterValue = this.filter.nativeElement.value.trim();
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

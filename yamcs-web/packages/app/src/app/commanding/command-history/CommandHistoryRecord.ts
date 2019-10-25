@@ -1,8 +1,12 @@
-import { CommandAssignment, CommandHistoryEntry } from '@yamcs/client';
+import { CommandAssignment, CommandHistoryEntry, CommandId } from '@yamcs/client';
 import * as utils from '../../shared/utils';
-import { CommandHistoryStage } from './CommandHistoryStage';
+import { Acknowledgment } from './Acknowledgment';
 
 export class CommandHistoryRecord {
+
+  private entry: CommandHistoryEntry;
+
+  commandId: CommandId;
 
   generationTime: string;
   origin: string;
@@ -17,10 +21,15 @@ export class CommandHistoryRecord {
 
   source: string;
   binary: string;
+  transmissionConstraints: string;
 
   comment?: string;
 
-  stages: CommandHistoryStage[] = [];
+  queued?: Acknowledgment;
+  released?: Acknowledgment;
+  sent?: Acknowledgment;
+  extraAcks: Acknowledgment[] = [];
+  verifications: Acknowledgment[] = [];
 
   extra: { [key: string]: string }[] = [];
 
@@ -28,15 +37,17 @@ export class CommandHistoryRecord {
   success?: boolean;
   failureMessage?: string;
 
-  transmissionConstraints?: string;
+  private acksByName: { [key: string]: Acknowledgment } = {};
 
   constructor(entry: CommandHistoryEntry) {
+    this.entry = entry;
+    this.commandId = entry.commandId;
     this.generationTime = entry.generationTimeUTC;
     this.origin = entry.commandId.origin;
     this.sequenceNumber = entry.commandId.sequenceNumber;
     this.commandName = entry.commandId.commandName;
 
-    for (const assignment of entry.assignment) {
+    for (const assignment of (entry.assignment || [])) {
       this.assignments.push(assignment);
       if (assignment.userInput) {
         this.userAssignments.push(assignment);
@@ -50,6 +61,8 @@ export class CommandHistoryRecord {
         this.source = attr.value.stringValue!;
       } else if (attr.name === 'binary') {
         this.binary = attr.value.binaryValue!;
+      } else if (attr.name === 'TransmissionConstraints') {
+        this.transmissionConstraints = attr.value.stringValue!;
       } else if (attr.name === 'CommandFailed') {
         this.failureMessage = attr.value.stringValue!;
       } else if (attr.name === 'CommandComplete') {
@@ -57,40 +70,72 @@ export class CommandHistoryRecord {
         this.success = attr.value.stringValue === 'OK';
       } else if (attr.name === 'Comment' || attr.name === 'comment') { // Old versions of Yamcs use "Comment" with capital
         this.comment = attr.value.stringValue;
-      } else if (attr.name.indexOf('Verifier_') === 0) {
-        const match = attr.name.match(/Verifier_(.*)_(Time|Status)/);
-        if (match) {
-          this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
-        }
-      } else if (attr.name.indexOf('Acknowledge_') === 0) {
-        const match = attr.name.match(/Acknowledge_(.*)_(Time|Status)/);
-        if (match) {
-          this.updateStageEvent(match[1], match[2], attr.value.stringValue!);
-        }
-      } else if (attr.name === 'TransmissionConstraints') {
-        this.transmissionConstraints = attr.value.stringValue;
+      } else if (attr.name.endsWith('_Time')) {
+        const ackName = attr.name.substring(0, attr.name.length - '_Time'.length);
+        this.saveAckTime(ackName, attr.value.stringValue!);
+      } else if (attr.name.endsWith('_Status')) {
+        const ackName = attr.name.substring(0, attr.name.length - '_Status'.length);
+        this.saveAckStatus(ackName, attr.value.stringValue!);
       } else {
         this.extra.push({ name: attr.name, value: utils.printValue(attr.value) });
       }
     }
+
+    for (const ack of Object.values(this.acksByName)) {
+      if (ack.name === 'Acknowledge_Queued') {
+        this.queued = ack;
+      } else if (ack.name === 'Acknowledge_Released') {
+        this.released = ack;
+      } else if (ack.name === 'Acknowledge_Sent') {
+        this.sent = ack;
+      } else if (ack.name!.indexOf('Verifier_') === 0) {
+        this.verifications.push(ack);
+      } else {
+        this.extraAcks.push(ack);
+      }
+    }
   }
 
-  private updateStageEvent(stage: string, attributeName: string, value: string) {
-    let event;
-    for (const existingEvent of this.stages) {
-      if (existingEvent.name === stage) {
-        event = existingEvent;
+  mergeEntry(entry: CommandHistoryEntry): CommandHistoryRecord {
+    const mergedAttr = [
+      ...this.entry.attr,
+      ...entry.attr,
+    ];
+    const mergedEntry = {
+      ...entry,
+      ...this.entry,
+      attr: mergedAttr,
+    } as CommandHistoryEntry;
+    return new CommandHistoryRecord(mergedEntry);
+  }
+
+  private saveAckTime(name: string, time: string) {
+    let ack: Acknowledgment | null = null;
+    for (const key in this.acksByName) {
+      if (key === name) {
+        ack = this.acksByName[key];
         break;
       }
     }
-    if (!event) {
-      event = { name: stage };
-      this.stages.push(event);
+    if (!ack) {
+      ack = { name };
+      this.acksByName[name] = ack;
     }
-    if (attributeName === 'Time') {
-      event.time = value;
-    } else if (attributeName === 'Status') {
-      event.status = value;
+    ack.time = time;
+  }
+
+  private saveAckStatus(name: string, status: string) {
+    let ack: Acknowledgment | null = null;
+    for (const key in this.acksByName) {
+      if (key === name) {
+        ack = this.acksByName[key];
+        break;
+      }
     }
+    if (!ack) {
+      ack = { name };
+      this.acksByName[name] = ack;
+    }
+    ack.status = status;
   }
 }

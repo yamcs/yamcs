@@ -745,6 +745,13 @@ public class YConfiguration {
         return getEnum(root, key, enumClass);
     }
 
+    public <T extends Enum<T>> T  getEnum(String key, Class<T> enumClass, T defaultValue) {
+        if(root.containsKey(key)) {
+            return getEnum(root, key, enumClass);
+        } else {
+            return defaultValue;
+        }
+    }
     /**
      * Returns a value of an enumeration that matches ignoring case the string obtained from the config with the given
      * key. Throws an Configurationexception if the key does not exist in config or if it does not map to a valid

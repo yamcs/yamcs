@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar [hasDetailPane]="true">
     Command History
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button mat-button
             matTooltip="Jump to now"
             color="primary"
@@ -16,114 +16,7 @@
         Command Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <h6>Command</h6>
-        <div class="block">
-          <a [routerLink]="['/mdb/commands', selectedRecord.commandName]"
-             [queryParams]="{instance: instance.name}"
-             class="ya-link">
-            {{ selectedRecord.commandName }}
-          </a>
-        </div>
-
-        <h6>Time</h6>
-        <div class="block">
-          {{ selectedRecord.generationTime | datetime }}
-        </div>
-
-        <h6>Issuer</h6>
-        <div class="block">
-          {{ selectedRecord.username }}<ng-container *ngIf="selectedRecord.origin">@{{ selectedRecord.origin }}</ng-container>
-        </div>
-
-        <h6>
-          Sequence Number
-          <app-help>
-            <p>The <strong>Sequence Number</strong> is a number assigned by the client that issued the command. It is used by Yamcs to establish unicity to other commands with the same time and issuer.</p>
-            <p>Note in particular that this value does not have any correlation with sequence numbers that may be encoded in the telecommand packet (e.g. CCSDS Sequence Number).</p>
-
-          </app-help>
-        </h6>
-        <div class="block">
-          {{ selectedRecord.sequenceNumber }}
-        </div>
-
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-
-        <h6 style="padding-top: 0">Source</h6>
-        <div class="block">
-          {{ selectedRecord.source || '-' }}
-        </div>
-
-        <h6>Binary</h6>
-        <div class="block">
-          <app-hex [base64String]="selectedRecord.binary"></app-hex>
-        </div>
-
-        <ng-container *ngIf="selectedRecord.comment">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Comment</h6>
-          <div class="block">
-            {{ selectedRecord.comment }}
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="selectedRecord.extra.length">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Extra Attributes</h6>
-          <div class="block">
-            <ul>
-              <li *ngFor="let extra of selectedRecord.extra">{{ extra.name }}: {{ extra.value }}</li>
-            </ul>
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="selectedRecord.stages.length">
-          <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-          <h6 style="padding-top: 0">Stages</h6>
-          <div class="block">
-            <table yaDataTable style="width: 100%">
-              <tr>
-                <th style="width: 16px"></th>
-                <th></th>
-                <th>Status</th>
-                <th>Time</th>
-              </tr>
-              <tr *ngFor="let stage of selectedRecord.stages">
-                <td>
-                  <ng-container [ngSwitch]="stage.status">
-                    <ng-container *ngSwitchCase="'OK'">
-                      <mat-icon class="step success" style="margin-right: 8px">
-                        check_circle
-                      </mat-icon>
-                    </ng-container>
-                    <ng-container *ngSwitchCase="'TIMEOUT'">
-                      <mat-icon class="step alert" style="margin-right: 8px">
-                        timer_off
-                      </mat-icon>
-                    </ng-container>
-                    <ng-container *ngSwitchDefault>
-                      <mat-icon class="step alert" style="margin-right: 8px">
-                        highlight_off
-                      </mat-icon>
-                    </ng-container>
-                  </ng-container>
-                </td>
-                <td>{{ stage.name }}</td>
-                <td>{{ stage.status }}</td>
-                <td>
-                  <span [matTooltip]="stage.time">{{ stage.time | deltaWith:selectedRecord.generationTime }}</span>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </ng-container>
-
-        <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-        <h6 style="padding-top: 0">Completion</h6>
-        <div class="block">
-          <app-command-completion [item]="selectedRecord"></app-command-completion>
-        </div>
-
+        <app-command-detail2 [command]="selectedRecord"></app-command-detail2>
         <p>&nbsp;</p>
       </div>
     </ng-container>
@@ -140,11 +33,9 @@
       <form [formGroup]="filterForm">
         <div class="filter-bar">
           <div class="vmiddle" style="flex: 1 1 0%">
-            <input formControlName="filter"
-                   class="ya-input"
-                   type="text"
-                   placeholder="Filter by text search"
-                   style="width: 300px">
+            <app-search-filter formControlName="filter"
+                               placeholder="Filter by text search">
+            </app-search-filter>
             &nbsp;&nbsp;
             <app-column-chooser [columns]="columns"
                                 [displayedColumns]="displayedColumns"
@@ -203,6 +94,13 @@
              [dataSource]="dataSource"
              class="ya-data-table">
 
+        <ng-container matColumnDef="commandId">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">ID</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.commandId | commandId }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="generationTimeUTC">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Time</th>
           <td mat-cell *matCellDef="let item">
@@ -227,7 +125,7 @@
               <mat-icon *ngSwitchCase="'OK'"
                         matTooltip="OK"
                         class="icon14"
-                        style="color: green">check_circle</mat-icon>
+                        style="color: #00c752">check_circle_outline</mat-icon>
               <mat-icon *ngSwitchCase="'NOK'"
                         matTooltip="NOK"
                         class="icon14"
@@ -271,44 +169,70 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="stages">
-          <th mat-header-cell *matHeaderCellDef style="width: 1px">Stages</th>
-          <td mat-cell *matCellDef="let item" style="white-space: nowrap">
-            <ng-container *ngFor="let step of item.stages">
-              <ng-container [ngSwitch]="step.status">
-                <app-label *ngSwitchCase="'OK'"
-                           icon="check_circle"
-                           matTooltip="OK"
-                           backgroundColor="inherit"
-                           color="green">{{ step.name }}</app-label>
-                <app-label *ngSwitchCase="'TIMEOUT'"
-                           icon="timer_off"
-                           matTooltip="TIMEOUT"
-                           backgroundColor="inherit"
-                           color="red">{{ step.name }}</app-label>
-                <app-label *ngSwitchDefault
-                           icon="highlight_off"
-                           [matTooltip]="step.status"
-                           backgroundColor="inherit"
-                           color="red">{{ step.name }}</app-label>
-              </ng-container>
+        <ng-container matColumnDef="queued">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Command queued">Q
+          </th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-acknowledgment-icon [ack]="item.queued"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="released">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Command released">
+            R
+          </th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-transmission-constraints-icon *ngIf="!item.released" [command]="item">
+            </app-transmission-constraints-icon>
+            <app-acknowledgment-icon *ngIf="item.released" [ack]="item.released"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sent">
+          <th mat-header-cell *matHeaderCellDef class="iconcol dense" style="text-align: center"
+              matTooltip="Command sent">S
+          </th>
+          <td mat-cell *matCellDef="let item" class="iconcol dense"
+              style="text-align: center">
+            <app-acknowledgment-icon [ack]="item.sent"></app-acknowledgment-icon>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acknowledgments">
+          <th mat-header-cell *matHeaderCellDef
+              class="dense">Acknowledgments</th>
+          <td mat-cell *matCellDef="let item"
+              class="dense" style="text-align: center">
+            <ng-container *ngFor="let ack of item.verifications">
+              <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
             </ng-container>
-            <ng-container *ngIf="!item.stages.length">-</ng-container>
+            <ng-container *ngIf="!item.verifications.length">-</ng-container>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="completion">
-          <th mat-header-cell *matHeaderCellDef>Completion</th>
-          <td mat-cell *matCellDef="let item">
-            <app-command-completion [item]="item"></app-command-completion>
+          <th mat-header-cell *matHeaderCellDef
+              style="padding-left: 8px">Completion</th>
+          <td mat-cell *matCellDef="let item" class="completion"
+              style="text-align: center; padding-left: 8px">
+            <ng-container *ngIf="item.completed && item.success">SUCCESS</ng-container>
+            <span *ngIf="item.completed && !item.success" [matTooltip]="item.failureMessage">
+              FAILURE
+            </span>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                 (click)="selectRecord(row)"
-                 [@rowAnimation]="row.animate"
-                 [class.selected]="(selectedRecord$ | async) === row">
+            (click)="selectRecord(row)"
+            [@rowAnimation]="row.animate"
+            [class.selected]="(selectedRecord$ | async) === row"
+            [class.success]="row.completed && row.success"
+            [class.failed]="row.completed && !row.success">
         </tr>
       </table>
 

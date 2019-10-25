@@ -1,13 +1,13 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { fromEvent, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../services/AuthService';
 import { MessageService } from '../services/MessageService';
 import { YamcsService } from '../services/YamcsService';
@@ -20,8 +20,7 @@ import { YamcsService } from '../services/YamcsService';
 })
 export class HomePage implements AfterViewInit, OnDestroy {
 
-  @ViewChild('filter', { static: true })
-  filter: ElementRef;
+  filterControl = new FormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
@@ -63,9 +62,15 @@ export class HomePage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
-      this.filter.nativeElement.value = queryParams.get('filter');
+      this.filterControl.setValue(queryParams.get('filter'));
       this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
     }
+
+    this.filterControl.valueChanges.subscribe(() => {
+      this.updateURL();
+      const value = this.filterControl.value || '';
+      this.dataSource.filter = value.toLowerCase();
+    });
 
     this.yamcs.yamcsClient.getInstances().then(instances => {
       for (const instance of instances) {
@@ -81,15 +86,6 @@ export class HomePage implements AfterViewInit, OnDestroy {
       });
     });
 
-    fromEvent(this.filter.nativeElement, 'keyup').pipe(
-      debounceTime(150), // Keep low -- Client-side filter
-      map(() => this.filter.nativeElement.value.trim()), // Detect 'distinct' on value not on KeyEvent
-      distinctUntilChanged(),
-    ).subscribe(value => {
-      this.updateURL();
-      this.dataSource.filter = value.toLowerCase();
-    });
-
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
@@ -102,8 +98,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
   masterToggle() {
     this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Instance) {
@@ -195,7 +191,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   private updateURL() {
-    const filterValue = this.filter.nativeElement.value.trim();
+    const filterValue = this.filterControl.value;
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

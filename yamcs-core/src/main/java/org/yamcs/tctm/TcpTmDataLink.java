@@ -34,11 +34,6 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
-    @Deprecated
-    public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
-        this(instance, name, YConfiguration.getConfiguration("tcp").getConfig(spec));
-    }
-
     public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
         log = new Log(getClass(), instance);
@@ -124,7 +119,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 }
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
-                pwt = packetPreprocessor.process(packet);
+                pwt = packetPreprocessor.process(new PacketWithTime(timeService.getMissionTime(), packet));
                 if (pwt != null) {
                     break;
                 }

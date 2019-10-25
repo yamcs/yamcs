@@ -1,0 +1,19 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Send a command
+  </app-instance-toolbar>
+
+  <app-send-command-wizard-step step="3"></app-send-command-wizard-step>
+
+  <div class="panel-content" *ngIf="command$ | async as command">
+    <app-command-detail2 [command]="command"></app-command-detail2>
+
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <a mat-raised-button routerLink="/commanding/send"
+         [queryParams]="{instance: instance.name}">
+        Prepare another command
+      </a>
+    </mat-toolbar>
+  </div>
+</app-instance-page>

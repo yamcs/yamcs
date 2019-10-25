@@ -1,10 +1,17 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { CommandCompletion } from './command-history/CommandCompletion';
-import { CommandQueuesTable } from './command-queues/CommandQueuesTable';
-import { QueuedCommandsTable } from './command-queues/QueuedCommandsTable';
+import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
+import { CommandDetail } from './command-history/CommandDetail';
+import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
+import { CommandIdPipe } from './pipes/CommandIdPipe';
+import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
+import { QueuesTable } from './queues/QueuesTable';
+
+const pipes = [
+  CommandIdPipe,
+];
 
 @NgModule({
   imports: [
@@ -13,10 +20,13 @@ import { CommandingRoutingModule, routingComponents } from './CommandingRoutingM
   ],
   declarations: [
     routingComponents,
-    CommandCompletion,
-    CommandQueuesTable,
+    pipes,
+    AcknowledgmentIcon,
+    CommandDetail,
     QueuedCommandsTable,
+    QueuesTable,
     SendCommandWizardStep,
+    TransmissionConstraintsIcon,
   ],
 })
 export class CommandingModule {

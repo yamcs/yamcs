@@ -11,12 +11,11 @@ public class LoggingUtils {
      * Do not leave it enabled as travis will kill the tests if it outputs too much
      */
     public static void enableLogging() {
-
         Logger logger = Logger.getLogger("org.yamcs");
         logger.setLevel(Level.ALL);
         ConsoleHandler ch = null;
         
-        for (Handler h: Logger.getGlobal().getHandlers()) {
+        for (Handler h: Logger.getLogger("").getHandlers()) {
             if(h instanceof ConsoleHandler) {
                 ch = (ConsoleHandler) h;
                 break;
@@ -24,9 +23,8 @@ public class LoggingUtils {
         }
         if(ch==null) {
             ch = new ConsoleHandler();
-            Logger.getGlobal().addHandler(ch);
+            Logger.getLogger("").addHandler(ch);
         }
         ch.setLevel(Level.ALL);
-
     }
 }

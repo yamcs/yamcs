@@ -1,11 +1,4 @@
-import {
-  AnimationTriggerMetadata,
-  animate,
-  sequence,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { animate, AnimationTriggerMetadata, group, sequence, state, style, transition, trigger } from '@angular/animations';
 
 export const rowAnimation: AnimationTriggerMetadata = trigger('rowAnimation', [
   transition('void => true', [
@@ -29,4 +22,22 @@ export const rowAnimation: AnimationTriggerMetadata = trigger('rowAnimation', [
       }))
     ])
   ])
+]);
+
+export const slideDownAnimation: AnimationTriggerMetadata = trigger('slideDownAnimation', [
+  state('in', style({ height: '*', opacity: 0 })),
+  transition(':leave', [
+    style({ height: '*', opacity: 1 }),
+    group([
+      animate(100, style({ height: 0 })),
+      animate('200ms ease-in-out', style({ 'opacity': '0' })),
+    ]),
+  ]),
+  transition(':enter', [
+    style({ height: '0', opacity: 0 }),
+    group([
+      animate(100, style({ height: '*' })),
+      animate('200ms ease-in-out', style({ 'opacity': '1' })),
+    ])
+  ]),
 ]);

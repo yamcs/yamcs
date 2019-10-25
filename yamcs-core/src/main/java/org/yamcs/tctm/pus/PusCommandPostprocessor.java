@@ -34,12 +34,8 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     @Override
     public byte[] process(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
-        boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
 
-        boolean hasCrc = false;
-        if (secHeaderFlag) {
-            hasCrc = (errorDetectionCalculator != null);
-        }
+        boolean hasCrc = hasCrc(pc);
         if (hasCrc) { // 2 extra bytes for the checkword
             binary = Arrays.copyOf(binary, binary.length + 2);
         }
@@ -62,6 +58,27 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
 
         commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
         return binary;
+    }
+    
+    
+    @Override
+    public int getBinaryLength(PreparedCommand pc) {
+        byte[] binary = pc.getBinary();
+        if (hasCrc(pc)) {
+            return binary.length+2;
+        } else {
+            return binary.length;
+        }
+    }
+
+    private boolean hasCrc(PreparedCommand pc) {
+        byte[] binary = pc.getBinary();
+        boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
+        if (secHeaderFlag) {
+            return  (errorDetectionCalculator != null);
+        } else {
+            return false;    
+        }
     }
 
     @Override

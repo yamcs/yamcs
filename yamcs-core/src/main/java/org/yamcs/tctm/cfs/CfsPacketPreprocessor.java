@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
@@ -32,12 +33,13 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         this(yamcsInstance, null);
     }
 
-    public CfsPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+    public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public PacketWithTime process(PacketWithTime pwt) {
+        byte[] packet = pwt.getPacket();
         if (packet.length < MINIMUM_LENGTH) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is " + MINIMUM_LENGTH
@@ -59,8 +61,9 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
 
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), getTime(packet),
-                apidseqcount, packet);
+        pwt.setGenerationTime(getTime(packet));
+        pwt.setSequenceCount(apidseqcount);
+        
         return pwt;
     }
 

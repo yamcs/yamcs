@@ -1,12 +1,11 @@
 <h2 mat-dialog-title>Add members</h2>
 
 <mat-dialog-content class="mat-typography">
-  <div style="margin-top: 5px; margin-bottom: 12px;">
-    <input #filter
-           class="ya-input"
-           type="text"
-           placeholder="Filter members"
-           style="width: 100%">
+  <div class="page-options" style="margin-top: 5px">
+    <app-search-filter [formControl]="filterControl"
+                       placeholder="Filter users"
+                       width="100%">
+    </app-search-filter>
   </div>
   <table mat-table
          *ngIf="dataSource"
@@ -18,8 +17,8 @@
       <th mat-header-cell *matHeaderCellDef class="checkbox"></th>
       <td mat-cell *matCellDef="let row" class="checkbox">
         <input type="checkbox" (click)="$event.stopPropagation()"
-                      (change)="$event ? selection.toggle(row) : null"
-                      [checked]="selection.isSelected(row)">
+               (change)="$event ? selection.toggle(row) : null"
+               [checked]="selection.isSelected(row)">
       </td>
     </ng-container>
 

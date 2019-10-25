@@ -319,4 +319,9 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
         return pv;
     }
 
+    public static ParameterValue getPV(String fqn, long time, Value v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(v);
+        return pv;
+    }
 }

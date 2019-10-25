@@ -42,43 +42,26 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
+        
+     
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
 
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("NA", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
+        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+        
+         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Execution_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Execution_Time", cha.getName());
-
-        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Complete_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Complete_Time", cha.getName());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr("Verifier_Complete_Status", "OK");
+        checkNextCmdHistoryAttr("Verifier_Complete_Time");
+        
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
 
         // check commands histogram
         String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);
@@ -90,6 +73,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());
     }
 
+   
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -110,53 +94,35 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
+       
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
+       
+        
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
-
         assertEquals(1, cmdhist.getAttrCount());
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
-        assertEquals("NA", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-
-        cha = cmdhist.getAttr(0);
         assertEquals("packetSeqNum", cha.getName());
         assertEquals(5000, cha.getValue().getSint32Value());
 
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Execution_Status", cha.getName());
-        assertEquals("OK", cha.getValue().getStringValue());
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertEquals("Verifier_Execution_Time", cmdhist.getAttr(0).getName());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Complete_Status", cha.getName());
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertEquals("Verifier_Complete_Time", cmdhist.getAttr(0).getName());
+        checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
+        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+        
+        checkNextCmdHistoryAttr("Verifier_Complete_Status", "NOK");
+        checkNextCmdHistoryAttr("Verifier_Complete_Time");
 
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        assertEquals(1, cmdhist.getAttrCount());
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
-        assertEquals("NOK", cha.getValue().getStringValue());
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        cha = cmdhist.getAttr(0);
-        assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
-        assertEquals("Verifier Complete result: NOK", cha.getValue().getStringValue());
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Status", "NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Time");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Message", "Verifier Complete result: NOK");
     }
 
     public static class MyTcDataLink implements TcDataLink {

@@ -1,0 +1,50 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Queues
+    <app-help>
+      <p>
+        A queue is a temporary holding location for issued commands that are waiting to enter the next stage of
+        processing.
+      </p>
+      <p>
+        A queue can perform these actions:
+      </p>
+      <table class="ya-data-table">
+        <tr>
+          <td width="1">
+            ACCEPT
+          </td>
+          <td>The queue accepts and releases commands.</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="blink">HOLD</span>
+          </td>
+          <td>The queue accepts commands but does not release them. These commands may be
+            released manually, or automatically as soon as the queue action changes to ACCEPT.</td>
+        </tr>
+        <tr>
+          <td>
+            REJECT
+          </td>
+          <td>The queue does not accept commands. Any attempt to issue a command matched to a
+            disabled queue will fail immediately.</td>
+        </tr>
+      </table>
+    </app-help>
+  </app-instance-toolbar>
+
+  <div class="panel-content">
+    <app-queues-table [cqueues$]="cqueues$"></app-queues-table>
+
+    <p>&nbsp;</p>
+    <h2>Pending commands</h2>
+    <app-queued-commands-table *ngIf="hasEntries(); else empty"
+                               [cqueues$]="cqueues$">
+    </app-queued-commands-table>
+    <ng-template #empty>
+      All queues are empty.
+    </ng-template>
+  </div>
+
+</app-instance-page>

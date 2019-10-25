@@ -1,9 +1,13 @@
 package org.yamcs.tctm.ccsds;
-
-public class IdleFrameHandler implements VirtualChannelHandler {
+/**
+ * Handles idle frames by ignoring them.
+ * @author nm
+ *
+ */
+public class IdleFrameHandler implements VcDownlinkHandler {
 
     @Override
-    public void handle(TransferFrame frame) {
+    public void handle(DownlinkTransferFrame frame) {
     //do nothing
     }
 

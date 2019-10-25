@@ -125,7 +125,7 @@ public class ProcessRunner extends AbstractYamcsService {
         // shutdown, this reduces the chance of subprocess to be momentarily
         // alive after the main Yamcs process has already stopped.
         try {
-            boolean exited = process.waitFor(1000, TimeUnit.SECONDS);
+            boolean exited = process.waitFor(1000, TimeUnit.MILLISECONDS);
             if (!exited) {
                 // This is also no "guarantee", but we did our best.
                 process.destroyForcibly();

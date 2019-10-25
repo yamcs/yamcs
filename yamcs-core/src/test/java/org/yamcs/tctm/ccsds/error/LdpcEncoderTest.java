@@ -3,7 +3,8 @@ package org.yamcs.tctm.ccsds.error;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.tctm.ccsds.error.Ldpc64Encoder;
+import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator.Ldpc256Encoder;
+import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
 import org.yamcs.utils.ByteArrayUtils;
 
 import static org.junit.Assert.assertArrayEquals;

@@ -12,7 +12,7 @@ import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.MasterChannelFrameHandler;
-import org.yamcs.tctm.ccsds.VirtualChannelHandler;
+import org.yamcs.tctm.ccsds.VcDownlinkHandler;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -60,7 +60,7 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, getClass().getSimpleName(), 10000);
         subLinks = new ArrayList<>();
-        for (VirtualChannelHandler vch : frameHandler.getVcHandlers()) {
+        for (VcDownlinkHandler vch : frameHandler.getVcHandlers()) {
             if (vch instanceof Link) {
                 Link l = (Link) vch;
                 subLinks.add(l);

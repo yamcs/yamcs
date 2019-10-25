@@ -1,0 +1,124 @@
+<h6 style="padding-top: 0">ID</h6>
+<div class="block">
+  {{ command.commandId | commandId }}
+</div>
+
+<h6>Command</h6>
+<div class="block">
+  {{ command.commandName }}
+</div>
+
+<h6>Time</h6>
+<div class="block">
+  {{ command.generationTime | datetime }}
+</div>
+
+<h6>Issuer</h6>
+<div class="block">
+  {{ command.username }}<ng-container *ngIf="command.origin">@{{ command.origin }}
+  </ng-container>
+</div>
+
+<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+
+<h6 style="padding-top: 0">Source</h6>
+<div class="block">
+  {{ command.source || '-' }}
+</div>
+
+<h6>Binary</h6>
+<div class="block">
+  <app-hex [base64String]="command.binary"></app-hex>
+</div>
+
+<ng-container *ngIf="command.comment">
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <h6 style="padding-top: 0">Comment</h6>
+  <div class="block">
+    {{ command.comment }}
+  </div>
+</ng-container>
+
+<ng-container *ngIf="command.extra.length">
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <h6 style="padding-top: 0">Extra attributes</h6>
+  <div class="block">
+    <ul>
+      <li *ngFor="let extra of command.extra">{{ extra.name }}: {{ extra.value }}</li>
+    </ul>
+  </div>
+</ng-container>
+
+<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<h6 style="padding-top: 0">Yamcs acknowledgments</h6>
+<div class="block">
+  <table yaDataTable style="width: 100%">
+    <tr>
+      <td style="width: 16px">
+        <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
+      </td>
+      <td style="width: 150px">Queued</td>
+      <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
+      <td>
+        <span [matTooltip]="command.queued?.time">
+          {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
+        </app-transmission-constraints-icon>
+        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
+      </td>
+      <td>Released</td>
+      <td>
+        {{ command.released?.status || command.transmissionConstraints || '-' }}
+      </td>
+      <td>
+        <span [matTooltip]="command.released?.time">
+          {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
+      </td>
+      <td>Sent</td>
+      <td>{{ command.sent?.status || '-' }}</td>
+      <td>
+        <span [matTooltip]="command.sent?.time">
+          {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
+        </span>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<ng-container *ngIf="command.verifications.length">
+  <h6>Extra acknowledgments</h6>
+  <div class="block">
+    <table yaDataTable style="width: 100%">
+      <tr *ngFor="let ack of command.verifications">
+        <td style="width: 16px">
+          <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
+        </td>
+        <td style="width: 150px">{{ ack.name }}</td>
+        <td style="width: 70px">{{ ack.status }}</td>
+        <td>
+          <span [matTooltip]="ack.time">{{ ack.time | deltaWith:command.generationTime }}</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+</ng-container>
+
+<h6>Completion</h6>
+<div class="block">
+  <ng-container *ngIf="command.completed && command.success">SUCCESS</ng-container>
+  <ng-container *ngIf="command.completed && !command.success">
+    FAILURE: {{ command.failureMessage }}
+  </ng-container>
+  <ng-container *ngIf="!command.completed">-</ng-container>
+</div>

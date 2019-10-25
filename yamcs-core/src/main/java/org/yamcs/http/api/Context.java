@@ -1,5 +1,6 @@
 package org.yamcs.http.api;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.Observer;
@@ -65,5 +66,10 @@ public class Context {
         // TODO It should be possible to refactor this such that
         // the HTTP status code becomes the result of the requestFuture.
         restRequest.reportStatusCode(statusCode);
+    }
+
+    public String getClientAddress() {
+        InetSocketAddress address = (InetSocketAddress) nettyContext.channel().remoteAddress();
+        return address.getAddress().getHostAddress();
     }
 }
