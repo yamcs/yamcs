@@ -7,12 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cfdp.CfdpTransactionId;
-import org.yamcs.tctm.Packet;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
-public abstract class CfdpPacket implements Packet {
+public abstract class CfdpPacket {
 
     protected ByteBuffer buffer;
     protected CfdpHeader header;
@@ -113,7 +112,6 @@ public abstract class CfdpPacket implements Packet {
         return toReturn;
     }
 
-    @Override
     public byte[] toByteArray() {
         ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + header.getDataLength());
 

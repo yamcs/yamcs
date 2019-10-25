@@ -3,11 +3,11 @@ package org.yamcs.tctm.ccsds;
 import java.io.IOException;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.PacketPreprocessor;
@@ -131,7 +131,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         }
 
         numPackets++;
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), p);
+        TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthRceptionTime(ertime);
         
         pwt = packetPreprocessor.process(pwt);

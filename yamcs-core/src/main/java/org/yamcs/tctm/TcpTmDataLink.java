@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
@@ -90,7 +90,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         }
 
         while (isRunning()) {
-            PacketWithTime pwrt = getNextPacket();
+            TmPacket pwrt = getNextPacket();
             if (pwrt == null) {
                 break;
             }
@@ -98,8 +98,8 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         }
     }
 
-    public PacketWithTime getNextPacket() {
-        PacketWithTime pwt = null;
+    public TmPacket getNextPacket() {
+        TmPacket pwt = null;
         while (isRunning()) {
             while (disabled) {
                 if (!isRunning()) {
@@ -119,7 +119,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 }
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
-                pwt = packetPreprocessor.process(new PacketWithTime(timeService.getMissionTime(), packet));
+                pwt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
                 if (pwt != null) {
                     break;
                 }

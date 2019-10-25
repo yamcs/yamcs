@@ -6,9 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.logging.Log;
 import org.yamcs.time.TimeService;
 
@@ -75,7 +75,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
                         log.info("Injecting the content of {}", f);
                         try {
                             TmFileReader prov = getTmFileReader(f.getAbsolutePath());
-                            PacketWithTime pwrt;
+                            TmPacket pwrt;
                             while ((pwrt = prov.readPacket(timeService.getMissionTime())) != null) {
                                 tmSink.processPacket(pwrt);
                                 tmCount++;

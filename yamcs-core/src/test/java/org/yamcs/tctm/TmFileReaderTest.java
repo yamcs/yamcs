@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.archive.PacketWithTime;
+import org.yamcs.TmPacket;
 import org.yamcs.tctm.TmFileReader;
 
 import static org.junit.Assert.*;
@@ -24,7 +24,7 @@ public class TmFileReaderTest {
 	@Test
 	public void testRawCcsdsReader() throws InterruptedException, IOException {
 		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-rawccsds", new IssPacketPreprocessor(null));
-		PacketWithTime pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
+		TmPacket pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
 		
 		assertNotNull(pwrt);
 		ByteBuffer bb = ByteBuffer.wrap(pwrt.getPacket());
@@ -47,7 +47,7 @@ public class TmFileReaderTest {
 	@Test(expected=IOException.class)
 	public void testHrdpReader() throws InterruptedException, IOException {
 		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-hrdp-corrupted", new IssPacketPreprocessor(null));
-		PacketWithTime pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
+		TmPacket pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
 		assertNotNull(pwrt);
 		ByteBuffer bb = ByteBuffer.wrap(pwrt.getPacket());
 		assertEquals(148, bb.capacity());

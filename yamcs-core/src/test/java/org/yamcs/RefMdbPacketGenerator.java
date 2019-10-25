@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
@@ -716,7 +715,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
         if (tmProcessor != null) {
-            tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.getInt(0), bb.array()));
+            tmProcessor.processPacket(new TmPacket(rectime, gentime, bb.getInt(0), bb.array()));
         }
     }
 

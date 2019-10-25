@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -130,7 +129,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
             long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-            PacketWithTime pwrt = new PacketWithTime(rectime, gentime, seqCount, packet);
+            TmPacket pwrt = new TmPacket(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;
             tmProcessor.processPacket(pwrt, rootContainer);
         }

@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ccsds.time.CcsdsTimeDecoder;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
@@ -105,7 +105,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public TmPacket process(byte[] packet) {
         if (packet.length < 6) {
             eventProducer.sendWarning(
                     "Short packet received, length: " + packet.length + "; minimum required length is 6 bytes.");
@@ -169,12 +169,12 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
                     corrupted);
         }
 
-        PacketWithTime pwt = new PacketWithTime(rectime, gentime, apidseqcount, packet);
+        TmPacket pwt = new TmPacket(rectime, gentime, apidseqcount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;
     }
 
-    private PacketWithTime processTimePacket(byte[] packet) {
+    private TmPacket processTimePacket(byte[] packet) {
         long rectime = timeService.getMissionTime();
         boolean corrupted = false;
         long gentime;
@@ -190,7 +190,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
-        PacketWithTime pwt = new PacketWithTime(rectime, gentime, apidseqcount, packet);
+        TmPacket pwt = new TmPacket(rectime, gentime, apidseqcount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;
     }

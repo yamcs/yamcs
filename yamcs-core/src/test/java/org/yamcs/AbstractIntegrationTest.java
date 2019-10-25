@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.client.BulkRestDataReceiver;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
@@ -373,12 +372,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public void processPacket(PacketWithTime pwrt) {
+        public void processPacket(TmPacket pwrt) {
             tmSink.processPacket(pwrt);
         }
 
         @Override
-        public void processPacket(PacketWithTime pwrt, SequenceContainer rootContainer) {
+        public void processPacket(TmPacket pwrt, SequenceContainer rootContainer) {
             tmSink.processPacket(pwrt);
         }
 

@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -38,7 +38,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(PacketWithTime pwt) {
+    public TmPacket process(TmPacket pwt) {
         byte[] packet = pwt.getPacket();
         if (packet.length < MINIMUM_LENGTH) {
             eventProducer.sendWarning("SHORT_PACKET",

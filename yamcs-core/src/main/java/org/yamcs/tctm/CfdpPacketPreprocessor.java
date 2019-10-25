@@ -1,7 +1,7 @@
 package org.yamcs.tctm;
 
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.CfdpUtils;
 
 /**
@@ -17,7 +17,7 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public TmPacket process(byte[] packet) {
 
         // check that we're processing a CFDP packet by verifying that we're reading
         // a CCSDS packet (that encapsulates the CFDP payload)
@@ -32,6 +32,6 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
                 4 + entityIdLength + sequenceNumberLength);
         long sequenceNr = CfdpUtils.getUnsignedLongFromByteArray(seqnr);
 
-        return new PacketWithTime(timeService.getMissionTime(), System.currentTimeMillis(), (int) sequenceNr, packet);
+        return new TmPacket(timeService.getMissionTime(), System.currentTimeMillis(), (int) sequenceNr, packet);
     }
 }

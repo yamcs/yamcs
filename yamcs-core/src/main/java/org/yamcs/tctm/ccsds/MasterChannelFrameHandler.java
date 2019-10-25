@@ -58,8 +58,9 @@ public class MasterChannelFrameHandler {
         handlers = params.createVcHandlers(yamcsInstance, linkName);
     }
 
-    public void handleFrame(byte[] data, int offset, int length) throws TcTmException {
+    public void handleFrame(long ertime, byte[] data, int offset, int length) throws TcTmException {
         DownlinkTransferFrame frame = frameDecoder.decode(data, offset, length);
+        frame.setEearthRceptionTime(ertime);
         frameCount++;
         if (frame.containsOnlyIdleData()) {
             idleFrameCount++;

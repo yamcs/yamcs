@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.xtce.SequenceContainer;
 
@@ -19,7 +18,7 @@ public interface TmProcessor extends TmSink {
      * @param pwrt
      * @param rootContainer
      */
-    public void processPacket(PacketWithTime pwrt, SequenceContainer rootContainer);
+    public void processPacket(TmPacket pwrt, SequenceContainer rootContainer);
     
     /**
      * Notification that there is no more packet to process

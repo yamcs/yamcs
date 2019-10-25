@@ -1,7 +1,7 @@
 package org.yamcs.tctm;
 
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -49,7 +49,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public TmPacket process(byte[] packet) {
         boolean corrupted = false;
         if (errorDetectionCalculator != null) {
             int computedCheckword;
@@ -93,7 +93,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
 
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), gentime, seqCount, packet);
+        TmPacket pwt = new TmPacket(timeService.getMissionTime(), gentime, seqCount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;
     }

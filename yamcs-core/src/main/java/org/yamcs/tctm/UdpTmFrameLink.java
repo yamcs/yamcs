@@ -13,6 +13,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.MasterChannelFrameHandler;
 import org.yamcs.tctm.ccsds.VcDownlinkHandler;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -98,7 +99,7 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
                 }
                 validDatagramCount++;
 
-                frameHandler.handleFrame(datagram.getData(), datagram.getOffset(), length);
+                frameHandler.handleFrame(TimeEncoding.getWallclockTime(), datagram.getData(), datagram.getOffset(), length);
             } catch (IOException e) {
                 log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
             } catch (TcTmException e) {

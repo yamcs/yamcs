@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
@@ -54,7 +54,7 @@ public class TmFileReader {
         }
     }
 
-    public PacketWithTime readPacket(long rectime) throws IOException {
+    public TmPacket readPacket(long rectime) throws IOException {
         int res;
         byte[] buffer;
         byte[] fourb = new byte[4];
@@ -141,7 +141,7 @@ public class TmFileReader {
                 throw new IOException("no new line at the end of the PaCTS packet");
             }
         }
-        return packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), buffer));
+        return packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), buffer));
     }
 
     public void close() throws IOException {
@@ -151,7 +151,7 @@ public class TmFileReader {
     public static void main(String[] args) throws IOException, ConfigurationException {
         YConfiguration.setupTool();
         TmFileReader tfr = new TmFileReader(args[0], new IssPacketPreprocessor(null));
-        PacketWithTime pwrt;
+        TmPacket pwrt;
 
         while ((pwrt = tfr.readPacket(TimeEncoding.getWallclockTime())) != null) {
             CcsdsPacket c = new CcsdsPacket(pwrt.getPacket());

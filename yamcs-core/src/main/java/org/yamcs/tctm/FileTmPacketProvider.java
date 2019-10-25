@@ -2,9 +2,9 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.time.RealtimeTimeService;
@@ -78,7 +78,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
                 while (disabled) {
                     Thread.sleep(1000);
                 }
-                PacketWithTime pwrt;
+                TmPacket pwrt;
                 pwrt = tmFileReader.readPacket(timeService.getMissionTime());
 
                 if (pwrt == null) {

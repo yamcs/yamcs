@@ -6,8 +6,8 @@ import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.logging.Log;
 
 /**
@@ -64,7 +64,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     @Override
     public void run() {
         while (isRunning()) {
-            PacketWithTime pwrt = getNextPacket();
+            TmPacket pwrt = getNextPacket();
             if (pwrt != null) {
                 tmSink.processPacket(pwrt);
             }
@@ -90,7 +90,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      * 
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
-    public PacketWithTime getNextPacket() {
+    public TmPacket getNextPacket() {
         ByteBuffer packet = null;
 
         while (isRunning()) {
@@ -110,7 +110,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
         }
 
         if (packet != null) {
-            return packetPreprocessor.process(new PacketWithTime(timeService.getMissionTime(), packet.array()));
+            return packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet.array()));
         } else {
             return null;
         }

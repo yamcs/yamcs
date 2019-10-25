@@ -13,11 +13,11 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
+import org.yamcs.TmPacket;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
@@ -168,7 +168,7 @@ public class ReplayService extends AbstractService
                     container = parent;
                 }
 
-                tmProcessor.processPacket(new PacketWithTime(rp.getReceptionTime(), rp.getGenerationTime(),
+                tmProcessor.processPacket(new TmPacket(rp.getReceptionTime(), rp.getGenerationTime(),
                         rp.getSequenceNumber(), rp.getPacket()), container);
             }
             break;

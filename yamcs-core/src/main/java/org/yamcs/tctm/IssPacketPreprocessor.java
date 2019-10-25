@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
 
@@ -77,7 +77,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public PacketWithTime process(byte[] packet) {
+    public TmPacket process(byte[] packet) {
         if (packet.length < 16) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is 16 bytes.");
@@ -121,7 +121,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
 
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
+        TmPacket pwt = new TmPacket(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
                 apidseqcount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;

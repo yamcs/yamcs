@@ -35,6 +35,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.TmPacket;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
@@ -501,7 +502,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         tableModel.removeRow(0);
     }
 
-    public void packetReceived(PacketWithTime data) {
+    public void packetReceived(TmPacket data) {
         byte[] buf = data.getPacket();
         int len = buf.length;
         final ListPacket packet = new ListPacket(buf, len);

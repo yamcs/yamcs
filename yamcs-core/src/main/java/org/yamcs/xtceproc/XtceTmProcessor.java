@@ -6,9 +6,9 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
+import org.yamcs.TmPacket;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterListener;
@@ -161,7 +161,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      *
      */
     @Override
-    public void processPacket(PacketWithTime pwrt) {
+    public void processPacket(TmPacket pwrt) {
         try {
             long rectime = pwrt.getReceptionTime();
             if (rectime == TimeEncoding.INVALID_INSTANT) {
@@ -186,7 +186,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     @Override
-    public void processPacket(PacketWithTime pwrt, SequenceContainer sc) {
+    public void processPacket(TmPacket pwrt, SequenceContainer sc) {
         try {
             long rectime = pwrt.getReceptionTime();
             if (rectime == TimeEncoding.INVALID_INSTANT) {

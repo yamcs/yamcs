@@ -67,9 +67,9 @@ import javax.swing.tree.TreeSelectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.RestClient;
@@ -557,7 +557,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     void loadFile() {
-        new SwingWorker<Void, PacketWithTime>() {
+        new SwingWorker<Void, TmPacket>() {
             ProgressMonitor progress;
             int packetCount = 0;
 
@@ -565,7 +565,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             protected Void doInBackground() throws Exception {
                 try (CountingInputStream reader = new CountingInputStream(new FileInputStream(lastFile))) {
                     PacketInputStream packetInputStream = getPacketInputStream(reader);
-                    PacketWithTime packet;
+                    TmPacket packet;
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int) (lastFile.length() >> 10) : maxLines;
@@ -577,7 +577,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         if (p == null) {
                             break;
                         }
-                        packet = packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), p));
+                        packet = packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), p));
                         
                         if (packet != null) {
                             publish(packet);
@@ -606,9 +606,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
 
             @Override
-            protected void process(final List<PacketWithTime> chunks) {
-                for (PacketWithTime packet : chunks) {
-                   
+            protected void process(final List<TmPacket> chunks) {
+                for (TmPacket packet : chunks) {
                     packetsTable.packetReceived(packet);
                 }
             }
@@ -789,7 +788,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(packetPreprocessor.process(new PacketWithTime(TimeEncoding.getWallclockTime(), listPacket.buf)));
+            tmProcessor.processPacket(packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf)));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -869,7 +868,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     public void onMessage(WebSocketSubscriptionData data) {
         if (data.hasTmPacket()) {
             TmPacketData tm = data.getTmPacket();
-            PacketWithTime pwt = new PacketWithTime(TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime()),
+            TmPacket pwt = new TmPacket(TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime()),
                     TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
                     tm.getSequenceNumber(), tm.getPacket().toByteArray());
             packetsTable.packetReceived(pwt);

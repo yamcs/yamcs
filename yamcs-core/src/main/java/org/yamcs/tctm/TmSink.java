@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import org.yamcs.archive.PacketWithTime;
+import org.yamcs.TmPacket;
 
 /**
  * Used by the {@link TmPacketDataLink} to propagate packets inside Yamcs.
@@ -9,6 +9,6 @@ import org.yamcs.archive.PacketWithTime;
  *
  */
 public interface TmSink {
-    public void processPacket(PacketWithTime pwrt);
+    public void processPacket(TmPacket pwrt);
 }
 
