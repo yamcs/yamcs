@@ -127,7 +127,7 @@ public class XtceTmExtractor {
             }
         } catch (Exception e) {
             // send warning as events and in the log file.
-            pdata.eventProducer.sendWarning(e.getMessage());
+            pdata.eventProducer.sendWarning(e.toString());
             log.error("got exception in tmextractor ", e);
         }
     }
