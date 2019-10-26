@@ -76,7 +76,7 @@ public abstract class AbstractEventProducer implements EventProducer {
 
     @Override
     public void sendInfo(String msg) {
-        sendWarning(getInvokingClass(), msg);
+        sendInfo(getInvokingClass(), msg);
     }
 
     @Override
