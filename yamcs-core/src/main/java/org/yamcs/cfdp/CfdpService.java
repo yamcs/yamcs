@@ -27,6 +27,13 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
+/**
+ * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
+ * 
+ * 
+ * @author nm
+ *
+ */
 public class CfdpService extends AbstractYamcsService implements StreamSubscriber {
 
     static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
