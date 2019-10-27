@@ -3,11 +3,8 @@
  */
 package org.yamcs.xtce.xml;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3586,9 +3583,7 @@ public class XtceStaxReader {
      * @throws XMLStreamException
      */
     private XMLEventReader initEventReader(String filename) throws FileNotFoundException, XMLStreamException {
-        InputStream in = new FileInputStream(new File(filename));
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        return factory.createXMLEventReader(in);
+        return new IncludeAwareEventReader(XMLInputFactory.newInstance(), filename);
     }
 
     /**

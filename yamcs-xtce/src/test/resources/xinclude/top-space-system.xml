@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" name="TOP_LEVEL"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="param0Type" sizeInBits="8" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter parameterTypeRef="param0Type" name="param0" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="container0">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="param0" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    
+    <xtce:CommandMetaData>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="command0" />
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+
+    <xi:include href="sub-space-system-one.xml" />
+
+    <xtce:SpaceSystem name="SUB_TWO">
+        <xtce:TelemetryMetaData>
+            <xtce:ParameterTypeSet>
+                <xtce:IntegerParameterType name="param2Type" sizeInBits="8" signed="false">
+                    <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+                </xtce:IntegerParameterType>
+            </xtce:ParameterTypeSet>
+            <xtce:ParameterSet>
+                <xtce:Parameter parameterTypeRef="param2Type" name="param2" />
+            </xtce:ParameterSet>
+            <xtce:ContainerSet>
+                <xtce:SequenceContainer name="container2">
+                    <xtce:EntryList>
+                        <xtce:ParameterRefEntry parameterRef="param2" />
+                    </xtce:EntryList>
+                </xtce:SequenceContainer>
+            </xtce:ContainerSet>
+        </xtce:TelemetryMetaData>
+        
+        <xtce:CommandMetaData>
+            <xtce:MetaCommandSet>
+                <xtce:MetaCommand name="command2" />
+            </xtce:MetaCommandSet>
+        </xtce:CommandMetaData>
+    </xtce:SpaceSystem>
+    
+    <xi:include href="sub-space-system-three.xml" />
+    
+</xtce:SpaceSystem>

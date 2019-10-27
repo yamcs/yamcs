@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" name="SYSTEM"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+   <xi:include href="included.xml" parse="text" />
+</xtce:SpaceSystem>

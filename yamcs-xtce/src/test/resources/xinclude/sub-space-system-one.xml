@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" name="SUB_ONE"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+    
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="param1Type" sizeInBits="8" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter parameterTypeRef="param1Type" name="param2" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="container1">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="param1" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    
+    <xtce:CommandMetaData>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="command1" />
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+
+</xtce:SpaceSystem>
