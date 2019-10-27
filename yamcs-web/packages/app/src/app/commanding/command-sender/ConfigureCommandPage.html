@@ -69,7 +69,7 @@
       </ng-container>
 
       <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
-        <br *ngIf="!first || arguments.length">
+        <br class="hasInitial" *ngIf="!first || arguments.length">
         <ng-container [ngSwitch]="argument.type?.engType">
 
           <label *ngSwitchCase="'enumeration'" class="hasInitial">

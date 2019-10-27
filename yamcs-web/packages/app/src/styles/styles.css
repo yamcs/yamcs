@@ -104,6 +104,10 @@ body {
   padding: 7px 8px 8px 0;
 }
 
+.ya-data-table td.vdiv, .ya-data-table th.vdiv {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
 dd, dt {
   font-size: 12px;
   color: rgba(0, 0, 0, .654);
@@ -326,7 +330,7 @@ a.ya-link.ya-header-link {
 }
 
 .alert, .ERROR td, .DISTRESS td, .CRITICAL td, .SEVERE td {
-  color: red !important;
+  color: crimson !important;
 }
 
 /*

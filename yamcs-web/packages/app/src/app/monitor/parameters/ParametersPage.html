@@ -49,7 +49,8 @@
 
         <ng-container matColumnDef="engValue">
           <th mat-header-cell *matHeaderCellDef style="width: 200px">Value</th>
-          <td mat-cell *matCellDef="let parameter">
+          <td mat-cell *matCellDef="let parameter"
+              [class.alert]="parameter.pval?.monitoringResult && parameter.pval?.monitoringResult !== 'IN_LIMITS'">
             <app-expirable *ngIf="parameter.pval" [pval]="parameter.pval">
               {{ (parameter.pval?.engValue | value) || '-' }}
               <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>

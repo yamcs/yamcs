@@ -23,7 +23,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   filterControl = new FormControl();
 
-  // Link to show n detail pane (only on single selection)
+  // Link to show detail pane (only on single selection)
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
 
   columns: ColumnInfo[] = [

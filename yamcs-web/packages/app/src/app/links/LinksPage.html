@@ -75,7 +75,10 @@
               <app-link-status [link]="row.link"
                                [parentLink]="row.parentLink"></app-link-status>
             </div>
-            {{ row.link.name }}
+            <a [routerLink]="['/links', row.link.name]"
+               [queryParams]="{instance: instance.name}">
+              {{ row.link.name }}
+            </a>
             <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"
                     (click)="expandItem($event, row)">

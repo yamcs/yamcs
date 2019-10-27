@@ -1,23 +1,28 @@
 <app-instance-page *ngIf="link$ | async as link">
   <app-instance-toolbar>
-    {{ link.name }}
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Links / {{ link.name }}
     &nbsp;&nbsp;&nbsp;
-    <button mat-button
+    <!--button mat-button
             color="primary"
             *ngIf="mayControlLinks()">
       <mat-icon>edit</mat-icon>
       EDIT
-    </button>
+    </button-->
     <button mat-button
             color="primary"
             *ngIf="mayControlLinks()"
-            disabled>
+            [disabled]="!link.disabled"
+            (click)="enableLink(link.name)">
       <mat-icon>link</mat-icon>
       ENABLE
     </button>
     <button mat-button
             color="primary"
-            *ngIf="mayControlLinks()">
+            *ngIf="mayControlLinks()"
+            [disabled]="link.disabled"
+            (click)="disableLink(link.name)">
       <mat-icon>link_off</mat-icon>
       DISABLE
     </button>
@@ -31,13 +36,13 @@
       <dd>
         <app-link-status [link]="link"></app-link-status> {{ link.status }}
       </dd>
-      <dt>In Count</dt>
-      <dd>0</dd>
-      <dt>Out Count</dt>
-      <dd>1234</dd>
+      <dt>In counter</dt>
+      <dd>{{ link.dataInCount | number }}</dd>
+      <dt>Out counter</dt>
+      <dd>{{ link.dataOutCount | number }}</dd>
     </dl>
 
-    <div class="section-divider">
+    <!--div class="section-divider">
       <mat-divider></mat-divider>
     </div>
     <h4>
@@ -161,6 +166,6 @@
       <dd style="color: green">
         <mat-icon class="icon16">check</mat-icon>
       </dd>
-    </dl>
+    </dl-->
   </div>
 </app-instance-page>
