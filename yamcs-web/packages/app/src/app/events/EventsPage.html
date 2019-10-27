@@ -49,15 +49,15 @@
       </div>
       <div class="filter-bar">
         <div class="vmiddle" style="flex: 1 1 0%">
-          <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
+          <app-select [options]="severityOptions" formControlName="severity"></app-select>
           &nbsp;&nbsp;
           <app-select [options]="sourceOptions$ | async"
-                      (change)="updateSource($event)"></app-select>
+                      formControlName="source"></app-select>
           &nbsp;&nbsp;
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
-                      (change)="updateInterval($event)"></app-select>
+                      formControlName="interval"></app-select>
           &nbsp;&nbsp;
           <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
             <input formControlName="customStart" type="datetime" style="width: 160px">

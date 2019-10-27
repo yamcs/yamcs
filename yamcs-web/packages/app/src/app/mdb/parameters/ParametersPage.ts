@@ -51,7 +51,7 @@ export class ParametersPage implements AfterViewInit {
   ];
 
   typeOptions: Option[] = [
-    { id: 'ANY', label: 'Any type', selected: true },
+    { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },
     { id: 'binary', label: 'binary' },
@@ -63,7 +63,7 @@ export class ParametersPage implements AfterViewInit {
   ];
 
   sourceOptions: Option[] = [
-    { id: 'ANY', label: 'Any source', selected: true },
+    { id: 'ANY', label: 'Any source' },
     { id: 'COMMAND', label: 'Command' },
     { id: 'COMMAND_HISTORY', label: 'Command History' },
     { id: 'CONSTANT', label: 'Constant' },
@@ -106,16 +106,10 @@ export class ParametersPage implements AfterViewInit {
     }
     if (queryParams.has('type')) {
       this.type = queryParams.get('type')!;
-      for (const option of this.typeOptions) {
-        option.selected = (option.id === this.type);
-      }
       this.filterForm.get('type')!.setValue(this.type);
     }
     if (queryParams.has('source')) {
       this.source = queryParams.get('source')!;
-      for (const option of this.sourceOptions) {
-        option.selected = (option.id === this.source);
-      }
       this.filterForm.get('source')!.setValue(this.source);
     }
 
@@ -179,13 +173,5 @@ export class ParametersPage implements AfterViewInit {
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
     this.preferenceStore.setVisibleColumns('mdb-parameters', displayedColumns);
-  }
-
-  updateType(type: string) {
-    this.filterForm.get('type')!.setValue(type);
-  }
-
-  updateSource(source: string) {
-    this.filterForm.get('source')!.setValue(source);
   }
 }

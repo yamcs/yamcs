@@ -143,6 +143,13 @@
           Overview
         </app-sidebar-nav-item>
 
+        <app-sidebar-nav-item *ngIf="config.features.dass"
+                              routerLink="/archive/gaps"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Gaps
+        </app-sidebar-nav-item>
+
         <app-sidebar-nav-item *ngIf="showTablesItem()"
                               routerLink="/archive/tables"
                               [queryParams]="{instance: instance.name}"

@@ -81,7 +81,7 @@ export class CommandHistoryPage {
   ];
 
   intervalOptions: Option[] = [
-    { id: 'PT1H', label: 'Last hour', selected: true },
+    { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
     { id: 'NO_LIMIT', label: 'No limit' },
@@ -148,9 +148,6 @@ export class CommandHistoryPage {
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
-      for (const option of this.intervalOptions) {
-        option.selected = (option.id === this.appliedInterval);
-      }
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
         const customStart = queryParams.get('customStart')!;
@@ -178,10 +175,10 @@ export class CommandHistoryPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -242,10 +239,6 @@ export class CommandHistoryPage {
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
     this.preferenceStore.setVisibleColumns('cmdhist', displayedColumns);
-  }
-
-  updateInterval(interval: string) {
-    this.filterForm.get('interval')!.setValue(interval);
   }
 
   selectRecord(rec: CommandHistoryRecord) {

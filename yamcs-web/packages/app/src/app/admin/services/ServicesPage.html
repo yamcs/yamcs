@@ -16,7 +16,7 @@
         <div class="vmiddle" style="flex: 1 1 0%">
           <small>Instance:&nbsp;</small>
           <app-select [options]="instanceOptions$ | async"
-                      (change)="updateInstance($event)"></app-select>
+                      formControlName="instance"></app-select>
         </div>
       </div>
     </form>

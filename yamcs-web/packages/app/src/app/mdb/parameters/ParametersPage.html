@@ -17,10 +17,9 @@
       </div>
       <div class="filter-bar">
         <div class="vmiddle" style="flex: 1 1 0%">
-          <app-select [options]="typeOptions" (change)="updateType($event)"></app-select>
+          <app-select [options]="typeOptions" formControlName="type"></app-select>
           &nbsp;&nbsp;
-          <app-select [options]="sourceOptions"
-                      (change)="updateSource($event)"></app-select>
+          <app-select [options]="sourceOptions" formControlName="source"></app-select>
         </div>
       </div>
     </form>

@@ -12,6 +12,7 @@ export interface WebsiteConfig {
 
 export interface FeaturesConfig {
   cfdp: boolean;
+  dass: boolean;
   layouts: boolean;
 }
 

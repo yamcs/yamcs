@@ -5,6 +5,7 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { ArchiveOverviewPage } from './ArchiveOverviewPage';
+import { GapsPage } from './gaps/GapsPage';
 import { StreamColumnsTab } from './stream/StreamColumnsTab';
 import { StreamDataTab } from './stream/StreamDataTab';
 import { StreamPage } from './stream/StreamPage';
@@ -28,18 +29,18 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'overview'
-      },
-      {
+      }, {
         path: 'overview',
         component: ArchiveOverviewPage,
-      },
-      {
+      }, {
+        path: 'gaps',
+        component: GapsPage,
+      }, {
         path: 'tables',
         pathMatch: 'full',
         component: TablesPage,
         canActivate: [MayReadTablesGuard],
-      },
-      {
+      }, {
         path: 'tables/:name',
         component: TablePage,
         canActivate: [MayReadTablesGuard],
@@ -59,13 +60,11 @@ const routes: Routes = [
             component: TableScriptTab,
           }
         ],
-      },
-      {
+      }, {
         path: 'streams',
         component: StreamsPage,
         pathMatch: 'full',
-      },
-      {
+      }, {
         path: 'streams/:name',
         component: StreamPage,
         children: [
@@ -89,13 +88,14 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class ArchiveRoutingModule { }
 
 export const routingComponents = [
   ArchiveOverviewPage,
+  GapsPage,
   StreamsPage,
   StreamPage,
   StreamColumnsTab,

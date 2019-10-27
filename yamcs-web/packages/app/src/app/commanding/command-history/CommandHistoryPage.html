@@ -47,7 +47,7 @@
             <app-select #intervalSelect
                         [options]="intervalOptions"
                         icon="access_time"
-                        (change)="updateInterval($event)"></app-select>
+                        formControlName="interval"></app-select>
             &nbsp;&nbsp;
             <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
               <input formControlName="customStart" type="datetime" style="width: 160px">

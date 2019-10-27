@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>Request playback</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <ng-container *ngIf="gaps.length > 1">
+      <label>
+        Merge tolerance (minutes)
+        <input type="number" formControlName="mergeTolerance">
+        <span class="hint">Gaps that are at least this close to each other, are merged.</span>
+      </label>
+      <br>
+    </ng-container>
+
+    <label>
+      Link<br>
+      <app-select formControlName="link" [options]="linkOptions$ | async">
+      </app-select>
+    </label>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button (click)="sendRequest()" color="primary" [disabled]="!form.valid">SEND REQUEST</button>
+</mat-dialog-actions>

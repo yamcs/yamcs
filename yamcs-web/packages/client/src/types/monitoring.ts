@@ -475,3 +475,27 @@ export interface ArchiveTag {
   description: string;
   color: string;
 }
+
+export interface Gap {
+  apid: number;
+  start: string;
+  stop: string;
+  startSequenceCount: number;
+  stopSequenceCount: number;
+  missingPacketCount: number;
+}
+
+export interface ListGapsResponse {
+  gaps: Gap[];
+  continuationToken?: string;
+}
+
+export interface PlaybackRange {
+  apid: number;
+  start: string;
+  stop: string;
+}
+
+export interface RequestPlaybackRequest {
+  ranges: PlaybackRange[];
+}

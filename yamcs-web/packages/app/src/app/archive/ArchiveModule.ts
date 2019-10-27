@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { ArchiveRoutingModule, routingComponents } from './ArchiveRoutingModule';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
+import { RequestPlaybackDialog } from './gaps/RequestPlaybackDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { ColumnValuePipe } from './pipes/ColumnValuePipe';
 import { StreamDataComponent } from './stream/StreamDataComponent';
@@ -12,6 +13,7 @@ import { TimelineTooltip } from './TimelineTooltip';
 const dialogComponents = [
   DownloadDumpDialog,
   JumpToDialog,
+  RequestPlaybackDialog,
   ShowEnumDialog,
 ];
 

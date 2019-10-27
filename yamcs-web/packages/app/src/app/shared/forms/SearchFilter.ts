@@ -12,7 +12,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => SearchFilter),
-      multi: true
+      multi: true,
     }
   ]
 })

@@ -79,7 +79,7 @@ export class EventsPage {
   ];
 
   severityOptions: Option[] = [
-    { id: 'INFO', label: 'Info level', selected: true },
+    { id: 'INFO', label: 'Info level' },
     { id: 'WATCH', label: 'Watch level' },
     { id: 'WARNING', label: 'Warning level' },
     { id: 'DISTRESS', label: 'Distress level' },
@@ -88,11 +88,11 @@ export class EventsPage {
   ];
 
   sourceOptions$ = new BehaviorSubject<Option[]>([
-    { id: 'ANY', label: 'Any source', selected: true },
+    { id: 'ANY', label: 'Any source' },
   ]);
 
   intervalOptions: Option[] = [
-    { id: 'PT1H', label: 'Last hour', selected: true },
+    { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
     { id: 'NO_LIMIT', label: 'No limit' },
@@ -156,7 +156,6 @@ export class EventsPage {
           {
             id: source,
             label: source,
-            selected: this.filterForm.get('source')!.value === source,
           }]);
       }
     });
@@ -211,23 +210,14 @@ export class EventsPage {
     }
     if (queryParams.has('severity')) {
       this.severity = queryParams.get('severity')!;
-      for (const option of this.severityOptions) {
-        option.selected = (option.id === this.severity);
-      }
       this.filterForm.get('severity')!.setValue(this.severity);
     }
     if (queryParams.has('source')) {
       this.source = queryParams.get('source')!;
-      for (const option of this.sourceOptions$.value) {
-        option.selected = (option.id === this.source);
-      }
       this.filterForm.get('source')!.setValue(this.source);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
-      for (const option of this.intervalOptions) {
-        option.selected = (option.id === this.appliedInterval);
-      }
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
         const customStart = queryParams.get('customStart')!;
@@ -255,10 +245,10 @@ export class EventsPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -361,18 +351,6 @@ export class EventsPage {
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
     this.preferenceStore.setVisibleColumns('events', displayedColumns);
-  }
-
-  updateSeverity(severity: string) {
-    this.filterForm.get('severity')!.setValue(severity);
-  }
-
-  updateSource(source: string) {
-    this.filterForm.get('source')!.setValue(source);
-  }
-
-  updateInterval(interval: string) {
-    this.filterForm.get('interval')!.setValue(interval);
   }
 
   mayWriteEvents() {

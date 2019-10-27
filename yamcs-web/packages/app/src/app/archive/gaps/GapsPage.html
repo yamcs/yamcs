@@ -1,0 +1,94 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Gaps
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            [disabled]="selection.isEmpty()"
+            (click)="openPlaybackDialog()">
+      <mat-icon>redo</mat-icon>
+      REQUEST PLAYBACK
+    </button>
+
+    <button mat-icon-button
+            matTooltip="Refresh view"
+            color="primary"
+            (click)="refreshView()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-instance-toolbar>
+
+  <div class="panel-content">
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table">
+
+      <ng-container cdkColumnDef="select">
+        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+          <input type="checkbox" (change)="$event ? masterToggle() : null"
+                 [checked]="selection.hasValue() && isAllSelected()">
+        </th>
+        <td mat-cell *cdkCellDef="let row" class="checkbox">
+          <input type="checkbox" (click)="$event.stopPropagation()"
+                 (change)="$event ? selection.toggle(row) : null"
+                 [checked]="selection.isSelected(row)">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="apid">
+        <th mat-header-cell *matHeaderCellDef>APID</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ gap.apid }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="start">
+        <th mat-header-cell *matHeaderCellDef>Start</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ (gap.start | datetime) || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="stop">
+        <th mat-header-cell *matHeaderCellDef>Stop</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ (gap.stop | datetime) || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="startSequence">
+        <th mat-header-cell *matHeaderCellDef>Start sequence</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ gap.startSequenceCount || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="stopSequence">
+        <th mat-header-cell *matHeaderCellDef>Stop sequence</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ gap.stopSequenceCount || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef class="vdiv" style="width: 100px">Duration</th>
+        <td mat-cell *matCellDef="let gap" class="vdiv">
+          {{ (gap.stop | deltaWith:gap.start:false) || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="packetCount">
+        <th mat-header-cell *matHeaderCellDef>Missing packets</th>
+        <td mat-cell *matCellDef="let gap">
+          {{ gap.missingPacketCount || '-' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row
+          *matRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
+    </table>
+  </div>
+</app-instance-page>

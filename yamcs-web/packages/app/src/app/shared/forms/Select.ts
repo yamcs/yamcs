@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, Input } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 
 export interface Option {
   id: string;
   label: string;
-  selected?: boolean;
   group?: boolean;
 }
 
@@ -12,8 +12,15 @@ export interface Option {
   selector: 'app-select',
   templateUrl: './Select.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => Select),
+      multi: true,
+    }
+  ]
 })
-export class Select implements OnChanges {
+export class Select implements ControlValueAccessor {
 
   @Input()
   options: Option[] = [];
@@ -21,32 +28,32 @@ export class Select implements OnChanges {
   @Input()
   icon: string;
 
-  @Output()
-  change = new EventEmitter<string>();
+  selected$ = new BehaviorSubject<string | null>(null);
 
-  selectedOption$ = new BehaviorSubject<Option | null>(null);
-
-  ngOnChanges() {
-    for (const option of this.options) {
-      if (option.selected) {
-        this.selectedOption$.next(option);
-      }
-    }
-  }
+  private onChange = (_: string | null) => { };
 
   public isSelected(id: string) {
-    const selectedOption = this.selectedOption$.value;
-    if (selectedOption !== null) {
-      return selectedOption.id === id;
-    }
-    return false;
+    return this.selected$.value === id;
   }
 
-  public select(id: string) {
+  writeValue(value: any) {
+    this.selected$.next(value);
+    this.onChange(value);
+  }
+
+  registerOnChange(fn: any) {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: any) {
+  }
+
+  getLabel(id: string) {
     const option = this.findOption(id);
     if (option) {
-      this.selectedOption$.next(option);
-      this.change.emit(option.id);
+      return option.label || option.id;
+    } else {
+      return id;
     }
   }
 

@@ -1,7 +1,7 @@
 <button [matMenuTriggerFor]="selMenu" class="ya-button">
   <mat-icon *ngIf="icon" class="icon12" style="vertical-align: middle">{{ icon }}</mat-icon>
-  <ng-container *ngIf="selectedOption$ | async as selectedOption">
-    {{ selectedOption.label }}
+  <ng-container *ngIf="selected$ | async as selected">
+    {{ getLabel(selected) }}
   </ng-container>
   <mat-icon class="icon12">arrow_drop_down</mat-icon>
 </button>
@@ -11,7 +11,7 @@
     <ng-container *ngFor="let option of options">
       <mat-divider *ngIf="option.group"></mat-divider>
       <button mat-menu-item
-              (click)="select(option.id)">
+              (click)="writeValue(option.id)">
         <mat-icon [style.visibility]="isSelected(option.id) ? 'visible' : 'hidden'">check</mat-icon>
         {{ option.label }}
       </button>

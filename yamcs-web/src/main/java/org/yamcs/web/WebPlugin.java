@@ -40,6 +40,7 @@ public class WebPlugin implements Plugin {
 
         Spec featuresSpec = new Spec();
         featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
+        featuresSpec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
         featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("features", OptionType.MAP)
                 .withSpec(featuresSpec)

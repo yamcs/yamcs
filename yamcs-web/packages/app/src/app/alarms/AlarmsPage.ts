@@ -34,7 +34,7 @@ export class AlarmsPage implements OnDestroy {
   selection = new SelectionModel<Alarm>(false, []);
 
   viewOptions: Option[] = [
-    { id: 'standard', label: 'Standard view (ack & unack)', selected: true },
+    { id: 'standard', label: 'Standard view (ack & unack)' },
     { id: 'unacknowledged', label: 'Unacknowledged alarms' },
     { id: 'acknowledged', label: 'Acknowledged alarms' },
     { id: 'shelved', label: 'Shelved alarms' },
@@ -121,9 +121,6 @@ export class AlarmsPage implements OnDestroy {
     if (queryParams.has('view')) {
       const view = queryParams.get('view')!;
       this.view$.next(view);
-      for (const option of this.viewOptions) {
-        option.selected = (option.id === view);
-      }
       this.filterForm.get('view')!.setValue(view);
     }
   }
@@ -180,10 +177,6 @@ export class AlarmsPage implements OnDestroy {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateView(view: string) {
-    this.filterForm.get('view')!.setValue(view);
   }
 
   ngOnDestroy() {
