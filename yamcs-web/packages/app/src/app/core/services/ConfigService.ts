@@ -18,7 +18,6 @@ export interface FeaturesConfig {
 
 export interface EventsConfig {
   extraColumns?: ExtraColumnInfo[];
-  displayedColumns?: string[];
 }
 
 export interface ExtraColumnInfo extends ColumnInfo {

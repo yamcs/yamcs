@@ -53,7 +53,6 @@ public class WebPlugin implements Plugin {
         extraColumnSpec.addOption("width", OptionType.STRING);
 
         Spec eventsSpec = new Spec();
-        eventsSpec.addOption("displayedColumns", OptionType.LIST).withElementType(OptionType.STRING);
         eventsSpec.addOption("extraColumns", OptionType.LIST).withElementType(OptionType.MAP).withSpec(extraColumnSpec);
         spec.addOption("events", OptionType.MAP).withSpec(eventsSpec);
 

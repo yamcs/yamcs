@@ -9,7 +9,6 @@ import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../animations';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, ExtraColumnInfo } from '../core/services/ConfigService';
-import { PreferenceStore } from '../core/services/PreferenceStore';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option, Select } from '../shared/forms/Select';
@@ -56,11 +55,11 @@ export class EventsPage {
   dataSource: EventsDataSource;
 
   columns: ColumnInfo[] = [
-    { id: 'severity', label: 'Severity' },
+    { id: 'severity', label: 'Severity', visible: true },
     { id: 'gentime', label: 'Generation Time', alwaysVisible: true },
     { id: 'message', label: 'Message', alwaysVisible: true },
-    { id: 'type', label: 'Type' },
-    { id: 'source', label: 'Source' },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'source', label: 'Source', visible: true },
     { id: 'rectime', label: 'Reception Time' },
     { id: 'seqNumber', label: 'Sequence Number' },
   ];
@@ -69,14 +68,6 @@ export class EventsPage {
    * Columns specific to a site
    */
   extraColumns: ExtraColumnInfo[] = [];
-
-  displayedColumns = [
-    'severity',
-    'gentime',
-    'message',
-    'type',
-    'source',
-  ];
 
   severityOptions: Option[] = [
     { id: 'INFO', label: 'Info level' },
@@ -110,7 +101,6 @@ export class EventsPage {
   constructor(
     private yamcs: YamcsService,
     private authService: AuthService,
-    private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
     configService: ConfigService,
     private router: Router,
@@ -132,21 +122,6 @@ export class EventsPage {
           }
         }
       }
-      if (eventConfig.displayedColumns) {
-        this.displayedColumns = eventConfig.displayedColumns;
-      }
-    }
-
-    const cols = (preferenceStore.getVisibleColumns('events') || []).filter(el => {
-      // Filter out extraColumns (maybe from another instance - we should maybe store this per instance)
-      for (const column of this.columns) {
-        if (column.id === el) {
-          return true;
-        }
-      }
-    });
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
     }
 
     yamcs.getInstanceClient()!.getEventSources().then(sources => {
@@ -346,11 +321,6 @@ export class EventsPage {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('events', displayedColumns);
   }
 
   mayWriteEvents() {

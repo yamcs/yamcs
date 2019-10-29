@@ -6,7 +6,6 @@ import { GetCommandHistoryOptions, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
@@ -18,7 +17,6 @@ import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
 const defaultInterval = 'PT1H';
-const deprecatedCols = ['stages', 'transmissionConstraints', 'release', 'sequenceNumber', 'verifications'];
 
 @Component({
   templateUrl: './CommandHistoryPage.html',
@@ -62,26 +60,14 @@ export class CommandHistoryPage {
   columns: ColumnInfo[] = [
     { id: 'commandId', label: 'ID' },
     { id: 'generationTimeUTC', label: 'Time', alwaysVisible: true },
-    { id: 'comment', label: 'Comment' },
+    { id: 'comment', label: 'Comment', visible: true },
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
-    { id: 'queued', label: 'Queued' },
-    { id: 'released', label: 'Released' },
-    { id: 'sent', label: 'Sent' },
-    { id: 'acknowledgments', label: 'Extra acknowledgments' },
-    { id: 'completion', label: 'Completion' },
-  ];
-
-  displayedColumns = [
-    // 'significance', // not stored in cmdhist?
-    'generationTimeUTC',
-    'comment',
-    'command',
-    'queued',
-    'released',
-    'sent',
-    'acknowledgments',
-    'completion',
+    { id: 'queued', label: 'Queued', visible: true },
+    { id: 'released', label: 'Released', visible: true },
+    { id: 'sent', label: 'Sent', visible: true },
+    { id: 'acknowledgments', label: 'Extra acknowledgments', visible: true },
+    { id: 'completion', label: 'Completion', visible: true },
   ];
 
   intervalOptions: Option[] = [
@@ -98,7 +84,6 @@ export class CommandHistoryPage {
 
   constructor(
     private yamcs: YamcsService,
-    private preferenceStore: PreferenceStore,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
@@ -106,11 +91,6 @@ export class CommandHistoryPage {
   ) {
     title.setTitle('Command History');
     this.instance = yamcs.getInstance();
-
-    const cols = preferenceStore.getVisibleColumns('cmdhist', deprecatedCols);
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 
@@ -238,11 +218,6 @@ export class CommandHistoryPage {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('cmdhist', displayedColumns);
   }
 
   selectRecord(rec: CommandHistoryRecord) {

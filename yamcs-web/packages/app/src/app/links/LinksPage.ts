@@ -7,7 +7,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Instance, Link, LinkEvent } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
-import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
 import { LinkItem } from './LinkItem';
@@ -31,18 +30,9 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     { id: 'status', label: '', alwaysVisible: true },
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'className', label: 'Class Name' },
-    { id: 'in', label: 'In Count' },
-    { id: 'out', label: 'Out Count' },
+    { id: 'in', label: 'In Count', visible: true },
+    { id: 'out', label: 'Out Count', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
-  ];
-
-  displayedColumns = [
-    'select',
-    'status',
-    'name',
-    'in',
-    'out',
-    'actions'
   ];
 
   dataSource = new MatTableDataSource<LinkItem>();
@@ -60,14 +50,9 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private changeDetection: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
-    private preferenceStore: PreferenceStore,
   ) {
     title.setTitle('Links');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('links');
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
 
     this.dataSource.filterPredicate = (item, filter) => {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
@@ -178,7 +163,6 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     switch (evt.type) {
       case 'REGISTERED':
       case 'UPDATED':
-        // console.log('got ' + evt.linkInfo.name);
         this.itemsByName[evt.linkInfo.name].link = evt.linkInfo;
         this.updateDataSource();
         break;
@@ -273,11 +257,6 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('links', displayedColumns);
   }
 
   ngOnDestroy() {

@@ -42,9 +42,9 @@
                              placeholder="Filter by text search">
           </app-search-filter>
           &nbsp;&nbsp;
-          <app-column-chooser [columns]="columns"
-                              [displayedColumns]="displayedColumns"
-                              (change)="updateColumns($event)"></app-column-chooser>
+          <app-column-chooser #columnChooser
+                              [columns]="columns"
+                              preferenceKey="events"></app-column-chooser>
         </div>
       </div>
       <div class="filter-bar">
@@ -160,8 +160,8 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+      <tr mat-header-row *cdkHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
           [@rowAnimation]="row.animate"
           [ngClass]="row.severity"></tr>
     </table>

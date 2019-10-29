@@ -46,9 +46,9 @@
                            placeholder="Filter links">
         </app-search-filter>
         &nbsp;&nbsp;
-        <app-column-chooser [columns]="columns"
-                            [displayedColumns]="displayedColumns"
-                            (change)="updateColumns($event)"></app-column-chooser>
+        <app-column-chooser #columnChooser
+                            [columns]="columns"
+                            preferenceKey="links"></app-column-chooser>
       </div>
       <table mat-table
              [dataSource]="dataSource"
@@ -144,8 +144,8 @@
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="toggleOne(row)"
             [class.selected]="selection.isSelected(row)"></tr>
       </table>

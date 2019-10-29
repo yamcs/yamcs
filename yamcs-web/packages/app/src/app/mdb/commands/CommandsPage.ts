@@ -4,7 +4,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetCommandsOptions, Instance } from '@yamcs/client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { CommandsDataSource } from './CommandsDataSource';
@@ -31,30 +30,19 @@ export class CommandsPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'significance', label: 'Significance' },
-    { id: 'abstract', label: 'Abstract' },
+    { id: 'significance', label: 'Significance', visible: true },
+    { id: 'abstract', label: 'Abstract', visible: true },
     { id: 'shortDescription', label: 'Description' },
-  ];
-
-  displayedColumns = [
-    'name',
-    'significance',
-    'abstract',
   ];
 
   constructor(
     yamcs: YamcsService,
     title: Title,
-    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Commands');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('commands');
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
     this.dataSource = new CommandsDataSource(yamcs);
   }
 
@@ -100,10 +88,5 @@ export class CommandsPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('commands', displayedColumns);
   }
 }

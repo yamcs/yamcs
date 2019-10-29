@@ -4,7 +4,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetParametersOptions, Instance } from '@yamcs/client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
@@ -33,31 +32,20 @@ export class ParametersPage implements AfterViewInit {
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'rawValue', label: 'Raw Value' },
-    { id: 'engValue', label: 'Value' },
+    { id: 'engValue', label: 'Value', visible: true },
     { id: 'dataSource', label: 'Data Source' },
-    { id: 'shortDescription', label: 'Description' },
-  ];
-
-  displayedColumns = [
-    'name',
-    'engValue',
-    'shortDescription',
+    { id: 'shortDescription', label: 'Description', visible: true },
   ];
 
   constructor(
     yamcs: YamcsService,
     title: Title,
-    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
     synchronizer: Synchronizer,
   ) {
     title.setTitle('Parameters');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('parameters');
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
     this.dataSource = new ParametersDataSource(yamcs, synchronizer);
   }
 
@@ -103,10 +91,5 @@ export class ParametersPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('parameters', displayedColumns);
   }
 }

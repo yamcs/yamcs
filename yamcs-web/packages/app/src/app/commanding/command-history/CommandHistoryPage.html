@@ -49,9 +49,9 @@
                                placeholder="Filter by text search">
             </app-search-filter>
             &nbsp;&nbsp;
-            <app-column-chooser [columns]="columns"
-                                [displayedColumns]="displayedColumns"
-                                (change)="updateColumns($event)"></app-column-chooser>
+            <app-column-chooser #columnChooser
+                                [columns]="columns"
+                                preferenceKey="cmdhist"></app-column-chooser>
           </div>
         </div>
         <div class="filter-bar">
@@ -134,16 +134,6 @@
           <th mat-header-cell *matHeaderCellDef style="width: 350px">Command</th>
           <td mat-cell *matCellDef="let item">
             {{ item.commandName }}
-            <button mat-stroked-button class="expandable"
-                    (click)="item.expanded = !item.expanded; $event.stopPropagation()"
-                    *ngIf="item.userAssignments.length">
-              <mat-icon>more_horiz</mat-icon>
-            </button><br>
-            <ng-container *ngIf="item.expanded">
-              <ng-container *ngFor="let assignment of item.userAssignments">
-                &nbsp;&bull; {{ assignment.name }}: {{ assignment.value | value }}<br>
-              </ng-container>
-            </ng-container>
           </td>
         </ng-container>
 
@@ -217,8 +207,8 @@
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="selectRecord(row)"
             [@rowAnimation]="row.animate"
             [class.selected]="(selectedRecord$ | async) === row"
