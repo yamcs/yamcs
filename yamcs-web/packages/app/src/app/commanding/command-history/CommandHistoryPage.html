@@ -2,6 +2,18 @@
   <app-instance-toolbar [hasDetailPane]="true">
     Command History
     &nbsp;&nbsp;&nbsp;
+    <mat-menu #exportMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="printableContent.print()">
+        <mat-icon>print</mat-icon>
+        Print report
+      </button>
+    </mat-menu>
+    <button mat-button
+            [matMenuTriggerFor]="exportMenu"
+            color="primary">
+      <mat-icon>save_alt</mat-icon>
+      EXPORT
+    </button>
     <button mat-button
             matTooltip="Jump to now"
             color="primary"
@@ -201,6 +213,7 @@
             <span *ngIf="item.completed?.status === 'NOK'" [matTooltip]="item.completed?.message">
               FAILURE
             </span>
+            <ng-container *ngIf="!item.completed">-</ng-container>
           </td>
         </ng-container>
 
@@ -221,6 +234,17 @@
                 (click)="loadMoreData()">Load More</button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
+
+      <app-printable-content #printableContent headerTitle="Command Report">
+        <ng-container *ngIf="dataSource">
+          <ng-container *ngIf="dataSource.records$ | async as records">
+            <ng-container *ngFor="let record of records | reverse">
+              <app-command-detail2 [command]="record"></app-command-detail2>
+              <div style="page-break-after: always;"></div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </app-printable-content>
     </div>
   </div>
 </app-instance-page>

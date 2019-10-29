@@ -72,7 +72,7 @@ export class LayoutPage implements OnDestroy {
       const username = this.authService.getUser()!.getName();
       const objectName = `layouts/${this.layoutName}`;
       this.storageClient.deleteObject('_global', `user.${username}`, objectName).then(() => {
-        this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);
+        this.router.navigateByUrl(`/telemetry/layouts?instance=${this.instance.name}`);
       });
     }
   }

@@ -24,7 +24,6 @@ import { Frame } from './layouts/Frame';
 import { FrameHost } from './layouts/FrameHost';
 import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
-import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { ColorPalette } from './parameters/ColorPalette';
 import { CompareParameterDialog } from './parameters/CompareParameterDialog';
 import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
@@ -36,6 +35,7 @@ import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
+import { routingComponents, TelemetryRoutingModule } from './TelemetryRoutingModule';
 
 const dialogComponents = [
   CompareParameterDialog,
@@ -76,7 +76,7 @@ const viewers = [
 @NgModule({
   imports: [
     SharedModule,
-    MonitorRoutingModule,
+    TelemetryRoutingModule,
   ],
   declarations: [
     routingComponents,
@@ -102,5 +102,5 @@ const viewers = [
     Frame,
   ]
 })
-export class MonitorModule {
+export class TelemetryModule {
 }

@@ -41,19 +41,19 @@
                              [active]="telemetryActive"
                              [expanded]="telemetryExpanded"
                              (toggle)="toggleTelemetryGroup()">
-        <app-sidebar-nav-item routerLink="/monitor/parameters"
+        <app-sidebar-nav-item routerLink="/telemetry/parameters"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Parameters
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/monitor/displays"
+        <app-sidebar-nav-item routerLink="/telemetry/displays"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Displays
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="config.features.layouts"
-                              routerLink="/monitor/layouts"
+                              routerLink="/telemetry/layouts"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Layouts

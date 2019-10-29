@@ -6,14 +6,6 @@ The MDB module within the Yamcs web interface provides a set of views on the Mis
 The MDB Module is always visited for a specific Yamcs instance. The MDB for an instance aggregates the content of the entire MDB loader tree for that instance.
 
 
-Space Systems
--------------
-
-Space systems represent the highest conceptual entity of the MDB. Space systems act like folders and may contain other space systems, parameters, containers and others.
-
-The Space Systems view shows a flat list of all space systems in the MDB. By clicking on one of the entires, you can navigate to a detail view for the space system which shows the parameters, containers, commands and algorithms that directly belong to that space system.
-
-
 Parameters
 ----------
 

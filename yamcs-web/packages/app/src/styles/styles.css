@@ -212,6 +212,10 @@ a.ya-link.ya-header-link {
   font-weight: 600;
 }
 
+.ya-menu.mat-menu-panel {
+  min-height: 24px;
+}
+
 .ya-form label {
   margin: -3px 0 20px 0;
   font-weight: 500;

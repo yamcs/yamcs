@@ -10,6 +10,7 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
+import { PrintableContent } from '../../shared/print/PrintableContent';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { subtractDuration } from '../../shared/utils';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
@@ -33,6 +34,9 @@ export class CommandHistoryPage {
 
   @ViewChild('intervalSelect', { static: false })
   intervalSelect: Select;
+
+  @ViewChild('printableContent', { static: false })
+  printableContent: PrintableContent;
 
   validStart: Date | null;
   validStop: Date | null;

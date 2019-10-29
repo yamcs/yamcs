@@ -2,7 +2,7 @@
   <app-instance-toolbar>
     <ng-container *ngFor="let alias of parameter.alias">
       <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-        <a routerLink="/monitor/parameters"
+        <a routerLink="/telemetry/parameters"
             [queryParams]="{instance: instance.name, filter: alias.namespace}"
             class="ya-link ya-header-link">
           {{ alias.namespace }}

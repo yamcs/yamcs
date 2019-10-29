@@ -60,7 +60,7 @@
           </tr>
           <tr *ngFor="let name of value.aggregateValue!.name; index as i">
             <td>
-              <a [routerLink]="['/monitor/parameters', parameter.qualifiedName + '.' + name]"
+              <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + '.' + name]"
                  [queryParams]="{instance: instance.name}">{{ name }}</a>
             </td>
             <td>{{ value.aggregateValue!.value[i] | value }}</td>

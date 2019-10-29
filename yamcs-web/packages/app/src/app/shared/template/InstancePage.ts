@@ -69,7 +69,7 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/archive.*/)) {
         this.archiveActive = true;
         this.archiveExpanded = true;
-      } else if (url.match(/\/monitor.*/)) {
+      } else if (url.match(/\/telemetry.*/)) {
         this.telemetryActive = true;
         this.telemetryExpanded = true;
       }
@@ -97,7 +97,7 @@ export class InstancePage implements OnInit, OnDestroy {
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     const instance = this.yamcs.getInstance();
     this.searchControl.setValue('');
-    this.router.navigate(['/monitor/parameters/', event.option.value], {
+    this.router.navigate(['/telemetry/parameters/', event.option.value], {
       queryParams: { instance: instance.name, }
     });
   }

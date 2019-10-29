@@ -11,17 +11,17 @@ export class DefaultNavigationHandler implements NavigationHandler {
     private objectName: string,
     private instance: string,
     private router: Router,
-  ) {}
+  ) { }
 
   getBaseId() {
     return this.objectName;
   }
 
   openDisplay(options: OpenDisplayCommandOptions) {
-    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${this.instance}`);
+    this.router.navigateByUrl(`/telemetry/displays/files/${options.target}?instance=${this.instance}`);
   }
 
   closeDisplay() {
-    this.router.navigateByUrl(`/monitor/displays/browse?instance=${this.instance}`);
+    this.router.navigateByUrl(`/telemetry/displays/browse?instance=${this.instance}`);
   }
 }

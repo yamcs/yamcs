@@ -40,7 +40,7 @@ export class CreateLayoutDialog {
     const username = this.authService.getUser()!.getName();
     this.storageClient.uploadObject('_global', `user.${username}`, objectName, objectValue).then(() => {
       this.dialogRef.close();
-      this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);
+      this.router.navigateByUrl(`/telemetry/layouts/${this.name.value}?instance=${instance.name}`);
     });
   }
 }

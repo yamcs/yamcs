@@ -99,8 +99,8 @@ export class DisplayFolderPage implements OnDestroy {
 
   masterToggle() {
     this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: BrowseItem) {
@@ -119,7 +119,7 @@ export class DisplayFolderPage implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.router.navigateByUrl(`/monitor/displays/files/${result}?instance=${this.instance.name}`);
+        this.router.navigateByUrl(`/telemetry/displays/files/${result}?instance=${this.instance.name}`);
       }
     });
   }
@@ -257,7 +257,7 @@ export class DisplayFolderPage implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: '/monitor/displays/browse' + path,
+        route: '/telemetry/displays/browse' + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

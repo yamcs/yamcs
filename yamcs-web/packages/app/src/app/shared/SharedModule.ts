@@ -57,9 +57,11 @@ import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
+import { ReversePipe } from './pipes/ReversePipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
+import { PrintableContent } from './print/PrintableContent';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { ActionLink } from './template/ActionLink';
@@ -160,6 +162,7 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
+  PrintableContent,
   SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,
@@ -186,6 +189,7 @@ const pipes = [
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
+  ReversePipe,
   SuperuserPipe,
   UnitsPipe,
   ValuePipe,

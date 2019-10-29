@@ -98,10 +98,10 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.objectName = objectName;
     const idx = this.objectName.lastIndexOf('/');
     if (idx === -1) {
-      this.folderLink = '/monitor/displays/browse/';
+      this.folderLink = '/telemetry/displays/browse/';
       this.filename = this.objectName;
     } else {
-      this.folderLink = '/monitor/displays/browse/' + this.objectName.substring(0, idx);
+      this.folderLink = '/telemetry/displays/browse/' + this.objectName.substring(0, idx);
       this.filename = this.objectName.substring(idx);
     }
 
