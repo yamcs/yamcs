@@ -246,6 +246,11 @@ a.ya-link.ya-header-link {
   height: 24px;
   padding: 0 7px 1px;
   box-sizing: border-box;
+  outline: none;
+}
+
+.ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus {
+  border-color: lightskyblue;
 }
 
 .ya-form input[type="radio"] {
@@ -352,7 +357,7 @@ button.expandable {
   padding: 0 8px;
 }
 
-.hide {
+.hide, .noDisplay {
   display: none;
 }
 
@@ -368,6 +373,27 @@ button.expandable {
 .mat-toolbar.top .mat-toolbar-row {
   height: 48px;
   font-weight: 400;
+}
+
+button.ya-button {
+  height: 24px;
+  border: 1px solid #d3d3d3;
+  background-color: #fff;
+  outline: none;
+  color: rgba(0, 0, 0, .75);
+  margin: 0;
+  border-radius: 1px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+}
+
+button.ya-button:active {
+  border-color: #bbb;
+  color: rgba(0, 0, 0, .75);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04))
+}
+
+button.ya-button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .shake {

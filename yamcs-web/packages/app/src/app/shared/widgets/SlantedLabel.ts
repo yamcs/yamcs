@@ -9,6 +9,7 @@ const slopeWidth = 10;
     '[class.shakeIcon]': 'shake',
     '[class.highlight]': 'highlight',
     '[class.selectable]': 'selectable',
+    '[class.spinIcon]': 'spin',
   },
   template: `
     <div id="wrapper">
@@ -45,6 +46,9 @@ export class SlantedLabel implements AfterViewInit {
 
   @Input()
   highlight = false;
+
+  @Input()
+  spin = false;
 
   @Input()
   selectable = false;

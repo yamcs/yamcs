@@ -38,7 +38,7 @@ export class AppComponent implements OnDestroy {
   userSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
     router: Router,
     route: ActivatedRoute,
     private authService: AuthService,
@@ -104,6 +104,13 @@ export class AppComponent implements OnDestroy {
     } else {
       this.preferenceStore.setShowSidebar(true);
     }
+  }
+
+  leaveReplay() {
+    const instance = this.yamcs.getInstance()!.name;
+    const clientId = this.yamcs.getClientId();
+    // Switch to the 'default' processor of the currently connected instance
+    this.yamcs.yamcsClient.editClient(clientId, { instance });
   }
 
   logout() {

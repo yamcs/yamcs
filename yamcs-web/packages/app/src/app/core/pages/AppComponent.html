@@ -1,5 +1,6 @@
 <mat-toolbar color="primary">
-  <mat-toolbar-row class="app-bar">
+  <mat-toolbar-row class="app-bar"
+                   [class.replay]="(connectionInfo$ | async)?.processor?.replay">
     <button mat-icon-button
             *ngIf="showMenuToggle$ | async"
             (click)="toggleSidebar()">
@@ -17,12 +18,27 @@
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
-
     <app-connected-label [connected]="connected$ | async"
                          [tag]="tag"
                          style="margin-top: 8px"></app-connected-label>
 
-    <app-alarm-label *ngIf="connectionInfo$ | async"
+    <mat-menu #replayMenu="matMenu" class="ya-menu" overlapTrigger="false">
+      <button mat-menu-item (click)="leaveReplay()">
+        <mat-icon>exit_to_app</mat-icon>
+        Leave replay
+      </button>
+    </mat-menu>
+    <div style="display: inline-block; margin-top: 8px" [matMenuTriggerFor]="replayMenu">
+      <app-slanted-label *ngIf="(connectionInfo$ | async)?.processor?.replay"
+                         color="white"
+                         iconColor="darkviolet"
+                         icon="ondemand_video"
+                         [selectable]="true">
+        REPLAY
+      </app-slanted-label>
+    </div>
+
+    <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms"
                      style="margin-top: 8px"
                      matTooltip="Alarm State"></app-alarm-label>
 

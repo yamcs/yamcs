@@ -1,7 +1,10 @@
 <div style="width: 100%; text-align: center">
-  <div style="display: inline-block; width: 300px; padding-top: 50px">
-    <mat-card>
+  <div class="frame">
+    <div class="header" *ngIf="headerTitle">
+      {{ headerTitle }}
+    </div>
+    <div class="body">
       <ng-content></ng-content>
-    </mat-card>
+    </div>
   </div>
 </div>
