@@ -61,7 +61,8 @@ import { ReversePipe } from './pipes/ReversePipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
-import { PrintableContent } from './print/PrintableContent';
+import { PrintableDirective } from './print/PrintableDirective';
+import { PrintZone } from './print/PrintZone';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { ActionLink } from './template/ActionLink';
@@ -132,6 +133,7 @@ const materialModules = [
 ];
 
 const sharedDirectives = [
+  PrintableDirective,
   YaDataTableComponent,
   YaSimpleTableComponent,
   YaTableComponent,
@@ -162,7 +164,7 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
-  PrintableContent,
+  PrintZone,
   SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,

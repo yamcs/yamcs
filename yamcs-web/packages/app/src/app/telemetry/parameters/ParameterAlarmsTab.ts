@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { GetAlarmsOptions } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option } from '../../shared/forms/Select';
 import * as utils from '../../shared/utils';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
 
@@ -16,6 +17,13 @@ const defaultInterval = 'P1M';
 export class ParameterAlarmsTab {
 
   qualifiedName: string;
+
+  intervalOptions: Option[] = [
+    { id: 'P1M', label: 'Last Month' },
+    { id: 'P1Y', label: 'Last Year' },
+    { id: 'NO_LIMIT', label: 'No Limit' },
+    { id: 'CUSTOM', label: 'Custom' },
+  ];
 
   validStart: Date | null;
   validStop: Date | null;

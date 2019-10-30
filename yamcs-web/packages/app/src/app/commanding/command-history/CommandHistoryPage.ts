@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,13 +6,14 @@ import { GetCommandHistoryOptions, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
+import { PrintService } from '../../core/services/PrintService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
-import { PrintableContent } from '../../shared/print/PrintableContent';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { subtractDuration } from '../../shared/utils';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
+import { CommandHistoryPrintable } from './CommandHistoryPrintable';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
@@ -32,9 +33,6 @@ export class CommandHistoryPage {
 
   @ViewChild('intervalSelect', { static: false })
   intervalSelect: Select;
-
-  @ViewChild('printableContent', { static: false })
-  printableContent: PrintableContent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -86,6 +84,8 @@ export class CommandHistoryPage {
     private yamcs: YamcsService,
     private router: Router,
     private route: ActivatedRoute,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private printService: PrintService,
     title: Title,
     synchronizer: Synchronizer,
   ) {
@@ -222,5 +222,11 @@ export class CommandHistoryPage {
 
   selectRecord(rec: CommandHistoryRecord) {
     this.selectedRecord$.next(rec);
+  }
+
+  printReport() {
+    const data = this.dataSource.records$.value.slice().reverse();
+    const factory = this.componentFactoryResolver.resolveComponentFactory(CommandHistoryPrintable);
+    this.printService.printComponent(factory, 'Command Report', data);
   }
 }

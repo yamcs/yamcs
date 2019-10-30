@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option } from '../../shared/forms/Select';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
 const defaultInterval = 'PT1H';
@@ -16,6 +17,14 @@ const defaultInterval = 'PT1H';
 export class ParameterDataTab {
 
   qualifiedName: string;
+
+  intervalOptions: Option[] = [
+    { id: 'PT1H', label: 'Last Hour' },
+    { id: 'PT6H', label: 'Last 6 Hours' },
+    { id: 'P1D', label: 'Last 24 Hours' },
+    { id: 'NO_LIMIT', label: 'No Limit' },
+    { id: 'CUSTOM', label: 'Custom' },
+  ];
 
   validStart: Date | null;
   validStop: Date | null;

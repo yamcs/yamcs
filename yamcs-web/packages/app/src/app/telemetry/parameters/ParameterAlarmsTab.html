@@ -3,13 +3,9 @@
     <form [formGroup]="filter">
       <div class="filter-bar">
         <div class="vmiddle" style="flex: 1 1 0%">
-          <mat-icon class="icon14">access_time</mat-icon>&nbsp;
-          <select formControlName="interval">
-            <option value="P1M">Last Month</option>
-            <option value="P1Y">Last Year</option>
-            <option value="NO_LIMIT">No Limit</option>
-            <option value="CUSTOM">Custom</option>
-          </select>
+          <app-select formControlName="interval" [options]="intervalOptions" icon="access_time">
+          </app-select>
+          &nbsp;&nbsp;
 
           <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
             <input formControlName="customStart" type="datetime" style="width: 160px">

@@ -396,6 +396,10 @@ button.ya-button:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+button.ya-button:disabled {
+  color: rgba(0, 0, 0, .25);
+}
+
 .shake {
   animation: yshake 0.82s infinite cubic-bezier(.36, .07, .19, .97) both;
   transform: translate3d(0, 0, 0);

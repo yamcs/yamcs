@@ -3,14 +3,9 @@
     <form [formGroup]="filter">
       <div class="filter-bar">
         <div class="vmiddle" style="flex: 1 1 0%">
-          <mat-icon class="icon14">access_time</mat-icon>&nbsp;
-          <select formControlName="interval">
-            <option value="PT1H">Last Hour</option>
-            <option value="PT6H">Last 6 Hours</option>
-            <option value="P1D">Last 24 Hours</option>
-            <option value="NO_LIMIT">No Limit</option>
-            <option value="CUSTOM">Custom</option>
-          </select>
+          <app-select icon="access_time" formControlName="interval" [options]="intervalOptions">
+          </app-select>
+          &nbsp;&nbsp;
 
           <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
             <input formControlName="customStart" type="datetime" style="width: 160px">
@@ -30,7 +25,7 @@
         </div>
         <div style="flex: 1 1 0%; text-align: right">
           <app-action-link icon="file_download"
-                          [link]="downloadURL$ | async">Download Data</app-action-link>
+                           [link]="downloadURL$ | async">Download Data</app-action-link>
         </div>
       </div>
     </form>
