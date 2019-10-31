@@ -29,6 +29,16 @@
       </app-detail-toolbar>
       <div style="padding: 0 16px">
         <app-command-detail2 [command]="selectedRecord"></app-command-detail2>
+        <ng-container>
+          <br>
+          <mat-divider></mat-divider>
+          <br>
+          <button class="ya-button"
+                  [routerLink]="['/commanding/send', selectedRecord.commandName]"
+                  [queryParams]="{instance: instance.name, template: (selectedRecord.commandId | commandId)}">
+            Resend
+          </button>
+        </ng-container>
         <p>&nbsp;</p>
       </div>
     </ng-container>
@@ -48,7 +58,6 @@
             <app-search-filter formControlName="filter"
                                placeholder="Filter by text search">
             </app-search-filter>
-            &nbsp;&nbsp;
             <app-column-chooser #columnChooser
                                 [columns]="columns"
                                 preferenceKey="cmdhist"></app-column-chooser>
@@ -60,11 +69,9 @@
                         [options]="intervalOptions"
                         icon="access_time"
                         formControlName="interval"></app-select>
-            &nbsp;&nbsp;
             <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-              <input formControlName="customStart" type="datetime" style="width: 160px">
-              <input formControlName="customStop" type="datetime" style="width: 160px">
-              &nbsp;&nbsp;
+              <app-date-time formControlName="customStart"></app-date-time>
+              <app-date-time formControlName="customStop"></app-date-time>
               <button (click)="applyCustomDates()"
                       class="ya-button"
                       [disabled]="filterForm.invalid">Apply</button>
@@ -75,7 +82,6 @@
               </button>
             </ng-container>
 
-            &nbsp;&nbsp;
             <app-dots *ngIf="dataSource.loading$ | async">
             </app-dots>
           </div>

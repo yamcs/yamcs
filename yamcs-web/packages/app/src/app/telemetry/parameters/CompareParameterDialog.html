@@ -2,8 +2,8 @@
   <label>
     Search parameter for comparison
     <input type="text"
-          [formControl]="parameter"
-          [matAutocomplete]="auto">
+           [formControl]="parameter"
+           [matAutocomplete]="auto">
     <mat-autocomplete class="ya-autocomplete" #auto>
       <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
         {{ option.qualifiedName }}
@@ -18,10 +18,9 @@
   <br>
   <label class="mat-typography">Thickness</label>
   <app-thickness #thickness [color]="palette.selectedColor"></app-thickness>
-  <br>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-button (click)="select()" color="primary" [disabled]="!parameter.valid">ADD</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="select()" [disabled]="!parameter.valid">ADD</button>
 </mat-dialog-actions>

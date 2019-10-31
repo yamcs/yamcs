@@ -1,8 +1,9 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
 
 @Component({
@@ -11,37 +12,33 @@ import { subtractDuration } from '../../shared/utils';
 })
 export class ExportArchiveDataDialog implements OnDestroy {
 
-  private startValueChangeSubscription: Subscription;
-  private stopValueChangeSubscription: Subscription;
+  private formChangeSubscription: Subscription;
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  start = new FormControl(null, [
-    Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-  ]);
-  stop = new FormControl(null, [
-    Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-  ]);
+  form = new FormGroup({
+    start: new FormControl(null, Validators.required),
+    stop: new FormControl(null, Validators.required),
+  });
 
   constructor(
     private dialogRef: MatDialogRef<ExportArchiveDataDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) private data: any,
   ) {
-    if (this.data.start && this.data.stop) {
-      this.start.setValue(this.data.start.toISOString());
-      this.stop.setValue(this.data.stop.toISOString());
-    } else {
-      const stop = new Date();
-      const start = subtractDuration(stop, 'PT1H');
-      this.start.setValue(start.toISOString());
-      this.stop.setValue(stop.toISOString());
+    let start = data.start;
+    let stop = data.stop;
+    if (!start || !stop) {
+      stop = new Date();
+      start = subtractDuration(stop, 'PT1H');
     }
 
-    this.startValueChangeSubscription = this.start.valueChanges.subscribe(() => {
-      this.updateURL();
+    this.form.setValue({
+      start: utils.printLocalDate(start, 'hhmm'),
+      stop: utils.printLocalDate(stop, 'hhmm'),
     });
-    this.stopValueChangeSubscription = this.stop.valueChanges.subscribe(() => {
+
+    this.formChangeSubscription = this.form.valueChanges.subscribe(() => {
       this.updateURL();
     });
 
@@ -49,26 +46,25 @@ export class ExportArchiveDataDialog implements OnDestroy {
   }
 
   closeDialog() {
-    if (this.start.valid && this.stop.valid) {
-      this.dialogRef.close(true);
-    }
+    this.dialogRef.close(true);
   }
 
   private updateURL() {
-    const url = this.yamcs.getInstanceClient()!.getParameterValuesDownloadURL({
-      start: this.start.value,
-      stop: this.stop.value,
-      parameters: this.data.parameterIds,
-    });
-    this.downloadURL$.next(url);
+    if (this.form.valid) {
+      const url = this.yamcs.getInstanceClient()!.getParameterValuesDownloadURL({
+        start: utils.toISOString(this.form.value['start']),
+        stop: utils.toISOString(this.form.value['stop']),
+        parameters: this.data.parameterIds,
+      });
+      this.downloadURL$.next(url);
+    } else {
+      this.downloadURL$.next(null);
+    }
   }
 
   ngOnDestroy() {
-    if (this.startValueChangeSubscription) {
-      this.startValueChangeSubscription.unsubscribe();
-    }
-    if (this.stopValueChangeSubscription) {
-      this.stopValueChangeSubscription.unsubscribe();
+    if (this.formChangeSubscription) {
+      this.formChangeSubscription.unsubscribe();
     }
   }
 }

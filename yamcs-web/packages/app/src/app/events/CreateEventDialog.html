@@ -21,13 +21,12 @@
     <br>
     <label>
       Event time
-      <input type="text" formControlName="time">
+      <app-date-time formControlName="time" step="1"></app-date-time>
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">SAVE</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()" [disabled]="!form.valid">SAVE</button>
 </mat-dialog-actions>

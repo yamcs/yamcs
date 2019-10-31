@@ -1,0 +1,21 @@
+.date-time-input {
+  position: relative;
+  display: inline-block;
+}
+
+.date-time-input input {
+  padding-left: 24px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.cal {
+  position: absolute;
+  top: 2px;
+  left: 0;
+}
+
+.cal .material-icons {
+  color: darkgrey;
+  padding: 3px;
+}

@@ -13,8 +13,8 @@
         </ng-container>
 
         <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-                [ngClass]="{selected: (row === (selectedBucket$ | async))}"
-                (click)="selectBucket(row)"></tr>
+            [ngClass]="{selected: (row === (selectedBucket$ | async))}"
+            (click)="selectBucket(row)"></tr>
       </table>
     </div>
     <div class="object-table-wrapper">

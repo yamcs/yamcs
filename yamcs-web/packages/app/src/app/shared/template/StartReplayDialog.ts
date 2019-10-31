@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
+import * as utils from '../../shared/utils';
 import { generateRandomName } from '../../shared/utils';
 
 @Component({
@@ -19,34 +20,33 @@ export class StartReplayDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
 
-    let initialStart = yamcs.getMissionTime().toISOString();
-    let initialStop = '';
+    let initialStart = yamcs.getMissionTime();
+    let initialStop;
 
     if (this.data) {
       if (this.data.start) {
-        initialStart = this.data.start.toISOString();
+        initialStart = this.data.start;
       }
       if (this.data.stop) {
-        initialStop = this.data.stop.toISOString();
+        initialStop = this.data.stop;
       }
     }
 
     this.form = formBuilder.group({
       name: [generateRandomName(), Validators.required],
-      start: [initialStart, [
+      start: [utils.printLocalDate(initialStart, 'hhmm'), [
         Validators.required,
-        Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       ]],
-      stop: [initialStop, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
+      stop: [utils.printLocalDate(initialStop, 'hhmm')],
     });
   }
 
   start() {
     const replayConfig: { [key: string]: any } = {
-      utcStart: this.form.value.start
+      utcStart: utils.toISOString(this.form.value.start),
     };
     if (this.form.value.stop) {
-      replayConfig.utcStop = this.form.value.stop;
+      replayConfig.utcStop = utils.toISOString(this.form.value.stop);
     }
 
     this.dialogRef.close({

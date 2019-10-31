@@ -50,19 +50,15 @@
       <div class="filter-bar">
         <div class="vmiddle" style="flex: 1 1 0%">
           <app-select [options]="severityOptions" formControlName="severity"></app-select>
-          &nbsp;&nbsp;
           <app-select [options]="sourceOptions$ | async"
                       formControlName="source"></app-select>
-          &nbsp;&nbsp;
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
                       formControlName="interval"></app-select>
-          &nbsp;&nbsp;
           <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-            <input formControlName="customStart" type="datetime" style="width: 160px">
-            <input formControlName="customStop" type="datetime" style="width: 160px">
-            &nbsp;&nbsp;
+            <app-date-time formControlName="customStart"></app-date-time>
+            <app-date-time formControlName="customStop"></app-date-time>
             <button (click)="applyCustomDates()"
                     class="ya-button"
                     [disabled]="filterForm.invalid">Apply</button>
@@ -73,7 +69,6 @@
             </button>
           </ng-container>
 
-          &nbsp;&nbsp;
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>
@@ -86,7 +81,7 @@
 
     <div class="table-status" [ngSwitch]="appliedInterval">
       <div class="message-zone">
-        <app-action-link [link]="downloadURL$ | async">Download events</app-action-link>
+        <app-action-link [link]="downloadURL$ | async" [download]="'Events'">Download events</app-action-link>
       </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)

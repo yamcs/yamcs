@@ -3,10 +3,11 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Argument, ArgumentAssignment, Command, Instance } from '@yamcs/client';
+import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
+import * as utils from '../../shared/utils';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
@@ -52,7 +53,22 @@ export class ConfigureCommandPage {
       }
     });
 
-    this.yamcs.getInstanceClient()!.getCommand(qualifiedName).then(command => {
+    const promises: Promise<any>[] = [
+      this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
+    ];
+
+    const templateId = route.snapshot.queryParamMap.get('template');
+    if (templateId) {
+      const promise = this.yamcs.getInstanceClient()!.getCommandHistoryEntry(templateId);
+      promises.push(promise);
+    }
+
+    Promise.all(promises).then(responses => {
+      const command = responses[0];
+      let template: CommandHistoryEntry | undefined;
+      if (responses.length > 1) {
+        template = responses[1];
+      }
       this.command$.next(command);
 
       // Order command definitions top-down
@@ -67,6 +83,18 @@ export class ConfigureCommandPage {
       for (const c of commandHierarchy) {
         if (c.argument) {
           for (const argument of c.argument) {
+            if (template) {
+              const previousValue = this.getPreviousAssignment(template, argument.name);
+              if (previousValue !== undefined) {
+                if (previousValue === argument.initialValue) {
+                  this.argumentsWithInitial.push(argument);
+                } else {
+                  this.arguments.push(argument);
+                }
+                continue;
+              }
+            }
+
             if (argument.initialValue !== undefined) {
               this.argumentsWithInitial.push(argument);
             } else {
@@ -86,14 +114,40 @@ export class ConfigureCommandPage {
       this.argumentsWithInitial = this.argumentsWithInitial.filter(argument => !assignments.has(argument.name));
 
       for (const arg of this.arguments) {
-        this.commandConfigurationForm.addControl(
-          arg.name, new FormControl('', Validators.required));
+        this.addControl(arg, template);
       }
       for (const arg of this.argumentsWithInitial) {
-        this.commandConfigurationForm.addControl(
-          arg.name, new FormControl(arg.initialValue, Validators.required));
+        this.addControl(arg, template);
       }
     });
+  }
+
+  private getPreviousAssignment(entry: CommandHistoryEntry, argumentName: string) {
+    if (entry.assignment) {
+      for (const assignment of entry.assignment) {
+        if (assignment.name === argumentName) {
+          return utils.printValue(assignment.value);
+        }
+      }
+    }
+  }
+
+  private addControl(argument: Argument, template?: CommandHistoryEntry) {
+    let initialValue = argument.initialValue;
+
+    if (template) {
+      const previousValue = this.getPreviousAssignment(template, argument.name);
+      if (previousValue !== undefined) {
+        initialValue = previousValue;
+      }
+    }
+
+    if (initialValue === undefined) {
+      initialValue = '';
+    }
+
+    this.commandConfigurationForm.addControl(
+      argument.name, new FormControl(initialValue, Validators.required));
   }
 
   goBack() {

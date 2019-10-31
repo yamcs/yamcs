@@ -17,10 +17,9 @@
       </app-select>
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button (click)="sendRequest()" color="primary" [disabled]="!form.valid">SEND REQUEST</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">SEND REQUEST</button>
 </mat-dialog-actions>

@@ -95,32 +95,28 @@
   </ng-container>
 </ng-container>
 
-<ng-container>
-  <br>
-  <mat-divider></mat-divider>
-  <br>
-
-  <button mat-raised-button
+<div class="action-bar">
+  <button class="ya-button"
           (click)="acknowledgeAlarm.emit(alarm)"
           *ngIf="!alarm.shelveInfo && !alarm.acknowledged">
     <mat-icon>notifications_off</mat-icon>
     ACKNOWLEDGE
   </button>
-  <button mat-raised-button
+  <button class="ya-button"
           (click)="shelveAlarm.emit(alarm)"
           *ngIf="!alarm.shelveInfo">
     <mat-icon>timer</mat-icon>
     SHELVE
   </button>
-  <button mat-raised-button
+  <button class="ya-button"
           (click)="unshelveAlarm.emit(alarm)"
           *ngIf="alarm.shelveInfo">
     <mat-icon>timer_off</mat-icon>
     UNSHELVE
   </button>
-  <button mat-raised-button
+  <button class="ya-button"
           (click)="clearAlarm.emit(alarm)">
     <mat-icon>clear_all</mat-icon>
     CLEAR
   </button>
-</ng-container>
+</div>

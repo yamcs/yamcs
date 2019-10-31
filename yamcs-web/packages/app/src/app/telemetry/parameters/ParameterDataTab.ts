@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
+import * as utils from '../../shared/utils';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
 const defaultInterval = 'PT1H';
@@ -36,12 +37,8 @@ export class ParameterDataTab {
 
   filter = new FormGroup({
     interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
-    customStop: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
+    customStart: new FormControl(null),
+    customStop: new FormControl(null),
   });
 
   dataSource: ParameterDataDataSource;
@@ -60,8 +57,8 @@ export class ParameterDataTab {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filter.get('customStart')!.setValue(customStart.toISOString());
-        this.filter.get('customStop')!.setValue(customStop.toISOString());
+        this.filter.get('customStart')!.setValue(utils.printLocalDate(customStart, 'hhmm'));
+        this.filter.get('customStop')!.setValue(utils.printLocalDate(customStop, 'hhmm'));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -90,8 +87,8 @@ export class ParameterDataTab {
   }
 
   applyCustomDates() {
-    this.validStart = new Date(this.filter.value['customStart']);
-    this.validStop = new Date(this.filter.value['customStop']);
+    this.validStart = utils.toDate(this.filter.value['customStart']);
+    this.validStop = utils.toDate(this.filter.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }

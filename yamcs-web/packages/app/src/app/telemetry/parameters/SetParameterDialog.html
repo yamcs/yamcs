@@ -40,7 +40,7 @@
       <ng-container *ngSwitchCase="'timestamp'">
         <label>
           Value
-          <input type="datetime" formControlName="value">
+          <app-date-time formControlName="value" step="0.001"></app-date-time>
         </label>
       </ng-container>
 
@@ -49,7 +49,8 @@
           Value
           <select formControlName="value">
             <option selected></option>
-            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}
+            </option>
           </select>
         </label>
       </ng-container>
@@ -68,10 +69,9 @@
 
     </ng-container>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">SAVE</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()" [disabled]="!form.valid">SAVE</button>
 </mat-dialog-actions>

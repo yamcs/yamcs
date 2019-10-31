@@ -13,15 +13,13 @@
     </label>
   </form>
   <app-dots *ngIf="uploading$ | async"></app-dots>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button
+  <button class="ya-button"
           mat-dialog-close
           [disabled]="uploading$ | async">CANCEL</button>
-  <button mat-raised-button
+  <button class="ya-button primary"
           [disabled]="uploading$ | async"
-          (click)="save()"
-          color="primary">UPLOAD</button>
+          (click)="save()">UPLOAD</button>
 </mat-dialog-actions>

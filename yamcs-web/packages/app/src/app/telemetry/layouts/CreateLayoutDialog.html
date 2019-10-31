@@ -5,10 +5,9 @@
     Layout name
     <input type="text" [formControl]="name">
   </label>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-button (click)="save()" color="primary">SAVE</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()">SAVE</button>
 </mat-dialog-actions>

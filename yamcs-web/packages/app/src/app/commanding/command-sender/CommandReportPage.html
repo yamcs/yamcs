@@ -8,12 +8,21 @@
   <div class="panel-content" *ngIf="command$ | async as command">
     <app-command-detail2 [command]="command"></app-command-detail2>
 
-    <mat-toolbar>
-      <span style="flex: 1 1 auto"></span>
-      <a mat-raised-button routerLink="/commanding/send"
-         [queryParams]="{instance: instance.name}">
-        Prepare another command
-      </a>
-    </mat-toolbar>
+    <ng-container>
+      <br>
+      <mat-divider></mat-divider>
+      <br>
+      <button class="ya-button"
+              routerLink="/commanding/send"
+              [queryParams]="{instance: instance.name}">
+        Send another command
+      </button>
+      &nbsp;&nbsp;
+      <button class="ya-button"
+              [routerLink]="['/commanding/send', command.commandName]"
+              [queryParams]="{instance: instance.name, template: (command.commandId | commandId)}">
+        Resend this command
+      </button>
+    </ng-container>
   </div>
 </app-instance-page>

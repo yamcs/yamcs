@@ -3,12 +3,11 @@
 <mat-dialog-content class="ya-form mat-typography">
   <label>
     Date
-    <input type="text" [formControl]="date">
+    <app-date-time [formControl]="date"></app-date-time>
   </label>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-button (click)="select()" color="primary">OK</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="select()">OK</button>
 </mat-dialog-actions>

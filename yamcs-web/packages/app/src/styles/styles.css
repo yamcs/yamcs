@@ -231,7 +231,7 @@ a.ya-link.ya-header-link {
   color: crimson;
 }
 
-.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select {
+.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;
@@ -251,6 +251,10 @@ a.ya-link.ya-header-link {
 
 .ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus {
   border-color: lightskyblue;
+}
+
+.ng-invalid>.date-time-input>input {
+  border-color: crimson !important;
 }
 
 .ya-form input[type="radio"] {
@@ -384,6 +388,7 @@ button.ya-button {
   margin: 0;
   border-radius: 1px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+  cursor: pointer;
 }
 
 button.ya-button:active {
@@ -397,7 +402,22 @@ button.ya-button:hover {
 }
 
 button.ya-button:disabled {
-  color: rgba(0, 0, 0, .25);
+  /*color: rgba(0, 0, 0, .25);*/
+  opacity: 0.6;
+}
+
+button.ya-button .material-icons {
+  font-size: 14px;
+  height: 14px;
+  width: 14px;
+  /*display: inline-flex;*/
+  vertical-align: middle;
+}
+
+button.ya-button.primary {
+  background-color: #1b61b9;
+  color: white;
+  border-color: #0d55cb;
 }
 
 .shake {
@@ -408,6 +428,14 @@ button.ya-button:disabled {
 
 .page-options {
   margin-bottom: 12px;
+}
+
+.action-bar {
+  padding-top: 16px;
+}
+
+.action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button {
+  margin-right: 7px;
 }
 
 .spin {

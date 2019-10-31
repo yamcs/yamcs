@@ -4,10 +4,9 @@
   <br>
   <label class="mat-typography">Thickness</label><br>
   <app-thickness #thickness [selectedThickness]="data.strokeWidth" [color]="data.color"></app-thickness>
-  <br>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-button (click)="select()" color="primary">OK</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="select()">OK</button>
 </mat-dialog-actions>

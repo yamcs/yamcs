@@ -5,11 +5,10 @@
         <div class="vmiddle" style="flex: 1 1 0%">
           <app-select formControlName="interval" [options]="intervalOptions" icon="access_time">
           </app-select>
-          &nbsp;&nbsp;
 
           <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
-            <input formControlName="customStart" type="datetime" style="width: 160px">
-            <input formControlName="customStop" type="datetime" style="width: 160px">
+            <app-date-time formControlName="customStart"></app-date-time>
+            <app-date-time formControlName="customStop"></app-date-time>
             <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
           </ng-container>
 
@@ -19,7 +18,6 @@
             </button>
           </ng-container>
 
-          &nbsp;&nbsp;
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>

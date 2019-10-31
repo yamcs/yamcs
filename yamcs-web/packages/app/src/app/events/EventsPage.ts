@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option, Select } from '../shared/forms/Select';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
+import * as utils from '../shared/utils';
 import { subtractDuration } from '../shared/utils';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
@@ -44,12 +45,8 @@ export class EventsPage {
     severity: new FormControl('INFO'),
     source: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
-    customStop: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
+    customStart: new FormControl(null),
+    customStop: new FormControl(null),
   });
 
   dataSource: EventsDataSource;
@@ -161,8 +158,8 @@ export class EventsPage {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filterForm.get('customStart')!.setValue(customStart.toISOString());
-        this.filterForm.get('customStop')!.setValue(customStop.toISOString());
+        this.filterForm.get('customStart')!.setValue(utils.printLocalDate(customStart, 'hhmm'));
+        this.filterForm.get('customStop')!.setValue(utils.printLocalDate(customStop, 'hhmm'));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -197,10 +194,10 @@ export class EventsPage {
       if (this.appliedInterval === 'CUSTOM') {
         const customStart = queryParams.get('customStart')!;
         this.filterForm.get('customStart')!.setValue(customStart);
-        this.validStart = new Date(customStart);
+        this.validStart = utils.toDate(customStart);
         const customStop = queryParams.get('customStop')!;
         this.filterForm.get('customStop')!.setValue(customStop);
-        this.validStop = new Date(customStop);
+        this.validStop = utils.toDate(customStop);
       } else if (this.appliedInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -241,8 +238,8 @@ export class EventsPage {
   }
 
   applyCustomDates() {
-    this.validStart = new Date(this.filterForm.value['customStart']);
-    this.validStop = new Date(this.filterForm.value['customStop']);
+    this.validStart = utils.toDate(this.filterForm.value['customStart']);
+    this.validStop = utils.toDate(this.filterForm.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Parameter, ParameterType, Value } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
+import * as utils from '../../shared/utils';
 
 @Component({
   selector: 'app-set-parameter-dialog',
@@ -33,7 +34,7 @@ export class SetParameterDialog {
         break;
       case 'timestamp':
         this.form = formBuilder.group({
-          value: [null, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)]
+          value: [null, Validators.required]
         });
         break;
       case 'enumeration':
@@ -77,7 +78,7 @@ export class SetParameterDialog {
       case 'string':
         return { type: 'STRING', stringValue: userValue };
       case 'timestamp':
-        return { type: 'TIMESTAMP', timestampValue: Date.parse(userValue) };
+        return { type: 'TIMESTAMP', stringValue: utils.toISOString(userValue) };
       case 'aggregate':
         // TODO use graphical value builder?
         const values: Value[] = [

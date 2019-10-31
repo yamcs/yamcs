@@ -7,13 +7,11 @@
       <input #filename type="text" formControlName="name">
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary"
           (click)="rename()"
-          color="primary"
           [disabled]="!filenameForm.valid">RENAME</button>
 </mat-dialog-actions>

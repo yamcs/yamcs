@@ -110,16 +110,16 @@
     </form>
     <p>&nbsp;</p>
     <mat-toolbar>
-      <button mat-button
+      <button class="ya-button"
               (click)="goBack()">
         Cancel
       </button>
       <span style="flex: 1 1 auto"></span>
-      <mat-slide-toggle [formControl]="armControl">
+      <mat-slide-toggle [formControl]="armControl" color="primary">
         Arm
       </mat-slide-toggle>
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button mat-raised-button color="primary"
+      <button class="ya-button primary"
               [disabled]="!armControl.value || !commandConfigurationForm.valid"
               (click)="sendCommand()">
         <mat-icon>send</mat-icon>

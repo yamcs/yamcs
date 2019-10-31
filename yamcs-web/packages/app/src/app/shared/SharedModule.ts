@@ -46,6 +46,8 @@ import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
+import { DateTime } from './forms/DateTime';
+import { DownloadButton } from './forms/DownloadButton';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
@@ -146,9 +148,11 @@ const sharedComponents = [
   AlarmLevel,
   ColumnChooser,
   ConnectedLabel,
+  DateTime,
   DetailPane,
   DetailToolbar,
   Dots,
+  DownloadButton,
   EmptyMessage,
   Expirable,
   Help,
