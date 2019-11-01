@@ -1,4 +1,4 @@
-<mat-toolbar color="primary">
+<mat-toolbar color="primary" *ngIf="user$ | async as user">
   <mat-toolbar-row class="app-bar"
                    [class.replay]="(connectionInfo$ | async)?.processor?.replay">
     <button mat-icon-button
@@ -42,38 +42,38 @@
                      style="margin-top: 8px"
                      matTooltip="Alarm State"></app-alarm-label>
 
-    <ng-container *ngIf="user$ | async as user">
-      <mat-menu #userMenu="matMenu" overlapTrigger="false">
-        <a mat-menu-item routerLink="profile">
-          <mat-icon>account_box</mat-icon>
-          Profile
+    <mat-menu #userMenu="matMenu" overlapTrigger="false">
+      <a mat-menu-item routerLink="profile">
+        <mat-icon>account_box</mat-icon>
+        Profile
+      </a>
+      <button mat-menu-item (click)="toggleDarkTheme()">
+        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
+        Dark mode:
+        <span *ngIf="darkMode$ | async">On</span>
+        <span *ngIf="!(darkMode$ | async)">Off</span>
+      </button>
+      <ng-container *ngIf="user | superuser">
+        <mat-divider></mat-divider>
+        <a mat-menu-item routerLink="admin">
+          <mat-icon>security</mat-icon>
+          Admin Area
         </a>
-        <button mat-menu-item (click)="toggleDarkTheme()">
-          <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-          Dark mode:
-          <span *ngIf="darkMode$ | async">On</span>
-          <span *ngIf="!(darkMode$ | async)">Off</span>
-        </button>
-        <ng-container *ngIf="user | superuser">
-          <mat-divider></mat-divider>
-          <a mat-menu-item routerLink="admin">
-            <mat-icon>security</mat-icon>
-            Admin Area
-          </a>
-        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="authInfo.requireAuthentication">
         <mat-divider></mat-divider>
         <a mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           Sign out
         </a>
-      </mat-menu>
-      <button mat-button
-              [matMenuTriggerFor]="userMenu"
-              matTooltipPosition="left">
-        <mat-icon>person</mat-icon>
-        {{ user.getDisplayName() || user.getName() }}
-      </button>
-    </ng-container>
+      </ng-container>
+    </mat-menu>
+    <button mat-button
+            [matMenuTriggerFor]="userMenu"
+            matTooltipPosition="left">
+      <mat-icon>person</mat-icon>
+      {{ user.getDisplayName() || user.getName() }}
+    </button>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>

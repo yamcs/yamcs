@@ -3,13 +3,13 @@
     <ng-container *ngFor="let alias of parameter.alias">
       <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
         <a routerLink="/telemetry/parameters"
-            [queryParams]="{instance: instance.name, filter: alias.namespace}"
-            class="ya-link ya-header-link">
+           [queryParams]="{instance: instance.name, filter: alias.namespace}"
+           class="ya-link ya-header-link">
           {{ alias.namespace }}
         </a>/{{ alias.name }}{{ offset$ | async}}
       </ng-container>
     </ng-container>
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
     <button *ngIf="isWritable() && maySetParameter()"
             mat-button
             color="primary"
@@ -28,31 +28,31 @@
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
-        routerLink="summary"
-        routerLinkActive #rla="routerLinkActive"
-        [active]="rla.isActive"
-        [queryParams]="{instance: instance.name}">
+       routerLink="summary"
+       routerLinkActive #rla="routerLinkActive"
+       [active]="rla.isActive"
+       [queryParams]="{instance: instance.name}">
       Summary
     </a>
     <a mat-tab-link
-        routerLink="chart"
-        routerLinkActive #rlb="routerLinkActive"
-        [active]="rlb.isActive"
-        [queryParams]="{instance: instance.name}">
+       routerLink="chart"
+       routerLinkActive #rlb="routerLinkActive"
+       [active]="rlb.isActive"
+       [queryParams]="{instance: instance.name}">
       Chart
     </a>
     <a mat-tab-link
-        routerLink="alarms"
-        routerLinkActive #rlc="routerLinkActive"
-        [active]="rlc.isActive"
-        [queryParams]="{instance: instance.name}">
+       routerLink="alarms"
+       routerLinkActive #rlc="routerLinkActive"
+       [active]="rlc.isActive"
+       [queryParams]="{instance: instance.name}">
       Alarm History
     </a>
     <a mat-tab-link
-        routerLink="data"
-        routerLinkActive #rld="routerLinkActive"
-        [active]="rld.isActive"
-        [queryParams]="{instance: instance.name}">
+       routerLink="data"
+       routerLinkActive #rld="routerLinkActive"
+       [active]="rld.isActive"
+       [queryParams]="{instance: instance.name}">
       Historical Data
     </a>
   </nav>

@@ -146,7 +146,7 @@ dt {
 }
 
 .ya-data-table a, .ya-link a, a.ya-link {
-  color: #1b61b9;
+  color: #5787b1;
   text-decoration: none;
 }
 
@@ -250,7 +250,7 @@ a.ya-link.ya-header-link {
 }
 
 .ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus {
-  border-color: lightskyblue;
+  border-color: #5787b1;
 }
 
 .ng-invalid>.date-time-input>input {
@@ -415,9 +415,9 @@ button.ya-button .material-icons {
 }
 
 button.ya-button.primary {
-  background-color: #1b61b9;
+  background-color: #222d4b;
   color: white;
-  border-color: #0d55cb;
+  border-color: #5787b1;
 }
 
 .shake {

@@ -44,8 +44,8 @@
 <div class="footer mat-typography">
   <mat-toolbar>
     <mat-toolbar-row>
-      <button mat-button mat-dialog-close>CANCEL</button>
-      <button mat-raised-button color="primary"
+      <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
+      <button class="ya-button primary"
               [disabled]="!localForm.valid || !remoteForm.valid"
               (click)="startTransfer()">START TRANSFER</button>
     </mat-toolbar-row>
