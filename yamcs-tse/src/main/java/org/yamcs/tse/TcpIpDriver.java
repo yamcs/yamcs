@@ -113,7 +113,8 @@ public class TcpIpDriver extends InstrumentDriver {
                     disconnect();
                     connect();
                 }
-            } else if (selectionKey.isWritable()) {
+            }
+            if (selectionKey.isWritable()) {
                 try {
                     byte[] barr = (cmd + "\n").getBytes(encoding);
                     ByteBuffer bb = ByteBuffer.wrap(barr);
@@ -124,8 +125,6 @@ public class TcpIpDriver extends InstrumentDriver {
                     disconnect();
                     connect();
                 }
-            } else {
-                log.warn("oops1");
             }
         }
     }
