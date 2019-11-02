@@ -77,7 +77,7 @@
           <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *cdkCellDef="let item">
             <ng-container *ngIf="item.folder">
-              <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
               <a [routerLink]="'/telemetry/displays/browse/' + item.name"
                  [queryParams]="{instance: instance.name}"
                  (click)="$event.stopPropagation()">
@@ -85,7 +85,7 @@
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
-              <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
+              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/telemetry/displays/files/' + item.name"
                  [queryParams]="{instance: instance.name}"
                  (click)="$event.stopPropagation()">

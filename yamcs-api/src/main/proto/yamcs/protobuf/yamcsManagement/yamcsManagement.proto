@@ -57,15 +57,6 @@ service ManagementApi {
     };
   }
   
-  // Update an instance
-  rpc UpdateInstance(EditInstanceRequest) returns (YamcsInstance) {
-    option (yamcs.api.route) = {
-      patch: "/api/instances/{instance}"
-      body: "*"
-      deprecated: true
-    };
-  }
-  
   // Create an instance
   rpc CreateInstance(CreateInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
@@ -120,15 +111,6 @@ service ManagementApi {
   rpc StopService(StopServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/services/{instance}/{name}:stop"
-    };
-  }
-  
-  // Update a service
-  rpc UpdateService(EditServiceRequest) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      patch: "/api/services/{instance}/{name}"
-      body: "*"
-      deprecated: true
     };
   }
   
@@ -380,12 +362,6 @@ message StopServiceRequest {
 
 message ListServicesResponse {
   repeated ServiceInfo services = 1;
-}
-
-message EditServiceRequest {
-  optional string instance = 1;
-  optional string name = 2;
-  optional string state = 3;
 }
 
 message ListInstancesRequest {

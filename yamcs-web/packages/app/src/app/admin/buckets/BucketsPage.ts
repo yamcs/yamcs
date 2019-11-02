@@ -14,7 +14,6 @@ import { CreateBucketDialog } from './CreateBucketDialog';
 
 @Component({
   templateUrl: './BucketsPage.html',
-  styleUrls: ['./BucketsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketsPage implements AfterViewInit {

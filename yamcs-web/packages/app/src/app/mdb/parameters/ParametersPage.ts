@@ -11,7 +11,6 @@ import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({
   templateUrl: './ParametersPage.html',
-  styleUrls: ['./ParametersPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametersPage implements AfterViewInit {

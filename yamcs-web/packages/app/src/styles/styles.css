@@ -292,12 +292,6 @@ a.ya-link.ya-header-link {
   font-size: 12px;
 }
 
-.vmiddle {
-  display: inline-flex;
-  vertical-align: middle;
-  align-items: center;
-}
-
 .dl-horizontal {
   margin-top: 1em;
   margin-bottom: 1em;
@@ -428,6 +422,12 @@ button.ya-button.primary {
 
 .page-options {
   margin-bottom: 12px;
+}
+
+.filter-bar {
+  height: 24px;
+  margin-bottom: 12px;
+  display: flex;
 }
 
 .action-bar {

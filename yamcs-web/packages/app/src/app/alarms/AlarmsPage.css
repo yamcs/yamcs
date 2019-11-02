@@ -22,12 +22,6 @@ mat-row:hover {
   background: #fafafa;
 }
 
-.filter-bar {
-  height: 24px;
-  margin-bottom: 10px;
-  display: flex;
-}
-
 .dl-horizontal dt {
   width: 30px;
 }

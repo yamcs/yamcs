@@ -2,25 +2,23 @@
   <div class="panel-content">
     <form [formGroup]="filter">
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <app-select formControlName="interval" [options]="intervalOptions" icon="access_time">
-          </app-select>
+        <app-select formControlName="interval" [options]="intervalOptions" icon="access_time">
+        </app-select>
 
-          <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
-            <app-date-time formControlName="customStart"></app-date-time>
-            <app-date-time formControlName="customStop"></app-date-time>
-            <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
-          </ng-container>
+        <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+          <app-date-time formControlName="customStart"></app-date-time>
+          <app-date-time formControlName="customStop"></app-date-time>
+          <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+        </ng-container>
 
-          <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
-            <button class="ya-button" (click)="jumpToNow()">
-              Jump to now
-            </button>
-          </ng-container>
+        <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
+          <button class="ya-button" (click)="jumpToNow()">
+            Jump to now
+          </button>
+        </ng-container>
 
-          <app-dots *ngIf="dataSource.loading$ | async">
-          </app-dots>
-        </div>
+        <app-dots *ngIf="dataSource.loading$ | async">
+        </app-dots>
       </div>
     </form>
 

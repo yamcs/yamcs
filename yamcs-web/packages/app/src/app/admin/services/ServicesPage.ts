@@ -10,7 +10,6 @@ import { Option } from '../../shared/forms/Select';
 
 @Component({
   templateUrl: './ServicesPage.html',
-  styleUrls: ['./ServicesPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicesPage {

@@ -1,9 +1,3 @@
-.filter-bar {
-  height: 24px;
-  margin-bottom: 12px;
-  display: flex;
-}
-
 .table-status {
   background-color: #f2f2f2;
   height: 24px;
@@ -11,6 +5,14 @@
   font-size: 12px;
   padding-left: 6px;
   margin-bottom: 12px;
+}
+
+.table-status .message-zone {
+  float: right;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-right: 6px;
 }
 
 .table-footer {

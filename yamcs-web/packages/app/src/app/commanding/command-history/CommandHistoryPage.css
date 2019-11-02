@@ -4,12 +4,6 @@
   height: 100%;
 }
 
-.filter-bar {
-  height: 24px;
-  margin-bottom: 10px;
-  display: flex;
-}
-
 .table-status {
   background-color: #f2f2f2;
   height: 24px;

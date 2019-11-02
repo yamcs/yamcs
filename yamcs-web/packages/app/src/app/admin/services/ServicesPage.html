@@ -13,11 +13,8 @@
   <div class="panel-content">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <small>Instance:&nbsp;</small>
-          <app-select [options]="instanceOptions$ | async"
-                      formControlName="instance"></app-select>
-        </div>
+        <app-select [options]="instanceOptions$ | async"
+                    formControlName="instance"></app-select>
       </div>
     </form>
     <app-services-table [dataSource]="dataSource"

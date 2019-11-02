@@ -5,83 +5,76 @@
   <div class="panel-content">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <app-search-filter formControlName="filter"
-                             placeholder="Filter parameters">
-          </app-search-filter>
-          &nbsp;&nbsp;
-          <app-column-chooser #columnChooser
-                              [columns]="columns"
-                              preferenceKey="mdb-parameters"></app-column-chooser>
-        </div>
+        <app-search-filter formControlName="filter"
+                           placeholder="Filter parameters">
+        </app-search-filter>
+        &nbsp;&nbsp;
+        <app-column-chooser #columnChooser
+                            [columns]="columns"
+                            preferenceKey="mdb-parameters"></app-column-chooser>
       </div>
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <app-select [options]="typeOptions" formControlName="type"></app-select>
-          &nbsp;&nbsp;
-          <app-select [options]="sourceOptions" formControlName="source"></app-select>
-        </div>
+        <app-select [options]="typeOptions" formControlName="type"></app-select>
+        <app-select [options]="sourceOptions" formControlName="source"></app-select>
       </div>
     </form>
-    <div style="display: inline-block">
-      <table mat-table
-             *ngIf="dataSource"
-             class="ya-data-table"
-             style="width: 1000px"
-             [dataSource]="dataSource">
+    <table mat-table
+           *ngIf="dataSource"
+           class="ya-data-table"
+           style="width: 1000px"
+           [dataSource]="dataSource">
 
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
-          <td mat-cell *matCellDef="let parameter">
-            <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
-            <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
-              <button mat-stroked-button class="expandable"
-                      (click)="parameter.expanded = !parameter.expanded">
-                <mat-icon *ngIf="parameter.expanded">expand_less</mat-icon>
-                <mat-icon *ngIf="!parameter.expanded">expand_more</mat-icon>
-              </button><br>
-              <ng-container *ngIf="parameter.expanded">
-                <ng-container *ngFor="let member of parameter.type.member">
-                  &nbsp;&bull; {{ member.name }}<br>
-                </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
+        <td mat-cell *matCellDef="let parameter">
+          <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
+             [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
+          <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
+            <button mat-stroked-button class="expandable"
+                    (click)="parameter.expanded = !parameter.expanded">
+              <mat-icon *ngIf="parameter.expanded">expand_less</mat-icon>
+              <mat-icon *ngIf="!parameter.expanded">expand_more</mat-icon>
+            </button><br>
+            <ng-container *ngIf="parameter.expanded">
+              <ng-container *ngFor="let member of parameter.type.member">
+                &nbsp;&bull; {{ member.name }}<br>
               </ng-container>
             </ng-container>
-          </td>
-        </ng-container>
+          </ng-container>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef style="width: 120px">Type</th>
-          <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef style="width: 120px">Type</th>
+        <td mat-cell *matCellDef="let parameter" style="font-family: monospace">{{ parameter.type?.engType || '-' }}
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="units">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Units</th>
-          <td mat-cell *matCellDef="let parameter">{{ (parameter.type?.unitSet | units) || '-' }}</td>
-        </ng-container>
+      <ng-container matColumnDef="units">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px">Units</th>
+        <td mat-cell *matCellDef="let parameter">{{ (parameter.type?.unitSet | units) || '-' }}</td>
+      </ng-container>
 
-        <ng-container matColumnDef="dataSource">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Data Source</th>
-          <td mat-cell *matCellDef="let parameter">{{ (parameter.dataSource | titlecase) || '-' }}</td>
-        </ng-container>
+      <ng-container matColumnDef="dataSource">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px">Data Source</th>
+        <td mat-cell *matCellDef="let parameter">{{ (parameter.dataSource | titlecase) || '-' }}</td>
+      </ng-container>
 
-        <ng-container matColumnDef="shortDescription">
-          <th mat-header-cell *matHeaderCellDef>Description</th>
-          <td mat-cell *matCellDef="let parameter">{{ parameter.shortDescription || '-' }}</td>
-        </ng-container>
+      <ng-container matColumnDef="shortDescription">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let parameter">{{ parameter.shortDescription || '-' }}</td>
+      </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
-      </table>
+      <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+      <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
+    </table>
 
-      <div style="text-align: right">
-        <mat-paginator [pageSize]="pageSize"
-                       [hidePageSize]="true"
-                       [showFirstLastButtons]="true"
-                       [length]="dataSource.totalSize$ | async">
-        </mat-paginator>
-      </div>
+    <div style="text-align: right">
+      <mat-paginator [pageSize]="pageSize"
+                     [hidePageSize]="true"
+                     [showFirstLastButtons]="true"
+                     [length]="dataSource.totalSize$ | async">
+      </mat-paginator>
     </div>
   </div>
   <ng-template #empty>
