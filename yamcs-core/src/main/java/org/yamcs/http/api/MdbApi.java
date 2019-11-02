@@ -14,6 +14,7 @@ import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractMdbApi;
@@ -123,29 +124,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
             matcher = new NameDescriptionSearchMatcher(request.getQ());
         }
 
-        boolean recurse = request.getRecurse();
-
         List<SpaceSystem> matchedSpaceSystems = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-
-            for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
-                if (matcher != null && !matcher.matches(spaceSystem)) {
-                    continue;
-                }
-
-                String alias = spaceSystem.getAlias(namespace);
-                if (alias != null || (recurse && spaceSystem.getQualifiedName().startsWith(namespace))) {
-                    matchedSpaceSystems.add(spaceSystem);
-                }
+        for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+            if (matcher != null && !matcher.matches(spaceSystem)) {
+                continue;
             }
-        } else { // List all
-            for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
-                if (matcher != null && !matcher.matches(spaceSystem)) {
-                    continue;
-                }
-                matchedSpaceSystems.add(spaceSystem);
-            }
+            matchedSpaceSystems.add(spaceSystem);
         }
 
         Collections.sort(matchedSpaceSystems, (p1, p2) -> {
@@ -170,7 +154,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         if (limit < matchedSpaceSystems.size()) {
             matchedSpaceSystems = matchedSpaceSystems.subList(0, limit);
             SpaceSystem lastSpaceSystem = matchedSpaceSystems.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(lastSpaceSystem.getQualifiedName());
+            continuationToken = new NamedObjectPageToken(lastSpaceSystem.getQualifiedName(), false);
         }
 
         ListSpaceSystemsResponse.Builder responseb = ListSpaceSystemsResponse.newBuilder();
@@ -203,86 +187,65 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = RestHandler.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        // Should eventually be replaced in a generic mdb search operation
-        NameDescriptionSearchMatcher matcher = null;
-        if (request.hasQ()) {
-            matcher = new NameDescriptionSearchMatcher(request.getQ());
-        }
-
-        boolean recurse = request.getRecurse();
-        boolean details = request.getDetails();
-
-        List<Parameter> matchedParameters = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-            for (Parameter p : mdb.getParameters()) {
-                if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
-                        p.getQualifiedName())) {
-                    continue;
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<Parameter> parameters = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (Parameter parameter : mdb.getParameters()) {
+                    if (parameter.getQualifiedName().startsWith(request.getSystem())) {
+                        parameters.add(parameter);
+                    }
                 }
-                if (matcher != null && !matcher.matches(p)) {
-                    continue;
-                }
-
-                String alias = p.getAlias(namespace);
-                if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    if (parameterTypeMatches(p, request.getTypeList())) {
-                        if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
-                            matchedParameters.add(p);
+            } else { // get direct children of the system
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        parameters.addAll(spaceSystem.getParameters());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
                         }
                     }
                 }
             }
-        } else { // List all
-            for (Parameter p : mdb.getParameters()) {
-                if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
-                        p.getQualifiedName())) {
-                    continue;
-                }
-                if (matcher != null && !matcher.matches(p)) {
-                    continue;
-                }
-                if (parameterTypeMatches(p, request.getTypeList())) {
-                    if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
-                        matchedParameters.add(p);
-                    }
+        } else {
+            parameters = new ArrayList<>(mdb.getParameters());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        parameters = parameters.stream().filter(p -> {
+            if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
+                    p.getQualifiedName())) {
+                return false;
+            }
+            if (matcher != null && !matcher.matches(p)) {
+                return false;
+            }
+            if (parameterTypeMatches(p, request.getTypeList())) {
+                if (!request.hasSource() || parameterSourceMatches(p, request.getSource())) {
+                    return true;
                 }
             }
+            return false;
+        }).collect(Collectors.toList());
+
+        MdbPageBuilder<Parameter> pageBuilder = new MdbPageBuilder<>(spaceSystems, parameters);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        MdbPage<Parameter> page = pageBuilder.buildPage();
+
+        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
         }
-
-        Collections.sort(matchedParameters, (p1, p2) -> {
-            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
-        });
-
-        int totalSize = matchedParameters.size();
-
-        String next = request.hasNext() ? request.getNext() : null;
-        int pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        if (next != null) {
-            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
-            matchedParameters = matchedParameters.stream().filter(p -> {
-                return p.getQualifiedName().compareTo(pageToken.name) > 0;
-            }).collect(Collectors.toList());
-        } else if (pos > 0) {
-            matchedParameters = matchedParameters.subList(pos, matchedParameters.size());
+        DetailLevel detail = request.getDetails() ? DetailLevel.FULL : DetailLevel.SUMMARY;
+        for (Parameter p : page.getItems()) {
+            responseb.addParameters(XtceToGpbAssembler.toParameterInfo(p, detail));
         }
-
-        NamedObjectPageToken continuationToken = null;
-        if (limit < matchedParameters.size()) {
-            matchedParameters = matchedParameters.subList(0, limit);
-            Parameter lastParameter = matchedParameters.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(lastParameter.getQualifiedName());
-        }
-
-        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
-        responseb.setTotalSize(totalSize);
-        for (Parameter p : matchedParameters) {
-            responseb.addParameters(
-                    XtceToGpbAssembler.toParameterInfo(p, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
-        }
-        if (continuationToken != null) {
-            responseb.setContinuationToken(continuationToken.encodeAsString());
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
         }
         observer.complete(responseb.build());
     }
@@ -361,29 +324,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
             matcher = new NameDescriptionSearchMatcher(request.getQ());
         }
 
-        boolean recurse = request.getRecurse();
         boolean details = request.getDetails();
 
         List<ParameterType> matchedTypes = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-            for (ParameterType t : mdb.getParameterTypes()) {
-                if (matcher != null && !matcher.matches((NameDescription) t)) {
-                    continue;
-                }
-
-                String alias = ((NameDescription) t).getAlias(namespace);
-                if (alias != null || (recurse && ((NameDescription) t).getQualifiedName().startsWith(namespace))) {
-                    matchedTypes.add(t);
-                }
+        for (ParameterType t : mdb.getParameterTypes()) {
+            if (matcher != null && !matcher.matches((NameDescription) t)) {
+                continue;
             }
-        } else { // List all
-            for (ParameterType t : mdb.getParameterTypes()) {
-                if (matcher != null && !matcher.matches((NameDescription) t)) {
-                    continue;
-                }
-                matchedTypes.add(t);
-            }
+            matchedTypes.add(t);
         }
 
         Collections.sort(matchedTypes, (t1, t2) -> {
@@ -408,7 +356,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         if (limit < matchedTypes.size()) {
             matchedTypes = matchedTypes.subList(0, limit);
             ParameterType lastType = matchedTypes.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(((NameDescription) lastType).getQualifiedName());
+            continuationToken = new NamedObjectPageToken(((NameDescription) lastType).getQualifiedName(), false);
         }
 
         ListParameterTypesResponse.Builder responseb = ListParameterTypesResponse.newBuilder();
@@ -442,69 +390,55 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = RestHandler.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        // Should eventually be replaced in a generic mdb search operation
-        NameDescriptionSearchMatcher matcher = null;
-        if (request.hasQ()) {
-            matcher = new NameDescriptionSearchMatcher(request.getQ());
-        }
-
-        boolean recurse = request.getRecurse();
-
-        List<SequenceContainer> matchedContainers = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-
-            for (SequenceContainer c : mdb.getSequenceContainers()) {
-                if (matcher != null && !matcher.matches(c)) {
-                    continue;
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<SequenceContainer> containers = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (SequenceContainer container : mdb.getSequenceContainers()) {
+                    if (container.getQualifiedName().startsWith(request.getSystem())) {
+                        containers.add(container);
+                    }
                 }
-
-                String alias = c.getAlias(namespace);
-                if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
-                    matchedContainers.add(c);
+            } else { // get direct children of the system
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        containers.addAll(spaceSystem.getSequenceContainers());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
+                        }
+                    }
                 }
             }
-        } else { // List all
-            for (SequenceContainer c : mdb.getSequenceContainers()) {
-                if (matcher != null && !matcher.matches(c)) {
-                    continue;
-                }
-                matchedContainers.add(c);
+        } else {
+            containers = new ArrayList<>(mdb.getSequenceContainers());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        containers = containers.stream().filter(c -> {
+            if (matcher != null && !matcher.matches(c)) {
+                return false;
             }
+            return true;
+        }).collect(Collectors.toList());
+
+        MdbPageBuilder<SequenceContainer> pageBuilder = new MdbPageBuilder<>(spaceSystems, containers);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        MdbPage<SequenceContainer> page = pageBuilder.buildPage();
+
+        ListContainersResponse.Builder responseb = ListContainersResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
         }
-
-        Collections.sort(matchedContainers, (p1, p2) -> {
-            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
-        });
-
-        int totalSize = matchedContainers.size();
-
-        String next = request.hasNext() ? request.getNext() : null;
-        int pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        if (next != null) {
-            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
-            matchedContainers = matchedContainers.stream().filter(p -> {
-                return p.getQualifiedName().compareTo(pageToken.name) > 0;
-            }).collect(Collectors.toList());
-        } else if (pos > 0) {
-            matchedContainers = matchedContainers.subList(pos, matchedContainers.size());
-        }
-
-        NamedObjectPageToken continuationToken = null;
-        if (limit < matchedContainers.size()) {
-            matchedContainers = matchedContainers.subList(0, limit);
-            SequenceContainer lastContainer = matchedContainers.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(lastContainer.getQualifiedName());
-        }
-
-        ListContainersResponse.Builder responseb = ListContainersResponse.newBuilder();
-        responseb.setTotalSize(totalSize);
-        for (SequenceContainer c : matchedContainers) {
+        for (SequenceContainer c : page.getItems()) {
             responseb.addContainers(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
         }
-        if (continuationToken != null) {
-            responseb.setContinuationToken(continuationToken.encodeAsString());
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
         }
         observer.complete(responseb.build());
     }
@@ -550,81 +484,59 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = RestHandler.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        // Should eventually be replaced in a generic mdb search operation
-        NameDescriptionSearchMatcher matcher = null;
-        if (request.hasQ()) {
-            matcher = new NameDescriptionSearchMatcher(request.getQ());
-        }
-
-        boolean details = request.getDetails();
-        boolean recurse = request.getRecurse();
-        boolean noAbstract = request.getNoAbstract();
-
-        DetailLevel detailLevel = details ? DetailLevel.FULL : DetailLevel.SUMMARY;
-
-        List<MetaCommand> matchedCommands = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-            for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.Command, cmd.getQualifiedName())) {
-                    continue;
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<MetaCommand> commands = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (MetaCommand command : mdb.getMetaCommands()) {
+                    if (command.getQualifiedName().startsWith(request.getSystem())) {
+                        commands.add(command);
+                    }
                 }
-                if (matcher != null && !matcher.matches(cmd)) {
-                    continue;
-                }
-                if (cmd.isAbstract() && noAbstract) {
-                    continue;
-                }
-
-                String alias = cmd.getAlias(namespace);
-                if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    matchedCommands.add(cmd);
+            } else { // get direct children of the system
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        commands.addAll(spaceSystem.getMetaCommands());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
+                        }
+                    }
                 }
             }
-        } else { // List all
-            for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (matcher != null && !matcher.matches(cmd)) {
-                    continue;
-                }
-                if (cmd.isAbstract() && noAbstract) {
-                    continue;
-                }
-                matchedCommands.add(cmd);
+        } else {
+            commands = new ArrayList<>(mdb.getMetaCommands());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        commands = commands.stream().filter(c -> {
+            if (matcher != null && !matcher.matches(c)) {
+                return false;
             }
+            if (c.isAbstract() && request.getNoAbstract()) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        MdbPageBuilder<MetaCommand> pageBuilder = new MdbPageBuilder<>(spaceSystems, commands);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        MdbPage<MetaCommand> page = pageBuilder.buildPage();
+
+        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
         }
-
-        Collections.sort(matchedCommands, (p1, p2) -> {
-            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
-        });
-
-        int totalSize = matchedCommands.size();
-
-        String next = request.hasNext() ? request.getNext() : null;
-        int pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        if (next != null) {
-            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
-            matchedCommands = matchedCommands.stream().filter(p -> {
-                return p.getQualifiedName().compareTo(pageToken.name) > 0;
-            }).collect(Collectors.toList());
-        } else if (pos > 0) {
-            matchedCommands = matchedCommands.subList(pos, matchedCommands.size());
+        DetailLevel detail = request.getDetails() ? DetailLevel.FULL : DetailLevel.SUMMARY;
+        for (MetaCommand c : page.getItems()) {
+            responseb.addCommands(XtceToGpbAssembler.toCommandInfo(c, detail));
         }
-
-        NamedObjectPageToken continuationToken = null;
-        if (limit < matchedCommands.size()) {
-            matchedCommands = matchedCommands.subList(0, limit);
-            MetaCommand lastCommand = matchedCommands.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(lastCommand.getQualifiedName());
-        }
-
-        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        responseb.setTotalSize(totalSize);
-        for (MetaCommand c : matchedCommands) {
-            responseb.addCommands(XtceToGpbAssembler.toCommandInfo(c, detailLevel));
-        }
-        if (continuationToken != null) {
-            responseb.setContinuationToken(continuationToken.encodeAsString());
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
         }
         observer.complete(responseb.build());
     }
@@ -645,73 +557,58 @@ public class MdbApi extends AbstractMdbApi<Context> {
     public void listAlgorithms(Context ctx, ListAlgorithmsRequest request,
             Observer<ListAlgorithmsResponse> observer) {
         RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-
         String instance = RestHandler.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        // Should eventually be replaced in a generic mdb search operation
-        NameDescriptionSearchMatcher matcher = null;
-        if (request.hasQ()) {
-            matcher = new NameDescriptionSearchMatcher(request.getQ());
-        }
-
-        boolean recurse = request.getRecurse();
-
-        List<Algorithm> matchedAlgorithms = new ArrayList<>();
-        if (request.hasNamespace()) {
-            String namespace = request.getNamespace();
-
-            for (Algorithm algo : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(algo)) {
-                    continue;
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<Algorithm> algorithms = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (Algorithm algorithm : mdb.getAlgorithms()) {
+                    if (algorithm.getQualifiedName().startsWith(request.getSystem())) {
+                        algorithms.add(algorithm);
+                    }
                 }
-
-                String alias = algo.getAlias(namespace);
-                if (alias != null || (recurse && algo.getQualifiedName().startsWith(namespace))) {
-                    matchedAlgorithms.add(algo);
+            } else { // get direct children of the system
+                for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        algorithms.addAll(spaceSystem.getAlgorithms());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
+                        }
+                    }
                 }
             }
-        } else { // List all
-            for (Algorithm algo : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(algo)) {
-                    continue;
-                }
-                matchedAlgorithms.add(algo);
+        } else {
+            algorithms = new ArrayList<>(mdb.getAlgorithms());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        algorithms = algorithms.stream().filter(a -> {
+            if (matcher != null && !matcher.matches(a)) {
+                return false;
             }
+            return true;
+        }).collect(Collectors.toList());
+
+        MdbPageBuilder<Algorithm> pageBuilder = new MdbPageBuilder<>(spaceSystems, algorithms);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        MdbPage<Algorithm> page = pageBuilder.buildPage();
+
+        ListAlgorithmsResponse.Builder responseb = ListAlgorithmsResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
         }
-
-        Collections.sort(matchedAlgorithms, (p1, p2) -> {
-            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
-        });
-
-        int totalSize = matchedAlgorithms.size();
-
-        String next = request.hasNext() ? request.getNext() : null;
-        int pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        if (next != null) {
-            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
-            matchedAlgorithms = matchedAlgorithms.stream().filter(p -> {
-                return p.getQualifiedName().compareTo(pageToken.name) > 0;
-            }).collect(Collectors.toList());
-        } else if (pos > 0) {
-            matchedAlgorithms = matchedAlgorithms.subList(pos, matchedAlgorithms.size());
-        }
-
-        NamedObjectPageToken continuationToken = null;
-        if (limit < matchedAlgorithms.size()) {
-            matchedAlgorithms = matchedAlgorithms.subList(0, limit);
-            Algorithm lastAlgorithm = matchedAlgorithms.get(limit - 1);
-            continuationToken = new NamedObjectPageToken(lastAlgorithm.getQualifiedName());
-        }
-
-        ListAlgorithmsResponse.Builder responseb = ListAlgorithmsResponse.newBuilder();
-        responseb.setTotalSize(totalSize);
-        for (Algorithm a : matchedAlgorithms) {
+        for (Algorithm a : page.getItems()) {
             responseb.addAlgorithms(XtceToGpbAssembler.toAlgorithmInfo(a, DetailLevel.SUMMARY));
         }
-        if (continuationToken != null) {
-            responseb.setContinuationToken(continuationToken.encodeAsString());
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
         }
         observer.complete(responseb.build());
     }

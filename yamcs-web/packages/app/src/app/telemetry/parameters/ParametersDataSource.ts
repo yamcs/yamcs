@@ -3,11 +3,17 @@ import { GetParametersOptions, NamedObjectId, Parameter, ParameterValue } from '
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ParameterWithValue } from './ParameterWithValue';
 
-export class ParametersDataSource extends DataSource<ParameterWithValue> {
+export class ListItem {
+  spaceSystem: boolean;
+  name: string;
+  parameter?: Parameter;
+  pval?: ParameterValue;
+}
 
-  parameters$ = new BehaviorSubject<ParameterWithValue[]>([]);
+export class ParametersDataSource extends DataSource<ListItem> {
+
+  items$ = new BehaviorSubject<ListItem[]>([]);
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
 
@@ -25,14 +31,14 @@ export class ParametersDataSource extends DataSource<ParameterWithValue> {
     this.syncSubscription = this.synchronizer.syncFast(() => {
       this.refreshTable();
     });
-    return this.parameters$;
+    return this.items$;
   }
 
   async loadParameters(options: GetParametersOptions) {
     this.loading$.next(true);
 
     // Unsubscribe parameters from a previous query
-    const ids = this.parameters$.value.map(p => ({ name: p.qualifiedName }));
+    const ids = this.items$.value.filter(item => !item.spaceSystem).map(item => ({ name: item.name }));
     if (ids.length) {
       await this.yamcs.getInstanceClient()!.unsubscribeParameterValueUpdates({
         subscriptionId: this.dataSubscriptionId,
@@ -43,17 +49,30 @@ export class ParametersDataSource extends DataSource<ParameterWithValue> {
     this.yamcs.getInstanceClient()!.getParameters(options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
-      this.parameters$.next(page.parameters || []);
+      const items: ListItem[] = [];
+      for (const spaceSystem of (page.spaceSystems || [])) {
+        items.push({ spaceSystem: true, name: spaceSystem });
+      }
+      for (const parameter of (page.parameters || [])) {
+        items.push({
+          spaceSystem: false,
+          name: parameter.qualifiedName,
+          parameter: parameter,
+        });
+      }
+      this.items$.next(items);
       this.createOrModifySubscription(page.parameters || []);
     });
   }
 
   private refreshTable() {
-    const parameters = this.parameters$.value;
-    for (const parameter of parameters) {
-      parameter.pval = this.latestValues.get(parameter.qualifiedName);
+    const items = this.items$.value;
+    for (const item of items) {
+      if (!item.spaceSystem) {
+        item.pval = this.latestValues.get(item.name);
+      }
     }
-    this.parameters$.next([...parameters]);
+    this.items$.next([...items]);
   }
 
   private createOrModifySubscription(parameters: Parameter[]) {
@@ -100,7 +119,7 @@ export class ParametersDataSource extends DataSource<ParameterWithValue> {
       this.dataSubscription.unsubscribe();
     }
 
-    const ids = this.parameters$.value.map(p => ({ name: p.qualifiedName }));
+    const ids = this.items$.value.filter(item => !item.spaceSystem).map(item => ({ name: item.name }));
     const instanceClient = this.yamcs.getInstanceClient();
     if (ids.length && instanceClient) {
       instanceClient.unsubscribeParameterValueUpdates({
@@ -109,7 +128,7 @@ export class ParametersDataSource extends DataSource<ParameterWithValue> {
       });
     }
 
-    this.parameters$.complete();
+    this.items$.complete();
     this.totalSize$.complete();
     this.loading$.complete();
   }

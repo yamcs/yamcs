@@ -34,17 +34,18 @@
 
     <div class="panel-content">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-        <div class="breadcrumb" *ngIf="breadcrumb.length">
-          <a class="ya-link"
-             [routerLink]="['/admin', 'buckets', bucketInstance, name]">Bucket</a>
-          <ng-container *ngFor="let item of breadcrumb; let i = index">
-            &nbsp;&nbsp;/&nbsp;&nbsp;
-            <a *ngIf="i < breadcrumb.length - 1"
-               class="ya-link"
-               [routerLink]="item.route">{{ item.name }}</a>
-            <ng-container *ngIf="i === breadcrumb.length - 1">{{ item.name }}</ng-container>
-          </ng-container>
-        </div>
+        <app-breadcrumb-trail>
+          <app-breadcrumb [link]="['/admin', 'buckets']"
+                          icon="account_tree"
+                          [queryParams]="{instance: bucketInstance}"></app-breadcrumb>
+          <app-breadcrumb [link]="['/admin', 'buckets', bucketInstance, name]"
+                          icon="shopping_basket"
+                          [label]="name"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [link]="item.route"
+                          [label]="item.name"
+                          icon="folder"></app-breadcrumb>
+        </app-breadcrumb-trail>
       </ng-container>
       <table mat-table
              *ngIf="dataSource && dataSource.data.length; else empty"
@@ -70,15 +71,15 @@
           <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *cdkCellDef="let item">
             <ng-container *ngIf="item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
               <a [routerLink]="'/admin/buckets/' + bucketInstance + '/' + name + '/' + item.name"
                  (click)="$event.stopPropagation()">
-                <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
                 {{ item.name | filename }}
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
               <a [href]="item.objectUrl" download (click)="$event.stopPropagation()">
-                <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
                 {{ item.name | filename }}
               </a>
             </ng-container>

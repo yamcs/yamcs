@@ -1,87 +1,97 @@
 <app-instance-page>
-  <app-instance-toolbar>Parameters</app-instance-toolbar>
+  <app-instance-toolbar>
+    Parameters
+  </app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content">
-    <div class="page-options">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter parameters">
-      </app-search-filter>
-      &nbsp;&nbsp;
+  <div class="panel-content" style="width: 1000px">
+    <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+      <app-breadcrumb-trail>
+        <ng-container *ngIf="breadcrumb.length">
+          <app-breadcrumb link="/telemetry/parameters"
+                          [queryParams]="{instance: instance.name}"
+                          icon="account_tree"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [link]="item.route"
+                          [queryParams]="item.queryParams"
+                          [label]="item.name"></app-breadcrumb>
+        </ng-container>
+        <app-search-filter [formControl]="filterControl"
+                           placeholder="Search by name"
+                           icon="search"
+                           [class.pullRight]="breadcrumb.length">
+        </app-search-filter>
+      </app-breadcrumb-trail>
+    </ng-container>
+    <table mat-table
+           *ngIf="dataSource"
+           class="ya-data-table"
+           style="width: 100%"
+           [dataSource]="dataSource">
 
-      <app-column-chooser #columnChooser
-                          [columns]="columns"
-                          preferenceKey="parameters"></app-column-chooser>
-    </div>
-    <div style="display: inline-block">
-      <table mat-table
-             *ngIf="dataSource"
-             class="ya-data-table"
-             style="width: 1000px"
-             [dataSource]="dataSource">
-
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
-          <td mat-cell *matCellDef="let parameter">
-            <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
-            <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
-              <button mat-stroked-button class="expandable"
-                      (click)="parameter.expanded = !parameter.expanded">
-                <mat-icon *ngIf="parameter.expanded">expand_less</mat-icon>
-                <mat-icon *ngIf="!parameter.expanded">expand_more</mat-icon>
-              </button><br>
-              <ng-container *ngIf="parameter.expanded">
-                <ng-container *ngFor="let member of parameter.type.member">
-                  &nbsp;&bull; {{ member.name }}<br>
-                </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
+        <td mat-cell *matCellDef="let item" class="primary-td">
+          <ng-container *ngIf="item.spaceSystem">
+            <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+            <a [routerLink]="['/telemetry/parameters']"
+               [queryParams]="{instance: instance.name, system: item.name}">
+              {{ item.name | slice:1 | filename }}/
+            </a>
+          </ng-container>
+          <ng-container *ngIf="!item.spaceSystem">
+            <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
+            <a [routerLink]="['/telemetry/parameters', item.parameter.qualifiedName]"
+               [queryParams]="{instance: instance.name}">
+              <ng-container *ngIf="!system">{{ item.parameter.qualifiedName }}</ng-container>
+              <ng-container *ngIf="system">{{ item.parameter.qualifiedName | slice:(system!.length + 1) }}
               </ng-container>
-            </ng-container>
-          </td>
-        </ng-container>
+            </a>
+          </ng-container>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="rawValue">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">Raw value</th>
-          <td mat-cell *cdkCellDef="let parameter">
-            {{ (parameter.pval?.rawValue | value) || '-' }}
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="rawValue">
+        <th mat-header-cell *matHeaderCellDef style="width: 200px">Raw value</th>
+        <td mat-cell *cdkCellDef="let item">
+          {{ (item.pval?.rawValue | value) || '-' }}
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="engValue">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">Value</th>
-          <td mat-cell *matCellDef="let parameter"
-              [class.alert]="parameter.pval?.monitoringResult && parameter.pval?.monitoringResult !== 'IN_LIMITS'">
-            <app-expirable *ngIf="parameter.pval" [pval]="parameter.pval">
-              {{ (parameter.pval?.engValue | value) || '-' }}
-              <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
-              <span *ngIf="parameter.pval?.rangeCondition === 'LOW'">&#8595;</span>
-              <span *ngIf="parameter.pval?.rangeCondition === 'HIGH'">&#8593;</span>
-            </app-expirable>
-            <span *ngIf="!parameter.pval">-</span>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="engValue">
+        <th mat-header-cell *matHeaderCellDef style="width: 200px">Value</th>
+        <td mat-cell *matCellDef="let item"
+            [class.alert]="item.pval?.monitoringResult && item.pval?.monitoringResult !== 'IN_LIMITS'">
+          <app-expirable *ngIf="item.pval" [pval]="item.pval">
+            {{ (item.pval?.engValue | value) || '-' }}
+            <span *ngIf="item.parameter?.type?.unitSet">{{ item.parameter?.type?.unitSet | units }}</span>
+            <span *ngIf="item.pval?.rangeCondition === 'LOW'">&#8595;</span>
+            <span *ngIf="item.pval?.rangeCondition === 'HIGH'">&#8593;</span>
+          </app-expirable>
+          <span *ngIf="!item.pval">-</span>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="dataSource">
-          <th mat-header-cell *matHeaderCellDef style="width: 100px">Data Source</th>
-          <td mat-cell *matCellDef="let parameter">{{ (parameter.dataSource | titlecase) || '-' }}</td>
-        </ng-container>
+      <ng-container matColumnDef="dataSource">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px">Data Source</th>
+        <td mat-cell *matCellDef="let item">{{ (item.parameter?.dataSource | titlecase) || '-' }}</td>
+      </ng-container>
 
-        <ng-container matColumnDef="shortDescription">
-          <th mat-header-cell *matHeaderCellDef>Description</th>
-          <td mat-cell *matCellDef="let parameter">{{ parameter.shortDescription || '-' }}</td>
-        </ng-container>
+      <ng-container matColumnDef="shortDescription">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let item">{{ item.parameter?.shortDescription || '-' }}</td>
+      </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
-      </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
-      <div style="text-align: right">
-        <mat-paginator [pageSize]="pageSize"
-                       [hidePageSize]="true"
-                       [showFirstLastButtons]="true"
-                       [length]="dataSource.totalSize$ | async">
-        </mat-paginator>
-      </div>
+    <div style="text-align: right">
+      <mat-paginator [pageSize]="pageSize"
+                     [hidePageSize]="true"
+                     [showFirstLastButtons]="true"
+                     [length]="dataSource.totalSize$ | async">
+      </mat-paginator>
     </div>
   </div>
   <ng-template #empty>

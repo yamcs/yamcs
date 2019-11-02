@@ -4,7 +4,7 @@
          type="text"
          [placeholder]="placeholder">
   <div class="filter">
-    <mat-icon class="icon16">filter_list</mat-icon>
+    <mat-icon class="icon16">{{ icon }}</mat-icon>
   </div>
   <div class="clear" *ngIf="showClear$ | async" (click)="writeValue('')">
     <mat-icon class="icon16">close</mat-icon>

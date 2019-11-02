@@ -1,23 +1,27 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { GetParametersOptions, Instance } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({
   templateUrl: './ParametersPage.html',
+  styleUrls: ['./ParametersPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParametersPage implements AfterViewInit {
+export class ParametersPage implements AfterViewInit, OnDestroy {
 
   instance: Instance;
   shortName = false;
   pageSize = 100;
+
+  system: string | null = null;
+  breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
   @ViewChild('top', { static: true })
   top: ElementRef;
@@ -29,13 +33,13 @@ export class ParametersPage implements AfterViewInit {
 
   dataSource: ParametersDataSource;
 
-  columns: ColumnInfo[] = [
-    { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'rawValue', label: 'Raw Value' },
-    { id: 'engValue', label: 'Value', visible: true },
-    { id: 'dataSource', label: 'Data Source' },
-    { id: 'shortDescription', label: 'Description', visible: true },
+  displayedColumns = [
+    'name',
+    'engValue',
+    'shortDescription',
   ];
+
+  private queryParamMapSubscription: Subscription;
 
   constructor(
     yamcs: YamcsService,
@@ -50,27 +54,41 @@ export class ParametersPage implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    this.filterControl.setValue(queryParams.get('filter'));
+    this.filterControl.setValue(this.route.snapshot.queryParamMap.get('filter'));
+    this.changeSystem(this.route.snapshot.queryParamMap);
 
+    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
+      if (map.get('system') !== this.system) {
+        console.log('cS', map.get('system'), this.system);
+        this.changeSystem(map);
+      }
+    });
     this.filterControl.valueChanges.subscribe(() => {
       this.paginator.pageIndex = 0;
       this.updateDataSource();
     });
-
-    if (queryParams.has('page')) {
-      this.paginator.pageIndex = Number(queryParams.get('page'));
-    }
-    this.updateDataSource();
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
       this.top.nativeElement.scrollIntoView();
     });
   }
 
+  changeSystem(map: ParamMap) {
+    this.system = map.get('system');
+    this.updateBrowsePath();
+
+    if (map.has('page')) {
+      this.paginator.pageIndex = Number(map.get('page'));
+    } else {
+      this.paginator.pageIndex = 0;
+    }
+    this.updateDataSource();
+  }
+
   private updateDataSource() {
     this.updateURL();
     const options: GetParametersOptions = {
+      system: this.system || '/',
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
     };
@@ -78,7 +96,9 @@ export class ParametersPage implements AfterViewInit {
     if (filterValue) {
       options.q = filterValue.toLowerCase();
     }
-    this.dataSource.loadParameters(options);
+    this.dataSource.loadParameters(options).then(() => {
+      this.updateBrowsePath();
+    });
   }
 
   private updateURL() {
@@ -88,8 +108,37 @@ export class ParametersPage implements AfterViewInit {
       queryParams: {
         page: this.paginator.pageIndex || null,
         filter: filterValue || null,
+        system: this.system || null,
       },
       queryParamsHandling: 'merge',
     });
   }
+
+  private updateBrowsePath() {
+    const breadcrumb: BreadCrumbItem[] = [];
+    let path = '';
+    if (this.system) {
+      for (const part of this.system.slice(1).split('/')) {
+        path += '/' + part;
+        breadcrumb.push({
+          name: part,
+          route: '/telemetry/parameters',
+          queryParams: { system: path, instance: this.instance.name },
+        });
+      }
+    }
+    this.breadcrumb$.next(breadcrumb);
+  }
+
+  ngOnDestroy() {
+    if (this.queryParamMapSubscription) {
+      this.queryParamMapSubscription.unsubscribe();
+    }
+  }
+}
+
+export interface BreadCrumbItem {
+  name?: string;
+  route: string;
+  queryParams: any;
 }

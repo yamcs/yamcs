@@ -42,6 +42,8 @@ import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
+import { Breadcrumb } from './breadcrumb/Breadcrumb';
+import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
@@ -146,6 +148,8 @@ const sharedComponents = [
   Ago,
   AlarmLabel,
   AlarmLevel,
+  Breadcrumb,
+  BreadcrumbTrail,
   ColumnChooser,
   ConnectedLabel,
   DateTime,

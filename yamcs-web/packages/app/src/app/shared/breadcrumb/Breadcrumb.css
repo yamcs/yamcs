@@ -1,0 +1,12 @@
+.item.with-label {
+  margin-right: 5px;
+}
+
+.sep {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.mat-icon {
+  vertical-align: middle;
+}

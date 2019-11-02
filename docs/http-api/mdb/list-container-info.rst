@@ -8,14 +8,19 @@ List all containers defined in the Mission Database for the given Yamcs instance
 
 .. rubric:: Parameters
 
-namespace (string)
-    Include containers under the specified namespace only
-
-recurse (bool)
-    If a ``namespace`` is given, specifies whether to list containers of any nested sub systems. Default ``no``.
-
 q (string)
     The search keywords. This supports searching on the namespace or name.
+
+system (string)
+    List only direct child sub-systems or containers of the specified system. For example when querying the system "/a" against an MDB with containers "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the container "/a/c".
+
+pos (integer)
+    The zero-based row number at which to start outputting results. Default: ``0``
+
+limit (integer)
+    The maximum number of returned containers per page. Choose this value too high and you risk hitting the maximum response size limit enforced by the server. Default: ``100``
+
+When ``system`` and ``q`` are used together, matching containers at any depth are returned, starting from the specified space system.
 
 
 .. rubric:: Response

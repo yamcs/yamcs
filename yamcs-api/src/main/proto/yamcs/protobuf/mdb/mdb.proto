@@ -492,8 +492,6 @@ message AlgorithmInfo {
 message ListSpaceSystemsRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
-  optional string namespace = 6;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -502,9 +500,7 @@ message ListSpaceSystemsRequest {
 message ListParameterTypesRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
   optional bool details = 4;
-  optional string namespace = 6;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -513,8 +509,7 @@ message ListParameterTypesRequest {
 message ListContainersRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
-  optional string namespace = 6;
+  optional string system = 10;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -523,8 +518,7 @@ message ListContainersRequest {
 message ListAlgorithmsRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
-  optional string namespace = 6;
+  optional string system = 10;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -533,9 +527,8 @@ message ListAlgorithmsRequest {
 message ListCommandsRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
+  optional string system = 11;
   optional bool details = 4;
-  optional string namespace = 6;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
@@ -550,17 +543,17 @@ message GetParameterRequest {
 message ListParametersRequest {
   optional string instance = 1;
   optional string q = 2;
-  optional bool recurse = 3;
   optional bool details = 4;
   repeated string type = 5;
   optional DataSourceType source = 10;
-  optional string namespace = 6;
+  optional string system = 11;
   optional string next = 7;
   optional int32 pos = 8;
   optional int32 limit = 9;
 }
 
 message ListParametersResponse {
+  repeated string spaceSystems = 4;
   repeated ParameterInfo parameters = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
@@ -586,18 +579,21 @@ message BatchGetParametersResponse {
 }
 
 message ListContainersResponse {
+  repeated string spaceSystems = 4;
   repeated ContainerInfo containers = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListCommandsResponse {
+  repeated string spaceSystems = 4;
   repeated CommandInfo commands = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListAlgorithmsResponse {
+  repeated string spaceSystems = 4;
   repeated AlgorithmInfo algorithms = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;

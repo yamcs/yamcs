@@ -41,19 +41,15 @@
 
     <div class="panel-content">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-        <div class="breadcrumb" *ngIf="breadcrumb.length">
-          <a class="ya-link"
-             routerLink="/telemetry/displays/browse"
-             [queryParams]="{instance: instance.name}">Displays</a>
-          <ng-container *ngFor="let item of breadcrumb; let i = index">
-            &nbsp;&nbsp;/&nbsp;&nbsp;
-            <a *ngIf="i < breadcrumb.length - 1"
-               class="ya-link"
-               [routerLink]="item.route"
-               [queryParams]="{instance: instance.name}">{{ item.name }}</a>
-            <ng-container *ngIf="i === breadcrumb.length - 1">{{ item.name }}</ng-container>
-          </ng-container>
-        </div>
+        <app-breadcrumb-trail *ngIf="breadcrumb.length">
+          <app-breadcrumb link="/telemetry/displays/browse"
+                          [queryParams]="{instance: instance.name}"
+                          icon="account_tree"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [link]="item.route"
+                          [queryParams]="{instance: instance.name}"
+                          [label]="item.name"></app-breadcrumb>
+        </app-breadcrumb-trail>
       </ng-container>
       <table mat-table
              *ngIf="dataSource && dataSource.data.length; else empty"
@@ -81,18 +77,18 @@
           <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *cdkCellDef="let item">
             <ng-container *ngIf="item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
               <a [routerLink]="'/telemetry/displays/browse/' + item.name"
                  [queryParams]="{instance: instance.name}"
                  (click)="$event.stopPropagation()">
-                <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
                 {{ item.name | filename }}
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
               <a [routerLink]="'/telemetry/displays/files/' + item.name"
                  [queryParams]="{instance: instance.name}"
                  (click)="$event.stopPropagation()">
-                <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
                 {{ item.name | filename }}
               </a>
             </ng-container>

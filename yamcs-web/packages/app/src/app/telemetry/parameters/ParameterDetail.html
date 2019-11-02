@@ -6,7 +6,11 @@
 
       <dt>Space System</dt>
       <dd>
-        {{ alias.namespace }}
+        <a routerLink="/telemetry/parameters"
+           [queryParams]="{instance: instance.name, system: alias.namespace}"
+           class="ya-link">
+          {{ alias.namespace }}
+        </a>
       </dd>
     </ng-container>
   </ng-container>

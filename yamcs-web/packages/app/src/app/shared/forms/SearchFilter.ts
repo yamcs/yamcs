@@ -30,6 +30,9 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
   @Input()
   debounceTime = 400;
 
+  @Input()
+  icon = 'filter_list';
+
   showClear$ = new Subject<boolean>();
 
   private setEvent$ = new Subject<string>();
