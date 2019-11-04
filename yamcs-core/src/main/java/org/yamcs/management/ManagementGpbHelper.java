@@ -87,9 +87,10 @@ public final class ManagementGpbHelper {
         return entryb.build();
     }
 
-    public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, boolean detail) {
+    public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, int order, boolean detail) {
         Processor c = queue.getProcessor();
         CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder()
+                .setOrder(order)
                 .setInstance(c.getInstance())
                 .setProcessorName(c.getName())
                 .setName(queue.getName())
