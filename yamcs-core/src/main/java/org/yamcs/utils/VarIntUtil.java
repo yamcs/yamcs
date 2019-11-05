@@ -12,7 +12,7 @@ public class VarIntUtil {
      * @param x
      * @return the decoded integer
      */
-    static public int writeVarint32(byte[] buf, int pos, int x) {
+    static public int writeVarInt32(byte[] buf, int pos, int x) {
         while ((x & ~0x7F) != 0) {
             buf[pos++] = ((byte)((x & 0x7F) | 0x80));
             x >>>= 7;
@@ -72,7 +72,7 @@ public class VarIntUtil {
 
     //same as above but better for negative numbers
     static public int encodeSigned(byte[] buf, int pos, int x) {
-        return writeVarint32(buf, pos, encodeZigZag(x));       
+        return writeVarInt32(buf, pos, encodeZigZag(x));       
     }
 
     /**
@@ -238,10 +238,10 @@ public class VarIntUtil {
             return buf;
         }
 
-        int pos = VarIntUtil.writeVarint32(buf, 0, a[0]);
+        int pos = VarIntUtil.writeVarInt32(buf, 0, a[0]);
 
         for (int i = 1; i < length; i++) {
-            pos = VarIntUtil.writeVarint32(buf, pos, (a[i] - a[i - 1]));
+            pos = VarIntUtil.writeVarInt32(buf, pos, (a[i] - a[i - 1]));
         }
         if (pos == buf.length) {
             return buf;

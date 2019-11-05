@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -28,7 +27,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     YConfiguration packetPreprocessorArgs;
     protected PacketPreprocessor packetPreprocessor;
 
-    final Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    final protected Log log;
     protected SystemParametersCollector sysParamCollector;
     private String spLinkStatus, spDataCount, spDataRate, spPacketRate;
     final protected TimeService timeService;
@@ -45,6 +44,8 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
         this.yamcsInstance = instance;
         this.name = name;
         this.config = config;
+        this.log = new Log(this.getClass(), instance);
+        log.setContext(name);
     }
 
     protected void initPreprocessor(String instance, YConfiguration config) {

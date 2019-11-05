@@ -9,8 +9,6 @@ import java.util.Arrays;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.logging.Log;
-import org.yamcs.time.TimeService;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -21,17 +19,14 @@ import com.google.common.collect.ImmutableMap;
 public class FilePollingTmDataLink extends AbstractTmDataLink {
 
     final Path incomingDir;
-    final private Log log;
     volatile boolean disabled;
     TmSink tmSink;
     volatile long tmCount = 0;
-    final TimeService timeService;
     boolean deleteAfterImport = true;
     long delayBetweenPackets = -1;
 
     public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
-        log = new Log(getClass(), yamcsInstance);
 
         if (config.containsKey("incomingDir")) {
             incomingDir = Paths.get(config.getString("incomingDir"));
@@ -41,16 +36,12 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
         }
         deleteAfterImport = config.getBoolean("deleteAfterImport", true);
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
-        timeService = YamcsServer.getTimeService(yamcsInstance);
         initPreprocessor(yamcsInstance, config);
     }
 
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
         super(yamcsInstance, name, YConfiguration.wrap(ImmutableMap.of("incomingDir", incomingDir)));
-        log = new Log(getClass(), yamcsInstance);
-        log.setContext(name);
         this.incomingDir = Paths.get(incomingDir);
-        this.timeService = YamcsServer.getTimeService(yamcsInstance);
         initPreprocessor(yamcsInstance, null);
     }
 

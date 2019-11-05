@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.logging.Log;
 
 /**
  * Receives telemetry packets via UDP. One UDP datagram = one TM packet.
@@ -28,12 +27,9 @@ public class UdpTmDataLink extends AbstractTmDataLink {
 
     private TmSink tmSink;
 
-    private Log log;
     final static int MAX_LENGTH = 1500;
     final DatagramPacket datagram;
     final int maxLength;
-    String packetPreprocessorClassName;
-    Object packetPreprocessorArgs;
 
     /**
      * Creates a new UDP TM Data Link
@@ -43,8 +39,6 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      */
     public UdpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
-        log = new Log(getClass(), instance);
-        log.setContext(name);
         port = config.getInt("port");
         maxLength = config.getInt("maxLength", MAX_LENGTH);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);

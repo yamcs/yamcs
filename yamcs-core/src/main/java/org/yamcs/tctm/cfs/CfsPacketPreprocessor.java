@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
-import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -23,7 +22,6 @@ import org.yamcs.utils.TimeEncoding;
  * </ul>
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
-    ErrorDetectionWordCalculator errorDetectionCalculator;
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(CfsPacketPreprocessor.class);
     static final int MINIMUM_LENGTH = 12;

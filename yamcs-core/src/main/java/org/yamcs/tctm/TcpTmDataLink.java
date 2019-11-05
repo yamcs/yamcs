@@ -12,7 +12,6 @@ import java.util.List;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
 
@@ -24,7 +23,6 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     protected long initialDelay;
     protected volatile boolean disabled = false;
 
-    protected final Log log;
     private TmSink tmSink;
 
     ParameterValue svConnectionStatus;
@@ -36,8 +34,6 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
-        log = new Log(getClass(), instance);
-        log.setContext(name);
         if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
             host = config.getString("tmHost");
             port = config.getInt("tmPort");

@@ -29,7 +29,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
     static AtomicInteger count = new AtomicInteger(0);
     final PartitioningSpec partitioningSpec;
-    final TableDefinition tableDefinition;
     private long numRecordsRead = 0;
     private final Tablespace tablespace;
     
@@ -39,7 +38,6 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         super(ydb, tblDef, partitionManager, ascending, follow);
         
         this.tablespace = tablespace;
-        this.tableDefinition = tblDef;
         partitioningSpec = tblDef.getPartitioningSpec();
     }
 
@@ -206,7 +204,6 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
 
     
     class RdbRawTuple extends RawTuple {       
-        int index; //used for sorting tuples with equals keys
         RocksIterator iterator;
         byte[] partition;
         byte[] key;

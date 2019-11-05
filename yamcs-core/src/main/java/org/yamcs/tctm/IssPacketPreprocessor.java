@@ -53,8 +53,6 @@ import org.yamcs.utils.CcsdsPacket;
  *
  */
 public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
-
-    ErrorDetectionWordCalculator errorDetectionCalculator;
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(IssPacketPreprocessor.class);
     private boolean checkForSequenceDiscontinuity = true;
@@ -63,10 +61,6 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
-    @Deprecated
-    public IssPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
-        this(yamcsInstance, YConfiguration.wrap(config));
-    }
 
     public IssPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);

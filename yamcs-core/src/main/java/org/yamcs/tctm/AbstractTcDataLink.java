@@ -3,7 +3,6 @@ package org.yamcs.tctm;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -36,7 +35,6 @@ public abstract class AbstractTcDataLink extends AbstractService
         implements TcDataLink, SystemParametersProducer {
 
     protected CommandHistoryPublisher commandHistoryPublisher;
-    SelectionKey selectionKey;
 
     protected volatile boolean disabled = false;
 

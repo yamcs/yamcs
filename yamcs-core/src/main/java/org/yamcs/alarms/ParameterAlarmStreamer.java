@@ -12,8 +12,6 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
     static public final DataType PARAMETER_DATA_TYPE = DataType
             .protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
 
-    Stream stream;
-
     static public final String CNAME_TRIGGER = "triggerPV";
     static public final String CNAME_CLEAR = "clearPV";
     static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedPV";

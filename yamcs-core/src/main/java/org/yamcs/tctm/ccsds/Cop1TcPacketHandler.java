@@ -45,7 +45,6 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
  *
  */
 public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
-    final Log log;
 
     static final int OUT_QUEUE_SIZE = 20;
 
@@ -157,8 +156,6 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
             TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor, Cop1Monitor monitor) {
         super(yamcsInstance, linkName, vmp.config);
-        log = new Log(getClass(), yamcsInstance);
-        log.setContext(linkName);
 
         this.frameFactory = vmp.getFrameFactory();
         this.executor = executor;

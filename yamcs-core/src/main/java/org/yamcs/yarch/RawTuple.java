@@ -6,7 +6,7 @@ import com.google.common.primitives.UnsignedBytes;
 
 
 public abstract class RawTuple implements Comparable<RawTuple>{
-    int index; //used for sorting tuples with equals keys
+    protected int index; //used for sorting tuples with equals keys
     protected abstract byte[] getKey();
     protected abstract byte[] getValue();
     
