@@ -116,6 +116,7 @@ import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
@@ -490,33 +491,32 @@ public class XtceToGpbAssembler {
 
     public static SignificanceInfo toSignificanceInfo(Significance xtceSignificance) {
         SignificanceInfo.Builder b = SignificanceInfo.newBuilder();
-        switch (xtceSignificance.getConsequenceLevel()) {
-        case none:
-            b.setConsequenceLevel(SignificanceLevelType.NONE);
-            break;
-        case watch:
-            b.setConsequenceLevel(SignificanceLevelType.WATCH);
-            break;
-        case warning:
-            b.setConsequenceLevel(SignificanceLevelType.WARNING);
-            break;
-        case distress:
-            b.setConsequenceLevel(SignificanceLevelType.DISTRESS);
-            break;
-        case critical:
-            b.setConsequenceLevel(SignificanceLevelType.CRITICAL);
-            break;
-        case severe:
-            b.setConsequenceLevel(SignificanceLevelType.SEVERE);
-            break;
-        default:
-            throw new IllegalStateException("Unexpected level " + xtceSignificance.getConsequenceLevel());
-        }
+        SignificanceLevelType level = toSignificanceLevelType(xtceSignificance.getConsequenceLevel());
+        b.setConsequenceLevel(level);
         if (xtceSignificance.getReasonForWarning() != null) {
             b.setReasonForWarning(xtceSignificance.getReasonForWarning());
         }
 
         return b.build();
+    }
+
+    public static SignificanceLevelType toSignificanceLevelType(Levels level) {
+        switch (level) {
+        case none:
+            return SignificanceLevelType.NONE;
+        case watch:
+            return SignificanceLevelType.WATCH;
+        case warning:
+            return SignificanceLevelType.WARNING;
+        case distress:
+            return SignificanceLevelType.DISTRESS;
+        case critical:
+            return SignificanceLevelType.CRITICAL;
+        case severe:
+            return SignificanceLevelType.SEVERE;
+        default:
+            throw new IllegalStateException("Unexpected level " + level);
+        }
     }
 
     public static ParameterInfo toParameterInfo(Parameter p, DetailLevel detail) {

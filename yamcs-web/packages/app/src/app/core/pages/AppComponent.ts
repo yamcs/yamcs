@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ConnectionInfo } from '@yamcs/client';
+import { AuthInfo, ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
@@ -25,6 +25,7 @@ export class AppComponent implements OnDestroy {
 
   title = 'Yamcs';
   tag: string;
+  authInfo: AuthInfo;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
   connected$: Observable<boolean>;
@@ -38,7 +39,7 @@ export class AppComponent implements OnDestroy {
   userSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
     router: Router,
     route: ActivatedRoute,
     private authService: AuthService,
@@ -47,6 +48,7 @@ export class AppComponent implements OnDestroy {
     configService: ConfigService,
   ) {
     this.tag = configService.getTag();
+    this.authInfo = configService.getAuthInfo();
     this.connected$ = yamcs.yamcsClient.connected$;
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
@@ -104,6 +106,13 @@ export class AppComponent implements OnDestroy {
     } else {
       this.preferenceStore.setShowSidebar(true);
     }
+  }
+
+  leaveReplay() {
+    const instance = this.yamcs.getInstance()!.name;
+    const clientId = this.yamcs.getClientId();
+    // Switch to the 'default' processor of the currently connected instance
+    this.yamcs.yamcsClient.editClient(clientId, { instance });
   }
 
   logout() {

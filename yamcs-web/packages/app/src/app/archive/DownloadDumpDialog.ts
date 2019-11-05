@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';
+import * as utils from '../shared/utils';
 import { subtractDuration } from '../shared/utils';
 
 @Component({
@@ -20,18 +21,18 @@ export class DownloadDumpDialog {
     private dialogRef: MatDialogRef<DownloadDumpDialog>,
     yamcs: YamcsService,
     formBuilder: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) data: any,
   ) {
     this.form = formBuilder.group({
-      start: [null, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
-      stop: [null, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
+      start: [null, Validators.required],
+      stop: [null, Validators.required],
     });
 
     this.form.valueChanges.subscribe(value => {
       if (this.form.valid) {
         const url = yamcs.getInstanceClient()!.getPacketsDownloadURL({
-          start: value.start,
-          stop: value.stop,
+          start: utils.toISOString(value.start),
+          stop: utils.toISOString(value.stop),
           format: 'raw',
         });
         this.downloadURL$.next(url);
@@ -40,19 +41,16 @@ export class DownloadDumpDialog {
       }
     });
 
-    if (this.data.start && this.data.stop) {
-      this.form.setValue({
-        start: this.data.start.toISOString(),
-        stop: this.data.stop.toISOString(),
-      });
-    } else {
-      const stop = new Date();
-      const start = subtractDuration(stop, 'PT1H');
-      this.form.setValue({
-        start: start.toISOString(),
-        stop: stop.toISOString(),
-      });
+    let start = data.start;
+    let stop = data.stop;
+    if (!start || !stop) {
+      stop = new Date();
+      start = subtractDuration(stop, 'PT1H');
     }
+    this.form.setValue({
+      start: utils.printLocalDate(start, 'hhmm'),
+      stop: utils.printLocalDate(stop, 'hhmm'),
+    });
   }
 
   closeDialog() {

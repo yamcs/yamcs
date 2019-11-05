@@ -3,7 +3,7 @@
     Profile
   </mat-toolbar-row>
 </mat-toolbar>
-<div class="panel-content mat-typography" *ngIf="user$ | async as user">
+<div class="form-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
     <dt>Username</dt>
     <dd>{{ user.getName() }}</dd>
@@ -17,7 +17,7 @@
     <ng-container *ngIf="user.isSuperuser()">
       <dt>Attributes</dt>
       <dd>
-        <mat-icon class="icon12" style="color: gold">flash_on</mat-icon> superuser
+        <mat-icon class="icon12" style="color: gold; vertical-align: middle">flash_on</mat-icon> superuser
       </dd>
     </ng-container>
   </dl>
@@ -29,7 +29,7 @@
     <dd>
       <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
       <table *ngIf="!user.isSuperuser()" yaDataTable>
-      <tr *ngFor="let privilege of user.getSystemPrivileges()">
+        <tr *ngFor="let privilege of user.getSystemPrivileges()">
           <td>{{ privilege }}</td>
         </tr>
       </table>

@@ -1,11 +1,12 @@
-<mat-toolbar color="primary">
-  <mat-toolbar-row class="app-bar">
+<mat-toolbar color="primary" *ngIf="user$ | async as user">
+  <mat-toolbar-row class="app-bar"
+                   [class.replay]="(connectionInfo$ | async)?.processor?.replay">
     <button mat-icon-button
             *ngIf="showMenuToggle$ | async"
             (click)="toggleSidebar()">
       <mat-icon>menu</mat-icon>
     </button>
-    <div class="vmiddle" class="logo-wrapper">
+    <div class="logo-wrapper">
       <a routerLink="/">
         <img src="static/yamcs.png" style="margin-top: 12px">
       </a>
@@ -17,47 +18,63 @@
       </button>
     </ng-container>
     <span style="flex: 1 1 auto"></span>
-
     <app-connected-label [connected]="connected$ | async"
                          [tag]="tag"
                          style="margin-top: 8px"></app-connected-label>
 
-    <app-alarm-label *ngIf="connectionInfo$ | async"
+    <mat-menu #replayMenu="matMenu" class="ya-menu" overlapTrigger="false">
+      <button mat-menu-item (click)="leaveReplay()">
+        <mat-icon>exit_to_app</mat-icon>
+        Leave replay
+      </button>
+    </mat-menu>
+    <div style="display: inline-block; margin-top: 8px" [matMenuTriggerFor]="replayMenu">
+      <app-slanted-label *ngIf="(connectionInfo$ | async)?.processor?.replay"
+                         color="white"
+                         iconColor="darkviolet"
+                         icon="ondemand_video"
+                         [selectable]="true">
+        REPLAY
+      </app-slanted-label>
+    </div>
+
+    <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms"
                      style="margin-top: 8px"
                      matTooltip="Alarm State"></app-alarm-label>
 
-    <ng-container *ngIf="user$ | async as user">
-      <mat-menu #userMenu="matMenu" overlapTrigger="false">
-        <a mat-menu-item routerLink="profile">
-          <mat-icon>account_box</mat-icon>
-          Profile
+    <mat-menu #userMenu="matMenu" overlapTrigger="false">
+      <a mat-menu-item routerLink="profile">
+        <mat-icon>account_box</mat-icon>
+        Profile
+      </a>
+      <button mat-menu-item (click)="toggleDarkTheme()">
+        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
+        Dark mode:
+        <span *ngIf="darkMode$ | async">On</span>
+        <span *ngIf="!(darkMode$ | async)">Off</span>
+      </button>
+      <ng-container *ngIf="user | superuser">
+        <mat-divider></mat-divider>
+        <a mat-menu-item routerLink="admin">
+          <mat-icon>security</mat-icon>
+          Admin Area
         </a>
-        <button mat-menu-item (click)="toggleDarkTheme()">
-          <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-          Dark mode:
-          <span *ngIf="darkMode$ | async">On</span>
-          <span *ngIf="!(darkMode$ | async)">Off</span>
-        </button>
-        <ng-container *ngIf="user | superuser">
-          <mat-divider></mat-divider>
-          <a mat-menu-item routerLink="admin">
-            <mat-icon>security</mat-icon>
-            Admin Area
-          </a>
-        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="authInfo.requireAuthentication">
         <mat-divider></mat-divider>
         <a mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
           Sign out
         </a>
-      </mat-menu>
-      <button mat-button
-              [matMenuTriggerFor]="userMenu"
-              matTooltipPosition="left">
-        <mat-icon>person</mat-icon>
-        {{ user.getDisplayName() || user.getName() }}
-      </button>
-    </ng-container>
+      </ng-container>
+    </mat-menu>
+    <button mat-button
+            [matMenuTriggerFor]="userMenu"
+            matTooltipPosition="left">
+      <mat-icon>person</mat-icon>
+      {{ user.getDisplayName() || user.getName() }}
+    </button>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>
+<app-print-zone></app-print-zone>

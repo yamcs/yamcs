@@ -3,12 +3,13 @@
 <mat-dialog-content class="mat-typography">
   <form [formGroup]="form" class="ya-form">
     <label>
-      Start time
-      <input type="text" formControlName="start">
+      Start time<br>
+      <app-date-time formControlName="start"></app-date-time>
     </label>
+    <br>
     <label>
-      Stop time (optional)
-      <input type="text" formControlName="stop">
+      Stop time <span class="hint">(optional)</span>
+      <app-date-time formControlName="stop"></app-date-time>
     </label>
     <br>
     <label>
@@ -17,10 +18,9 @@
       <span class="hint">Must be unique. Other users can join your replay via this name</span>
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button (click)="start()" color="primary" [disabled]="!form.valid">START</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="start()" [disabled]="!form.valid">START</button>
 </mat-dialog-actions>

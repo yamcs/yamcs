@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
-import { AdminPage } from '../shared/template/AdminPage';
+import { AdminPage } from './AdminPage';
 import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
@@ -21,6 +21,8 @@ import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
 import { LeapSecondsPage } from './leap-seconds/LeapSecondsPage';
 import { PluginsPage } from './plugins/PluginsPage';
+import { DatabasePage } from './rocksdb/DatabasePage';
+import { DatabasesPage } from './rocksdb/DatabasesPage';
 import { RoutesPage } from './routes/RoutesPage';
 import { ServicesPage } from './services/ServicesPage';
 
@@ -74,7 +76,30 @@ const routes: Routes = [
       },
       {
         path: 'rocksdb',
-        loadChildren: () => import('src/app/rocksdb/RocksDbModule').then(m => m.RocksDbModule),
+        canActivate: [AuthGuard, SuperuserGuard, UnselectInstanceGuard],
+        canActivateChild: [AuthGuard],
+        runGuardsAndResolvers: 'always',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'databases'
+          },
+          {
+            path: 'databases',
+            pathMatch: 'full',
+            component: DatabasesPage,
+          },
+          {
+            path: 'databases/:tablespace',
+            children: [
+              {
+                path: '**',
+                component: DatabasePage,
+              }
+            ]
+          },
+        ],
       },
       {
         path: 'iam/service-accounts',
@@ -141,8 +166,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class AdminRoutingModule { }
 
@@ -155,6 +180,8 @@ export const routingComponents = [
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
+  DatabasesPage,
+  DatabasePage,
   EditGroupPage,
   EditUserPage,
   GroupsPage,

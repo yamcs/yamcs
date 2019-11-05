@@ -32,21 +32,15 @@
   {{ link.dataOutCount | number }}
 </div>
 
-<ng-container *ngIf="mayControlLinks()">
-  <br>
-  <mat-divider></mat-divider>
-  <br>
-
-  <button mat-raised-button
+<div class="action-bar" *ngIf="mayControlLinks()">
+  <button class="ya-button"
           (click)="enableLink()"
-          *ngIf="link.status === 'DISABLED'"
-          color="primary">
+          *ngIf="link.status === 'DISABLED'">
     ENABLE LINK
   </button>
-  <button mat-raised-button
+  <button class="ya-button"
           (click)="disableLink()"
-          *ngIf="link.status !== 'DISABLED'"
-          color="warn">
+          *ngIf="link.status !== 'DISABLED'">
     DISABLE LINK
   </button>
-</ng-container>
+</div>

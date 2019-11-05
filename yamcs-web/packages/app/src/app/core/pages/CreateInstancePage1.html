@@ -1,4 +1,4 @@
-<mat-toolbar class="main">
+<mat-toolbar class="top">
   <mat-toolbar-row>
     <a mat-icon-button routerLink="/" color="primary">
       <mat-icon>arrow_back</mat-icon>
@@ -6,44 +6,31 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-toolbar class="sub">
-  <mat-toolbar-row>
-    <app-create-instance-wizard-step step="1"></app-create-instance-wizard-step>
-  </mat-toolbar-row>
-</mat-toolbar>
+<app-create-instance-wizard-step step="1"></app-create-instance-wizard-step>
 
 <div class="form-content mat-typography">
   <table mat-table
-          [dataSource]="dataSource"
-          class="ya-data-table"
-          style="width: 100%">
-
-    <ng-container cdkColumnDef="select">
-      <td mat-cell *matCellDef="let row" style="width: 50px">
-        <mat-checkbox (click)="$event.stopPropagation()"
-                      (change)="$event ? selectRow(row) : null"
-                      [checked]="selection.isSelected(row)">
-        </mat-checkbox>
-      </td>
-    </ng-container>
+         [dataSource]="dataSource"
+         class="ya-data-table"
+         style="width: 100%">
 
     <ng-container cdkColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
       <td mat-cell *cdkCellDef="let row">
-        {{ row.name }}
+        <a [routerLink]="row.name">
+          {{ row.name }}
+        </a>
       </td>
     </ng-container>
 
-    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-        [class.vs-selected]></tr>
-  </table>
+    <ng-container cdkColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <td mat-cell *cdkCellDef="let row">
+        -
+      </td>
+    </ng-container>
 
-  <p>&nbsp;</p>
-  <mat-toolbar>
-    <span style="flex: 1 1 auto"></span>
-    <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
-    <button type="submit" (click)="goToCustomizeInstance()"
-            mat-raised-button
-            [disabled]="!(selectedTemplate$ | async)"
-            color="primary">Next</button>
-  </mat-toolbar>
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
 </div>

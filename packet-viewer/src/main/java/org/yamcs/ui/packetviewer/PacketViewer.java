@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -578,7 +580,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                             break;
                         }
                         packet = packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), p));
-                        
+
                         if (packet != null) {
                             publish(packet);
                             packetCount++;
@@ -788,7 +790,8 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf)));
+            tmProcessor.processPacket(
+                    packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf)));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -997,6 +1000,12 @@ public class PacketViewer extends JFrame implements ActionListener,
                 } else {
                     printArgsError("Name of stream not specified for -s option");
                 }
+            } else if ("--etc-dir".equals(args[i])) {
+                if (i + 1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Directory not specified for --etc-dir option");
+                }
             } else if (args[i].startsWith("-")) {
                 printArgsError("Unknown option: " + args[i]);
             } else { // i should now be positioned at [file|url]
@@ -1033,7 +1042,12 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
 
         // Okay, launch the GUI now
-        YConfiguration.setupTool();
+        if (options.containsKey("--etc-dir")) {
+            Path etcDir = Paths.get(options.get("--etc-dir"));
+            YConfiguration.setupTool(etcDir.toFile());
+        } else {
+            YConfiguration.setupTool();
+        }
         theApp = new PacketViewer(maxLines);
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("http://")) {
@@ -1061,11 +1075,9 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     protected void readConfig(String instance, YConfiguration config) {
         String packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS, IssPacketPreprocessor.class.getName());
-        YConfiguration packetPreprocessorArgs = null;
-        packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
-
         try {
-            if (packetPreprocessorArgs != null) {
+            if (config.containsKey("packetPreprocessorArgs")) {
+                YConfiguration packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
                 packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
                         packetPreprocessorArgs);
             } else {

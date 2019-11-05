@@ -1,6 +1,8 @@
 import { CommandId, Value } from '@yamcs/client';
 const PREVIEW_LENGTH = 5;
 
+export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
+
 /**
  * Deep clones an object.
  * https://github.com/whatwg/html/issues/793
@@ -208,11 +210,61 @@ export function printCommandId(commandId: CommandId): string {
 }
 
 export function printDateTime(date: Date | string, addTimezone = true): string {
+  let dateString;
   if (typeof date === 'string') {
-    return date.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+    // Convert to date first, this standardizes output (millis precision)
+    dateString = toDate(date).toISOString();
   } else {
-    const dateString = date.toISOString();
-    return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+    dateString = date.toISOString();
+  }
+  return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
+}
+
+/**
+ * Prints a date in ISO format (with Z suffix).
+ * Dates or datetimes without Z suffix are considered UTC.
+ */
+export function toISOString(date: Date | string): string {
+  let dateString;
+  if (typeof date === 'string') {
+    // Convert to date first, this standardizes output (millis precision)
+    dateString = toDate(date).toISOString();
+  } else {
+    dateString = date.toISOString();
+  }
+  return dateString;
+}
+
+/**
+ * Prints a date in ISO format without any timezone indication.
+ *
+ * For example:
+ * - 'day' resolution: 2050-12-20
+ * - 'hhmm' resolution: 2050-12-20T08:06
+ * - 'millis' resolution: 2050-12-20T08:06:00.123
+ */
+export function printLocalDate(date: Date | string, resolution: ISOResolution = 'millis'): string | null {
+  if (!date) {
+    return null;
+  }
+  let dateString;
+  if (typeof date === 'string') {
+    // Convert to date first, this standardizes output (millis precision)
+    dateString = toDate(date).toISOString();
+  } else {
+    dateString = date.toISOString();
+  }
+  switch (resolution) {
+    case 'day':
+      return dateString.substr(0, 10);
+    case 'hhmm':
+      return dateString.substr(0, 16);
+    case 'hhmmss':
+      return dateString.substr(0, 19);
+    case 'millis':
+      return dateString;
+    default:
+      return `Unexpected resolution ${resolution}`;
   }
 }
 
@@ -226,6 +278,9 @@ export function toDate(obj: any): Date {
   } else if (typeof obj === 'number') {
     return new Date(obj);
   } else if (typeof obj === 'string') {
+    if (!obj.endsWith('Z')) {
+      obj = obj + 'Z';
+    }
     return new Date(Date.parse(obj));
   } else {
     throw new Error(`Cannot convert '${obj}' to Date`);

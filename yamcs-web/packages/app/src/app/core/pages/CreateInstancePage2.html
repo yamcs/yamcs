@@ -1,16 +1,12 @@
-<mat-toolbar class="main">
+<mat-toolbar class="top">
   <mat-toolbar-row>
-    <a mat-icon-button routerLink="/" color="primary">
+    <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Create an instance
   </mat-toolbar-row>
 </mat-toolbar>
 
-<mat-toolbar class="sub">
-  <mat-toolbar-row>
-    <app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
-  </mat-toolbar-row>
-</mat-toolbar>
+<app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
 
 <div *ngIf="template$ | async as template" class="form-content ya-form mat-typography">
   <form [formGroup]="form" novalidate>
@@ -26,12 +22,9 @@
     </ng-container>
   </form>
   <p>&nbsp;</p>
-  <mat-toolbar>
-    <span style="flex: 1 1 auto"></span>
-    <button mat-button routerLink="/" class="ya-link">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
-    <button type="submit" (click)="onConfirm()"
-            mat-raised-button
-            [disabled]="!form.valid"
-            color="primary">CREATE</button>
-  </mat-toolbar>
+  <div class="action-bar">
+    <button class="ya-button" routerLink="/">CANCEL</button>
+    <button class="ya-button primary" type="submit" (click)="onConfirm()"
+            [disabled]="!form.valid">CREATE</button>
+  </div>
 </div>

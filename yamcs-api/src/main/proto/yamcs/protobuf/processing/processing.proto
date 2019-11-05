@@ -7,6 +7,7 @@ option java_outer_classname = "ProcessingProto";
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
@@ -128,10 +129,18 @@ message IssueCommandRequest {
 }
 
 message IssueCommandResponse {
-  optional commanding.CommandQueueEntry commandQueueEntry = 1;
+  optional string id = 5;
+  optional google.protobuf.Timestamp generationTime = 6;
+  optional string origin = 7;
+  optional int32 sequenceNumber = 8;
+  optional string commandName = 9;
   optional string source = 2;
   optional string hex = 3;
   optional bytes binary = 4;
+  optional string username = 11;
+  optional string queue = 10;
+  
+  optional commanding.CommandQueueEntry commandQueueEntry = 1 [deprecated=true];
 }
 
 message UpdateCommandHistoryRequest {

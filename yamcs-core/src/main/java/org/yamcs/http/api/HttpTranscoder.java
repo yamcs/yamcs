@@ -112,6 +112,8 @@ public class HttpTranscoder {
             return toLong(name, parameter);
         case STRING:
             return parameter;
+        case ENUM:
+            return field.getEnumType().findValueByName(parameter);
         case MESSAGE:
             if (Timestamp.getDescriptor().equals(field.getMessageType())) {
                 long instant = TimeEncoding.parse(parameter);

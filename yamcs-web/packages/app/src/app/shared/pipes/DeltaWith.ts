@@ -1,18 +1,19 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import * as utils from '../utils';
 
 @Pipe({ name: 'deltaWith' })
 export class DeltaWithPipe implements PipeTransform {
 
-  transform(second: Date | string, first: Date | string): string | null {
+  transform(second: Date | string, first: Date | string, showSign = true): string | null {
     if (!first || !second) {
       return null;
     }
 
-    const firstDate = this.toDate(first);
-    const secondDate = this.toDate(second);
+    const firstDate = utils.toDate(first);
+    const secondDate = utils.toDate(second);
     let millis = secondDate.getTime() - firstDate.getTime();
 
-    const sign = (millis >= 0) ? '+' : '-';
+    const sign = showSign ? (millis >= 0 ? '+' : '-') : '';
     millis = Math.abs(millis);
 
     const totalSeconds = Math.floor(millis / 1000);
@@ -20,7 +21,15 @@ export class DeltaWithPipe implements PipeTransform {
     const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
     const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
     const milliseconds = millis % 1000;
-    if (hours) {
+
+    const days = Math.floor(hours / 24);
+    const years = Math.floor(days / 365);
+
+    if (years) {
+      return years === 1 ? `${sign}1 year` : `${sign}${years} years `;
+    } else if (days) {
+      return days === 1 ? `${sign}1 day` : `${sign}${days} days `;
+    } else if (hours) {
       if (minutes) {
         return `${sign}${hours}h ${minutes}m`;
       } else {
@@ -32,25 +41,10 @@ export class DeltaWithPipe implements PipeTransform {
       } else {
         return `${sign}${minutes}m`;
       }
+    } else if (seconds) {
+      return `${sign}${seconds}s`;
     } else {
-      const prefixed = '00' + milliseconds;
-      return `${sign}${seconds}.${prefixed.substr(prefixed.length - 3)}`;
-    }
-  }
-
-  private toDate(obj: any): Date {
-    if (!obj) {
-      return obj;
-    }
-
-    if (obj instanceof Date) {
-      return obj;
-    } else if (typeof obj === 'number') {
-      return new Date(obj);
-    } else if (typeof obj === 'string') {
-      return new Date(Date.parse(obj));
-    } else {
-      throw new Error(`Cannot convert '${obj}' to Date`);
+      return `${sign}${milliseconds}ms`;
     }
   }
 }

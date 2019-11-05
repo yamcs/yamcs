@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Instance, Parameter } from '@yamcs/client';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { AppConfig, APP_CONFIG, SidebarItem } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { User } from '../../shared/User';
@@ -26,10 +26,10 @@ export class InstancePage implements OnInit, OnDestroy {
   user: User;
   sidebar$: Observable<boolean>;
 
-  extraItems: SidebarItem[];
+  config: WebsiteConfig;
 
-  monitoringActive = false;
-  monitoringExpanded = false;
+  telemetryActive = false;
+  telemetryExpanded = false;
   commandingActive = false;
   commandingExpanded = false;
   mdbActive = false;
@@ -41,15 +41,13 @@ export class InstancePage implements OnInit, OnDestroy {
 
   constructor(
     private yamcs: YamcsService,
-    @Inject(APP_CONFIG) appConfig: AppConfig,
+    configService: ConfigService,
     authService: AuthService,
     preferenceStore: PreferenceStore,
     route: ActivatedRoute,
     private router: Router,
   ) {
-    const monitorConfig = appConfig.monitor || {};
-    this.extraItems = monitorConfig.extraItems || [];
-
+    this.config = configService.getConfig();
     this.user = authService.getUser()!;
     this.sidebar$ = preferenceStore.sidebar$;
 
@@ -60,7 +58,7 @@ export class InstancePage implements OnInit, OnDestroy {
       this.mdbActive = false;
       this.commandingActive = false;
       this.archiveActive = false;
-      this.monitoringActive = false;
+      this.telemetryActive = false;
       this.collapseAllGroups();
       if (url.match(/\/mdb.*/)) {
         this.mdbActive = true;
@@ -71,9 +69,9 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/archive.*/)) {
         this.archiveActive = true;
         this.archiveExpanded = true;
-      } else if (url.match(/\/monitor.*/)) {
-        this.monitoringActive = true;
-        this.monitoringExpanded = true;
+      } else if (url.match(/\/telemetry.*/)) {
+        this.telemetryActive = true;
+        this.telemetryExpanded = true;
       }
     });
 
@@ -99,22 +97,22 @@ export class InstancePage implements OnInit, OnDestroy {
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     const instance = this.yamcs.getInstance();
     this.searchControl.setValue('');
-    this.router.navigate(['/monitor/parameters/', event.option.value], {
+    this.router.navigate(['/telemetry/parameters/', event.option.value], {
       queryParams: { instance: instance.name, }
     });
   }
 
   private collapseAllGroups() {
-    this.monitoringExpanded = false;
+    this.telemetryExpanded = false;
     this.commandingExpanded = false;
     this.mdbExpanded = false;
     this.archiveExpanded = false;
   }
 
-  toggleMonitoringGroup() {
-    const expanded = this.monitoringExpanded;
+  toggleTelemetryGroup() {
+    const expanded = this.telemetryExpanded;
     this.collapseAllGroups();
-    this.monitoringExpanded = !expanded;
+    this.telemetryExpanded = !expanded;
   }
 
   toggleCommandingGroup() {

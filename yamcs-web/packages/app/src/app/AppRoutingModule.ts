@@ -81,7 +81,7 @@ const routes: Routes = [
         path: 'instance',
         loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
         canActivate: [AuthGuard],
-        data: {preload: true},
+        data: { preload: true },
       },
       {
         path: 'links',
@@ -89,10 +89,10 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'monitor',
-        loadChildren: () => import('src/app/monitor/MonitorModule').then(m => m.MonitorModule),
+        path: 'telemetry',
+        loadChildren: () => import('src/app/telemetry/TelemetryModule').then(m => m.TelemetryModule),
         canActivate: [AuthGuard],
-        data: {preload: true},
+        data: { preload: true },
       },
       {
         path: 'mdb',
@@ -139,6 +139,6 @@ const routes: Routes = [
       preloadingStrategy: CustomPreloadingStrategy,
     }),
   ],
-  exports: [ RouterModule ],
+  exports: [RouterModule],
 })
 export class AppRoutingModule { }

@@ -83,7 +83,7 @@
         </executions>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
-          <tarLongFileMode>gnu</tarLongFileMode>
+          <tarLongFileMode>posix</tarLongFileMode>
           <attach>false</attach>
         </configuration>
       </plugin>

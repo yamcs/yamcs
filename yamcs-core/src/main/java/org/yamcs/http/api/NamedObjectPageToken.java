@@ -17,8 +17,15 @@ public class NamedObjectPageToken {
      */
     public String name;
 
-    public NamedObjectPageToken(String name) {
+    /**
+     * Whether this represents a space system. Pagination is based on an ordering where space systems are returned
+     * before the actual items.
+     */
+    public boolean spaceSystem;
+
+    public NamedObjectPageToken(String name, boolean spaceSystem) {
         this.name = name;
+        this.spaceSystem = spaceSystem;
     }
 
     public static NamedObjectPageToken decode(String encoded) {

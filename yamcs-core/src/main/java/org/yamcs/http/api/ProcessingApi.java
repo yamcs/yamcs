@@ -49,6 +49,7 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -275,14 +276,24 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             queue = processor.getCommandingManager().sendCommand(ctx.user, preparedCommand);
         }
 
-        CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
+        IssueCommandResponse.Builder responseb = IssueCommandResponse.newBuilder()
+                .setId(toStringIdentifier(preparedCommand.getCommandId()))
+                .setGenerationTime(TimeEncoding.toProtobufTimestamp(preparedCommand.getGenerationTime()))
+                .setOrigin(preparedCommand.getCommandId().getOrigin())
+                .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
+                .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
+                .setSource(preparedCommand.getSource())
+                .setBinary(ByteString.copyFrom(preparedCommand.getBinary()))
+                .setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()))
+                .setUsername(preparedCommand.getUsername());
 
-        IssueCommandResponse.Builder response = IssueCommandResponse.newBuilder();
-        response.setCommandQueueEntry(cqe);
-        response.setSource(preparedCommand.getSource());
-        response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
-        response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
-        observer.complete(response.build());
+        if (queue != null) {
+            responseb.setQueue(queue.getName());
+            CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
+            responseb.setCommandQueueEntry(cqe);
+        }
+
+        observer.complete(responseb.build());
     }
 
     @Override
@@ -377,5 +388,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } else {
             return mgr;
         }
+    }
+
+    private String toStringIdentifier(CommandId commandId) {
+        String id = commandId.getGenerationTime() + "-";
+        if (commandId.hasOrigin() && !"".equals(commandId.getOrigin())) {
+            id += commandId.getOrigin() + "-";
+        }
+        return id + commandId.getSequenceNumber();
     }
 }

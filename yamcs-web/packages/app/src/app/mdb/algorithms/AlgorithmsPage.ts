@@ -4,7 +4,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetAlgorithmsOptions, Instance } from '@yamcs/client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { AlgorithmsDataSource } from './AlgorithmsDataSource';
@@ -31,26 +30,19 @@ export class AlgorithmsPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'language', label: 'Language' },
-    { id: 'scope', label: 'Scope' },
+    { id: 'language', label: 'Language', visible: true },
+    { id: 'scope', label: 'Scope', visible: true },
     { id: 'shortDescription', label: 'Description' },
   ];
-
-  displayedColumns = ['name', 'language', 'scope'];
 
   constructor(
     yamcs: YamcsService,
     title: Title,
-    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Algorithms');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('algorithms');
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
     this.dataSource = new AlgorithmsDataSource(yamcs);
   }
 
@@ -96,10 +88,5 @@ export class AlgorithmsPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('algorithms', displayedColumns);
   }
 }

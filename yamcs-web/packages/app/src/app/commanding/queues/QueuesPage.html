@@ -7,6 +7,9 @@
         processing.
       </p>
       <p>
+        Queues are an ordered list. Issued commands are offered to the first matching queue.
+      </p>
+      <p>
         A queue can perform these actions:
       </p>
       <table class="ya-data-table">
@@ -35,15 +38,29 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-queues-table [cqueues$]="cqueues$"></app-queues-table>
+    <ng-container *ngIf="(connectionInfo$ | async)?.processor?.hasCommanding; else noCommanding">
+      <app-queues-table [cqueues$]="cqueues$"></app-queues-table>
 
-    <p>&nbsp;</p>
-    <h2>Pending commands</h2>
-    <app-queued-commands-table *ngIf="hasEntries(); else empty"
-                               [cqueues$]="cqueues$">
-    </app-queued-commands-table>
-    <ng-template #empty>
-      All queues are empty.
+      <p>&nbsp;</p>
+      <h2>Pending commands</h2>
+      <app-queued-commands-table *ngIf="hasEntries(); else empty"
+                                 [cqueues$]="cqueues$">
+      </app-queued-commands-table>
+      <ng-template #empty>
+        All queues are empty.
+      </ng-template>
+    </ng-container>
+    <ng-template #noCommanding>
+      <app-empty-message headerTitle="Queues" *ngIf="connectionInfo$ | async as connectionInfo">
+        <p>
+          You are connected to the
+          <ng-container *ngIf="connectionInfo.processor?.replay">replay</ng-container>
+          processor <strong>{{ connectionInfo.processor?.name }}</strong>.
+        </p>
+        <p>
+          This processor does not support commanding.
+        </p>
+      </app-empty-message>
     </ng-template>
   </div>
 

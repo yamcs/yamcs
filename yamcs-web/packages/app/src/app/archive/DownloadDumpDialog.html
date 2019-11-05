@@ -4,23 +4,21 @@
   <form [formGroup]="form" class="ya-form">
     <label>
       Start
-      <input type="text" formControlName="start">
+      <app-date-time formControlName="start"></app-date-time>
     </label>
     <label>
       Stop
-      <input type="text" formControlName="stop">
+      <app-date-time formControlName="stop"></app-date-time>
     </label>
-    <p>&nbsp;</p>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <a mat-button
-     (click)="closeDialog()"
-     color="primary"
-     [disabled]="!form.valid"
-     [href]="downloadURL$ | async">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <app-download-button (click)="closeDialog()"
+                       [link]="downloadURL$ | async"
+                       [disabled]="!form.valid"
+                       [primary]="true">
     DOWNLOAD
-  </a>
+  </app-download-button>
 </mat-dialog-actions>

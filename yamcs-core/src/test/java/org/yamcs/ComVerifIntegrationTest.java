@@ -44,23 +44,28 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
-        
-     
+
         checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-        
+
+        checkNextCmdHistoryAttr("Verifier_Execution_Status", "PENDING");
+        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
 
         checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
         checkNextCmdHistoryAttr("Verifier_Execution_Time");
-        
-         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
+
+        checkNextCmdHistoryAttr("Verifier_Complete_Status", "PENDING");
+        checkNextCmdHistoryAttr("Verifier_Complete_Time");
 
         checkNextCmdHistoryAttr("Verifier_Complete_Status", "OK");
         checkNextCmdHistoryAttr("Verifier_Complete_Time");
-        
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Status", "OK");
+
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "OK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
 
         // check commands histogram
@@ -73,7 +78,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());
     }
 
-   
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -96,11 +100,13 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
-       
+
         checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-       
-        
+
+        checkNextCmdHistoryAttr("Verifier_Execution_Status", "PENDING");
+        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
@@ -116,13 +122,17 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
         checkNextCmdHistoryAttr("Verifier_Execution_Time");
-        
+
+        checkNextCmdHistoryAttr("Verifier_Complete_Status", "PENDING");
+        checkNextCmdHistoryAttr("Verifier_Complete_Time");
+
         checkNextCmdHistoryAttr("Verifier_Complete_Status", "NOK");
         checkNextCmdHistoryAttr("Verifier_Complete_Time");
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Status", "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Time");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY+"_Message", "Verifier Complete result: NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "NOK");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
+                "Verifier Complete result: NOK");
     }
 
     public static class MyTcDataLink implements TcDataLink {

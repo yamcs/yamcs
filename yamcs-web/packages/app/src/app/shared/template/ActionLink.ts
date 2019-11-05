@@ -18,4 +18,7 @@ export class ActionLink {
 
   @Input()
   link: string;
+
+  @Input()
+  download: string;
 }

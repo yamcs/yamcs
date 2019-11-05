@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../core/services/YamcsService';
+import * as utils from '../shared/utils';
 
 @Component({
   selector: 'app-create-event-dialog',
@@ -20,12 +21,15 @@ export class CreateEventDialog {
     this.form = formBuilder.group({
       message: ['', Validators.required],
       severity: 'INFO',
-      time: [yamcs.getMissionTime().toISOString(), Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
+      time: [utils.printLocalDate(yamcs.getMissionTime(), 'hhmmss'), Validators.required],
     });
   }
 
   save() {
-    this.yamcs.getInstanceClient()!.createEvent(this.form.value)
-      .then(event => this.dialogRef.close(event));
+    this.yamcs.getInstanceClient()!.createEvent({
+      message: this.form.value['message'],
+      severity: this.form.value['severity'],
+      time: utils.toISOString(this.form.value['time']),
+    }).then(event => this.dialogRef.close(event));
   }
 }

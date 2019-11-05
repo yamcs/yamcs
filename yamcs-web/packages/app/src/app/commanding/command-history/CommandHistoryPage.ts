@@ -1,23 +1,24 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewChild } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetCommandHistoryOptions, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { PrintService } from '../../core/services/PrintService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option, Select } from '../../shared/forms/Select';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
-import { Option, Select } from '../../shared/template/Select';
+import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
+import { CommandHistoryPrintable } from './CommandHistoryPrintable';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
 const defaultInterval = 'PT1H';
-const deprecatedCols = ['stages', 'transmissionConstraints', 'release', 'sequenceNumber', 'verifications'];
 
 @Component({
   templateUrl: './CommandHistoryPage.html',
@@ -45,12 +46,8 @@ export class CommandHistoryPage {
   filterForm = new FormGroup({
     filter: new FormControl(),
     interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
-    customStop: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
+    customStart: new FormControl(null),
+    customStop: new FormControl(null),
   });
 
   dataSource: CommandHistoryDataSource;
@@ -58,30 +55,18 @@ export class CommandHistoryPage {
   columns: ColumnInfo[] = [
     { id: 'commandId', label: 'ID' },
     { id: 'generationTimeUTC', label: 'Time', alwaysVisible: true },
-    { id: 'comment', label: 'Comment' },
+    { id: 'comment', label: 'Comment', visible: true },
     { id: 'command', label: 'Command', alwaysVisible: true },
     { id: 'issuer', label: 'Issuer' },
-    { id: 'queued', label: 'Queued' },
-    { id: 'released', label: 'Released' },
-    { id: 'sent', label: 'Sent' },
-    { id: 'acknowledgments', label: 'Extra acknowledgments' },
-    { id: 'completion', label: 'Completion' },
-  ];
-
-  displayedColumns = [
-    // 'significance', // not stored in cmdhist?
-    'generationTimeUTC',
-    'comment',
-    'command',
-    'queued',
-    'released',
-    'sent',
-    'acknowledgments',
-    'completion',
+    { id: 'queued', label: 'Queued', visible: true },
+    { id: 'released', label: 'Released', visible: true },
+    { id: 'sent', label: 'Sent', visible: true },
+    { id: 'acknowledgments', label: 'Extra acknowledgments', visible: true },
+    { id: 'completion', label: 'Completion', visible: true },
   ];
 
   intervalOptions: Option[] = [
-    { id: 'PT1H', label: 'Last hour', selected: true },
+    { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
     { id: 'NO_LIMIT', label: 'No limit' },
@@ -94,19 +79,15 @@ export class CommandHistoryPage {
 
   constructor(
     private yamcs: YamcsService,
-    private preferenceStore: PreferenceStore,
     private router: Router,
     private route: ActivatedRoute,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private printService: PrintService,
     title: Title,
     synchronizer: Synchronizer,
   ) {
     title.setTitle('Command History');
     this.instance = yamcs.getInstance();
-
-    const cols = preferenceStore.getVisibleColumns('cmdhist', deprecatedCols);
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 
@@ -124,8 +105,8 @@ export class CommandHistoryPage {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filterForm.get('customStart')!.setValue(customStart.toISOString());
-        this.filterForm.get('customStop')!.setValue(customStop.toISOString());
+        this.filterForm.get('customStart')!.setValue(utils.printLocalDate(customStart, 'hhmm'));
+        this.filterForm.get('customStop')!.setValue(utils.printLocalDate(customStop, 'hhmm'));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -148,9 +129,6 @@ export class CommandHistoryPage {
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
-      for (const option of this.intervalOptions) {
-        option.selected = (option.id === this.appliedInterval);
-      }
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
         const customStart = queryParams.get('customStart')!;
@@ -178,10 +156,10 @@ export class CommandHistoryPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -193,8 +171,8 @@ export class CommandHistoryPage {
   // tableTrackerFn = (index: number, entry: CommandHistoryEntry) => ;
 
   applyCustomDates() {
-    this.validStart = new Date(this.filterForm.value['customStart']);
-    this.validStop = new Date(this.filterForm.value['customStop']);
+    this.validStart = utils.toDate(this.filterForm.value['customStart']);
+    this.validStop = utils.toDate(this.filterForm.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -239,16 +217,13 @@ export class CommandHistoryPage {
     });
   }
 
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('cmdhist', displayedColumns);
-  }
-
-  updateInterval(interval: string) {
-    this.filterForm.get('interval')!.setValue(interval);
-  }
-
   selectRecord(rec: CommandHistoryRecord) {
     this.selectedRecord$.next(rec);
+  }
+
+  printReport() {
+    const data = this.dataSource.records$.value.slice().reverse();
+    const factory = this.componentFactoryResolver.resolveComponentFactory(CommandHistoryPrintable);
+    this.printService.printComponent(factory, 'Command Report', data);
   }
 }

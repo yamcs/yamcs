@@ -9,12 +9,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Bucket, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/template/Select';
+import { Option } from '../../shared/forms/Select';
 import { CreateBucketDialog } from './CreateBucketDialog';
 
 @Component({
   templateUrl: './BucketsPage.html',
-  styleUrls: ['./BucketsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketsPage implements AfterViewInit {
@@ -36,7 +35,7 @@ export class BucketsPage implements AfterViewInit {
   });
 
   instanceOptions$ = new BehaviorSubject<Option[]>([
-    { id: '_global', label: '_global', selected: true },
+    { id: '_global', label: '_global' },
   ]);
 
   dataSource = new MatTableDataSource<Bucket>();
@@ -63,7 +62,6 @@ export class BucketsPage implements AfterViewInit {
           {
             id: instance.name,
             label: instance.name,
-            selected: this.filterForm.get('instance')!.value === instance.name,
           }
         ]);
       }
@@ -82,9 +80,6 @@ export class BucketsPage implements AfterViewInit {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('instance')) {
       this.instance = queryParams.get('instance')!;
-      for (const option of this.instanceOptions$.value) {
-        option.selected = (option.id === this.instance);
-      }
       this.filterForm.get('instance')!.setValue(this.instance);
     }
   }
@@ -101,8 +96,8 @@ export class BucketsPage implements AfterViewInit {
 
   masterToggle() {
     this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Bucket) {
@@ -156,9 +151,5 @@ export class BucketsPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateInstance(instance: string) {
-    this.filterForm.get('instance')!.setValue(instance);
   }
 }

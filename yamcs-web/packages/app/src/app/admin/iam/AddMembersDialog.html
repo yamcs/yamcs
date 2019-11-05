@@ -49,11 +49,9 @@
                  [hidePageSize]="true"
                  [showFirstLastButtons]="false">
   </mat-paginator>
-
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-button (click)="save()" color="primary" [disabled]="selection.isEmpty()">ADD</button>
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()" [disabled]="selection.isEmpty()">ADD</button>
 </mat-dialog-actions>

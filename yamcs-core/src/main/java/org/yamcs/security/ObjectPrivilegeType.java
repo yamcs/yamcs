@@ -17,7 +17,6 @@ public class ObjectPrivilegeType {
     public static final ObjectPrivilegeType ReadPacket = new ObjectPrivilegeType("ReadPacket");
     public static final ObjectPrivilegeType ReadParameter = new ObjectPrivilegeType("ReadParameter");
     public static final ObjectPrivilegeType WriteParameter = new ObjectPrivilegeType("WriteParameter");
-    public static final ObjectPrivilegeType InsertCommandQueue = new ObjectPrivilegeType("InsertCommandQueue");
 
     private String type;
 

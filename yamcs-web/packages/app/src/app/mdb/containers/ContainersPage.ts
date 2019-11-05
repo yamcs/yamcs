@@ -4,7 +4,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GetContainersOptions, Instance } from '@yamcs/client';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ContainersDataSource } from './ContainersDataSource';
@@ -31,34 +30,21 @@ export class ContainersPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'maxInterval', label: 'Max Interval' },
-    { id: 'sizeInBits', label: 'Size in bits' },
-    { id: 'baseContainer', label: 'Base Container' },
-    { id: 'restrictionCriteria', label: 'Restriction Criteria' },
+    { id: 'maxInterval', label: 'Max Interval', visible: true },
+    { id: 'sizeInBits', label: 'Size in bits', visible: true },
+    { id: 'baseContainer', label: 'Base Container', visible: true },
+    { id: 'restrictionCriteria', label: 'Restriction Criteria', visible: true },
     { id: 'shortDescription', label: 'Description' },
-  ];
-
-  displayedColumns = [
-    'name',
-    'maxInterval',
-    'sizeInBits',
-    'baseContainer',
-    'restrictionCriteria',
   ];
 
   constructor(
     yamcs: YamcsService,
     title: Title,
-    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Containers');
     this.instance = yamcs.getInstance();
-    const cols = preferenceStore.getVisibleColumns('containers');
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
-    }
     this.dataSource = new ContainersDataSource(yamcs);
   }
 
@@ -104,10 +90,5 @@ export class ContainersPage implements AfterViewInit {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('containers', displayedColumns);
   }
 }

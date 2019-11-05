@@ -32,7 +32,11 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
 
     @Override
     public void init(Processor proc) {
-        proc.setCommandReleaser(this);
+        try {
+            proc.setCommandReleaser(this);
+        } catch (ValidationException e) {
+            throw new ConfigurationException(e.getMessage());
+        }
     }
 
     @Override

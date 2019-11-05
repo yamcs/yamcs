@@ -5,13 +5,13 @@
 
   <app-send-command-wizard-step step="1"></app-send-command-wizard-step>
 
-  <div class="panel-content">
-    <div class="page-options">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter by text search">
-      </app-search-filter>
-    </div>
-    <div style="display: inline-block">
+  <div class="panel-content" *ngIf="connectionInfo$ | async as connectionInfo">
+    <div [class.noDisplay]="!connectionInfo.processor?.hasCommanding">
+      <div class="page-options">
+        <app-search-filter [formControl]="filterControl"
+                           placeholder="Filter by text search">
+        </app-search-filter>
+      </div>
       <table mat-table
              [dataSource]="dataSource"
              class="ya-data-table"
@@ -54,5 +54,16 @@
         </mat-paginator>
       </div>
     </div>
+    <app-empty-message *ngIf="!connectionInfo.processor?.hasCommanding"
+                       headerTitle="Send a command">
+      <p>
+        You are connected to the
+        <ng-container *ngIf="connectionInfo.processor?.replay">replay</ng-container>
+        processor <strong>{{ connectionInfo.processor?.name }}</strong>.
+      </p>
+      <p>
+        This processor does not support commanding.
+      </p>
+    </app-empty-message>
   </div>
 </app-instance-page>

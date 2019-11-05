@@ -1,0 +1,77 @@
+<h2 mat-dialog-title>Set parameter value</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <ng-container [ngSwitch]="parameter?.type?.engType">
+
+      <ng-container *ngSwitchCase="'boolean'">
+        <input type="radio" name="value" formControlName="value" value="TRUE">true<br>
+        <input type="radio" name="value" formControlName="value" value="FALSE">false
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'string'">
+        <label>
+          Value
+          <input type="text" formControlName="value">
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'float'">
+        <label>
+          Value
+          <input type="number" formControlName="value">
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'double'">
+        <label>
+          Value
+          <input type="number" formControlName="value">
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'integer'">
+        <label>
+          Value
+          <input type="number" formControlName="value">
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'timestamp'">
+        <label>
+          Value
+          <app-date-time formControlName="value" step="0.001"></app-date-time>
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'enumeration'">
+        <label>
+          Value
+          <select formControlName="value">
+            <option selected></option>
+            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}
+            </option>
+          </select>
+        </label>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'aggregate'">
+        Setting aggregate values via this website is not yet supported.
+        <!--label>
+          Value
+          <input type="text" formControlName="value">
+        </label-->
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'array'">
+        Setting array values via this website is not yet supported.
+      </ng-container>
+
+    </ng-container>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="save()" [disabled]="!form.valid">SAVE</button>
+</mat-dialog-actions>

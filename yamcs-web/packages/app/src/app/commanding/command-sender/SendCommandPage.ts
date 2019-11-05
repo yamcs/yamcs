@@ -2,7 +2,8 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@a
 import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
-import { GetCommandsOptions, Instance } from '@yamcs/client';
+import { ConnectionInfo, GetCommandsOptions, Instance } from '@yamcs/client';
+import { Observable } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
 
@@ -11,6 +12,8 @@ import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SendCommandPage implements AfterViewInit {
+
+  connectionInfo$: Observable<ConnectionInfo | null>;
 
   instance: Instance;
   pageSize = 100;
@@ -32,6 +35,7 @@ export class SendCommandPage implements AfterViewInit {
     yamcs: YamcsService,
   ) {
     title.setTitle('Send a command');
+    this.connectionInfo$ = yamcs.connectionInfo$;
     this.instance = yamcs.getInstance();
     this.dataSource = new CommandsDataSource(yamcs);
   }

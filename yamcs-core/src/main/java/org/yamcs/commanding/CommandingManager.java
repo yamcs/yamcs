@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
+import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -39,7 +40,7 @@ public class CommandingManager extends AbstractService {
      * 
      * @param proc
      */
-    public CommandingManager(Processor proc) {
+    public CommandingManager(Processor proc) throws ValidationException {
         this.processor = proc;
         this.commandQueueManager = new CommandQueueManager(this);
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(),
@@ -99,7 +100,7 @@ public class CommandingManager extends AbstractService {
         commandQueueManager.addToCommandHistory(commandId, key, value);
     }
 
-    public Processor getChannel() {
+    public Processor getProcessor() {
         return processor;
     }
 

@@ -14,7 +14,7 @@
         Display name<br>
         <input formControlName="displayName" type="text">
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
-            This user has an external identity. Changes to this field may get overwritten on next login.
+          This user has an external identity. Changes to this field may get overwritten on next login.
         </span>
       </label>
       <br>
@@ -35,7 +35,8 @@
       <label>
         Superuser<br>
         <mat-slide-toggle formControlName="superuser"></mat-slide-toggle><br>
-        <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators only.</span>
+        <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators
+          only.</span>
       </label>
       <p>&nbsp;</p>
       <ng-container *ngIf="!user.identities || !user.identities.length">
@@ -57,13 +58,10 @@
     </form>
 
     <p>&nbsp;</p>
-    <mat-toolbar>
-      <span style="flex: 1 1 auto"></span>
-      <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
-      <button type="submit" (click)="onConfirm()"
-              mat-raised-button
-              [disabled]="!form.valid || form.pristine"
-              color="primary">SAVE CHANGES</button>
-    </mat-toolbar>
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
+      <button class="ya-button primary" type="submit" (click)="onConfirm()"
+              [disabled]="!form.valid || form.pristine">SAVE CHANGES</button>
+    </div>
   </div>
 </app-admin-page>

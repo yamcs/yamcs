@@ -1,0 +1,54 @@
+<div class="scrollpane">
+  <div class="panel-content">
+    <form [formGroup]="filter">
+      <div class="filter-bar">
+        <app-select icon="access_time" formControlName="interval" [options]="intervalOptions">
+        </app-select>
+
+        <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+          <app-date-time formControlName="customStart"></app-date-time>
+          <app-date-time formControlName="customStop"></app-date-time>
+          <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+        </ng-container>
+
+        <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
+          <button class="ya-button" (click)="jumpToNow()">
+            Jump to now
+          </button>
+        </ng-container>
+
+        <app-dots *ngIf="dataSource.loading$ | async">
+        </app-dots>
+      </div>
+    </form>
+
+    <div class="table-status" [ngSwitch]="appliedInterval">
+      <div class="message-zone">
+        <app-action-link [link]="downloadURL$ | async" [download]="'Parameter Data'">Download Data</app-action-link>
+      </div>
+      <span *ngSwitchCase="'PT1H'">
+        Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'PT6H'">
+        Showing data from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'P1D'">
+        Showing data from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'NO_LIMIT'">
+        Showing data from <b>all time</b>
+      </span>
+      <span *ngSwitchCase="'CUSTOM'">
+        Showing data from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+    </div>
+
+    <app-parameter-values-table [dataSource]="dataSource"></app-parameter-values-table>
+
+    <div class="table-footer"
+         *ngIf="!(dataSource.loading$ | async)">
+      <small *ngIf="dataSource.isEmpty()">No records found matching current filter in the selected time range.</small>
+      <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
+    </div>
+  </div>
+</div>

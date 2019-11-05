@@ -42,10 +42,16 @@ import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
+import { Breadcrumb } from './breadcrumb/Breadcrumb';
+import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
+import { DateTime } from './forms/DateTime';
+import { DownloadButton } from './forms/DownloadButton';
+import { SearchFilter } from './forms/SearchFilter';
+import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
@@ -55,15 +61,15 @@ import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
+import { ReversePipe } from './pipes/ReversePipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
+import { PrintableDirective } from './print/PrintableDirective';
+import { PrintZone } from './print/PrintZone';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { ActionLink } from './template/ActionLink';
-import { AdminPage } from './template/AdminPage';
-import { AdminPageTemplate } from './template/AdminPageTemplate';
-import { AdminToolbar } from './template/AdminToolbar';
 import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
@@ -78,7 +84,6 @@ import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
 import { MessageBar } from './template/MessageBar';
-import { Select } from './template/Select';
 import { SignificanceLevel } from './template/SignificanceLevel';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
 import { StartReplayDialog } from './template/StartReplayDialog';
@@ -95,7 +100,6 @@ import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
-import { SearchFilter } from './widgets/SearchFilter';
 import { SlantedLabel } from './widgets/SlantedLabel';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
@@ -133,6 +137,7 @@ const materialModules = [
 ];
 
 const sharedDirectives = [
+  PrintableDirective,
   YaDataTableComponent,
   YaSimpleTableComponent,
   YaTableComponent,
@@ -140,17 +145,18 @@ const sharedDirectives = [
 
 const sharedComponents = [
   ActionLink,
-  AdminPage,
-  AdminPageTemplate,
-  AdminToolbar,
   Ago,
   AlarmLabel,
   AlarmLevel,
+  Breadcrumb,
+  BreadcrumbTrail,
   ColumnChooser,
   ConnectedLabel,
+  DateTime,
   DetailPane,
   DetailToolbar,
   Dots,
+  DownloadButton,
   EmptyMessage,
   Expirable,
   Help,
@@ -166,6 +172,7 @@ const sharedComponents = [
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
+  PrintZone,
   SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,
@@ -192,6 +199,7 @@ const pipes = [
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,
+  ReversePipe,
   SuperuserPipe,
   UnitsPipe,
   ValuePipe,

@@ -1,6 +1,9 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
+import { AdminPage } from './AdminPage';
+import { AdminPageTemplate } from './AdminPageTemplate';
 import { AdminRoutingModule, routingComponents } from './AdminRoutingModule';
+import { AdminToolbar } from './AdminToolbar';
 import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
@@ -35,6 +38,9 @@ const pipes = [
     routingComponents,
     dialogComponents,
     pipes,
+    AdminPage,
+    AdminPageTemplate,
+    AdminToolbar,
     RouteDetail,
     ServiceState,
     ServicesTable,

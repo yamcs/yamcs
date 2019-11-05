@@ -97,16 +97,6 @@ export class InstanceToolbar implements OnDestroy {
     this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { state: 'running' });
   }
 
-  leaveReplay() {
-    const processor = this.processor$.value!;
-    const clientId = this.yamcs.getClientId();
-
-    // Switch to the 'default' processor of the currently connected instance
-    this.yamcs.yamcsClient.editClient(clientId, {
-      instance: processor.instance
-    });
-  }
-
   changeSpeed(speed: string) {
     const processor = this.processor$.value!;
     this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { speed });

@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,13 +7,13 @@ import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../animations';
-import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../core/config/AppConfig';
 import { AuthService } from '../core/services/AuthService';
-import { PreferenceStore } from '../core/services/PreferenceStore';
+import { ConfigService, ExtraColumnInfo } from '../core/services/ConfigService';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
+import { Option, Select } from '../shared/forms/Select';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
-import { Option, Select } from '../shared/template/Select';
+import * as utils from '../shared/utils';
 import { subtractDuration } from '../shared/utils';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
@@ -45,22 +45,18 @@ export class EventsPage {
     severity: new FormControl('INFO'),
     source: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
-    customStop: new FormControl(null, [
-      Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-    ]),
+    customStart: new FormControl(null),
+    customStop: new FormControl(null),
   });
 
   dataSource: EventsDataSource;
 
   columns: ColumnInfo[] = [
-    { id: 'severity', label: 'Severity' },
+    { id: 'severity', label: 'Severity', visible: true },
     { id: 'gentime', label: 'Generation Time', alwaysVisible: true },
     { id: 'message', label: 'Message', alwaysVisible: true },
-    { id: 'type', label: 'Type' },
-    { id: 'source', label: 'Source' },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'source', label: 'Source', visible: true },
     { id: 'rectime', label: 'Reception Time' },
     { id: 'seqNumber', label: 'Sequence Number' },
   ];
@@ -70,16 +66,8 @@ export class EventsPage {
    */
   extraColumns: ExtraColumnInfo[] = [];
 
-  displayedColumns = [
-    'severity',
-    'gentime',
-    'message',
-    'type',
-    'source',
-  ];
-
   severityOptions: Option[] = [
-    { id: 'INFO', label: 'Info level', selected: true },
+    { id: 'INFO', label: 'Info level' },
     { id: 'WATCH', label: 'Watch level' },
     { id: 'WARNING', label: 'Warning level' },
     { id: 'DISTRESS', label: 'Distress level' },
@@ -88,11 +76,11 @@ export class EventsPage {
   ];
 
   sourceOptions$ = new BehaviorSubject<Option[]>([
-    { id: 'ANY', label: 'Any source', selected: true },
+    { id: 'ANY', label: 'Any source' },
   ]);
 
   intervalOptions: Option[] = [
-    { id: 'PT1H', label: 'Last hour', selected: true },
+    { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
     { id: 'NO_LIMIT', label: 'No limit' },
@@ -110,9 +98,8 @@ export class EventsPage {
   constructor(
     private yamcs: YamcsService,
     private authService: AuthService,
-    private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
-    @Inject(APP_CONFIG) appConfig: AppConfig,
+    configService: ConfigService,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
@@ -121,8 +108,8 @@ export class EventsPage {
     title.setTitle('Events');
 
     // Consider site-specific configuration
-    if (appConfig.events) {
-      const eventConfig = appConfig.events;
+    const eventConfig = configService.getConfig().events;
+    if (eventConfig) {
       this.extraColumns = eventConfig.extraColumns || [];
       for (const extraColumn of this.extraColumns) {
         for (let i = 0; i < this.columns.length; i++) {
@@ -132,21 +119,6 @@ export class EventsPage {
           }
         }
       }
-      if (eventConfig.displayedColumns) {
-        this.displayedColumns = eventConfig.displayedColumns;
-      }
-    }
-
-    const cols = (preferenceStore.getVisibleColumns('events') || []).filter(el => {
-      // Filter out extraColumns (maybe from another instance - we should maybe store this per instance)
-      for (const column of this.columns) {
-        if (column.id === el) {
-          return true;
-        }
-      }
-    });
-    if (cols && cols.length) {
-      this.displayedColumns = cols;
     }
 
     yamcs.getInstanceClient()!.getEventSources().then(sources => {
@@ -156,7 +128,6 @@ export class EventsPage {
           {
             id: source,
             label: source,
-            selected: this.filterForm.get('source')!.value === source,
           }]);
       }
     });
@@ -187,8 +158,8 @@ export class EventsPage {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || new Date();
         const customStop = this.validStop || new Date();
-        this.filterForm.get('customStart')!.setValue(customStart.toISOString());
-        this.filterForm.get('customStop')!.setValue(customStop.toISOString());
+        this.filterForm.get('customStart')!.setValue(utils.printLocalDate(customStart, 'hhmm'));
+        this.filterForm.get('customStop')!.setValue(utils.printLocalDate(customStop, 'hhmm'));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -211,31 +182,22 @@ export class EventsPage {
     }
     if (queryParams.has('severity')) {
       this.severity = queryParams.get('severity')!;
-      for (const option of this.severityOptions) {
-        option.selected = (option.id === this.severity);
-      }
       this.filterForm.get('severity')!.setValue(this.severity);
     }
     if (queryParams.has('source')) {
       this.source = queryParams.get('source')!;
-      for (const option of this.sourceOptions$.value) {
-        option.selected = (option.id === this.source);
-      }
       this.filterForm.get('source')!.setValue(this.source);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
-      for (const option of this.intervalOptions) {
-        option.selected = (option.id === this.appliedInterval);
-      }
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
         const customStart = queryParams.get('customStart')!;
         this.filterForm.get('customStart')!.setValue(customStart);
-        this.validStart = new Date(customStart);
+        this.validStart = utils.toDate(customStart);
         const customStop = queryParams.get('customStop')!;
         this.filterForm.get('customStop')!.setValue(customStop);
-        this.validStop = new Date(customStop);
+        this.validStop = utils.toDate(customStop);
       } else if (this.appliedInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -255,10 +217,10 @@ export class EventsPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
-      this.intervalSelect.select(defaultInterval);
+      this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -276,8 +238,8 @@ export class EventsPage {
   }
 
   applyCustomDates() {
-    this.validStart = new Date(this.filterForm.value['customStart']);
-    this.validStop = new Date(this.filterForm.value['customStop']);
+    this.validStart = utils.toDate(this.filterForm.value['customStart']);
+    this.validStop = utils.toDate(this.filterForm.value['customStop']);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -356,23 +318,6 @@ export class EventsPage {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateColumns(displayedColumns: string[]) {
-    this.displayedColumns = displayedColumns;
-    this.preferenceStore.setVisibleColumns('events', displayedColumns);
-  }
-
-  updateSeverity(severity: string) {
-    this.filterForm.get('severity')!.setValue(severity);
-  }
-
-  updateSource(source: string) {
-    this.filterForm.get('source')!.setValue(source);
-  }
-
-  updateInterval(interval: string) {
-    this.filterForm.get('interval')!.setValue(interval);
   }
 
   mayWriteEvents() {

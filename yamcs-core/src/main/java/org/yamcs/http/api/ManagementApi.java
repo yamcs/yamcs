@@ -38,9 +38,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractManagementApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
-import org.yamcs.protobuf.EditInstanceRequest;
 import org.yamcs.protobuf.EditLinkRequest;
-import org.yamcs.protobuf.EditServiceRequest;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetInstanceTemplateRequest;
 import org.yamcs.protobuf.GetLinkRequest;
@@ -214,71 +212,6 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(instanceInfo);
         observer.complete(enriched);
-    }
-
-    @Override
-    public void updateInstance(Context ctx, EditInstanceRequest request, Observer<YamcsInstance> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
-        String instance = RestHandler.verifyInstance(request.getInstance());
-
-        String state = request.hasState() ? request.getState() : null;
-        YamcsServer yamcs = YamcsServer.getServer();
-
-        CompletableFuture<Void> cf = CompletableFuture.completedFuture(null);
-        if (state != null) {
-            switch (state.toLowerCase()) {
-            case "stop":
-            case "stopped":
-                if (yamcs.getInstance(instance) == null) {
-                    throw new BadRequestException("No instance named '" + instance + "'");
-                }
-                cf = CompletableFuture.supplyAsync(() -> {
-                    log.info("Stopping instance {}", instance);
-                    try {
-                        yamcs.stopInstance(instance);
-                        return null;
-                    } catch (IOException e) {
-                        throw new UncheckedExecutionException(e);
-                    }
-                });
-                break;
-            case "restarted":
-                cf = CompletableFuture.supplyAsync(() -> {
-                    log.info("Restarting instance {}", instance);
-                    try {
-                        yamcs.restartInstance(instance);
-                        return null;
-                    } catch (IOException e) {
-                        throw new UncheckedExecutionException(e);
-                    }
-                });
-                break;
-            case "running":
-                cf = CompletableFuture.supplyAsync(() -> {
-                    log.info("Starting instance {}", instance);
-                    try {
-                        yamcs.startInstance(instance);
-                        return null;
-                    } catch (IOException e) {
-                        throw new UncheckedExecutionException(e);
-                    }
-                });
-                break;
-            default:
-                throw new BadRequestException("Unsupported service state '" + state + "'");
-            }
-        }
-
-        cf.whenComplete((v, error) -> {
-            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
-            if (error == null) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(ysi.getInstanceInfo());
-                observer.complete(enriched);
-            } else {
-                Throwable t = ExceptionUtil.unwind(error);
-                observer.completeExceptionally(new InternalServerErrorException(t));
-            }
-        });
     }
 
     @Override
@@ -528,67 +461,6 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             observer.complete(Empty.getDefaultInstance());
         } catch (Exception e) {
             observer.completeExceptionally(e);
-        }
-    }
-
-    @Override
-    public void updateService(Context ctx, EditServiceRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
-        YamcsServer yamcs = YamcsServer.getServer();
-
-        String instance = request.getInstance();
-
-        boolean global = false;
-        if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
-            global = true;
-        } else {
-            RestHandler.verifyInstance(instance);
-        }
-
-        String serviceName = request.getName();
-        String state = request.hasState() ? request.getState() : null;
-
-        if (serviceName == null) {
-            throw new BadRequestException("No service name specified");
-        }
-
-        if (state != null) {
-            switch (state.toLowerCase()) {
-            case "stop":
-            case "stopped":
-                Service s;
-                if (global) {
-                    s = yamcs.getGlobalService(serviceName);
-                } else {
-                    s = yamcs.getInstance(instance).getService(serviceName);
-                }
-                if (s == null) {
-                    throw new NotFoundException("No service by name '" + serviceName + "'");
-                }
-
-                s.stopAsync();
-                observer.complete(Empty.getDefaultInstance());
-                return;
-            case "running":
-                try {
-                    if (global) {
-                        ServiceWithConfig service = yamcs.getGlobalServiceWithConfig(serviceName);
-                        yamcs.startGlobalService(service.getName());
-                    } else {
-                        ServiceWithConfig service = yamcs.getInstance(instance)
-                                .getServiceWithConfig(serviceName);
-                        yamcs.getInstance(instance).startService(service.getName());
-                    }
-                    observer.complete(Empty.getDefaultInstance());
-                } catch (Exception e) {
-                    observer.completeExceptionally(e);
-                }
-                return;
-            default:
-                throw new BadRequestException("Unsupported service state '" + state + "'");
-            }
-        } else {
-            observer.complete(Empty.getDefaultInstance());
         }
     }
 

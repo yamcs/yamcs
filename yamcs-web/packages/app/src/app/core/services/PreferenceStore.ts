@@ -63,7 +63,7 @@ export class PreferenceStore {
       for (const col of cols) {
         for (const deprecatedCol of deprecated) {
           if (col === deprecatedCol) {
-            localStorage.removeItem(`yamcs.${source}.cols`)
+            localStorage.removeItem(`yamcs.${source}.cols`);
             return;
           }
         }

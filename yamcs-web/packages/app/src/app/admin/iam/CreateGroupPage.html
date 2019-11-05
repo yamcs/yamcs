@@ -18,7 +18,7 @@
       </label>
     </form>
     <p>&nbsp;</p>
-    <button mat-stroked-button (click)="showAddMembersDialog()">
+    <button class="ya-button" (click)="showAddMembersDialog()">
       <mat-icon>add</mat-icon>
       ADD MEMBERS
     </button>
@@ -45,13 +45,10 @@
     </table>
 
     <p>&nbsp;</p>
-    <mat-toolbar>
-      <span style="flex: 1 1 auto"></span>
-      <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
-      <button type="submit" (click)="onConfirm()"
-              mat-raised-button
-              [disabled]="!form.valid"
-              color="primary">CREATE</button>
-    </mat-toolbar>
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
+      <button class="ya-button primary" type="submit" (click)="onConfirm()"
+              [disabled]="!form.valid">CREATE</button>
+    </div>
   </div>
 </app-admin-page>

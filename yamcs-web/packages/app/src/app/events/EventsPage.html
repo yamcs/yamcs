@@ -37,46 +37,38 @@
   <div class="panel-content" *ngIf="dataSource">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <app-search-filter formControlName="filter"
-                             placeholder="Filter by text search">
-          </app-search-filter>
-          &nbsp;&nbsp;
-          <app-column-chooser [columns]="columns"
-                              [displayedColumns]="displayedColumns"
-                              (change)="updateColumns($event)"></app-column-chooser>
-        </div>
+        <app-search-filter formControlName="filter"
+                           placeholder="Filter by text search">
+        </app-search-filter>
+        &nbsp;&nbsp;
+        <app-column-chooser #columnChooser
+                            [columns]="columns"
+                            preferenceKey="events"></app-column-chooser>
       </div>
       <div class="filter-bar">
-        <div class="vmiddle" style="flex: 1 1 0%">
-          <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
-          &nbsp;&nbsp;
-          <app-select [options]="sourceOptions$ | async"
-                      (change)="updateSource($event)"></app-select>
-          &nbsp;&nbsp;
-          <app-select #intervalSelect
-                      [options]="intervalOptions"
-                      icon="access_time"
-                      (change)="updateInterval($event)"></app-select>
-          &nbsp;&nbsp;
-          <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-            <input formControlName="customStart" type="datetime" style="width: 160px">
-            <input formControlName="customStop" type="datetime" style="width: 160px">
-            &nbsp;&nbsp;
-            <button (click)="applyCustomDates()"
-                    class="ya-button"
-                    [disabled]="filterForm.invalid">Apply</button>
-          </ng-container>
-          <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
-            <button class="ya-button" (click)="jumpToNow()">
-              Jump to now
-            </button>
-          </ng-container>
+        <app-select [options]="severityOptions" formControlName="severity"></app-select>
+        <app-select [options]="sourceOptions$ | async"
+                    formControlName="source"></app-select>
+        <app-select #intervalSelect
+                    [options]="intervalOptions"
+                    icon="access_time"
+                    formControlName="interval"></app-select>
+        <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+          <app-date-time formControlName="customStart"></app-date-time>
+          <app-date-time formControlName="customStop"></app-date-time>
+          <button (click)="applyCustomDates()"
+                  class="ya-button"
+                  [disabled]="filterForm.invalid">Apply</button>
+        </ng-container>
+        <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+          <button class="ya-button" (click)="jumpToNow()">
+            Jump to now
+          </button>
+        </ng-container>
 
-          &nbsp;&nbsp;
-          <app-dots *ngIf="dataSource.loading$ | async">
-          </app-dots>
-        </div>
+        <app-dots *ngIf="dataSource.loading$ | async">
+        </app-dots>
+
         <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
           Listening for events
           <app-dots fontSize="16px" color="#1b61b9"></app-dots>
@@ -86,7 +78,7 @@
 
     <div class="table-status" [ngSwitch]="appliedInterval">
       <div class="message-zone">
-        <app-action-link [link]="downloadURL$ | async">Download events</app-action-link>
+        <app-action-link [link]="downloadURL$ | async" [download]="'Events'">Download events</app-action-link>
       </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
@@ -160,8 +152,8 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+      <tr mat-header-row *cdkHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
           [@rowAnimation]="row.animate"
           [ngClass]="row.severity"></tr>
     </table>

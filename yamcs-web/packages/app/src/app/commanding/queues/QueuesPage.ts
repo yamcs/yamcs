@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { CommandQueue } from '@yamcs/client';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { CommandQueue, ConnectionInfo } from '@yamcs/client';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -9,6 +9,8 @@ import { YamcsService } from '../../core/services/YamcsService';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QueuesPage implements OnDestroy {
+
+  connectionInfo$: Observable<ConnectionInfo | null>;
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
   cqueueSubscription: Subscription;
@@ -21,6 +23,7 @@ export class QueuesPage implements OnDestroy {
     const processor = yamcs.getProcessor();
     const instanceClient = yamcs.getInstanceClient()!;
     title.setTitle('Queues');
+    this.connectionInfo$ = yamcs.connectionInfo$;
 
     instanceClient.getCommandQueues(processor.name).then(cqueues => {
       for (const cqueue of cqueues) {

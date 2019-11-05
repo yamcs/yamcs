@@ -104,6 +104,10 @@ body {
   padding: 7px 8px 8px 0;
 }
 
+.ya-data-table td.vdiv, .ya-data-table th.vdiv {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
 dd, dt {
   font-size: 12px;
   color: rgba(0, 0, 0, .654);
@@ -142,7 +146,7 @@ dt {
 }
 
 .ya-data-table a, .ya-link a, a.ya-link {
-  color: #1b61b9;
+  color: #5787b1;
   text-decoration: none;
 }
 
@@ -208,6 +212,10 @@ a.ya-link.ya-header-link {
   font-weight: 600;
 }
 
+.ya-menu.mat-menu-panel {
+  min-height: 24px;
+}
+
 .ya-form label {
   margin: -3px 0 20px 0;
   font-weight: 500;
@@ -223,13 +231,13 @@ a.ya-link.ya-header-link {
   color: crimson;
 }
 
-.ya-form label, .ya-form label input[type="text"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select {
+.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;
 }
 
-.ya-form input[type="text"], .ya-form input[type="password"], .ya-input {
+.ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="password"], .ya-input {
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;
@@ -238,6 +246,15 @@ a.ya-link.ya-header-link {
   height: 24px;
   padding: 0 7px 1px;
   box-sizing: border-box;
+  outline: none;
+}
+
+.ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus {
+  border-color: #5787b1;
+}
+
+.ng-invalid>.date-time-input>input {
+  border-color: crimson !important;
 }
 
 .ya-form input[type="radio"] {
@@ -273,12 +290,6 @@ a.ya-link.ya-header-link {
   height: auto;
   line-height: 16px;
   font-size: 12px;
-}
-
-.vmiddle {
-  display: inline-flex;
-  vertical-align: middle;
-  align-items: center;
 }
 
 .dl-horizontal {
@@ -326,7 +337,7 @@ a.ya-link.ya-header-link {
 }
 
 .alert, .ERROR td, .DISTRESS td, .CRITICAL td, .SEVERE td {
-  color: red !important;
+  color: crimson !important;
 }
 
 /*
@@ -344,7 +355,7 @@ button.expandable {
   padding: 0 8px;
 }
 
-.hide {
+.hide, .noDisplay {
   display: none;
 }
 
@@ -362,6 +373,47 @@ button.expandable {
   font-weight: 400;
 }
 
+button.ya-button {
+  height: 24px;
+  border: 1px solid #d3d3d3;
+  background-color: #fff;
+  outline: none;
+  color: rgba(0, 0, 0, .75);
+  margin: 0;
+  border-radius: 1px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+  cursor: pointer;
+}
+
+button.ya-button:active {
+  border-color: #bbb;
+  color: rgba(0, 0, 0, .75);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04))
+}
+
+button.ya-button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+button.ya-button:disabled {
+  /*color: rgba(0, 0, 0, .25);*/
+  opacity: 0.6;
+}
+
+button.ya-button .material-icons {
+  font-size: 14px;
+  height: 14px;
+  width: 14px;
+  /*display: inline-flex;*/
+  vertical-align: middle;
+}
+
+button.ya-button.primary {
+  background-color: #222d4b;
+  color: white;
+  border-color: #5787b1;
+}
+
 .shake {
   animation: yshake 0.82s infinite cubic-bezier(.36, .07, .19, .97) both;
   transform: translate3d(0, 0, 0);
@@ -370,6 +422,24 @@ button.expandable {
 
 .page-options {
   margin-bottom: 12px;
+}
+
+.filter-bar {
+  height: 24px;
+  margin-bottom: 12px;
+  display: flex;
+}
+
+.action-bar {
+  padding-top: 16px;
+}
+
+.action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button {
+  margin-right: 7px;
+}
+
+.spin {
+  animation: yspin 2s infinite linear;
 }
 
 @keyframes yshake {

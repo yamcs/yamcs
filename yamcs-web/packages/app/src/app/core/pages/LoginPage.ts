@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../services/AuthService';
@@ -21,7 +22,10 @@ export class LoginPage {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService) {
+    private authService: AuthService,
+    title: Title,
+  ) {
+    title.setTitle('Sign In');
   }
 
   doLogin() {

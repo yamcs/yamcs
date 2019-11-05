@@ -1,0 +1,12 @@
+<div class="date-time-input">
+  <input #input class="ya-input"
+         type="datetime-local"
+         placeholder="yyyy-MM-ddThh:mm"
+         autocomplete="off"
+         (keyup)="fireChange()"
+         (change)="fireChange()"
+         [step]="step">
+  <div class="cal">
+    <mat-icon class="icon14">calendar_today</mat-icon>
+  </div>
+</div>

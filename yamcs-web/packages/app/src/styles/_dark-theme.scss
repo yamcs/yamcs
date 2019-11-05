@@ -127,17 +127,11 @@ mat-table {
   background-color: #191919 !important;
 }
 
-input {
+.ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="password"], .ya-input {
   background-color: #171717;
   border: 1px solid #2e2e2e;
   color: rgba(255, 255, 255, 0.882353);
   outline: none;
-  height: 19px;
-  padding-left: 3px;
-}
-
-input:focus {
-  border-color: #1b61b9;
 }
 
 button.ya-button {
@@ -152,7 +146,7 @@ button.ya-button {
   margin: 0;
 }
 
-.app-bar {
+.app-bar:not(.replay) {
   background-color: #232323 !important;
 }
 

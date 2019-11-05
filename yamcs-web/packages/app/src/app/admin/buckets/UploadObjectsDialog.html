@@ -12,13 +12,11 @@
       <input type="text" formControlName="path">
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button
+  <button class="ya-button"
           mat-dialog-close>CANCEL</button>
-  <button mat-raised-button
-          (click)="save()"
-          color="primary">UPLOAD</button>
+  <button class="ya-button primary"
+          (click)="save()">UPLOAD</button>
 </mat-dialog-actions>

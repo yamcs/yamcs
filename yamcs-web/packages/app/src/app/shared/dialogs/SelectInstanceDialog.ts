@@ -53,7 +53,7 @@ export class SelectInstanceDialog implements AfterViewInit {
     const newInstance = selectedOption.value;
     this.dialogRef.close();
     if (instance.name !== newInstance) {
-      this.router.navigateByUrl(`/monitor/displays/browse?instance=${newInstance}`);
+      this.router.navigateByUrl(`/telemetry/displays/browse?instance=${newInstance}`);
     }
   }
 }

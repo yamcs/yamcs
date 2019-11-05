@@ -1,6 +1,7 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import * as utils from '../shared/utils';
 
 @Component({
   selector: 'app-jump-to-dialog',
@@ -10,7 +11,6 @@ export class JumpToDialog {
 
   date = new FormControl(null, [
     Validators.required,
-    Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
   ]);
 
   constructor(
@@ -18,12 +18,12 @@ export class JumpToDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     if (this.data.date) {
-      this.date.setValue(this.data.date.toISOString());
+      this.date.setValue(utils.printLocalDate(this.data.date, 'hhmm'));
     }
   }
 
   select() {
-    const date = new Date(Date.parse(this.date.value));
+    const date = utils.toDate(this.date.value);
     this.dialogRef.close({ date });
   }
 }

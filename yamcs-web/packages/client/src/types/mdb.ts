@@ -246,11 +246,11 @@ export interface Container extends NameDescription {
 }
 
 export type OperatorType = 'EQUAL_TO'
-| 'NOT_EQUAL_TO'
-| 'GREATER_THAN'
-| 'GREATER_THAN_OR_EQUAL_TO'
-| 'SMALLER_THAN'
-| 'SMALLER_THAN_OR_EQUAL_TO';
+  | 'NOT_EQUAL_TO'
+  | 'GREATER_THAN'
+  | 'GREATER_THAN_OR_EQUAL_TO'
+  | 'SMALLER_THAN'
+  | 'SMALLER_THAN_OR_EQUAL_TO';
 
 export interface ComparisonInfo {
   parameter: Parameter;
@@ -282,59 +282,60 @@ export interface RepeatInfo {
 }
 
 export interface GetParametersOptions {
-  namespace?: string;
-  recurse?: boolean;
   type?: string;
+  source?: string;
   q?: string;
+  system?: string;
   pos?: number;
   limit?: number;
 }
 
 export interface ParametersPage {
-  parameters?: Parameter[]
+  spaceSystems?: string[];
+  parameters?: Parameter[];
   continuationToken?: string;
   totalSize: number;
 }
 
 export interface GetAlgorithmsOptions {
-  namespace?: string;
-  recurse?: boolean;
   q?: string;
+  system?: string;
   pos?: number;
   limit?: number;
 }
 
 export interface AlgorithmsPage {
-  algorithms?: Algorithm[]
+  spaceSystems?: string[];
+  algorithms?: Algorithm[];
   continuationToken?: string;
   totalSize: number;
 }
 
 export interface GetContainersOptions {
-  namespace?: string;
-  recurse?: boolean;
   q?: string;
+  system?: string;
   pos?: number;
   limit?: number;
 }
 
 export interface ContainersPage {
-  containers?: Container[]
+  spaceSystems?: string[];
+  containers?: Container[];
   continuationToken?: string;
   totalSize: number;
 }
 
 export interface GetCommandsOptions {
-  namespace?: string;
-  recurse?: boolean;
   noAbstract?: boolean;
   q?: string;
+  system?: string;
   pos?: number;
   limit?: number;
 }
 
 export interface CommandsPage {
-  commands?: Command[]
+  spaceSystems?: string[];
+  commands?: Command[];
   continuationToken?: string;
   totalSize: number;
 }

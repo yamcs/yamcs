@@ -6,11 +6,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Service } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/template/Select';
+import { Option } from '../../shared/forms/Select';
 
 @Component({
   templateUrl: './ServicesPage.html',
-  styleUrls: ['./ServicesPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicesPage {
@@ -22,7 +21,7 @@ export class ServicesPage {
   });
 
   instanceOptions$ = new BehaviorSubject<Option[]>([
-    { id: '_global', label: '_global', selected: true },
+    { id: '_global', label: '_global' },
   ]);
 
   dataSource = new MatTableDataSource<Service>();
@@ -44,7 +43,6 @@ export class ServicesPage {
           {
             id: instance.name,
             label: instance.name,
-            selected: this.filterForm.get('instance')!.value === instance.name,
           }
         ]);
       }
@@ -63,9 +61,6 @@ export class ServicesPage {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('instance')) {
       this.instance = queryParams.get('instance')!;
-      for (const option of this.instanceOptions$.value) {
-        option.selected = (option.id === this.instance);
-      }
       this.filterForm.get('instance')!.setValue(this.instance);
     }
   }
@@ -118,9 +113,5 @@ export class ServicesPage {
       },
       queryParamsHandling: 'merge',
     });
-  }
-
-  updateInstance(instance: string) {
-    this.filterForm.get('instance')!.setValue(instance);
   }
 }

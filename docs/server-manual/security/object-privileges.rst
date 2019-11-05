@@ -7,8 +7,6 @@ Command
     Allows to issue a particular command
 CommandHistory
     Allows access to the command history of a particular command
-InsertCommandQueue
-    Allows to insert commands to a particular queue
 ManageBucket
     Allow control over a specific bucket
 ReadBucket

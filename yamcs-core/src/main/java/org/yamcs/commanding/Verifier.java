@@ -11,7 +11,7 @@ abstract class Verifier {
         NEW, RUNNING, OK, NOK, TIMEOUT, CANCELLED
     };
 
-    volatile State state;
+    volatile State state = State.NEW;
 
     Verifier nextVerifier;
 
@@ -33,16 +33,15 @@ abstract class Verifier {
         doCancel();
         cvh.onVerifierFinished(this, null);
     }
-    
+
     void cancel() {
-        if (state != State.RUNNING) {
+        if (state != State.RUNNING && state != State.NEW) {
             return;
         }
         state = State.CANCELLED;
         doCancel();
         cvh.onVerifierFinished(this, null);
     }
-    
 
     void finished(boolean result, String failureReason) {
         if (state != State.RUNNING) {
@@ -60,8 +59,8 @@ abstract class Verifier {
     abstract void doCancel();
 
     /**
-     * Called when a command history parameter (an entry in the command history) is received
-     * The parameter name is set to /yamcs/cdmHist/&lt;key&gt; where the key is the command history key.
+     * Called when a command history parameter (an entry in the command history) is received The parameter name is set
+     * to /yamcs/cdmHist/&lt;key&gt; where the key is the command history key.
      * 
      * 
      * @param pv

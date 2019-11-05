@@ -26,10 +26,12 @@
   {{ command.source || '-' }}
 </div>
 
-<h6>Binary</h6>
-<div class="block">
-  <app-hex [base64String]="command.binary"></app-hex>
-</div>
+<ng-container *ngIf="command.binary">
+  <h6>Binary</h6>
+  <div class="block">
+    <app-hex [base64String]="command.binary"></app-hex>
+  </div>
+</ng-container>
 
 <ng-container *ngIf="command.comment">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
@@ -73,7 +75,7 @@
       </td>
       <td>Released</td>
       <td>
-        {{ command.released?.status || command.transmissionConstraints || '-' }}
+        {{ command.released?.status || command.transmissionConstraints?.status || '-' }}
       </td>
       <td>
         <span [matTooltip]="command.released?.time">
@@ -107,7 +109,13 @@
         <td style="width: 150px">{{ ack.name }}</td>
         <td style="width: 70px">{{ ack.status }}</td>
         <td>
-          <span [matTooltip]="ack.time">{{ ack.time | deltaWith:command.generationTime }}</span>
+          <ng-container [ngSwitch]="ack.status">
+            <span *ngSwitchCase="'SCHEDULED'">-</span>
+            <span *ngSwitchCase="'PENDING'">-</span>
+            <span *ngSwitchDefault [matTooltip]="ack.time">
+              {{ ack.time | deltaWith:command.generationTime }}
+            </span>
+          </ng-container>
         </td>
       </tr>
     </table>
@@ -116,9 +124,9 @@
 
 <h6>Completion</h6>
 <div class="block">
-  <ng-container *ngIf="command.completed && command.success">SUCCESS</ng-container>
-  <ng-container *ngIf="command.completed && !command.success">
-    FAILURE: {{ command.failureMessage }}
+  <ng-container *ngIf="command.completed?.status === 'OK'">SUCCESS</ng-container>
+  <ng-container *ngIf="command.completed?.status === 'NOK'">
+    FAILURE: {{ command.completed?.message }}
   </ng-container>
   <ng-container *ngIf="!command.completed">-</ng-container>
 </div>

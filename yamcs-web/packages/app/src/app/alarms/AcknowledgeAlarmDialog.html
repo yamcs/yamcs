@@ -15,13 +15,11 @@
       <textarea formControlName="comment" rows="5" style="resize: none"></textarea>
     </label>
   </form>
-  <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCEL</button>
-  <button mat-raised-button
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary"
           (click)="acknowledge()"
-          color="primary"
           [disabled]="!formGroup.valid">OK</button>
 </mat-dialog-actions>

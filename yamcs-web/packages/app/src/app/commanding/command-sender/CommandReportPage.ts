@@ -31,12 +31,11 @@ export class CommandReportPage implements OnDestroy {
       ignorePastCommands: false,
     }).then(response => {
 
-      this.commandSubscription = response.command$.pipe(
-        filter(entry => printCommandId(entry.commandId) === id),
-      ).subscribe(entry => this.mergeEntry(entry));
-
       yamcs.getInstanceClient()!.getCommandHistoryEntry(id).then(entry => {
         this.mergeEntry(entry);
+        this.commandSubscription = response.command$.pipe(
+          filter(wsEntry => printCommandId(wsEntry.commandId) === id),
+        ).subscribe(wsEntry => this.mergeEntry(wsEntry));
       });
     });
   }

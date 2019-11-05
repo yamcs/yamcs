@@ -93,7 +93,7 @@
                              placeholder="Filter by text search">
           </app-search-filter>
           &nbsp;&nbsp;
-          <app-select [options]="viewOptions" (change)="updateView($event)"></app-select>
+          <app-select [options]="viewOptions" formControlName="view"></app-select>
         </div>
       </form>
       <app-alarms-table [instance]="instance"

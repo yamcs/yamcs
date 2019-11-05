@@ -1,27 +1,34 @@
-<div class="mat-typography panel-content">
-  <div style="width: 100%; text-align: center">
-    <div style="display: inline-block; width: 500px; padding-top: 50px">
-      <mat-card>
-        <form [formGroup]="formGroup" (keyup.enter)="doLogin()">
-          <table>
-            <tr>
-              <td>Username</td>
-              <td><input type="text" formControlName="username" autofocus></td>
-            </tr>
-            <tr>
-              <td>Password</td>
-              <td><input type="password" formControlName="password"></td>
-            </tr>
-          </table>
-        </form>
-        <mat-card-actions align="end">
-          <span *ngIf="errorMessage$ | async as errorMessage" class="vmiddle error-message">
-            <mat-icon class="icon18">error</mat-icon>&nbsp;&nbsp;{{ errorMessage }}
-          </span>
-          <div style="flex: 1 1 0%"></div>
-          <button mat-raised-button (click)="doLogin()">Login</button>
-        </mat-card-actions>
-      </mat-card>
+<div class="wrapper mat-typography">
+  <div class="console">
+    <img src="static/console.svg">
+  </div>
+  <div class="login-panel">
+    <div class="logo">
+      <img src="static/yamcs300.png">
+    </div>
+    <div class="login-form">
+      <h3>Sign in to your account</h3>
+      <form [formGroup]="formGroup" class="ya-form" (keyup.enter)="doLogin()">
+        <label>
+          Username
+          <input type="text" formControlName="username" autofocus class="ya-input">
+        </label>
+        <br>
+        <label>
+          Password
+          <input type="password" formControlName="password" class="ya-input">
+        </label>
+      </form>
+
+      <br>
+
+      <p class="error-message" *ngIf="errorMessage$ | async as errorMessage">
+        {{ errorMessage }}
+      </p>
+
+      <div class="action-bar">
+        <button class="ya-button primary" (click)="doLogin()">Sign in</button>
+      </div>
     </div>
   </div>
 </div>
