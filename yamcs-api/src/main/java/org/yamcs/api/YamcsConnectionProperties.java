@@ -135,8 +135,7 @@ public class YamcsConnectionProperties {
         this.protocol = protocol;
     }
 
-    @Override
-    public YamcsConnectionProperties clone() {
+    public YamcsConnectionProperties copy() {
         YamcsConnectionProperties ycp1 = new YamcsConnectionProperties(this.host, this.port, this.instance);
         ycp1.tls = this.tls;
         ycp1.protocol = this.protocol;

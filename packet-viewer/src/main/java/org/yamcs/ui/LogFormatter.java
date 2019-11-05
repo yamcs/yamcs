@@ -12,7 +12,7 @@ public class LogFormatter extends Formatter {
 
     @Override
     public String format(LogRecord r) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         d.setTime(r.getMillis());
         sb.append(sdf.format(d)).append(" ");
@@ -24,19 +24,21 @@ public class LogFormatter extends Formatter {
         Throwable t = r.getThrown();
         if (t != null) {
             sb.append(": ").append(t.toString()).append("\n");
-            for (StackTraceElement ste : t.getStackTrace()) {
-                sb.append("\t").append(ste.toString()).append("\n");
-            }
+            addStack(sb, t);
             Throwable cause = t.getCause();
             while (cause != null && cause != t) {
                 sb.append("Caused by: ").append(cause.toString()).append("\n");
-                for (StackTraceElement ste : cause.getStackTrace()) {
-                    sb.append("\t").append(ste.toString()).append("\n");
-                }
+                addStack(sb, cause);
                 cause = cause.getCause();
             }
         }
         sb.append("\n");
         return sb.toString();
+    }
+    
+    private void addStack(StringBuilder sb, Throwable t) {
+        for (StackTraceElement ste : t.getStackTrace()) {
+            sb.append("\t").append(ste.toString()).append("\n");
+        }
     }
 }

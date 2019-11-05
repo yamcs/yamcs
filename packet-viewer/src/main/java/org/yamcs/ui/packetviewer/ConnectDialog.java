@@ -395,7 +395,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     }
 
     public YamcsConnectionProperties getConnectData() {
-        return connectionProps.clone();
+        return connectionProps.copy();
     }
 
     public boolean getUseServerMdb() {

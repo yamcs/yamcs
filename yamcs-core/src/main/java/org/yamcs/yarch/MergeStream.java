@@ -17,7 +17,6 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
     Stream[] streams;
     private Tuple queueEndMark = new Tuple(new TupleDefinition(), new ArrayList<>());
     static AtomicInteger counter = new AtomicInteger();
-    private volatile boolean quitting = false;
     private final String mergeColumn;
 
     public MergeStream(YarchDatabaseInstance ydb, Stream[] streams, String mergeColumn, boolean ascending)
@@ -132,7 +131,6 @@ public class MergeStream extends Stream implements StreamSubscriber, Runnable {
 
     @Override
     protected void doClose() {
-        quitting = true;
         for (Stream s : streams) {
             s.close();
         }

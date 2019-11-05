@@ -40,7 +40,7 @@ jobs:
       jdk: openjdk8
       script: skip
       after_success:  # Use this hook so it does not impact global build success
-        - mvn -Dsurefire.useFile=false org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+        - mvn -Dsurefire.useFile=false -Dsonar.organization=yamcs -Dsonar.projectKey=yamcs org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
       addons:
         sonarcloud:
           token:

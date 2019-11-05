@@ -222,7 +222,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
                     }
                 }
             } else {
-                reason = String.format("Cannot connect to %s:%d : %s", host, port);
+                reason = String.format("Cannot connect to %s:%d", host, port);
             }
             retries--;
             if (!sent && (retries > 0)) {

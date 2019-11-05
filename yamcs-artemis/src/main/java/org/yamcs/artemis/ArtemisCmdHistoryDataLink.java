@@ -4,6 +4,7 @@ package org.yamcs.artemis;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
     ServerLocator locator;
     ClientSession session;
     ClientConsumer client;
+    ClientSessionFactory factory; 
     
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -38,7 +40,8 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
     @Override
     protected void doStart() {
         try {
-            session = locator.createSessionFactory().createSession();
+            factory = locator.createSessionFactory();
+            session = factory.createSession();
             CmdHistoryTupleTranslator translator = new CmdHistoryTupleTranslator();
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
             StreamConfig sc = StreamConfig.getInstance(instance);

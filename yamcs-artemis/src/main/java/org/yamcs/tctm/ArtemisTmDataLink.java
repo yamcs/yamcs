@@ -37,6 +37,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     ClientSession artemisSession;
     ServerLocator locator;
     ClientSessionFactory factory;
+    ClientConsumer client;
     
     boolean preserveIncomingReceptionTime = false;
     YConfiguration config;
@@ -138,7 +139,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
             String queue = artemisAddress + "-ActiveMQTmProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             log.debug("Starting artemis tm data link connected to {}.{}", artemisAddress, queue);
-            ClientConsumer client = artemisSession.createConsumer(queue,
+            client = artemisSession.createConsumer(queue,
                     AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME + "<>"
                             + AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);

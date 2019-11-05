@@ -189,7 +189,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
     }
 
     private RestClient getRestClient(String username, String password) {
-        YamcsConnectionProperties ycp1 = ycp.clone();
+        YamcsConnectionProperties ycp1 = ycp.copy();
 
         ycp1.setCredentials(username, password.toCharArray());
         RestClient restClient1 = new RestClient(ycp1);

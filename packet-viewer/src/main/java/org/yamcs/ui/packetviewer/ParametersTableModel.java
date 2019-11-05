@@ -76,6 +76,8 @@ public class ParametersTableModel extends AbstractTableModel {
                     calib = ((FloatDataEncoding) encoding).getDefaultCalibrator();
                 }
                 return calib == null ? "" : calib.toString();
+            } else {
+                return null;
             }
         default:
             return null;
