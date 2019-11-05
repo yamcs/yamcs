@@ -71,7 +71,9 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public TmPacket process(byte[] packet) {
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] packet = tmPacket.getPacket();
+        
         if (packet.length < 16) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is 16 bytes.");
@@ -115,10 +117,10 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
 
-        TmPacket pwt = new TmPacket(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
-                apidseqcount, packet);
-        pwt.setCorrupted(corrupted);
-        return pwt;
+        tmPacket.setGenerationTime(CcsdsPacket.getInstant(packet));
+        tmPacket.setSequenceCount(apidseqcount);
+        tmPacket.setCorrupted(corrupted);
+        return tmPacket;
     }
 
     public boolean checkForSequenceDiscontinuity() {

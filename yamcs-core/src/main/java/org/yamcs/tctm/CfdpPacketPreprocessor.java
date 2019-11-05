@@ -17,7 +17,8 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public TmPacket process(byte[] packet) {
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] packet = tmPacket.getPacket();
 
         // check that we're processing a CFDP packet by verifying that we're reading
         // a CCSDS packet (that encapsulates the CFDP payload)
@@ -32,6 +33,8 @@ public class CfdpPacketPreprocessor extends AbstractPacketPreprocessor {
                 4 + entityIdLength + sequenceNumberLength);
         long sequenceNr = CfdpUtils.getUnsignedLongFromByteArray(seqnr);
 
-        return new TmPacket(timeService.getMissionTime(), System.currentTimeMillis(), (int) sequenceNr, packet);
+        tmPacket.setGenerationTime(timeService.getMissionTime());
+        tmPacket.setSequenceCount((int) sequenceNr);
+        return tmPacket;
     }
 }

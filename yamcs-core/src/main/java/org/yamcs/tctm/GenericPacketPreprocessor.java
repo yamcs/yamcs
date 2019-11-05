@@ -49,7 +49,9 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public TmPacket process(byte[] packet) {
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] packet = tmPacket.getPacket();
+        
         boolean corrupted = false;
         if (errorDetectionCalculator != null) {
             int computedCheckword;
@@ -93,8 +95,9 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
 
-        TmPacket pwt = new TmPacket(timeService.getMissionTime(), gentime, seqCount, packet);
-        pwt.setCorrupted(corrupted);
-        return pwt;
+        tmPacket.setSequenceCount(seqCount);
+        tmPacket.setGenerationTime(gentime);
+        tmPacket.setCorrupted(corrupted);
+        return tmPacket;
     }
 }

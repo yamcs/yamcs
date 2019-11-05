@@ -105,7 +105,8 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     }
 
     @Override
-    public TmPacket process(byte[] packet) {
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] packet = tmPacket.getPacket();
         if (packet.length < 6) {
             eventProducer.sendWarning(
                     "Short packet received, length: " + packet.length + "; minimum required length is 6 bytes.");
@@ -117,7 +118,8 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
                                    // apid = 0
             int apid = CcsdsPacket.getAPID(packet);
             if (apid == 0) {
-                return processTimePacket(packet);
+                processTimePacket(tmPacket);
+                return tmPacket;
             }
             eventProducer.sendWarning("Packet with apid=" + apid + " and without secondary header received, ignoring.");
             return null;
@@ -168,14 +170,16 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
                     CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet), TimeEncoding.toString(gentime),
                     corrupted);
         }
-
-        TmPacket pwt = new TmPacket(rectime, gentime, apidseqcount, packet);
-        pwt.setCorrupted(corrupted);
-        return pwt;
+        
+        tmPacket.setSequenceCount(apidseqcount);
+        tmPacket.setGenerationTime(gentime);
+        tmPacket.setCorrupted(corrupted);
+        return tmPacket;
     }
 
-    private TmPacket processTimePacket(byte[] packet) {
-        long rectime = timeService.getMissionTime();
+    private void processTimePacket(TmPacket tmPacket) {
+        byte[] packet = tmPacket.getPacket(); 
+        long rectime = tmPacket.getReceptionTime();
         boolean corrupted = false;
         long gentime;
         if (useLocalGenerationTime) {
@@ -190,8 +194,8 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
-        TmPacket pwt = new TmPacket(rectime, gentime, apidseqcount, packet);
-        pwt.setCorrupted(corrupted);
-        return pwt;
+        tmPacket.setCorrupted(corrupted);
+        tmPacket.setSequenceCount(apidseqcount);
+        tmPacket.setGenerationTime(gentime);
     }
 }
