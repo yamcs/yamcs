@@ -98,6 +98,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
         }
 
         while (isRunning()) {
+            doHousekeeping();
             try {
                 PreparedCommand pc = commandQueue.poll(housekeepingInterval, TimeUnit.MILLISECONDS);
                 if (pc == null) {
@@ -123,4 +124,10 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     protected abstract void startUp() throws Exception;
 
     protected abstract void shutDown() throws Exception;
+    
+    /**
+     * Called each {@link #housekeepingInterval} milliseconds, can be used to establish tcp connections or similar things
+     */
+    protected void doHousekeeping() {
+    }
 }
