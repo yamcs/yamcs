@@ -3,6 +3,9 @@ Version 4.10.4 relesed 5-Nov-2020
 - cancel the pending verifiers on command completion
 - improvements into the command queue definition
 - added CCSDS TC Data Link protocol including COP1
+- allow links to set an Earth Reception Time on TM packets (used by the SLE link
+to set the time as received from the ground station) - useful for
+spacecraft/ground time synchronization purposes
 - various changes in the web interface
 - various bugfixes
 
