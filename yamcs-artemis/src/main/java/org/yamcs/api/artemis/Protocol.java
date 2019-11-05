@@ -178,17 +178,19 @@ public class Protocol {
         ClientSession session;
         Map<SimpleString, ClientProducer> producers = new ConcurrentHashMap<>();
         ServerLocator locator;
-
+        ClientSessionFactory factory;
+        ClientConsumer consumer ;
+        
         ProducerKiller() throws Exception {
             locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
-            ClientSessionFactory factory = locator.createSessionFactory();
+            factory = locator.createSessionFactory();
 
             session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true,
                     true, true, 1);
 
             // session.createQueue("example", "example", true);
             session.createTemporaryQueue("activemq.notifications", "ProducerKiller");
-            ClientConsumer consumer = session.createConsumer("ProducerKiller");
+            consumer = session.createConsumer("ProducerKiller");
             consumer.setMessageHandler(this);
             session.start();
         }

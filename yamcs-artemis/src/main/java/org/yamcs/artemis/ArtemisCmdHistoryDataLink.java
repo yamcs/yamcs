@@ -26,6 +26,8 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
     String instance;
     ServerLocator locator;
     ClientSession session;
+    ClientConsumer client;
+    
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public ArtemisCmdHistoryDataLink(String instance) {
@@ -46,7 +48,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
                 String queue = address + "-StreamAdapter";
                 log.debug("Subscribing to {}:{}", address, queue);
                 session.createTemporaryQueue(address, queue);
-                ClientConsumer client = session.createConsumer(queue);
+                client = session.createConsumer(queue);
                 client.setMessageHandler(msg -> {
                     try {
                         Tuple tuple = translator.buildTuple(msg);
@@ -69,6 +71,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
         try {
             session.stop();
             session.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             notifyFailed(e);

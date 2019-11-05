@@ -49,18 +49,16 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         int numParamChanging = packetSize / 40; // 10% of parameters are changing with each packet
 
         while (isRunning()) {
-            while (true) {
-                for (int i = 0; i < numPackets; i++) {
-                    CCSDSPacket packet = packets[i];
-                    ByteBuffer bb = packet.getUserDataBuffer();
-                    for (int j = 0; j < numParamChanging; j++) {
-                        bb.putInt(r.nextInt(packetSize - 4), r.nextInt());
-                    }
-                    packet.setTime(TimeEncoding.getWallclockTime());
-                    simulator.transmitRealtimeTM(packet);
+            for (int i = 0; i < numPackets; i++) {
+                CCSDSPacket packet = packets[i];
+                ByteBuffer bb = packet.getUserDataBuffer();
+                for (int j = 0; j < numParamChanging; j++) {
+                    bb.putInt(r.nextInt(packetSize - 4), r.nextInt());
                 }
-                Thread.sleep(interval);
+                packet.setTime(TimeEncoding.getWallclockTime());
+                simulator.transmitRealtimeTM(packet);
             }
+            Thread.sleep(interval);
         }
     }
 

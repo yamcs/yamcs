@@ -3,6 +3,7 @@ package org.yamcs.artemis;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class ArtemisEventDataLink extends AbstractService {
     String instance;
     ServerLocator locator;
     ClientSession session;
+    ClientConsumer client;
+    ClientSessionFactory factory;
+    
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public ArtemisEventDataLink(String instance) {
@@ -34,7 +38,8 @@ public class ArtemisEventDataLink extends AbstractService {
     @Override
     protected void doStart() {
         try {
-            session = locator.createSessionFactory().createSession();
+            factory = locator.createSessionFactory();
+            session = factory.createSession();
             EventTupleTranslator translator = new EventTupleTranslator();
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
             StreamConfig sc = StreamConfig.getInstance(instance);
@@ -43,7 +48,7 @@ public class ArtemisEventDataLink extends AbstractService {
                 String address = instance + "." + streamName;
                 String queue = address + "-StreamAdapter";
                 session.createTemporaryQueue(address, queue);
-                ClientConsumer client = session.createConsumer(queue);
+                client = session.createConsumer(queue);
                 client.setMessageHandler((msg) -> {
                     try {
                         msg.acknowledge();
@@ -66,6 +71,7 @@ public class ArtemisEventDataLink extends AbstractService {
         try {
             session.stop();
             session.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             notifyFailed(e);

@@ -49,7 +49,9 @@ public class AbstractArtemisTranslatorService extends AbstractService implements
     Logger log = LoggerFactory.getLogger(getClass());
     String instance;
     ServerLocator locator;
-
+    ClientSessionFactory factory;
+    
+    
     private final ThreadLocal<ArtemisClient> artemisClient = new ThreadLocal<ArtemisClient>() {
         ArtemisClient client;
 
@@ -57,7 +59,7 @@ public class AbstractArtemisTranslatorService extends AbstractService implements
         protected ArtemisClient initialValue() {
             try {
                 client = new ArtemisClient();
-                ClientSessionFactory factory = locator.createSessionFactory();
+                factory = locator.createSessionFactory();
                 client.session = factory.createSession();
                 client.producer = client.session.createProducer();
                 return client;

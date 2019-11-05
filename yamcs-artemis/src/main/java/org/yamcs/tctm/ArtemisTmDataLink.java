@@ -4,13 +4,14 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.artemis.Protocol;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
@@ -35,7 +36,8 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     final String artemisAddress;
     ClientSession artemisSession;
     ServerLocator locator;
-
+    ClientSessionFactory factory;
+    
     boolean preserveIncomingReceptionTime = false;
     YConfiguration config;
     final String linkName;
@@ -119,7 +121,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
             packetcount++;
             long rectime = preserveIncomingReceptionTime ? TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime())
                     : timeService.getMissionTime();
-            PacketWithTime pwt = new PacketWithTime(rectime, TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
+            TmPacket pwt = new TmPacket(rectime, TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
                     tm.getSequenceNumber(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
         } catch (Exception e) {
@@ -131,7 +133,8 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     protected void doStart() {
 
         try {
-            artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
+            factory = locator.createSessionFactory();
+            artemisSession = factory.createSession(false, true, true, true);
             String queue = artemisAddress + "-ActiveMQTmProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             log.debug("Starting artemis tm data link connected to {}.{}", artemisAddress, queue);
@@ -151,6 +154,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     protected void doStop() {
         try {
             artemisSession.close();
+            locator.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);

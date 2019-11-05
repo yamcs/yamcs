@@ -4,6 +4,7 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.yamcs.ConfigurationException;
@@ -34,8 +35,10 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     final String artemisAddress;
     ClientSession artemisSession;
     ServerLocator locator;
+    ClientSessionFactory factory;
     YConfiguration config;
     final String linkName;
+    ClientConsumer client;
 
     public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         log = new Log(getClass(), instance);
@@ -144,11 +147,12 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     @Override
     protected void doStart() {
         try {
-            artemisSession = locator.createSessionFactory().createSession();
+            factory = locator.createSessionFactory();
+            artemisSession = factory.createSession();
             String queue = artemisAddress + "-ArtemisPpProvider";
             log.debug("Starting artemis parameter data link connected to {}.{}", artemisAddress, queue);
             artemisSession.createTemporaryQueue(artemisAddress, queue);
-            ClientConsumer client = artemisSession.createConsumer(queue,
+            client = artemisSession.createConsumer(queue,
                     AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME + "<>"
                             + AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
