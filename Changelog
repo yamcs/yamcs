@@ -1,3 +1,11 @@
+Version 4.10.4 relesed 5-Nov-2020
+- made the command acknowledgments more uniform 
+- cancel the pending verifiers on command completion
+- improvements into the command queue definition
+- added CCSDS TC Data Link protocol including COP1
+- various changes in the web interface
+- various bugfixes
+
 Version 4.10.3 release 24-Sep-2019
 - changed the alarms to follow more closely the ISA-18.2 standard
 - added a user management module in the web interface
