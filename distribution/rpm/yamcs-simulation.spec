@@ -24,9 +24,9 @@ cd %{name}-%{version}-%{release}
 mkdir -p %{buildroot}/%{prefix}/lib
 cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib
 
-cp -r simulation/mdb %{buildroot}/%{prefix}
+cp -r simulation/src/main/yamcs/mdb %{buildroot}/%{prefix}
 
-cp -r simulation/etc %{buildroot}/%{prefix}
+cp -r simulation/src/main/yamcs/etc %{buildroot}/%{prefix}
 mv %{buildroot}/%{prefix}/etc/logging.properties.sample %{buildroot}/%{prefix}/etc/logging.properties
 
 mkdir -p %{buildroot}/%{prefix}/displays
