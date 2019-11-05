@@ -130,8 +130,7 @@ public class DataLinkInitialiser extends AbstractYamcsService {
                                 new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
                     } else {
                         t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
-                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                                        pwrt.getEarthReceptionTime(), pkt, ertime });
+                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt, ertime });
                     }
                     stream.emitTuple(t);
                 });

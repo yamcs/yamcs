@@ -48,12 +48,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
     static public final String TABLE_NAME = "tm";
     static public final String PNAME_COLUMN = "pname";
 
-    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION = new TupleDefinition();
+    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
     static {
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.GENTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_PACKET_COLUMN, DataType.BINARY);
+        RECORDED_TM_TUPLE_DEFINITION = StandardTupleDefinitions.TM.copy();
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
     }
 
@@ -316,7 +313,10 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 columns.addAll(c);
 
                 columns.add(c.size(), partitionBySc.getQualifiedName());
-                Tuple tp = new Tuple(RECORDED_TM_TUPLE_DEFINITION, columns);
+                TupleDefinition tdef = t.getDefinition().copy();
+                tdef.addColumn(PNAME_COLUMN, DataType.ENUM);
+                
+                Tuple tp = new Tuple(tdef, columns);
                 outputStream.emitTuple(tp);
             } catch (Exception e) {
                 log.error("got exception when saving packet ", e);
