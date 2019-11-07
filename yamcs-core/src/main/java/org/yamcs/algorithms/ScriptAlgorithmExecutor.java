@@ -241,6 +241,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
      * @return a matching code fragment to be included in the updateValue() method
      */
     private static String addValueType(StringBuilder source, Value v, boolean raw) {
+
         if (v.getType() == Type.BINARY) {
             if (raw) {
                 source.append("  public byte[] rawValue;\n");
@@ -312,6 +313,13 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             } else {
                 source.append("  public boolean value;\n");
                 return "    value=v.getEngValue().getBooleanValue();\n";
+            }
+        } else if (v.getType() == Type.ENUMERATED) {
+            if (raw) {
+                throw new IllegalArgumentException("Unexpected raw value of type ENUMERATED");
+            } else {
+                source.append("  public String value;\n");
+                return "    value=v.getEngValue().getStringValue();\n";
             }
         } else {
             throw new IllegalArgumentException("Unexpected value of type " + v.getType());
