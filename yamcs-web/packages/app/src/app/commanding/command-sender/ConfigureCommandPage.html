@@ -122,12 +122,13 @@
         Cancel
       </button>
       <span style="flex: 1 1 auto"></span>
-      <mat-slide-toggle [formControl]="armControl" color="primary">
+      <mat-slide-toggle *ngIf="config.twoStageCommanding"
+                        [formControl]="armControl" color="primary">
         Arm
       </mat-slide-toggle>
       &nbsp;&nbsp;&nbsp;&nbsp;
       <button class="ya-button primary"
-              [disabled]="!armControl.value || !commandConfigurationForm.valid"
+              [disabled]="(config.twoStageCommanding && !armControl.value) || !commandConfigurationForm.valid"
               (click)="sendCommand()">
         <mat-icon>send</mat-icon>
         Send

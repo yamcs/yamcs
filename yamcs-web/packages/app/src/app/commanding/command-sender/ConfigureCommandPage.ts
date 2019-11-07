@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance, Value } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
@@ -17,6 +18,7 @@ import * as utils from '../../shared/utils';
 export class ConfigureCommandPage {
 
   instance: Instance;
+  config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
   commandConfigurationForm = new FormGroup({
@@ -35,23 +37,27 @@ export class ConfigureCommandPage {
     private messageService: MessageService,
     private yamcs: YamcsService,
     private location: Location,
+    configService: ConfigService,
   ) {
     this.instance = yamcs.getInstance();
+    this.config = configService.getConfig();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
 
     title.setTitle(`Send a command: ${qualifiedName}`);
 
-    this.commandConfigurationForm.valueChanges.subscribe(() => {
-      this.armControl.setValue(false);
-    });
-    this.commandConfigurationForm.statusChanges.subscribe(() => {
-      if (this.commandConfigurationForm.valid) {
-        this.armControl.enable();
-      } else {
-        this.armControl.disable();
-      }
-    });
+    if (this.config.twoStageCommanding) {
+      this.commandConfigurationForm.valueChanges.subscribe(() => {
+        this.armControl.setValue(false);
+      });
+      this.commandConfigurationForm.statusChanges.subscribe(() => {
+        if (this.commandConfigurationForm.valid) {
+          this.armControl.enable();
+        } else {
+          this.armControl.disable();
+        }
+      });
+    }
 
     const promises: Promise<any>[] = [
       this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
