@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance } from '@yamcs/client';
+import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance, Value } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -126,7 +126,7 @@ export class ConfigureCommandPage {
     if (entry.assignment) {
       for (const assignment of entry.assignment) {
         if (assignment.name === argumentName) {
-          return utils.printValue(assignment.value);
+          return this.renderFieldValue(assignment.value);
         }
       }
     }
@@ -195,5 +195,30 @@ export class ConfigureCommandPage {
       }
     }
     return false;
+  }
+
+  private renderFieldValue(value: Value) {
+    switch (value.type) {
+      case 'BOOLEAN':
+        return '' + value.booleanValue;
+      case 'FLOAT':
+        return '' + value.floatValue;
+      case 'DOUBLE':
+        return '' + value.doubleValue;
+      case 'UINT32':
+        return '' + value.uint32Value;
+      case 'SINT32':
+        return '' + value.sint32Value;
+      case 'BINARY':
+        return utils.convertBase64ToHex(value.binaryValue!);
+      case 'ENUMERATED':
+      case 'STRING':
+      case 'TIMESTAMP':
+        return value.stringValue!;
+      case 'UINT64':
+        return '' + value.uint64Value;
+      case 'SINT64':
+        return '' + value.sint64Value;
+    }
   }
 }
