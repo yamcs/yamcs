@@ -96,14 +96,14 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
      * command added/command removed when the queue gets modified.
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
-        int order = commandQueueManager.getQueues().indexOf(q);
+        int order = commandQueueManager.getQueues().indexOf(q) + 1;
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, true);
         client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void updateQueue(CommandQueue q) {
-        int order = commandQueueManager.getQueues().indexOf(q);
+        int order = commandQueueManager.getQueues().indexOf(q) + 1;
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, false);
         client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
