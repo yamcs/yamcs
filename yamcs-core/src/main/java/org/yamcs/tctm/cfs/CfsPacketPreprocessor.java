@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -23,7 +22,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(CfsPacketPreprocessor.class);
+    private final Log log;
     static final int MINIMUM_LENGTH = 12;
     private boolean checkForSequenceDiscontinuity = true;
 
@@ -33,6 +32,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CfsPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
+        this.log = new Log(getClass(), yamcsInstance);
     }
 
     @Override
