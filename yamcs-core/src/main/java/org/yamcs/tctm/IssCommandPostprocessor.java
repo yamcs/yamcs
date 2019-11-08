@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.TimeEncoding;
 

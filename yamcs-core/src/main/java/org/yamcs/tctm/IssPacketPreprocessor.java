@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * This implements CCSDS packets as used in ISS (International Space Station). <br>
@@ -117,7 +117,9 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
 
-        tmPacket.setGenerationTime(CcsdsPacket.getInstant(packet));
+        
+        long genTime = TimeEncoding.fromGpsCcsdsTime( ByteArrayUtils.decodeInt(packet, 6), packet[10]);
+        tmPacket.setGenerationTime(genTime);
         tmPacket.setSequenceCount(apidseqcount);
         tmPacket.setCorrupted(corrupted);
         return tmPacket;

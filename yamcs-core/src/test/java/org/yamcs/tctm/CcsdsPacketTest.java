@@ -1,9 +1,9 @@
-package org.yamcs.api;
+package org.yamcs.tctm;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.CcsdsPacket;
 
 import java.nio.ByteBuffer;
 
@@ -51,6 +51,5 @@ public class CcsdsPacketTest {
                 "0000: 1b8a e154 005b 467f b356 7245 1300 e22b ...T.[F\u007F.VrE...+\n" +
                 "0010: a192 0300 0026 0001 0090 0030 07e1 0133 .....&.....0...3\n\n", packetString);
     }
-
 
 }

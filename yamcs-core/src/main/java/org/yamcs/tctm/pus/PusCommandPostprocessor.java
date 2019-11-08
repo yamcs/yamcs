@@ -9,11 +9,11 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.IssCommandPostprocessor;
-import org.yamcs.utils.CcsdsPacket;
 
 public class PusCommandPostprocessor implements CommandPostprocessor {
     static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);

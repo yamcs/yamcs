@@ -24,7 +24,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
@@ -112,12 +112,11 @@ public class CcsdsTmIndex implements TmIndex {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        byte[] packet = (byte[]) tuple.getColumn("packet");
-        ByteBuffer bbpacket = ByteBuffer.wrap(packet);
+        byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+        long time = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
 
-        short apid = CcsdsPacket.getAPID(bbpacket);
-        long time = CcsdsPacket.getInstant(bbpacket);
-        short seq = CcsdsPacket.getSequenceCount(bbpacket);
+        short apid = CcsdsPacket.getAPID(packet);
+        short seq = (short) CcsdsPacket.getSequenceCount(packet);
         try {
             addPacket(apid, time, seq);
         } catch (RocksDBException e) {

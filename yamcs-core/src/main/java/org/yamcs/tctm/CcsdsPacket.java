@@ -1,12 +1,12 @@
-package org.yamcs.utils;
+package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-public class CcsdsPacket implements Comparable<CcsdsPacket> {
-    static public final int DATA_OFFSET = 16;
+import org.yamcs.utils.ByteArrayUtils;
 
+public class CcsdsPacket {
     static public final int MAX_CCSDS_SIZE = 1500;
     protected ByteBuffer bb;
 
@@ -31,7 +31,7 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
     }
 
     public static int getSequenceCount(byte[] packet) {
-        return ((packet[2] << 8) + packet[3]) & 0x3FFF;
+        return ByteArrayUtils.decodeShort(packet, 2) & 0x3FFF;
     }
 
     public void setSequenceCount(short seqCount) {
@@ -78,17 +78,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
         return bb.capacity();
     }
 
-    /**
-     * 
-     * @return instant
-     */
-    public long getInstant() {
-        return TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10));
-    }
-
-    public static long getInstant(ByteBuffer bb) {
-        return TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10));
-    }
 
     /**
      * @return time in seconds since 6 Jan 1980
@@ -194,23 +183,14 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
         return new CcsdsPacket(bb);
     }
 
-    public static long getInstant(byte[] pkt) {
-        return getInstant(ByteBuffer.wrap(pkt));
-    }
-
     public static short getAPID(byte[] packet) {
-        return getAPID(ByteBuffer.wrap(packet));
+        return (short) (ByteArrayUtils.decodeShort(packet, 0) & 0x07FF);
     }
 
     public static int getCccsdsPacketLength(byte[] buf) {
         return getCccsdsPacketLength(ByteBuffer.wrap(buf));
     }
 
-    /* comparison based on time */
-    @Override
-    public int compareTo(CcsdsPacket p) {
-        return Long.signum(this.getInstant() - p.getInstant());
-    }
 
     @Override
     public String toString() {
@@ -221,7 +201,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket> {
         int lengthRoundedUpToNextMultipleOf16 = (int) Math.ceil(len / 16.0) * 16;
         sb.append("apid: " + getAPID() + "\n");
         sb.append("packetId: " + getPacketID() + "\n");
-        sb.append("time: " + TimeEncoding.toCombinedFormat(getInstant()));
         sb.append("\n");
         for (int i = 0; i < lengthRoundedUpToNextMultipleOf16; ++i) {
             // If we are at the beginning of a 16 byte multiple

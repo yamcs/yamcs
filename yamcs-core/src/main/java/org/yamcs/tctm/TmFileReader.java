@@ -11,7 +11,6 @@ import java.util.zip.GZIPInputStream;
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
@@ -148,19 +147,4 @@ public class TmFileReader {
         inputStream.close();
     }
 
-    public static void main(String[] args) throws IOException, ConfigurationException {
-        YConfiguration.setupTool();
-        TmFileReader tfr = new TmFileReader(args[0], new IssPacketPreprocessor(null));
-        TmPacket pwrt;
-
-        while ((pwrt = tfr.readPacket(TimeEncoding.getWallclockTime())) != null) {
-            CcsdsPacket c = new CcsdsPacket(pwrt.getPacket());
-            System.out.println("rectime: " + TimeEncoding.toString(pwrt.getReceptionTime()) + " apid:" + c.getAPID()
-                    + " seq: " + c.getSequenceCount() + " coarse: " + c.getCoarseTime() + " fine: " + c.getFineTime() +
-                    " time: " + TimeEncoding.toCombinedFormat(c.getInstant())
-                    + " received: " + TimeEncoding.toCombinedFormat(pwrt.getReceptionTime()) + " delta: "
-                    + (pwrt.getReceptionTime() - c.getInstant()));
-
-        }
-    }
 }

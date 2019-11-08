@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.YConfiguration;
-import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;

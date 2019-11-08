@@ -8,10 +8,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.ccsds.time.CcsdsTimeDecoder;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 
 import static org.yamcs.tctm.pus.Constants.*;
