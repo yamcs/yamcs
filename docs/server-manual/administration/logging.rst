@@ -10,6 +10,9 @@ The ``yamcsd`` program acceps some options to modify these defaults. In particul
 ``--log``
     The numeric verbosity level, where 0 = OFF, 1 = WARNING, 2 = INFO, 3 = FINE and 4 = ALL. Default: 2
 
+``--log-config``
+    Detailed logger verbosity levels. If unspecified, the ``--log`` option impacts all loggers, which may lead to excessive output.
+
 ``--no-color``
     Turn off ANSI color codes
 

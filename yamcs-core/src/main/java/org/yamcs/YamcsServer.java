@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -107,6 +108,9 @@ public class YamcsServer {
 
     @Parameter(names = "--log", description = "Level of verbosity")
     private int verbose = 2;
+
+    @Parameter(names = "--log-config", description = "File with log configuration", converter = PathConverter.class)
+    private Path logConfig;
 
     @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
     private Path configDirectory = Paths.get("etc").toAbsolutePath();
@@ -939,24 +943,7 @@ public class YamcsServer {
     }
 
     private static void setupDefaultLogging() throws SecurityException, IOException {
-        Level logLevel;
-        switch (YAMCS.verbose) {
-        case 0:
-            logLevel = Level.OFF;
-            break;
-        case 1:
-            logLevel = Level.WARNING;
-            break;
-        case 2:
-            logLevel = Level.INFO;
-            break;
-        case 3:
-            logLevel = Level.FINE;
-            break;
-        default:
-            logLevel = Level.ALL;
-            break;
-        }
+        Level logLevel = toLevel(YAMCS.verbose);
 
         // Not sure. This seems to be the best programmatic way. Changing Logger
         // instances directly only works on the weak instance.
@@ -967,10 +954,19 @@ public class YamcsServer {
         buf.append(defaultHandler).append(".level=").append(logLevel).append("\n");
         buf.append(defaultHandler).append(".formatter=").append(defaultFormatter).append("\n");
 
-        // This sets up the level for *everything*.
-        // If this turns out to be too much, we could optimize by setting the log level
-        // on each logger obtained through org.yamcs.logging.Log
-        buf.append(".level=").append(logLevel);
+        if (YAMCS.logConfig != null) {
+            try (InputStream in = Files.newInputStream(YAMCS.logConfig)) {
+                Properties props = new Properties();
+                props.load(in);
+                props.forEach((logger, verbosity) -> {
+                    Level loggerLevel = toLevel(Integer.parseInt((String) verbosity));
+                    buf.append(logger).append(".level=").append(loggerLevel).append("\n");
+                });
+            }
+        } else {
+            // This sets up the level for *everything*.
+            buf.append(".level=").append(logLevel);
+        }
 
         try (InputStream in = new ByteArrayInputStream(buf.toString().getBytes())) {
             LogManager.getLogManager().readConfiguration(in);
@@ -980,6 +976,21 @@ public class YamcsServer {
             if (formatter != null && formatter instanceof ConsoleFormatter) {
                 ((ConsoleFormatter) formatter).setEnableAnsiColors(!YAMCS.noColor);
             }
+        }
+    }
+
+    private static Level toLevel(int verbosity) {
+        switch (verbosity) {
+        case 0:
+            return Level.OFF;
+        case 1:
+            return Level.WARNING;
+        case 2:
+            return Level.INFO;
+        case 3:
+            return Level.FINE;
+        default:
+            return Level.ALL;
         }
     }
 
