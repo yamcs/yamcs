@@ -44,8 +44,7 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         if (args.containsKey("dataDir")) {
             root = Paths.get(YConfiguration.getString(args, "dataDir"));
         } else {
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-            String dataDir = yconf.getString("dataDir");
+            String dataDir = YarchDatabase.getDataDir();
             root = Paths.get(dataDir).resolve(yamcsInstance).resolve("fsbuckets");
         }
         Files.createDirectories(root);

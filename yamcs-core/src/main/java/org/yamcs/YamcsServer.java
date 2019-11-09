@@ -111,6 +111,9 @@ public class YamcsServer {
     @Parameter(names = "--etc-dir", description = "Path to config directory", converter = PathConverter.class)
     private Path configDirectory = Paths.get("etc").toAbsolutePath();
 
+    @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
+    private Path dataDir;
+
     @Parameter(names = "--no-stream-redirect", description = "Do not redirect stdout/stderr to the log system")
     private boolean noStreamRedirect;
 
@@ -135,7 +138,6 @@ public class YamcsServer {
     private byte[] secretKey;
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
-    Path dataDir;
     Path incomingDir;
     Path cacheDir;
     Path instanceDefDir;
@@ -1118,7 +1120,10 @@ public class YamcsServer {
         } else {
             globalCrashHandler = new LogCrashHandler();
         }
-        dataDir = Paths.get(config.getString("dataDir"));
+        if (dataDir == null) {
+            dataDir = Paths.get(config.getString("dataDir"));
+        }
+        YarchDatabase.setHome(dataDir.toAbsolutePath().toString());
         incomingDir = Paths.get(config.getString("incomingDir"));
         instanceDefDir = dataDir.resolve("instance-def");
 

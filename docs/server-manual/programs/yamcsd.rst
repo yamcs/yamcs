@@ -13,7 +13,7 @@ yamcsd
     .. code-block:: text
 
         yamcsd [--version] [--help] [--check] [--log LEVEL] [--no-color]
-               [--no-stream-redirect] [--etc-dir DIR]
+               [--no-stream-redirect] [--etc-dir DIR] [--data-dir DIR]
 
 
 **DESCRIPTION**
@@ -38,6 +38,10 @@ yamcsd
     .. option:: --etc-dir DIR
 
        Path to config directory. This defaults to the etc directory relative to the working directory.
+
+    .. option:: --data-dir DIR
+
+       Path to data directory. When unspecified the location is read from the ``yamcs.yaml`` configuration file.
 
     .. option:: --check
 
