@@ -1,5 +1,7 @@
 package org.yamcs.http;
 
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -13,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,7 +35,12 @@ import org.yamcs.http.api.Context;
 import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
+import org.yamcs.utils.ExceptionUtil;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -50,7 +58,6 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
@@ -65,6 +72,7 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
 public class HttpServer extends AbstractYamcsService {
 
     private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
     private Router apiRouter;
 
     private int port;
@@ -232,7 +240,7 @@ public class HttpServer extends AbstractYamcsService {
 
         // Note that by default (i.e. with nThreads = 0), Netty will limit the number
         // of worker threads to 2*number of CPU cores
-        EventLoopGroup workerGroup = new NioEventLoopGroup(0,
+        workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
         if (port != -1) {
@@ -257,10 +265,6 @@ public class HttpServer extends AbstractYamcsService {
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
-    }
-
-    public Future<?> stopServer() {
-        return bossGroup.shutdownGracefully();
     }
 
     public boolean isHttpEnabled() {
@@ -340,7 +344,24 @@ public class HttpServer extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
-        stopServer();
-        notifyStopped();
+        ListeningExecutorService closers = listeningDecorator(Executors.newCachedThreadPool());
+        ListenableFuture<?> future1 = closers.submit(() -> {
+            return workerGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
+        });
+        ListenableFuture<?> future2 = closers.submit(() -> {
+            return bossGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
+        });
+        closers.shutdown();
+        Futures.addCallback(Futures.allAsList(future1, future2), new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                notifyStopped();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                notifyFailed(ExceptionUtil.unwind(t));
+            }
+        });
     }
 }

@@ -1,9 +1,12 @@
 package org.yamcs;
 
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
@@ -12,6 +15,7 @@ import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
@@ -21,6 +25,10 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -125,19 +133,30 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStop() {
-        for (int i = services.size() - 1; i >= 0; i--) {
-            ServiceWithConfig swc = services.get(i);
-            swc.service.stopAsync();
-        }
-        for (int i = services.size() - 1; i >= 0; i--) {
-            ServiceWithConfig swc = services.get(i);
-            ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
+        ListeningExecutorService serviceStoppers = listeningDecorator(Executors.newCachedThreadPool());
+        List<ListenableFuture<?>> stopFutures = new ArrayList<>();
+        for (ServiceWithConfig swc : services) {
+            stopFutures.add(serviceStoppers.submit(() -> {
+                swc.service.stopAsync();
+                ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
+            }));
         }
 
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
-        ydb.close();
-        YarchDatabase.removeInstance(name);
-        notifyStopped();
+        serviceStoppers.shutdown();
+        Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
+                ydb.close();
+                YarchDatabase.removeInstance(name);
+                notifyStopped();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                notifyFailed(ExceptionUtil.unwind(t));
+            }
+        });
     }
 
     public XtceDb getXtceDb() {
