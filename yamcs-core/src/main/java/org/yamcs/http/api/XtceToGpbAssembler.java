@@ -109,7 +109,9 @@ import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.Repeat;
@@ -464,7 +466,7 @@ public class XtceToGpbAssembler {
 
     public static ComparisonInfo toComparisonInfo(Comparison xtceComparison) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
-        b.setParameter(toParameterInfo(xtceComparison.getParameter(), DetailLevel.LINK));
+        b.setParameter(toParameterInfo(xtceComparison.getParameterRef()));
         b.setOperator(toOperatorType(xtceComparison.getComparisonOperator()));
         b.setValue(xtceComparison.getStringValue());
         return b.build();
@@ -517,6 +519,24 @@ public class XtceToGpbAssembler {
         default:
             throw new IllegalStateException("Unexpected level " + level);
         }
+    }
+
+    public static ParameterInfo toParameterInfo(ParameterInstanceRef ref) {
+        ParameterInfo.Builder b = ParameterInfo.newBuilder();
+        Parameter p = ref.getParameter();
+        PathElement[] path = ref.getMemberPath();
+        if (path == null) {
+            b.setName(ref.getParameter().getName());
+            b.setQualifiedName(p.getQualifiedName());
+        } else {
+            String memberPath = "";
+            for (PathElement el : path) {
+                memberPath += "." + el.toString();
+            }
+            b.setName(p.getName() + memberPath);
+            b.setQualifiedName(p.getQualifiedName() + memberPath);
+        }
+        return b.build();
     }
 
     public static ParameterInfo toParameterInfo(Parameter p, DetailLevel detail) {
