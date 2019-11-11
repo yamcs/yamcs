@@ -70,11 +70,14 @@ import { PrintableDirective } from './print/PrintableDirective';
 import { PrintZone } from './print/PrintZone';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
+import { YaDataTableComponent } from './table/DataTableDirective';
+import { YaSimpleTableComponent } from './table/SimpleTableDirective';
+import { TableContainer } from './table/TableContainer';
+import { YaTableComponent } from './table/TableDirective';
 import { ActionLink } from './template/ActionLink';
 import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
-import { YaDataTableComponent } from './template/DataTableDirective';
 import { DetailPane } from './template/DetailPane';
 import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
@@ -86,10 +89,8 @@ import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
 import { MessageBar } from './template/MessageBar';
 import { SignificanceLevel } from './template/SignificanceLevel';
-import { YaSimpleTableComponent } from './template/SimpleTableDirective';
 import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
-import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { AlarmLabel } from './widgets/AlarmLabel';
@@ -186,6 +187,7 @@ const sharedComponents = [
   SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,
+  TableContainer,
   TextAction,
   TimestampTracker,
   ToolbarActions,
