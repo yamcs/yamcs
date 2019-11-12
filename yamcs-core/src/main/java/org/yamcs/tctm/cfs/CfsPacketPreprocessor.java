@@ -1,6 +1,5 @@
 package org.yamcs.tctm.cfs;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +43,7 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
                             + " bytes.");
             return null;
         }
-        int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
         int apid = (apidseqcount >> 16) & 0x07FF;
         int seq = (apidseqcount) & 0x3FFF;
         AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
@@ -67,9 +66,9 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
 
     static long getTime(byte[] packet) {
         long sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
-        int millisec = ByteArrayUtils.decodeShortLE(packet, 10);
+        int subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
 
-        return TimeEncoding.fromGpsMillisec(1000 * sec + millisec);
+        return TimeEncoding.fromGpsMillisec(1000 * sec + subsecs*1000/65536);
     }
 
     public boolean checkForSequenceDiscontinuity() {
