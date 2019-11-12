@@ -1,6 +1,6 @@
 package org.yamcs.management;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.yamcs.Processor;
 import org.yamcs.commanding.CommandQueue;
@@ -21,29 +21,14 @@ import com.google.protobuf.ByteString;
  */
 public final class ManagementGpbHelper {
 
-    public static Statistics buildStats(Processor processor) {
+    public static Statistics buildStats(Processor processor, List<TmStatistics> statistics) {
         ProcessingStatistics ps = processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb = Statistics.newBuilder()
                 .setInstance(processor.getInstance())
+                .setProcessor(processor.getName())
                 .setYProcessorName(processor.getName())
                 .setLastUpdated(TimestampUtil.java2Timestamp(ps.getLastUpdated()));
-
-        Collection<ProcessingStatistics.TmStats> tmstats = ps.stats.values();
-        if (tmstats == null) {
-            return ManagementService.STATS_NULL;
-        }
-
-        for (ProcessingStatistics.TmStats t : tmstats) {
-            TmStatistics ts = TmStatistics.newBuilder()
-                    .setPacketName(t.packetName)
-                    .setQualifiedName(t.qualifiedName)
-                    .setReceivedPackets(t.receivedPackets)
-                    .setSubscribedParameterCount(t.subscribedParameterCount)
-                    .setLastPacketTime(TimeEncoding.toProtobufTimestamp(t.lastPacketTime))
-                    .setLastReceived(TimeEncoding.toProtobufTimestamp(t.lastReceived))
-                    .build();
-            statsb.addTmstats(ts);
-        }
+        statsb.addAllTmstats(statistics);
         return statsb.build();
     }
 

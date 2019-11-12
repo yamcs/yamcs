@@ -335,7 +335,7 @@ export interface ColumnData {
 
 export interface Statistics {
   instance: string;
-  yProcessorName: string;
+  processor: string;
   tmstats: TmStatistics[];
   lastUpdated: string;
 }
@@ -348,6 +348,7 @@ export interface TmStatistics {
   packetName: string;
   qualifiedName: string;
   receivedPackets: number;
+  packetRate: number;
   lastReceived: string;
   lastPacketTime: string;
   subscribedParameterCount: number;

@@ -39,12 +39,12 @@ export class DeltaWithPipe implements PipeTransform {
       if (seconds) {
         return `${sign}${minutes}m ${seconds}s`;
       } else {
-        return `${sign}${minutes}m`;
+        return `${sign}${minutes} min`;
       }
     } else if (seconds) {
-      return `${sign}${seconds}s`;
+      return `${sign}${seconds} s`;
     } else {
-      return `${sign}${milliseconds}ms`;
+      return `${sign}${milliseconds} ms`;
     }
   }
 }

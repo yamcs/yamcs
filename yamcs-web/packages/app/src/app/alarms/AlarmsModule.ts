@@ -6,15 +6,10 @@ import { AlarmsRoutingModule, routingComponents } from './AlarmsRoutingModule';
 import { AlarmsTable } from './AlarmsTable';
 import { AlarmStateIcon } from './AlarmStateIcon';
 import { ShelveAlarmDialog } from './ShelveAlarmDialog';
-import { ShortNamePipe } from './ShortNamePipe';
 
 const dialogComponents = [
   AcknowledgeAlarmDialog,
   ShelveAlarmDialog,
-];
-
-const pipes = [
-  ShortNamePipe,
 ];
 
 @NgModule({
@@ -25,7 +20,6 @@ const pipes = [
   declarations: [
     routingComponents,
     dialogComponents,
-    pipes,
     AlarmDetail,
     AlarmStateIcon,
     AlarmsTable,

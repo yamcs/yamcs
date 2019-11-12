@@ -34,7 +34,7 @@ export class InstanceHomePage implements OnDestroy {
     title.setTitle(this.instance.name);
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
-        filter(stats => stats.yProcessorName === processor.name),
+        filter(stats => stats.processor === processor.name),
         map(stats => stats.tmstats || []),
       ).subscribe(tmstats => {
         this.tmstats$.next(tmstats);

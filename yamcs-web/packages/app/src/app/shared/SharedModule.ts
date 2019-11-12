@@ -63,6 +63,7 @@ import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { ReversePipe } from './pipes/ReversePipe';
+import { ShortNamePipe } from './pipes/ShortNamePipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
@@ -204,6 +205,7 @@ const pipes = [
   OperatorPipe,
   PrintJsonPipe,
   ReversePipe,
+  ShortNamePipe,
   SuperuserPipe,
   UnitsPipe,
   ValuePipe,
