@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
@@ -19,9 +21,7 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     Stream stream;
     String streamName;
     String yamcsInstance;
-
-    volatile long sentTcCount;
-
+    
     public StreamTcCommandReleaser(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         if (!config.containsKey("stream")) {
@@ -42,7 +42,6 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     @Override
     public void releaseCommand(PreparedCommand pc) {
         stream.emitTuple(pc.toTuple());
-        sentTcCount++;
     }
 
     @Override

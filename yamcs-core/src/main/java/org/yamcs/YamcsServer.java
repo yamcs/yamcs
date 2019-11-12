@@ -1226,8 +1226,8 @@ public class YamcsServer {
     }
 
     private void reportReady(long bootTime) {
-        long instanceCount = getOnlineInstanceCount();
-        long serviceCount = globalServiceList.size() + getInstances().stream()
+        int instanceCount = getOnlineInstanceCount();
+        int serviceCount = globalServiceList.size() + getInstances().stream()
                 .map(instance -> instance.services != null ? instance.services.size() : 0)
                 .reduce(0, Integer::sum);
 

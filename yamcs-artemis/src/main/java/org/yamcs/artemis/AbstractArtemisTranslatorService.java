@@ -132,6 +132,7 @@ public class AbstractArtemisTranslatorService extends AbstractService implements
         for (Stream s : streams) {
             s.removeSubscriber(streamSubscribers.get(s));
         }
+        artemisClient.remove();
         notifyStopped();
     }
 

@@ -453,7 +453,7 @@ public class ParameterArchive extends AbstractYamcsService {
      * @return
      */
     public static long getIntervalDuration() {
-        return TIMESTAMP_MASK + 1;
+        return TIMESTAMP_MASK + 1l;
     }
 
     public Tablespace getTablespace() {

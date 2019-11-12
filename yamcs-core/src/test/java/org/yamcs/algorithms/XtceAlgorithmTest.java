@@ -11,6 +11,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
@@ -33,6 +34,7 @@ public class XtceAlgorithmTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
+        EventProducerFactory.setMockup(false);
         XtceDbFactory.reset();
         AlgorithmManager am = new AlgorithmManager(instance);
         c = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);

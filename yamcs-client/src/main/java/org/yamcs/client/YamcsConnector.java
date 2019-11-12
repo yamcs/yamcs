@@ -150,6 +150,7 @@ public class YamcsConnector implements WebSocketClientCallback {
                 }
                 log.warn(maxAttempts + " connection attempts failed, giving up.");
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 for (ConnectionListener cl : connectionListeners) {
                     cl.connectionFailed(connectingTo, new ClientException("Thread interrupted", e));
                 }

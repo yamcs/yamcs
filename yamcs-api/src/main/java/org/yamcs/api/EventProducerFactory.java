@@ -143,7 +143,7 @@ public class EventProducerFactory {
             Constructor<EventProducer> constructor = ic.getConstructor(arg.getClass());
             return constructor.newInstance(arg);
         } catch (Exception e) {
-            return null;
+            throw new ConfigurationException(e);
         }
     }
 

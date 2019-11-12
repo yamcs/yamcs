@@ -79,7 +79,7 @@ public class CfdpReceiver {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
 
                 // checking the file completeness;

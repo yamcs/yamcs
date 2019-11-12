@@ -12,10 +12,11 @@ import org.yamcs.xtce.Parameter;
  * 
  * Stores a collection of ParameterValue indexed on Parameter
  * 
- * It works like a LinkedHashMap&lt;Parameter, LinkedList&lt;ParameterValue&gt;&gt;  
+ * It works like a LinkedHashMap&lt;Parameter, LinkedList&lt;ParameterValue&gt;&gt;
  *
  * 
  * Not thread safe
+ * 
  * @author nm
  *
  */
@@ -24,42 +25,40 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     Entry head;
     int size;
-    int threshold; 
+    int threshold;
     float loadFactor = 0.75f;
 
     public ParameterValueList() {
         size = 0;
         table = new Entry[16];
-        threshold = (int)(table.length*loadFactor);
+        threshold = (int) (table.length * loadFactor);
         initHead();
     }
 
-    /**     
+    /**
      * @param pvs
      */
     public ParameterValueList(Collection<ParameterValue> pvs) {
-        int len = (int)(pvs.size()/loadFactor)+ 1;
+        int len = (int) (pvs.size() / loadFactor) + 1;
         len = roundUpToPowerOfTwo(len);
         table = new Entry[len];
-        threshold = (int)(len * loadFactor);
+        threshold = (int) (len * loadFactor);
         size = 0;
         initHead();
-        for(ParameterValue pv:pvs) {
+        for (ParameterValue pv : pvs) {
             doAdd(pv);
         }
     }
 
-
-
-    //used for unit tests to ensure max collision
+    // used for unit tests to ensure max collision
     ParameterValueList(int capacity, Collection<ParameterValue> pvs) {
         int len = roundUpToPowerOfTwo(capacity);
         table = new Entry[len];
-        threshold = (int)(len * loadFactor);
+        threshold = (int) (len * loadFactor);
         size = 0;
         initHead();
 
-        for(ParameterValue pv:pvs) {
+        for (ParameterValue pv : pvs) {
             doAdd(pv);
         }
     }
@@ -71,12 +70,12 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     @Override
     public boolean add(ParameterValue pv) {
-        if(pv==null) {
+        if (pv == null) {
             throw new NullPointerException();
         }
-        if(size-1 >= threshold) {
-            ensureCapacity(2*table.length);
-            threshold = 2*threshold;
+        if (size - 1 >= threshold) {
+            ensureCapacity(2 * table.length);
+            threshold = 2 * threshold;
         }
         doAdd(pv);
         return true;
@@ -84,6 +83,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     /**
      * Return the number of values for p
+     * 
      * @param p
      * @return
      */
@@ -93,8 +93,8 @@ public class ParameterValueList implements Collection<ParameterValue> {
         Entry e = table[index];
         int count = 0;
 
-        while(e!=null) {
-            if(e.pv.getParameter()==p) {
+        while (e != null) {
+            if (e.pv.getParameter() == p) {
                 count++;
             }
             e = e.next;
@@ -106,22 +106,21 @@ public class ParameterValueList implements Collection<ParameterValue> {
         Entry[] oldt = table;
         Entry[] newt = new Entry[newCapacity];
 
-
-        //transfer content
-        for(int i = 0; i<oldt.length; i++) {
+        // transfer content
+        for (int i = 0; i < oldt.length; i++) {
             Entry e = oldt[i];
-            while(e!=null) {
+            while (e != null) {
                 int hash = getHash(e.pv.getParameter());
                 int index = hash & (newt.length - 1);
 
                 Entry next = e.next;
                 e.next = null;
                 Entry e1 = newt[index];
-                if(e1 == null) {
+                if (e1 == null) {
                     newt[index] = e;
                 } else {
-                    while(e1.next!=null) {
-                        e1=e1.next;
+                    while (e1.next != null) {
+                        e1 = e1.next;
                     }
                     e1.next = e;
 
@@ -131,7 +130,6 @@ public class ParameterValueList implements Collection<ParameterValue> {
         }
         table = newt;
     }
-
 
     /**
      * add a parameter to the hashtable, to the end of the list for the same parameter
@@ -144,12 +142,12 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
         int hash = getHash(pv.getParameter());
         int index = hash & (t.length - 1);
-        if(t[index] == null) {
+        if (t[index] == null) {
             t[index] = newEntry;
         } else {
             Entry e = t[index];
-            while(e.next!=null) {
-                e=e.next;
+            while (e.next != null) {
+                e = e.next;
             }
             e.next = newEntry;
         }
@@ -161,8 +159,6 @@ public class ParameterValueList implements Collection<ParameterValue> {
         size++;
     }
 
-
-
     private int getHash(Parameter p) {
         return p.hashCode();
     }
@@ -171,50 +167,51 @@ public class ParameterValueList implements Collection<ParameterValue> {
         return size;
     }
 
-
     /**
      * Returns the last inserted value for Parameter p or null if there is no value
+     * 
      * @param p
      * @return
      */
     public ParameterValue getLastInserted(Parameter p) {
-        int index =  getHash(p) & (table.length - 1);
+        int index = getHash(p) & (table.length - 1);
         ParameterValue r = null;
-        for(Entry e = table[index] ; e!=null; e=e.next) {
-            if(e.pv.getParameter()==p) {
+        for (Entry e = table[index]; e != null; e = e.next) {
+            if (e.pv.getParameter() == p) {
                 r = e.pv;
             }
         }
         return r;
     }
-    
+
     public ParameterValue getFirstInserted(Parameter p) {
-        int index =  getHash(p) & (table.length - 1);
+        int index = getHash(p) & (table.length - 1);
         ParameterValue r = null;
-        for(Entry e = table[index] ; e!=null; e=e.next) {
-            if(e.pv.getParameter()==p) {
+        for (Entry e = table[index]; e != null; e = e.next) {
+            if (e.pv.getParameter() == p) {
                 r = e.pv;
                 break;
             }
         }
         return r;
     }
-    
+
     /**
      * Performs the given action for each value of the parameter p
      * The values are considered in insertion order - oldest is first to be processed
+     * 
      * @param p
      * @param action
      */
     public void forEach(Parameter p, Consumer<ParameterValue> action) {
-        int index =  getHash(p) & (table.length - 1);
-        for(Entry e = table[index] ; e!=null; e=e.next) {
-            if(e.pv.getParameter()==p) {
+        int index = getHash(p) & (table.length - 1);
+        for (Entry e = table[index]; e != null; e = e.next) {
+            if (e.pv.getParameter() == p) {
                 action.accept(e.pv);
             }
         }
     }
-    
+
     /**
      * Remove the last inserted value for Parameter p
      * 
@@ -222,9 +219,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
      * @return the value removed or null if there was no value for p
      */
     public ParameterValue removeLast(Parameter p) {
-        int index =  getHash(p) & (table.length - 1);
+        int index = getHash(p) & (table.length - 1);
         Entry e = table[index];
-        if(e == null) {
+        if (e == null) {
             return null;
         }
 
@@ -233,8 +230,8 @@ public class ParameterValueList implements Collection<ParameterValue> {
         Entry prev_e = null;
         Entry r = null;
 
-        while(e!=null) {
-            if(e.pv.getParameter()==p) {
+        while (e != null) {
+            if (e.pv.getParameter() == p) {
                 prev_r = prev_e;
                 r = e;
             }
@@ -242,12 +239,12 @@ public class ParameterValueList implements Collection<ParameterValue> {
             e = e.next;
         }
 
-        if(r==null) {
+        if (r == null) {
             return null;
         }
 
         size--;
-        if(table[index]==r) {
+        if (table[index] == r) {
             table[index] = r.next;
         } else {
             prev_r.next = r.next;
@@ -262,6 +259,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
         b.after = a;
         a.before = b;
     }
+
     /**
      * Remove the first inserted value for Parameter p
      * 
@@ -269,18 +267,17 @@ public class ParameterValueList implements Collection<ParameterValue> {
      * @return the value removed or null if there was no value for p
      */
     public ParameterValue removeFirst(Parameter p) {
-        int index =  getHash(p) & (table.length - 1);
+        int index = getHash(p) & (table.length - 1);
         Entry prev = table[index];
-        if(prev == null) {
+        if (prev == null) {
             return null;
         }
-
 
         Entry e = prev;
         Entry r = null;
 
-        while(e!=null) {
-            if(e.pv.getParameter()==p) {
+        while (e != null) {
+            if (e.pv.getParameter() == p) {
                 r = e;
                 break;
             }
@@ -288,12 +285,12 @@ public class ParameterValueList implements Collection<ParameterValue> {
             e = e.next;
         }
 
-        if(r==null) {
+        if (r == null) {
             return null;
         }
 
         size--;
-        if(table[index]==r) {
+        if (table[index] == r) {
             table[index] = r.next;
         } else {
             prev.next = r.next;
@@ -308,7 +305,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
      * 
      * 
      */
-    static int roundUpToPowerOfTwo(int v){
+    static int roundUpToPowerOfTwo(int v) {
         v--;
         v |= v >> 1;
         v |= v >> 2;
@@ -319,8 +316,6 @@ public class ParameterValueList implements Collection<ParameterValue> {
         return v;
     }
 
-
-
     @Override
     public Iterator<ParameterValue> iterator() {
         return new Iter();
@@ -328,19 +323,20 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     /**
      * Adds all element to this collection
+     * 
      * @param c
      * @return
      */
     @Override
     public boolean addAll(Collection<? extends ParameterValue> c) {
-        int newSize = size+c.size();
-        if(newSize>threshold) {
+        int newSize = size + c.size();
+        if (newSize > threshold) {
             int newCapacity = roundUpToPowerOfTwo(newSize);
             ensureCapacity(newCapacity);
-            threshold = (int) (newCapacity*loadFactor);
+            threshold = (int) (newCapacity * loadFactor);
         }
 
-        for(ParameterValue pv:c) {
+        for (ParameterValue pv : c) {
             doAdd(pv);
         }
         return false;
@@ -356,28 +352,27 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     /**
      * Return true if the list contains the exact same ParameterValue.
-     * That means exactly the same object. 
+     * That means exactly the same object.
      * 
      * @param o
      * @return
      */
     @Override
     public boolean contains(Object o) {
-        if(!(o instanceof ParameterValue)) {
+        if (!(o instanceof ParameterValue)) {
             return false;
         }
 
-        ParameterValue pv = (ParameterValue)o;
+        ParameterValue pv = (ParameterValue) o;
 
-        int index =  getHash(pv.getParameter()) & (table.length - 1);
-        for(Entry e = table[index] ; e!=null; e=e.next) {
-            if(e.pv==pv) {
+        int index = getHash(pv.getParameter()) & (table.length - 1);
+        for (Entry e = table[index]; e != null; e = e.next) {
+            if (e.pv == pv) {
                 return true;
             }
         }
         return false;
     }
-
 
     /**
      * Throws UnsupportedOperationException
@@ -391,7 +386,6 @@ public class ParameterValueList implements Collection<ParameterValue> {
     public boolean isEmpty() {
         return size == 0;
     }
-
 
     /**
      * Throws UnsupportedOperationException
@@ -408,7 +402,6 @@ public class ParameterValueList implements Collection<ParameterValue> {
     public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
-
 
     /**
      * Throws UnsupportedOperationException
@@ -429,14 +422,13 @@ public class ParameterValueList implements Collection<ParameterValue> {
     @Override
     public Object[] toArray() {
         ParameterValue[] r = new ParameterValue[size];
-        int i=0;
+        int i = 0;
         Iterator<ParameterValue> it = iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             r[i++] = it.next();
         }
         return r;
     }
-
 
     /**
      * Throws UnsupportedOperationException
@@ -450,8 +442,8 @@ public class ParameterValueList implements Collection<ParameterValue> {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         boolean first = true;
-        for(ParameterValue pv:this) {
-            if(first) {
+        for (ParameterValue pv : this) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(", ");
@@ -461,28 +453,27 @@ public class ParameterValueList implements Collection<ParameterValue> {
         sb.append("]");
         return sb.toString();
     }
-    
-    
+
     static class Entry {
         final ParameterValue pv;
         Entry next, before, after;
+
         Entry(ParameterValue pv) {
             this.pv = pv;
         }
     }
-
 
     private final class Iter implements Iterator<ParameterValue> {
         Entry next = head.after;
 
         @Override
         public boolean hasNext() {
-            return next!=head;
+            return next != head;
         }
 
         @Override
         public ParameterValue next() {
-            if(next==head) {
+            if (next == head) {
                 throw new NoSuchElementException();
             }
 
@@ -499,6 +490,4 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     }
 
-
-   
 }

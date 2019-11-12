@@ -167,6 +167,7 @@ public class AlgorithmUtils {
      * Little endian to host long
      */
     public long letohl(int value) {
-        return ((value >> 24) & 0xff) + ((value >> 8) & 0xff00) + ((value & 0xff00) << 8) + ((value & 0xff) << 24);
+        long x = value & 0xFFFFFFFFl;
+        return (((x >> 24) & 0xff) + ((x >> 8) & 0xff00) + ((x & 0xff00) << 8) + ((x & 0xff) << 24));
     }
 }

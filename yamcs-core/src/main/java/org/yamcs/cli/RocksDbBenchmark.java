@@ -98,7 +98,7 @@ class RocksDbBenchmark extends Command {
         } else {
             console.println("Table " + tableName + " already exists!. Old data will not be overwritten.");
         }
-        populate(tblDef, durationHours * 36000);
+        populate(tblDef, durationHours * 36000l);
 
         console.println("*********************** reading data ********************");
 

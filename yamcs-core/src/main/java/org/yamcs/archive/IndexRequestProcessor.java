@@ -66,7 +66,9 @@ class IndexRequestProcessor implements Runnable {
     int count = 0;
     HistoRequest[] hreq = new HistoRequest[5];
     MergingResult mergingResult;
-
+    static Random random = new Random();
+    
+    
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
         log.debug("new index request: {}", req);
         this.yamcsInstance = req.getInstance();
@@ -166,9 +168,8 @@ class IndexRequestProcessor implements Runnable {
     }
 
     private static String getRandomToken() {
-        Random r = new Random();
         byte[] b = new byte[16];
-        r.nextBytes(b);
+        random.nextBytes(b);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
     }
 

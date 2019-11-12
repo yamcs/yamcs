@@ -162,6 +162,7 @@ public class YamcsConnector implements SessionFailureListener {
                 }
                 log.warn(maxAttempts + " connection attempts failed, giving up.");
             } catch (InterruptedException e2) {
+                Thread.currentThread().interrupt();
                 for (ConnectionListener cl6 : connectionListeners) {
                     cl6.connectionFailed(url, new YamcsException("Thread interrupted", e2));
                 }

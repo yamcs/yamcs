@@ -298,7 +298,6 @@ public class YarchReplay implements StreamSubscriber {
         quitting = true;
         log.debug("Replay quitting");
 
-        this.notify();
         try {
             YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
             if (db.getStream(streamName) != null) {

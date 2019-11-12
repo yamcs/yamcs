@@ -183,7 +183,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
 
         sqlb.descend(desc);
-        sqlb.limit(pos, limit + 1); // one more to detect hasMore
+        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
         RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -779,7 +779,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
 
         sqlb.descend(desc);
-        sqlb.limit(pos, limit + 1); // one more to detect hasMore
+        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
         RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {

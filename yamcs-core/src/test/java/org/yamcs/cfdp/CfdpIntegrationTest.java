@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.cfdp.pdu.CfdpPacket;
@@ -57,6 +58,7 @@ public class CfdpIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        EventProducerFactory.setMockup(false);
         Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
         YConfiguration.setupTest("cfdp");
