@@ -69,13 +69,13 @@ public class RdbConfig {
         defaultColumnFamilyOptions = new ColumnFamilyOptions();
 
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
-        tableFormatConfig.setBlockSize(256 * 1024);// 256KB
+        tableFormatConfig.setBlockSize(256l * 1024);// 256KB
         tableFormatConfig.setBlockCacheSize(100l * 1024 * 1024);// 50MB
         tableFormatConfig.setFilter(new BloomFilter());
         tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
         defaultOptions = new Options();
-        defaultOptions.setWriteBufferSize(50 * 1024 * 1024);// 50MB
+        defaultOptions.setWriteBufferSize(50l * 1024 * 1024);// 50MB
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
         defaultOptions.setTableFormatConfig(tableFormatConfig);

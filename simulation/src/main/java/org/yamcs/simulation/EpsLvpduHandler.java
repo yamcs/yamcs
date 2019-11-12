@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 
 public class EpsLvpduHandler {
 
@@ -19,7 +20,10 @@ public class EpsLvpduHandler {
         try (BufferedReader in = new BufferedReader(
                 new InputStreamReader(EpsLvpduHandler.class.getResourceAsStream("/landing_data/ESPLVPDU.csv")))) {
             String line;
-            in.readLine(); // skip column titles
+            line = in.readLine(); // skip column titles
+            if (line == null) {
+                throw new ConfigurationException("Empty ESPLVPDU.csv file");
+            }
 
             while ((line = in.readLine()) != null) {
 

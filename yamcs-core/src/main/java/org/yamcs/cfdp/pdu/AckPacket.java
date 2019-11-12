@@ -16,10 +16,7 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     private TransactionStatus transactionStatus;
 
     public enum TransactionStatus {
-        Undefined((byte) 0x00),
-        Active((byte) 0x01),
-        Terminated((byte) 0x02),
-        Unrecognized((byte) 0x03);
+        Undefined((byte) 0x00), Active((byte) 0x01), Terminated((byte) 0x02), Unrecognized((byte) 0x03);
 
         private byte status;
 
@@ -46,8 +43,7 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     }
 
     public enum FileDirectiveSubtypeCode {
-        FinishedByWaypointOrOther((byte) 0x00),
-        FinishedByEndSystem((byte) 0x01);
+        FinishedByWaypointOrOther((byte) 0x00), FinishedByEndSystem((byte) 0x01);
 
         private byte code;
 
@@ -95,8 +91,8 @@ public class AckPacket extends CfdpPacket implements FileDirective {
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put(getFileDirectiveCode().getCode());
-        buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
-        buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
+        buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode() & 0xff));
+        buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus() & 0xff));
     }
 
     @Override

@@ -201,7 +201,6 @@ public class CcsdsPacket {
         int lengthRoundedUpToNextMultipleOf16 = (int) Math.ceil(len / 16.0) * 16;
         sb.append("apid: " + getAPID() + "\n");
         sb.append("packetId: " + getPacketID() + "\n");
-        sb.append("\n");
         for (int i = 0; i < lengthRoundedUpToNextMultipleOf16; ++i) {
             // If we are at the beginning of a 16 byte multiple
             if (i % 16 == 0) {

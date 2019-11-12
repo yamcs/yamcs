@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -26,7 +28,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class ArtemisParameterDataLink extends AbstractService implements ParameterDataLink, MessageHandler {
-    protected volatile long totalPpCount = 0;
+    protected AtomicLong totalPpCount = new AtomicLong(0);
     protected volatile boolean disabled = false;
 
     protected Log log;
@@ -94,7 +96,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
 
     @Override
     public long getDataInCount() {
-        return totalPpCount;
+        return totalPpCount.get();
     }
 
     @Override
@@ -104,7 +106,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
 
     @Override
     public void resetCounters() {
-        totalPpCount = 0;
+        totalPpCount.set(0);
     }
 
     @Override
@@ -137,7 +139,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
                     return;
                 }
             }
-            totalPpCount += pd.getParameterCount();
+            totalPpCount.addAndGet(pd.getParameterCount());
             ppListener.updateParams(genTime, ppGroup, pd.getSeqNum(), pd.getParameterList());
         } catch (Exception e) {
             log.warn("{} for message: {}", e.getMessage(), msg);

@@ -129,8 +129,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     FindParameterBar findBar;
     ListPacket currentPacket;
     OpenFileDialog openFileDialog;
-    static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    static final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
+    final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
     YamcsConnector yconnector;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;

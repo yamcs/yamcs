@@ -1772,7 +1772,7 @@ public class XtceStaxReader {
                 if (!enumParamType.hasLabel(label)) {
                     throw new XMLStreamException("Reference to invalid enumeration label '" + label + "'");
                 }
-                AlarmLevels level = getAlarmLevel(readAttribute("alarmLevel", xmlEvent.asStartElement(), null));
+                AlarmLevels level = getAlarmLevel(readMandatoryAttribute("alarmLevel", xmlEvent.asStartElement()));
                 alarm.addAlarm(label, level);
             } else if (isEndElementWithName(tag)) {
                 return alarm;

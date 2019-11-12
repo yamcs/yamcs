@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,7 +60,7 @@ public class TseDataLink extends AbstractService implements Link {
 
     private volatile boolean disabled = false;
     private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
-    private volatile long outCount = 0;
+    private AtomicLong outCount = new AtomicLong();
 
     private XtceDb xtcedb;
     private String host;
@@ -175,7 +176,7 @@ public class TseDataLink extends AbstractService implements Link {
                         missionTime, AckStatus.NOK);
             }
         });
-        outCount++;
+        outCount.incrementAndGet();
     }
 
     @Override
@@ -220,13 +221,13 @@ public class TseDataLink extends AbstractService implements Link {
 
     @Override
     public long getDataOutCount() {
-        return outCount;
+        return outCount.get();
     }
 
     @Override
     public void resetCounters() {
         inStartCount = ppStream.getDataCount();
-        outCount = 0;
+        outCount.set(0);
     }
 
     @Override

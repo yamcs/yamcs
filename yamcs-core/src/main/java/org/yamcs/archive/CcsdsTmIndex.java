@@ -66,7 +66,7 @@ public class CcsdsTmIndex implements TmIndex {
 
     // if time between two packets with the same apid is more than one hour,
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
-    static long maxApidInterval = 3600 * 1000;
+    static long maxApidInterval = 3600 * 1000l;
     String yamcsInstance;
     private static AtomicInteger streamCounter = new AtomicInteger();
     final Tablespace tablespace;

@@ -67,7 +67,7 @@ public class FileStoreResponse {
                                 + secondFileName.getValue().length
                                 + filestoreMessage.getValue().length)
                         .put((byte) ((actionCode.getCode() << 4)
-                                | statusCode.getCode()))
+                                | statusCode.getCode() & 0xff))
                         .put(firstFileName.getValue())
                         .put(secondFileName.getValue())
                         .put(filestoreMessage.getValue())

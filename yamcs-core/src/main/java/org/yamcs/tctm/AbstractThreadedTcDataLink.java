@@ -65,6 +65,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
             thread.join();
         } catch (InterruptedException e) {
             log.warn("Interrupted while waiting for thread shutdown");
+            Thread.currentThread().interrupt();
         }
         notifyStopped();
     }
@@ -93,6 +94,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
             try {
                 Thread.sleep(initialDelay);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return;
             }
         }

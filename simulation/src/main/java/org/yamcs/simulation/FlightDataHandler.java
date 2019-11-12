@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 
 public class FlightDataHandler {
 
@@ -19,8 +20,10 @@ public class FlightDataHandler {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 FlightDataHandler.class.getResourceAsStream("/landing_data/Flight parameters.csv")))) {
             String line;
-            in.readLine(); // skip column titles
-
+            line = in.readLine(); // skip column titles
+            if (line == null) {
+                throw new ConfigurationException("Empty Flight parameters.csv file");
+            }
             while ((line = in.readLine()) != null) {
                 line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
                 String[] parts = line.split(";");

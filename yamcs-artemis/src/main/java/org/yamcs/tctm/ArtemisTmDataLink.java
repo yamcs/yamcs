@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -27,7 +29,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLink, MessageHandler {
-    protected volatile long packetcount = 0;
+    protected AtomicLong packetcount = new AtomicLong();
     protected volatile boolean disabled = false;
 
     protected Log log;
@@ -98,7 +100,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
 
     @Override
     public long getDataInCount() {
-        return packetcount;
+        return packetcount.get();
     }
 
     @Override
@@ -108,7 +110,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
 
     @Override
     public void resetCounters() {
-        packetcount = 0;
+        packetcount.set(0);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
                 return;
             }
             TmPacketData tm = (TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder());
-            packetcount++;
+            packetcount.incrementAndGet();
             long rectime = preserveIncomingReceptionTime ? TimeEncoding.fromProtobufTimestamp(tm.getReceptionTime())
                     : timeService.getMissionTime();
             TmPacket pwt = new TmPacket(rectime, TimeEncoding.fromProtobufTimestamp(tm.getGenerationTime()),
