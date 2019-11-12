@@ -37,11 +37,17 @@ public class RestDownsampler implements Consumer<ParameterValueArray> {
     }
 
     public RestDownsampler(long start, long stop, int sampleCount) {
+        if (start > stop) {
+            throw new IllegalArgumentException("start (" + start + ") should be smaller than stop (" + stop + ")");
+        }
         this.start = start;
         this.stop = stop;
 
         // Initialize intervals
         long step = (stop - start) / sampleCount;
+        if (step == 0) {
+            step = 1;
+        }
         for (long i = start; i < stop; i += step) {
             samplesByTime.put(i, null);
         }

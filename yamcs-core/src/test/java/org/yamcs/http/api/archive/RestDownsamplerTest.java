@@ -52,4 +52,19 @@ public class RestDownsamplerTest {
         assertEquals(2, sample1.min, 1e-10);
         assertEquals(2, sample1.max, 1e-10);
     }
+    
+    @Test
+    public void testSamplingTooMany() {
+        RestDownsampler sampler = new RestDownsampler(1, 2, 3);
+        sampler.process(1, 1);
+        sampler.process(2, 2);
+        sampler.process(2, 2.3);
+        List<Sample> samples = sampler.collect();
+        assertEquals(1, samples.size());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testSamplingInvalid() {
+       new RestDownsampler(2, 1, 3);
+    }
 }
