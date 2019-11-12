@@ -1,6 +1,7 @@
 <table mat-table
        *ngIf="dataSource"
        [dataSource]="dataSource"
+       [trackBy]="tableTrackerFn"
        class="ya-data-table">
 
   <ng-container matColumnDef="order">

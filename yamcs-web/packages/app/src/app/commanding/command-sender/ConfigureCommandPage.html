@@ -60,6 +60,11 @@
             <input type="radio" [formControlName]="argument.name" value="false"> false
           </label>
 
+          <label *ngSwitchCase="'binary'">
+            {{ argument.name }}
+            <app-binary-input [formControlName]="argument.name"></app-binary-input>
+          </label>
+
           <label *ngSwitchDefault>
             {{ argument.name }}
             <input type="text" [formControlName]="argument.name">
@@ -94,12 +99,14 @@
         </ng-container>
       </ng-container>
 
-      <app-text-action (click)="showAll$.next(true)"
-                       *ngIf="argumentsWithInitial.length && !(showAll$ | async)"
-                       icon="double_arrow">
-        Show {{ argumentsWithInitial.length }}
-        argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
-      </app-text-action>
+      <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
+        <br>
+        <app-text-action (click)="showAll$.next(true)"
+                         icon="double_arrow">
+          Show {{ argumentsWithInitial.length }}
+          argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
+        </app-text-action>
+      </ng-container>
 
       <p>&nbsp;</p>
       <h3>Options</h3>
@@ -115,12 +122,13 @@
         Cancel
       </button>
       <span style="flex: 1 1 auto"></span>
-      <mat-slide-toggle [formControl]="armControl" color="primary">
+      <mat-slide-toggle *ngIf="config.twoStageCommanding"
+                        [formControl]="armControl" color="primary">
         Arm
       </mat-slide-toggle>
       &nbsp;&nbsp;&nbsp;&nbsp;
       <button class="ya-button primary"
-              [disabled]="!armControl.value || !commandConfigurationForm.valid"
+              [disabled]="(config.twoStageCommanding && !armControl.value) || !commandConfigurationForm.valid"
               (click)="sendCommand()">
         <mat-icon>send</mat-icon>
         Send

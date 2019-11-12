@@ -58,13 +58,13 @@ export class ParametersPage implements AfterViewInit {
     { id: 'COMMAND', label: 'Command' },
     { id: 'COMMAND_HISTORY', label: 'Command History' },
     { id: 'CONSTANT', label: 'Constant' },
+    { id: 'DERIVED', label: 'Derived' },
     { id: 'EXTERNAL1', label: 'External 1' },
     { id: 'EXTERNAL2', label: 'External 2' },
     { id: 'EXTERNAL3', label: 'External 3' },
     { id: 'LOCAL', label: 'Local' },
-    { id: 'TELEMETERED', label: 'Telemetered' },
-    { id: 'DERIVED', label: 'Derived' },
     { id: 'SYSTEM', label: 'System' },
+    { id: 'TELEMETERED', label: 'Telemetered' },
   ];
 
   // Would prefer to use formGroup, but when using valueChanges this

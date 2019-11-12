@@ -53,7 +53,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
 
-        int order = mgr.getQueues().indexOf(queue);
+        int order = mgr.getQueues().indexOf(queue) + 1;
         CommandQueueInfo info = toCommandQueueInfo(req, queue, order, true);
         completeOK(req, info);
     }
@@ -91,7 +91,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported queue state '" + state + "'");
             }
         }
-        int order = mgr.getQueues().indexOf(queue);
+        int order = mgr.getQueues().indexOf(queue) + 1;
         CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, order, true);
         completeOK(req, qinfo);
     }

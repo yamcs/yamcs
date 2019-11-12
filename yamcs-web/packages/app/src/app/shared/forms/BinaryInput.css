@@ -1,0 +1,20 @@
+.binary-input {
+  position: relative;
+}
+
+.binary-input input {
+  padding-left: 24px;
+}
+
+.hex-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  text-align: center;
+  color: darkgrey;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 4px;
+  font-weight: 300;
+}
