@@ -595,7 +595,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
 
         if (queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
-            log.info("scheduling expiration state for new state {} for queue {}", newState, queue.getName());
+            log.info("Scheduling expiration for {} queue [state={}]", queue.getName(), newState);
             scheduleStateExpiration(queue);
         }
 
@@ -612,12 +612,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             queue.stateExpirationJob = null;
         }
         Runnable r = () -> {
-            log.info("executing epiration state, reverting to {}", queue.defaultState);
+            log.info("Returning {} queue to default state {}", queue.getName(), queue.defaultState);
             setQueueState(queue.getName(), queue.defaultState);
             queue.stateExpirationJob = null;
         };
 
-        log.info("sceduling expiration time in {}", queue.stateExpirationTimeS);
         queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
         queue.stateExpirationJob = timer.schedule(r, queue.stateExpirationTimeS, TimeUnit.SECONDS);
     }

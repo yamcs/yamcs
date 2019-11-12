@@ -59,7 +59,6 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
 
     this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
       if (map.get('system') !== this.system) {
-        console.log('cS', map.get('system'), this.system);
         this.changeSystem(map);
       }
     });

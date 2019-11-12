@@ -253,7 +253,7 @@ a.ya-link.ya-header-link {
   border-color: #5787b1;
 }
 
-.ng-invalid>.date-time-input>input {
+.ng-invalid :not(.ng-pristine)>.date-time-input>input, .ng-invalid :not(.ng-pristine)>.binary-input>input {
   border-color: crimson !important;
 }
 

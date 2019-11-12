@@ -61,7 +61,7 @@ export class DateTime implements ControlValueAccessor, Validator {
   }
 
   validate(control: FormControl) {
-    if (control.value === '') {
+    if (!control.value) {
       return null;
     }
     return PATTERN_VALIDATOR(control) || DATE_VALIDATOR(control);

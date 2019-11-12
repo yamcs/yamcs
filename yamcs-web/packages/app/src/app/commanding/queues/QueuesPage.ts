@@ -37,9 +37,8 @@ export class QueuesPage implements OnDestroy {
         const existingQueue = this.cqueueByName[cqueue.name];
         if (existingQueue) {
           // Update queue (but keep already known entries)
-          existingQueue.state = cqueue.state;
-          // Change object id for change detection
-          this.cqueueByName[cqueue.name] = { ...existingQueue };
+          cqueue.entry = existingQueue.entry;
+          this.cqueueByName[cqueue.name] = cqueue;
           this.emitChange();
         }
       });

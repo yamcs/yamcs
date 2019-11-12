@@ -3,8 +3,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance } from '@yamcs/client';
+import { Argument, ArgumentAssignment, Command, CommandHistoryEntry, Instance, Value } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
@@ -17,6 +18,7 @@ import * as utils from '../../shared/utils';
 export class ConfigureCommandPage {
 
   instance: Instance;
+  config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
   commandConfigurationForm = new FormGroup({
@@ -35,23 +37,27 @@ export class ConfigureCommandPage {
     private messageService: MessageService,
     private yamcs: YamcsService,
     private location: Location,
+    configService: ConfigService,
   ) {
     this.instance = yamcs.getInstance();
+    this.config = configService.getConfig();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
 
     title.setTitle(`Send a command: ${qualifiedName}`);
 
-    this.commandConfigurationForm.valueChanges.subscribe(() => {
-      this.armControl.setValue(false);
-    });
-    this.commandConfigurationForm.statusChanges.subscribe(() => {
-      if (this.commandConfigurationForm.valid) {
-        this.armControl.enable();
-      } else {
-        this.armControl.disable();
-      }
-    });
+    if (this.config.twoStageCommanding) {
+      this.commandConfigurationForm.valueChanges.subscribe(() => {
+        this.armControl.setValue(false);
+      });
+      this.commandConfigurationForm.statusChanges.subscribe(() => {
+        if (this.commandConfigurationForm.valid) {
+          this.armControl.enable();
+        } else {
+          this.armControl.disable();
+        }
+      });
+    }
 
     const promises: Promise<any>[] = [
       this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
@@ -126,7 +132,7 @@ export class ConfigureCommandPage {
     if (entry.assignment) {
       for (const assignment of entry.assignment) {
         if (assignment.name === argumentName) {
-          return utils.printValue(assignment.value);
+          return this.renderFieldValue(assignment.value);
         }
       }
     }
@@ -195,5 +201,30 @@ export class ConfigureCommandPage {
       }
     }
     return false;
+  }
+
+  private renderFieldValue(value: Value) {
+    switch (value.type) {
+      case 'BOOLEAN':
+        return '' + value.booleanValue;
+      case 'FLOAT':
+        return '' + value.floatValue;
+      case 'DOUBLE':
+        return '' + value.doubleValue;
+      case 'UINT32':
+        return '' + value.uint32Value;
+      case 'SINT32':
+        return '' + value.sint32Value;
+      case 'BINARY':
+        return utils.convertBase64ToHex(value.binaryValue!);
+      case 'ENUMERATED':
+      case 'STRING':
+      case 'TIMESTAMP':
+        return value.stringValue!;
+      case 'UINT64':
+        return '' + value.uint64Value;
+      case 'SINT64':
+        return '' + value.sint64Value;
+    }
   }
 }

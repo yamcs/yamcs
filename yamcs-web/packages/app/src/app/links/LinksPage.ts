@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Instance, Link, LinkEvent } from '@yamcs/client';
+import { Instance, LinkEvent } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -109,7 +109,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   // trackBy is needed to prevent menu from closing when
   // the link is updated.
-  tableTrackerFn = (index: number, link: Link) => link.name;
+  tableTrackerFn = (index: number, item: LinkItem) => item.link.name;
 
   expandItem($event: Event, item: LinkItem) {
     item.expanded = !item.expanded;

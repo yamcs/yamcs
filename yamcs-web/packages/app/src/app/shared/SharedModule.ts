@@ -48,6 +48,7 @@ import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
+import { BinaryInput } from './forms/BinaryInput';
 import { DateTime } from './forms/DateTime';
 import { DownloadButton } from './forms/DownloadButton';
 import { SearchFilter } from './forms/SearchFilter';
@@ -148,6 +149,7 @@ const sharedComponents = [
   Ago,
   AlarmLabel,
   AlarmLevel,
+  BinaryInput,
   Breadcrumb,
   BreadcrumbTrail,
   ColumnChooser,
