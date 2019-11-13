@@ -12,6 +12,7 @@ import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
 /**
@@ -70,6 +71,17 @@ public class ContainerProcessingContext {
             this.stats = stats;
         }
 
+        public String getPacketName() {
+            // Derives the archive partition based on a list of matched containers. The first container is the root
+            // container. Usually we have just two elements in the list.
+            for (int i = containers.size() - 1; i >= 0; i--) {
+                SequenceContainer sc = containers.get(i).getContainer();
+                if (sc.useAsArchivePartition()) {
+                    return sc.getQualifiedName();
+                }
+            }
+            return containers.get(0).getContainer().getQualifiedName();
+        }
     }
 
     /**

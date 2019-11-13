@@ -18,7 +18,7 @@ public class SequenceContainerProcessor {
     private Log log;
 
     SequenceContainerProcessor(ContainerProcessingContext pcontext) {
-        log = new Log(this.getClass(),pcontext.getProcessorData().getYamcsInstance());
+        log = new Log(this.getClass(), pcontext.getProcessorData().getYamcsInstance());
         this.pcontext = pcontext;
     }
 
@@ -109,7 +109,8 @@ public class SequenceContainerProcessor {
         buf.setPosition(maxposition);
         // Finaly update the stats. We add the packet into the statistics only if it doesn't have a derived container
         if (!hasDerived && (result.stats != null)) {
-            result.stats.newPacket(seq, (entries == null) ? 0 : entries.size(),
+            String pname = result.getPacketName();
+            result.stats.newPacket(pname, (entries == null) ? 0 : entries.size(),
                     result.acquisitionTime, result.generationTime);
         }
     }
