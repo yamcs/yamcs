@@ -27,7 +27,7 @@ cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib
 cp -r simulation/src/main/yamcs/mdb %{buildroot}/%{prefix}
 
 cp -r simulation/src/main/yamcs/etc %{buildroot}/%{prefix}
-mv %{buildroot}/%{prefix}/etc/logging.properties.sample %{buildroot}/%{prefix}/etc/logging.properties
+cp -r simulation/src/main/yamcs/etc-rpm/* %{buildroot}/%{prefix}/etc
 
 mkdir -p %{buildroot}/%{prefix}/displays
 mkdir -p %{buildroot}/storage/yamcs-data

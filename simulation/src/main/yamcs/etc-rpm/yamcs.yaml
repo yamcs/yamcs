@@ -26,7 +26,3 @@ yamcs-web:
   displayPath: etc/displays
   features:
     cfdp: true
-
-  # Hook the webapp sources directly to the output of yarn. This
-  # allows running yarn in watch mode without restarting Yamcs.
-  staticRoot: ../../../yamcs-web/packages/app/dist
