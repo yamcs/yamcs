@@ -38,4 +38,9 @@ public class PromptPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.Prompt;
     }
 
+    @Override
+    public String toString() {
+        return "PromptPacket [responseRequired=" + responseRequired + "]";
+    }
+
 }

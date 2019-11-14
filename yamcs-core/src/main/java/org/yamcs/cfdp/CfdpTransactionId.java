@@ -7,7 +7,6 @@ import org.yamcs.utils.TimeEncoding;
 public class CfdpTransactionId {
     private int sequenceNumber;
     private long initiatorEntity;
-    private final long startTime;
 
     static IdGenerator transactionNrGenerator = new IdGenerator();
 
@@ -16,7 +15,6 @@ public class CfdpTransactionId {
     }
 
     public CfdpTransactionId(long entityId, long sequenceNumber) {
-        this.startTime = TimeEncoding.getWallclockTime();//TODO use mission time?
         this.initiatorEntity = entityId;
         this.sequenceNumber = (int)sequenceNumber;
     }
@@ -54,7 +52,4 @@ public class CfdpTransactionId {
         return initiatorEntity+"_"+sequenceNumber;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
 }

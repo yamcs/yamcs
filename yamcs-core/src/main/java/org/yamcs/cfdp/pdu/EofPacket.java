@@ -59,4 +59,10 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.EOF;
     }
 
+    @Override
+    public String toString() {
+        return "EofPacket [conditionCode=" + conditionCode + ", fileChecksum=" + fileChecksum + ", fileSize=" + fileSize
+                + ", faultLocation=" + faultLocation + "]";
+    }
+
 }

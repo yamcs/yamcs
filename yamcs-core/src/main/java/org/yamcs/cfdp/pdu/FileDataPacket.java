@@ -1,6 +1,7 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.yamcs.utils.CfdpUtils;
 
@@ -46,6 +47,11 @@ public class FileDataPacket extends CfdpPacket {
     @Override
     protected int calculateDataFieldLength() {
         return 4 + this.filedata.length;
+    }
+
+    @Override
+    public String toString() {
+        return "FileDataPacket [offset=" + offset+", length="+filedata.length+"]";
     }
 
 }

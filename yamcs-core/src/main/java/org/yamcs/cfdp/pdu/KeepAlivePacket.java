@@ -37,4 +37,9 @@ public class KeepAlivePacket extends CfdpPacket implements FileDirective {
         return FileDirectiveCode.KeepAlive;
     }
 
+    @Override
+    public String toString() {
+        return "KeepAlivePacket [progress=" + progress + "]";
+    }
+
 }

@@ -12,7 +12,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpService;
-import org.yamcs.cfdp.CfdpTransaction;
+import org.yamcs.cfdp.CfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
@@ -47,15 +47,15 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         String instance = RestHandler.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
 
-        List<CfdpTransaction> transactions = new ArrayList<>(cfdpService.getCfdpTransfers(true));
-        Collections.sort(transactions, (c1, c2) -> {
+        List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers(true));
+        Collections.sort(transfers, (c1, c2) -> {
             return Long.compare(
-                    c1.getTransactionId().getStartTime(),
-                    c2.getTransactionId().getStartTime());
+                    c1.getStartTime(),
+                    c2.getStartTime());
         });
 
         ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
-        for (CfdpTransaction transaction : transactions) {
+        for (CfdpTransfer transaction : transfers) {
             responseb.addTransfer(toTransferInfo(transaction));
         }
         observer.complete(responseb.build());
@@ -64,7 +64,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
         String instance = RestHandler.verifyInstance(request.getInstance());
-        CfdpTransaction transaction = verifyTransaction(instance, request.getId());
+        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
         observer.complete(toTransferInfo(transaction));
     }
 
@@ -139,7 +139,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     public void updateTransfer(Context ctx, EditTransferRequest request, Observer<Empty> observer) {
         String instance = RestHandler.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransaction transaction = verifyTransaction(instance, request.getId());
+        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
         if (request.hasOperation()) {
             switch (request.getOperation()) {
             case "pause":
@@ -167,9 +167,9 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         observer.complete(Empty.getDefaultInstance());
     }
 
-    private CfdpTransaction verifyTransaction(String instance, long transactionId) throws NotFoundException {
+    private CfdpTransfer verifyTransaction(String instance, long transactionId) throws NotFoundException {
         CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransaction transaction = cfdpService.getCfdpTransfer(transactionId);
+        CfdpTransfer transaction = cfdpService.getCfdpTransfer(transactionId);
         if (transaction == null) {
             throw new NotFoundException("No such transaction");
         } else {
@@ -177,11 +177,10 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         }
     }
 
-    private static TransferInfo toTransferInfo(CfdpTransaction transaction) {
+    private static TransferInfo toTransferInfo(CfdpTransfer transaction) {
         CfdpTransactionId id = transaction.getTransactionId();
-        id.getStartTime();
-        Timestamp startTime = TimeEncoding.toProtobufTimestamp(id.getStartTime());
-        return TransferInfo.newBuilder()
+        Timestamp startTime = TimeEncoding.toProtobufTimestamp(transaction.getStartTime());
+        TransferInfo.Builder tib = TransferInfo.newBuilder()
                 .setTransactionId(id.getSequenceNumber())
                 .setStartTime(startTime)
                 .setState(transaction.getTransferState())
@@ -191,8 +190,13 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 .setDirection(transaction.getDirection())
                 .setTotalSize(transaction.getTotalSize())
                 .setSizeTransferred(transaction.getTransferredSize())
-                .setReliable(transaction.isReliable())
-                .build();
+                .setReliable(transaction.isReliable());
+        String failureReason = transaction.getFailuredReason();
+        if (failureReason != null) {
+            tib.setFailureReason(failureReason);
+        }
+
+        return tib.build();
     }
 
     private CfdpService verifyCfdpService(String instance) throws NotFoundException {

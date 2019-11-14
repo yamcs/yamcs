@@ -32,6 +32,8 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         }
     }
 
+   
+
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put(getFileDirectiveCode().getCode());
@@ -52,6 +54,12 @@ public class NakPacket extends CfdpPacket implements FileDirective {
 
     public List<SegmentRequest> getSegmentRequests() {
         return this.segmentRequests;
+    }
+    
+    @Override
+    public String toString() {
+        return "NakPacket [scopeStart=" + scopeStart + ", scopeEnd=" + scopeEnd + ", segmentRequests=" + segmentRequests
+                + "]";
     }
 
 }

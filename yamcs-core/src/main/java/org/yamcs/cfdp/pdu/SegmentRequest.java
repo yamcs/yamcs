@@ -9,6 +9,7 @@ public class SegmentRequest {
     private long segmentStart;
     private long segmentEnd;
 
+    
     public SegmentRequest(long start, long end) {
         this.segmentStart = start;
         this.segmentEnd = end;
@@ -52,4 +53,10 @@ public class SegmentRequest {
     public int hashCode() {
         return Objects.hash(getSegmentStart(), getSegmentEnd());
     }
+    
+    @Override
+    public String toString() {
+        return "SegmentRequest [segmentStart=" + segmentStart + ", segmentEnd=" + segmentEnd + "]";
+    }
+
 }

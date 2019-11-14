@@ -9,14 +9,14 @@ package org.yamcs.cfdp;
 
 public class PauseRequest extends CfdpRequest {
 
-    private CfdpTransaction transfer;
+    private CfdpTransfer transfer;
 
-    public PauseRequest(CfdpTransaction transfer) {
+    public PauseRequest(CfdpTransfer transfer) {
         super(CfdpRequestType.PAUSE);
         this.transfer = transfer;
     }
 
-    public CfdpTransaction getTransfer() {
+    public CfdpTransfer getTransfer() {
         return this.transfer;
     }
 

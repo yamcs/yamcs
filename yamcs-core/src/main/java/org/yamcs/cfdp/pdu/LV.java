@@ -29,4 +29,9 @@ public class LV {
         CfdpUtils.writeUnsignedByte(buffer, (short) this.getValue().length);
         buffer.put(this.getValue());
     }
+
+    @Override
+    public String toString() {
+        return new String(value);
+    }
 }

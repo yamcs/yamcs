@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.cfdp.CfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -24,24 +25,6 @@ public abstract class CfdpPacket {
         CFDP.addColumn("entityId", DataType.INT);
         CFDP.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
         CFDP.addColumn("pdu", DataType.BINARY);
-    }
-
-    private class LV {
-        private short length;
-        private byte[] value;
-
-        public LV(short length, byte[] value) {
-            this.length = length;
-            this.value = value;
-        }
-
-        public short getLength() {
-            return length;
-        }
-
-        public byte[] getValue() {
-            return value;
-        }
     }
 
     protected CfdpPacket() {
@@ -132,12 +115,14 @@ public abstract class CfdpPacket {
     }
     
     
-    public Tuple toTuple(CfdpTransactionId transferId) {
+    public Tuple toTuple(CfdpTransfer trans) {
+        CfdpTransactionId id = trans.getId();
+        
         TupleDefinition td = CFDP.copy();
         ArrayList<Object> al = new ArrayList<>();
-        al.add(transferId.getStartTime());
-        al.add(transferId.getInitiatorEntity());
-        al.add(transferId.getSequenceNumber());
+        al.add(trans.getStartTime());
+        al.add(id.getInitiatorEntity());
+        al.add(id.getSequenceNumber());
         al.add(this.toByteArray());
         return new Tuple(td, al);
     }

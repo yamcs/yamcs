@@ -125,4 +125,13 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     public String getDestinationFilename() {
         return new String(destinationFileName.getValue());
     }
+
+    @Override
+    public String toString() {
+        return "MetadataPacket [segmentationControl=" + segmentationControl + ", fileSize=" + fileSize
+                + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName
+                + ", filestoreRequests=" + filestoreRequests + ", messagesToUser=" + messagesToUser
+                + ", faultHandlerOverrides=" + faultHandlerOverrides + ", flowLabel=" + flowLabel + "]";
+    }
+    
 }

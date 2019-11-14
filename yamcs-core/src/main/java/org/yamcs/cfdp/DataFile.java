@@ -71,4 +71,22 @@ public class DataFile {
         });
         return baos.toByteArray();
     }
+
+    /**
+     * 
+     * @return true if all the data has been received
+     */
+    public boolean isComplete() {
+        long startOffset = 0;
+        for (DataFileSegment segment : this.dataFileSegments.values()) {
+            if (segment.getOffset() != startOffset) {
+               return false;
+            }
+            startOffset = segment.getOffset() + segment.getLength();
+        }
+        if (maxSize != -1 && startOffset != maxSize) {
+            return false;
+        }
+        return true;
+    }
 }

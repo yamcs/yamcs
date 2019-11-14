@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.protobuf.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -34,14 +36,15 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * @author nm
  *
  */
-public class CfdpService extends AbstractYamcsService implements StreamSubscriber {
+public class CfdpService extends AbstractYamcsService implements StreamSubscriber, TransferMonitor {
 
     static final String ETYPE_UNEXPECTED_CFDP_PACKET = "UNEXPECTED_CFDP_PACKET";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
     static final String ETYPE_EOF_LIMIT_REACHED = "EOF_LIMIT_REACHED";
 
-    Map<CfdpTransactionId, CfdpTransaction> transfers = new HashMap<>();
+    Map<CfdpTransactionId, CfdpTransfer> pendingTransfers = new HashMap<>();
+    List<CfdpTransfer> completedTransfers = new ArrayList<>();
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     Stream cfdpIn;
@@ -104,29 +107,33 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
     }
 
-    public CfdpTransaction getCfdpTransfer(CfdpTransactionId transferId) {
-        return transfers.get(transferId);
+    public CfdpTransfer getCfdpTransfer(CfdpTransactionId transferId) {
+        return pendingTransfers.get(transferId);
     }
 
-    public CfdpTransaction getCfdpTransfer(long transferId) {
-        return transfers.get(new CfdpTransactionId(mySourceId, transferId));
+    public CfdpTransfer getCfdpTransfer(long transferId) {
+        return pendingTransfers.get(new CfdpTransactionId(mySourceId, transferId));
     }
 
-    public Collection<CfdpTransaction> getCfdpTransfers(boolean all) {
-        return all
-                ? this.transfers.values()
-                : this.transfers.values().stream().filter(transfer -> transfer.isOngoing())
-                        .collect(Collectors.toList());
+    public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
+        if(all) {
+           List<CfdpTransfer> r =  new ArrayList<CfdpTransfer>();
+           r.addAll(pendingTransfers.values());
+           r.addAll(completedTransfers);
+           return r;
+        } else {
+            return pendingTransfers.values(); 
+        }
     }
 
-    public Collection<CfdpTransaction> getCfdpTransfers(List<Long> transferIds) {
+    public Collection<CfdpTransfer> getCfdpTransfers(List<Long> transferIds) {
         List<CfdpTransactionId> transactionIds = transferIds.stream()
                 .map(x -> new CfdpTransactionId(mySourceId, x)).collect(Collectors.toList());
-        return this.transfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
+        return this.pendingTransfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
                 .collect(Collectors.toList());
     }
 
-    public CfdpTransaction processRequest(CfdpRequest request) {
+    public CfdpTransfer processRequest(CfdpRequest request) {
         switch (request.getType()) {
         case PUT:
             return processPutRequest((PutRequest) request);
@@ -142,30 +149,34 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     private CfdpOutgoingTransfer processPutRequest(PutRequest request) {
-        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                "Starting new CFDP upload " + request.getObjectName() + " -> " + request.getTargetPath());
 
-        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(executor, request, cfdpOut, config,
+        CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, executor, request, cfdpOut, config,
                 eventProducer);
-        transfers.put(transfer.getTransactionId(), transfer);
+        transfer.setMonitor(this);
+
+        pendingTransfers.put(transfer.getTransactionId(), transfer);
+
+        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                "Starting new CFDP upload (" + transfer.getTransactionId() + ")" + request.getObjectName() + " -> "
+                        + request.getTargetPath());
         transfer.start();
         return transfer;
     }
 
-    private CfdpTransaction processPauseRequest(PauseRequest request) {
-        CfdpTransaction transfer = request.getTransfer();
+    private CfdpTransfer processPauseRequest(PauseRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
         transfer.pause();
         return transfer;
     }
 
-    private CfdpTransaction processResumeRequest(ResumeRequest request) {
-        CfdpTransaction transfer = request.getTransfer();
+    private CfdpTransfer processResumeRequest(ResumeRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
         transfer.resumeTransfer();
         return transfer;
     }
 
-    private CfdpTransaction processCancelRequest(CancelRequest request) {
-        CfdpTransaction transfer = request.getTransfer();
+    private CfdpTransfer processCancelRequest(CancelRequest request) {
+        CfdpTransfer transfer = request.getTransfer();
         transfer.cancelTransfer();
         return transfer;
     }
@@ -174,14 +185,14 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     public void onTuple(Stream stream, Tuple tuple) {
         CfdpPacket packet = CfdpPacket.fromTuple(tuple);
         CfdpTransactionId id = packet.getTransactionId();
-        CfdpTransaction transaction = null;
-        if (transfers.containsKey(id)) {
-            transaction = transfers.get(id);
+        CfdpTransfer transaction = null;
+        if (pendingTransfers.containsKey(id)) {
+            transaction = pendingTransfers.get(id);
         } else {
             // the communication partner has initiated a transfer
             transaction = instantiateTransaction(packet);
             if (transaction != null) {
-                transfers.put(transaction.getTransactionId(), transaction);
+                pendingTransfers.put(transaction.getTransactionId(), transaction);
             }
         }
 
@@ -190,16 +201,19 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    private CfdpTransaction instantiateTransaction(CfdpPacket packet) {
+    private CfdpTransfer instantiateTransaction(CfdpPacket packet) {
         if (packet.getHeader().isFileDirective()
                 && ((FileDirective) packet).getFileDirectiveCode() == FileDirectiveCode.Metadata) {
             MetadataPacket mpkt = (MetadataPacket) packet;
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new CFDP downlink " + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-            return new CfdpIncomingTransfer(executor, mpkt, cfdpOut, incomingBucket, eventProducer);
+                    "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
+                            + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
+            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, mpkt, cfdpOut, incomingBucket, eventProducer);
+            transfer.setMonitor(this);
+            return transfer;
         } else {
-            eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PACKET,
-                    "Unexpected CFDP packet received; " + packet.getHeader());
+            eventProducer.sendInfo(ETYPE_UNEXPECTED_CFDP_PACKET,
+                    "Unexpected CFDP packet received; " + packet);
             return null;
             // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
@@ -226,5 +240,14 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         return processPutRequest(
                 new PutRequest(mySourceId, destinationId, objName, target, overwrite, acknowledged, createpath, b,
                         objData));
+    }
+
+    @Override
+    public void stateChanged(CfdpTransfer cfdpTransfer) {
+        if (cfdpTransfer.getTransferState() == TransferState.COMPLETED
+                || cfdpTransfer.getTransferState() == TransferState.FAILED) {
+            pendingTransfers.remove(cfdpTransfer.getId());
+            completedTransfers.add(cfdpTransfer);
+        }
     }
 }

@@ -10,6 +10,8 @@ import com.google.common.collect.Maps;
 
 public class AckPacket extends CfdpPacket implements FileDirective {
 
+   
+
     private FileDirectiveCode directiveCode;
     private FileDirectiveSubtypeCode directiveSubtypeCode;
     private ConditionCode conditionCode;
@@ -111,5 +113,11 @@ public class AckPacket extends CfdpPacket implements FileDirective {
 
     public FileDirectiveSubtypeCode getFileDirectiveSubtypeCode() {
         return directiveSubtypeCode;
+    }
+    
+    @Override
+    public String toString() {
+        return "AckPacket [directiveCode=" + directiveCode + ", directiveSubtypeCode=" + directiveSubtypeCode
+                + ", conditionCode=" + conditionCode + ", transactionStatus=" + transactionStatus + "]";
     }
 }

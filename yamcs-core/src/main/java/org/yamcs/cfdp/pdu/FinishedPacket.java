@@ -67,7 +67,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
         this.generatedByEndSystem = CfdpUtils.isBitOfByteSet(temp, 4);
         this.dataInComplete = CfdpUtils.isBitOfByteSet(temp, 5);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
-
+        
         while (buffer.hasRemaining()) {
             TLV tempTLV = TLV.readTLV(buffer);
             switch (tempTLV.getType()) {
@@ -120,6 +120,13 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
 
     public ConditionCode getConditionCode() {
         return this.conditionCode;
+    }
+
+    @Override
+    public String toString() {
+        return "FinishedPacket [conditionCode=" + conditionCode + ", generatedByEndSystem=" + generatedByEndSystem
+                + ", dataInComplete=" + dataInComplete + ", fileStatus=" + fileStatus + ", faultLocation="
+                + faultLocation + ", filestoreResponses=" + filestoreResponses + "]";
     }
 
 }
