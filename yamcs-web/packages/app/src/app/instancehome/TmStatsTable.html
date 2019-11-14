@@ -2,6 +2,7 @@
        *ngIf="dataSource"
        [dataSource]="dataSource"
        class="ya-data-table"
+       style="width: 100%"
        matSort
        matSortActive="packetName"
        matSortDirection="asc"
@@ -10,23 +11,16 @@
   <ng-container matColumnDef="packetName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
     <td mat-cell *matCellDef="let tmstats">
-      <a [routerLink]="['/telemetry/packets', tmstats.packetName]"
-         [queryParams]="{instance: instance.name}">
+      <a routerLink="/telemetry/packets"
+         [queryParams]="{instance: instance.name, filter: tmstats.packetName}">
         {{ tmstats.packetName }}
       </a>
     </td>
   </ng-container>
 
-  <ng-container matColumnDef="receivedPackets">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Count</th>
-    <td mat-cell *matCellDef="let tmstats" style="text-align: right; padding-right: 20px;">
-      {{ tmstats.receivedPackets | number }}
-    </td>
-  </ng-container>
-
   <ng-container matColumnDef="lastReceived">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Received</th>
-    <td mat-cell *matCellDef="let tmstats">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">Received</th>
+    <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.lastReceived | deltaWith:tmstats.lastPacketTime }}
     </td>
   </ng-container>
@@ -39,9 +33,17 @@
   </ng-container>
 
   <ng-container matColumnDef="packetRate">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Rate</th>
-    <td mat-cell *matCellDef="let tmstats" style="padding-right: 20px;">
-      {{ tmstats.packetRate | number:'1.0-0' }} p/s
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Packet&nbsp;Rate</th>
+    <td mat-cell *matCellDef="let tmstats" style="text-align: right;">
+      {{ tmstats.packetRate }} p/s
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="dataRate">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Data&nbsp;Rate
+    </th>
+    <td mat-cell *matCellDef="let tmstats" style="text-align: right">
+      {{ tmstats.dataRate | dataRate }}
     </td>
   </ng-container>
 

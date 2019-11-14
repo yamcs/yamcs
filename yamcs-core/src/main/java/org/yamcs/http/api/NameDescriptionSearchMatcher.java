@@ -1,7 +1,5 @@
 package org.yamcs.http.api;
 
-import java.util.Map.Entry;
-
 import org.yamcs.xtce.NameDescription;
 
 /**
@@ -19,11 +17,15 @@ public class NameDescriptionSearchMatcher {
         for (String term : terms) {
             boolean match = false;
             if (nameDescription.getQualifiedName().toLowerCase().contains(term)) {
-                continue;
+                match = true;
+            }
+            if (nameDescription.getShortDescription() != null
+                    && nameDescription.getShortDescription().toLowerCase().contains(term)) {
+                match = true;
             }
             if (nameDescription.getAliasSet() != null) {
-                for (Entry<String, String> entry : nameDescription.getAliasSet().getAliases().entrySet()) {
-                    if (entry.getKey().toLowerCase().contains(term) || entry.getValue().toLowerCase().contains(term)) {
+                for (String alias : nameDescription.getAliasSet().getAliases().values()) {
+                    if (alias.toLowerCase().contains(term)) {
                         match = true;
                         break;
                     }

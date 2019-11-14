@@ -11,7 +11,6 @@ import { DisplaysPage } from './displays/DisplaysPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
-import { PacketPage } from './packets/PacketPage';
 import { PacketsPage } from './packets/PacketsPage';
 import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
@@ -64,11 +63,7 @@ const routes: Routes = [
         component: LayoutPage,
       }, {
         path: 'packets',
-        pathMatch: 'full',
         component: PacketsPage,
-      }, {
-        path: 'packets/:qualifiedName',
-        component: PacketPage,
       }, {
         path: 'parameters',
         pathMatch: 'full',
@@ -121,7 +116,6 @@ export const routingComponents = [
   LayoutsPage,
   LayoutPage,
   PacketsPage,
-  PacketPage,
   ParametersPage,
   ParameterPage,
   ParameterAlarmsTab,

@@ -1,84 +1,130 @@
 <app-instance-page>
-  <app-instance-toolbar>
+  <app-instance-toolbar [hasDetailPane]="true">
     Packets
+    &nbsp;&nbsp;&nbsp;
+    <button mat-icon-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
+      <mat-icon>refresh</mat-icon>
+    </button>
   </app-instance-toolbar>
-  <span #top></span>
 
-  <div class="panel-content">
-    <div class="filter-bar">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter packets">
-      </app-search-filter>
-    </div>
-    <table mat-table
-           *ngIf="dataSource"
-           [dataSource]="dataSource"
-           class="ya-data-table"
-           matSort
-           matSortActive="packetName"
-           matSortDirection="asc"
-           matSortDisableClear>
-
-      <ng-container matColumnDef="packetName">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let tmstats">
-          <a [routerLink]="['/telemetry/packets', tmstats.packetName]"
-             [queryParams]="{instance: instance.name}">
-            {{ tmstats.packetName }}
-          </a>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="receivedPackets">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Count</th>
-        <td mat-cell *matCellDef="let tmstats" style="text-align: right; padding-right: 20px;">
-          {{ tmstats.receivedPackets | number }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="packetRate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Packet&nbsp;Rate</th>
-        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
-          {{ tmstats.packetRate }} p/s
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="dataRate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Data&nbsp;Rate
-        </th>
-        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
-          {{ tmstats.dataRate | dataRate }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="lastReceived">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Received</th>
-        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
-          {{ tmstats.lastReceived | deltaWith:tmstats.lastPacketTime }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="lastPacketTime">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Packet Time</th>
-        <td mat-cell *matCellDef="let tmstats">
-          {{ tmstats.lastPacketTime | datetime }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="subscribedParameterCount">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Parameters</th>
-        <td mat-cell *matCellDef="let tmstats" style="text-align: right;">
-          {{ tmstats.subscribedParameterCount | number }}
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-  </div>
-  <ng-template #empty>
+  <app-detail-pane>
+    <ng-container *ngIf="detailPacket$ | async as detailPacket; else noSelection">
+      <app-detail-toolbar>
+        Packet Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <h6>Generation time</h6>
+        <div class="block">
+          {{ detailPacket.generationTime | datetime }}
+        </div>
+        <h6>Reception time</h6>
+        <div class="block">
+          {{ detailPacket.receptionTime | datetime }}
+          ({{ detailPacket.receptionTime | deltaWith:detailPacket.generationTime }})
+        </div>
+        <h6>Size</h6>
+        <div class="block">
+          {{ detailPacket.packet | binarySize | formatBytes }}
+        </div>
+        <h6>Data</h6>
+        <div class="block">
+          <app-hex [base64String]="detailPacket.packet"></app-hex>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select a packet
+      </app-detail-toolbar>
+    </ng-template>
+  </app-detail-pane>
+  <div class="table-wrapper">
     <div class="panel-content">
-      The Mission Database for <i>{{ instance.name }}</i> does not define any packets.
+      <form [formGroup]="filterForm">
+        <div class="filter-bar">
+          <app-search-filter formControlName="filter"
+                             placeholder="Filter by text search">
+          </app-search-filter>
+        </div>
+        <div class="filter-bar">
+          <app-select #intervalSelect
+                      [options]="intervalOptions"
+                      icon="access_time"
+                      formControlName="interval"></app-select>
+          <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+            <app-date-time formControlName="customStart"></app-date-time>
+            <app-date-time formControlName="customStop"></app-date-time>
+            <button (click)="applyCustomDates()"
+                    class="ya-button"
+                    [disabled]="filterForm.invalid">Apply</button>
+          </ng-container>
+          <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+            <button class="ya-button" (click)="jumpToNow()">
+              Jump to now
+            </button>
+          </ng-container>
+
+          <app-dots *ngIf="dataSource.loading$ | async">
+          </app-dots>
+        </div>
+      </form>
+      <table mat-table
+             [dataSource]="dataSource"
+             class="ya-data-table">
+
+        <ng-container matColumnDef="packetName">
+          <th mat-header-cell *matHeaderCellDef>Packet Name</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.id.name }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="generationTime">
+          <th mat-header-cell *matHeaderCellDef>Generation Time</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.generationTime | datetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="receptionTime">
+          <th mat-header-cell *matHeaderCellDef>Reception Time</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.receptionTime | datetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef>Size</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.packet | binarySize | formatBytes }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="data">
+          <th mat-header-cell *matHeaderCellDef>Data</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.packet | hex }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row
+            *matRowDef="let row; columns: displayedColumns;"
+            (click)="selectPacket(row)"
+            [@rowAnimation]="row.animate"
+            [class.selected]="(detailPacket$ | async) === row"></tr>
+      </table>
+
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button [disabled]="!dataSource.hasMore()"
+                class="ya-button"
+                (click)="loadMoreData()">Load More</button>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
     </div>
-  </ng-template>
+  </div>
 </app-instance-page>

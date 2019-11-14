@@ -1,3 +1,32 @@
-.primary-td .mat-icon {
-  margin-right: 7px;
+.detail {
+  background-color: #fcfcfc;
+  float: right;
+  height: 100%;
+  width: 450px;
+  overflow: auto;
+  border-left: 1px solid #d3d3d3;
+  box-sizing: border-box;
+}
+
+.table-wrapper {
+  position: relative;
+  overflow: auto;
+  height: 100%;
+}
+
+mat-row {
+  cursor: pointer;
+}
+
+h6 {
+  font-weight: 500;
+  font-size: 12px;
+  padding-bottom: 0;
+  padding-top: 1em;
+  margin: 0;
+}
+
+.block {
+  font-weight: normal;
+  font-size: 12px;
 }

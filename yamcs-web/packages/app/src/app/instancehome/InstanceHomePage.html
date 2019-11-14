@@ -10,6 +10,12 @@
             <mat-card-content>
               <app-tmstats-table [tmstats$]="tmstats$"></app-tmstats-table>
             </mat-card-content>
+            <div class="actions">
+              <a mat-button
+                 color="primary"
+                 routerLink="/telemetry/packets"
+                 [queryParams]="{instance: instance.name}">VIEW PACKETS &gt;</a>
+            </div>
           </mat-card>
         </div>
         <div class="card">
