@@ -346,9 +346,9 @@ export interface StatisticsSubscriptionResponse {
 
 export interface TmStatistics {
   packetName: string;
-  qualifiedName: string;
   receivedPackets: number;
   packetRate: number;
+  dataRate: number;
   lastReceived: string;
   lastPacketTime: string;
   subscribedParameterCount: number;

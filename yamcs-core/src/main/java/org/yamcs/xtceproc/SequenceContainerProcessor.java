@@ -111,7 +111,7 @@ public class SequenceContainerProcessor {
         if (!hasDerived && (result.stats != null)) {
             String pname = result.getPacketName();
             result.stats.newPacket(pname, (entries == null) ? 0 : entries.size(),
-                    result.acquisitionTime, result.generationTime);
+                    result.acquisitionTime, result.generationTime, buf.sizeInBits());
         }
     }
 }

@@ -1,0 +1,84 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Packets
+  </app-instance-toolbar>
+  <span #top></span>
+
+  <div class="panel-content">
+    <div class="filter-bar">
+      <app-search-filter [formControl]="filterControl"
+                         placeholder="Filter packets">
+      </app-search-filter>
+    </div>
+    <table mat-table
+           *ngIf="dataSource"
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           matSort
+           matSortActive="packetName"
+           matSortDirection="asc"
+           matSortDisableClear>
+
+      <ng-container matColumnDef="packetName">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let tmstats">
+          <a [routerLink]="['/telemetry/packets', tmstats.packetName]"
+             [queryParams]="{instance: instance.name}">
+            {{ tmstats.packetName }}
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="receivedPackets">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Count</th>
+        <td mat-cell *matCellDef="let tmstats" style="text-align: right; padding-right: 20px;">
+          {{ tmstats.receivedPackets | number }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="packetRate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Packet&nbsp;Rate</th>
+        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
+          {{ tmstats.packetRate }} p/s
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="dataRate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Data&nbsp;Rate
+        </th>
+        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
+          {{ tmstats.dataRate | dataRate }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastReceived">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Received</th>
+        <td mat-cell *matCellDef="let tmstats" style="text-align: right">
+          {{ tmstats.lastReceived | deltaWith:tmstats.lastPacketTime }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastPacketTime">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Packet Time</th>
+        <td mat-cell *matCellDef="let tmstats">
+          {{ tmstats.lastPacketTime | datetime }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="subscribedParameterCount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Parameters</th>
+        <td mat-cell *matCellDef="let tmstats" style="text-align: right;">
+          {{ tmstats.subscribedParameterCount | number }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  <ng-template #empty>
+    <div class="panel-content">
+      The Mission Database for <i>{{ instance.name }}</i> does not define any packets.
+    </div>
+  </ng-template>
+</app-instance-page>

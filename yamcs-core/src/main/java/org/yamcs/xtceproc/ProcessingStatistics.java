@@ -14,7 +14,7 @@ public class ProcessingStatistics {
     public ConcurrentHashMap<String, TmStats> stats = new ConcurrentHashMap<>();
 
     public void newPacket(String pname, int subscribedParameterCount, long acquisitionTime,
-            long generationTime) {
+            long generationTime, int sizeInBits) {
         TmStats s = stats.computeIfAbsent(pname, p -> new TmStats());
         s.pname = pname;
         s.receivedPackets++;
@@ -22,6 +22,7 @@ public class ProcessingStatistics {
         s.lastReceived = acquisitionTime;
         s.lastPacketTime = generationTime;
         s.packetRateMeter.mark(1);
+        s.dataRateMeter.mark(sizeInBits);
         lastUpdated = System.currentTimeMillis();
     }
 
@@ -42,7 +43,8 @@ public class ProcessingStatistics {
                         .setSubscribedParameterCount(t.subscribedParameterCount)
                         .setLastPacketTime(TimeEncoding.toProtobufTimestamp(t.lastPacketTime))
                         .setLastReceived(TimeEncoding.toProtobufTimestamp(t.lastReceived))
-                        .setPacketRate(t.packetRateMeter.getFiveSecondsRate())
+                        .setPacketRate(Math.round(t.packetRateMeter.getFiveSecondsRate()))
+                        .setDataRate(Math.round(t.dataRateMeter.getFiveSecondsRate()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -54,5 +56,6 @@ public class ProcessingStatistics {
         long lastReceived;
         long lastPacketTime;
         DataRateMeter packetRateMeter = new DataRateMeter();
+        DataRateMeter dataRateMeter = new DataRateMeter();
     }
 }

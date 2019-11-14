@@ -319,6 +319,34 @@ export interface EditReplayProcessorRequest {
   speed?: string;
 }
 
+export interface GetPacketsOptions {
+  /**
+   * Inclusive lower bound
+   */
+  start?: string;
+  /**
+   * Exclusive upper bound
+   */
+  stop?: string;
+  name?: string | string[];
+  next?: string;
+  limit?: number;
+  order?: 'asc' | 'desc';
+}
+
+export interface ListPacketsResponse {
+  packet?: Packet[];
+  continuationToken?: string;
+}
+
+export interface Packet {
+  id: NamedObjectId;
+  receptionTime: string;
+  generationTime: string;
+  sequenceNumber: number;
+  packet: string;
+}
+
 export interface GetEventsOptions {
   /**
    * Inclusive lower bound

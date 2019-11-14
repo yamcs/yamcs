@@ -41,6 +41,11 @@
                              [active]="telemetryActive"
                              [expanded]="telemetryExpanded"
                              (toggle)="toggleTelemetryGroup()">
+        <app-sidebar-nav-item routerLink="/telemetry/packets"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Packets
+        </app-sidebar-nav-item>
         <app-sidebar-nav-item routerLink="/telemetry/parameters"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
