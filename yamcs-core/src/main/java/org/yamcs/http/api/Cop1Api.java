@@ -75,7 +75,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
         Cop1TcPacketHandler cop1Link = verifyCop1Link(request.getInstance(), request.getName());
         boolean bypassAll = request.hasSetBypassAll()?request.getSetBypassAll():true;
         cop1Link.disableCop1(bypassAll);
-
+        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override

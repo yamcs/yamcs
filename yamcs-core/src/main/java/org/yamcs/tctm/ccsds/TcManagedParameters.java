@@ -1,8 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
@@ -17,16 +16,16 @@ import org.yamcs.YConfiguration;
 public class TcManagedParameters extends UplinkManagedParameters {
     int maxFrameLength;
 
-    public enum MultiplexingScheme {
-        FIFO, ABSOLUTE_PRIORITY, POLLING_VECTOR
+    public enum PriorityScheme {
+        FIFO, ABSOLUTE, POLLING_VECTOR
     };
 
-    MultiplexingScheme vcMultiplexingScheme;
+    PriorityScheme vcMultiplexingScheme;
 
     // make a frame out of multiple packets
     boolean blocking;
 
-    Map<Integer, TcVcManagedParameters> vcParams = new HashMap<>();
+    List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
     public TcManagedParameters(YConfiguration config) {
         super(config);
@@ -45,13 +44,23 @@ public class TcManagedParameters extends UplinkManagedParameters {
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
             TcVcManagedParameters vmp = new TcVcManagedParameters(yc, this);
-            if (vcParams.containsKey(vmp.vcId)) {
-                throw new ConfigurationException("duplicate configuration of vcId " + vmp.vcId);
+            if(vmp.useCop1 && vcParams.stream().anyMatch(p -> p.useCop1 && p.vcId == vmp.vcId)) {
+                throw new ConfigurationException("Cannot have two data links for the same vcId " + vmp.vcId+" and both using COP1");
             }
             if (vmp.maxFrameLength == -1) {
                 vmp.maxFrameLength = maxFrameLength;
             }
-            vcParams.put(vmp.vcId, vmp);
+            if(vmp.linkName == null) {
+                vmp.linkName = "vc"+vmp.vcId;
+                int c = 0;
+                while (vcParams.stream().anyMatch(p->p.linkName.equals(vmp.linkName))) {
+                    c++;
+                    vmp.linkName = "vc"+vmp.vcId+"_"+c;
+                }
+            }
+            
+            
+            vcParams.add(vmp);
         }
     }
 
@@ -61,12 +70,11 @@ public class TcManagedParameters extends UplinkManagedParameters {
     }
 
     @Override
-    public Map<Integer, VcUplinkHandler> createVcHandlers(String yamcsInstance, String parentLinkName,
+    public List<VcUplinkHandler> createVcHandlers(String yamcsInstance, String parentLinkName,
             ScheduledThreadPoolExecutor executor) {
-        Map<Integer, VcUplinkHandler> m = new HashMap<>();
-        for (Map.Entry<Integer, TcVcManagedParameters> me : vcParams.entrySet()) {
-            TcVcManagedParameters vmp = me.getValue();
-            String linkName = parentLinkName + ".vc" + vmp.vcId;
+        List<VcUplinkHandler> l = new ArrayList<>();
+        for (TcVcManagedParameters vmp : vcParams) {
+            String linkName = parentLinkName + "."+vmp.linkName;
             switch (vmp.service) {
             case PACKET:
                 VcUplinkHandler vcph;
@@ -76,21 +84,24 @@ public class TcManagedParameters extends UplinkManagedParameters {
                 } else {
                     vcph = new TcPacketHandler(yamcsInstance, linkName, vmp);
                 }
-                m.put(vmp.vcId, vcph);
+                l.add(vcph);
                 break;
             case VCA_SDU:
                 throw new UnsupportedOperationException("VCA_SDU not supported (TODO)");
             }
         }
-        return m;
+        return l;
     }
 
     public class TcVcManagedParameters extends VcUplinkManagedParameters {
+        
         ServiceType service;
         boolean useCop1;
         int maxFrameLength = -1;
         public boolean blocking;
         public boolean bdAbsolutePriority;
+        //this is used to compose the link name, if not set it will be vc<x>
+        String linkName;
 
         public TcVcManagedParameters(YConfiguration config, TcManagedParameters tmp) {
             super(config);
@@ -106,6 +117,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
             }
             this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
             this.useCop1 = config.getBoolean("useCop1", false);
+            this.linkName = config.getString("linkName", null);
         }
 
         public TcVcManagedParameters(int vcId, ServiceType service) {

@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Clcw;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Cop1Config;
@@ -211,7 +210,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         boolean added = outQueue.offer(new QueuedFrame(tf));
         if (!added) {
             long time = getCurrentTime();
-            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, time, AckStatus.NOK, "OutQueue on link " + name + " full");
+            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, time, AckStatus.NOK,
+                    "OutQueue on link " + name + " full");
             commandHistoryPublisher.commandFailed(pc.getCommandId(), time, "OutQueue on link " + name + " full");
         } else {
             signalDataAvailable();
@@ -334,9 +334,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      */
     public CompletableFuture<Void> initiateAD(boolean clcwCheck, long waitMillisec) {
         return doInExecutor(cf -> {
-            if (state != 6) {
-                cf.completeExceptionally(
-                        new Fop1Exception("Invalid state " + state + " for this operation (should be in state 6)"));
+            if(!preInitCheck(cf)) { 
                 return;
             }
 
@@ -374,10 +372,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         if (vR < 0 || vR > 255) {
             throw new IllegalArgumentException("vR has to be between 0 and 255 (inclusive)");
         }
+        cop1Active = true;
         return doInExecutor(cf -> {
-            if (state != 6) {
-                cf.completeExceptionally(
-                        new Fop1Exception("Invalid state " + state + " for this operation (should be in state 6"));
+            if(!preInitCheck(cf)) { 
                 return;
             }
             log.info("VC {} state: {} Initiating AD with vR {}", vcId, state, vR);
@@ -406,14 +403,15 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             }
         });
     }
+    
+ 
 
     /**
      * Initiate AD with Unlock. This causes a BC Unlock frame to be sent to the remote system.
      */
     public CompletableFuture<Void> initiateADWithUnlock() {
         return doInExecutor(cf -> {
-            if (state != 6) {
-                cf.completeExceptionally(new Fop1Exception("Invalid state for this operation (state should be 6)"));
+            if(!preInitCheck(cf)) { 
                 return;
             }
             log.info("VC {} state: {} Initiating AD with Unlock", vcId, state);
@@ -438,7 +436,20 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             }
         });
     }
-
+    
+    
+    private boolean preInitCheck(CompletableFuture<Void> cf) {
+        if (cop1Active) {
+            if (state != 6) {
+                cf.completeExceptionally(new Fop1Exception("Invalid state for the init operation (state should be 6)"));
+                return false;
+            }
+        } else {
+            cop1Active = true;
+            state = 6;
+        }
+        return true;
+    }
     /**
      * Terminate the AD service
      * 
@@ -1019,8 +1030,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     public void disableCop1(boolean bypassAll) {
-        // TODO Auto-generated method stub
-
+        purgeSentQueue();
+        this.cop1Active = false;
+        this.bypassAll = bypassAll;
     }
 
     /**

@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.concurrent.Semaphore;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.ccsds.TcManagedParameters.MultiplexingScheme;
+import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -27,7 +26,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class MasterChannelFrameMultiplexer {
     // Map<Integer, VirtualChannelUplinkHandler> handlers;
-    MultiplexingScheme scheme;
+    PriorityScheme scheme;
 
     Semaphore dataAvailableSemaphore = new Semaphore(0);
     volatile boolean quitting = false;
@@ -40,16 +39,16 @@ public class MasterChannelFrameMultiplexer {
 
     public MasterChannelFrameMultiplexer(String yamcsInstance, String linkName, YConfiguration config) {
         tcManagedParameters = new TcManagedParameters(config);
-        handlers = new ArrayList<>(tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor).values());
-        scheme = config.getEnum("priorityScheme", MultiplexingScheme.class, MultiplexingScheme.FIFO);
+        handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
+        scheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
         for(VcUplinkHandler h: handlers) {
             h.setDataAvailableSemaphore(dataAvailableSemaphore);
         }
-        if (scheme == MultiplexingScheme.ABSOLUTE_PRIORITY) {
+        if (scheme == PriorityScheme.ABSOLUTE) {
             Collections.sort(handlers, (h1, h2) -> {
                 return Integer.compare(h2.getParameters().getPriority(), h1.getParameters().getPriority());
             });
-        } else if (scheme == MultiplexingScheme.POLLING_VECTOR) {
+        } else if (scheme == PriorityScheme.POLLING_VECTOR) {
             pollingVector = new int[handlers.size()];
             for (int i = 0; i < pollingVector.length; i++) {
                 VcUplinkManagedParameters hp = handlers.get(i).getParameters();
@@ -70,9 +69,9 @@ public class MasterChannelFrameMultiplexer {
     public TcTransferFrame getFrame() {
         while (!quitting) {
             TcTransferFrame tf = null;
-            if (scheme == MultiplexingScheme.ABSOLUTE_PRIORITY) {
+            if (scheme == PriorityScheme.ABSOLUTE) {
                 tf = getFrameAbsolutePriority();
-            } else if (scheme == MultiplexingScheme.FIFO) {
+            } else if (scheme == PriorityScheme.FIFO) {
                 tf = getFrameFifo();
             } else {
                 tf = getFramePollingVector();

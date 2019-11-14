@@ -1,6 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.YConfiguration;
@@ -31,5 +31,5 @@ public abstract class UplinkManagedParameters {
     
     abstract int getMaxFrameLength();
     
-    abstract public Map<Integer, VcUplinkHandler> createVcHandlers(String yamcsInstance, String linkName, ScheduledThreadPoolExecutor executor);
+    abstract public  List<VcUplinkHandler> createVcHandlers(String yamcsInstance, String linkName, ScheduledThreadPoolExecutor executor);
 }
