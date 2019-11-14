@@ -13,6 +13,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.MasterChannelFrameHandler;
 import org.yamcs.tctm.ccsds.VcDownlinkHandler;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
@@ -85,7 +86,10 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
-
+                if (log.isTraceEnabled()) {
+                    log.trace("Received datagram of length {}: {}", datagram.getLength(), StringConverter
+                            .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
+                }
                 int length = datagram.getLength();
                 if (length < frameHandler.getMinFrameSize()) {
                     eventProducer.sendWarning("Error processing frame: size " + length
@@ -99,7 +103,8 @@ public class UdpTmFrameLink extends AbstractExecutionThreadService implements Ag
                 }
                 validDatagramCount++;
 
-                frameHandler.handleFrame(TimeEncoding.getWallclockTime(), datagram.getData(), datagram.getOffset(), length);
+                frameHandler.handleFrame(TimeEncoding.getWallclockTime(), datagram.getData(), datagram.getOffset(),
+                        length);
             } catch (IOException e) {
                 log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
             } catch (TcTmException e) {
