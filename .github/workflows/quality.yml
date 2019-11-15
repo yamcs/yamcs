@@ -1,0 +1,23 @@
+name: Code Quality
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sonar:
+    name: Sonar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Apply name resolution issue workaround (temp)
+        run: sudo bash -c 'echo "52.57.226.101 sonarcloud.io" >> /etc/hosts'
+      - name: Scan code
+        run: mvn -B --no-transfer-progress -Dsurefire.useFile=false -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=yamcs -Dsonar.projectKey=yamcs org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

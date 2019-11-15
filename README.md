@@ -1,4 +1,4 @@
-# Yamcs Mission Control [![Build Status](https://travis-ci.org/yamcs/yamcs.svg?branch=master)](https://travis-ci.org/yamcs/yamcs) ![Maven Central](https://img.shields.io/maven-central/v/org.yamcs/yamcs.svg?label=release)
+# Yamcs Mission Control ![Maven Central](https://img.shields.io/maven-central/v/org.yamcs/yamcs.svg?label=release)
 
 * Website: https://www.yamcs.org
 * Mailing list: [Google Groups](https://groups.google.com/group/yamcs/)
