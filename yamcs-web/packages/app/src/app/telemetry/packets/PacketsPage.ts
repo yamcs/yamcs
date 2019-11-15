@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetPacketsOptions, Instance, Packet } from '@yamcs/client';
+import { DownloadPacketsOptions, GetPacketsOptions, Instance, Packet } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
@@ -64,6 +64,8 @@ export class PacketsPage {
     { id: 'NO_LIMIT', label: 'No limit' },
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
+
+  downloadURL$ = new BehaviorSubject<string | null>(null);
 
   private filter: string;
 
@@ -177,7 +179,23 @@ export class PacketsPage {
     if (this.filter) {
       options.name = this.filter;
     }
-    this.dataSource.loadEntries('realtime', options);
+
+    const dlOptions: DownloadPacketsOptions = {};
+    if (this.validStart) {
+      dlOptions.start = this.validStart.toISOString();
+    }
+    if (this.validStop) {
+      dlOptions.stop = this.validStop.toISOString();
+    }
+    if (this.filter) {
+      dlOptions.name = this.filter;
+    }
+
+    const instanceClient = this.yamcs.getInstanceClient()!;
+    this.dataSource.loadEntries('realtime', options).then(packets => {
+      const downloadURL = instanceClient.getPacketsDownloadURL(dlOptions);
+      this.downloadURL$.next(downloadURL);
+    });
   }
 
   loadMoreData() {

@@ -10,7 +10,8 @@
     </mat-menu>
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
-            color="primary">
+            color="primary"
+            [disabled]="!((dataSource.records$ | async).length)">
       <mat-icon>save_alt</mat-icon>
       EXPORT
     </button>

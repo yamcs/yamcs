@@ -2,6 +2,18 @@
   <app-instance-toolbar [hasDetailPane]="true">
     Packets
     &nbsp;&nbsp;&nbsp;
+    <mat-menu #exportMenu="matMenu" class="ya-menu">
+      <app-download-menu-item [link]="downloadURL$ | async">
+        Raw dump
+      </app-download-menu-item>
+    </mat-menu>
+    <button mat-button
+            [matMenuTriggerFor]="exportMenu"
+            color="primary"
+            [disabled]="!((dataSource.packets$ | async).length)">
+      <mat-icon>save_alt</mat-icon>
+      EXPORT
+    </button>
     <button mat-icon-button
             matTooltip="Jump to now"
             color="primary"

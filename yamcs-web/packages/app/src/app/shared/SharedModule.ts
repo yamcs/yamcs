@@ -51,6 +51,7 @@ import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { BinaryInput } from './forms/BinaryInput';
 import { DateTime } from './forms/DateTime';
 import { DownloadButton } from './forms/DownloadButton';
+import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
@@ -164,6 +165,7 @@ const sharedComponents = [
   DetailToolbar,
   Dots,
   DownloadButton,
+  DownloadMenuItem,
   EmptyMessage,
   Expirable,
   Help,
