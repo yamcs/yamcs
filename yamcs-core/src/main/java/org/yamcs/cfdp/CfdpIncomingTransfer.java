@@ -98,7 +98,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     @Override
     public void processPacket(CfdpPacket packet) {
         if(log.isDebugEnabled()) {
-            log.debug("CFDP transaction {}, received PDU: {}", myId, packet);
+            log.debug("CFDP transaction {}, received PDU: {}", cfdpTransactionId, packet);
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
         if (packet.getHeader().isFileDirective()) {

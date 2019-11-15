@@ -116,7 +116,7 @@ public abstract class CfdpPacket {
     
     
     public Tuple toTuple(CfdpTransfer trans) {
-        CfdpTransactionId id = trans.getId();
+        CfdpTransactionId id = trans.getTransactionId();
         
         TupleDefinition td = CFDP.copy();
         ArrayList<Object> al = new ArrayList<>();

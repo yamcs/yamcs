@@ -78,11 +78,9 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     FinishedPacket finishedPacket;
 
     public CfdpOutgoingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, PutRequest request,
-            Stream cfdpOut,
-            YConfiguration config, EventProducer eventProducer) {
+            Stream cfdpOut, YConfiguration config, EventProducer eventProducer) {
         super(yamcsInstance, executor, request.getSourceId(), cfdpOut, eventProducer);
         this.request = request;
-
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
         int maxPduSize = config.getInt("maxPduSize", 512);
@@ -221,7 +219,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
-                this.myId.getSequenceNumber());
+                this.cfdpTransactionId.getSequenceNumber());
 
         return new MetadataPacket(
                 withSegmentation,
@@ -245,7 +243,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(), // my Entity Id
                 request.getDestinationId(), // the id of the target
-                this.myId.getSequenceNumber());
+                this.cfdpTransactionId.getSequenceNumber());
 
         FileDataPacket filedata = new FileDataPacket(
                 Arrays.copyOfRange(request.getPacketData(), (int) offset, (int) end),
@@ -264,7 +262,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(),
                 request.getDestinationId(),
-                this.myId.getSequenceNumber());
+                this.cfdpTransactionId.getSequenceNumber());
 
         return new EofPacket(
                 code,
@@ -285,7 +283,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 seqNrSize,
                 getTransactionId().getInitiatorEntity(),
                 request.getDestinationId(),
-                this.myId.getSequenceNumber());
+                this.cfdpTransactionId.getSequenceNumber());
 
         return new AckPacket(
                 FileDirectiveCode.Finished,
@@ -350,11 +348,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     private void doProcessPacket(CfdpPacket packet) {
         if (log.isDebugEnabled()) {
-            log.debug("CFDP transaction {}, received PDU: {}", myId, packet);
+            log.debug("CFDP transaction {}, received PDU: {}", cfdpTransactionId, packet);
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
         if (state == TransferState.COMPLETED || state == TransferState.FAILED) {
-            log.info("Ignoring PDU {} for finished transaction {}", packet, myId);
+            log.info("Ignoring PDU {} for finished transaction {}", packet, cfdpTransactionId);
             return;
         }
         if (packet.getHeader().isFileDirective()) {
@@ -395,7 +393,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                                         + request.getObjectName() + " -> "
                                         + request.getTargetPath());
                     } else {
-                        log.warn("Transaction {} received bogus finish packet in state {}: {}", myId, currentState,
+                        log.warn("Transaction {} received bogus finish packet in state {}: {}", cfdpTransactionId, currentState,
                                 finishedPacket);
                     }
                 }

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.stream.Collectors;
 
@@ -111,8 +112,13 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         return pendingTransfers.get(transferId);
     }
 
-    public CfdpTransfer getCfdpTransfer(long transferId) {
-        return pendingTransfers.get(new CfdpTransactionId(mySourceId, transferId));
+    public CfdpTransfer getCfdpTransfer(long id) {
+       Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c-> c.getId()==id).findAny();
+        if(r.isPresent()) {
+            return r.get();
+        } else {
+            return completedTransfers.stream().filter(c-> c.getId()==id).findAny().orElse(null);
+        }
     }
 
     public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {

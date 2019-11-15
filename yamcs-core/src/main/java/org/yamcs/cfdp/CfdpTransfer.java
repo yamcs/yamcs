@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
@@ -13,35 +14,35 @@ import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public abstract class CfdpTransfer implements Runnable {
-    protected CfdpTransactionId myId;
+    protected CfdpTransactionId cfdpTransactionId;
     private Stream cfdpOut;
     protected TransferState state;
     final protected ScheduledThreadPoolExecutor executor;
     final protected EventProducer eventProducer;
     protected boolean acknowledged = false;
-    protected final Log log; 
+    protected final Log log;
     protected final long startTime;
     TransferMonitor monitor;
-    
-    public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, long initiatorEntity, Stream cfdpOut,
+    static final AtomicInteger idGenerator = new AtomicInteger();
+    final int id;
+
+    public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, long initiatorEntity,
+            Stream cfdpOut,
             EventProducer eventProducer) {
         this(yamcsInstance, executor, new CfdpTransactionId(initiatorEntity), cfdpOut, eventProducer);
     }
 
-    public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut,
+    public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, CfdpTransactionId cfdpTransactionId,
+            Stream cfdpOut,
             EventProducer eventProducer) {
-        this.myId = id;
+        this.cfdpTransactionId = cfdpTransactionId;
         this.cfdpOut = cfdpOut;
         this.state = TransferState.RUNNING;
         this.executor = executor;
         this.eventProducer = eventProducer;
-        this.startTime = TimeEncoding.getWallclockTime();//TODO use mission time?
+        this.startTime = TimeEncoding.getWallclockTime();// TODO use mission time?
         log = new Log(this.getClass(), yamcsInstance);
-        
-    }
-
-    public CfdpTransactionId getTransactionId() {
-        return this.myId;
+        this.id = idGenerator.getAndIncrement();
     }
 
     public abstract void step();
@@ -50,9 +51,10 @@ public abstract class CfdpTransfer implements Runnable {
 
     protected void sendPacket(CfdpPacket p) {
         if (log.isDebugEnabled()) {
-            log.debug("CFDP transaction {}, sending PDU: {}", myId, p);
+            log.debug("CFDP transaction {}, sending PDU: {}", cfdpTransactionId, p);
             log.trace("{}", StringConverter.arrayToHexString(p.toByteArray(), true));
         }
+
         cfdpOut.emitTuple(p.toTuple(this));
     }
 
@@ -95,8 +97,8 @@ public abstract class CfdpTransfer implements Runnable {
         return this;
     }
 
-    public CfdpTransactionId getId() {
-        return myId;
+    public CfdpTransactionId getTransactionId() {
+        return cfdpTransactionId;
     }
 
     public boolean isReliable() {
@@ -106,18 +108,21 @@ public abstract class CfdpTransfer implements Runnable {
     public long getStartTime() {
         return startTime;
     }
-    
+
     public void setMonitor(TransferMonitor monitor) {
         this.monitor = monitor;
     }
-    
+
     protected void changeState(TransferState newState) {
         this.state = newState;
-        if(monitor!=null) {
+        if (monitor != null) {
             monitor.stateChanged(this);
         }
     }
-  
-    
+
     abstract public String getFailuredReason();
+
+    public int getId() {
+        return id;
+    }
 }

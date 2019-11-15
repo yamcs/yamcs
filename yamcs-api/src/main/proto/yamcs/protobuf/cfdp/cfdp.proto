@@ -61,9 +61,17 @@ message RemoteFile {
   required bool isDirectory = 2;
 }
 
+message TransactionId {
+    optional uint32 sequenceNumber = 1;
+    optional uint64 initiatorEntity = 2;
+}
+
 //message sent as reponse to the info and also when starting a new transfer
 message TransferInfo {
-  optional uint64 transactionId = 1;
+  //unique identifier assigned by the CfdpService
+  //can be used to refer to individual transfers in the REST calls
+  optional uint32 id = 1;
+  
   optional google.protobuf.Timestamp startTime = 2;
   optional TransferState state = 3;
 
@@ -82,6 +90,10 @@ message TransferInfo {
   
   //in case the transcation is failed, this provides more information
   optional string failureReason = 11;
+
+  // CFDP transaction id;
+  // for the incoming transfers it is assigned by the remote peer so therefore might not be unique
+  optional TransactionId transactionId = 12;
 }
 
 message CreateTransferRequest {

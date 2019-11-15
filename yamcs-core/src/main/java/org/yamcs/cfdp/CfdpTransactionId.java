@@ -1,17 +1,16 @@
 package org.yamcs.cfdp;
 
 import java.util.Objects;
-
-import org.yamcs.utils.TimeEncoding;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CfdpTransactionId {
     private int sequenceNumber;
     private long initiatorEntity;
 
-    static IdGenerator transactionNrGenerator = new IdGenerator();
+    static final AtomicInteger transactionNrGenerator = new AtomicInteger(1); 
 
     public CfdpTransactionId(long entityId) {
-        this(entityId, CfdpTransactionId.transactionNrGenerator.generate());
+        this(entityId, transactionNrGenerator.getAndIncrement());
     }
 
     public CfdpTransactionId(long entityId, long sequenceNumber) {

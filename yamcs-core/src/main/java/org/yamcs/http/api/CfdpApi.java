@@ -26,6 +26,7 @@ import org.yamcs.protobuf.EditTransferRequest;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
+import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.utils.TimeEncoding;
@@ -167,9 +168,9 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         observer.complete(Empty.getDefaultInstance());
     }
 
-    private CfdpTransfer verifyTransaction(String instance, long transactionId) throws NotFoundException {
+    private CfdpTransfer verifyTransaction(String instance, long id) throws NotFoundException {
         CfdpService cfdpService = verifyCfdpService(instance);
-        CfdpTransfer transaction = cfdpService.getCfdpTransfer(transactionId);
+        CfdpTransfer transaction = cfdpService.getCfdpTransfer(id);
         if (transaction == null) {
             throw new NotFoundException("No such transaction");
         } else {
@@ -181,7 +182,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         CfdpTransactionId id = transaction.getTransactionId();
         Timestamp startTime = TimeEncoding.toProtobufTimestamp(transaction.getStartTime());
         TransferInfo.Builder tib = TransferInfo.newBuilder()
-                .setTransactionId(id.getSequenceNumber())
+                .setId(transaction.getId())
                 .setStartTime(startTime)
                 .setState(transaction.getTransferState())
                 .setBucket(transaction.getBucket().getName())
@@ -190,13 +191,19 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
                 .setDirection(transaction.getDirection())
                 .setTotalSize(transaction.getTotalSize())
                 .setSizeTransferred(transaction.getTransferredSize())
-                .setReliable(transaction.isReliable());
+                .setReliable(transaction.isReliable())
+                .setTransactionId(toTransactionId(id));
         String failureReason = transaction.getFailuredReason();
         if (failureReason != null) {
             tib.setFailureReason(failureReason);
         }
 
         return tib.build();
+    }
+
+    private static TransactionId toTransactionId(CfdpTransactionId id) {
+        return TransactionId.newBuilder().setInitiatorEntity(id.getInitiatorEntity())
+                .setSequenceNumber(id.getSequenceNumber()).build();
     }
 
     private CfdpService verifyCfdpService(String instance) throws NotFoundException {

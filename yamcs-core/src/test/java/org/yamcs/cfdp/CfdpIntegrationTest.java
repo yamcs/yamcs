@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.LoggingUtils;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducerFactory;
@@ -108,7 +109,7 @@ public class CfdpIntegrationTest {
 
         for (int i = 0; i < 3; i++) {
             Thread.sleep(1000);
-            responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers/" + tinf.getTransactionId(),
+            responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers/" + tinf.getId(),
                     HttpMethod.GET);
             tinfo1 = TransferInfo.parseFrom(responseFuture.get());
 
@@ -151,11 +152,10 @@ public class CfdpIntegrationTest {
 
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-
                     CfdpPacket packet = CfdpPacket.fromTuple(tuple);
                     if (trsf == null) {
                         MetadataPacket mdp = (MetadataPacket) packet;
-                        trsf = new CfdpIncomingTransfer(executor, (MetadataPacket) mdp, cfdpIn, incomingBucket, null);
+                        trsf = new CfdpIncomingTransfer("test", executor, (MetadataPacket) mdp, cfdpIn, incomingBucket, null);
                     } else {
                         trsf.processPacket(packet);
                     }
