@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -14,8 +16,8 @@ import java.util.Map;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
  * Sends raw command packets on TCP socket.
@@ -50,6 +52,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
     }
 
+    @Override
     protected void initPostprocessor(String instance, YConfiguration config) {
         // traditionally this has used by default the ISS post-processor
         Map<String, Object> m = null;
@@ -60,7 +63,8 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
             m = config.getRoot();
         }
         if (m != null) {
-            log.warn("Please set the commandPostprocessorClassName for the TcpTcDataLink; in the future versions it will default to GenericCommandPostprocessor");
+            log.warn(
+                    "Please set the commandPostprocessorClassName for the TcpTcDataLink; in the future versions it will default to GenericCommandPostprocessor");
             m.put("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
         }
         super.initPostprocessor(instance, config);
@@ -185,7 +189,9 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     protected void startUp() throws Exception {
-        openSocket();
+        if (!disabled) {
+            openSocket();
+        }
     }
 
     @Override
@@ -193,6 +199,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         disconnect();
     }
 
+    @Override
     public void uplinkCommand(PreparedCommand pc) {
         byte[] binary = cmdPostProcessor.process(pc);
 
@@ -236,12 +243,14 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
             }
         }
         if (sent) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
+            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(),
+                    AckStatus.OK);
         } else {
             failedCommand(pc.getCommandId(), reason);
         }
     }
 
+    @Override
     protected void doHousekeeping() {
         if (!isRunning() || disabled) {
             return;
