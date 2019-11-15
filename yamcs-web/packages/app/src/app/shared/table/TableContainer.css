@@ -1,0 +1,7 @@
+.table-container {
+  display: inline-block;
+}
+
+::ng-deep table {
+  /*min-width: 1000px;*/
+}

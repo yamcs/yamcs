@@ -4,7 +4,7 @@
   </app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content" style="width: 1000px">
+  <div class="panel-content">
     <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
       <app-breadcrumb-trail>
         <ng-container *ngIf="breadcrumb.length">
@@ -59,7 +59,7 @@
       </ng-container>
 
       <ng-container matColumnDef="engValue">
-        <th mat-header-cell *matHeaderCellDef style="width: 200px">Value</th>
+        <th mat-header-cell *matHeaderCellDef style="min-width: 200px">Value</th>
         <td mat-cell *matCellDef="let item"
             [class.alert]="item.pval?.monitoringResult && item.pval?.monitoringResult !== 'IN_LIMITS'">
           <app-expirable *ngIf="item.pval" [pval]="item.pval">
@@ -86,13 +86,11 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
-    <div style="text-align: right">
-      <mat-paginator [pageSize]="pageSize"
-                     [hidePageSize]="true"
-                     [showFirstLastButtons]="true"
-                     [length]="dataSource.totalSize$ | async">
-      </mat-paginator>
-    </div>
+    <mat-paginator [pageSize]="pageSize"
+                   [hidePageSize]="true"
+                   [showFirstLastButtons]="true"
+                   [length]="dataSource.totalSize$ | async">
+    </mat-paginator>
   </div>
   <ng-template #empty>
     <div class="panel-content">

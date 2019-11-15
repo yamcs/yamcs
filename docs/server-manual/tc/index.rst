@@ -27,35 +27,53 @@ The command significance can be defined in the Excel Spreadsheet in the CommandO
 Command Queues
 --------------
 
-When a command is sent by an external user, it goes first into a queue. Privileges are checked before the command is put into the queue, so if the user doesn't have the privilege for the given command, the command will be rejected and not appear at all in the queue.
+When a command is issued, it must first pass by a queue. Privileges are checked before the command is put into the queue, so if the user does not have the privilege for the given command, the command is rejected before even reaching the queue.
 
 The available queues are defined in the file ``etc/command-queue.yaml``.
 
 .. code-block:: yaml
 
-    ops:
+    supervised:
       state: enabled
-      significances: [none]
+      minLevel: critical
 
-    ops-critic:
+    default:
       state: enabled
-      significances: [watch, warning, distress, critical, severe]
-      stateExpirationTimeS: 300
 
-Each queue has a name, a default state and a list of roles. The commands of a user logging in with a given role will be put in the first queue for which the user has privileges. A queue can be in three different states:
+If this file is absent, a default queue is created, equivalent to this configuration:
 
-* | **Enabled**
-  | The commands are sent immediately.
+.. code-block:: yaml
 
-* | **Blocked**
-  | The commands are accepted into the queue but need to be manually sent.
+    default:
+      state: enabled
 
-* | **Disabled**
-  | The commands are rejected.
+Each queue has a name, a default state and optional conditions. Issued commands are offered to the first queue (in definition order) whose conditions matches the command.
 
-There is always a command-queue called 'default' whose state is enabled. If a command comes from a user without privilege for any of the defined queues, the command will be put in the default queue. The default queue can be redefined in order to have a different state.
+The conditions are:
 
-Control over the command queues, requires the ``ControlCommandQueue`` privilege.
+* | **minLevel** (one of watch, warning, distress, critical or severe)
+  | Match only commands that are at least as significant as ``minLevel``.
+
+* | **users** (list of usernames)
+  | Match only commands that are issued by one of the specified users.
+
+* | **groups** (list of group names)
+  | Match only commands that are issued by one of the specified groups.
+
+The conditions ``users`` and ``groups`` are evaluated together: it suffices if the issuer matches with one of these two conditions. All other conditions must all apply, before a command can be matched to the queue.
+
+At runtime, a queue can perform different actions on matched commands:
+
+* | **ACCEPT** (state: ``enabled``)
+  | Matched commands are immediately released.
+
+* | **HOLD** (state: ``blocked``)
+  | Matched commands are accepted into the queue but need to be manually released.
+
+* | **REJECT** (state: ``disabled``)
+  | Matched commands are immediately rejected.
+
+The queue action can be changed dynamically by users with the ``ControlCommandQueue`` privilege.
 
 
 Transmission Constraints

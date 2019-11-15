@@ -420,10 +420,6 @@ button.ya-button.primary {
   backface-visibility: hidden;
 }
 
-.page-options {
-  margin-bottom: 12px;
-}
-
 .filter-bar {
   height: 24px;
   margin-bottom: 12px;
@@ -434,7 +430,7 @@ button.ya-button.primary {
   padding-top: 16px;
 }
 
-.action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button {
+.action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button, .filter-bar .search-input {
   margin-right: 7px;
 }
 
@@ -479,7 +475,7 @@ button.ya-button.primary {
 }
 
 @media print {
-  .mat-drawer, .mat-toolbar, .page-options, button.expandable, .filter-bar {
+  .mat-drawer, .mat-toolbar, button.expandable, .filter-bar {
     display: none !important;
   }
   .page-content, .mat-sidenav-container {

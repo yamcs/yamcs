@@ -7,54 +7,51 @@
       <app-search-filter [formControl]="filterControl"
                          placeholder="Filter algorithms">
       </app-search-filter>
-      &nbsp;&nbsp;
       <app-column-chooser #columnChooser
                           [columns]="columns"
                           preferenceKey="algorithms"></app-column-chooser>
     </div>
 
-    <table mat-table
-           *ngIf="dataSource"
-           class="ya-data-table"
-           style="width: 1000px"
-           [dataSource]="dataSource">
+    <app-table-container>
+      <table mat-table
+             *ngIf="dataSource"
+             class="ya-data-table"
+             [dataSource]="dataSource">
 
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
-        <td mat-cell *matCellDef="let algorithm">
-          <a [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
-             [queryParams]="{instance: instance.name}">
-            {{ shortName ? algorithm.name : algorithm.qualifiedName }}
-          </a>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
+          <td mat-cell *matCellDef="let algorithm">
+            <a [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
+               [queryParams]="{instance: instance.name}">
+              {{ shortName ? algorithm.name : algorithm.qualifiedName }}
+            </a>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="language">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px">Language</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.language || '-' }}</td>
-      </ng-container>
+        <ng-container matColumnDef="language">
+          <th mat-header-cell *matHeaderCellDef style="width: 100px">Language</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.language || '-' }}</td>
+        </ng-container>
 
-      <ng-container matColumnDef="scope">
-        <th mat-header-cell *matHeaderCellDef style="width: 200px">Scope</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.scope || '-' }}</td>
-      </ng-container>
+        <ng-container matColumnDef="scope">
+          <th mat-header-cell *matHeaderCellDef style="width: 200px">Scope</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.scope || '-' }}</td>
+        </ng-container>
 
-      <ng-container matColumnDef="shortDescription">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.shortDescription || '-' }}</td>
-      </ng-container>
+        <ng-container matColumnDef="shortDescription">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.shortDescription || '-' }}</td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-      <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
-    </table>
-
-    <div style="text-align: right">
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
+      </table>
       <mat-paginator [pageSize]="pageSize"
                      [hidePageSize]="true"
                      [showFirstLastButtons]="true"
                      [length]="dataSource.totalSize$ | async">
       </mat-paginator>
-    </div>
+    </app-table-container>
   </div>
   <ng-template #empty>
     <div class="panel-content">
