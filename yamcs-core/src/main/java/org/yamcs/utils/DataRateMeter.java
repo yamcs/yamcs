@@ -8,29 +8,30 @@ import com.codahale.metrics.EWMA;
 
 /**
  * Like the {@link com.codahale.metrics.Meter} but gives the data rates at 5 seconds mean rates
+ * 
  * @author nm
  *
  */
 public class DataRateMeter {
-    
+
     private final AtomicLong lastTick;
     private final Clock clock;
     private final long startTime;
-    
+
     private final EWMA rate = new EWMA(1, 2, TimeUnit.SECONDS);
     private static final long TICK_INTERVAL = TimeUnit.SECONDS.toNanos(2);
-    
+
     public DataRateMeter() {
         this.clock = Clock.defaultClock();
         this.startTime = this.clock.getTick();
         this.lastTick = new AtomicLong(startTime);
     }
-    
+
     public void mark(long n) {
         tickIfNecessary();
         rate.update(n);
     }
-    
+
     private void tickIfNecessary() {
         final long oldTick = lastTick.get();
         final long newTick = clock.getTick();
@@ -45,7 +46,7 @@ public class DataRateMeter {
             }
         }
     }
-    
+
     public double getFiveSecondsRate() {
         tickIfNecessary();
         return rate.getRate(TimeUnit.SECONDS);

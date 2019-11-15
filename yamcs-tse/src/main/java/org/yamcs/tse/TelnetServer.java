@@ -2,6 +2,8 @@ package org.yamcs.tse;
 
 import static io.netty.handler.codec.Delimiters.lineDelimiter;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,7 @@ public class TelnetServer extends AbstractService {
 
     @Override
     protected void doStop() {
-        eventLoopGroup.shutdownGracefully().addListener(future -> {
+        eventLoopGroup.shutdownGracefully(0, 10, TimeUnit.SECONDS).addListener(future -> {
             if (future.isSuccess()) {
                 notifyStopped();
             } else {

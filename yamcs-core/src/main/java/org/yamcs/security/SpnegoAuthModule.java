@@ -63,14 +63,16 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     private static final long AUTH_CODE_VALIDITY = 10000;
 
     private static Oid spnegoOid;
+    private static Oid krb5Oid;
     static {
         try {
             spnegoOid = new Oid("1.3.6.1.5.5.2");
-            // krb5Oid = new Oid("1.2.840.113554.1.2.2");
+            krb5Oid = new Oid("1.2.840.113554.1.2.2");
         } catch (GSSException e) {
             throw new ConfigurationException(e);
         }
     }
+    private static Oid[] SUPPORTED_OIDS = new Oid[] { spnegoOid, krb5Oid };
 
     private String realm;
     private boolean stripRealm; // if true, realm will be stripped from the username
@@ -162,7 +164,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         if (yamcsCred == null || yamcsCred.getRemainingLifetime() == 0) {
             yamcsCred = Subject.doAs(yamcsLogin.getSubject(), (PrivilegedAction<GSSCredential>) () -> {
                 try {
-                    GSSCredential clientCred = gssManager.createCredential(null, 3600, spnegoOid,
+                    GSSCredential clientCred = gssManager.createCredential(null, 3600, SUPPORTED_OIDS,
                             GSSCredential.ACCEPT_ONLY);
                     return clientCred;
                 } catch (Exception e) {
@@ -213,8 +215,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
                         ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
                         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
                         HttpUtil.setContentLength(res, buf.readableBytes());
-                        log.info("{} {} {} Sending authorization code {}", req.method(), req.uri(), res.status().code(),
-                                authorizationCode);
+                        log.info("{} {} {} Sending authorization code", req.method(), req.uri(), res.status().code());
                         ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
                     } else {
                         log.warn("Context is not established, multiple rounds needed???");

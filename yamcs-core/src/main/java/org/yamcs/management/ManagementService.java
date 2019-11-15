@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -36,7 +34,6 @@ import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.tctm.Link;
-import org.yamcs.utils.TimestampUtil;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -62,6 +59,7 @@ public class ManagementService implements ProcessorListener {
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
     List<StreamWithInfo> streams = new CopyOnWriteArrayList<>();
     List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
+    List<Processor> processors = new CopyOnWriteArrayList<>();
 
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
@@ -72,11 +70,6 @@ public class ManagementService implements ProcessorListener {
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
-
-    Map<Processor, Statistics> processors = new ConcurrentHashMap<>();
-
-    // we use this one because ConcurrentHashMap does not support null values
-    static final Statistics STATS_NULL = Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();
 
     static public ManagementService getInstance() {
         return managementService;
@@ -138,7 +131,6 @@ public class ManagementService implements ProcessorListener {
                 .filter(lwi -> instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
                 .findFirst();
     }
-    
 
     public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
         for (int i = 0; i < qmanagers.size(); i++) {
@@ -421,24 +413,12 @@ public class ManagementService implements ProcessorListener {
     }
 
     private void updateStatistics() {
-        try {
-            for (Entry<Processor, Statistics> entry : processors.entrySet()) {
-                Processor yproc = entry.getKey();
-                Statistics stats = entry.getValue();
-                ProcessingStatistics ps = yproc.getTmProcessor().getStatistics();
-                if ((stats == STATS_NULL)
-                        || (ps.getLastUpdated() > TimestampUtil.timestamp2Java(stats.getLastUpdated()))) {
-                    stats = ManagementGpbHelper.buildStats(yproc);
-                    processors.put(yproc, stats);
-                }
-                if (stats != STATS_NULL) {
-                    for (ManagementListener l : managementListeners) {
-                        l.statisticsUpdated(yproc, stats);
-                    }
-                }
+        for (Processor processor : processors) {
+            ProcessingStatistics ps = processor.getTmProcessor().getStatistics();
+            Statistics stats = ManagementGpbHelper.buildStats(processor, ps.snapshot());
+            for (ManagementListener l : managementListeners) {
+                l.statisticsUpdated(processor, stats);
             }
-        } catch (Exception e) {
-            log.warn("Error updating statistics ", e);
         }
     }
 
@@ -465,7 +445,7 @@ public class ManagementService implements ProcessorListener {
     public void processorAdded(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorAdded(pi));
-        processors.put(processor, STATS_NULL);
+        processors.add(processor);
     }
 
     @Override

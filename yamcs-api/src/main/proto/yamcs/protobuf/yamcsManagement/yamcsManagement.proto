@@ -226,12 +226,14 @@ message TmStatistics {
   optional int32 subscribedParameterCount = 6;
   optional google.protobuf.Timestamp lastReceived = 10;
   optional google.protobuf.Timestamp lastPacketTime = 11;
+  optional double packetRate = 12;
 }
 
 message Statistics {
   reserved 4,5;
   optional string instance = 1;
-  optional string yProcessorName = 2;
+  optional string yProcessorName = 2 [deprecated=true];
+  optional string processor = 7;
   repeated TmStatistics tmstats = 3;
   optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update
 }

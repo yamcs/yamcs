@@ -25,10 +25,9 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
 
   displayedColumns = [
     'packetName',
-    'receivedPackets',
     'lastPacketTime',
     'lastReceived',
-    // 'subscribedParameterCount',
+    'packetRate',
   ];
 
   constructor(yamcs: YamcsService) {
