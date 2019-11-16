@@ -58,7 +58,7 @@ public abstract class Stream {
                 if (handler != null) {
                     handler.handle(tuple, s, e);
                 } else {
-                    log.warn("Exception received when emitting tuple to subscriber " + s + ": {}", e);
+                    log.warn("Exception received when emitting tuple to subscriber " + s, e);
                     throw e;
                 }
             }
