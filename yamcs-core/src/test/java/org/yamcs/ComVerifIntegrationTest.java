@@ -81,7 +81,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get();
 
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
