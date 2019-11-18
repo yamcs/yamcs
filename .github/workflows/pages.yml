@@ -1,0 +1,30 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  javadoc:
+    name: Update javadoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Generate site
+        run: |
+          mvn -B --no-transfer-progress -DskipTests javadoc:aggregate
+          mkdir -p _build
+          touch _build/.nojekyll
+          cp -r target/site/apidocs _build/javadoc
+      - name: Deploy to GitHub Pages
+        uses: maxheld83/ghpages@v0.2.1
+        env:
+          GH_PAT: ${{ secrets.ACTIONS_PAT }}
+          # Follow: https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/m-p/31266/
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_DIR: _build
