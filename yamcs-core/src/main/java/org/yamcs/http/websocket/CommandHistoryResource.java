@@ -62,11 +62,11 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
             if (req.hasIgnorePastCommands()) {
                 ignorePastCommands = req.getIgnorePastCommands();
             }
-            client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
-
+          
             if (req.getCommandIdCount() > 0) {
                 subscribeAll = false;
                 ignorePastCommands = false;
+                client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
                 for (CommandId commandId : req.getCommandIdList()) {
                     if (!subscribedCommands.contains(commandId)) {
                         try {
@@ -85,10 +85,12 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
                         }
                     }
                 }
+               
             }
         }
 
         if (subscribeAll) {
+            client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
             long since = ignorePastCommands ? client.getProcessor().getCurrentTime() : 0;
             allSubscription = requestManager.subscribeCommandHistory(null, since, this);
         }
