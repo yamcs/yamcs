@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.yamcs.InitException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.security.protobuf.AccountCollection;
@@ -39,6 +40,7 @@ public class Directory {
     private Map<String, User> users = new ConcurrentHashMap<>();
     private Map<String, ServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
     private Map<String, Group> groups = new ConcurrentHashMap<>();
+    private Map<String, Role> roles = new ConcurrentHashMap<>();
 
     private ProtobufDatabase protobufDatabase;
 
@@ -72,6 +74,8 @@ public class Directory {
         } catch (YarchException | IOException e) {
             throw new InitException(e);
         }
+
+        loadRoles();
     }
 
     public synchronized void addUser(User user) throws IOException {
@@ -128,8 +132,8 @@ public class Directory {
     }
 
     /**
-     * Creates a new service account. The service account is assumed to represent one appplication only, for which
-     * automatically generate credentials are returned. These may be used to identify as that application, for example
+     * Creates a new service account. The service account is assumed to represent one application only, for which
+     * automatically generated credentials are returned. These may be used to identify as that application, for example
      * to generate access tokens.
      */
     public synchronized ApplicationCredentials addServiceAccount(ServiceAccount service) throws IOException {
@@ -160,6 +164,33 @@ public class Directory {
     public synchronized void updateApplicationProperties(ServiceAccount service) throws IOException {
         serviceAccounts.put(service.getName(), service);
         persistChanges();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadRoles() {
+        if (YConfiguration.isDefined("roles")) {
+            YConfiguration yconf = YConfiguration.getConfiguration("roles");
+            Map<String, Object> roleConfig = yconf.getRoot();
+            for (String roleName : roleConfig.keySet()) {
+                Role role = new Role(roleName);
+                if (!YConfiguration.isNull(roleConfig, roleName)) {
+                    Map<String, Object> roleDef = YConfiguration.getMap(roleConfig, roleName);
+                    roleDef.forEach((typeString, objects) -> {
+                        if (typeString.equals("System")) {
+                            for (String name : (List<String>) objects) {
+                                role.addSystemPrivilege(new SystemPrivilege(name));
+                            }
+                        } else {
+                            ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
+                            for (String object : (List<String>) objects) {
+                                role.addObjectPrivilege(new ObjectPrivilege(type, object));
+                            }
+                        }
+                    });
+                }
+                roles.put(role.getName(), role);
+            }
+        }
     }
 
     private synchronized void persistChanges() throws IOException {
@@ -265,5 +296,13 @@ public class Directory {
 
     public List<ServiceAccount> getServiceAccounts() {
         return new ArrayList<>(serviceAccounts.values());
+    }
+
+    public List<Role> getRoles() {
+        return new ArrayList<>(roles.values());
+    }
+
+    public Role getRole(String name) {
+        return roles.get(name);
     }
 }

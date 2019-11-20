@@ -1,5 +1,6 @@
 package org.yamcs.security;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ public class User extends Account {
     private boolean superuser;
 
     private Map<String, String> identitiesByProvider = new HashMap<>();
+    private Set<String> roles = new HashSet<>();
 
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
@@ -53,6 +55,7 @@ public class User extends Account {
         for (ExternalIdentity identity : userDetail.getIdentitiesList()) {
             identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
         }
+        roles.addAll(userDetail.getRolesList());
     }
 
     public String getEmail() {
@@ -77,6 +80,23 @@ public class User extends Account {
 
     public void deleteIdentity(String provider) {
         identitiesByProvider.remove(provider);
+    }
+
+    public Set<String> getRoles() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    public void setRoles(Collection<String> roles) {
+        this.roles.clear();
+        this.roles.addAll(roles);
+    }
+
+    public void addRole(String role) {
+        roles.add(role);
+    }
+
+    public void deleteRole(String role) {
+        roles.remove(role);
     }
 
     public boolean isSuperuser() {
@@ -151,6 +171,7 @@ public class User extends Account {
         if (email != null) {
             userDetailb.setEmail(email);
         }
+        userDetailb.addAllRoles(roles);
         userDetailb.setSuperuser(superuser);
         identitiesByProvider.forEach((provider, identity) -> {
             userDetailb.addIdentities(ExternalIdentity.newBuilder()

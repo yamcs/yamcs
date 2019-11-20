@@ -16,6 +16,8 @@ import { EditGroupPage } from './iam/EditGroupPage';
 import { EditUserPage } from './iam/EditUserPage';
 import { GroupPage } from './iam/GroupPage';
 import { GroupsPage } from './iam/GroupsPage';
+import { RolePage } from './iam/RolePage';
+import { RolesPage } from './iam/RolesPage';
 import { ServiceAccountsPage } from './iam/ServiceAccountsPage';
 import { UserPage } from './iam/UserPage';
 import { UsersPage } from './iam/UsersPage';
@@ -161,6 +163,18 @@ const routes: Routes = [
         component: EditGroupPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
+      {
+        path: 'iam/roles',
+        pathMatch: 'full',
+        component: RolesPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'iam/roles/:name',
+        pathMatch: 'full',
+        component: RolePage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      }
     ]
   }
 ];
@@ -188,6 +202,8 @@ export const routingComponents = [
   GroupPage,
   LeapSecondsPage,
   PluginsPage,
+  RolesPage,
+  RolePage,
   RoutesPage,
   ServiceAccountsPage,
   ServicesPage,

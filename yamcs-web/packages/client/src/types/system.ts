@@ -128,6 +128,7 @@ export interface EditUserRequest {
   active?: boolean;
   superuser?: boolean;
   password?: string;
+  roleAssignment?: RoleAssignmentInfo;
 }
 
 export interface UserInfo {
@@ -141,6 +142,7 @@ export interface UserInfo {
   confirmationTime: string;
   lastLoginTime: string;
   groups: GroupInfo[];
+  roles: RoleInfo[];
   clientInfo: ClientInfo[];
   identities: ExternalIdentity[];
 
@@ -190,9 +192,20 @@ export interface EditGroupRequest {
   memberInfo?: GroupMemberInfo;
 }
 
+export interface RoleAssignmentInfo {
+  roles?: string[];
+}
+
 export interface ObjectPrivilege {
   type: string;
   object: string[];
+}
+
+export interface RoleInfo {
+  name: string;
+  description: string;
+  systemPrivileges: string[];
+  objectPrivileges: ObjectPrivilege[];
 }
 
 export interface Service {

@@ -1,6 +1,6 @@
 import { SpaceSystem } from './mdb';
 import { Alarm, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientInfo, CommandQueue, GroupInfo, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, Service, Stream, Table, UserInfo } from './system';
+import { Bucket, ClientInfo, CommandQueue, GroupInfo, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, RoleInfo, Service, Stream, Table, UserInfo } from './system';
 
 
 export type WebSocketClientMessage = [
@@ -57,6 +57,10 @@ export interface UsersWrapper {
 
 export interface GroupsWrapper {
   groups: GroupInfo[];
+}
+
+export interface RolesWrapper {
+  roles: RoleInfo[];
 }
 
 export interface ClientsWrapper {

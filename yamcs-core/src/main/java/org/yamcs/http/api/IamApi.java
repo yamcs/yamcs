@@ -21,17 +21,21 @@ import org.yamcs.protobuf.CreateServiceAccountResponse;
 import org.yamcs.protobuf.CreateUserRequest;
 import org.yamcs.protobuf.DeleteGroupRequest;
 import org.yamcs.protobuf.DeleteIdentityRequest;
+import org.yamcs.protobuf.DeleteRoleAssignmentRequest;
 import org.yamcs.protobuf.DeleteServiceAccountRequest;
 import org.yamcs.protobuf.ExternalIdentityInfo;
 import org.yamcs.protobuf.GetGroupRequest;
+import org.yamcs.protobuf.GetRoleRequest;
 import org.yamcs.protobuf.GetServiceAccountRequest;
 import org.yamcs.protobuf.GetUserRequest;
 import org.yamcs.protobuf.GroupInfo;
 import org.yamcs.protobuf.ListGroupsResponse;
 import org.yamcs.protobuf.ListPrivilegesResponse;
+import org.yamcs.protobuf.ListRolesResponse;
 import org.yamcs.protobuf.ListServiceAccountsResponse;
 import org.yamcs.protobuf.ListUsersResponse;
 import org.yamcs.protobuf.ObjectPrivilegeInfo;
+import org.yamcs.protobuf.RoleInfo;
 import org.yamcs.protobuf.ServiceAccountInfo;
 import org.yamcs.protobuf.UpdateGroupRequest;
 import org.yamcs.protobuf.UpdateUserRequest;
@@ -41,6 +45,7 @@ import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
+import org.yamcs.security.Role;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.ServiceAccount;
 import org.yamcs.security.SystemPrivilege;
@@ -50,6 +55,51 @@ import org.yamcs.utils.TimeEncoding;
 import com.google.protobuf.Empty;
 
 public class IamApi extends AbstractIamApi<Context> {
+
+    @Override
+    public void listRoles(Context ctx, Empty request, Observer<ListRolesResponse> observer) {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        List<Role> roles = securityStore.getDirectory().getRoles();
+        Collections.sort(roles, (p1, p2) -> p1.getName().compareTo(p2.getName()));
+
+        ListRolesResponse.Builder responseb = ListRolesResponse.newBuilder();
+        for (Role role : roles) {
+            RoleInfo roleInfo = toRoleInfo(role);
+            responseb.addRoles(roleInfo);
+        }
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void getRole(Context ctx, GetRoleRequest request, Observer<RoleInfo> observer) {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        Role role = securityStore.getDirectory().getRole(request.getName());
+        if (role == null) {
+            throw new NotFoundException();
+        }
+        observer.complete(toRoleInfo(role));
+    }
+
+    @Override
+    public void deleteRoleAssignment(Context ctx, DeleteRoleAssignmentRequest request, Observer<Empty> observer) {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
+        Directory directory = securityStore.getDirectory();
+        String username = request.getName();
+        User user = directory.getUser(username);
+        if (user == null) {
+            throw new NotFoundException();
+        }
+        user.deleteRole(request.getRole());
+        try {
+            directory.updateUserProperties(user);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        observer.complete(Empty.getDefaultInstance());
+    }
 
     @Override
     public void listPrivileges(Context ctx, Empty request, Observer<ListPrivilegesResponse> observer) {
@@ -166,6 +216,9 @@ public class IamApi extends AbstractIamApi<Context> {
         }
         if (request.hasSuperuser()) {
             user.setSuperuser(request.getSuperuser());
+        }
+        if (request.hasRoleAssignment()) {
+            user.setRoles(request.getRoleAssignment().getRolesList());
         }
         try {
             directory.updateUserProperties(user);
@@ -463,6 +516,21 @@ public class IamApi extends AbstractIamApi<Context> {
                         .setIdentity(entry.getValue()));
             });
 
+            List<String> unsortedRoles = new ArrayList<>();
+            unsortedRoles.addAll(user.getRoles());
+            Collections.sort(unsortedRoles);
+            for (String roleName : unsortedRoles) {
+                Role role = directory.getRole(roleName);
+                if (role != null) {
+                    RoleInfo.Builder roleb = RoleInfo.newBuilder();
+                    roleb.setName(roleName);
+                    if (role.getDescription() != null) {
+                        roleb.setDescription(role.getDescription());
+                    }
+                    userb.addRoles(roleb);
+                }
+            }
+
             for (Group group : directory.getGroups(user)) {
                 GroupInfo groupInfo = toGroupInfo(group, false);
                 userb.addGroups(groupInfo);
@@ -504,6 +572,32 @@ public class IamApi extends AbstractIamApi<Context> {
                 b.setCreatedBy(toUserInfo(createdBy, false));
             }
             b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
+        }
+        return b.build();
+    }
+
+    private static RoleInfo toRoleInfo(Role role) {
+        RoleInfo.Builder b = RoleInfo.newBuilder();
+        b.setName(role.getName());
+        if (role.getDescription() != null) {
+            b.setDescription(role.getDescription());
+        }
+
+        List<SystemPrivilege> systemPrivileges = new ArrayList<>(role.getSystemPrivileges());
+        Collections.sort(systemPrivileges, (p1, p2) -> p1.getName().compareTo(p2.getName()));
+        for (SystemPrivilege privilege : systemPrivileges) {
+            b.addSystemPrivileges(privilege.getName());
+        }
+
+        List<ObjectPrivilege> objectPrivileges = new ArrayList<>(role.getObjectPrivileges());
+        Collections.sort(objectPrivileges, (p1, p2) -> {
+            int rc = p1.getType().toString().compareTo(p2.getType().toString());
+            return rc != 0 ? rc : p1.getObject().compareTo(p2.getObject());
+        });
+        for (ObjectPrivilege privilege : objectPrivileges) {
+            b.addObjectPrivileges(ObjectPrivilegeInfo.newBuilder()
+                    .setType(privilege.getType().toString())
+                    .addObject(privilege.getObject()));
         }
         return b.build();
     }

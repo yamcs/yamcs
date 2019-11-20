@@ -38,30 +38,36 @@
         <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators
           only.</span>
       </label>
+
       <p>&nbsp;</p>
-      <ng-container *ngIf="!user.identities || !user.identities.length">
-        <div class="section-divider">
-          <mat-divider></mat-divider>
-        </div>
-        <h4>Account</h4>
-        <label>
-          Password<br>
-          <input formControlName="password" type="password">
-          <span class="hint">Leave empty if you do not wish to change this user's password.</span>
-        </label>
-        <br>
-        <label>
-          Password confirmation<br>
-          <input formControlName="passwordConfirmation" type="password">
-        </label>
-      </ng-container>
+      <button mat-stroked-button (click)="showAddRolesDialog()">
+        <mat-icon>add</mat-icon>
+        ADD ROLES
+      </button>
+
+      <p>&nbsp;</p>
+      <table yaDataTable style="width: 100%" *ngIf="roleItems$ | async as roleItems">
+        <tr>
+          <th>Role</th>
+          <th></th>
+        </tr>
+        <tr *ngIf="!roleItems.length">
+          <td colspan="2">No rows to display</td>
+        </tr>
+        <tr *ngFor="let item of roleItems">
+          <td>{{ item.label }}</td>
+          <td style="text-align: right">
+            <app-text-action icon="delete" (click)="deleteItem(item)">DELETE</app-text-action>
+          </td>
+        </tr>
+      </table>
     </form>
 
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" (click)="location.back()">Cancel</button>
       <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!form.valid || form.pristine">SAVE CHANGES</button>
+              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
     </div>
   </div>
 </app-admin-page>
