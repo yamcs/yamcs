@@ -10,7 +10,7 @@ yamcsadmin backup restore
 
 **SYNOPSIS**
 
-    ``yamcsadmin backup restore [--backupDir DIR] [--backupId ID] [--restoreDir DIR]``
+    ``yamcsadmin backup restore --backup-dir DIR --restore-dir DIR [ID]``
 
 
 **DECRIPTION**
@@ -18,16 +18,19 @@ yamcsadmin backup restore
     Note that backups can only be restored when Yamcs is not running.
 
 
+**POSITIONAL ARGUMENTS**
+
+    .. option:: ID
+
+        Backup ID. If unspecified this defaults to the last backup.
+
+
 **OPTIONS**
 
-    .. option:: --backupDir DIR
+    .. option:: --backup-dir DIR
 
-        Backup directory.
+        Directory containg backups.
 
-    .. option:: --backupId ID
-
-        Backup ID. If not specified, defaults to the last backup.
-
-    .. option:: --restoreDir DIR
+    .. option:: --restore-dir DIR
 
         Directory where to restore the backup.

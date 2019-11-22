@@ -1,11 +1,19 @@
 package org.yamcs.yarch;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -60,6 +68,13 @@ public class YarchDatabase {
             }
         }
 
+        MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            mbeanServer.registerMBean(new BackupControl(), new ObjectName("org.yamcs:name=Backup"));
+        } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException
+                | MalformedObjectNameException e) {
+            throw new RuntimeException(e);
+        }
     }
     static Map<String, YarchDatabaseInstance> databases = new HashMap<>();
 
