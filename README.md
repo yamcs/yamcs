@@ -49,4 +49,4 @@ When Yamcs started successfully, you can visit the built-in web interface by nav
 
 ## Contributions
 
-While Yamcs is managed and developed by Space Applications Services, we also consider pull requests from other contributors. For non-trivial patches we ask you to sign our [CLA](https://www.yamcs.org/assets/Yamcs_Contributor_Agreement_v1.pdf). You need to do this only once.
+While Yamcs is managed and developed by Space Applications Services, we also consider pull requests from other contributors. For non-trivial patches we ask you to sign our [CLA](https://www.yamcs.org/assets/pdf/Yamcs_Contributor_Agreement_v2.0.pdf). You need to do this only once.
