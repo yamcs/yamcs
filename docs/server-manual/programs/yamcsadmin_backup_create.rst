@@ -10,8 +10,10 @@ yamcsadmin backup create
 
 **SYNOPSIS**
 
-    ``yamcsadmin backup create --backup-dir DIR [--data-dir DIR]
-                              [--url HOST:PORT] TABLESPACE``
+    .. code-block:: text
+    
+        yamcsadmin backup create --backup-dir DIR [--data-dir DIR]
+                                 [--url HOST:PORT] TABLESPACE
 
 
 **DESCRIPTION**

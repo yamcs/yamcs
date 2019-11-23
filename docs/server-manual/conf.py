@@ -8,6 +8,7 @@
 
 import os
 import sys
+from xml.etree import ElementTree as ET
 
 import pkg_resources
 
@@ -16,12 +17,17 @@ import pkg_resources
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('_ext'))
 
+# Read the latest Yamcs versions from the Maven pom.xml
+tree = ET.ElementTree()
+tree.parse('../../pom.xml')
+yamcs_version_el = tree.getroot().find('{http://maven.apache.org/POM/4.0.0}version')
+
 project = u'Yamcs'
 copyright = u'2019, Space Applications Services'
 author = u'Yamcs Team'
 
 # The short X.Y version
-version = u''
+version = yamcs_version_el.text
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -105,7 +111,6 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'yamcs-server-manual.tex', 'Yamcs Server Manual', 'Space Applications Services', 'manual'),
-    ('http-api/index', 'yamcs-http-api.tex', 'Yamcs HTTP API', 'Space Applications Services', 'manual'),
 ]
 
 latex_show_pagerefs = True
