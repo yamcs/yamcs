@@ -18,24 +18,24 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testStopStart() throws Exception {
-        String resp = restClient.doRequest("/instances", HttpMethod.GET, "").get();
-        ListInstancesResponse lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        byte[] resp = restClient.doRequest("/instances", HttpMethod.GET).get();
+        ListInstancesResponse lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(1, lir.getInstancesCount());
         YamcsInstance yi = lir.getInstances(0);
         assertEquals("IntegrationTest", yi.getName());
         assertEquals(InstanceState.RUNNING, yi.getState());
 
-        resp = restClient.doRequest("/instances/IntegrationTest:stop", HttpMethod.POST, "").get();
-        resp = restClient.doRequest("/instances", HttpMethod.GET, "").get();
-        lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        resp = restClient.doRequest("/instances/IntegrationTest:stop", HttpMethod.POST).get();
+        resp = restClient.doRequest("/instances", HttpMethod.GET).get();
+        lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(1, lir.getInstancesCount());
         yi = lir.getInstances(0);
         assertEquals("IntegrationTest", yi.getName());
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
-        resp = restClient.doRequest("/instances/IntegrationTest:start", HttpMethod.POST, "").get();
-        resp = restClient.doRequest("/instances", HttpMethod.GET, "").get();
-        lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        resp = restClient.doRequest("/instances/IntegrationTest:start", HttpMethod.POST).get();
+        resp = restClient.doRequest("/instances", HttpMethod.GET).get();
+        lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(1, lir.getInstancesCount());
         yi = lir.getInstances(0);
         assertEquals("IntegrationTest", yi.getName());
@@ -47,37 +47,36 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
         CreateInstanceRequest cir = CreateInstanceRequest.newBuilder().setName("inst-test1").setTemplate("templ1")
                 .putLabels("label1", "labelValue1").putLabels("label2", "labelValue2").build();
 
-        String resp = restClient.doRequest("/instances", HttpMethod.POST, toJson(cir)).get();
+        byte[] resp = restClient.doRequest("/instances", HttpMethod.POST, cir).get();
         assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
         assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.metadata").exists());
-        YamcsInstance yi = fromJson(resp, YamcsInstance.newBuilder()).build();
+        YamcsInstance yi = YamcsInstance.parseFrom(resp);
         assertEquals(InstanceState.RUNNING, yi.getState());
 
-        resp = restClient.doRequest("/instances/inst-test1:stop", HttpMethod.POST, "").get();
-        yi = fromJson(resp, YamcsInstance.newBuilder()).build();
+        resp = restClient.doRequest("/instances/inst-test1:stop", HttpMethod.POST).get();
+        yi = YamcsInstance.parseFrom(resp);
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
         assertFalse(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
         assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml.offline").exists());
 
-        resp = restClient.doRequest("/instances?filter=label:label1%3DlabelValue1", HttpMethod.GET, "").get();
-        ListInstancesResponse lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        resp = restClient.doRequest("/instances?filter=label:label1%3DlabelValue1", HttpMethod.GET).get();
+        ListInstancesResponse lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(1, lir.getInstancesCount());
         yi = lir.getInstances(0);
         assertEquals("inst-test1", yi.getName());
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
         resp = restClient
-                .doRequest("/instances?filter=label:label1%3DlabelValue1&filter=state%3Drunning", HttpMethod.GET, "")
+                .doRequest("/instances?filter=label:label1%3DlabelValue1&filter=state%3Drunning", HttpMethod.GET)
                 .get();
-        lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(0, lir.getInstancesCount());
 
-        resp = restClient.doRequest("/instances?filter=state!%3Doffline", HttpMethod.GET, "").get();
-        lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
+        resp = restClient.doRequest("/instances?filter=state!%3Doffline", HttpMethod.GET).get();
+        lir = ListInstancesResponse.parseFrom(resp);
         assertEquals(1, lir.getInstancesCount());
         yi = lir.getInstances(0);
         assertEquals("IntegrationTest", yi.getName());
     }
-
 }

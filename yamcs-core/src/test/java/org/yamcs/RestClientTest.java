@@ -2,7 +2,7 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
+import org.yamcs.client.UnauthorizedException;
 import org.yamcs.protobuf.YamcsInstance;
 
 public class RestClientTest extends AbstractIntegrationTest {
@@ -26,14 +27,14 @@ public class RestClientTest extends AbstractIntegrationTest {
             e = e1;
         }
         assertNotNull(e);
-        assertTrue(e.getMessage().contains("401 Unauthorized"));
+        assertSame(UnauthorizedException.class, e.getClass());
     }
 
     @Test
     public void testGetYamcsInstances() throws Exception {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
-        ycp.setCredentials(adminUsername, adminPassword);
         RestClient restClient = new RestClient(ycp);
+        restClient.login(adminUsername, adminPassword);
         List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
 
         assertEquals(1, instances.size());
@@ -43,8 +44,8 @@ public class RestClientTest extends AbstractIntegrationTest {
     @Test
     public void testGetBulk() throws Exception {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
-        ycp.setCredentials(adminUsername, adminPassword);
         RestClient restClient = new RestClient(ycp);
+        restClient.login(adminUsername, adminPassword);
         List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
 
         assertEquals(1, instances.size());

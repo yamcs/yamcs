@@ -65,14 +65,14 @@ public class YamcsConnectionProperties {
             relativePath = "/" + relativePath;
         }
         try {
-            return new URI((tls?"http":"https")+"://" + host + ":" + port + "/api/" + relativePath);
+            return new URI((tls ? "http" : "https") + "://" + host + ":" + port + "/api/" + relativePath);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }
     }
 
     public URI webSocketURI() {
-        String urlString = (tls?"ws":"wss")+"://" + host + ":" + port + "/_websocket";
+        String urlString = (tls ? "ws" : "wss") + "://" + host + ":" + port + "/_websocket";
         if (instance != null) {
             urlString += "/" + instance;
         }
@@ -153,13 +153,17 @@ public class YamcsConnectionProperties {
         this.port = port;
     }
 
+    public String getBaseURL() {
+        return (tls ? "https" : "http") + "://" + host + ":" + port;
+    }
+
     /**
      * Return the base REST API URL for connecting to yamcs
      *
      * @return A string of the shape http://host:port/api
      */
     public String getRestApiUrl() {
-        return (tls?"https":"http")+"://" + host + ":" + port + "/api";
+        return getBaseURL() + "/api";
     }
 
     public String getUsername() {
@@ -248,15 +252,14 @@ public class YamcsConnectionProperties {
         }
         return sb.toString();
     }
-    
+
     public boolean isTls() {
         return tls;
     }
-    
+
     @Override
     public String toString() {
         return getUrl();
     }
-
 
 }

@@ -5,10 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,19 +16,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.SSLException;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.BulkRestDataReceiver;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
+import org.yamcs.client.YamcsClient;
 import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -62,14 +58,13 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
-
 public abstract class AbstractIntegrationTest {
     final String yamcsInstance = "IntegrationTest";
     ParameterProvider parameterProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
+    YamcsClient yamcsClient;
+
     WebSocketClient wsClient;
     RestClient restClient;
 
@@ -88,27 +83,28 @@ public abstract class AbstractIntegrationTest {
     }
 
     @Before
-    public void before() throws InterruptedException, SSLException, GeneralSecurityException {
-        if (!YamcsServer.getServer().getSecurityStore().getGuestUser().isActive()) {
-            ycp.setCredentials(adminUsername, adminPassword);
-        }
+    public void before() throws ClientException {
         parameterProvider = ParameterProvider.instance;
         assertNotNull(parameterProvider);
 
         wsListener = new MyWsListener();
-        wsClient = new WebSocketClient(ycp, wsListener);
-        wsClient.setUserAgent("it-junit");
-        wsClient.connect();
-        assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
-        restClient = new RestClient(ycp);
-        restClient.setAcceptMediaType(MediaType.JSON);
-        restClient.setSendMediaType(MediaType.JSON);
-        restClient.setAutoclose(false);
+        yamcsClient = YamcsClient.newBuilder(ycp.getHost(), ycp.getPort())
+                .withUserAgent("it-junit")
+                .withInitialInstance("IntegrationTest")
+                .build();
+        yamcsClient.addWebSocketListener(wsListener);
+        if (!YamcsServer.getServer().getSecurityStore().getGuestUser().isActive()) {
+            yamcsClient.connect(adminUsername, adminPassword);
+        }
+
+        restClient = yamcsClient.getRestClient();
+        wsClient = yamcsClient.getWebSocketClient();
+
         packetGenerator = PacketProvider.instance[0].mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
         packetGenerator2 = PacketProvider.instance[1].mdbPacketGenerator;
         packetGenerator2.setGenerationTime(TimeEncoding.INVALID_INSTANT);
-        
+
         Processor.getInstance(yamcsInstance, "realtime").getParameterRequestManager().getAlarmServer().clearAll();
     }
 
@@ -163,22 +159,13 @@ public abstract class AbstractIntegrationTest {
 
     @After
     public void after() throws InterruptedException {
-        wsClient.disconnect();
+        yamcsClient.close();
         assertTrue(wsListener.onDisconnect.tryAcquire(5, TimeUnit.SECONDS));
     }
 
     @AfterClass
     public static void shutDownYamcs() throws Exception {
         YamcsServer.getServer().shutDown();
-    }
-
-    <T extends Message> String toJson(T msg) throws IOException {
-        return JsonFormat.printer().print(msg);
-    }
-
-    <T extends Message.Builder> T fromJson(String json, T builder) throws IOException {
-        JsonFormat.parser().merge(json, builder);
-        return builder;
     }
 
     void generatePkt13AndPps(String utcStart, int numPackets) {
@@ -260,7 +247,6 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void connected() {
             onConnect.release();
-
         }
 
         @Override

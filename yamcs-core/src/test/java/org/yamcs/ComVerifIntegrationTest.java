@@ -3,6 +3,7 @@ package org.yamcs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -21,15 +22,16 @@ import org.yamcs.utils.TimeEncoding;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
+
     @Test
     public void testCommandVerificationContainer() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(7);
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq)).get();
-        IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
+        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
+                HttpMethod.POST, cmdreq).get();
+        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -72,8 +74,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);
         String stop = TimeEncoding.toString(TimeEncoding.getWallclockTime());
         resp = restClient.doRequest("/archive/IntegrationTest/indexes/commands?start=" + start + "&stop=" + stop,
-                HttpMethod.GET, "").get();
-        ArchiveRecord ar = fromJson(resp, ArchiveRecord.newBuilder()).build();
+                HttpMethod.GET).get();
+        ArchiveRecord ar = ArchiveRecord.parseDelimitedFrom(new ByteArrayInputStream(resp));
         assertEquals(1, ar.getNum());
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());
     }
@@ -84,9 +86,9 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr).get();
 
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
-        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq)).get();
-        IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
+        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
+                HttpMethod.POST, cmdreq).get();
+        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);

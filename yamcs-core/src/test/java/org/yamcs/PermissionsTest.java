@@ -8,17 +8,18 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.RestClient;
+import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.IssueCommandRequest;
+import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -33,15 +34,12 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     @Test
     public void testAuthenticationWebServices() throws Exception {
-        RestClient restClient1 = getRestClient("baduser", "wrongpassword");
         try {
-            restClient1.doRequest("/user", HttpMethod.GET, "").get();
+            getRestClient("baduser", "wrongpassword");
             fail("should have thrown an exception");
-        } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("Unauthorized"));
+        } catch (UnauthorizedException e) {
+            assertTrue(true);
         }
-
-        restClient1.close();
     }
 
     @Test
@@ -54,8 +52,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
         resource += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
 
-        String response = restClient1.doRequest(resource, HttpMethod.GET, "").get();
-        ParameterData pdata = fromJson(response, ParameterData.newBuilder()).build();
+        byte[] response = restClient1.doRequest(resource, HttpMethod.GET).get();
+        ParameterData pdata = ParameterData.parseFrom(response);
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
         ParameterValue pv0 = pdata.getParameter(0);
@@ -68,8 +66,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
             resource = "/archive/IntegrationTest";
             resource += stringId;
             resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
-            response = restClient1.doRequest(resource, HttpMethod.GET, "").get();
-            pdata = fromJson(response, ParameterData.newBuilder()).build();
+            response = restClient1.doRequest(resource, HttpMethod.GET).get();
+            pdata = ParameterData.parseFrom(response);
             if (pdata.getParameterCount() == 0) {
                 throw new Exception("should get parameters");
             }
@@ -88,15 +86,16 @@ public class PermissionsTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        String resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
-                HttpMethod.POST, toJson(cmdreq)).get();
-        assertTrue(resp.contains("binary"));
+        byte[] resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
+                HttpMethod.POST, cmdreq).get();
+        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
+        assertTrue(response.hasBinary());
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
         try {
             resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
-                    HttpMethod.POST, toJson(cmdreq)).get();
+                    HttpMethod.POST, cmdreq).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof ClientException);
@@ -113,7 +112,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         BatchGetParameterValuesRequest req = BatchGetParameterValuesRequest.newBuilder().setFromCache(true)
                 .addAllId(validSubscrList.getIdList()).build();
-        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
+        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
                 .get();
 
         // Denied to subscribe to Float parameter from cache
@@ -122,7 +121,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .build();
         try {
             restClient1
-                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, toJson(req))
+                    .doRequest("/processors/IntegrationTest/realtime/parameters:batchGet", HttpMethod.POST, req)
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
@@ -142,7 +141,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .setValue(ValueHelper.newValue(5)));
         try {
             restClient1.doRequest("/processors/IntegrationTest/realtime/parameters:batchSet", HttpMethod.POST,
-                    toJson(bulkPvals.build())).get();
+                    bulkPvals.build()).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             ClientException e1 = (ClientException) e.getCause();
@@ -172,7 +171,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     }
 
-    private String updateCommandHistory(RestClient restClient1) throws Exception {
+    private byte[] updateCommandHistory(RestClient restClient1) throws Exception {
         // insert a value in the command history on dummy command id
         CommandId commandId = CommandId.newBuilder()
                 .setSequenceNumber(0)
@@ -184,19 +183,21 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
-                        HttpMethod.POST, toJson(updateHistoryRequest.build()))
+                        HttpMethod.POST, updateHistoryRequest.build())
                 .get();
     }
 
-    private RestClient getRestClient(String username, String password) {
-        YamcsConnectionProperties ycp1 = ycp.copy();
-
-        ycp1.setCredentials(username, password.toCharArray());
-        RestClient restClient1 = new RestClient(ycp1);
-        restClient1.setAcceptMediaType(MediaType.JSON);
-        restClient1.setSendMediaType(MediaType.JSON);
-        restClient1.setAutoclose(false);
-        return restClient1;
-
+    private RestClient getRestClient(String username, String password) throws ClientException {
+        RestClient restClient1 = null;
+        try {
+            YamcsConnectionProperties ycp1 = ycp.copy();
+            restClient1 = new RestClient(ycp1);
+            restClient1.login(username, password.toCharArray());
+            restClient1.setAutoclose(false);
+            return restClient1;
+        } catch (ClientException e) {
+            restClient1.close();
+            throw e;
+        }
     }
 }

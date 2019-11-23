@@ -67,7 +67,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         callback.disconnected();
 
         if (client.isReconnectionEnabled()) {
-            ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval,
+            ctx.channel().eventLoop().schedule(() -> client.connect(client.getAccessToken()),
+                    client.reconnectionInterval,
                     TimeUnit.MILLISECONDS);
         }
     }

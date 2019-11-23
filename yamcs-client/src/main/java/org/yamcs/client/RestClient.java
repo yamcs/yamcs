@@ -1,7 +1,6 @@
 package org.yamcs.client;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.MediaType;
@@ -16,6 +16,8 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
+
+import com.google.protobuf.Message;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -27,7 +29,8 @@ import io.netty.handler.codec.http.cookie.Cookie;
  *
  */
 public class RestClient {
-    final YamcsConnectionProperties connectionProperties;
+
+    final YamcsConnectionProperties yprops;
     long timeout = 5000; // timeout in milliseconds
 
     final HttpClient httpClient;
@@ -42,38 +45,45 @@ public class RestClient {
 
     /**
      * Creates a rest client that communications using protobuf
-     * 
-     * @param connectionProperties
      */
-    public RestClient(YamcsConnectionProperties connectionProperties) {
-        YamcsConnectionProperties.Protocol p = connectionProperties.getProtocol();
+    public RestClient(YamcsConnectionProperties yprops) {
+        Protocol p = yprops.getProtocol();
         if (p != null && p != Protocol.http) {
             throw new ConfigurationException(
                     "Unsupported protocol " + p + "; The only supported protocol is " + Protocol.http);
         }
-        this.connectionProperties = connectionProperties;
+        this.yprops = yprops;
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
         httpClient.setAcceptMediaType(MediaType.PROTOBUF);
         httpClient.setSendMediaType(MediaType.PROTOBUF);
     }
 
+    public synchronized void login(String username, char[] password) throws ClientException {
+        String tokenUrl = yprops.getBaseURL() + "/auth/token";
+        httpClient.login(tokenUrl, username, password);
+    }
+
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
      * 
      * @return the list of yamcs instances configured on the server
-     * @throws Exception
+     * @throws ClientException
      */
-    public List<YamcsInstance> blockingGetYamcsInstances() throws Exception {
+    public List<YamcsInstance> blockingGetYamcsInstances() throws ClientException {
         try {
             return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
-            Throwable t = e.getCause();
-            if (t instanceof Exception) {
-                throw (Exception) t;
+            if (e.getCause() instanceof ClientException) {
+                throw (ClientException) e.getCause();
             } else {
-                throw new RuntimeException(t);// should never happen
+                throw new ClientException(e.getCause());
             }
+        } catch (TimeoutException e) {
+            throw new ClientException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
     }
 
@@ -108,23 +118,22 @@ public class RestClient {
      * response will not be available.
      * 
      * @param resource
-     *            - the url and query parameters after the "/api" part.
+     *            the url and query parameters after the "/api" part.
      * @param method
-     *            - http method to use
+     *            http method to use
      * @param body
-     *            - the body of the request. Can be used even for the GET requests although strictly not allowed by the
+     *            the body of the request. Can be used even for the GET requests although strictly not allowed by the
      *            HTTP standard.
-     * @return - the response body
+     * @return the response body
      * @throws IllegalArgumentException
-     *             thrown in case the resource specification is invalid
+     *             when the resource specification is invalid
      */
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body.getBytes(),
-                    connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
-                                                                                  // since if the code is not buggy it's
+            cf = httpClient.doAsyncRequest(yprops.getRestApiUrl() + resource, method, body.getBytes());
+        } catch (ClientException | IOException | GeneralSecurityException e) {
+            // throw a RuntimeException instead since if the code is not buggy it's
             // unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
@@ -137,7 +146,21 @@ public class RestClient {
         return cf.thenApply(b -> {
             return new String(b);
         });
+    }
 
+    /**
+     * Perform asynchronously the request indicated by the HTTP method and return the result as a future providing byte
+     * array.
+     * 
+     * To be used when performing protobuf requests.
+     * 
+     * @param resource
+     * @param method
+     * @param message
+     * @return future containing protobuf encoded data
+     */
+    public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, Message message) {
+        return doBaseRequest("/api" + resource, method, message.toByteArray());
     }
 
     /**
@@ -153,12 +176,26 @@ public class RestClient {
      * @return future containing protobuf encoded data
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, byte[] body) {
+        return doBaseRequest("/api" + resource, method, body);
+    }
+
+    /**
+     * Perform asynchronously the request indicated by the HTTP method and return the result as a future providing byte
+     * array.
+     * 
+     * To be used when performing protobuf requests.
+     * 
+     * @param resource
+     * @param method
+     * @param body
+     *            protobuf encoded data.
+     * @return future containing protobuf encoded data
+     */
+    public CompletableFuture<byte[]> doBaseRequest(String resource, HttpMethod method, byte[] body) {
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl() + resource, method, body,
-                    connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) { // throw a RuntimeException instead
-                                                                                  // since if the code is not buggy it's
+            cf = httpClient.doAsyncRequest(yprops.getBaseURL() + resource, method, body);
+        } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -192,9 +229,9 @@ public class RestClient {
         CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            cf = httpClient.doBulkReceiveRequest(connectionProperties.getRestApiUrl() + resource, method,
-                    body, connectionProperties.getUsername(), connectionProperties.getPassword(), splitter);
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) {
+            cf = httpClient.doBulkReceiveRequest(yprops.getRestApiUrl() + resource, method,
+                    body, splitter);
+        } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
         if (autoclose) {
@@ -231,7 +268,7 @@ public class RestClient {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
                 if (msgLength > MAX_MESSAGE_LENGTH) {
-                    throw new ClientException("Message too long: decodedMessagLength: " + msgLength + " max length: "
+                    throw new ClientException("Message too long: decodedMessageLength: " + msgLength + " max length: "
                             + MAX_MESSAGE_LENGTH);
                 }
                 if (msgLength > writeOffset - bb.position()) {
@@ -320,9 +357,8 @@ public class RestClient {
 
     public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String resource, HttpMethod method) {
         try {
-            return httpClient.doBulkSendRequest(connectionProperties.getRestApiUrl() + resource, method,
-                    connectionProperties.getUsername(), connectionProperties.getPassword());
-        } catch (URISyntaxException | IOException | GeneralSecurityException e) {
+            return httpClient.doBulkSendRequest(yprops.getRestApiUrl() + resource, method);
+        } catch (ClientException | IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }
@@ -351,5 +387,4 @@ public class RestClient {
     public void setCaCertFile(String caCertFile) throws IOException, GeneralSecurityException {
         httpClient.setCaCertFile(caCertFile);
     }
-
 }

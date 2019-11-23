@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -15,11 +14,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.LoggingUtils;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
@@ -36,9 +33,6 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -74,8 +68,6 @@ public class CfdpIntegrationTest {
     @Before
     public void before() throws InterruptedException {
         restClient = new RestClient(ycp);
-        restClient.setAcceptMediaType(MediaType.PROTOBUF);
-        restClient.setSendMediaType(MediaType.PROTOBUF);
         restClient.setAutoclose(false);
     }
 
@@ -155,21 +147,13 @@ public class CfdpIntegrationTest {
                     CfdpPacket packet = CfdpPacket.fromTuple(tuple);
                     if (trsf == null) {
                         MetadataPacket mdp = (MetadataPacket) packet;
-                        trsf = new CfdpIncomingTransfer("test", executor, (MetadataPacket) mdp, cfdpIn, incomingBucket, null);
+                        trsf = new CfdpIncomingTransfer("test", executor, (MetadataPacket) mdp, cfdpIn, incomingBucket,
+                                null);
                     } else {
                         trsf.processPacket(packet);
                     }
                 }
             });
         }
-    }
-
-    protected static String getYamcsInstance() {
-        return "cfdp";
-    }
-
-    <T extends Message.Builder> T fromJson(String json, T builder) throws IOException {
-        JsonFormat.parser().merge(json, builder);
-        return builder;
     }
 }

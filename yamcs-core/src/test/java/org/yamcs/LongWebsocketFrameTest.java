@@ -67,8 +67,7 @@ public class LongWebsocketFrameTest {
         WebSocketClient wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.enableReconnection(false);
         wsClient.setMaxFramePayloadLength(frameSize);
-
-        wsClient.connect();
+        wsClient.connect(null);
 
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
         ParameterSubscriptionRequest req = getRequest();
