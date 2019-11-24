@@ -117,7 +117,9 @@ public class ProcessorHelper {
             if (ct != TimeEncoding.INVALID_INSTANT) {
                 ClearInfo.Builder cib = ClearInfo.newBuilder();
                 cib.setClearTime(TimeEncoding.toProtobufTimestamp(ct));
-                cib.setClearedBy(activeAlarm.getUsernameThatCleared());
+                if (activeAlarm.getUsernameThatCleared() != null) {
+                    cib.setClearedBy(activeAlarm.getUsernameThatCleared());
+                }
                 if (activeAlarm.getClearMessage() != null) {
                     cib.setClearMessage(activeAlarm.getClearMessage());
                 }
