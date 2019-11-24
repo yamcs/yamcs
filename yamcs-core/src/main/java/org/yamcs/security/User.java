@@ -35,6 +35,12 @@ public class User extends Account {
     private Map<String, String> identitiesByProvider = new HashMap<>();
     private Set<String> roles = new HashSet<>();
 
+    // Keep track of external privileges separately. It allows us to rebuild the effective
+    // privileges when the roles change.
+    private Set<SystemPrivilege> externalSystemPrivileges = new HashSet<>();
+    private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> externalObjectPrivileges = new HashMap<>();
+
+    // Effective privileges (= external privileges + privileges from directory roles
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
@@ -128,17 +134,40 @@ public class User extends Account {
         return privilegesForType != null ? privilegesForType : Collections.emptySet();
     }
 
-    public void addSystemPrivilege(SystemPrivilege systemPrivilege) {
+    public void addSystemPrivilege(SystemPrivilege systemPrivilege, boolean external) {
+        if (external) {
+            externalSystemPrivileges.add(systemPrivilege);
+        }
         systemPrivileges.add(systemPrivilege);
     }
 
-    public void addObjectPrivilege(ObjectPrivilege objectPrivilege) {
+    public void addObjectPrivilege(ObjectPrivilege objectPrivilege, boolean external) {
+        if (external) {
+            Set<ObjectPrivilege> externalPrivilegesForType = externalObjectPrivileges.get(objectPrivilege.getType());
+            if (externalPrivilegesForType == null) {
+                externalPrivilegesForType = new HashSet<>();
+                externalObjectPrivileges.put(objectPrivilege.getType(), externalPrivilegesForType);
+            }
+            externalPrivilegesForType.add(objectPrivilege);
+        }
+
         Set<ObjectPrivilege> privilegesForType = objectPrivileges.get(objectPrivilege.getType());
         if (privilegesForType == null) {
             privilegesForType = new HashSet<>();
             objectPrivileges.put(objectPrivilege.getType(), privilegesForType);
         }
         privilegesForType.add(objectPrivilege);
+    }
+
+    /**
+     * Resets user privileges to only those that are externally defined.
+     */
+    public void clearDirectoryPrivileges() {
+        systemPrivileges.clear();
+        systemPrivileges.addAll(externalSystemPrivileges);
+
+        objectPrivileges.clear();
+        objectPrivileges.putAll(externalObjectPrivileges);
     }
 
     public boolean hasSystemPrivilege(SystemPrivilege systemPrivilege) {

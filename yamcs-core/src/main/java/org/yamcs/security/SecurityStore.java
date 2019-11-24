@@ -115,12 +115,12 @@ public class SecurityStore {
                 List<String> objects = privilegeConfigs.getList(privilegeName);
                 if (privilegeName.equals("System")) {
                     for (String object : objects) {
-                        guestUser.addSystemPrivilege(new SystemPrivilege(object));
+                        guestUser.addSystemPrivilege(new SystemPrivilege(object), false);
                     }
                 } else {
                     ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
                     for (String object : objects) {
-                        guestUser.addObjectPrivilege(new ObjectPrivilege(type, object));
+                        guestUser.addObjectPrivilege(new ObjectPrivilege(type, object), false);
                     }
                 }
             }
@@ -146,6 +146,7 @@ public class SecurityStore {
     private void generatePredefinedPrivileges() {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
         systemPrivileges.add(SystemPrivilege.Command);
+        systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandQueue);
         systemPrivileges.add(SystemPrivilege.ControlLinks);
@@ -154,6 +155,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.CreateInstances);
         systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
+        systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadEvents);
         systemPrivileges.add(SystemPrivilege.ReadTables);
@@ -342,10 +344,10 @@ public class SecurityStore {
                         user.setSuperuser(true);
                     }
                     for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
-                        user.addSystemPrivilege(privilege);
+                        user.addSystemPrivilege(privilege, true);
                     }
                     for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
-                        user.addObjectPrivilege(privilege);
+                        user.addObjectPrivilege(privilege, true);
                     }
                 }
             } catch (AuthorizationException e) {

@@ -115,6 +115,13 @@ export class AppComponent implements OnDestroy {
     this.yamcs.yamcsClient.editClient(clientId, { instance });
   }
 
+  mayReadAlarms() {
+    const user = this.authService.getUser();
+    if (user) {
+      return user.hasSystemPrivilege('ReadAlarms');
+    }
+  }
+
   logout() {
     this.authService.logout(true);
   }

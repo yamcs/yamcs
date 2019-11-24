@@ -4,7 +4,7 @@
   <div class="panel-content">
     <div class="card-list-container">
       <div class="card-list">
-        <div class="card big">
+        <div class="card big" *ngIf="showPackets()">
           <mat-card>
             <mat-card-subtitle>Packets</mat-card-subtitle>
             <mat-card-content>
@@ -18,7 +18,7 @@
             </div>
           </mat-card>
         </div>
-        <div class="card">
+        <div class="card" *ngIf="showAlarms()">
           <mat-card>
             <mat-card-subtitle>Alarms</mat-card-subtitle>
             <div class="table-wrapper">
@@ -27,7 +27,9 @@
                   Unacknowledged:<br>
                   <table yaDataTable>
                     <tr *ngFor="let alarm of alarms">
-                      <td><app-alarm-level [level]="alarm.severity"></app-alarm-level></td>
+                      <td>
+                        <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+                      </td>
                       <td [ngSwitch]="alarm.type">
                         <ng-container *ngSwitchCase="'PARAMETER'">
                           <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace + '/' + alarm.id.name]"
@@ -80,7 +82,7 @@
             </div>
           </mat-card>
         </div>
-        <div class="card" *ngIf="info$ | async as info">
+        <!--div class="card" *ngIf="info$ | async as info">
           <mat-card>
             <mat-card-subtitle>Server Info</mat-card-subtitle>
             <mat-list dense>
@@ -114,7 +116,7 @@
               </table>
             </mat-list>
           </mat-card>
-        </div>
+        </div-->
         <ng-container *ngIf="showMDB()">
           <div class="card" *ngIf="mdb$ | async as mdb">
             <mat-card>
@@ -122,33 +124,28 @@
               <dl class="dl-horizontal">
                 <dt>Parameters:</dt>
                 <dd>
-                  <a class="ya-link" routerLink="/mdb/parameters" [queryParams]="{instance: instance.name}">{{ mdb.parameterCount }}</a>
+                  <a class="ya-link" routerLink="/mdb/parameters"
+                     [queryParams]="{instance: instance.name}">{{ mdb.parameterCount }}</a>
                 </dd>
                 <dt>Containers:</dt>
                 <dd>
-                  <a class="ya-link" routerLink="/mdb/containers" [queryParams]="{instance: instance.name}">{{ mdb.containerCount }}</a>
+                  <a class="ya-link" routerLink="/mdb/containers"
+                     [queryParams]="{instance: instance.name}">{{ mdb.containerCount }}</a>
                 </dd>
                 <dt>Commands:</dt>
                 <dd>
-                  <a class="ya-link" routerLink="/mdb/commands" [queryParams]="{instance: instance.name}">{{ mdb.commandCount }}</a>
+                  <a class="ya-link" routerLink="/mdb/commands"
+                     [queryParams]="{instance: instance.name}">{{ mdb.commandCount }}</a>
                 </dd>
                 <dt>Algorithms:</dt>
                 <dd>
-                  <a class="ya-link" routerLink="/mdb/algorithms" [queryParams]="{instance: instance.name}">{{ mdb.algorithmCount }}</a>
+                  <a class="ya-link" routerLink="/mdb/algorithms"
+                     [queryParams]="{instance: instance.name}">{{ mdb.algorithmCount }}</a>
                 </dd>
               </dl>
             </mat-card>
           </div>
         </ng-container>
-        <div class="card">
-          <mat-card></mat-card>
-        </div>
-        <div class="card">
-          <mat-card></mat-card>
-        </div>
-        <div class="card">
-          <mat-card></mat-card>
-        </div>
       </div>
     </div>
   </div>

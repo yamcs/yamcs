@@ -273,6 +273,8 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}", method = "PATCH")
     public void patchAlarm(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlAlarms);
+
         Processor processor = verifyProcessor(req.getRouteParam("instance"), req.getRouteParam("processor"));
         String alarmName = req.getRouteParam("name");
         if (!alarmName.startsWith("/")) {
@@ -321,7 +323,7 @@ public class ProcessorRestHandler extends RestHandler {
                 alarmServer.acknowledge(activeAlarm, username, processor.getCurrentTime(), comment);
                 break;
             case "shelved":
-                long shelveDuration = request.hasShelveDuration()?request.getShelveDuration():-1;
+                long shelveDuration = request.hasShelveDuration() ? request.getShelveDuration() : -1;
                 alarmServer.shelve(activeAlarm, username, comment, shelveDuration);
                 break;
             case "unshelved":

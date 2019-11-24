@@ -14,6 +14,7 @@ import java.util.Objects;
 public class SystemPrivilege {
 
     public static final SystemPrivilege ControlProcessor = new SystemPrivilege("ControlProcessor");
+    public static final SystemPrivilege ReadCommandHistory = new SystemPrivilege("ReadCommandHistory");
     public static final SystemPrivilege ModifyCommandHistory = new SystemPrivilege("ModifyCommandHistory");
     public static final SystemPrivilege ControlCommandQueue = new SystemPrivilege("ControlCommandQueue");
 
@@ -27,6 +28,8 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege GetMissionDatabase = new SystemPrivilege("GetMissionDatabase");
 
+    public static final SystemPrivilege ReadAlarms = new SystemPrivilege("ReadAlarms");
+    public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");
     public static final SystemPrivilege ControlArchiving = new SystemPrivilege("ControlArchiving");
     public static final SystemPrivilege ControlLinks = new SystemPrivilege("ControlLinks");
     public static final SystemPrivilege ControlServices = new SystemPrivilege("ControlServices");

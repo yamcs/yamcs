@@ -94,6 +94,21 @@ public class Directory {
     }
 
     public synchronized void updateUserProperties(User user) throws IOException {
+
+        // Recalculate effective privileges
+        user.clearDirectoryPrivileges();
+        for (String roleName : user.getRoles()) {
+            Role role = getRole(roleName);
+            if (role != null) {
+                for (SystemPrivilege privilege : role.getSystemPrivileges()) {
+                    user.addSystemPrivilege(privilege, false);
+                }
+                for (ObjectPrivilege privilege : role.getObjectPrivileges()) {
+                    user.addObjectPrivilege(privilege, false);
+                }
+            }
+        }
+
         users.put(user.getName(), user);
         persistChanges();
     }

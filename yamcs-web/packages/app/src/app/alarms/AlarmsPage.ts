@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Alarm, EditAlarmOptions, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
@@ -55,6 +56,7 @@ export class AlarmsPage implements OnDestroy {
     private router: Router,
     title: Title,
     private dialog: MatDialog,
+    private authService: AuthService,
   ) {
     title.setTitle('Alarms');
     this.instance = this.yamcs.getInstance();
@@ -166,6 +168,10 @@ export class AlarmsPage implements OnDestroy {
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
       this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
     }
+  }
+
+  mayControlAlarms() {
+    return this.authService.getUser()!.hasSystemPrivilege('ControlAlarms');
   }
 
   private updateURL() {

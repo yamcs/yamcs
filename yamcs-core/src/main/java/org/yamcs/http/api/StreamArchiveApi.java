@@ -735,7 +735,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadPacket, request.getNameList());
         Set<String> nameSet = new HashSet<>(request.getNameList());
         if (nameSet.isEmpty()) {
-            nameSet.addAll(getTmPacketNames(instance, ctx.user));
+            for (String packetName : getTmPacketNames(instance, ctx.user)) {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
+                    nameSet.add(packetName);
+                }
+            }
+        }
+        if (nameSet.isEmpty()) {
+            // No permissions for any packet
+            observer.complete(ListPacketsResponse.getDefaultInstance());
+            return;
         }
 
         PacketPageToken nextToken = null;

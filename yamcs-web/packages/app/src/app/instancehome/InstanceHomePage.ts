@@ -27,7 +27,7 @@ export class InstanceHomePage implements OnDestroy {
   info$: Promise<GeneralInfo>;
   mdb$: Promise<MissionDatabase>;
 
-  constructor(yamcs: YamcsService, authService: AuthService, title: Title) {
+  constructor(yamcs: YamcsService, private authService: AuthService, title: Title) {
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
@@ -53,6 +53,14 @@ export class InstanceHomePage implements OnDestroy {
 
   showMDB() {
     return this.user.hasSystemPrivilege('GetMissionDatabase');
+  }
+
+  showAlarms() {
+    return this.user.hasSystemPrivilege('ReadAlarms');
+  }
+
+  showPackets() {
+    return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }
 
   ngOnDestroy() {

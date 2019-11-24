@@ -21,6 +21,14 @@ export class User {
     return this.userInfo.superuser || false;
   }
 
+  getGroups() {
+    return this.userInfo.groups || [];
+  }
+
+  getRoles() {
+    return this.userInfo.roles || [];
+  }
+
   getSystemPrivileges() {
     return this.userInfo.systemPrivilege || [];
   }
@@ -47,6 +55,18 @@ export class User {
             return true;
           }
         }
+      }
+    }
+    return false;
+  }
+
+  hasAnyObjectPrivilegeOfType(type: string) {
+    if (this.userInfo.superuser) {
+      return true;
+    }
+    for (const p of this.getObjectPrivileges()) {
+      if (p.type === type) {
+        return true;
       }
     }
     return false;

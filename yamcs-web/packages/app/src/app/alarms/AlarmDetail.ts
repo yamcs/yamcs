@@ -15,6 +15,9 @@ export class AlarmDetail {
   @Input()
   instance: Instance;
 
+  @Input()
+  mayControl = false;
+
   @Output()
   acknowledgeAlarm = new EventEmitter<Alarm>();
 

@@ -61,12 +61,14 @@ This file defines which privileges belong to which roles.
       WriteParameter: []
       ReadPacket: [".*"]
       Command: [".*"]
+      CommandHistory: [".*"]
       System:
         - ControlProcessor
         - ModifyCommandHistory
         - ControlCommandQueue
         - Command
         - GetMissionDatabase
+        - ControlAlarms
         - ControlArchiving
 
 This example specifies one role ``Operator``. It also demonstrates the use of regular expressions to grant a set of object privileges.
