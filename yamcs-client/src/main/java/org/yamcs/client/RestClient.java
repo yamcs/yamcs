@@ -64,6 +64,11 @@ public class RestClient {
         httpClient.login(tokenUrl, username, password);
     }
 
+    public synchronized void loginWithAuthorizationCode(String authorizationCode) throws ClientException {
+        String tokenUrl = yprops.getBaseURL() + "/auth/token";
+        httpClient.loginWithAuthorizationCode(tokenUrl, authorizationCode);
+    }
+
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
      * 

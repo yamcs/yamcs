@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
+import org.yamcs.client.SpnegoUtils.SpnegoException;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -25,6 +26,7 @@ import org.yamcs.protobuf.YamcsInstance;
 import com.google.protobuf.MessageLite;
 
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 
 public class YamcsClient {
 
@@ -91,6 +93,28 @@ public class YamcsClient {
         return connect(null, false);
     }
 
+    public synchronized ConnectionInfo connectWithKerberos() throws ClientException {
+        pollServer();
+        try {
+            String authorizationCode = SpnegoUtils.fetchAuthenticationCode(host, port, tls);
+            restClient.loginWithAuthorizationCode(authorizationCode);
+        } catch (SpnegoException e) {
+            for (ConnectionListener cl : connectionListeners) {
+                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+            }
+            log.warn("Connection to " + host + ":" + port + " failed", e);
+            throw new UnauthorizedException();
+        } catch (ClientException e) {
+            for (ConnectionListener cl : connectionListeners) {
+                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+            }
+            log.warn("Connection to " + host + ":" + port + " failed", e);
+            throw e;
+        }
+        String accessToken = restClient.httpClient.getCredentials().getAccessToken();
+        return connect(accessToken, true);
+    }
+
     /**
      * Login to the server with user/password credential, and establish a live communication channel.
      */
@@ -119,12 +143,19 @@ public class YamcsClient {
                 restClient.doBaseRequest("/auth", HttpMethod.GET, null).get(5, TimeUnit.SECONDS);
                 return; // Server up!
             } catch (ExecutionException e) {
-                for (ConnectionListener cl : connectionListeners) {
-                    cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
-                }
-                log.warn("Connection to " + host + ":" + port + " failed", e);
-                if (e.getCause() instanceof UnauthorizedException) {
-                    throw (UnauthorizedException) e.getCause();
+                Throwable cause = e.getCause();
+                if (cause instanceof UnauthorizedException) {
+                    for (ConnectionListener cl : connectionListeners) {
+                        cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                        cl.connectionFailed(host + ":" + port, (UnauthorizedException) cause);
+                    }
+                    log.warn("Connection to " + host + ":" + port + " failed", cause);
+                    throw (UnauthorizedException) cause; // Jump out
+                } else {
+                    for (ConnectionListener cl : connectionListeners) {
+                        cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
+                    }
+                    log.warn("Connection to " + host + ":" + port + " failed", cause);
                 }
             } catch (TimeoutException e) {
                 for (ConnectionListener cl : connectionListeners) {
@@ -138,7 +169,7 @@ public class YamcsClient {
                 }
             }
 
-            if (i < connectionAttempts) {
+            if (i + 1 < connectionAttempts) {
                 try {
                     Thread.sleep(retryDelay);
                 } catch (InterruptedException e1) {
@@ -148,12 +179,17 @@ public class YamcsClient {
         }
 
         connectionDone = null;
-        for (ConnectionListener cl : connectionListeners) {
-            cl.log(connectionAttempts + " connection attempts failed, giving up.");
-            cl.connectionFailed(host + ":" + port,
-                    new ClientException(connectionAttempts + " connection attempts failed, giving up."));
+        if (connectionAttempts > 1) {
+            ClientException e = new ClientException(connectionAttempts + " connection attempts failed, giving up.");
+            for (ConnectionListener cl : connectionListeners) {
+                cl.log(connectionAttempts + " connection attempts failed, giving up.");
+                cl.connectionFailed(host + ":" + port, e);
+            }
+            log.warn(connectionAttempts + " connection attempts failed, giving up.");
+            throw e;
+        } else {
+            throw new ClientException("Server is not available");
         }
-        log.warn(connectionAttempts + " connection attempts failed, giving up.");
     }
 
     /**
@@ -206,12 +242,19 @@ public class YamcsClient {
             connectionDone = null;
             throw new ClientException("Cannot connect WebSocket client", e);
         } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
             for (ConnectionListener cl : connectionListeners) {
-                cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
+                cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", e);
+            log.warn("Connection to " + host + ":" + port + " failed", cause);
             connectionDone = null;
-            throw new ClientException(e.getCause());
+            if (cause instanceof WebSocketHandshakeException && cause.getMessage().contains("401")) {
+                throw new UnauthorizedException();
+            } else if (cause instanceof ClientException) {
+                throw (ClientException) cause;
+            } else {
+                throw new ClientException(cause);
+            }
         }
     }
 

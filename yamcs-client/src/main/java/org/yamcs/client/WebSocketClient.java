@@ -193,21 +193,19 @@ public class WebSocketClient {
         });
 
         log.info("WebSocket Client connecting");
-        ChannelFuture future = bootstrap.connect(uri.getHost(), uri.getPort());
-        future.addListener((ChannelFuture future1) -> {
-            if (future1.isSuccess()) {
-                nettyChannel = future1.channel();
-            } else {
-                callback.connectionFailed(future1.cause());
-                if (enableReconnection.get()) {
-                    log.info("Attempting reconnect..");
-                    callback.connecting();
-                    group.schedule(() -> createBootstrap(accessToken), reconnectionInterval, TimeUnit.MILLISECONDS);
-                }
+        try {
+            nettyChannel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
+        } catch (Exception e) {
+            callback.connectionFailed(e);
+            if (enableReconnection.get()) {
+                log.info("Attempting reconnect..");
+                callback.connecting();
+                group.schedule(() -> createBootstrap(accessToken), reconnectionInterval, TimeUnit.MILLISECONDS);
             }
-        });
+        }
 
-        return future;
+        // Finish handshake, this may still catch something like a 401
+        return webSocketHandler.handshakeFuture();
     }
 
     /**

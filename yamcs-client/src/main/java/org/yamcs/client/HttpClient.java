@@ -117,6 +117,28 @@ public class HttpClient {
         }
     }
 
+    public synchronized void loginWithAuthorizationCode(String tokenUrl, String authorizationCode)
+            throws ClientException {
+        this.tokenUrl = tokenUrl;
+        Map<String, String> attrs = new HashMap<>();
+        attrs.put("grant_type", "authorization_code");
+        attrs.put("code", authorizationCode);
+
+        try {
+            credentials = requestTokens(tokenUrl, attrs).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof ClientException) {
+                throw (ClientException) e.getCause();
+            } else {
+                throw new ClientException(e.getCause());
+            }
+        } catch (IOException | GeneralSecurityException e) {
+            throw new ClientException(e);
+        }
+    }
+
     public synchronized void refreshAccessToken() throws ClientException {
         Map<String, String> attrs = new HashMap<>();
         attrs.put("grant_type", "refresh_token");
