@@ -19,6 +19,7 @@ service Cop1Api {
 	rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {
         option (yamcs.api.route) = {
             post: "/api/cop1/{instance}/{name}:initialize"
+            body: "*"
         };
     }
     
@@ -42,7 +43,7 @@ service Cop1Api {
     rpc SetConfig(SetConfigRequest) returns (google.protobuf.Empty) {
         option (yamcs.api.route) = {
             patch: "/api/cop1/{instance}/{name}/config"
-            body: "cop1Config"
+            body: "*"
         };
     }
     
@@ -129,6 +130,10 @@ message Clcw {
 
 //this message will be sent periodically via the websocket
 message Cop1Status {
+     //link name for which this status applies 
+     // it is present when this message is sent over the websocket as there might be multiple COP1 links subscribed
+    optional string name = 11;
+    
     //if false, all frames are immediately transmitted (i.e. COP1 is disabled)
     optional bool cop1Active = 1;
     

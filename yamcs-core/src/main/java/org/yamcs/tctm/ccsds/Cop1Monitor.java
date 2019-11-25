@@ -1,7 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
 
-interface Cop1Monitor {
+public interface Cop1Monitor {
     public enum AlertType {
         LOCKOUT("Lockout detected"), //
         SYNCH("Synchronization Lost"), CLCW("Invalid CLCW received"), //
@@ -39,4 +39,9 @@ interface Cop1Monitor {
      * @param newState 
      */
     void stateChanged(int oldState, int newState);
+    
+    /**
+     * Called when the COP1 has been disabled
+     */
+    void disabled();
 }

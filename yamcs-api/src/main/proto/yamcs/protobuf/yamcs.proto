@@ -204,6 +204,8 @@ enum ProtoDataType {
   CONNECTION_INFO = 19;
   INSTANCE = 20;
   STREAM_EVENT = 21;
+  COP1_STATUS = 22;
+  
   
   EXTENSION_DATA = 100;
 }

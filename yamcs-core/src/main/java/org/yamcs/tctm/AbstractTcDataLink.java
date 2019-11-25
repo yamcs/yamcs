@@ -202,4 +202,8 @@ public abstract class AbstractTcDataLink extends AbstractService
                 currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
     }
+    
+    public String getYamcsInstance() {
+        return yamcsInstance;
+    }
 }

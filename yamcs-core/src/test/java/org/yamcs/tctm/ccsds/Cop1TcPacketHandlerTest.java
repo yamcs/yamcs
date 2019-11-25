@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -43,7 +42,7 @@ public class Cop1TcPacketHandlerTest {
     public static void beforeClass() {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 6);
-      
+
         m.put("maxFrameLength", 1000);
         m.put("errorCorrection", "NONE");
         Map<String, Object> vc0 = new HashMap<>();
@@ -53,12 +52,12 @@ public class Cop1TcPacketHandlerTest {
         vc0.put("vcId", 0);
         vc0.put("service", "PACKET");
         vc0.put("clcwStream", "clcw");
-        
+
         tcParams = new TcManagedParameters(YConfiguration.wrap(m));
         tcFrameFactory = new TcFrameFactory(tcParams);
         TimeEncoding.setUp();
 
-        //org.yamcs.LoggingUtils.enableLogging();
+        // org.yamcs.LoggingUtils.enableLogging();
     }
 
     @Before
@@ -66,8 +65,8 @@ public class Cop1TcPacketHandlerTest {
         executor = new ScheduledThreadPoolExecutor(1);
         monitor = new MyMonitor();
 
-        fop1ph = new Cop1TcPacketHandler("test", "test", tcParams.getVcParams(0),
-                executor, monitor);
+        fop1ph = new Cop1TcPacketHandler("test", "test", tcParams.getVcParams(0), executor);
+        fop1ph.addMonitor(monitor);
         fop1ph.setCommandHistoryPublisher(new TcpTcDataLinkTest.MyPublisher(new Semaphore(0)));
 
         dataAvailable = new Semaphore(0);
@@ -176,7 +175,6 @@ public class Cop1TcPacketHandlerTest {
         assertEquals(AlertType.T1, monitor.alerts.get(0));
         verifyState(6);
 
-
         fop1ph.initiateAD(true);
         verifyState(4);
         fop1ph.onCLCW(getCLCW(false, false, false, 10));
@@ -277,7 +275,7 @@ public class Cop1TcPacketHandlerTest {
         // send the CLCW with the good nR
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
         assertNotNull(fop1ph.getFrame());
-        
+
         TcTransferFrame tf0 = sendTcInOneFrame(89);
         fop1ph.onCLCW(getCLCW(false, false, false, 4));
 
@@ -301,7 +299,7 @@ public class Cop1TcPacketHandlerTest {
         // send the CLCW with the good nR
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
         synchWithExecutor();
-        
+
         assertNotNull(fop1ph.getFrame());
 
         TcTransferFrame tf0 = sendTcInOneFrame(89);
@@ -319,7 +317,7 @@ public class Cop1TcPacketHandlerTest {
     public void test2frames_OneAckMissing() throws Exception {
         fop1ph.initiateADWithVR(3).get();
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
-        
+
         assertNotNull(fop1ph.getFrame());
 
         TcTransferFrame tf0 = sendTcInOneFrame(89);
@@ -337,7 +335,7 @@ public class Cop1TcPacketHandlerTest {
         fop1ph.initiateADWithVR(3).get();
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
         synchWithExecutor();
-        
+
         assertNotNull(fop1ph.getFrame());
 
         TcTransferFrame tf0 = sendTcInOneFrame(89);
@@ -452,7 +450,7 @@ public class Cop1TcPacketHandlerTest {
         fop1ph.initiateADWithVR(3).get();
         fop1ph.onCLCW(getCLCW(false, false, false, 3));
         synchWithExecutor();
-        
+
         assertNotNull(fop1ph.getFrame());
 
         sendTcInOneFrame(89);
@@ -475,7 +473,7 @@ public class Cop1TcPacketHandlerTest {
         // retransmit without wait
         fop1ph.onCLCW(getCLCW(false, false, true, 4));
         synchWithExecutor();
-        
+
         verifyState(2);
 
         l = getFrames(1, 1000);
@@ -609,7 +607,7 @@ public class Cop1TcPacketHandlerTest {
         assertEquals(1, monitor.state);
 
         fop1ph.setWindowWidth(1);
-       
+
         synchWithExecutor();
         assertEquals(8, errCount.get());
     }
@@ -705,14 +703,17 @@ public class Cop1TcPacketHandlerTest {
         public void alert(AlertType alert) {
             alerts.add(alert);
             alertSema.release();
-            //System.out.println("MONITOR: alert: " + alert);
+            // System.out.println("MONITOR: alert: " + alert);
         }
 
         public void stateChanged(int oldState, int newState) {
-            //System.out.println("MONITOR: Sate changed, new state: " + newState);
+            // System.out.println("MONITOR: Sate changed, new state: " + newState);
             this.state = newState;
         }
 
+        @Override
+        public void disabled() {
+        }
     }
 
     private PreparedCommand makeTc(boolean bypass, long t, int seqNum, int length) {

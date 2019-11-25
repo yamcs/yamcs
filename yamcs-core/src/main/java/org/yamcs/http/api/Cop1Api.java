@@ -28,6 +28,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     @Override
     public void initialize(Context ctx, InitializeRequest request, Observer<Empty> observer) {
         Cop1TcPacketHandler cop1Link = verifyCop1Link(request.getInstance(), request.getName());
+        
         if(!request.hasType()) {
             throw new BadRequestException("No initialization type specified");
         }

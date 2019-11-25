@@ -44,22 +44,22 @@ public class TcManagedParameters extends UplinkManagedParameters {
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
             TcVcManagedParameters vmp = new TcVcManagedParameters(yc, this);
-            if(vmp.useCop1 && vcParams.stream().anyMatch(p -> p.useCop1 && p.vcId == vmp.vcId)) {
-                throw new ConfigurationException("Cannot have two data links for the same vcId " + vmp.vcId+" and both using COP1");
+            if (vmp.useCop1 && vcParams.stream().anyMatch(p -> p.useCop1 && p.vcId == vmp.vcId)) {
+                throw new ConfigurationException(
+                        "Cannot have two data links for the same vcId " + vmp.vcId + " and both using COP1");
             }
             if (vmp.maxFrameLength == -1) {
                 vmp.maxFrameLength = maxFrameLength;
             }
-            if(vmp.linkName == null) {
-                vmp.linkName = "vc"+vmp.vcId;
+            if (vmp.linkName == null) {
+                vmp.linkName = "vc" + vmp.vcId;
                 int c = 0;
-                while (vcParams.stream().anyMatch(p->p.linkName.equals(vmp.linkName))) {
+                while (vcParams.stream().anyMatch(p -> p.linkName.equals(vmp.linkName))) {
                     c++;
-                    vmp.linkName = "vc"+vmp.vcId+"_"+c;
+                    vmp.linkName = "vc" + vmp.vcId + "_" + c;
                 }
             }
-            
-            
+
             vcParams.add(vmp);
         }
     }
@@ -74,13 +74,13 @@ public class TcManagedParameters extends UplinkManagedParameters {
             ScheduledThreadPoolExecutor executor) {
         List<VcUplinkHandler> l = new ArrayList<>();
         for (TcVcManagedParameters vmp : vcParams) {
-            String linkName = parentLinkName + "."+vmp.linkName;
+            String linkName = parentLinkName + "." + vmp.linkName;
             switch (vmp.service) {
             case PACKET:
                 VcUplinkHandler vcph;
                 if (vmp.useCop1) {
-                    vcph = new Cop1TcPacketHandler(yamcsInstance, linkName, vmp, executor,
-                            new Cop1MonitorImpl(yamcsInstance, linkName));
+                    vcph = new Cop1TcPacketHandler(yamcsInstance, linkName, vmp, executor);
+                    ((Cop1TcPacketHandler) vcph).addMonitor(new Cop1MonitorImpl(yamcsInstance, linkName));
                 } else {
                     vcph = new TcPacketHandler(yamcsInstance, linkName, vmp);
                 }
@@ -94,13 +94,13 @@ public class TcManagedParameters extends UplinkManagedParameters {
     }
 
     public class TcVcManagedParameters extends VcUplinkManagedParameters {
-        
+
         ServiceType service;
         boolean useCop1;
         int maxFrameLength = -1;
         public boolean blocking;
         public boolean bdAbsolutePriority;
-        //this is used to compose the link name, if not set it will be vc<x>
+        // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
 
         public TcVcManagedParameters(YConfiguration config, TcManagedParameters tmp) {

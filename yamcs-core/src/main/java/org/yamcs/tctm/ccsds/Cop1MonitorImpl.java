@@ -39,4 +39,9 @@ public class Cop1MonitorImpl implements Cop1Monitor {
         eventProducer.sendInfo("STATE_CHANGE", "state changed from "+FOP1_STATE[oldState]+" to "+FOP1_STATE[newState]);
     }
 
+    @Override
+    public void disabled() {
+        eventProducer.sendInfo("DISABLED", "COP1 disabled");
+    }
+
 }

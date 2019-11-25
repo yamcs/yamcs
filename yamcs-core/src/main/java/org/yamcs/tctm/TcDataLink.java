@@ -11,8 +11,6 @@ import org.yamcs.commanding.PreparedCommand;
  */
 public interface TcDataLink extends Link {
     
-    
-    
     void sendTc(PreparedCommand preparedCommand);
 
     void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher);

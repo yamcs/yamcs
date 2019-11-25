@@ -8,6 +8,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.Cop1Status;
 import org.yamcs.protobuf.LinkEvent;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -90,6 +91,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setTmPacket((TmPacketData) message);
         } else if (dataType == ProtoDataType.CONNECTION_INFO) {
             responseb.setConnectionInfo((ConnectionInfo) message);
+        } else if (dataType == ProtoDataType.COP1_STATUS) {
+            responseb.setCop1Status((Cop1Status) message);
         } else if (dataType == ProtoDataType.EXTENSION_DATA) {
             responseb.setExtensionData((WebSocketExtensionData) message);
         } else {

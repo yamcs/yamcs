@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -146,19 +147,18 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     private QueuedFrame pendingBCFrame;
 
-    final Cop1Monitor monitor;
+    CopyOnWriteArrayList<Cop1Monitor> monitors = new CopyOnWriteArrayList<>();
 
     final int vcId;
     String clcwStreamName;
     ClcwStreamHelper clcwHelper;
 
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
-            TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor, Cop1Monitor monitor) {
+            TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
         super(yamcsInstance, linkName, vmp.config);
 
         this.frameFactory = vmp.getFrameFactory();
         this.executor = executor;
-        this.monitor = monitor;
         this.vmp = vmp;
         this.vcId = vmp.vcId;
         outQueue = new ArrayBlockingQueue<>(OUT_QUEUE_SIZE);
@@ -166,6 +166,15 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         this.initialClcwWait = 1000 * vmp.config.getInt("initialClcwWait", -1);
     }
 
+    public void addMonitor(Cop1Monitor monitor) {
+        monitors.add(monitor);
+    }
+
+    public void removeMonitor(Cop1Monitor monitor) {
+        monitors.remove(monitor);
+    }
+
+    
     @Override
     public void sendTc(PreparedCommand pc) {
         if (disabled) {
@@ -531,6 +540,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     int _ss = suspendState;
                     doResume();
                     changeState(_ss);
+                    cf.complete(null);
                 }
             }
         });
@@ -806,7 +816,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         if (oldState != newState) {
             state = newState;
             externalState = state;
-            monitor.stateChanged(oldState, newState);
+            monitors.forEach(m-> m.stateChanged(oldState, newState));
         }
     }
 
@@ -869,7 +879,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     lookForFDU();
                 } else if (state == 4) {
                     suspendState = 4;
-                    monitor.suspended(suspendState);
+                    monitors.forEach(m-> m.suspended(suspendState));
                     changeState(6);
                 } else if (state == 5) {
                     initiateBCRetransmission();
@@ -886,7 +896,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 if (state <= 4) {
                     log.debug("VC {} FOP-1 suspended", vcId);
                     suspendState = state;
-                    monitor.suspended(suspendState);
+                    monitors.forEach(m-> m.suspended(suspendState));
                     changeState(6);
                 } else if (state == 5) {
                     alert(AlertType.T1);
@@ -953,7 +963,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             }
             i = incr(i);
         }
-        monitor.alert(alert);
+        monitors.forEach(m-> m.alert(alert));
     }
 
     // check that nR is in between nnR and vS (modulo 256)
@@ -1033,6 +1043,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         purgeSentQueue();
         this.cop1Active = false;
         this.bypassAll = bypassAll;
+        monitors.forEach(m-> m.disabled());
     }
 
     /**
@@ -1074,6 +1085,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     public CompletableFuture<Void> setConfig(Cop1Config config) {
         return doInExecutor(cf -> {
+            System.out.println(" =--------------- cop1 config: "+config+" hasT1: "+config.hasT1());
             if (config.hasBdAbsolutePriority()) {
                 bdAbsolutePriority = config.getBdAbsolutePriority();
             }
@@ -1089,6 +1101,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             if (config.hasT1()) {
                 setT1Initial(config.getT1());
             }
+            cf.complete(null);
         });
     }
 
@@ -1116,7 +1129,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     private Cop1Status _getCop1Status() {
         Cop1Status.Builder cb = Cop1Status.newBuilder().setCop1Active(cop1Active).setNnR(nnR)
                 .setTxCount(txCount).setWaitQueueNumTC(waitQueue.size())
-                .setSentQueueNumFrames(sentQueueSize()).setOutQueueNumFrames(outQueue.size());
+                .setSentQueueNumFrames(sentQueueSize()).setOutQueueNumFrames(outQueue.size())
+                .setVS(vS);
         if (cop1Active) {
             if (suspendState > 0) {
                 cb.setState(Cop1State.SUSPENDED);
