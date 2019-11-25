@@ -112,6 +112,14 @@ public class SyslogHandler extends Handler {
             buf.append(": ");
             buf.append(record.getMessage());
         }
+        if (record.getThrown() != null) {
+            buf.append(" [");
+            buf.append(record.getThrown().getClass().getName());
+            if (record.getThrown().getMessage() != null) {
+                buf.append(": ").append(record.getThrown().getMessage());
+            }
+            buf.append("]");
+        }
 
         byte[] b = buf.toString().getBytes();
         DatagramPacket packet = new DatagramPacket(b, b.length, host, port);

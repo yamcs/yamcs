@@ -10,11 +10,11 @@ yamcsadmin backup list
 
 **SYNOPSIS**
 
-    ``yamcsadmin backup list [--backupDir DIR]``
+    ``yamcsadmin backup list --backup-dir DIR``
 
 
 **OPTIONS**
 
-    .. option:: --backupDir DIR
+    .. option:: --backup-dir DIR
 
-        Backup directory.
+        Directory containing backups.

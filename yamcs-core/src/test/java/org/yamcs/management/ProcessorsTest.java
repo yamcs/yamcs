@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -24,12 +22,11 @@ import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.RestExceptionData;
 import org.yamcs.client.ProcessorControlClient;
 import org.yamcs.client.ProcessorListener;
-import org.yamcs.client.YamcsConnector;
+import org.yamcs.client.YamcsClient;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ServiceState;
@@ -55,10 +52,12 @@ public class ProcessorsTest {
 
     @Test
     public void createProcessorWithoutClient() throws Exception {
-        YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
-        ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
+        YamcsClient client = YamcsClient.newBuilder("localhost", 28090)
+                .withInitialInstance("yproctest0")
+                .build();
+        ProcessorControlClient ccc = new ProcessorControlClient(client);
         ccc.setProcessorListener(new MyListener("YProcessorsTest"));
-        yconnector.connect(YamcsConnectionProperties.parse("http://localhost:28090/")).get(5, TimeUnit.SECONDS);
+        client.connectAnonymously();
 
         try {
             ccc.createProcessor("yproctest0", "test1", "dummy", null, false, new int[] { 10, 14 }).get();
@@ -67,18 +66,19 @@ public class ProcessorsTest {
             RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
             assertEquals("createProcessor invoked with a list full of invalid client ids", excData.getMessage());
         }
-        yconnector.disconnect();
+        client.close();
     }
 
     @Test
     public void createAndSwitchProcessor() throws Exception {
-        YamcsConnector yconnector = new YamcsConnector("ProcessorTest-randname1");
-        ProcessorControlClient client1 = new ProcessorControlClient(yconnector);
+        YamcsClient yamcsClient = YamcsClient.newBuilder("localhost", 28090)
+                .withUserAgent("ProcessorTest-randname1")
+                .withInitialInstance("yproctest1")
+                .build();
+        ProcessorControlClient client1 = new ProcessorControlClient(yamcsClient);
         MyListener ml = new MyListener("yproctest1");
         client1.setProcessorListener(ml);
-        Future<YamcsConnectionProperties> f = yconnector
-                .connect(YamcsConnectionProperties.parse("http://localhost:28090/yproctest1"));
-        f.get(5, TimeUnit.SECONDS);
+        yamcsClient.connectAnonymously();
 
         Thread.sleep(3000);
 
@@ -111,7 +111,7 @@ public class ProcessorsTest {
         processor1.quit();
         assertNull(ManagementService.getInstance().getClient(clientId));
 
-        yconnector.disconnect();
+        yamcsClient.close();
 
         Thread.sleep(3000);// to allow for events to come
 

@@ -21,6 +21,8 @@ yamcsadmin backup
         Delete a backup.
     :doc:`list <yamcsadmin_backup_list>`
         List the existing backups.
+    :doc:`purge <yamcsadmin_backup_purge>`
+        Purge old backups.
     :doc:`restore <yamcsadmin_backup_restore>`
         Restore a backup.
 
@@ -31,4 +33,5 @@ yamcsadmin backup
     create <yamcsadmin_backup_create>
     delete <yamcsadmin_backup_delete>
     list <yamcsadmin_backup_list>
+    purge <yamcsadmin_backup_purge>
     restore <yamcsadmin_backup_restore>

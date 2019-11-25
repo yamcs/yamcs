@@ -26,9 +26,9 @@ export class DeltaWithPipe implements PipeTransform {
     const years = Math.floor(days / 365);
 
     if (years) {
-      return years === 1 ? `${sign}1 year` : `${sign}${years} years `;
+      return years === 1 ? `${sign}1 year` : `${sign}${years} years`;
     } else if (days) {
-      return days === 1 ? `${sign}1 day` : `${sign}${days} days `;
+      return days === 1 ? `${sign}1 day` : `${sign}${days} days`;
     } else if (hours) {
       if (minutes) {
         return `${sign}${hours}h ${minutes}m`;

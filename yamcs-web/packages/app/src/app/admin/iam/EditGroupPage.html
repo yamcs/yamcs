@@ -43,13 +43,11 @@
     </table>
 
     <p>&nbsp;</p>
-    <mat-toolbar>
-      <span style="flex: 1 1 auto"></span>
-      <button mat-button (click)="location.back()">Cancel</button>&nbsp;&nbsp;&nbsp;&nbsp;
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
       <button type="submit" (click)="onConfirm()"
-              mat-raised-button
-              [disabled]="!(dirty$ | async) || !form.valid"
-              color="primary">SAVE CHANGES</button>
-    </mat-toolbar>
+              class="ya-button primary"
+              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+    </div>
   </div>
 </app-admin-page>

@@ -51,14 +51,18 @@ import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { BinaryInput } from './forms/BinaryInput';
 import { DateTime } from './forms/DateTime';
 import { DownloadButton } from './forms/DownloadButton';
+import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
+import { BinarySizePipe } from './pipes/BinarySizePipe';
+import { DataRatePipe } from './pipes/DataRatePipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { HexPipe } from './pipes/HexPipe';
 import { NvlPipe } from './pipes/NvlPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
@@ -161,6 +165,7 @@ const sharedComponents = [
   DetailToolbar,
   Dots,
   DownloadButton,
+  DownloadMenuItem,
   EmptyMessage,
   Expirable,
   Help,
@@ -196,11 +201,14 @@ const sharedComponents = [
 
 const pipes = [
   AgoPipe,
+  BinarySizePipe,
+  DataRatePipe,
   DateTimePipe,
   DeltaWithPipe,
   DurationPipe,
   FilenamePipe,
   FormatBytesPipe,
+  HexPipe,
   NvlPipe,
   OperatorPipe,
   PrintJsonPipe,

@@ -133,8 +133,24 @@ export class InstancePage implements OnInit, OnDestroy {
     this.archiveExpanded = !expanded;
   }
 
+  showPacketsItem() {
+    return this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
+  }
+
+  showDisplaysItem() {
+    return this.user.hasObjectPrivilege('ReadBucket', 'displays');
+  }
+
+  showParametersItem() {
+    return this.user.hasSystemPrivilege('GetMissionDatabase');
+  }
+
   showEventsItem() {
     return this.user.hasSystemPrivilege('ReadEvents');
+  }
+
+  showAlarmsItem() {
+    return this.user.hasSystemPrivilege('ReadAlarms');
   }
 
   showTablesItem() {
@@ -142,21 +158,31 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showCommandQueuesItem() {
-    return this.user.hasSystemPrivilege('ControlCommandQueue');
+    return this.config.features.tc && this.user.hasSystemPrivilege('ControlCommandQueue');
+  }
+
+  showSendACommand() {
+    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
+  }
+
+  showCommandHistory() {
+    return this.user.hasAnyObjectPrivilegeOfType('CommandHistory');
   }
 
   showMDB() {
     return this.user.hasSystemPrivilege('GetMissionDatabase');
   }
 
+  showArchiveOverview() {
+    return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
+  }
+
+  showGapsItem() {
+    return this.user.hasSystemPrivilege('RequestPlayback');
+  }
+
   showStreamsItem() {
-    const objectPrivileges = this.user.getObjectPrivileges();
-    for (const priv of objectPrivileges) {
-      if (priv.type === 'Stream') {
-        return true;
-      }
-    }
-    return this.user.isSuperuser();
+    return this.user.hasAnyObjectPrivilegeOfType('Stream');
   }
 
   ngOnDestroy() {

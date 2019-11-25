@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -311,6 +311,19 @@ export default class YamcsClient implements HttpHandler {
     return await this.doFetch(url, { method: 'DELETE' });
   }
 
+  async getRoles() {
+    const url = `${this.apiUrl}/roles`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as RolesWrapper;
+    return wrapper.roles || [];
+  }
+
+  async getRole(name: string) {
+    const url = `${this.apiUrl}/roles/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as RoleInfo;
+  }
+
   async getClients() {
     const url = `${this.apiUrl}/clients`;
     const response = await this.doFetch(url);
@@ -342,13 +355,13 @@ export default class YamcsClient implements HttpHandler {
     return wrapper.databases || [];
   }
 
-  async getRocksDbDatabaseProperties(tablespace: string, dbPath='') {
+  async getRocksDbDatabaseProperties(tablespace: string, dbPath = '') {
     const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:describe`;
     const response = await this.doFetch(url);
     return await response.text();
   }
 
-  async compactRocksDbDatabase(tablespace: string, dbPath='') {
+  async compactRocksDbDatabase(tablespace: string, dbPath = '') {
     const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:compact`;
     return await this.doFetch(url, {
       method: 'POST',
@@ -436,7 +449,7 @@ export default class YamcsClient implements HttpHandler {
     }
   }
 
-  private queryString(options: {[key: string]: any}) {
+  private queryString(options: { [key: string]: any }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');

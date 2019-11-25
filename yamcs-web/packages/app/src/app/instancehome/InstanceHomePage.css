@@ -7,7 +7,7 @@
   display: flex;
   flex-wrap: wrap;
   margin: auto;
-  justify-content: center;
+  justify-content: left;
 }
 
 .card {
@@ -24,7 +24,7 @@
 }
 
 .card.big .mat-card {
-  width: 648px;
+  width: 996px;
 }
 
 .card .mat-card .table-wrapper {

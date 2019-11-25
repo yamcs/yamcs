@@ -50,14 +50,16 @@
     <button mat-button
             color="primary"
             (click)="acknowledgeAlarms(selection.selected)"
-            [disabled]="!selection.hasValue()">
+            [disabled]="!selection.hasValue()"
+            *ngIf="mayControlAlarms()">
       <mat-icon>notifications_off</mat-icon>
       ACKNOWLEDGE
     </button>
     <button mat-button
             color="primary"
             (click)="shelveAlarms(selection.selected)"
-            [disabled]="!selection.hasValue()">
+            [disabled]="!selection.hasValue()"
+            *ngIf="mayControlAlarms()">
       <mat-icon>timer</mat-icon>
       SHELVE
     </button>
@@ -71,6 +73,7 @@
       <div style="padding: 0 16px">
         <app-alarm-detail [alarm]="detailAlarm"
                           [instance]="instance"
+                          [mayControl]="mayControlAlarms()"
                           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                           (shelveAlarm)="shelveAlarms([$event])"
                           (unshelveAlarm)="unshelveAlarms([$event])"
@@ -99,6 +102,7 @@
                         [dataSource]="dataSource"
                         [selection]="selection"
                         [view]="view$ | async"
+                        [mayControl]="mayControlAlarms()"
                         (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                         (shelveAlarm)="shelveAlarms([$event])"
                         (unshelveAlarm)="unshelveAlarms([$event])"

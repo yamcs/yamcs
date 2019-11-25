@@ -36,6 +36,7 @@ message UserAccountRecordDetail {
   optional string email = 1;
   optional string hash = 2;
   optional bool superuser = 3;
+  repeated string roles = 5;
   repeated ExternalIdentity identities = 4;
 }
 

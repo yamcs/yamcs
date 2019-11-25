@@ -226,7 +226,8 @@ message TmStatistics {
   optional int32 subscribedParameterCount = 6;
   optional google.protobuf.Timestamp lastReceived = 10;
   optional google.protobuf.Timestamp lastPacketTime = 11;
-  optional double packetRate = 12;
+  optional int64 packetRate = 12;
+  optional int64 dataRate = 13;
 }
 
 message Statistics {

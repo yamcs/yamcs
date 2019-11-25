@@ -360,11 +360,11 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 String host = hostTextField.getText();
                 int port = Integer.parseInt(portTextField.getText());
                 YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
-                if (!usernameTextField.getText().isEmpty()) {
-                    ycp.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
-                }
 
                 RestClient restClient = new RestClient(ycp);
+                if (!usernameTextField.getText().isEmpty()) {
+                    restClient.login(usernameTextField.getText(), passwordTextField.getPassword());
+                }
                 List<YamcsInstance> list = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();
                 serverMdbConfigCombo.removeAllItems();

@@ -38,7 +38,8 @@
        routerLink="chart"
        routerLinkActive #rlb="routerLinkActive"
        [active]="rlb.isActive"
-       [queryParams]="{instance: instance.name}">
+       [queryParams]="{instance: instance.name}"
+       *ngIf="config.features.tmArchive">
       Chart
     </a>
     <a mat-tab-link
@@ -52,12 +53,13 @@
        routerLink="data"
        routerLinkActive #rld="routerLinkActive"
        [active]="rld.isActive"
-       [queryParams]="{instance: instance.name}">
+       [queryParams]="{instance: instance.name}"
+       *ngIf="config.features.tmArchive">
       Historical Data
     </a>
   </nav>
 
-  <div class="tab-content-wrapper" [class.noscroll]="rlb.isActive">
+  <div class="tab-content-wrapper" [class.noscroll]="rlb?.isActive">
     <router-outlet></router-outlet>
   </div>
 </app-instance-page>

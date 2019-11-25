@@ -33,6 +33,9 @@ export class AlarmsTable {
   @Input()
   view: 'standard' | 'unacknowledged' | 'acknowledged' | 'shelved' | 'all' = 'standard';
 
+  @Input()
+  mayControl = false;
+
   @Output()
   acknowledgeAlarm = new EventEmitter<Alarm>();
 

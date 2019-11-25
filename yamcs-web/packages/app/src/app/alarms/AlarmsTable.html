@@ -56,7 +56,7 @@
     <th mat-header-cell *matHeaderCellDef style="width: 90px">Live Value</th>
     <td mat-cell *matCellDef="let alarm">
       <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
-        {{ parameterDetail.triggerValue.engValue | value }}
+        {{ parameterDetail.currentValue.engValue | value }}
         <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
         <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
       </ng-container>
@@ -88,7 +88,7 @@
           Unshelve
         </button>
       </mat-menu>
-      <button mat-button [matMenuTriggerFor]="alarmMenu" class="icon">
+      <button mat-button [matMenuTriggerFor]="alarmMenu" class="icon" *ngIf="mayControl">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

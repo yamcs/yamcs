@@ -28,7 +28,7 @@ public class RocksDbCli extends Command {
 
     public RocksDbCli(YamcsAdminCli yamcsCli) {
         super("rocksdb", yamcsCli);
-        addSubCommand(new RocksdbCompact());
+        addSubCommand(new RocksDbCompact());
         addSubCommand(new RocksDbBenchmark(this));
     }
 
@@ -38,15 +38,15 @@ public class RocksDbCli extends Command {
         super.execute();
     }
 
-    @Parameters(commandDescription = "Compact rocksdb database")
-    private class RocksdbCompact extends Command {
+    @Parameters(commandDescription = "Compact RocksDB database")
+    private class RocksDbCompact extends Command {
         @Parameter(names = "--dbDir", description = "database directory", required = true)
         String dbDir;
 
         @Parameter(names = "--sizeMB", description = "target size of each SST files in MB (by default 256 MB)", required = false)
         int sizeMB = 256;
 
-        public RocksdbCompact() {
+        public RocksDbCompact() {
             super("compact", RocksDbCli.this);
         }
 

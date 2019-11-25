@@ -157,6 +157,10 @@ public class XtceTmExtractor {
         return result.containers;
     }
 
+    public String getPacketName() {
+        return result.getPacketName();
+    }
+
     public Subscription getSubscription() {
         return subscription;
     }

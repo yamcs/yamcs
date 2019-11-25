@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.AbstractEventProducer;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Archive.CreateEventRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
@@ -25,20 +24,19 @@ import io.netty.handler.codec.http.HttpMethod;
 public class RestEventProducer extends AbstractEventProducer {
     static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
 
-    RestClient restClient;
     static Logger logger = LoggerFactory.getLogger(RestEventProducer.class);
 
     static final int MAX_QUEUE_SIZE = 1000;
     ArrayBlockingQueue<Event> queue = new ArrayBlockingQueue<>(MAX_QUEUE_SIZE);
 
     String eventResource;
-    YamcsConnectionProperties connProp;
+    private YamcsClient client;
 
-    public RestEventProducer(YamcsConnectionProperties connProp) {
-        restClient = new RestClient(connProp);
-        this.connProp = connProp;
+    public RestEventProducer(YamcsClient client) {
+        this.client = client;
 
-        eventResource = "/archive/" + connProp.getInstance() + "/events";
+        String effectiveInstance = client.getConnectionInfo().getInstance().getName();
+        eventResource = "/archive/" + effectiveInstance + "/events";
         InputStream is = RestEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if (is != null) {
@@ -61,7 +59,6 @@ public class RestEventProducer extends AbstractEventProducer {
 
     @Override
     public void close() {
-        restClient.close();
     }
 
     @Override
@@ -86,12 +83,12 @@ public class RestEventProducer extends AbstractEventProducer {
                 req.setSequenceNumber(event.getSeqNumber());
             }
         }
-        restClient.doRequest(eventResource, HttpMethod.POST, req.build().toByteArray());
+        client.getRestClient().doRequest(eventResource, HttpMethod.POST, req.build().toByteArray());
     }
 
     @Override
     public String toString() {
-        return RestEventProducer.class.getName() + " sending events to " + connProp;
+        return RestEventProducer.class.getName() + " sending events to " + client.getUrl();
     }
 
     @Override

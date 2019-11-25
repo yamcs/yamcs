@@ -10,15 +10,18 @@ yamcsamdin backup delete
 
 **SYNOPSIS**
 
-    ``yamcsadmin backup delete [--backupDir DIR] [--backupId ID]``
+    ``yamcsadmin backup delete --backup-dir DIR ID ...``
+
+
+**POSITIONAL ARGUMENTS**
+
+    .. option:: ID ...
+
+        Backup IDs to delete.
 
 
 **OPTIONS**
 
-    .. option:: --backupDir DIR
+    .. option:: --backup-dir DIR
 
-        Backup directory.
-
-    .. option:: --backupId ID
-
-        Backup ID.
+        Directory containing backups.

@@ -24,7 +24,7 @@ public class YamcsAdminCli extends Command {
 
     public YamcsAdminCli() {
         super("yamcsadmin", null);
-        addSubCommand(new Backup(this));
+        addSubCommand(new BackupCli(this));
         addSubCommand(new CheckConfig(this));
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));

@@ -31,16 +31,16 @@ import io.netty.handler.codec.http.HttpMethod;
  *
  */
 public class ProcessorControlClient implements ConnectionListener, WebSocketClientCallback, WebSocketResponseHandler {
-    YamcsConnector yconnector;
-    ProcessorListener yamcsMonitor;
+    YamcsClient client;
+    ProcessorListener processorListener;
 
-    public ProcessorControlClient(YamcsConnector yconnector) {
-        this.yconnector = yconnector;
-        yconnector.addConnectionListener(this);
+    public ProcessorControlClient(YamcsClient client) {
+        this.client = client;
+        client.addConnectionListener(this);
     }
 
-    public void setProcessorListener(ProcessorListener yamcsMonitor) {
-        this.yamcsMonitor = yamcsMonitor;
+    public void setProcessorListener(ProcessorListener processorListener) {
+        this.processorListener = processorListener;
     }
 
     public void destroyProcessor(String name) throws ClientException {
@@ -65,13 +65,14 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
             }
         }
 
-        RestClient restClient = yconnector.getRestClient();
+        RestClient restClient = client.getRestClient();
         // POST "/api/processors/:instance"
         String resource = "/processors/" + instance;
+
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.POST, cprb.build().toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                yamcsMonitor.log("Exception creating processor: " + exception.getMessage());
+                processorListener.log("Exception creating processor: " + exception.getMessage());
             }
         });
         return cf;
@@ -79,7 +80,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     @SuppressWarnings("unchecked")
     public CompletableFuture<Void> connectToProcessor(String instance, String processorName, int[] clients) {
-        RestClient restClient = yconnector.getRestClient();
+        RestClient restClient = client.getRestClient();
         CompletableFuture<byte[]>[] cfs = new CompletableFuture[clients.length];
 
         for (int i = 0; i < clients.length; i++) {
@@ -90,7 +91,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
             cfs[i] = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
             cfs[i].whenComplete((result, exception) -> {
                 if (exception != null) {
-                    yamcsMonitor.log("Exception connecting client to processor: " + exception.getMessage());
+                    processorListener.log("Exception connecting client to processor: " + exception.getMessage());
                 }
             });
         }
@@ -99,33 +100,33 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     public void pauseArchiveReplay(String instance, String name) {
-        RestClient restClient = yconnector.getRestClient();
+        RestClient restClient = client.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
         EditProcessorRequest body = EditProcessorRequest.newBuilder().setState("paused").build();
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                yamcsMonitor.log("Exception pauysing the processor: " + exception.getMessage());
+                processorListener.log("Exception pauysing the processor: " + exception.getMessage());
             }
         });
     }
 
     public void resumeArchiveReplay(String instance, String name) {
-        RestClient restClient = yconnector.getRestClient();
+        RestClient restClient = client.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
         EditProcessorRequest body = EditProcessorRequest.newBuilder().setState("running").build();
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                yamcsMonitor.log("Exception resuming the processor: " + exception.getMessage());
+                processorListener.log("Exception resuming the processor: " + exception.getMessage());
             }
         });
     }
 
     public void seekArchiveReplay(String instance, String name, long newPosition) {
-        RestClient restClient = yconnector.getRestClient();
+        RestClient restClient = client.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
         EditProcessorRequest body = EditProcessorRequest.newBuilder().setSeek(TimeEncoding.toString(newPosition))
@@ -133,7 +134,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                yamcsMonitor.log("Exception seeking the processor: " + exception.getMessage());
+                processorListener.log("Exception seeking the processor: " + exception.getMessage());
             }
         });
     }
@@ -144,13 +145,13 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     private void receiveInitialConfig() {
         WebSocketRequest wsr = new WebSocketRequest("management", "subscribe");
-        yconnector.performSubscription(wsr, this, this);
+        client.performSubscription(wsr, this, this);
 
-        yconnector.getRestClient().doRequest("/processors", HttpMethod.GET).whenComplete((response, exc) -> {
+        client.getRestClient().doRequest("/processors", HttpMethod.GET).whenComplete((response, exc) -> {
             if (exc == null) {
                 try {
                     for (ProcessorInfo pi : ListProcessorsResponse.parseFrom(response).getProcessorList()) {
-                        yamcsMonitor.processorUpdated(pi);
+                        processorListener.processorUpdated(pi);
                     }
                 } catch (InvalidProtocolBufferException e) {
                     throw new CompletionException(e);
@@ -162,7 +163,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         optionsb.setAllInstances(true);
         optionsb.setAllProcessors(true);
         wsr = new WebSocketRequest("processor", "subscribe", optionsb.build());
-        yconnector.performSubscription(wsr, this, this);
+        client.performSubscription(wsr, this, this);
     }
 
     @Override
@@ -176,23 +177,23 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
             ProcessorInfo procInfo = data.getProcessorInfo();
             ServiceState servState = procInfo.getState();
             if (servState == ServiceState.TERMINATED || servState == ServiceState.FAILED) {
-                yamcsMonitor.processorClosed(procInfo);
+                processorListener.processorClosed(procInfo);
             } else {
-                yamcsMonitor.processorUpdated(procInfo);
+                processorListener.processorUpdated(procInfo);
             }
         }
         if (data.hasClientInfo()) {
             ClientInfo cinfo = data.getClientInfo();
             ClientState cstate = cinfo.getState();
             if (cstate == ClientState.DISCONNECTED) {
-                yamcsMonitor.clientDisconnected(cinfo);
+                processorListener.clientDisconnected(cinfo);
             } else {
-                yamcsMonitor.clientUpdated(cinfo);
+                processorListener.clientUpdated(cinfo);
             }
         }
         if (data.hasStatistics()) {
             Statistics s = data.getStatistics();
-            yamcsMonitor.updateStatistics(s);
+            processorListener.updateStatistics(s);
         }
     }
 
@@ -210,6 +211,6 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     @Override
     public void onException(WebSocketExceptionData e) {
-        yamcsMonitor.log("Exception when performing subscription:" + e.getMessage());
+        processorListener.log("Exception when performing subscription:" + e.getMessage());
     }
 }

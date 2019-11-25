@@ -74,10 +74,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
-import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.WebSocketRequest;
-import org.yamcs.client.YamcsConnector;
+import org.yamcs.client.YamcsClient;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
@@ -131,12 +130,11 @@ public class PacketViewer extends JFrame implements ActionListener,
     OpenFileDialog openFileDialog;
     final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
-    YamcsConnector yconnector;
+    YamcsClient client;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;
     Preferences uiPrefs;
 
-    YamcsConnectionProperties connectionParams;
     // used for decoding full packets
     XtceTmProcessor tmProcessor;
 
@@ -372,8 +370,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     void updateTitle() {
         SwingUtilities.invokeLater(() -> {
             StringBuilder title = new StringBuilder("Yamcs Packet Viewer");
-            if (connectionParams != null) {
-                title.append(" [").append(connectionParams.getUrl()).append("]");
+            if (client != null && client.isConnected()) {
+                title.append(" [").append(client.getUrl()).append("]");
             } else if (lastFile != null) {
                 title.append(" - ");
                 title.append(lastFile.getName());
@@ -530,12 +528,11 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        log("Loading remote XTCE db for yamcs instance " + connectionParams.getInstance());
-        RestClient restClient = new RestClient(connectionParams);
+        String effectiveInstance = client.getConnectionInfo().getInstance().getName();
+        log("Loading remote XTCE db for yamcs instance " + effectiveInstance);
         try {
-            restClient.setMaxResponseLength(10 * 1024 * 1024);// TODO make this configurable
-            byte[] serializedMdb = restClient
-                    .doRequest("/mdb/" + connectionParams.getInstance() + ":exportJava", HttpMethod.GET).get();
+            byte[] serializedMdb = client.getRestClient()
+                    .doRequest("/mdb/" + effectiveInstance + ":exportJava", HttpMethod.GET).get();
             ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
             Object o = ois.readObject();
             xtcedb = (XtceDb) o;
@@ -695,18 +692,30 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     void connectYamcs(YamcsConnectionProperties ycd) {
         disconnect();
-        connectionParams = ycd;
-        yconnector = new YamcsConnector("PacketViewer");
-        yconnector.addConnectionListener(this);
-        yconnector.connect(ycd);
+        client = YamcsClient.newBuilder(ycd.getHost(), ycd.getPort())
+                .withTls(ycd.isTls())
+                .withInitialInstance(ycd.getInstance(), true, false)
+                .withConnectionAttempts(10)
+                .withUserAgent("PacketViewer")
+                .build();
+        client.addConnectionListener(this);
+        try {
+            if (ycd.getUsername() == null) {
+                client.connectAnonymously();
+            } else {
+                client.connect(ycd.getUsername(), ycd.getPassword());
+            }
+        } catch (ClientException e) {
+            log.error("Error while connecting", e);
+        }
+
         updateTitle();
     }
 
     void disconnect() {
-        if (yconnector != null) {
-            yconnector.disconnect();
+        if (client != null) {
+            client.close();
         }
-        connectionParams = null;
         updateTitle();
     }
 
@@ -829,7 +838,6 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     @Override
     public void connected(String url) {
-        connectionParams = yconnector.getConnectionParams();
         try {
             log("connected to " + url);
             if (connectDialog != null) {
@@ -843,21 +851,20 @@ public class PacketViewer extends JFrame implements ActionListener,
                     }
                 }
             } else {
-                RestClient restclient = new RestClient(connectionParams);
-                List<YamcsInstance> list = restclient.blockingGetYamcsInstances();
+                List<YamcsInstance> list = client.getRestClient().blockingGetYamcsInstances();
 
+                String effectiveInstance = client.getConnectionInfo().getInstance().getName();
                 for (YamcsInstance yi : list) {
-                    if (connectionParams.getInstance().equals(yi.getName())) {
+                    if (effectiveInstance.equals(yi.getName())) {
                         String mdbConfig = yi.getMissionDatabase().getConfigName();
                         if (!loadRemoteXtcedb(mdbConfig)) {
                             return;
                         }
                     }
                 }
-
             }
             WebSocketRequest wsr = new WebSocketRequest("packets", "subscribe " + streamName);
-            yconnector.performSubscription(wsr, this, e -> {
+            client.performSubscription(wsr, this, e -> {
                 showError("Error subscribing to " + streamName + ": " + e.getMessage());
             });
         } catch (Exception e) {

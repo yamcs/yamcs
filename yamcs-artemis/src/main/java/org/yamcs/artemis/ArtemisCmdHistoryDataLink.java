@@ -1,21 +1,19 @@
 package org.yamcs.artemis;
 
-
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.YConfiguration;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Receives command history data from Artemis queues and publishes into yamcs streams
@@ -23,18 +21,17 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisCmdHistoryDataLink extends AbstractService {
-    String instance;
-    ServerLocator locator;
-    ClientSession session;
-    ClientConsumer client;
-    ClientSessionFactory factory; 
-    
-    Logger log = LoggerFactory.getLogger(this.getClass().getName());
+public class ArtemisCmdHistoryDataLink extends AbstractYamcsService {
 
-    public ArtemisCmdHistoryDataLink(String instance) {
-        this.instance = instance;
-        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+    private ServerLocator locator;
+    private ClientSession session;
+    private ClientConsumer client;
+    private ClientSessionFactory factory;
+
+    @Override
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
+        locator = AbstractArtemisTranslatorService.getServerLocator(yamcsInstance);
     }
 
     @Override
@@ -43,11 +40,11 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
             factory = locator.createSessionFactory();
             session = factory.createSession();
             CmdHistoryTupleTranslator translator = new CmdHistoryTupleTranslator();
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-            StreamConfig sc = StreamConfig.getInstance(instance);
-            for (String s : sc.getStreamNames(StandardStreamType.cmdHist)) {
-                Stream stream = ydb.getStream(s);
-                String address = instance + "." + s;
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
+            for (String streamName : sc.getStreamNames(StandardStreamType.cmdHist)) {
+                Stream stream = ydb.getStream(streamName);
+                String address = yamcsInstance + "." + streamName;
                 String queue = address + "-StreamAdapter";
                 log.debug("Subscribing to {}:{}", address, queue);
                 session.createTemporaryQueue(address, queue);
@@ -58,7 +55,7 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
                         stream.emitTuple(tuple);
                     } catch (IllegalArgumentException e) {
                         log.warn("Cannot decode cmdhist message: {} from artemis message: {}", e.getMessage(), msg);
-                    } 
+                    }
                 });
             }
             session.start();
@@ -80,5 +77,4 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
             notifyFailed(e);
         }
     }
-
 }

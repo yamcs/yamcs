@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,10 +61,11 @@ public class WebSocketClient {
     private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
     private String userAgent;
-    private Integer timeoutMs = null;
+    private Integer timeoutMs;
     private AtomicBoolean enableReconnection = new AtomicBoolean(true);
     private AtomicInteger idSequence = new AtomicInteger(1);
-    YamcsConnectionProperties yprops;
+    private YamcsConnectionProperties yprops;
+    private String accessToken;
     final boolean useProtobuf = true;
 
     private ConnectionInfo connectionInfo;
@@ -125,9 +125,14 @@ public class WebSocketClient {
         this.enableReconnection.set(enableReconnection);
     }
 
-    public ChannelFuture connect() throws SSLException, GeneralSecurityException {
+    public ChannelFuture connect(String accessToken) throws SSLException, GeneralSecurityException {
         callback.connecting();
-        return createBootstrap();
+        this.accessToken = accessToken;
+        return createBootstrap(accessToken);
+    }
+
+    public String getAccessToken() {
+        return accessToken;
     }
 
     /**
@@ -142,24 +147,15 @@ public class WebSocketClient {
         this.reconnectionInterval = reconnectionIntervalMillisec;
     }
 
-    private ChannelFuture createBootstrap() throws SSLException, GeneralSecurityException {
+    private ChannelFuture createBootstrap(String accessToken) throws SSLException, GeneralSecurityException {
         HttpHeaders header = new DefaultHttpHeaders();
         if (userAgent != null) {
             header.add(HttpHeaderNames.USER_AGENT, userAgent);
         }
 
-        if (yprops.getUsername() != null) {
-            String username = yprops.getUsername();
-            String password = new String(yprops.getPassword());
-            if (username != null) {
-                String credentialsClear = username;
-                if (password != null) {
-                    credentialsClear += ":" + password;
-                }
-                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-                String authorization = "Basic " + credentialsB64;
-                header.add(HttpHeaderNames.AUTHORIZATION, authorization);
-            }
+        if (accessToken != null) {
+            String authorization = "Bearer " + accessToken;
+            header.add(HttpHeaderNames.AUTHORIZATION, authorization);
         }
         String subprotocol = SUBPROTOCOL_JSON;
         if (useProtobuf) {
@@ -197,21 +193,19 @@ public class WebSocketClient {
         });
 
         log.info("WebSocket Client connecting");
-        ChannelFuture future = bootstrap.connect(uri.getHost(), uri.getPort());
-        future.addListener((ChannelFuture future1) -> {
-            if (future1.isSuccess()) {
-                nettyChannel = future1.channel();
-            } else {
-                callback.connectionFailed(future1.cause());
-                if (enableReconnection.get()) {
-                    log.info("Attempting reconnect..");
-                    callback.connecting();
-                    group.schedule(() -> createBootstrap(), reconnectionInterval, TimeUnit.MILLISECONDS);
-                }
+        try {
+            nettyChannel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
+        } catch (Exception e) {
+            callback.connectionFailed(e);
+            if (enableReconnection.get()) {
+                log.info("Attempting reconnect..");
+                callback.connecting();
+                group.schedule(() -> createBootstrap(accessToken), reconnectionInterval, TimeUnit.MILLISECONDS);
             }
-        });
+        }
 
-        return future;
+        // Finish handshake, this may still catch something like a 401
+        return webSocketHandler.handshakeFuture();
     }
 
     /**
@@ -279,7 +273,7 @@ public class WebSocketClient {
 
     /**
      * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before
-     * the connection is estabilished.
+     * the connection is established.
      * 
      * @param enableTcpKeepAlive
      *            if true the TCP SO_KEEPALIVE option is set
@@ -292,7 +286,7 @@ public class WebSocketClient {
      * @return the Future which is notified when the executor has been terminated.
      */
     public Future<?> shutdown() {
-        return group.shutdownGracefully();
+        return group.shutdownGracefully(0, 5, TimeUnit.SECONDS);
     }
 
     static class RequestResponsePair {

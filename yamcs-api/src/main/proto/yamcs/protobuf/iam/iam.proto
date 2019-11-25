@@ -19,6 +19,27 @@ service IamApi {
       get: "/api/privileges"
     };
   }
+  
+  // List roles
+  rpc ListRoles(google.protobuf.Empty) returns (ListRolesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/roles"
+    };
+  }
+  
+  // Get a role
+  rpc GetRole(GetRoleRequest) returns (RoleInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/roles/{name}"
+    };
+  }
+  
+  // Delete a role assignment
+  rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/users/{name}/roles/{role}"
+    };
+  }
 
   // List users
   rpc ListUsers(google.protobuf.Empty) returns (ListUsersResponse) {
@@ -205,6 +226,11 @@ message UpdateUserRequest {
   optional bool active = 4;
   optional bool superuser = 5;
   optional string password = 6;
+  optional RoleAssignment roleAssignment = 7;
+}
+
+message RoleAssignment {
+  repeated string roles = 1;
 }
 
 message UserInfo {
@@ -222,6 +248,7 @@ message UserInfo {
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
   repeated GroupInfo groups = 22;
   repeated ExternalIdentityInfo identities = 23;
+  repeated RoleInfo roles = 24;
 }
 
 message DeleteIdentityRequest {
@@ -232,6 +259,11 @@ message DeleteIdentityRequest {
 message ExternalIdentityInfo {
   optional string identity = 1;
   optional string provider = 2;
+}
+
+message DeleteRoleAssignmentRequest {
+  optional string name = 1;
+  optional string role = 2;
 }
 
 message GroupInfo {
@@ -258,4 +290,19 @@ message ObjectPrivilegeInfo {
 
 message ListPrivilegesResponse {
   repeated string systemPrivileges = 1; 
+}
+
+message GetRoleRequest {
+  optional string name  = 1;
+}
+
+message ListRolesResponse {
+  repeated RoleInfo roles = 1;
+}
+
+message RoleInfo {
+  optional string name = 1;
+  optional string description = 2;
+  repeated string systemPrivileges = 3;
+  repeated ObjectPrivilegeInfo objectPrivileges = 4;
 }

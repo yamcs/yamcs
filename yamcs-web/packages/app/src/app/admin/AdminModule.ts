@@ -9,7 +9,9 @@ import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadObjectsDialog } from './buckets/UploadObjectsDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
 import { AddMembersDialog } from './iam/AddMembersDialog';
+import { AddRolesDialog } from './iam/AddRolesDialog';
 import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog';
+import { ChangeUserPasswordDialog } from './iam/ChangeUserPasswordDialog';
 import { UsersTable } from './iam/UsersTable';
 import { MessageNamePipe } from './routes/MessageNamePipe';
 import { RouteDetail } from './routes/RouteDetail';
@@ -18,7 +20,9 @@ import { ServiceState } from './services/ServiceState';
 
 const dialogComponents = [
   AddMembersDialog,
+  AddRolesDialog,
   ApplicationCredentialsDialog,
+  ChangeUserPasswordDialog,
   CreateBucketDialog,
   RenameObjectDialog,
   UploadObjectsDialog,

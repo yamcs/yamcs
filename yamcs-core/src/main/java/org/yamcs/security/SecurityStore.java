@@ -71,6 +71,14 @@ public class SecurityStore {
         directory = new Directory();
         blockUnknownUsers = config.getBoolean("blockUnknownUsers", false);
 
+        if (directory.getUsers().isEmpty()) {
+            try {
+                generateDefaultAdminUser();
+            } catch (IOException e) {
+                throw new InitException("Could not create default admin user", e);
+            }
+        }
+
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
@@ -107,21 +115,38 @@ public class SecurityStore {
                 List<String> objects = privilegeConfigs.getList(privilegeName);
                 if (privilegeName.equals("System")) {
                     for (String object : objects) {
-                        guestUser.addSystemPrivilege(new SystemPrivilege(object));
+                        guestUser.addSystemPrivilege(new SystemPrivilege(object), false);
                     }
                 } else {
                     ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
                     for (String object : objects) {
-                        guestUser.addObjectPrivilege(new ObjectPrivilege(type, object));
+                        guestUser.addObjectPrivilege(new ObjectPrivilege(type, object), false);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Generate a default admin user. This user is stored in the directory and can be used for log in.
+     * 
+     * TODO mark password as expired.
+     */
+    private void generateDefaultAdminUser() throws IOException {
+        User adminUser = new User("admin", systemUser);
+        adminUser.setDisplayName("Administrator");
+        adminUser.setSuperuser(true);
+        adminUser.setEmail("admin@example.com");
+        adminUser.setActive(true);
+        adminUser.confirm();
+        directory.addUser(adminUser);
+        directory.changePassword(adminUser, "admin".toCharArray());
+    }
+
     private void generatePredefinedPrivileges() {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
         systemPrivileges.add(SystemPrivilege.Command);
+        systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandQueue);
         systemPrivileges.add(SystemPrivilege.ControlLinks);
@@ -130,6 +155,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.CreateInstances);
         systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
+        systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadEvents);
         systemPrivileges.add(SystemPrivilege.ReadTables);
@@ -318,10 +344,10 @@ public class SecurityStore {
                         user.setSuperuser(true);
                     }
                     for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
-                        user.addSystemPrivilege(privilege);
+                        user.addSystemPrivilege(privilege, true);
                     }
                     for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
-                        user.addObjectPrivilege(privilege);
+                        user.addObjectPrivilege(privilege, true);
                     }
                 }
             } catch (AuthorizationException e) {

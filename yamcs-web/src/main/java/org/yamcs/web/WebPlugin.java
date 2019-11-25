@@ -43,6 +43,8 @@ public class WebPlugin implements Plugin {
         featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
         featuresSpec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
         featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false);
+        featuresSpec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
+        featuresSpec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("features", OptionType.MAP)
                 .withSpec(featuresSpec)
                 .withApplySpecDefaults(true);

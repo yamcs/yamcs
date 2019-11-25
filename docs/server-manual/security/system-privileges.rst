@@ -17,6 +17,10 @@ GetMissionDatabase
     Allows to read the entire Mission Database.
 ChangeMissionDatabase
     Allows online changes to the Mission Database.
+ReadAlarms
+    Allows to read alarms.
+ControlAlarms
+    Allows to manage alarms.
 ControlArchiving
     Allows to manage archiving properties of Yamcs.
 ControlLinks

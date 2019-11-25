@@ -1,5 +1,6 @@
 package org.yamcs.security;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +33,14 @@ public class User extends Account {
     private boolean superuser;
 
     private Map<String, String> identitiesByProvider = new HashMap<>();
+    private Set<String> roles = new HashSet<>();
 
+    // Keep track of external privileges separately. It allows us to rebuild the effective
+    // privileges when the roles change.
+    private Set<SystemPrivilege> externalSystemPrivileges = new HashSet<>();
+    private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> externalObjectPrivileges = new HashMap<>();
+
+    // Effective privileges (= external privileges + privileges from directory roles
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
@@ -53,6 +61,7 @@ public class User extends Account {
         for (ExternalIdentity identity : userDetail.getIdentitiesList()) {
             identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
         }
+        roles.addAll(userDetail.getRolesList());
     }
 
     public String getEmail() {
@@ -77,6 +86,23 @@ public class User extends Account {
 
     public void deleteIdentity(String provider) {
         identitiesByProvider.remove(provider);
+    }
+
+    public Set<String> getRoles() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    public void setRoles(Collection<String> roles) {
+        this.roles.clear();
+        this.roles.addAll(roles);
+    }
+
+    public void addRole(String role) {
+        roles.add(role);
+    }
+
+    public void deleteRole(String role) {
+        roles.remove(role);
     }
 
     public boolean isSuperuser() {
@@ -108,17 +134,40 @@ public class User extends Account {
         return privilegesForType != null ? privilegesForType : Collections.emptySet();
     }
 
-    public void addSystemPrivilege(SystemPrivilege systemPrivilege) {
+    public void addSystemPrivilege(SystemPrivilege systemPrivilege, boolean external) {
+        if (external) {
+            externalSystemPrivileges.add(systemPrivilege);
+        }
         systemPrivileges.add(systemPrivilege);
     }
 
-    public void addObjectPrivilege(ObjectPrivilege objectPrivilege) {
+    public void addObjectPrivilege(ObjectPrivilege objectPrivilege, boolean external) {
+        if (external) {
+            Set<ObjectPrivilege> externalPrivilegesForType = externalObjectPrivileges.get(objectPrivilege.getType());
+            if (externalPrivilegesForType == null) {
+                externalPrivilegesForType = new HashSet<>();
+                externalObjectPrivileges.put(objectPrivilege.getType(), externalPrivilegesForType);
+            }
+            externalPrivilegesForType.add(objectPrivilege);
+        }
+
         Set<ObjectPrivilege> privilegesForType = objectPrivileges.get(objectPrivilege.getType());
         if (privilegesForType == null) {
             privilegesForType = new HashSet<>();
             objectPrivileges.put(objectPrivilege.getType(), privilegesForType);
         }
         privilegesForType.add(objectPrivilege);
+    }
+
+    /**
+     * Resets user privileges to only those that are externally defined.
+     */
+    public void clearDirectoryPrivileges() {
+        systemPrivileges.clear();
+        systemPrivileges.addAll(externalSystemPrivileges);
+
+        objectPrivileges.clear();
+        objectPrivileges.putAll(externalObjectPrivileges);
     }
 
     public boolean hasSystemPrivilege(SystemPrivilege systemPrivilege) {
@@ -151,6 +200,7 @@ public class User extends Account {
         if (email != null) {
             userDetailb.setEmail(email);
         }
+        userDetailb.addAllRoles(roles);
         userDetailb.setSuperuser(superuser);
         identitiesByProvider.forEach((provider, identity) -> {
             userDetailb.addIdentities(ExternalIdentity.newBuilder()

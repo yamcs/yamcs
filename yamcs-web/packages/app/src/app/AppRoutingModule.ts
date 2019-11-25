@@ -100,11 +100,6 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'system',
-        loadChildren: () => import('src/app/system/SystemModule').then(m => m.SystemModule),
-        canActivate: [AuthGuard],
-      },
-      {
         path: 'login',
         component: LoginPage,
         canActivate: [UnselectInstanceGuard],

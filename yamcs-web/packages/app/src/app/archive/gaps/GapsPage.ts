@@ -49,10 +49,17 @@ export class GapsPage {
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.data.forEach(row => {
+        if (row.start && row.stop) {
+          this.selection.select(row);
+        }
+      });
   }
 
   toggleOne(row: Gap) {
+    if (!row.start || !row.stop) {
+      return;
+    }
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();
     }

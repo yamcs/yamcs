@@ -37,16 +37,25 @@
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
       </app-sidebar-nav-item>
-      <app-sidebar-nav-group label="Telemetry" icon="speed"
+      <app-sidebar-nav-group *ngIf="showPacketsItem() || showParametersItem() || showDisplaysItem()"
+                             label="Telemetry" icon="speed"
                              [active]="telemetryActive"
                              [expanded]="telemetryExpanded"
                              (toggle)="toggleTelemetryGroup()">
-        <app-sidebar-nav-item routerLink="/telemetry/parameters"
+        <app-sidebar-nav-item *ngIf="showPacketsItem()"
+                              routerLink="/telemetry/packets"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Packets
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item *ngIf="showParametersItem()"
+                              routerLink="/telemetry/parameters"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Parameters
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/telemetry/displays"
+        <app-sidebar-nav-item *ngIf="showDisplaysItem()"
+                              routerLink="/telemetry/displays"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Displays
@@ -67,22 +76,26 @@
         Events
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="/alarms"
+      <app-sidebar-nav-item *ngIf="showAlarmsItem()"
+                            routerLink="/alarms"
                             [queryParams]="{instance: instance.name}">
         <mat-icon class="item-icon">notification_important</mat-icon>
         Alarms
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-group label="Commanding" icon="rss_feed"
+      <app-sidebar-nav-group *ngIf="showCommandHistory() || showCommandQueuesItem() || showSendACommand()"
+                             label="Commanding" icon="rss_feed"
                              [active]="commandingActive"
                              [expanded]="commandingExpanded"
                              (toggle)="toggleCommandingGroup()">
-        <app-sidebar-nav-item routerLink="/commanding/send"
+        <app-sidebar-nav-item *ngIf="showSendACommand()"
+                              routerLink="/commanding/send"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Send a command
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item routerLink="/commanding/history"
+        <app-sidebar-nav-item *ngIf="showCommandHistory()"
+                              routerLink="/commanding/history"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Command History
@@ -133,17 +146,20 @@
         </app-sidebar-nav-group>
       </ng-container>
 
-      <app-sidebar-nav-group label="Archive" icon="storage"
+      <app-sidebar-nav-group *ngIf="showArchiveOverview() || showGapsItem() || showTablesItem() || showStreamsItem()"
+                             label="Archive" icon="storage"
                              [active]="archiveActive"
                              [expanded]="archiveExpanded"
                              (toggle)="toggleArchiveGroup()">
-        <app-sidebar-nav-item routerLink="/archive/overview"
+
+        <app-sidebar-nav-item *ngIf="showArchiveOverview()"
+                              routerLink="/archive/overview"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Overview
         </app-sidebar-nav-item>
 
-        <app-sidebar-nav-item *ngIf="config.features.dass"
+        <app-sidebar-nav-item *ngIf="config.features.dass && showGapsItem()"
                               routerLink="/archive/gaps"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
@@ -164,12 +180,6 @@
           Streams
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
-
-      <app-sidebar-nav-item routerLink="/system"
-                            [queryParams]="{instance: instance.name}">
-        <mat-icon class="item-icon">memory</mat-icon>
-        System
-      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

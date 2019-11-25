@@ -12,18 +12,25 @@ import java.util.Properties;
 import org.yamcs.ConfigurationException;
 
 public class YamcsConnectionProperties {
+
+    public static enum Protocol {
+        http, artemis;
+    }
+
+    public static enum AuthType {
+        STANDARD,
+        KERBEROS;
+    }
+
     private String host = "localhost";
     private int port;
     private String instance;
     private String username;
     private char[] password;
 
-    public static enum Protocol {
-        http, artemis;
-    }
-
     private Protocol protocol;
     private boolean tls;
+    private AuthType authType = AuthType.STANDARD;
 
     static final private String PREF_FILENAME = "YamcsConnectionProperties"; // relative to the <home>/.yamcs directory
 
@@ -60,19 +67,23 @@ public class YamcsConnectionProperties {
         return instance;
     }
 
+    public AuthType getAuthType() {
+        return authType;
+    }
+
     public URI webResourceURI(String relativePath) {
         if (!relativePath.startsWith("/")) {
             relativePath = "/" + relativePath;
         }
         try {
-            return new URI((tls?"http":"https")+"://" + host + ":" + port + "/api/" + relativePath);
+            return new URI((tls ? "https" : "http") + "://" + host + ":" + port + "/api/" + relativePath);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }
     }
 
     public URI webSocketURI() {
-        String urlString = (tls?"ws":"wss")+"://" + host + ":" + port + "/_websocket";
+        String urlString = (tls ? "wss" : "ws") + "://" + host + ":" + port + "/_websocket";
         if (instance != null) {
             urlString += "/" + instance;
         }
@@ -131,6 +142,10 @@ public class YamcsConnectionProperties {
         this.tls = tls;
     }
 
+    public void setAuthType(AuthType authType) {
+        this.authType = authType;
+    }
+
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
@@ -141,6 +156,7 @@ public class YamcsConnectionProperties {
         ycp1.protocol = this.protocol;
         ycp1.username = this.username;
         ycp1.password = this.password;
+        ycp1.authType = this.authType;
 
         return ycp1;
     }
@@ -153,13 +169,17 @@ public class YamcsConnectionProperties {
         this.port = port;
     }
 
+    public String getBaseURL() {
+        return (tls ? "https" : "http") + "://" + host + ":" + port;
+    }
+
     /**
      * Return the base REST API URL for connecting to yamcs
      *
      * @return A string of the shape http://host:port/api
      */
     public String getRestApiUrl() {
-        return (tls?"https":"http")+"://" + host + ":" + port + "/api";
+        return getBaseURL() + "/api";
     }
 
     public String getUsername() {
@@ -248,15 +268,13 @@ public class YamcsConnectionProperties {
         }
         return sb.toString();
     }
-    
+
     public boolean isTls() {
         return tls;
     }
-    
+
     @Override
     public String toString() {
         return getUrl();
     }
-
-
 }

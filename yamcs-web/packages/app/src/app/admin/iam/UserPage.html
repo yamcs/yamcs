@@ -10,6 +10,13 @@
       <mat-icon>edit</mat-icon>
       EDIT USER
     </a>
+    <a mat-button
+       color="primary"
+       [disabled]="user.identities?.length"
+       (click)="showChangeUserPasswordDialog()">
+      <mat-icon>account_box</mat-icon>
+      CHANGE PASSWORD
+    </a>
   </app-admin-toolbar>
 
   <div class="panel-content ya-link">
@@ -45,6 +52,14 @@
         <ng-container *ngIf="!user.createdBy">-</ng-container>
       </dd>
     </dl>
+
+    <div class="section-divider">
+      <mat-divider></mat-divider>
+    </div>
+    <h4>{{ user.roles?.length || '0' }} assigned roles</h4>
+    <ng-container *ngFor="let role of user.roles">
+      {{ role.name }}<br>
+    </ng-container>
 
     <ng-container *ngIf="user.identities">
       <div class="section-divider">

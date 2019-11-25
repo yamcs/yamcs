@@ -249,7 +249,7 @@ a.ya-link.ya-header-link {
   outline: none;
 }
 
-.ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus {
+.ya-form input[type="text"]:focus, .ya-form input[type="number"]:focus, .ya-form input[type="password"]:focus, .ya-input:focus, .ya-form textarea:focus {
   border-color: #5787b1;
 }
 
@@ -269,6 +269,7 @@ a.ya-link.ya-header-link {
   font-weight: 400;
   padding: 0 7px 1px;
   box-sizing: border-box;
+  outline: none;
 }
 
 .ya-form .error-message {

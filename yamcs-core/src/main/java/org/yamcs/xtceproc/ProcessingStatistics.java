@@ -7,22 +7,22 @@ import java.util.stream.Collectors;
 import org.yamcs.protobuf.TmStatistics;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.SequenceContainer;
 
 public class ProcessingStatistics {
 
     long lastUpdated; // local java time of the last update
     public ConcurrentHashMap<String, TmStats> stats = new ConcurrentHashMap<>();
 
-    public void newPacket(SequenceContainer seq, int subscribedParameterCount, long acquisitionTime,
-            long generationTime) {
-        TmStats s = stats.computeIfAbsent(seq.getName(), k -> new TmStats(k));
-        s.qualifiedName = seq.getQualifiedName();
+    public void newPacket(String pname, int subscribedParameterCount, long acquisitionTime,
+            long generationTime, int sizeInBits) {
+        TmStats s = stats.computeIfAbsent(pname, p -> new TmStats());
+        s.pname = pname;
         s.receivedPackets++;
         s.subscribedParameterCount = subscribedParameterCount;
         s.lastReceived = acquisitionTime;
         s.lastPacketTime = generationTime;
         s.packetRateMeter.mark(1);
+        s.dataRateMeter.mark(sizeInBits);
         lastUpdated = System.currentTimeMillis();
     }
 
@@ -37,29 +37,25 @@ public class ProcessingStatistics {
     public List<TmStatistics> snapshot() {
         return stats.values().stream()
                 .map(t -> TmStatistics.newBuilder()
-                        .setPacketName(t.packetName)
-                        .setQualifiedName(t.qualifiedName)
+                        .setPacketName(t.pname)
+                        .setQualifiedName(t.pname)
                         .setReceivedPackets(t.receivedPackets)
                         .setSubscribedParameterCount(t.subscribedParameterCount)
                         .setLastPacketTime(TimeEncoding.toProtobufTimestamp(t.lastPacketTime))
                         .setLastReceived(TimeEncoding.toProtobufTimestamp(t.lastReceived))
-                        .setPacketRate(t.packetRateMeter.getFiveSecondsRate())
+                        .setPacketRate(Math.round(t.packetRateMeter.getFiveSecondsRate()))
+                        .setDataRate(Math.round(t.dataRateMeter.getFiveSecondsRate()))
                         .build())
                 .collect(Collectors.toList());
     }
 
     private static class TmStats {
-        final String packetName;
-        String qualifiedName;
+        String pname;
         int receivedPackets;
         int subscribedParameterCount;
         long lastReceived;
         long lastPacketTime;
-
         DataRateMeter packetRateMeter = new DataRateMeter();
-
-        TmStats(String packetName) {
-            this.packetName = packetName;
-        }
+        DataRateMeter dataRateMeter = new DataRateMeter();
     }
 }

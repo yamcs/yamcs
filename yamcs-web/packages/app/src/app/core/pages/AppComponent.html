@@ -38,7 +38,7 @@
       </app-slanted-label>
     </div>
 
-    <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms"
+    <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms && mayReadAlarms()"
                      style="margin-top: 8px"
                      matTooltip="Alarm State"></app-alarm-label>
 

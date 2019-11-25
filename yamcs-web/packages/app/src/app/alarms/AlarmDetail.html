@@ -95,7 +95,7 @@
   </ng-container>
 </ng-container>
 
-<div class="action-bar">
+<div class="action-bar" *ngIf="mayControl">
   <button class="ya-button"
           (click)="acknowledgeAlarm.emit(alarm)"
           *ngIf="!alarm.shelveInfo && !alarm.acknowledged">

@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { ExternalIdentity, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeUserPasswordDialog } from './ChangeUserPasswordDialog';
 
 @Component({
   templateUrl: './UserPage.html',
@@ -19,6 +21,7 @@ export class UserPage {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private title: Title,
+    private dialog: MatDialog,
     private messageService: MessageService,
   ) {
 
@@ -44,5 +47,14 @@ export class UserPage {
         .then(() => this.changeUser(username))
         .catch(err => this.messageService.showError(err));
     }
+  }
+
+  showChangeUserPasswordDialog() {
+    this.dialog.open(ChangeUserPasswordDialog, {
+      data: {
+        user: this.user$.value,
+      },
+      width: '400px',
+    });
   }
 }

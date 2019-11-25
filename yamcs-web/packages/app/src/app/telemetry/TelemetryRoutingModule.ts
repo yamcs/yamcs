@@ -11,6 +11,7 @@ import { DisplaysPage } from './displays/DisplaysPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
+import { PacketsPage } from './packets/PacketsPage';
 import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
@@ -30,13 +31,11 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'home',
-      },
-      {
+      }, {
         path: 'displays',
         pathMatch: 'full',
         redirectTo: 'displays/browse'
-      },
-      {
+      }, {
         path: 'displays/browse',
         component: DisplaysPage,
         children: [
@@ -45,8 +44,7 @@ const routes: Routes = [
             component: DisplayFolderPage,
           }
         ]
-      },
-      {
+      }, {
         path: 'displays/files',
         component: DisplayPage,
         children: [
@@ -63,6 +61,9 @@ const routes: Routes = [
       }, {
         path: 'layouts/:name',
         component: LayoutPage,
+      }, {
+        path: 'packets',
+        component: PacketsPage,
       }, {
         path: 'parameters',
         pathMatch: 'full',
@@ -114,6 +115,7 @@ export const routingComponents = [
   ExtensionPage,
   LayoutsPage,
   LayoutPage,
+  PacketsPage,
   ParametersPage,
   ParameterPage,
   ParameterAlarmsTab,
