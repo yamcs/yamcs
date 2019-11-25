@@ -4,7 +4,7 @@
 
   <groupId>org.yamcs</groupId>
   <artifactId>yamcs</artifactId>
-  <version>4.10.5-SNAPSHOT</version>
+  <version>4.10.5</version>
 
   <packaging>pom</packaging>
 
