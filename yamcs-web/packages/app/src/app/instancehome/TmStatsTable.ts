@@ -3,6 +3,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Instance, TmStatistics } from '@yamcs/client';
 import { Observable, Subscription } from 'rxjs';
+import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
 
 export interface PacketStats {
@@ -32,6 +33,8 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
 
   instance: Instance;
 
+  config: WebsiteConfig;
+
   displayedColumns = [
     'packetName',
     'lastPacketTime',
@@ -40,8 +43,9 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
     'dataRate',
   ];
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, configService: ConfigService) {
     this.instance = yamcs.getInstance();
+    this.config = configService.getConfig();
   }
 
   ngAfterViewInit() {

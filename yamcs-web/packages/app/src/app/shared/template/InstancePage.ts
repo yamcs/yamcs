@@ -134,7 +134,7 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showPacketsItem() {
-    return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
+    return this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }
 
   showDisplaysItem() {
@@ -158,11 +158,11 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showCommandQueuesItem() {
-    return this.user.hasSystemPrivilege('ControlCommandQueue');
+    return this.config.features.tc && this.user.hasSystemPrivilege('ControlCommandQueue');
   }
 
   showSendACommand() {
-    return this.user.hasAnyObjectPrivilegeOfType('Command');
+    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
   }
 
   showCommandHistory() {

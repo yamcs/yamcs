@@ -28,10 +28,11 @@
           <input type="checkbox" (change)="$event ? masterToggle() : null"
                  [checked]="selection.hasValue() && isAllSelected()">
         </th>
-        <td mat-cell *cdkCellDef="let row" class="checkbox">
+        <td mat-cell *cdkCellDef="let gap" class="checkbox">
           <input type="checkbox" (click)="$event.stopPropagation()"
-                 (change)="$event ? selection.toggle(row) : null"
-                 [checked]="selection.isSelected(row)">
+                 (change)="$event ? selection.toggle(gap) : null"
+                 [checked]="selection.isSelected(gap)"
+                 [disabled]="!gap.start || !gap.stop">
         </td>
       </ng-container>
 

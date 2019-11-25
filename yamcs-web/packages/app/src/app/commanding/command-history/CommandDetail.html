@@ -98,11 +98,11 @@
   </table>
 </div>
 
-<ng-container *ngIf="command.verifications.length">
+<ng-container *ngIf="command.extraAcks.length">
   <h6>Extra acknowledgments</h6>
   <div class="block">
     <table yaDataTable style="width: 100%">
-      <tr *ngFor="let ack of command.verifications">
+      <tr *ngFor="let ack of command.extraAcks">
         <td style="width: 16px">
           <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
         </td>

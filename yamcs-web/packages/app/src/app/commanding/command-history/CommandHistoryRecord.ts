@@ -30,7 +30,6 @@ export class CommandHistoryRecord {
   released?: Acknowledgment;
   sent?: Acknowledgment;
   extraAcks: Acknowledgment[] = [];
-  verifications: Acknowledgment[] = [];
 
   completed?: Acknowledgment;
 
@@ -87,8 +86,6 @@ export class CommandHistoryRecord {
         this.released = ack;
       } else if (ack.name === 'Acknowledge_Sent') {
         this.sent = ack;
-      } else if (ack.name!.indexOf('Verifier_') === 0) {
-        this.verifications.push(ack);
       } else {
         this.extraAcks.push(ack);
       }

@@ -5,6 +5,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AlarmsDataSource } from '../alarms/AlarmsDataSource';
 import { AuthService } from '../core/services/AuthService';
+import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
 import { User } from '../shared/User';
 
@@ -18,6 +19,7 @@ export class InstanceHomePage implements OnDestroy {
   instance: Instance;
 
   private user: User;
+  config: WebsiteConfig;
 
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
@@ -27,7 +29,14 @@ export class InstanceHomePage implements OnDestroy {
   info$: Promise<GeneralInfo>;
   mdb$: Promise<MissionDatabase>;
 
-  constructor(yamcs: YamcsService, private authService: AuthService, title: Title) {
+  constructor(
+    yamcs: YamcsService,
+    private authService: AuthService,
+    title: Title,
+    configService: ConfigService,
+  ) {
+    this.config = configService.getConfig();
+
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;

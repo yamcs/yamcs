@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Instance, Parameter, ParameterValue, Value } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
@@ -20,6 +21,7 @@ import { SetParameterDialog } from './SetParameterDialog';
 export class ParameterPage implements OnDestroy {
 
   instance: Instance;
+  config: WebsiteConfig;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
 
@@ -35,7 +37,9 @@ export class ParameterPage implements OnDestroy {
     private title: Title,
     private valuePipe: ValuePipe,
     private unitsPipe: UnitsPipe,
+    configService: ConfigService,
   ) {
+    this.config = configService.getConfig();
     this.instance = yamcs.getInstance();
 
     // When clicking links pointing to this same component, Angular will not reinstantiate

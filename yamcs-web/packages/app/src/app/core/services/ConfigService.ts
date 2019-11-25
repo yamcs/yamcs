@@ -15,6 +15,8 @@ export interface FeaturesConfig {
   cfdp: boolean;
   dass: boolean;
   layouts: boolean;
+  tc: boolean;
+  tmArchive: boolean;
 }
 
 export interface EventsConfig {
