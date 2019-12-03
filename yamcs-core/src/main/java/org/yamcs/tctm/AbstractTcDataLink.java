@@ -4,7 +4,7 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -40,7 +40,7 @@ public abstract class AbstractTcDataLink extends AbstractService
 
     protected volatile long dataCount;
 
-    private String sv_linkStatus_id, sp_dataCount_id;
+    protected String sv_linkStatus_id, sp_dataCount_id;
 
     protected SystemParametersCollector sysParamCollector;
     protected final Log log;
@@ -164,7 +164,7 @@ public abstract class AbstractTcDataLink extends AbstractService
     }
 
     @Override
-    public Collection<ParameterValue> getSystemParameters() {
+    public List<ParameterValue> getSystemParameters() {
         long time = getCurrentTime();
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());

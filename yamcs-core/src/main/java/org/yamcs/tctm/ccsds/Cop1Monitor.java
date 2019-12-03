@@ -30,7 +30,7 @@ public interface Cop1Monitor {
      */
     void suspended(int suspendState);
 
-    void alert(AlertType alert);
+    default void alert(AlertType alert) {};
 
     /**
      * Called each time when the state changes.
@@ -44,4 +44,18 @@ public interface Cop1Monitor {
      * Called when the COP1 has been disabled
      */
     void disabled();
+    
+    /**
+     * Called when a new CLCW has been received
+     */
+    default void clcwReceived(int clcw) {};
+    
+    /**
+     * Called when a new command has been added to the COP1 waiting queue 
+     */
+    default void tcQueued() {};
+    /**
+     * Called when a new AD frame has been sent queued for being sent upstream
+     */
+    default void tcSent() {};
 }
