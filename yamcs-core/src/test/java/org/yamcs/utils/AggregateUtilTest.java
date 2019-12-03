@@ -2,6 +2,7 @@ package org.yamcs.utils;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Test;
@@ -39,7 +40,7 @@ public class AggregateUtilTest {
     
     @Test
     public void testPatchAggregate() {
-        Parameter p = getAggregateParameter();
+        Parameter p = getAggregateParameter("p");
         AggregateParameterType adt = (AggregateParameterType) p.getParameterType();
         Map<String, Object> m = adt.parseString("{ m1: 3, m2: { s1: 5, s2:7}}"); 
         Value v = DataTypeProcessor.getValueForType(adt, m);
@@ -106,13 +107,18 @@ public class AggregateUtilTest {
     }
 
     @Test
+    public void testVerifyPath() {
+        Parameter p = getAggregateParameter("/yamcs/nm/UDP_FRAME_OUT.tc/cop1Status");
+        String name = "/yamcs/nm/UDP_FRAME_OUT.tc/cop1Status.m1";
+        int x = AggregateUtil.findSeparator(name);
+        PathElement[] path = AggregateUtil.parseReference(name.substring(x));
+        assertTrue(AggregateUtil.verifyPath(p.getParameterType(), path));
+    }
+    
+    
+    @Test
     public void testFindSeparator() {
-        assertEquals(-1, AggregateUtil.findSeparator("asdfasd"));
-        assertEquals(-1, AggregateUtil.findSeparator("as.d/fasd"));
-        assertEquals(7, AggregateUtil.findSeparator("as.d/fa.sd"));
-        assertEquals(7, AggregateUtil.findSeparator("as.d/fa.s.d"));
-        assertEquals(7, AggregateUtil.findSeparator("as.d/fa[s.d"));
-        assertEquals(0, AggregateUtil.findSeparator(".dd"));
+        
     }
     
     private Parameter getArrayInsideAggregateParameter() {
@@ -124,9 +130,9 @@ public class AggregateUtilTest {
         return p;
     }
     
-    private Parameter getAggregateParameter() {
-        Parameter p = new Parameter("p");
-        AggregateParameterType adt = new AggregateParameterType("p");
+    private Parameter getAggregateParameter(String pname) {
+        Parameter p = new Parameter(pname);
+        AggregateParameterType adt = new AggregateParameterType(pname);
         adt.addMember(getIntegerMember("m1"));
         adt.addMember(getAggregateMember("m2"));
         p.setParameterType(adt);

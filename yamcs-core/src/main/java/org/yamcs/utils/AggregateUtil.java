@@ -13,6 +13,7 @@ import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
+import org.yamcs.xtce.util.AggregateMemberNames;
 
 import com.google.common.base.Splitter;
 
@@ -261,5 +262,14 @@ public class AggregateUtil {
             }
         }
         return sb.toString();
+    }
+
+    public static AggregateParameterType createParameterType(String name, AggregateValue v) {
+        AggregateParameterType apt = new AggregateParameterType(name);
+        AggregateMemberNames amn = v.getMemberNames();
+        for(int i=0; i<amn.size(); i++) {
+            apt.addMember(new Member(amn.get(i)));
+        }
+        return apt;
     }
 }
