@@ -114,7 +114,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     int nnR;
 
     // Timer_Initial_Value (also known as ‘T1_Initial’) in milliseconds
-    private long t1Initial = 2000;
+    private long t1Initial;
 
     // Transmission_Limit;
     int txLimit = 3;
@@ -175,6 +175,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         outQueue = new ArrayBlockingQueue<>(OUT_QUEUE_SIZE);
         clcwStreamName = vmp.config.getString("clcwStream");
         this.initialClcwWait = 1000 * vmp.config.getInt("initialClcwWait", -1);
+        this.t1Initial =  1000 * vmp.config.getInt("t1", 3);
     }
 
     public void addMonitor(Cop1Monitor monitor) {
