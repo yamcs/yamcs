@@ -190,10 +190,13 @@ public class AggregateDataType extends NameDescription implements DataType {
         Map<String, Object> r = new HashMap<String, Object>();
         for (Member memb : memberList) {
             Object v = memb.getInitialValue();
-            if(v==null) {
-                v = memb.getType().getInitialValue();
+            if (v == null) {
+                DataType dt = memb.getType();
+                if (dt != null) {
+                    v = dt.getInitialValue();
+                }
             }
-            if(v==null) {
+            if (v == null) {
                 return null;
             }
             r.put(memb.getName(), v);
