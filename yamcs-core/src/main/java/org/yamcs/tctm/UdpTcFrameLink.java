@@ -41,7 +41,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
         super(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");
-       
+
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {
             if ("BCH".equals(cltuEncoding)) {
@@ -74,19 +74,24 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
             TcTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();
-                if(log.isTraceEnabled()) {
+                if (log.isTraceEnabled()) {
                     log.trace("Frame data: {}", StringConverter.arrayToHexString(data, true));
                 }
-                
+
                 if (cltuGenerator != null) {
                     data = cltuGenerator.makeCltu(data);
-                    if(log.isTraceEnabled()) {
+                    if (log.isTraceEnabled()) {
                         log.trace("CLTU: {}", StringConverter.arrayToHexString(data, true));
                     }
                 }
-                if(tf.isBypass()) { //the AD frames are acknowledged when the COP1 ack is received
-                    for(PreparedCommand pc: tf.getCommands()) {
-                        commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
+                // Ack the BD frames
+                // (note that the AD frames are acknowledged in the when the COP1 ack is received)
+                if (tf.isBypass()) {
+                    if (tf.getCommands() != null) {
+                        for (PreparedCommand pc : tf.getCommands()) {
+                            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX,
+                                    getCurrentTime(), AckStatus.OK);
+                        }
                     }
                 }
                 DatagramPacket dtg = new DatagramPacket(data, data.length, address, port);

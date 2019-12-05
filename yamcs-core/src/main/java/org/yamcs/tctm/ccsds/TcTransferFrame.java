@@ -20,7 +20,7 @@ public class TcTransferFrame {
     final protected int virtualChannelId;
     int vcFrameSeq;
     long genTime;
-    
+
     List<PreparedCommand> commands;
     byte[] data;
     int dataStart;
@@ -84,6 +84,10 @@ public class TcTransferFrame {
         return virtualChannelId;
     }
 
+    /**
+     * 
+     * @return the list of commands that compose this frame. It could be null (e.g. for BC frames)
+     */
     public List<PreparedCommand> getCommands() {
         return commands;
     }
@@ -102,6 +106,5 @@ public class TcTransferFrame {
                 + ", vcFrameSeq=" + vcFrameSeq + ", bypass=" + bypass + ", cmdControl=" + cmdControl
                 + ", numCommands: " + ((commands != null) ? commands.size() : 0) + "]";
     }
-
 
 }

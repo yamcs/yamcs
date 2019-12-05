@@ -392,7 +392,6 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         if (vR < 0 || vR > 255) {
             throw new IllegalArgumentException("vR has to be between 0 and 255 (inclusive)");
         }
-        cop1Active = true;
         return doInExecutor(cf -> {
             if (!preInitCheck(cf)) {
                 return;
@@ -594,9 +593,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         startTimer();
 
         queueForDownstream(pendingBCFrame).handleAsync((v, t) -> {
+            bcOutReady = true;
             if (t == null) {// E43
                 traceEvent("E43");
-                bcOutReady = true;
                 if (state == 5) {
                     lookForDirective();
                 }
