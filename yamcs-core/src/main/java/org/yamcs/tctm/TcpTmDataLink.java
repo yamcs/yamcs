@@ -6,8 +6,6 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -15,18 +13,14 @@ import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.YObjectLoader;
 
-public class TcpTmDataLink extends AbstractTmDataLink {
+public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     protected Socket tmSocket;
     protected String host;
     protected int port;
     protected long initialDelay;
-    protected volatile boolean disabled = false;
-
-    private TmSink tmSink;
 
     ParameterValue svConnectionStatus;
-    List<ParameterValue> sysVariables = new ArrayList<>();
 
     String packetInputStreamClassName;
     Object packetInputStreamArgs;
@@ -41,7 +35,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
             host = config.getString("host");
             port = config.getInt("port");
         }
-        initialDelay = config.getLong("initialDelay", 0);
+        initialDelay = config.getLong("initialDelay", -1);
         if (config.containsKey("packetInputStreamClassName")) {
             this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
         } else {
@@ -71,21 +65,43 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public void setTmSink(TmSink tmSink) {
-        this.tmSink = tmSink;
+    public void doStart() {
+        setupSysVariables();
+        if (!isDisabled()) {
+            new Thread(this).start();
+        }
+        notifyStarted();
+    }
+
+    @Override
+    public void doStop() {
+        if (sysParamCollector != null) {
+            sysParamCollector.unregisterProducer(this);
+        }
+        if (tmSocket != null) {
+            try {
+                tmSocket.close();
+            } catch (IOException e) {
+                log.warn("Exception got when closing the tm socket:", e);
+            }
+            tmSocket = null;
+        }
+        notifyStopped();
     }
 
     @Override
     public void run() {
-        setupSysVariables();
-        try {
-            Thread.sleep(initialDelay);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
+        if (initialDelay > 0) {
+            try {
+                Thread.sleep(initialDelay);
+                initialDelay = -1;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
 
-        while (isRunning()) {
+        while (isRunning() && !isDisabled()) {
             TmPacket pwrt = getNextPacket();
             if (pwrt == null) {
                 break;
@@ -96,18 +112,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     public TmPacket getNextPacket() {
         TmPacket pwt = null;
-        while (isRunning()) {
-            while (disabled) {
-                if (!isRunning()) {
-                    return null;
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return null;
-                }
-            }
+        while (isRunning() && !isDisabled()) {
             try {
                 if (tmSocket == null) {
                     openSocket();
@@ -131,7 +136,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 }
                 tmSocket = null;
                 for (int i = 0; i < 10; i++) {
-                    if (!isRunning()) {
+                    if (!isRunning() || isDisabled()) {
                         break;
                     }
                     try {
@@ -155,7 +160,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     @Override
     public Status getLinkStatus() {
-        if (disabled) {
+        if (isDisabled()) {
             return Status.DISABLED;
         }
         if (tmSocket == null) {
@@ -166,23 +171,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public void triggerShutdown() {
-        if (tmSocket != null) {
-            try {
-                tmSocket.close();
-            } catch (IOException e) {
-                log.warn("Exception got when closing the tm socket:", e);
-            }
-            tmSocket = null;
-        }
-        if (sysParamCollector != null) {
-            sysParamCollector.unregisterProducer(this);
-        }
-    }
-
-    @Override
-    public void disable() {
-        disabled = true;
+    public void doDisable() {
         if (tmSocket != null) {
             try {
                 tmSocket.close();
@@ -194,24 +183,19 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public void enable() {
-        disabled = false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
+    public void doEnable() {
+        new Thread(this).start();
     }
 
     @Override
     public String getDetailedStatus() {
-        if (disabled) {
+        if (isDisabled()) {
             return String.format("DISABLED (should connect to %s:%d)", host, port);
         }
         if (tmSocket == null) {
             return String.format("Not connected to %s:%d", host, port);
         } else {
-            return String.format("OK, connected to %s:%d, received %d packets", host, port, packetcount);
+            return String.format("OK, connected to %s:%d, received %d packets", host, port, packetCount);
         }
     }
 }

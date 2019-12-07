@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 
 import org.yamcs.ConfigurationException;
@@ -17,15 +18,11 @@ import org.yamcs.YConfiguration;
  * @author nm
  *
  */
-public class UdpTmDataLink extends AbstractTmDataLink {
-    private volatile int validDatagramCount = 0;
+public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     private volatile int invalidDatagramCount = 0;
-    private volatile boolean disabled = false;
 
     private DatagramSocket tmSocket;
     private int port;
-
-    private TmSink tmSink;
 
     final static int MAX_LENGTH = 1500;
     final DatagramPacket datagram;
@@ -46,36 +43,35 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public void startUp() throws IOException {
-        tmSocket = new DatagramSocket(port);
+    public void doStart() {
+        if (!isDisabled()) {
+            try {
+                tmSocket = new DatagramSocket(port);
+                new Thread(this).start();
+            } catch (SocketException e) {
+                notifyFailed(e);
+            }
+        }
+        notifyStarted();
     }
 
     @Override
-    public void setTmSink(TmSink tmSink) {
-        this.tmSink = tmSink;
+    public void doStop() {
+        tmSocket.close();
+        notifyStopped();
     }
+    
+
+   
 
     @Override
     public void run() {
-        while (isRunning()) {
+        while (isRunning() && !isDisabled()) {
             TmPacket pwrt = getNextPacket();
             if (pwrt != null) {
                 tmSink.processPacket(pwrt);
             }
-            while (isRunning() && disabled) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
         }
-    }
-
-    @Override
-    public void triggerShutdown() {
-        tmSocket.close();
     }
 
     /**
@@ -90,12 +86,12 @@ public class UdpTmDataLink extends AbstractTmDataLink {
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
-                validDatagramCount++;
+                updateStats(datagram.getLength());
                 packet = ByteBuffer.allocate(datagram.getLength());
                 packet.put(datagram.getData(), datagram.getOffset(), datagram.getLength());
                 break;
             } catch (IOException e) {
-                if (!isRunning()) {// the triggerShutdown will close the socket and that will generate an exception
+                if (!isRunning() || isDisabled()) {// the shutdown or disable will close the socket and that will generate an exception
                                    // which we ignore here
                     return null;
                 }
@@ -111,21 +107,16 @@ public class UdpTmDataLink extends AbstractTmDataLink {
 
     }
 
-    @Override
-    public Status getLinkStatus() {
-        return disabled ? Status.DISABLED : Status.OK;
-    }
-
     /**
      * returns statistics with the number of datagram received and the number of invalid datagrams
      */
     @Override
     public String getDetailedStatus() {
-        if (disabled) {
+        if (isDisabled()) {
             return "DISABLED";
         } else {
             return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, validDatagramCount, invalidDatagramCount);
+                    port, packetCount, invalidDatagramCount);
         }
     }
 
@@ -133,35 +124,17 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      * Sets the disabled to true such that getNextPacket ignores the received datagrams
      */
     @Override
-    public void disable() {
-        disabled = true;
+    public void doDisable() {
+        tmSocket.close();
     }
 
     /**
      * Sets the disabled to false such that getNextPacket does not ignore the received datagrams
+     * @throws SocketException 
      */
     @Override
-    public void enable() {
-        disabled = false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    @Override
-    public long getDataInCount() {
-        return validDatagramCount;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
-    @Override
-    public void resetCounters() {
-        validDatagramCount = 0;
+    public void doEnable() throws SocketException {
+        tmSocket = new DatagramSocket(port);
+        new Thread(this).start();
     }
 }

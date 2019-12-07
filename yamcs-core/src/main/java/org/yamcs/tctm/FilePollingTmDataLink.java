@@ -16,14 +16,12 @@ import com.google.common.collect.ImmutableMap;
  * Reads telemetry files from the directory yamcs.incomingDir/tm
  *
  */
-public class FilePollingTmDataLink extends AbstractTmDataLink {
+public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnable {
 
     final Path incomingDir;
-    volatile boolean disabled;
-    TmSink tmSink;
-    volatile long tmCount = 0;
     boolean deleteAfterImport = true;
     long delayBetweenPackets = -1;
+    Thread thread;
 
     public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
@@ -58,31 +56,9 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     public void run() {
         File fdir = incomingDir.toFile();
         try {
-            while (isRunning()) {
-                if (!disabled && fdir.exists()) {
-                    File[] files = fdir.listFiles();
-                    Arrays.sort(files);
-                    for (File f : files) {
-                        log.info("Injecting the content of {}", f);
-                        try {
-                            TmFileReader prov = getTmFileReader(f.getAbsolutePath());
-                            TmPacket pwrt;
-                            while ((pwrt = prov.readPacket(timeService.getMissionTime())) != null) {
-                                tmSink.processPacket(pwrt);
-                                tmCount++;
-                                if (delayBetweenPackets > 0) {
-                                    Thread.sleep(delayBetweenPackets);
-                                }
-                            }
-                        } catch (IOException e) {
-                            log.warn("Got IOException while reading from " + f + ": ", e);
-                        }
-                        if (deleteAfterImport) {
-                            if (!f.delete()) {
-                                log.warn("Could not remove {}", f);
-                            }
-                        }
-                    }
+            while (isRunning() && !isDisabled()) {
+                if (fdir.exists()) {
+                    play(fdir);
                 }
                 if (delayBetweenPackets < 0) {
                     Thread.sleep(10000);
@@ -92,6 +68,33 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
             log.debug("Interrupted", e);
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void play(File fdir) throws InterruptedException {
+        File[] files = fdir.listFiles();
+        Arrays.sort(files);
+        for (File f : files) {
+            log.info("Injecting the content of {}", f);
+            try {
+                TmFileReader prov = getTmFileReader(f.getAbsolutePath());
+                TmPacket pwrt;
+                while ((pwrt = prov.readPacket(timeService.getMissionTime())) != null) {
+                    tmSink.processPacket(pwrt);
+                    updateStats(pwrt.getPacket().length);
+                    if (delayBetweenPackets > 0) {
+                        Thread.sleep(delayBetweenPackets);
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("Got IOException while reading from " + f + ": ", e);
+            }
+            if (deleteAfterImport) {
+                if (!f.delete()) {
+                    log.warn("Could not remove {}", f);
+                }
+            }
+        }
+
     }
 
     public TmFileReader getTmFileReader(String fileName) throws IOException {
@@ -104,50 +107,29 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public void disable() {
-        disabled = true;
-
-    }
-
-    @Override
-    public void enable() {
-        disabled = false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    @Override
-    public Status getLinkStatus() {
-        if (disabled) {
-            return Status.DISABLED;
-        }
-        if (isRunning()) {
-            return Status.OK;
-        } else {
-            return Status.UNAVAIL;
+    public void doDisable() {
+        if (thread != null) {
+            thread.interrupt();
         }
     }
 
     @Override
-    public void setTmSink(TmSink tmSink) {
-        this.tmSink = tmSink;
+    public void doEnable() {
+        thread = new Thread(this);
+        thread.start();
     }
 
     @Override
-    public long getDataInCount() {
-        return tmCount;
+    protected void doStart() {
+        if (!isDisabled()) {
+            doEnable();
+        }
+        notifyStarted();
     }
 
     @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
-    @Override
-    public void resetCounters() {
-        tmCount = 0;
+    protected void doStop() {
+        doDisable();
+        notifyStopped();
     }
 }

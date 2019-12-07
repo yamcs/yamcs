@@ -24,7 +24,7 @@ import org.yamcs.utils.YObjectLoader;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Base implementation for a TC data link that initialises a post processor and provides a queing and rate limiting
+ * Base implementation for a TC data link that initialises a post processor and provides a queueing and rate limiting
  * function.
  * 
  * 

@@ -15,11 +15,9 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
-public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
-        implements TmPacketDataLink, SystemParametersProducer {
-    protected volatile long packetcount = 0;
+public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
+    protected volatile long packetCount = 0;
     DataRateMeter packetRateMeter = new DataRateMeter();
     DataRateMeter dataRateMeter = new DataRateMeter();
 
@@ -32,18 +30,14 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     private String spLinkStatus, spDataCount, spDataRate, spPacketRate;
     final protected TimeService timeService;
 
-    final protected String yamcsInstance;
-    final protected String name;
-
-    final YConfiguration config;
-
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
+    protected TmSink tmSink;
+
+    
 
     protected AbstractTmDataLink(String instance, String name, YConfiguration config) {
+        super(instance, name, config);
         this.timeService = YamcsServer.getTimeService(instance);
-        this.yamcsInstance = instance;
-        this.name = name;
-        this.config = config;
         this.log = new Log(this.getClass(), instance);
         log.setContext(name);
     }
@@ -55,7 +49,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
             } else {
                 this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             }
-            if(config.containsKey("packetPreprocessorArgs")) {
+            if (config.containsKey("packetPreprocessorArgs")) {
                 this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
             }
         } else {
@@ -96,7 +90,7 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     public Collection<ParameterValue> getSystemParameters() {
         long time = timeService.getMissionTime();
         ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, packetcount);
+        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, packetCount);
         ParameterValue dataRate = SystemParametersCollector.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate());
         ParameterValue packetRate = SystemParametersCollector.getPV(spPacketRate, time,
                 packetRateMeter.getFiveSecondsRate());
@@ -105,17 +99,17 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
 
     @Override
     public long getDataInCount() {
-        return packetcount;
+        return packetCount;
     }
 
     @Override
     public long getDataOutCount() {
         return 0;
     }
-
+    
     @Override
-    public void resetCounters() {
-        packetcount = 0;
+    public void setTmSink(TmSink tmSink) {
+        this.tmSink = tmSink;
     }
 
     /**
@@ -124,23 +118,13 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
      * @param packetSize
      */
     protected void updateStats(int packetSize) {
-        packetcount++;
+        packetCount++;
         packetRateMeter.mark(1);
         dataRateMeter.mark(packetSize);
     }
 
-    /**
-     * Return the configuration used when creating the link
-     * 
-     * @return
-     */
     @Override
-    public YConfiguration getConfig() {
-        return config;
-    }
-
-    @Override
-    public String getName() {
-        return name;
+    public void resetCounters() {
+        packetCount = 0;
     }
 }

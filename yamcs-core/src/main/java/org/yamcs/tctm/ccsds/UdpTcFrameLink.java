@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs.tctm.ccsds;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
 
