@@ -1,22 +1,29 @@
 package org.yamcs.tctm.ccsds.error;
 
-import org.yamcs.utils.ByteArrayUtils;
-
-
 /**
- *  Makes CLTUs from command transfer frames as per 
- *  CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
- *  
- *  <p>
- *  Implements BCH encoder
+ * Makes CLTUs from command transfer frames as per
+ * CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
+ * 
+ * <p>
+ * Implements BCH encoder
  */
 public class BchCltuGenerator extends CltuGenerator {
-    static final int START_SEQ = 0xEB90;
-    static final long TAIL_SEQ = 0xC5C5_C5C5_C5C5_C579L;
-    
+    public static final byte[] CCSDS_START_SEQ = { (byte) 0xEB, (byte) 0x90 };
+    public static final byte[] CCSDS_TAIL_SEQ = { (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, (byte) 0xC5,
+            (byte) 0xC5, (byte) 0xC5, (byte) 0xC5, 0x79 };
 
+    
+    final byte[] startSeq;
+    final byte[] tailSeq;// = 0xC5C5_C5C5_C5C5_C579L;
+    
     public BchCltuGenerator(boolean randomize) {
+        this(randomize, CCSDS_START_SEQ, CCSDS_TAIL_SEQ);
+    }
+
+    public BchCltuGenerator(boolean randomize, byte[] startSeq, byte[] tailSeq) {
         super(randomize);
+        this.startSeq = startSeq;
+        this.tailSeq = tailSeq;
     }
 
     @Override
@@ -25,11 +32,11 @@ public class BchCltuGenerator extends CltuGenerator {
             randomize(data);
         }
         int numBlocks = (data.length - 1) / 7 + 1;
-        int length = 2 + 8 * numBlocks + 8;
+        int length = startSeq.length + 8 * numBlocks + tailSeq.length;
 
         byte[] encData = new byte[length];
         // start sequence
-        ByteArrayUtils.encodeShort(START_SEQ, encData, 0);
+        System.arraycopy(startSeq, 0, encData, 0, startSeq.length);
 
         // data
         int inOffset = 0;
@@ -37,7 +44,7 @@ public class BchCltuGenerator extends CltuGenerator {
         int n = data.length / 7;
         for (int i = 0; i < n; i++) {
             System.arraycopy(data, inOffset, encData, outOffset, 7);
-            encData[outOffset+7] = BchEncoder.encode(encData, outOffset);
+            encData[outOffset + 7] = BchEncoder.encode(encData, outOffset);
             outOffset += 8;
             inOffset += 7;
         }
@@ -45,13 +52,13 @@ public class BchCltuGenerator extends CltuGenerator {
         if (d > 0) {// last block is padded with alternating 0 1 bits
             System.arraycopy(data, inOffset, encData, outOffset, d);
             for (int i = 0; i < 7 - d; i++) {
-                encData[outOffset+d+i] = 0x55;
+                encData[outOffset + d + i] = 0x55;
             }
-            encData[outOffset+7] = BchEncoder.encode(encData, outOffset);
+            encData[outOffset + 7] = BchEncoder.encode(encData, outOffset);
             outOffset += 8;
         }
         // tail sequence
-        ByteArrayUtils.encodeLong(TAIL_SEQ, encData, outOffset);
+        System.arraycopy(tailSeq, 0, encData, outOffset, tailSeq.length);
         return encData;
     }
 
@@ -65,24 +72,24 @@ public class BchCltuGenerator extends CltuGenerator {
         static void init() {
             int remainder;
 
-            for (int i = 0; i < 256; ++i)  {
+            for (int i = 0; i < 256; ++i) {
                 remainder = i;
-                for (int j = 0; j<8; j++) {
-                    if ((remainder & 0x80) ==0) {
+                for (int j = 0; j < 8; j++) {
+                    if ((remainder & 0x80) == 0) {
                         remainder = (remainder << 1);
                     } else {
                         remainder = (remainder << 1) ^ POLYNOMIAL;
                     }
                 }
-                r[i] = (byte)remainder;
+                r[i] = (byte) remainder;
             }
 
         }
 
-        public static byte encode(byte p[])  {
+        public static byte encode(byte p[]) {
             return encode(p, 0);
         }
-        
+
         /**
          * Encodes 7 bytes of data from p:offset and returns the result
          * 
@@ -90,11 +97,11 @@ public class BchCltuGenerator extends CltuGenerator {
          * @param offset
          * @return
          */
-        public static byte encode(byte p[], int offset)  {
+        public static byte encode(byte p[], int offset) {
             int remainder = 0;
             int len = 7;
 
-            for (int i = offset; i < offset+len; i++) {
+            for (int i = offset; i < offset + len; i++) {
                 remainder = r[0xFF & (p[i] ^ remainder)];
             }
 
@@ -102,6 +109,6 @@ public class BchCltuGenerator extends CltuGenerator {
             remainder &= 0xFE;
             return (byte) remainder;
         }
-      
+
     }
 }

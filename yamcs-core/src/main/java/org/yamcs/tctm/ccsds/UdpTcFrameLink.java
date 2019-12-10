@@ -16,10 +16,6 @@ import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
 import org.yamcs.tctm.ccsds.TcFrameFactory;
 
 import org.yamcs.tctm.ccsds.TcTransferFrame;
-import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
-import org.yamcs.tctm.ccsds.error.CltuGenerator;
-import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
-import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -35,26 +31,12 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
     int port;
     DatagramSocket socket;
     InetAddress address;
-    CltuGenerator cltuGenerator;
 
     public UdpTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");
-
-        String cltuEncoding = config.getString("cltuEncoding", null);
-        if (cltuEncoding != null) {
-            if ("BCH".equals(cltuEncoding)) {
-                cltuGenerator = new BchCltuGenerator(config.getBoolean("randomizeCltu", false));
-            } else if ("LDPC64".equals(cltuEncoding)) {
-                cltuGenerator = new Ldpc64CltuGenerator(config.getBoolean("ldpc64Tail", false));
-            } else if ("LDPC256".equals(cltuEncoding)) {
-                cltuGenerator = new Ldpc256CltuGenerator();
-            } else {
-                throw new ConfigurationException(
-                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64 or LDPC256");
-            }
-        }
+       
         try {
             address = InetAddress.getByName(host);
         } catch (UnknownHostException e) {

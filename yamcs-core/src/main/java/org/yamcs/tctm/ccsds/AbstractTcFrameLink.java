@@ -21,6 +21,10 @@ import org.yamcs.tctm.ccsds.MasterChannelFrameMultiplexer;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 import org.yamcs.tctm.ccsds.VcUplinkHandler;
+import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
+import org.yamcs.tctm.ccsds.error.CltuGenerator;
+import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
+import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 
@@ -46,6 +50,7 @@ public abstract class AbstractTcFrameLink extends AbstractExecutionThreadService
     protected SystemParametersCollector sysParamCollector;
     private String sv_linkStatus_id, sp_dataCount_id;
     protected Log log;
+    protected CltuGenerator cltuGenerator;
     
     public AbstractTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
         this.config = config;
@@ -53,6 +58,28 @@ public abstract class AbstractTcFrameLink extends AbstractExecutionThreadService
         this.yamcsInstance  = yamcsInstance;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         this.log = new Log(getClass(), yamcsInstance);
+        
+        String cltuEncoding = config.getString("cltuEncoding", null);
+        if (cltuEncoding != null) {
+            if ("BCH".equals(cltuEncoding)) {
+                byte[] startSeq = config.getBinary("startSequence", BchCltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary("tailSequence", BchCltuGenerator.CCSDS_TAIL_SEQ);
+                boolean randomize = config.getBoolean("randomizeCltu", false);
+                cltuGenerator = new BchCltuGenerator(randomize, startSeq, tailSeq);
+            } else if ("LDPC64".equals(cltuEncoding)) {
+                byte[] startSeq = config.getBinary("startSequence", Ldpc64CltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary("tailSequence", CltuGenerator.EMPTY_SEQ);
+                cltuGenerator = new Ldpc64CltuGenerator(startSeq, tailSeq);
+            } else if ("LDPC256".equals(cltuEncoding)) {
+                byte[] startSeq = config.getBinary("startSequence", Ldpc256CltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary("tailSequence", CltuGenerator.EMPTY_SEQ);
+                cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
+            } else {
+                throw new ConfigurationException(
+                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64 or LDPC256");
+            }
+        }
+        
         multiplexer = new MasterChannelFrameMultiplexer(yamcsInstance, name, config);
         subLinks = new ArrayList<>();
         for (VcUplinkHandler vch : multiplexer.getVcHandlers()) {

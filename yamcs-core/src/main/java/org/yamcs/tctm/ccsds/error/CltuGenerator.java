@@ -10,6 +10,8 @@ import org.yamcs.tctm.ccsds.Randomizer;
  *  TODO: implement randomization
  */
 public abstract class CltuGenerator {
+    public final static byte[] EMPTY_SEQ = {};
+    
     public enum Encoding {
         BCH, LDCP64, LDPC256
     };

@@ -3,22 +3,30 @@ package org.yamcs.tctm.ccsds.error;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class Ldpc256CltuGenerator extends CltuGenerator {
-
+    static final public byte[] CCSDS_START_SEQ = new byte[] {0x03, 0x47, 0x76, (byte)0xC7, 0x27, 0x28, (byte)0x95, (byte)0xB0};
+    final byte[] startSeq;
+    final byte[] tailSeq;
+    
     public Ldpc256CltuGenerator() {
-        super(true);
+        this(CCSDS_START_SEQ, EMPTY_SEQ);
     }
-
+    public Ldpc256CltuGenerator(byte[] startSeq, byte[] tailSeq) {
+        super(true);
+        this.startSeq = startSeq;
+        this.tailSeq = tailSeq;
+    }
+    
     @Override
     public byte[] makeCltu(byte[] frameData) {
         if (randomize) {
             randomize(frameData);
         }
         int numBlocks = (frameData.length - 1) / 32 + 1;
-        int length = 8 + 64 * numBlocks;
+        int length = startSeq.length + 64 * numBlocks + tailSeq.length;
 
         byte[] encData = new byte[length];
         // start sequence
-        ByteArrayUtils.encodeLong(0x0347_76C7_2728_95B0L, encData, 0);
+        System.arraycopy(startSeq, 0, encData, 0, startSeq.length);
 
         // data
         int inOffset = 0;
@@ -37,6 +45,10 @@ public class Ldpc256CltuGenerator extends CltuGenerator {
                 encData[outOffset + d + i] = 0x55;
             }
             Ldpc256Encoder.encode(encData, outOffset, encData, outOffset + 32);
+            outOffset+=64;
+        }
+        if (tailSeq.length > 0) { // tail sequence
+            System.arraycopy(tailSeq, 0, encData, outOffset, tailSeq.length);
         }
 
         return encData;

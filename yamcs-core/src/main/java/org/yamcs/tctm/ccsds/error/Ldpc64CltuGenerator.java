@@ -3,11 +3,23 @@ package org.yamcs.tctm.ccsds.error;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class Ldpc64CltuGenerator extends CltuGenerator {
-    final boolean withTail;
+    static public final byte[] CCSDS_START_SEQ = { 0x03, 0x47, 0x76, (byte) 0xC7, 0x27, 0x28, (byte) 0x95,
+            (byte) 0xB0 };
+    static public final byte[] CCSDS_TAIL_SEQ = { 0x55, 0x55, 0x55, 0x56, (byte) 0xAA, (byte) 0xAA, (byte) 0xAA,
+            (byte) 0xAA,
+            0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55 };
+
+    final byte[] startSeq;
+    final byte[] tailSeq;
+
+    public Ldpc64CltuGenerator(byte[] startSeq, byte[] tailSeq) {
+        super(true);
+        this.startSeq = startSeq;
+        this.tailSeq = tailSeq;
+    }
 
     public Ldpc64CltuGenerator(boolean withTail) {
-        super(true);
-        this.withTail = withTail;
+        this(CCSDS_START_SEQ, withTail ? CCSDS_TAIL_SEQ : EMPTY_SEQ);
     }
 
     @Override
@@ -16,11 +28,11 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
             randomize(frameData);
         }
         int numBlocks = (frameData.length - 1) / 8 + 1;
-        int length = 8 + 16 * numBlocks + (withTail ? 32 : 0);
+        int length = startSeq.length + 16 * numBlocks + tailSeq.length;
 
         byte[] encData = new byte[length];
         // start sequence
-        ByteArrayUtils.encodeLong(0x0347_76C7_2728_95B0L, encData, 0);
+        System.arraycopy(startSeq, 0, encData, 0, startSeq.length);
 
         // data
         int inOffset = 0;
@@ -41,11 +53,8 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
             Ldpc64Encoder.encode(encData, outOffset, encData, outOffset + 8);
             outOffset += 16;
         }
-        if (withTail) { // tail sequence
-            ByteArrayUtils.encodeLong(0x5555_5556_AAAA_AAAAL, encData, outOffset);
-            outOffset += 8;
-            ByteArrayUtils.encodeLong(0x5555_5555_5555_5555L, encData, outOffset);
-
+        if (tailSeq.length > 0) { // tail sequence
+            System.arraycopy(tailSeq, 0, encData, outOffset, tailSeq.length);
         }
         return encData;
     }
@@ -83,7 +92,6 @@ public class Ldpc64CltuGenerator extends CltuGenerator {
             }
             ByteArrayUtils.encodeLong(r, out, outOffset);
         }
-
 
         // Circularly shift to the right each group of 16 bits
         static long rotrGroupOf16(long x) {
