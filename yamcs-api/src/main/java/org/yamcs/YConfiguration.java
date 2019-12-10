@@ -18,6 +18,7 @@ import java.util.logging.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.YConfigurationResolver;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -629,6 +630,36 @@ public class YConfiguration {
         }
     }
 
+    public byte[] getBinary(String key) {
+        return getBinary(root, key);
+    }
+
+    public byte[] getBinary(String key, byte[] defaultValue) {
+        if(root.containsKey(key)) {
+            return getBinary(root, key);
+        } else {
+            return defaultValue;
+                
+        }
+    }
+
+    static public byte[] getBinary(Map<String, Object> m, String key) throws ConfigurationException {
+        checkKey(m, key);
+        Object o = m.get(key);
+        if (o instanceof byte[]) {
+            return (byte[]) o;
+        } else if (o instanceof String) {
+            String s =  (String)o;
+            try {
+                return StringConverter.hexStringToArray((String) o);
+            } catch (IllegalArgumentException e) {
+                throw new ConfigurationException("'"+s+"' is not an hexadecimal string");
+            }
+        } else {
+            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
+                    + getUnqualfiedClassName(o) + " and not binary or hexadecimal string");
+        }
+    }
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
      *

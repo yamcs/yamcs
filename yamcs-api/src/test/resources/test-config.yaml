@@ -1,0 +1,5 @@
+emptyBinary: ""
+binary1: 01AB
+binary2: !!binary "As0D"
+
+invalid-binary1: 01AB0X
