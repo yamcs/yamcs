@@ -5,7 +5,9 @@ services:
       outStream: cfdp_out
       sourceId: 12
       destinationId: 15
-      sleepBetweenPdusMs: 10
+      sleepBetweenPdus: 10
+      eofAckTimeout: 30
+      maxEofResendAttempts: 2
 
 mdb:
   - type: "emptyNode"

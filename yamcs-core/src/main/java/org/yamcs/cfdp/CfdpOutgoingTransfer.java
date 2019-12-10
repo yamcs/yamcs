@@ -58,7 +58,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     private EofPacket eofPacket;
     private long EOFAckTimer;
-    private final long eofAckTimeoutMs;
+    private final long eofAckTimeout;
     private final int maxEofResendAttempts;
     private int EOFSendAttempts = 0;
 
@@ -68,7 +68,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     private long offset = 0;
     private long end = 0;
 
-    private final int sleepBetweenPdusMs;
+    private final int sleepBetweenPdus;
 
     private boolean sleeping = false;
 
@@ -85,9 +85,9 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         seqNrSize = config.getInt("sequenceNrLength");
         int maxPduSize = config.getInt("maxPduSize", 512);
         maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
-        eofAckTimeoutMs = config.getInt("eofAckTimeoutMs", 10000);
+        eofAckTimeout = config.getInt("eofAckTimeout", 10000);
         maxEofResendAttempts = config.getInt("maxEofResendAttempts", 5);
-        sleepBetweenPdusMs = config.getInt("sleepBetweenPdusMs", 500);
+        sleepBetweenPdus = config.getInt("sleepBetweenPdus", 500);
 
         acknowledged = request.isAcknowledged();
 
@@ -116,15 +116,13 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         return this.transferred;
     }
 
-    @Override
     public void run() {
         if (state == TransferState.RUNNING && !sleeping) {
             step();
         }
     }
 
-    @Override
-    public void step() {
+    private void step() {
         switch (currentState) {
         case START:
             this.startTime = System.currentTimeMillis();
@@ -169,7 +167,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
         case EOF_SENT:
             if (this.acknowledged) {
                 // wait for the EOF_ACK
-                if (System.currentTimeMillis() > EOFAckTimer + eofAckTimeoutMs) {
+                if (System.currentTimeMillis() > EOFAckTimer + eofAckTimeout) {
                     if (EOFSendAttempts < maxEofResendAttempts) {
                         log.info("Resending EOF {} of max {}", EOFSendAttempts + 1, maxEofResendAttempts);
                         sendPacket(eofPacket);
@@ -179,8 +177,6 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                         eventProducer.sendWarning(ETYPE_EOF_LIMIT_REACHED,
                                 "Resend attempts (" + maxEofResendAttempts + ") of EOF reached");
                         // resend attempts exceeded the limit
-                        // TODO, we should issue a "Positive ACK Limit Reached fault" Condition Code (or even call an
-                        // appropriate sender FaultHandler. See 4.1.7.1.d
                         changeState(TransferState.FAILED);
                         scheduledFuture.cancel(true);
                     }
@@ -334,7 +330,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     }
 
     public void start() {
-        scheduledFuture = executor.scheduleAtFixedRate(this, 0, sleepBetweenPdusMs, TimeUnit.MILLISECONDS);
+        scheduledFuture = executor.scheduleAtFixedRate(()->run(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
     }
 
     public long getTransferredBytes() {
@@ -413,7 +409,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 break;
             }
         } else {
-            // TODO, unexpected packet
+            log.warn("Unexpected packet {} ", packet);
         }
     }
 

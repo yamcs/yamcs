@@ -3,17 +3,17 @@ package org.yamcs.cfdp;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
-public abstract class CfdpTransfer implements Runnable {
+public abstract class CfdpTransfer {
     protected CfdpTransactionId cfdpTransactionId;
     private Stream cfdpOut;
     protected TransferState state;
@@ -40,12 +40,10 @@ public abstract class CfdpTransfer implements Runnable {
         this.state = TransferState.RUNNING;
         this.executor = executor;
         this.eventProducer = eventProducer;
-        this.startTime = TimeEncoding.getWallclockTime();// TODO use mission time?
+        this.startTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
         log = new Log(this.getClass(), yamcsInstance);
         this.id = idGenerator.getAndIncrement();
     }
-
-    public abstract void step();
 
     public abstract void processPacket(CfdpPacket packet);
 

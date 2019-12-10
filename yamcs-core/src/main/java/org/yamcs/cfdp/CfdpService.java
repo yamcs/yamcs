@@ -67,9 +67,9 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
-        spec.addOption("eofAckTimeoutMs", OptionType.INTEGER).withDefault(3000);
+        spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(3000);
         spec.addOption("maxEofResendAttempts", OptionType.INTEGER).withDefault(5);
-        spec.addOption("sleepBetweenPdusMs", OptionType.INTEGER).withDefault(500);
+        spec.addOption("sleepBetweenPdus", OptionType.INTEGER).withDefault(500);
         return spec;
     }
 
@@ -214,7 +214,7 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
                             + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, mpkt, cfdpOut, incomingBucket, eventProducer);
+            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut, incomingBucket, eventProducer);
             transfer.setMonitor(this);
             return transfer;
         } else {

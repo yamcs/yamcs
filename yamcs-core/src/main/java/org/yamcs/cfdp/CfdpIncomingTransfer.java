@@ -3,12 +3,18 @@ package org.yamcs.cfdp;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
@@ -40,77 +46,68 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
 
     private ReceiverTransferState currentState;
     private Bucket incomingBucket = null;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
     private String objectName;
     private long expectedFileSize;
 
     private DataFile incomingDataFile;
     MetadataPacket metadataPacket;
-    
-    public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, MetadataPacket packet, Stream cfdpOut,
+    long inactivityTimeout;
+    private ScheduledFuture<?> scheduledFuture;
+    String failureReason;
+
+    public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, YConfiguration config,
+            MetadataPacket packet, Stream cfdpOut,
             Bucket target, EventProducer eventProducer) {
-        this(yamcsInstance, executor, packet.getHeader().getTransactionId(), cfdpOut, target, eventProducer);
+        this(yamcsInstance, executor, config, packet.getHeader().getTransactionId(), cfdpOut, target, eventProducer);
         // create a new empty data file
         incomingDataFile = new DataFile(packet.getPacketLength());
         this.acknowledged = packet.getHeader().isAcknowledged();
         this.currentState = ReceiverTransferState.START;
-        objectName = "received_" + dateFormat.format(new Date());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+        objectName = "received_" + dateFormat.format(new Date(startTime));
         expectedFileSize = packet.getPacketLength();
         this.metadataPacket = packet;
     }
 
-    public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, CfdpTransactionId id, Stream cfdpOut,
+    public CfdpIncomingTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, YConfiguration config,
+            CfdpTransactionId id, Stream cfdpOut,
             Bucket target, EventProducer eventProducer) {
         super(yamcsInstance, executor, id, cfdpOut, eventProducer);
         incomingBucket = target;
+        this.inactivityTimeout = config.getLong("inactivityTimeout", 5000);
+        rescheduleInactivityTimer();
     }
 
-    @Override
-    public void step() {
-        switch (currentState) {
-        case START:
-            this.currentState = ReceiverTransferState.START;
-            break;
-        case METADATA_RECEIVED:
-            // nothing to do, we're waiting for data
-            changeState(TransferState.RUNNING);
-            break;
-        case FILEDATA_RECEIVED:
-            // nothing to do, we're waiting for more data or an EOF
-            // TODO, timeout + request resend
-            break;
-        case EOF_RECEIVED:
-            // unreachable, virtual state, after receiving EOF, Finished packet is immediately
-            // sent back and state updated accordingly
-            break;
-        case FINISHED_SENT:
-            // nothing to do, awaiting the ack
-            break;
-        case RESENDING:
-            // nothing to do, waiting for further packets
-            break;
-        case FINISHED_ACK_RECEIVED:
-            changeState(TransferState.COMPLETED);
-            break;
+    private void rescheduleInactivityTimer() {
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(false);
         }
+        scheduledFuture = executor.schedule(() -> onInactivityTimerExpiration(), inactivityTimeout,
+                TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void processPacket(CfdpPacket packet) {
-        if(log.isDebugEnabled()) {
+        executor.execute(() -> doProcessPacket(packet));
+    }
+
+    private void doProcessPacket(CfdpPacket packet) {
+        if (log.isDebugEnabled()) {
             log.debug("CFDP transaction {}, received PDU: {}", cfdpTransactionId, packet);
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
+        rescheduleInactivityTimer();
         if (packet.getHeader().isFileDirective()) {
             switch (((FileDirective) packet).getFileDirectiveCode()) {
             case Metadata:
                 // do nothing, already processed this (constructor)
                 break;
             case EOF:
+                List<SegmentRequest> missingSegments = incomingDataFile.getMissingChunks();
+                log.debug("EOF received, having {} missing segments", missingSegments.size());
                 if (this.acknowledged) {
                     sendAckEofPacket(packet);
                     // check completeness
-                    List<SegmentRequest> missingSegments = incomingDataFile.getMissingChunks();
                     if (missingSegments.isEmpty()) {
                         sendFinishedPacket(packet);
                         this.currentState = ReceiverTransferState.FINISHED_SENT;
@@ -119,16 +116,23 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                         this.currentState = ReceiverTransferState.RESENDING;
                     }
                 } else {
-                    this.state = TransferState.COMPLETED;
-                    saveFileInBucket();
+                    scheduledFuture.cancel(false);
+                    if (missingSegments.isEmpty()) {
+                        changeState(TransferState.COMPLETED);
+                    } else {
+                        failureReason = "EOF received but missing "+missingSegments.size()+" segments";
+                        changeState(TransferState.FAILED);
+                    }
+                    saveFileInBucket(missingSegments);
                 }
                 break;
             case ACK:
                 AckPacket ack = (AckPacket) packet;
                 if (ack.getDirectiveCode() == FileDirectiveCode.Finished) {
                     this.currentState = ReceiverTransferState.FINISHED_ACK_RECEIVED;
-                    this.state = TransferState.COMPLETED;
-                    saveFileInBucket();
+                    changeState(TransferState.COMPLETED);
+                    scheduledFuture.cancel(false);
+                    saveFileInBucket(Collections.emptyList());
                 } else {
                     // we're not expecting any other ACK, so log and ignore
                     log.info("received unexpected ACK, with directive code ", ack.getDirectiveCode().name());
@@ -153,9 +157,19 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
         }
     }
 
-    private void saveFileInBucket() {
+    private void onInactivityTimerExpiration() {
+        failureReason="inactivity timeout";
+        changeState(TransferState.FAILED);
+    }
+
+    private void saveFileInBucket(List<SegmentRequest> missingSegments) {
         try {
-            incomingBucket.putObject(getObjectName(), null, null, incomingDataFile.getData());
+            Map<String, String> metadata = null;
+            if(!missingSegments.isEmpty()) {
+                metadata = new HashMap<>();
+                metadata.put("missingSegments", missingSegments.toString());
+            }
+            incomingBucket.putObject(getObjectName(), null, metadata, incomingDataFile.getData());
         } catch (IOException e) {
             throw new RuntimeException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
         }
@@ -243,15 +257,8 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     }
 
     @Override
-    public void run() {
-        // TODO - we should setup some timers to check the incoming file is delivered ok
+    public String getFailuredReason() {
+        return failureReason;
     }
 
-    @Override
-    public String getFailuredReason() {
-        return null;
-    }
-    
-    
- 
 }
