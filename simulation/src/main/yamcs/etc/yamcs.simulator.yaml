@@ -55,7 +55,7 @@ services:
      sequenceNrLength: 4
      maxPduSize: 512
      incomingBucket: "cfdpDown"
-     eofAckTimeoutMs: 3000
+     eofAckTimeout: 3000
      maxEofResendAttempts: 5 
 
 dataLinks:
