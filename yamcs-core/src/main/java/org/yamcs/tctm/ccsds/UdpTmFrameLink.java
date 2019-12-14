@@ -121,4 +121,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         tmSocket = new DatagramSocket(port);
         new Thread(this).start();
     }
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
+    }
 }

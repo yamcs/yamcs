@@ -132,4 +132,9 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         doDisable();
         notifyStopped();
     }
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
+    }
 }

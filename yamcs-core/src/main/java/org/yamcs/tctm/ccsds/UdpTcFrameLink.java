@@ -1,7 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -9,11 +9,8 @@ import java.net.UnknownHostException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
-import org.yamcs.tctm.ccsds.TcFrameFactory;
 
 import org.yamcs.tctm.ccsds.TcTransferFrame;
 import org.yamcs.utils.StringConverter;
@@ -24,13 +21,13 @@ import org.yamcs.utils.StringConverter;
  * @author nm
  *
  */
-public class UdpTcFrameLink extends AbstractTcFrameLink {
+public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     FrameErrorCorrection errorCorrection;
-    TcFrameFactory tcFrameFactory;
     String host;
     int port;
     DatagramSocket socket;
     InetAddress address;
+    Thread thread;
 
     public UdpTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
@@ -44,15 +41,10 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
         }
     }
 
-    @Override
-    protected void startUp() throws Exception {
-        super.startUp();
-        socket = new DatagramSocket();
-    }
 
     @Override
-    protected void run() throws Exception {
-        while (isRunning()) {
+    public void run() {
+        while (isRunning()&& !isDisabled()) {
             TcTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();
@@ -66,27 +58,62 @@ public class UdpTcFrameLink extends AbstractTcFrameLink {
                         log.trace("CLTU: {}", StringConverter.arrayToHexString(data, true));
                     }
                 }
-                // Ack the BD frames
-                // (note that the AD frames are acknowledged in the when the COP1 ack is received)
-                if (tf.isBypass()) {
-                    if (tf.getCommands() != null) {
-                        for (PreparedCommand pc : tf.getCommands()) {
-                            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX,
-                                    getCurrentTime(), AckStatus.OK);
-                        }
-                    }
-                }
                 DatagramPacket dtg = new DatagramPacket(data, data.length, address, port);
-                socket.send(dtg);
+                try {
+                    socket.send(dtg);
+                } catch (IOException e) {
+                   log.warn("Error sending datagram", e);
+                   notifyFailed(e);
+                   return;
+                }
+                
+                if (tf.isBypass()) {
+                    ackBypassFrame(tf);
+                }
+
                 frameCount++;
             }
         }
     }
 
     @Override
-    public void triggerShutdown() {
+    protected void doDisable() throws Exception {
+        thread.interrupt();
         socket.close();
-        multiplexer.quit();
+        socket = null;
     }
 
+    @Override
+    protected void doEnable() throws Exception {
+        socket = new DatagramSocket();
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    protected void doStart() {
+        try {
+            doEnable();
+            notifyStarted();
+        } catch (Exception e) {
+            notifyFailed(e);
+        }
+    }
+
+    @Override
+    protected void doStop() {
+        try {
+            doDisable();
+            multiplexer.quit();
+            notifyStopped();
+        } catch (Exception e) {
+            notifyFailed(e);
+        }
+    }
+
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
+    }
 }

@@ -9,12 +9,11 @@ import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 
-
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     protected List<Link> subLinks;
-   protected final MasterChannelFrameHandler frameHandler;
+    protected final MasterChannelFrameHandler frameHandler;
     protected volatile int frameCount;
-    
+
     public AbstractTmFrameLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         super(instance, name, config);
         frameHandler = new MasterChannelFrameHandler(yamcsInstance, name, config);
@@ -27,7 +26,6 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
             }
         }
     }
-
 
     @Override
     public long getDataInCount() {
@@ -48,5 +46,5 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     public List<Link> getSubLinks() {
         return subLinks;
     }
-    
+
 }

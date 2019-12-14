@@ -159,18 +159,6 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     }
 
     @Override
-    public Status getLinkStatus() {
-        if (isDisabled()) {
-            return Status.DISABLED;
-        }
-        if (tmSocket == null) {
-            return Status.UNAVAIL;
-        } else {
-            return Status.OK;
-        }
-    }
-
-    @Override
     public void doDisable() {
         if (tmSocket != null) {
             try {
@@ -197,5 +185,10 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         } else {
             return String.format("OK, connected to %s:%d, received %d packets", host, port, packetCount);
         }
+    }
+
+    @Override
+    protected Status connectionStatus() {
+        return (tmSocket == null)?Status.UNAVAIL:Status.OK;
     }
 }
