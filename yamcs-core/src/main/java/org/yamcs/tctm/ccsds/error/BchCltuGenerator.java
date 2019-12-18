@@ -14,7 +14,7 @@ public class BchCltuGenerator extends CltuGenerator {
 
     
     final byte[] startSeq;
-    final byte[] tailSeq;// = 0xC5C5_C5C5_C5C5_C579L;
+    final byte[] tailSeq;
     
     public BchCltuGenerator(boolean randomize) {
         this(randomize, CCSDS_START_SEQ, CCSDS_TAIL_SEQ);
@@ -40,7 +40,7 @@ public class BchCltuGenerator extends CltuGenerator {
 
         // data
         int inOffset = 0;
-        int outOffset = 2;
+        int outOffset = startSeq.length;
         int n = data.length / 7;
         for (int i = 0; i < n; i++) {
             System.arraycopy(data, inOffset, encData, outOffset, 7);

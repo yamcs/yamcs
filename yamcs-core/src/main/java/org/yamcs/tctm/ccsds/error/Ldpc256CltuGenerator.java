@@ -30,7 +30,7 @@ public class Ldpc256CltuGenerator extends CltuGenerator {
 
         // data
         int inOffset = 0;
-        int outOffset = 8;
+        int outOffset = startSeq.length;
         int n = frameData.length / 32;
         for (int i = 0; i < n; i++) {
             System.arraycopy(frameData, inOffset, encData, outOffset, 32);

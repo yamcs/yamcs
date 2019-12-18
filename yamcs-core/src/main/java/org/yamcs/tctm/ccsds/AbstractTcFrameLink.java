@@ -46,6 +46,8 @@ public abstract class AbstractTcFrameLink extends AbstractLink
     protected SystemParametersCollector sysParamCollector;
     private String sv_linkStatus_id, sp_dataCount_id;
     protected CltuGenerator cltuGenerator;
+    final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
+    final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
 
     public AbstractTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
@@ -54,17 +56,17 @@ public abstract class AbstractTcFrameLink extends AbstractLink
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {
             if ("BCH".equals(cltuEncoding)) {
-                byte[] startSeq = config.getBinary("startSequence", BchCltuGenerator.CCSDS_START_SEQ);
-                byte[] tailSeq = config.getBinary("tailSequence", BchCltuGenerator.CCSDS_TAIL_SEQ);
+                byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, BchCltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, BchCltuGenerator.CCSDS_TAIL_SEQ);
                 boolean randomize = config.getBoolean("randomizeCltu", false);
                 cltuGenerator = new BchCltuGenerator(randomize, startSeq, tailSeq);
             } else if ("LDPC64".equals(cltuEncoding)) {
-                byte[] startSeq = config.getBinary("startSequence", Ldpc64CltuGenerator.CCSDS_START_SEQ);
-                byte[] tailSeq = config.getBinary("tailSequence", CltuGenerator.EMPTY_SEQ);
+                byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc64CltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc64CltuGenerator(startSeq, tailSeq);
             } else if ("LDPC256".equals(cltuEncoding)) {
-                byte[] startSeq = config.getBinary("startSequence", Ldpc256CltuGenerator.CCSDS_START_SEQ);
-                byte[] tailSeq = config.getBinary("tailSequence", CltuGenerator.EMPTY_SEQ);
+                byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc256CltuGenerator.CCSDS_START_SEQ);
+                byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
             } else {
                 throw new ConfigurationException(
@@ -134,7 +136,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink
         throw new ConfigurationException(
                 "This class cannot send command directly, please remove the stream associated to the main link");
     }
-    
+
     /**
      * Ack the BD frames
      * Note: the AD frames are acknowledged in the when the COP1 ack is received
@@ -161,5 +163,4 @@ public abstract class AbstractTcFrameLink extends AbstractLink
         }
     }
 
-   
 }
