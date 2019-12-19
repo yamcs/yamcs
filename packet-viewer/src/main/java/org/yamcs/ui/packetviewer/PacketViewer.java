@@ -798,9 +798,8 @@ public class PacketViewer extends JFrame implements ActionListener,
         currentPacket = listPacket;
         try {
             currentPacket.load(lastFile);
-            byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(
-                    packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf)));
+            TmPacket packet = new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf);
+            tmProcessor.processPacket(packetPreprocessor.process(packet), xtcedb.getRootSequenceContainer());
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);

@@ -160,31 +160,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      * Process telemetry packets
      *
      */
-    @Override
-    public void processPacket(TmPacket pwrt) {
-        try {
-            long rectime = pwrt.getReceptionTime();
-            if (rectime == TimeEncoding.INVALID_INSTANT) {
-                rectime = getCurrentTime();
-            }
-            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), rectime);
-
-            ParameterValueList paramResult = tmExtractor.getParameterResult();
-            List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
-
-            if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
-                parameterRequestManager.update(paramResult);
-            }
-
-            if ((containerRequestManager != null) && (containerResult.size() > 0)) {
-                containerRequestManager.update(containerResult);
-            }
-
-        } catch (Exception e) {
-            log.error("got exception in tmprocessor ", e);
-        }
-    }
-
+   
     @Override
     public void processPacket(TmPacket pwrt, SequenceContainer sc) {
         try {

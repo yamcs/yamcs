@@ -54,7 +54,6 @@ import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -300,17 +299,15 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
-    public static class PacketProvider implements TmPacketDataLink, TmProcessor {
+    public static class PacketProvider implements TmPacketDataLink {
         static volatile PacketProvider[] instance = new PacketProvider[2];
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
-        TmSink tmSink;
         YConfiguration config;
         String name;
 
         public PacketProvider(String yinstance, String name, YConfiguration args) {
             instance[args.getInt("num", 0)] = this;
             this.config = args;
-            mdbPacketGenerator.setTmProcessor(this);
             this.name = name;
         }
 
@@ -354,22 +351,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public void setTmSink(TmSink tmSink) {
-            this.tmSink = tmSink;
-        }
-
-        @Override
-        public void processPacket(TmPacket pwrt) {
-            tmSink.processPacket(pwrt);
-        }
-
-        @Override
-        public void processPacket(TmPacket pwrt, SequenceContainer rootContainer) {
-            tmSink.processPacket(pwrt);
-        }
-
-        @Override
-        public void finished() {
-
+            mdbPacketGenerator.setTmSink(tmSink);
         }
 
         @Override

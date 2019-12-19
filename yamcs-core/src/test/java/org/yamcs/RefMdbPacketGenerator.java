@@ -6,21 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 
 import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Generates packets according to the refmdb database.
  * 
- * Works both as a ProcessprService part of a processor or as TmPacketProvider in the integration tests
+ * Works either as a ProcessprService part of a processor or as TmPacketProvider in the integration tests
  * 
  * @author nm
  *
  */
-public class RefMdbPacketGenerator extends AbstractService implements TmPacketProvider, ProcessorService {
+public class RefMdbPacketGenerator extends AbstractService implements TmPacketProvider {
     TmProcessor tmProcessor;
     public final int headerLength = 16;
     public final int pkt1Length = headerLength + 3;
@@ -113,10 +115,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     Map<Integer, AtomicInteger> seqCount = new HashMap<Integer, AtomicInteger>();
 
     private long generationTime = TimeEncoding.INVALID_INSTANT;
-
-    /**
-     * Constructor called when RefMdbPacketGenerator is declared in tmProviderList in yamcs.instance.yaml
-     */
+    TmSink tmSink;
+    
+    SequenceContainer rootSc;
+    
     public RefMdbPacketGenerator(String instance, String name, String spec) {
 
     }
@@ -128,11 +130,17 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public void init(Processor proc) {
         this.tmProcessor = proc.getTmProcessor();
         proc.setPacketProvider(this);
+        rootSc = proc.getXtceDb().getRootSequenceContainer();
+        if(rootSc == null) {
+            throw new ConfigurationException("Cannot find the root sequence container");
+        }
     }
 
-    public void setTmProcessor(TmProcessor tmProcessor) {
-        this.tmProcessor = tmProcessor;
+
+    public void setTmSink(TmSink tmSink) {
+        this.tmSink = tmSink;
     }
+
 
     public byte[] generate_PKT1_1() {
         ByteBuffer bb = ByteBuffer.allocate(pkt1_1Length);
@@ -715,7 +723,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
         if (tmProcessor != null) {
-            tmProcessor.processPacket(new TmPacket(rectime, gentime, bb.getInt(0), bb.array()));
+            tmProcessor.processPacket(new TmPacket(rectime, gentime, bb.getInt(0), bb.array()), rootSc);
+        }
+        if (tmSink != null) {
+            tmSink.processPacket(new TmPacket(rectime, gentime, bb.getInt(0), bb.array()));
         }
     }
 
@@ -739,4 +750,5 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         notifyStopped();
     }
 
+    
 }
