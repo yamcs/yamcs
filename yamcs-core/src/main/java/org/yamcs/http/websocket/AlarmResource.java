@@ -3,15 +3,13 @@ package org.yamcs.http.websocket;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.print.attribute.standard.Severity;
-
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.EventAlarmServer;
-import org.yamcs.http.api.processor.ProcessorHelper;
+import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -38,15 +36,16 @@ public class AlarmResource implements WebSocketResource {
 
     static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
     static {
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.ACKNOWLEDGED, AlarmNotificationType.ACKNOWLEDGED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.ACKNOWLEDGED,
+                AlarmNotificationType.ACKNOWLEDGED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.CLEARED, AlarmNotificationType.CLEARED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RESET, AlarmNotificationType.RESET);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RTN, AlarmNotificationType.RTN );
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED );
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RTN, AlarmNotificationType.RTN);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
     }
-    
+
     public AlarmResource(ConnectedWebSocketClient client) {
         this.client = client;
         Processor processor = client.getProcessor();
@@ -161,16 +160,15 @@ public class AlarmResource implements WebSocketResource {
             sendAlarm(AlarmNotificationType.VALUE_UPDATED, activeAlarm);
         }
 
-
         @Override
         public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm<T> activeAlarm) {
             sendAlarm(AlarmResource.protoNotificationType.get(notificationType), activeAlarm);
-            
+
         }
     }
 
     private void sendAlarm(AlarmNotificationType type, ActiveAlarm<?> activeAlarm) {
-        AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm, sendDetail);
+        AlarmData alarmData = AlarmsApi.toAlarmData(type, activeAlarm, sendDetail);
         client.sendData(ProtoDataType.ALARM_DATA, alarmData);
     }
 }

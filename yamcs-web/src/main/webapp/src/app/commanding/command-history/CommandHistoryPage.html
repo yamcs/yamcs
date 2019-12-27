@@ -11,7 +11,7 @@
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
             color="primary"
-            [disabled]="!((dataSource.records$ | async).length)">
+            [disabled]="!((dataSource.records$ | async)?.length)">
       <mat-icon>save_alt</mat-icon>
       EXPORT
     </button>
@@ -35,8 +35,8 @@
           <mat-divider></mat-divider>
           <br>
           <button class="ya-button"
-                  [routerLink]="['/commanding/send', selectedRecord.commandName]"
-                  [queryParams]="{instance: instance.name, template: (selectedRecord.commandId | commandId)}">
+                  [routerLink]="['/commanding/send', selectedRecord?.commandName]"
+                  [queryParams]="{instance: instance.name, template: (selectedRecord?.commandId | commandId)}">
             Resend
           </button>
         </ng-container>

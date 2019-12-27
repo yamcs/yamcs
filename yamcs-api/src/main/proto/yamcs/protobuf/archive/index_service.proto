@@ -1,0 +1,203 @@
+syntax="proto2";
+
+package yamcs.protobuf.archive;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "IndexServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service IndexApi {
+
+  // List command history index
+  rpc ListCommandHistoryIndex(ListCommandHistoryIndexRequest) returns (IndexResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/command-index"
+    };
+  }
+  
+  // List event index
+  rpc ListEventIndex(ListEventIndexRequest) returns (IndexResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/event-index"
+    };
+  }
+  
+  // List packet index
+  rpc ListPacketIndex(ListPacketIndexRequest) returns (IndexResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packet-index"
+    };
+  }
+  
+  // List parameter index
+  rpc ListParameterIndex(ListParameterIndexRequest) returns (IndexResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameter-index"
+    };
+  }
+  
+  // List completeness index
+  rpc ListCompletenessIndex(ListCompletenessIndexRequest) returns (IndexResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/completeness-index"
+    };
+  }
+
+  // Streams back index records
+  rpc StreamIndexes(StreamIndexesRequest) returns (stream IndexResult) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes:stream"
+      body: "*"
+    };
+  }
+
+  // Streams back packet index records
+  rpc StreamPacketIndex(StreamPacketIndexRequest) returns (stream ArchiveRecord) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes/packets:stream"
+      body: "*"
+    };
+  }
+  
+  // Streams back parameter index records
+  rpc StreamParameterIndex(StreamParameterIndexRequest) returns (stream ArchiveRecord) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes/parameters:stream"
+      body: "*"
+    };
+  }
+  
+  // Streams back processed parameter index records
+  rpc StreamCommandIndex(StreamCommandIndexRequest) returns (stream ArchiveRecord) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes/commands:stream"
+      body: "*"
+    };
+  }
+  
+  // Streams back event index records
+  rpc StreamEventIndex(StreamEventIndexRequest) returns (stream ArchiveRecord) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes/events:stream"
+      body: "*"
+    };
+  }
+  
+  // Streams back event index records
+  rpc StreamCompletenessIndex(StreamCompletenessIndexRequest) returns (stream ArchiveRecord) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/indexes/completeness:stream"
+      body: "*"
+    };
+  }
+}
+
+message ListCommandHistoryIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string name = 7;
+}
+
+message ListEventIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string source = 7;
+}
+
+message ListPacketIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string name = 7;
+}
+
+message ListParameterIndexRequest {
+  optional string instance = 1;
+  optional int32 mergeTime = 2;
+  optional int32 limit = 3;
+  optional google.protobuf.Timestamp start = 4;
+  optional google.protobuf.Timestamp stop = 5;
+  optional string next = 6;
+  repeated string group = 7;
+}
+
+message ListCompletenessIndexRequest {
+  optional string instance = 1;
+  optional int32 limit = 2;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp stop = 4;
+  optional string next = 5;
+}
+
+message IndexResponse {
+  repeated IndexGroup group = 1;
+  optional string continuationToken = 2;
+}
+
+message IndexGroup {
+  optional NamedObjectId id = 1;
+  repeated IndexEntry entry = 2;
+}
+
+message IndexEntry {
+  optional string start = 1;
+  optional string stop = 2;
+  optional int32 count = 3;
+  optional int64 seqStart = 4;
+  optional int64 seqStop = 5;
+}
+
+message StreamIndexesRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string filters = 4;
+  repeated string packetnames = 5;
+}
+
+message StreamPacketIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string names = 4;
+}
+
+message StreamParameterIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message StreamCommandIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message StreamEventIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message StreamCompletenessIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}

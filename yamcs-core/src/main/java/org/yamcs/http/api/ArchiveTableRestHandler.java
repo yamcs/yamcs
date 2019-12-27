@@ -1,4 +1,4 @@
-package org.yamcs.http.api.archive;
+package org.yamcs.http.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,8 +19,6 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.api.RestHandler;
-import org.yamcs.http.api.Route;
 import org.yamcs.http.api.Router.RouteMatch;
 import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Table;

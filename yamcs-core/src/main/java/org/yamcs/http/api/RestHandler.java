@@ -9,13 +9,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
-import org.yamcs.alarms.AlarmServer;
-import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
@@ -24,7 +20,6 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.RouteHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.RestExceptionMessage;
@@ -201,15 +196,6 @@ public abstract class RestHandler extends RouteHandler {
             throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
         }
         return linkInfo;
-    }
-
-    protected static ConnectedClient verifyClient(RestRequest req, int clientId) throws NotFoundException {
-        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
-        if (client == null) {
-            throw new NotFoundException("No such client");
-        } else {
-            return client;
-        }
     }
 
     protected static Processor verifyProcessor(String instance, String processorName)
@@ -429,29 +415,6 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         throw new NotFoundException("No such container");
-    }
-
-    protected static AlarmServer<Parameter, ParameterValue> verifyParameterAlarmServer(Processor processor)
-            throws BadRequestException {
-        if (!processor.hasAlarmServer()) {
-            String instance = processor.getInstance();
-            String processorName = processor.getName();
-            throw new BadRequestException(
-                    "Alarms are not enabled for processor '" + instance + "/" + processorName + "'");
-        } else {
-            return processor.getParameterRequestManager().getAlarmServer();
-        }
-    }
-
-    protected static EventAlarmServer verifyEventAlarmServer(Processor processor) throws BadRequestException {
-        if (!processor.hasAlarmServer()) {
-            String instance = processor.getInstance();
-            String processorName = processor.getName();
-            throw new BadRequestException(
-                    "Alarms are not enabled for processor '" + instance + "/" + processorName + "'");
-        } else {
-            return processor.getEventAlarmServer();
-        }
     }
 
     protected static class NameDescriptionWithId<T extends NameDescription> {

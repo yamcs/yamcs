@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.http.api.archive.RestDownsampler;
-import org.yamcs.http.api.archive.RestDownsampler.Sample;
+import org.yamcs.http.api.RestDownsampler;
+import org.yamcs.http.api.RestDownsampler.Sample;
 
 public class RestDownsamplerTest {
 

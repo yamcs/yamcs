@@ -1,4 +1,4 @@
-package org.yamcs.http.api.archive;
+package org.yamcs.http.api;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,7 +8,6 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.ServiceUnavailableException;
-import org.yamcs.http.api.RestReplayListener;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;

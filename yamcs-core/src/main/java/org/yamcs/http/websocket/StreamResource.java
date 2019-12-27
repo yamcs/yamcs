@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.http.api.archive.ArchiveHelper;
+import org.yamcs.http.api.ArchiveHelper;
 import org.yamcs.protobuf.StreamSubscribeRequest;
 import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;

@@ -1,25 +1,27 @@
-package org.yamcs.http.api.archive;
+package org.yamcs.http.api;
 
 import java.util.Base64;
 
 import com.google.gson.Gson;
 
 /**
- * Stateless continuation token for paged requests on the tm table
+ * Stateless continuation token for paged requests on the event table
  */
-public class PacketPageToken {
+public class EventPageToken {
 
     public long gentime;
+    public String source;
     public int seqNum;
 
-    public PacketPageToken(long timestamp, int seqNum) {
-        this.gentime = timestamp;
+    public EventPageToken(long gentime, String source, int seqNum) {
+        this.gentime = gentime;
+        this.source = source;
         this.seqNum = seqNum;
     }
 
-    public static PacketPageToken decode(String encoded) {
+    public static EventPageToken decode(String encoded) {
         String decoded = new String(Base64.getUrlDecoder().decode(encoded));
-        return new Gson().fromJson(decoded, PacketPageToken.class);
+        return new Gson().fromJson(decoded, EventPageToken.class);
     }
 
     public String encodeAsString() {

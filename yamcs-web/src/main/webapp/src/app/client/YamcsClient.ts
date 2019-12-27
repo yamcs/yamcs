@@ -96,7 +96,7 @@ export default class YamcsClient implements HttpHandler {
 
   private async doFetchAccessToken(body: string) {
     const headers = new Headers();
-    headers.append('Content-Type', 'application/x-www-form-urlencoded')
+    headers.append('Content-Type', 'application/x-www-form-urlencoded');
     const response = await fetch(`${this.authUrl}/token`, {
       method: 'POST',
       headers,
@@ -280,7 +280,7 @@ export default class YamcsClient implements HttpHandler {
     const response = await this.doFetch(`${this.apiUrl}/groups`, {
       body,
       method: 'POST',
-    })
+    });
     return await response.json() as GroupInfo;
   }
 
@@ -328,7 +328,7 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/clients`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as ClientsWrapper;
-    return wrapper.client || [];
+    return wrapper.clients || [];
   }
 
   async getClient(id: number) {
@@ -382,7 +382,7 @@ export default class YamcsClient implements HttpHandler {
     const response = await this.doFetch(`${this.apiUrl}/instances`, {
       body,
       method: 'POST',
-    })
+    });
     return await response.json() as Instance;
   }
 
@@ -449,7 +449,7 @@ export default class YamcsClient implements HttpHandler {
     }
   }
 
-  private queryString(options: { [key: string]: any }) {
+  private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');

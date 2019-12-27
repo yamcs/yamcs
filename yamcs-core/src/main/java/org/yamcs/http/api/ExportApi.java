@@ -22,8 +22,6 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.RestRequest.IntervalResult;
-import org.yamcs.http.api.archive.ArchiveHelper;
-import org.yamcs.http.api.archive.RestReplays;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.protobuf.AbstractExportApi;
 import org.yamcs.protobuf.ExportEventsRequest;

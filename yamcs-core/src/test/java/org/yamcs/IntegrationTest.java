@@ -33,7 +33,7 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Alarms.EditAlarmRequest;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
-import org.yamcs.protobuf.Archive.ListAlarmsResponse;
+import org.yamcs.protobuf.Alarms.ListAlarmsResponse;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
@@ -50,9 +50,6 @@ import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
-import org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest;
-import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
-import org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType;
 import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
@@ -62,6 +59,9 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
+import org.yamcs.protobuf.Mdb.UpdateAlgorithmRequest;
+import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
+import org.yamcs.protobuf.Mdb.UpdateParameterRequest.ActionType;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -214,7 +214,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(packetGenerator.pFloatPara1_1_2 * 0.0001672918,
                 pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
 
-        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_CALIBRATOR)
+        UpdateParameterRequest cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_CALIBRATOR)
                 .setDefaultCalibrator(CalibratorInfo.newBuilder().setType(CalibratorInfo.Type.POLYNOMIAL)
                         .setPolynomialCalibrator(
                                 PolynomialCalibratorInfo.newBuilder().addCoefficient(1).addCoefficient(2).build())
@@ -230,7 +230,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(1 + packetGenerator.pFloatPara1_1_2 * 2, pdata.getParameter(0).getEngValue().getFloatValue(),
                 1e-5);
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_1_2",
                         HttpMethod.PATCH, cpr)
@@ -256,7 +256,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(3, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
 
         // this will remove the context calibrators
-        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS).build();
+        UpdateParameterRequest cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/FloatPara1_10_3",
                         HttpMethod.PATCH, cpr)
@@ -282,7 +282,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setCalibrator(CalibratorInfo.newBuilder().setType(CalibratorInfo.Type.SPLINE)
                         .setSplineCalibrator(spi).build())
                 .build();
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS)
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS)
                 .addContextCalibrator(cci)
                 .build();
 
@@ -295,7 +295,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(8, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
 
         // remove all overrides
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_10_3",
                         HttpMethod.PATCH, cpr)
@@ -323,7 +323,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         EnumerationAlarm ea = EnumerationAlarm.newBuilder().setLevel(AlarmLevelType.CRITICAL).setLabel("three_ok")
                 .build();
-        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_ALARMS)
+        UpdateParameterRequest cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_ALARMS)
                 .setDefaultAlarm(AlarmInfo.newBuilder().addEnumerationAlarm(ea).build()).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/EnumerationPara1_10_2",
@@ -334,7 +334,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         assertEquals(MonitoringResult.CRITICAL, pdata.getParameter(0).getMonitoringResult());
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/EnumerationPara1_10_2",
                         HttpMethod.PATCH, cpr)
@@ -370,7 +370,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 AlarmRange.newBuilder().setLevel(AlarmLevelType.DISTRESS).setMaxExclusive(70).build()).build();
         ContextAlarmInfo cai = ContextAlarmInfo.newBuilder().addComparison(cinfo).setAlarm(ai).build();
 
-        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS)
+        UpdateParameterRequest cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS)
                 .addContextAlarm(cai).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
@@ -386,7 +386,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 AlarmRange.newBuilder().setLevel(AlarmLevelType.SEVERE).setMaxExclusive(10).build()).build();
         cai = ContextAlarmInfo.newBuilder().setContext("EnumerationPara1_10_2==five_yes").setAlarm(ai).build();
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS).addContextAlarm(cai).build();
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS).addContextAlarm(cai).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
                         HttpMethod.PATCH, cpr)
@@ -397,7 +397,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(MonitoringResult.SEVERE, pdata.getParameter(0).getMonitoringResult());
 
         // reset to the original MDB value
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).addContextAlarm(cai).build();
+        cpr = UpdateParameterRequest.newBuilder().setAction(ActionType.RESET).addContextAlarm(cai).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
                         HttpMethod.PATCH, cpr)
@@ -425,8 +425,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         AlgorithmInfo ai = AlgorithmInfo.newBuilder().setText("AlgoFloatAddition.value = 10 + f0.value + f1.value")
                 .build();
 
-        ChangeAlgorithmRequest car = ChangeAlgorithmRequest.newBuilder()
-                .setAction(ChangeAlgorithmRequest.ActionType.SET).setAlgorithm(ai).build();
+        UpdateAlgorithmRequest car = UpdateAlgorithmRequest.newBuilder()
+                .setAction(UpdateAlgorithmRequest.ActionType.SET).setAlgorithm(ai).build();
         restClient.doRequest("/mdb/IntegrationTest/realtime/algorithms/REFMDB/SUBSYS1/float_add",
                 HttpMethod.PATCH, car).get();
 
@@ -435,7 +435,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(12.16729187, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
 
         // reset back to MDB version
-        car = ChangeAlgorithmRequest.newBuilder().setAction(ChangeAlgorithmRequest.ActionType.RESET).build();
+        car = UpdateAlgorithmRequest.newBuilder().setAction(UpdateAlgorithmRequest.ActionType.RESET).build();
         restClient.doRequest("/mdb/IntegrationTest/realtime/algorithms/REFMDB/SUBSYS1/float_add",
                 HttpMethod.PATCH, car).get();
 
@@ -1210,8 +1210,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .get();
         ListAlarmsResponse lar = ListAlarmsResponse.parseFrom(resp);
 
-        assertEquals(1, lar.getAlarmCount());
-        assertEquals("a nice ack explanation", lar.getAlarm(0).getAcknowledgeInfo().getAcknowledgeMessage());
+        assertEquals(1, lar.getAlarmsCount());
+        assertEquals("a nice ack explanation", lar.getAlarms(0).getAcknowledgeInfo().getAcknowledgeMessage());
 
         ear = EditAlarmRequest.newBuilder().setState("cleared").setComment("a nice clear explanation")
                 .build();
@@ -1226,7 +1226,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         resp = restClient.doRequest("/processors/" + yamcsInstance + "/realtime/alarms", HttpMethod.GET).get();
 
         lar = ListAlarmsResponse.parseFrom(resp);
-        assertEquals(0, lar.getAlarmCount());
+        assertEquals(0, lar.getAlarmsCount());
     }
 
     @Test

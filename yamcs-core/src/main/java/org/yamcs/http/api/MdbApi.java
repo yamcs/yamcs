@@ -1,5 +1,12 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.http.api.GbpToXtceAssembler.toCalibrator;
+import static org.yamcs.http.api.GbpToXtceAssembler.toContextCalibratorList;
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationContextAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericContextAlarm;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
@@ -10,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.yamcs.Processor;
+import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -49,6 +58,8 @@ import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
+import org.yamcs.protobuf.Mdb.UpdateAlgorithmRequest;
+import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
@@ -56,18 +67,23 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 
 public class MdbApi extends AbstractMdbApi<Context> {
 
@@ -636,5 +652,136 @@ public class MdbApi extends AbstractMdbApi<Context> {
     private boolean parameterSourceMatches(Parameter p, DataSourceType source) {
         DataSource xtceSource = p.getDataSource();
         return xtceSource != null && xtceSource.toString().equals(source.toString());
+    }
+
+    @Override
+    public void updateParameter(Context ctx, UpdateParameterRequest request, Observer<ParameterTypeInfo> observer) {
+        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ChangeMissionDatabase);
+
+        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Parameter p = RestHandler.verifyParameter(ctx.user, xtcedb, request.getName());
+
+        ProcessorData pdata = processor.getProcessorData();
+        ParameterType origParamType = p.getParameterType();
+
+        switch (request.getAction()) {
+        case RESET:
+            pdata.clearParameterOverrides(p);
+            break;
+        case RESET_CALIBRATORS:
+            pdata.clearParameterCalibratorOverrides(p);
+            break;
+        case SET_CALIBRATORS:
+            verifyNumericParameter(p);
+            if (request.hasDefaultCalibrator()) {
+                pdata.setDefaultCalibrator(p, toCalibrator(request.getDefaultCalibrator()));
+            }
+            pdata.setContextCalibratorList(p,
+                    toContextCalibratorList(xtcedb, p.getSubsystemName(), request.getContextCalibratorList()));
+            break;
+        case SET_DEFAULT_CALIBRATOR:
+            verifyNumericParameter(p);
+            if (request.hasDefaultCalibrator()) {
+                pdata.setDefaultCalibrator(p, toCalibrator(request.getDefaultCalibrator()));
+            } else {
+                pdata.removeDefaultCalibrator(p);
+            }
+            break;
+        case RESET_ALARMS:
+            pdata.clearParameterAlarmOverrides(p);
+            break;
+        case SET_DEFAULT_ALARMS:
+            if (!request.hasDefaultAlarm()) {
+                pdata.removeDefaultAlarm(p);
+            } else {
+                if (origParamType instanceof NumericParameterType) {
+                    pdata.setDefaultNumericAlarm(p, toNumericAlarm(request.getDefaultAlarm()));
+                } else if (origParamType instanceof EnumeratedParameterType) {
+                    pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(request.getDefaultAlarm()));
+                } else {
+                    throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
+                }
+            }
+            break;
+        case SET_ALARMS:
+            if (origParamType instanceof NumericParameterType) {
+                if (request.hasDefaultAlarm()) {
+                    pdata.setDefaultNumericAlarm(p, toNumericAlarm(request.getDefaultAlarm()));
+                }
+                pdata.setNumericContextAlarm(p,
+                        toNumericContextAlarm(xtcedb, p.getSubsystemName(), request.getContextAlarmList()));
+            } else if (origParamType instanceof EnumeratedParameterType) {
+                if (request.hasDefaultAlarm()) {
+                    pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(request.getDefaultAlarm()));
+                }
+                pdata.setEnumerationContextAlarm(p,
+                        toEnumerationContextAlarm(xtcedb, p.getSubsystemName(), request.getContextAlarmList()));
+            } else {
+                throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
+            }
+            break;
+        default:
+            throw new BadRequestException("Unknown action " + request.getAction());
+
+        }
+        ParameterType ptype = pdata.getParameterType(p);
+        ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
+        observer.complete(pinfo);
+    }
+
+    @Override
+    public void updateAlgorithm(Context ctx, UpdateAlgorithmRequest request, Observer<Empty> observer) {
+        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ChangeMissionDatabase);
+
+        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
+        if (l.size() == 0) {
+            throw new BadRequestException("No AlgorithmManager available for this processor");
+        }
+        if (l.size() > 1) {
+            throw new BadRequestException(
+                    "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
+        }
+        AlgorithmManager algMng = l.get(0);
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Algorithm a = RestHandler.verifyAlgorithm(xtcedb, request.getName());
+        if (!(a instanceof CustomAlgorithm)) {
+            throw new BadRequestException("Can only patch CustomAlgorithm instances");
+        }
+        CustomAlgorithm calg = (CustomAlgorithm) a;
+
+        switch (request.getAction()) {
+        case RESET:
+            algMng.clearAlgorithmOverride(calg);
+            break;
+        case SET:
+            if (!request.hasAlgorithm()) {
+                throw new BadRequestException("No algorithm info provided");
+            }
+            AlgorithmInfo ai = request.getAlgorithm();
+            if (!ai.hasText()) {
+                throw new BadRequestException("No algorithm text provided");
+            }
+            try {
+                log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
+                algMng.setAlgorithmText(calg, ai.getText());
+            } catch (Exception e) {
+                throw new BadRequestException(e.getMessage());
+            }
+            break;
+        default:
+            throw new BadRequestException("Unknown action " + request.getAction());
+        }
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    private static void verifyNumericParameter(Parameter p) throws BadRequestException {
+        ParameterType ptype = p.getParameterType();
+        if (!(ptype instanceof NumericParameterType)) {
+            throw new BadRequestException(
+                    "Cannot set a calibrator on a non numeric parameter type (" + ptype.getTypeAsString() + ")");
+        }
     }
 }

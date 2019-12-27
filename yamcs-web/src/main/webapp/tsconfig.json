@@ -15,8 +15,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strict": true,
-    "strictFunctionTypes": false, // TODO
-    "strictPropertyInitialization": false, // TODO
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
     "typeRoots": [
       "node_modules/@types"
     ]

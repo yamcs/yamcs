@@ -1,9 +1,9 @@
 import { Observable } from 'rxjs';
 import { CreateTransferRequest, Transfer, TransfersPage } from './types/cfdp';
-import { AlarmsWrapper, ClientsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
+import { CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
@@ -46,7 +46,7 @@ export class InstanceClient {
   async getEventSources() {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/events/sources`;
     const response = await this.yamcs.doFetch(url);
-    const wrapper = await response.json() as SourcesWrapper
+    const wrapper = await response.json() as SourcesWrapper;
     return wrapper.source || [];
   }
 
@@ -104,14 +104,14 @@ export class InstanceClient {
   }
 
   async getLinks(): Promise<Link[]> {
-    const url = `${this.yamcs.apiUrl}/links/${this.instance}`
+    const url = `${this.yamcs.apiUrl}/links/${this.instance}`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as LinksWrapper;
     return wrapper.links || [];
   }
 
   async getLink(name: string): Promise<Link> {
-    const url = `${this.yamcs.apiUrl}/links/${this.instance}/${name}`
+    const url = `${this.yamcs.apiUrl}/links/${this.instance}/${name}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Link;
   }
@@ -141,11 +141,11 @@ export class InstanceClient {
   }
 
   async enableLink(name: string) {
-    return this.editLink(name, { state: 'enabled' })
+    return this.editLink(name, { state: 'enabled' });
   }
 
   async disableLink(name: string) {
-    return this.editLink(name, { state: 'disabled' })
+    return this.editLink(name, { state: 'disabled' });
   }
 
   async editLink(name: string, options: EditLinkOptions) {
@@ -180,7 +180,7 @@ export class InstanceClient {
 
   async getProcessorUpdates(): Promise<ProcessorSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient!.getProcessorUpdates()
+    return this.webSocketClient!.getProcessorUpdates();
   }
 
   async getProcessorStatistics(): Promise<StatisticsSubscriptionResponse> {
@@ -225,14 +225,14 @@ export class InstanceClient {
   }
 
   async getCommandQueues(processorName: string) {
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues`;
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/queues`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as CommandQueuesWrapper;
-    return wrapper.queue || [];
+    return wrapper.queues || [];
   }
 
   async getCommandQueue(processorName: string, queueName: string) {
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}`;
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/queues/${queueName}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as CommandQueue;
   }
@@ -243,7 +243,7 @@ export class InstanceClient {
   }
 
   async editCommandQueue(processorName: string, queueName: string, options: EditCommandQueueOptions) {
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}`;
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/queues/${queueName}`;
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
       body,
@@ -258,34 +258,12 @@ export class InstanceClient {
   }
 
   async editCommandQueueEntry(processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
-    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}/entries/${uuid}`;
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/queues/${queueName}/entries/${uuid}`;
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
       body,
       method: 'PATCH',
     });
-  }
-
-  async getClients() {
-    const url = `${this.yamcs.apiUrl}/instances/${this.instance}/clients`;
-    const response = await this.yamcs.doFetch(url);
-    const wrapper = await response.json() as ClientsWrapper;
-    return wrapper.client || [];
-  }
-
-  async getClient(id: number) {
-    const url = `${this.yamcs.apiUrl}/clients/${id}`;
-    const response = await this.yamcs.doFetch(url);
-    return await response.json() as ClientInfo;
-  }
-
-  async getClientUpdates(anyInstance = false): Promise<ClientSubscriptionResponse> {
-    this.prepareWebSocketClient();
-    if (anyInstance) {
-      return this.webSocketClient!.getClientUpdates();
-    } else {
-      return this.webSocketClient!.getClientUpdates(this.instance);
-    }
   }
 
   async getServices(): Promise<Service[]> {
@@ -317,14 +295,14 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/alarms`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
-    return wrapper.alarm || [];
+    return wrapper.alarms || [];
   }
 
   async getAlarms(options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
-    return wrapper.alarm || [];
+    return wrapper.alarms || [];
   }
 
   async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
@@ -338,7 +316,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms${qualifiedName}`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
-    return await wrapper.alarm || [];
+    return await wrapper.alarms || [];
   }
 
   async editAlarm(processor: string, alarm: string, sequenceNumber: number, options: EditAlarmOptions) {
@@ -574,7 +552,7 @@ export class InstanceClient {
   }
 
   async createCfdpTransfer(options: CreateTransferRequest) {
-    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/transfers`
+    const url = `${this.yamcs.apiUrl}/cfdp/${this.instance}/transfers`;
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(url, {
       body,
@@ -585,7 +563,7 @@ export class InstanceClient {
 
   async getGaps() {
     const url = `${this.yamcs.apiUrl}/dass/gaps/${this.instance}`;
-    const response = await this.yamcs.doFetch(url)
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as ListGapsResponse;
   }
 
@@ -612,7 +590,7 @@ export class InstanceClient {
     }
   }
 
-  private queryString(options: { [key: string]: any }) {
+  private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');

@@ -4,7 +4,6 @@ import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.http.api.processor.ProcessorRestHandler;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.ClientInfo.ClientState;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
@@ -44,7 +43,7 @@ public class YamcsToGpbAssembler {
         }
 
         for (Processor processor : Processor.getProcessors(instanceb.getName())) {
-            instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, false));
+            instanceb.addProcessor(ProcessingApi.toProcessorInfo(processor, false));
         }
 
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());

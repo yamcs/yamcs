@@ -36,7 +36,7 @@
             <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
             <a [routerLink]="['/telemetry/parameters']"
                [queryParams]="{instance: instance.name, system: item.name}">
-              {{ item.name | slice:1 | filename }}/
+              {{ item.name | filename }}/
             </a>
           </ng-container>
           <ng-container *ngIf="!item.spaceSystem">

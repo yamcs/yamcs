@@ -328,7 +328,3 @@ message Event {
 
   extensions 100 to 10000;
 }
-
-message ProcessorTypeInfo {
-  repeated string type = 1;
-}

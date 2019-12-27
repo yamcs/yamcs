@@ -129,7 +129,8 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         RestClient restClient = client.getRestClient();
         // PATCH /api/processors/:instance/:name
         String resource = "/processors/" + instance + "/" + name;
-        EditProcessorRequest body = EditProcessorRequest.newBuilder().setSeek(TimeEncoding.toString(newPosition))
+        EditProcessorRequest body = EditProcessorRequest.newBuilder()
+                .setSeek(TimeEncoding.toProtobufTimestamp(newPosition))
                 .build();
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
@@ -150,7 +151,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         client.getRestClient().doRequest("/processors", HttpMethod.GET).whenComplete((response, exc) -> {
             if (exc == null) {
                 try {
-                    for (ProcessorInfo pi : ListProcessorsResponse.parseFrom(response).getProcessorList()) {
+                    for (ProcessorInfo pi : ListProcessorsResponse.parseFrom(response).getProcessorsList()) {
                         processorListener.processorUpdated(pi);
                     }
                 } catch (InvalidProtocolBufferException e) {

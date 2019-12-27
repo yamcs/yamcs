@@ -9,7 +9,7 @@ import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 
 /**
- * Expected class type for use with {@link org.yamcs.http.api.archive.RestReplays} Adds functionality for stopping a
+ * Expected class type for use with {@link org.yamcs.http.api.RestReplays} Adds functionality for stopping a
  * replay, and has support for pagination
  */
 public abstract class RestReplayListener extends Service.Listener implements ParameterWithIdConsumer {

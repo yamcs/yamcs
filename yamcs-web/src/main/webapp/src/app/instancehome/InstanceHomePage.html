@@ -32,7 +32,7 @@
                       </td>
                       <td [ngSwitch]="alarm.type">
                         <ng-container *ngSwitchCase="'PARAMETER'">
-                          <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace + '/' + alarm.id.name]"
+                          <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
                              [queryParams]="{instance: instance.name}">
                             {{ alarm.id.namespace }}/{{ alarm.id.name }}
                           </a>
@@ -54,7 +54,7 @@
                 <a routerLink="/alarms"
                    class="ya-link"
                    [queryParams]="{instance: instance.name, view: 'unacknowledged'}">
-                  <strong>{{ (alarmsDataSource.unacknowledgedAlarms$ | async).length }}</strong>
+                  <strong>{{ (alarmsDataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
                 </a><br>
               </dd>
               <dt>Acknowledged alarms:</dt>
@@ -62,7 +62,7 @@
                 <a routerLink="/alarms"
                    class="ya-link"
                    [queryParams]="{instance: instance.name, view: 'acknowledged'}">
-                  <strong>{{ (alarmsDataSource.acknowledgedAlarms$ | async).length }}</strong>
+                  <strong>{{ (alarmsDataSource.acknowledgedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
               <dt>Shelved alarms:</dt>
@@ -70,7 +70,7 @@
                 <a routerLink="/alarms"
                    class="ya-link"
                    [queryParams]="{instance: instance.name, view: 'shelved'}">
-                  <strong>{{ (alarmsDataSource.shelvedAlarms$ | async).length }}</strong>
+                  <strong>{{ (alarmsDataSource.shelvedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
             </dl>

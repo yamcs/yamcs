@@ -12,9 +12,54 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service ProcessingApi {
+
+  // List processor types
+  rpc ListProcessorTypes(google.protobuf.Empty) returns (ListProcessorTypesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/processor-types"
+    };
+  }
+  
+  // List processors
+  rpc ListProcessors(ListProcessorsRequest) returns (ListProcessorsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/processors"
+    };
+  }
+  
+  // Get a processor
+  rpc GetProcessor(GetProcessorRequest) returns (yamcsManagement.ProcessorInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/processors/{instance}/{processor}"
+    };
+  }
+  
+  // Delete a processor
+  rpc DeleteProcessor(DeleteProcessorRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/processors/{instance}/{processor}"
+    };
+  }
+  
+  // Update a processor
+  rpc EditProcessor(EditProcessorRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/processors/{instance}/{processor}"
+      body: "*"
+    };
+  }
+  
+  // Create a processor
+  rpc CreateProcessor(CreateProcessorRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/processors"
+      body: "*"
+    };
+  }
 
   // Get a parameter's value
   rpc GetParameterValue(GetParameterValueRequest) returns (pvalue.ParameterValue) {
@@ -66,6 +111,45 @@ service ProcessingApi {
       body: "*"
     };
   }
+}
+
+message ListProcessorTypesResponse {
+  repeated string types = 1;
+}
+
+message ListProcessorsRequest {
+  optional string instance = 1;
+}
+
+message ListProcessorsResponse {
+  repeated yamcsManagement.ProcessorInfo processors = 1;
+}
+
+message GetProcessorRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message DeleteProcessorRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message CreateProcessorRequest {
+  optional string instance = 1;
+  optional string name = 2;
+  repeated int32 clientId = 3;
+  optional bool persistent = 4;
+  optional string type = 5;
+  optional string config = 6;
+}
+
+message EditProcessorRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+  optional string state = 3;
+  optional google.protobuf.Timestamp seek = 4;
+  optional string speed = 5;
 }
 
 message GetParameterValueRequest {

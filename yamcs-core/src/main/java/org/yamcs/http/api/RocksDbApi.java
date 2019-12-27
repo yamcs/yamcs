@@ -12,7 +12,6 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.http.api.archive.ArchiveHelper;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractRocksDbApi;
 import org.yamcs.protobuf.BackupDatabaseRequest;

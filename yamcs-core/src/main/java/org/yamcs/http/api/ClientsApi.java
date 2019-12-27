@@ -2,68 +2,54 @@ package org.yamcs.http.api;
 
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.AbstractClientsApi;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.ClientInfo.ClientState;
 import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.GetClientRequest;
 import org.yamcs.protobuf.ListClientsResponse;
 import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.ProcessorManagementRequest.Operation;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 
-/**
- * Gives information on clients (aka sessions)
- */
-public class ClientRestHandler extends RestHandler {
-    private static final Logger log = LoggerFactory.getLogger(ClientRestHandler.class);
+import com.google.protobuf.Empty;
 
-    @Route(path = "/api/clients", method = "GET")
-    public void listClients(RestRequest req) throws HttpException {
+public class ClientsApi extends AbstractClientsApi<Context> {
+
+    @Override
+    public void listClients(Context ctx, Empty request, Observer<ListClientsResponse> observer) {
         Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ConnectedClient client : clients) {
             ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
-            responseb.addClient(clientInfo);
+            responseb.addClients(clientInfo);
         }
-        completeOK(req, responseb.build());
+        observer.complete(responseb.build());
     }
 
-    @Route(path = "/api/instances/{instance}/clients", method = "GET")
-    public void listClientsForInstance(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req.getRouteParam("instance"));
-        Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
-        ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
-        for (ConnectedClient client : clients) {
-            if (client.getProcessor() != null && instance.equals(client.getProcessor().getInstance())) {
-                responseb.addClient(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
-            }
-        }
-        completeOK(req, responseb.build());
-    }
-
-    @Route(path = "/api/clients/{id}", method = "GET")
-    public void getClient(RestRequest req) throws HttpException {
-        ConnectedClient client = verifyClient(req, req.getIntegerRouteParam("id"));
+    @Override
+    public void getClient(Context ctx, GetClientRequest request, Observer<ClientInfo> observer) {
+        ConnectedClient client = verifyClient(request.getId());
         ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
-        completeOK(req, clientInfo);
+        observer.complete(clientInfo);
     }
 
-    @Route(path = "/api/clients/{id}", method = "PATCH")
-    public void patchClient(RestRequest restReq) throws HttpException {
-        ConnectedClient client = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
-
-        EditClientRequest request = restReq.bodyAsMessage(EditClientRequest.newBuilder()).build();
+    @Override
+    public void updateClient(Context ctx, EditClientRequest request, Observer<Empty> observer) {
+        ConnectedClient client = verifyClient(request.getId());
 
         if (request.hasInstance() || request.hasProcessor()) {
             String newInstance;
@@ -90,7 +76,7 @@ public class ClientRestHandler extends RestHandler {
                     throw new BadRequestException(String.format("No processor for instance '" + newInstance + "'"));
                 }
             }
-            verifyPermission(newProcessor, client.getId(), restReq);
+            verifyPermission(ctx.user, newProcessor, client.getId());
 
             ManagementService mservice = ManagementService.getInstance();
             ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
@@ -105,21 +91,27 @@ public class ClientRestHandler extends RestHandler {
             }
         }
 
-        completeOK(restReq);
+        observer.complete(Empty.getDefaultInstance());
     }
 
-    private void verifyPermission(Processor processor, int clientId, RestRequest req)
+    private static ConnectedClient verifyClient(int clientId) throws NotFoundException {
+        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
+        if (client == null) {
+            throw new NotFoundException("No such client");
+        } else {
+            return client;
+        }
+    }
+
+    private void verifyPermission(User user, Processor processor, int clientId)
             throws HttpException {
-        if (hasSystemPrivilege(req.getUser(), SystemPrivilege.ControlProcessor)) {
+        if (RestHandler.hasSystemPrivilege(user, SystemPrivilege.ControlProcessor)) {
             // With this privilege, everything is allowed
             return;
         }
 
-        String username = req.getUser().getName();
-
         // other users can only connect clients to the processor they own
-        if (!(processor.isPersistent() || processor.getCreator().equals(username))) {
-            log.warn("User {} is not allowed to connect users to processor {}", username, processor.getName());
+        if (!(processor.isPersistent() || processor.getCreator().equals(user.getName()))) {
             throw new ForbiddenException("not allowed to connect clients other than yours");
         }
 
@@ -128,8 +120,7 @@ public class ClientRestHandler extends RestHandler {
         if (client == null) {
             throw new BadRequestException("Invalid client id " + clientId);
         }
-        if (!client.getUser().getName().equals(username)) {
-            log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
+        if (!client.getUser().getName().equals(user.getName())) {
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
     }

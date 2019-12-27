@@ -200,24 +200,6 @@ message ProcessorInfo {
   optional bool replay = 19;
 }
 
-message ClientInfo {
-  reserved 8,9;
-  enum ClientState {
-    CONNECTED = 0;
-    DISCONNECTED = 1;
-  }
-  optional int32 id = 2;
-  optional string username = 3;
-  optional string applicationName = 4;
-  optional string address = 10;
-
-  optional string instance = 1;  
-  optional string processorName = 5;
-  
-  optional ClientState state = 6;
-  optional google.protobuf.Timestamp loginTime = 11;
-}
-
 message TmStatistics {
   reserved 3,4,7, 8;
   optional string packetName = 1;

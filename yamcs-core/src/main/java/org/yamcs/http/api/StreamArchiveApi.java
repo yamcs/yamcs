@@ -4,42 +4,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.AlarmRecorder;
+import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.GPBHelper;
-import org.yamcs.archive.IndexRequestListener;
-import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
-import org.yamcs.archive.IndexServer;
 import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ProtobufRegistry;
+import org.yamcs.http.api.RestDownsampler.Sample;
 import org.yamcs.http.api.RestRequest.IntervalResult;
-import org.yamcs.http.api.archive.ArchiveHelper;
-import org.yamcs.http.api.archive.EventPageToken;
-import org.yamcs.http.api.archive.PacketPageToken;
-import org.yamcs.http.api.archive.RestDownsampler;
-import org.yamcs.http.api.archive.RestDownsampler.Sample;
-import org.yamcs.http.api.archive.RestReplays;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -48,19 +39,12 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.CreateEventRequest;
 import org.yamcs.protobuf.Archive.GetPacketRequest;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
-import org.yamcs.protobuf.Archive.IndexEntry;
-import org.yamcs.protobuf.Archive.IndexGroup;
-import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Archive.ListAlarmsRequest;
 import org.yamcs.protobuf.Archive.ListAlarmsResponse;
-import org.yamcs.protobuf.Archive.ListCommandHistoryIndexRequest;
-import org.yamcs.protobuf.Archive.ListCompletenessIndexRequest;
-import org.yamcs.protobuf.Archive.ListEventIndexRequest;
 import org.yamcs.protobuf.Archive.ListEventSourcesRequest;
 import org.yamcs.protobuf.Archive.ListEventSourcesResponse;
 import org.yamcs.protobuf.Archive.ListEventsRequest;
 import org.yamcs.protobuf.Archive.ListEventsResponse;
-import org.yamcs.protobuf.Archive.ListPacketIndexRequest;
 import org.yamcs.protobuf.Archive.ListPacketNamesRequest;
 import org.yamcs.protobuf.Archive.ListPacketNamesResponse;
 import org.yamcs.protobuf.Archive.ListPacketsRequest;
@@ -69,17 +53,21 @@ import org.yamcs.protobuf.Archive.ListParameterAlarmsRequest;
 import org.yamcs.protobuf.Archive.ListParameterGroupsRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
-import org.yamcs.protobuf.Archive.ListParameterIndexRequest;
 import org.yamcs.protobuf.Archive.ParameterGroupInfo;
+import org.yamcs.protobuf.Archive.StreamCommandsRequest;
+import org.yamcs.protobuf.Archive.StreamEventsRequest;
+import org.yamcs.protobuf.Archive.StreamPacketsRequest;
 import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Mdb.GetCommandRequest;
+import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
-import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
-import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -110,6 +98,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     private static final Log log = new Log(StreamArchiveApi.class);
+    private static final Pattern PATTERN_COMMAND_ID = Pattern.compile("([0-9]+)(-(.*))?-([0-9]+)");
 
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
@@ -127,11 +116,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         boolean desc = !request.getOrder().equals("asc");
         String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
 
-        Set<String> sourceSet = new HashSet<>(request.getSourceList());
-
-        PacketPageToken nextToken = null;
+        EventPageToken nextToken = null;
         if (request.hasNext()) {
-            nextToken = PacketPageToken.decode(request.getNext());
+            nextToken = EventPageToken.decode(request.getNext());
         }
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
@@ -144,8 +131,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             IntervalResult ir = new IntervalResult(start, stop);
             sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (!sourceSet.isEmpty()) {
-            sqlb.whereColIn("source", sourceSet);
+        if (request.getSourceCount() > 0) {
+            sqlb.whereColIn("source", request.getSourceList());
         }
         switch (severity) {
         case "INFO":
@@ -314,6 +301,79 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     }
 
     @Override
+    public void streamEvents(Context ctx, StreamEventsRequest request, Observer<Event> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+        StreamArchiveApi.verifyEventArchiveSupport(instance);
+        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadEvents);
+
+        SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
+        if (request.hasStart() || request.hasStop()) {
+            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
+                    : TimeEncoding.INVALID_INSTANT;
+            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
+                    : TimeEncoding.INVALID_INSTANT;
+            IntervalResult ir = new IntervalResult(start, stop);
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+
+        if (request.getSourceCount() > 0) {
+            sqlb.whereColIn("source", request.getSourceList());
+        }
+
+        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
+        switch (severity) {
+        case "INFO":
+            break;
+        case "WATCH":
+            sqlb.where("body.severity != 'INFO'");
+            break;
+        case "WARNING":
+            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "DISTRESS":
+            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "CRITICAL":
+            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "SEVERE":
+            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
+            break;
+        default:
+            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
+        }
+
+        if (request.hasQ()) {
+            sqlb.where("body.message like ?", "%" + request.getQ() + "%");
+        }
+
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                Event incoming = (Event) tuple.getColumn("body");
+                Event event;
+                try {
+                    event = Event.parseFrom(incoming.toByteArray(),
+                            getProtobufRegistry().getExtensionRegistry());
+                } catch (InvalidProtocolBufferException e) {
+                    throw new UnsupportedOperationException(e);
+                }
+
+                Event.Builder eventb = Event.newBuilder(event);
+                eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
+                eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
+                observer.next(eventb.build());
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete();
+            }
+        });
+    }
+
+    @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
         String instance = RestHandler.verifyInstance(request.getInstance());
 
@@ -350,7 +410,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple, true);
-                responseb.addAlarm(alarm);
+                responseb.addAlarms(alarm);
             }
 
             @Override
@@ -396,7 +456,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple, request.getDetail());
-                responseb.addAlarm(alarm);
+                responseb.addAlarms(alarm);
             }
 
             @Override
@@ -537,168 +597,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         };
 
         RestReplays.replay(instance, ctx.user, rr.build(), replayListener);
-    }
-
-    @Override
-    public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,
-            Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
-
-        int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
-        int limit = request.hasLimit() ? request.getLimit() : 500;
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
-
-        if (request.hasStart()) {
-            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
-        }
-        if (request.hasStop()) {
-            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
-        }
-        String next = request.hasNext() ? request.getNext() : null;
-
-        if (request.getNameCount() > 0) {
-            for (String name : request.getNameList()) {
-                requestb.addCmdName(NamedObjectId.newBuilder().setName(name.trim()));
-            }
-        } else {
-            requestb.setSendAllCmd(true);
-        }
-
-        handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
-    }
-
-    @Override
-    public void listEventIndex(Context ctx, ListEventIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
-
-        int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
-        int limit = request.hasLimit() ? request.getLimit() : 500;
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
-
-        if (request.hasStart()) {
-            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
-        }
-        if (request.hasStop()) {
-            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
-        }
-        String next = request.hasNext() ? request.getNext() : null;
-
-        if (request.getSourceCount() > 0) {
-            for (String source : request.getSourceList()) {
-                requestb.addEventSource(NamedObjectId.newBuilder().setName(source.trim()));
-            }
-        } else {
-            requestb.setSendAllEvent(true);
-        }
-
-        handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
-    }
-
-    @Override
-    public void listPacketIndex(Context ctx, ListPacketIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
-
-        int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
-        int limit = request.hasLimit() ? request.getLimit() : 500;
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
-
-        if (request.hasStart()) {
-            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
-        }
-        if (request.hasStop()) {
-            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
-        }
-        String next = request.hasNext() ? request.getNext() : null;
-
-        if (request.getNameCount() > 0) {
-            for (String name : request.getNameList()) {
-                requestb.addTmPacket(NamedObjectId.newBuilder().setName(name.trim()));
-            }
-        } else {
-            requestb.setSendAllTm(true);
-        }
-        try {
-            handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
-        } catch (InvalidTokenException e) {
-            throw new BadRequestException("Invalid token specified");
-        }
-        
-    }
-
-    @Override
-    public void listParameterIndex(Context ctx, ListParameterIndexRequest request,
-            Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
-
-        int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 20000;
-        int limit = request.hasLimit() ? request.getLimit() : 500;
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
-
-        if (request.hasStart()) {
-            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
-        }
-        if (request.hasStop()) {
-            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
-        }
-        String next = request.hasNext() ? request.getNext() : null;
-
-        if (request.getGroupCount() > 0) {
-            for (String group : request.getGroupList()) {
-                requestb.addPpGroup(NamedObjectId.newBuilder().setName(group.trim()));
-            }
-        } else {
-            requestb.setSendAllPp(true);
-        }
-
-        handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
-    }
-
-    @Override
-    public void listCompletenessIndex(Context ctx, ListCompletenessIndexRequest request,
-            Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        IndexServer indexServer = verifyIndexServer(instance);
-        int limit = request.hasLimit() ? request.getLimit() : 500;
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setSendCompletenessIndex(true);
-        requestb.setInstance(instance);
-
-        if (request.hasStart()) {
-            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
-        }
-        if (request.hasStop()) {
-            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
-        }
-        String next = request.hasNext() ? request.getNext() : null;
-
-        handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
     }
 
     @Override
@@ -858,6 +756,44 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     }
 
     @Override
+    public void streamPackets(Context ctx, StreamPacketsRequest request, Observer<TmPacketData> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+
+        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadPacket, request.getNameList());
+
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+
+        long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
+                : TimeEncoding.INVALID_INSTANT;
+        long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
+                : TimeEncoding.INVALID_INSTANT;
+
+        IntervalResult ir = new IntervalResult(start, stop);
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+
+        if (request.getNameCount() > 0) {
+            sqlb.whereColIn("pname", request.getNameList());
+        }
+
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                if (RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
+                    observer.next(pdata);
+                }
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete();
+            }
+        });
+    }
+
+    @Override
     public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
             Observer<ParameterData> observer) {
         String instance = RestHandler.verifyInstance(request.getInstance());
@@ -932,6 +868,158 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         RestReplays.replay(instance, ctx.user, rr.build(), replayListener);
     }
 
+    @Override
+    public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
+            observer.complete(ListCommandsResponse.getDefaultInstance());
+            return;
+        }
+
+        long pos = request.hasPos() ? request.getPos() : 0;
+        int limit = request.hasLimit() ? request.getLimit() : 100;
+        boolean desc = !request.getOrder().equals("asc");
+
+        CommandPageToken nextToken = null;
+        if (request.hasNext()) {
+            String next = request.getNext();
+            nextToken = CommandPageToken.decode(next);
+        }
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+        if (request.hasStart() || request.hasStop()) {
+            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
+                    : TimeEncoding.INVALID_INSTANT;
+            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
+                    : TimeEncoding.INVALID_INSTANT;
+            IntervalResult ir = new IntervalResult(start, stop);
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+
+        if (request.hasQ()) {
+            sqlb.where("cmdName like ?", "%" + request.getQ() + "%");
+        }
+        if (nextToken != null) {
+            // TODO this currently ignores the origin column (also part of the key)
+            // Requires string comparison in StreamSQL, and an even more complicated query condition...
+            if (desc) {
+                sqlb.where("(gentime < ? or (gentime = ? and seqNum < ?))",
+                        nextToken.gentime, nextToken.gentime, nextToken.seqNum);
+            } else {
+                sqlb.where("(gentime > ? or (gentime = ? and seqNum > ?))",
+                        nextToken.gentime, nextToken.gentime, nextToken.seqNum);
+            }
+        }
+
+        sqlb.descend(desc);
+        sqlb.limit(pos, limit + 1); // one more to detect hasMore
+
+        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            CommandHistoryEntry last;
+            int count;
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                if (++count <= limit) {
+                    CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                    responseb.addEntry(che);
+                    last = che;
+                }
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (count > limit) {
+                    CommandId cmdId = last.getCommandId();
+                    CommandPageToken token = new CommandPageToken(
+                            cmdId.getGenerationTime(), cmdId.getOrigin(),
+                            cmdId.getSequenceNumber());
+                    responseb.setContinuationToken(token.encodeAsString());
+                }
+                observer.complete(responseb.build());
+            }
+        });
+    }
+
+    @Override
+    public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandHistoryEntry> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+
+        Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
+        if (!matcher.matches()) {
+            throw new BadRequestException("Invalid command id");
+        }
+
+        long gentime = Long.parseLong(matcher.group(1));
+        String origin = matcher.group(3) != null ? matcher.group(3) : "";
+        int seqNum = Integer.parseInt(matcher.group(4));
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME)
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum)
+                .where("origin = ?", origin);
+
+        List<CommandHistoryEntry> commands = new ArrayList<>();
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                commands.add(che);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (commands.isEmpty()) {
+                    observer.completeExceptionally(new NotFoundException());
+                } else if (commands.size() > 1) {
+                    observer.completeExceptionally(new InternalServerErrorException("Too many results"));
+                } else {
+                    observer.complete(commands.get(0));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+
+        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.CommandHistory, request.getNameList());
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+
+        if (request.hasStart() || request.hasStop()) {
+            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
+                    : TimeEncoding.INVALID_INSTANT;
+            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
+                    : TimeEncoding.INVALID_INSTANT;
+            IntervalResult ir = new IntervalResult(start, stop);
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+
+        if (request.getNameCount() > 0) {
+            sqlb.whereColIn("cmdName", request.getNameList());
+        }
+
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                observer.next(entry);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete();
+            }
+        });
+    }
+
     /**
      * Get packet names this user has appropriate privileges for.
      */
@@ -968,77 +1056,5 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             protobufRegistry = services.get(0).getProtobufRegistry();
         }
         return protobufRegistry;
-    }
-
-    private IndexServer verifyIndexServer(String instance) throws HttpException {
-        YamcsServer yamcs = YamcsServer.getServer();
-        RestHandler.verifyInstance(instance);
-        List<IndexServer> services = yamcs.getServices(instance, IndexServer.class);
-        if (services.isEmpty()) {
-            throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
-        } else {
-            return services.get(0);
-        }
-    }
-
-    /**
-     * Submits an index request but returns only the first batch of results combined with a pagination token if the user
-     * wishes to retrieve the next batch.
-     * 
-     * The batch size is determined by the IndexServer and is set to 500 (shared between all requested groups).
-     */
-    private void handleOneIndexResult(Observer<IndexResponse> observer, IndexServer indexServer,
-            IndexRequest request, int limit, String token) throws HttpException {
-        try {
-            IndexResponse.Builder responseb = IndexResponse.newBuilder();
-            Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
-            indexServer.submitIndexRequest(request, limit, token, new IndexRequestListener() {
-
-                long last;
-
-                @Override
-                public void processData(ArchiveRecord rec) {
-                    IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
-                    if (groupb == null) {
-                        groupb = IndexGroup.newBuilder().setId(rec.getId());
-                        groupBuilders.put(rec.getId(), groupb);
-                    }
-                    long first = TimeEncoding.fromProtobufTimestamp(rec.getFirst());
-                    long last1 = TimeEncoding.fromProtobufTimestamp(rec.getLast());
-
-                    IndexEntry.Builder ieb = IndexEntry.newBuilder()
-                            .setStart(TimeEncoding.toString(first))
-                            .setStop(TimeEncoding.toString(last1))
-                            .setCount(rec.getNum());
-                    if (rec.hasSeqFirst()) {
-                        ieb.setSeqStart(rec.getSeqFirst());
-                    }
-                    if (rec.hasSeqLast()) {
-                        ieb.setSeqStop(rec.getSeqLast());
-                    }
-                    groupb.addEntry(ieb);
-                    last = Math.max(last, last1);
-                }
-
-                @Override
-                public void finished(String token, boolean success) {
-                    if (success) {
-                        if (token != null) {
-                            responseb.setContinuationToken(token);
-                        }
-                        List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
-                        Collections.sort(sortedGroups, (g1, g2) -> {
-                            return g1.getId().getName().compareTo(g2.getId().getName());
-                        });
-                        sortedGroups.forEach(groupb -> responseb.addGroup(groupb));
-                        observer.complete(responseb.build());
-                    } else {
-                        observer.completeExceptionally(new InternalServerErrorException("Too many results"));
-                    }
-                }
-            });
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException("Too many results", e);
-        }
     }
 }

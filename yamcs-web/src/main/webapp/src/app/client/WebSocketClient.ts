@@ -83,7 +83,7 @@ export class WebSocketClient {
     return new Promise<EventSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -99,7 +99,7 @@ export class WebSocketClient {
         } else {
           reject('Unexpected response code');
         }
-      })
+      });
     });
   }
 
@@ -109,7 +109,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -129,7 +129,7 @@ export class WebSocketClient {
     return new Promise<TimeSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -166,7 +166,7 @@ export class WebSocketClient {
           map(msg => msg[3].data as ConnectionInfo),
         );
         resolve(response);
-      }, err => reject(err))
+      }, err => reject(err));
     });
   }
 
@@ -176,7 +176,7 @@ export class WebSocketClient {
     return new Promise<LinkSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -205,7 +205,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -228,7 +228,7 @@ export class WebSocketClient {
     return new Promise<StreamEventSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -256,7 +256,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -276,7 +276,7 @@ export class WebSocketClient {
     return new Promise<AlarmSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -296,7 +296,7 @@ export class WebSocketClient {
     });
   }
 
-  async getClientUpdates(instance?: string) {
+  async getClientUpdates() {
     const requestId = this.emit({
       management: 'subscribe',
     });
@@ -304,7 +304,7 @@ export class WebSocketClient {
     return new Promise<ClientSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -313,9 +313,6 @@ export class WebSocketClient {
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
             map(msg => msg[3].data as ClientInfo),
-            filter((clientInfo: ClientInfo) => {
-              return !instance || (instance === clientInfo.instance);
-            }),
           );
           resolve(response);
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
@@ -334,7 +331,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -357,7 +354,7 @@ export class WebSocketClient {
     return new Promise<StreamSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -384,7 +381,7 @@ export class WebSocketClient {
     return new Promise<InstanceSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -410,7 +407,7 @@ export class WebSocketClient {
     return new Promise<ProcessorSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -438,7 +435,7 @@ export class WebSocketClient {
     return new Promise<StatisticsSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -470,7 +467,7 @@ export class WebSocketClient {
     return new Promise<CommandSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -496,7 +493,7 @@ export class WebSocketClient {
     return new Promise<CommandQueueSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -528,7 +525,7 @@ export class WebSocketClient {
     return new Promise<CommandQueueEventSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -563,7 +560,7 @@ export class WebSocketClient {
     return new Promise<ParameterSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -603,7 +600,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -625,7 +622,7 @@ export class WebSocketClient {
     return new Promise<void>((resolve, reject) => {
       this.webSocketConnection$.pipe(
         first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
@@ -644,13 +641,13 @@ export class WebSocketClient {
     this.webSocket.unsubscribe();
   }
 
-  private emit(payload: { [key: string]: any, data?: {} }) {
+  private emit(payload: { [key: string]: any, data?: {}; }) {
     this.webSocket.next([
       PROTOCOL_VERSION,
       MESSAGE_TYPE_REQUEST,
       ++this.requestSequence,
       payload,
     ]);
-    return this.requestSequence
+    return this.requestSequence;
   }
 }

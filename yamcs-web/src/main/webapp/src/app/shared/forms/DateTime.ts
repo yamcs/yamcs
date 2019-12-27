@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ValidatorFn, Validators } from '@angular/forms';
 import * as utils from '../utils';
 
 const ISO_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(.\d{3})?)?Z?$/;
 const PATTERN_VALIDATOR = Validators.pattern(ISO_PATTERN);
-const DATE_VALIDATOR: ValidatorFn = (control: FormControl) => {
+const DATE_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
   if (control.value === '') {
     return null;
   }

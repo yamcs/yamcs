@@ -8,6 +8,7 @@ option java_multiple_files = true;
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/table/table.proto";
+import "yamcs/protobuf/clients/clients.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
@@ -53,7 +54,7 @@ message WebSocketServerMessage {
     optional pvalue.ParameterData parameterData = 3;
     optional commanding.CommandHistoryEntry command = 4;
     optional yamcsManagement.ProcessorInfo processorInfo = 5;
-    optional yamcsManagement.ClientInfo clientInfo = 6;
+    optional clients.ClientInfo clientInfo = 6;
     optional yamcsManagement.Statistics statistics = 7;
     optional Event event = 8;
     optional table.StreamData streamData = 9;

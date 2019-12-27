@@ -96,7 +96,7 @@ export interface ParameterSubscriptionResponse {
   subscriptionId: number;
   subscribed: SubscribedParameter[];
   invalid: NamedObjectId[];
-  mapping: { [key: number]: NamedObjectId };
+  mapping: { [key: number]: NamedObjectId; };
   parameterValues$: Observable<ParameterValue[]>;
 }
 
@@ -110,7 +110,7 @@ export interface EventSubscriptionResponse {
 }
 
 export interface ListAlarmsResponse {
-  alarm: Alarm[];
+  alarms: Alarm[];
 }
 
 export interface AlarmSubscriptionResponse {
@@ -196,7 +196,7 @@ export interface CommandHistoryEntry {
 }
 
 export interface CommandHistoryPage {
-  entry?: CommandHistoryEntry[]
+  entry?: CommandHistoryEntry[];
   continuationToken?: string;
 }
 

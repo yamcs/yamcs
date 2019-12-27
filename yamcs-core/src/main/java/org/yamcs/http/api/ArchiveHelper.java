@@ -1,4 +1,4 @@
-package org.yamcs.http.api.archive;
+package org.yamcs.http.api;
 
 import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_BY;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_TIME;
@@ -16,9 +16,8 @@ import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.ProtobufRegistry;
-import org.yamcs.http.api.archive.ParameterRanger.Range;
-import org.yamcs.http.api.archive.RestDownsampler.Sample;
-import org.yamcs.http.api.processor.ProcessorHelper;
+import org.yamcs.http.api.ParameterRanger.Range;
+import org.yamcs.http.api.RestDownsampler.Sample;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmType;
@@ -227,7 +226,7 @@ public final class ArchiveHelper {
                 break;
             case BOOLEAN:
                 v.setType(Type.BOOLEAN);
-                v.setBooleanValue((Boolean)column);
+                v.setBooleanValue((Boolean) column);
                 break;
             case LONG:
                 v.setType(Type.SINT64);
@@ -370,7 +369,7 @@ public final class ArchiveHelper {
             if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
                 pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
-            alarmb.setSeverity(ProcessorHelper.getParameterAlarmSeverity(pval.getMonitoringResult()));
+            alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
 
             if (detail) {
                 ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
@@ -380,12 +379,12 @@ public final class ArchiveHelper {
             alarmb.setType(AlarmType.EVENT);
             Event ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
             alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
-            alarmb.setId(ProcessorHelper.getAlarmId(ev));
+            alarmb.setId(AlarmsApi.getAlarmId(ev));
 
             if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
                 ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
-            alarmb.setSeverity(ProcessorHelper.getEventAlarmSeverity(ev.getSeverity()));
+            alarmb.setSeverity(AlarmsApi.getEventAlarmSeverity(ev.getSeverity()));
 
         }
 

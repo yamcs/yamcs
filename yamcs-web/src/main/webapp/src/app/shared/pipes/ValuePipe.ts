@@ -5,7 +5,7 @@ import * as utils from '../utils';
 @Pipe({ name: 'value' })
 export class ValuePipe implements PipeTransform {
 
-  transform(value: Value): string | null {
+  transform(value: Value | null | undefined): string | null {
     if (!value) {
       return null;
     }

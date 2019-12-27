@@ -7,7 +7,7 @@ export type WebSocketClientMessage = [
   number, // Protocol
   number, // Message Type
   number, // Request Sequence
-  { [key: string]: string } // payload
+  { [key: string]: string; } // payload
 ];
 
 export type WebSocketServerMessage = [
@@ -15,11 +15,11 @@ export type WebSocketServerMessage = [
   number, // Message Type
   number, // Response Sequence
   {
-    dt?: string
-    data?: { [key: string]: any }
+    dt?: string;
+    data?: { [key: string]: any; };
 
-    et?: string
-    msg?: string
+    et?: string;
+    msg?: string;
   }
 ];
 
@@ -48,7 +48,7 @@ export interface SpaceSystemsWrapper {
 }
 
 export interface AlarmsWrapper {
-  alarm: Alarm[];
+  alarms: Alarm[];
 }
 
 export interface UsersWrapper {
@@ -64,11 +64,11 @@ export interface RolesWrapper {
 }
 
 export interface ClientsWrapper {
-  client: ClientInfo[];
+  clients: ClientInfo[];
 }
 
 export interface CommandQueuesWrapper {
-  queue: CommandQueue[];
+  queues: CommandQueue[];
 }
 
 export interface ProcessorsWrapper {

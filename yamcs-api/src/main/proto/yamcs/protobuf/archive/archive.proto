@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
 
@@ -35,15 +36,23 @@ service StreamArchiveApi {
     };
   }
   
+  // Streams back events
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamEvents"
+      body: "*"
+    };
+  }
+  
   // List alarms
-  rpc ListAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {
+  rpc ListAlarms(ListAlarmsRequest) returns (alarms.ListAlarmsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/alarms"
     };
   }
   
   // List alarms for a specific parameter
-  rpc ListParameterAlarms(ListParameterAlarmsRequest) returns (ListAlarmsResponse) {
+  rpc ListParameterAlarms(ListParameterAlarmsRequest) returns (alarms.ListAlarmsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/alarms/{parameter*}"
     };
@@ -78,41 +87,6 @@ service StreamArchiveApi {
     };
   }
   
-  // List command history index
-  rpc ListCommandHistoryIndex(ListCommandHistoryIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/command-index"
-    };
-  }
-  
-  // List event index
-  rpc ListEventIndex(ListEventIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/event-index"
-    };
-  }
-  
-  // List packet index
-  rpc ListPacketIndex(ListPacketIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packet-index"
-    };
-  }
-  
-  // List parameter index
-  rpc ListParameterIndex(ListParameterIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameter-index"
-    };
-  }
-  
-  // List completeness index
-  rpc ListCompletenessIndex(ListCompletenessIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/completeness-index"
-    };
-  }
-  
   // List packet names
   rpc ListPacketNames(ListPacketNamesRequest) returns (ListPacketNamesResponse) {
     option (yamcs.api.route) = {
@@ -131,6 +105,36 @@ service StreamArchiveApi {
   rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+    };
+  }
+  
+  // Streams back packets
+  rpc StreamPackets(StreamPacketsRequest) returns (stream TmPacketData) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamPackets"
+      body: "*"
+    };
+  }
+  
+  // List commands
+  rpc ListCommands(ListCommandsRequest) returns (ListCommandsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/commands"
+    };
+  }
+  
+  // Get a command
+  rpc GetCommand(GetCommandRequest) returns (commanding.CommandHistoryEntry) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/commands/{id}"
+    };
+  }
+  
+  // Streams back commands
+  rpc StreamCommands(StreamCommandsRequest) returns (stream commanding.CommandHistoryEntry) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamCommands"
+      body: "*"
     };
   }
 }
@@ -171,6 +175,15 @@ message CreateEventRequest {
   optional int32 sequenceNumber = 7;
 }
 
+message StreamEventsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string source = 4;
+  optional string severity = 5;
+  optional string q = 6;
+}
+
 message ListAlarmsRequest {
   optional string instance = 1;
   optional int64 pos = 2;
@@ -178,10 +191,6 @@ message ListAlarmsRequest {
   optional google.protobuf.Timestamp start = 4;
   optional google.protobuf.Timestamp stop = 5;
   optional string order = 6;
-}
-
-message ListAlarmsResponse {
-  repeated alarms.AlarmData alarm = 1;
 }
 
 message ListParameterAlarmsRequest {
@@ -205,72 +214,6 @@ message ListEventSourcesResponse {
 
 message ParameterGroupInfo {
   repeated string group = 1;
-}
-
-message ListCommandHistoryIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string name = 7;
-}
-
-message ListEventIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string source = 7;
-}
-
-message ListPacketIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string name = 7;
-}
-
-message ListParameterIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string group = 7;
-}
-
-message ListCompletenessIndexRequest {
-  optional string instance = 1;
-  optional int32 limit = 2;
-  optional google.protobuf.Timestamp start = 3;
-  optional google.protobuf.Timestamp stop = 4;
-  optional string next = 5;
-}
-
-message IndexResponse {
-  repeated IndexGroup group = 1;
-  optional string continuationToken = 2;
-}
-
-message IndexGroup {
-  optional NamedObjectId id = 1;
-  repeated IndexEntry entry = 2;
-}
-
-message IndexEntry {
-  optional string start = 1;
-  optional string stop = 2;
-  optional int32 count = 3;
-  optional int64 seqStart = 4;
-  optional int64 seqStop = 5;
 }
 
 message ListPacketNamesRequest {
@@ -326,6 +269,13 @@ message GetPacketRequest {
   optional int32 seqnum = 3;
 }
 
+message StreamPacketsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string name = 4;
+}
+
 message GetParameterSamplesRequest {
   optional string instance = 1;
   optional string name = 2;
@@ -335,4 +285,32 @@ message GetParameterSamplesRequest {
   optional bool norealtime = 6;
   optional string processor = 7;
   optional string source = 8;
+}
+
+message ListCommandsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional string order = 4;
+  optional string q = 5;
+  optional string next = 6;
+  optional google.protobuf.Timestamp start = 7;
+  optional google.protobuf.Timestamp stop = 8;
+}
+
+message ListCommandsResponse {
+  repeated commanding.CommandHistoryEntry entry = 1;
+  optional string continuationToken = 2;
+}
+
+message GetCommandRequest {
+  optional string instance = 1;
+  optional string id = 2;
+}
+
+message StreamCommandsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string name = 4;
 }

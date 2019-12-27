@@ -26,8 +26,8 @@ import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmSeverity;
 import org.yamcs.protobuf.Alarms.AlarmType;
+import org.yamcs.protobuf.Alarms.ListAlarmsResponse;
 import org.yamcs.protobuf.Archive.IndexResponse;
-import org.yamcs.protobuf.Archive.ListAlarmsResponse;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.CreateProcessorRequest;
@@ -498,8 +498,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 HttpMethod.GET).get();
 
         ListAlarmsResponse listalarm = ListAlarmsResponse.parseFrom(resp);
-        assertEquals(1, listalarm.getAlarmCount());
-        AlarmData alarm = listalarm.getAlarm(0);
+        assertEquals(1, listalarm.getAlarmsCount());
+        AlarmData alarm = listalarm.getAlarms(0);
         assertEquals(AlarmType.EVENT, alarm.getType());
 
         assertEquals("Event-Alarm-Test", alarm.getId().getName());

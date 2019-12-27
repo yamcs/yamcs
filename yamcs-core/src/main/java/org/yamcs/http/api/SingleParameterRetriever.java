@@ -1,4 +1,4 @@
-package org.yamcs.http.api.archive;
+package org.yamcs.http.api;
 
 import java.io.IOException;
 import java.util.ArrayList;

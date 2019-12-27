@@ -29,12 +29,6 @@ import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.RouteHandler;
 import org.yamcs.http.RpcDescriptor;
-import org.yamcs.http.api.archive.ArchiveCommandRestHandler;
-import org.yamcs.http.api.archive.ArchiveDownloadRestHandler;
-import org.yamcs.http.api.archive.ArchiveIndexDownloadsRestHandler;
-import org.yamcs.http.api.archive.ArchiveTableRestHandler;
-import org.yamcs.http.api.processor.ProcessorCommandQueueRestHandler;
-import org.yamcs.http.api.processor.ProcessorRestHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.RouteInfo;
 import org.yamcs.security.User;
@@ -98,30 +92,27 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         this.contextPath = contextPath;
         this.protobufRegistry = protobufRegistry;
 
+        addApi(new AlarmsApi());
         addApi(new BucketsApi());
         addApi(new CfdpApi());
+        addApi(new ClientsApi());
+        addApi(new Cop1Api());
         addApi(new GeneralApi(this));
         addApi(new ExportApi());
         addApi(new IamApi());
+        addApi(new IndexApi());
         addApi(new ManagementApi());
         addApi(new MdbApi());
         addApi(new ParameterArchiveApi());
         addApi(new ProcessingApi());
+        addApi(new QueueApi());
         addApi(new StreamArchiveApi());
         addApi(new RocksDbApi());
         addApi(new TableApi());
         addApi(new TagApi());
-        addApi(new Cop1Api());
 
         // Not (yet) converted to Protobuf-style API
-        registerRouteHandler(new MdbRestHandler());
         registerRouteHandler(new ArchiveTableRestHandler());
-        registerRouteHandler(new ClientRestHandler());
-        registerRouteHandler(new ArchiveCommandRestHandler());
-        registerRouteHandler(new ArchiveDownloadRestHandler());
-        registerRouteHandler(new ArchiveIndexDownloadsRestHandler());
-        registerRouteHandler(new ProcessorRestHandler());
-        registerRouteHandler(new ProcessorCommandQueueRestHandler());
     }
 
     public void addApi(Api<Context> api) {

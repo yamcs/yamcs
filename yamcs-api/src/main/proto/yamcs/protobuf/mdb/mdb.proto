@@ -3,6 +3,8 @@ syntax="proto2";
 package yamcs.protobuf.mdb;
 option java_package = "org.yamcs.protobuf";
 
+import "google/protobuf/empty.proto";
+
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/yamcs.proto";
@@ -114,6 +116,22 @@ service MdbApi {
       get: "/api/mdb/{instance}/algorithms/{name*}"
     };
   }
+  
+  // Update a parameter's definition
+  rpc UpdateParameter(UpdateParameterRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      patch: "/api/mdb/{instance}/{processor}/parameters/{name*}"
+      body: "*"
+    };
+  }
+  
+  // Update an algorithm's definition
+  rpc UpdateAlgorithm(UpdateAlgorithmRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/mdb/{instance}/{processor}/algorithms/{name*}"
+      body: "*"
+    };
+  }
 }
 
 message MissionDatabase {
@@ -185,7 +203,7 @@ message ContextAlarmInfo {
   repeated ComparisonInfo comparison = 1;
   optional AlarmInfo alarm = 2;
   
-  //this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+  //this can be used in the UpdateParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
   // either this or the comparison above has to be used (not both at the same time)
   optional string context = 3; 
 }
@@ -210,7 +228,7 @@ message ContextCalibratorInfo {
   repeated ComparisonInfo comparison = 1;
   optional CalibratorInfo calibrator = 2;
 
-  //this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+  //this can be used in the UpdateParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
   // either this or the comparison above has to be used (not both at the same time)
   optional string context = 3; 
 }
@@ -639,7 +657,7 @@ message SpaceSystemInfo {
 }
 
 // used to change calibrators or alarms for one parameter
-message ChangeParameterRequest {
+message UpdateParameterRequest {
   enum ActionType {
      RESET = 0; //reset all parameter properties (calibrators+alarms) to their default MDB value
      RESET_CALIBRATORS = 1; //reset calibrators to their default MDB value
@@ -649,22 +667,29 @@ message ChangeParameterRequest {
      RESET_ALARMS = 4; //reset alarms to their default MDB value
      SET_DEFAULT_ALARMS = 5; //sets the default alarms (the contextual ones are unmodified)
      SET_ALARMS = 6; //sets all alarms (default+contextual), if default is not set in the proto message, the existing one is not modified
-  } 
+  }
+  
+  optional string instance = 1;
+  optional string processor = 2;
+  optional string name = 3;
 
-  optional ActionType action = 1;
-  optional CalibratorInfo defaultCalibrator = 2; //used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
-  repeated ContextCalibratorInfo contextCalibrator = 3; //used when action = SET_CALIBRATORS
-  optional AlarmInfo defaultAlarm = 4; //used when action = SET_DEFAULT_ALARMS or SET_ALARMS
-  repeated ContextAlarmInfo contextAlarm = 5; //used when action = SET_ALARMS
+  optional ActionType action = 4;
+  optional CalibratorInfo defaultCalibrator = 5; //used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+  repeated ContextCalibratorInfo contextCalibrator = 6; //used when action = SET_CALIBRATORS
+  optional AlarmInfo defaultAlarm = 7; //used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+  repeated ContextAlarmInfo contextAlarm = 8; //used when action = SET_ALARMS
 }
 
-
-//used to change algorithms
-message ChangeAlgorithmRequest {
+message UpdateAlgorithmRequest {
   enum ActionType {
      RESET = 0; //restores the original MDB definition
      SET = 1; //sets the algorithm text
   }
-  optional ActionType action = 1;
-  optional AlgorithmInfo algorithm = 2;//used when action = SET
+  
+  optional string instance = 1;
+  optional string processor = 2;
+  optional string name = 3;
+  
+  optional ActionType action = 4;
+  optional AlgorithmInfo algorithm = 6; //used when action = SET
 }
