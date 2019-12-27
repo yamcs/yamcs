@@ -25,12 +25,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: Set up yarn
-        run: |
-          npm install -g yarn
-          yarn --cwd yamcs-web install
+      - name: Set up webapp
+        run: npm --cwd yamcs-web/src/main/webapp install
       - name: Build webapp
-        run: yarn --cwd yamcs-web build
+        run: npm --cwd yamcs-web/src/main/webapp run build
 
   docs:
     name: Documentation

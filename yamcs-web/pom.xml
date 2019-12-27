@@ -11,7 +11,7 @@
   <name>Yamcs :: Web Interface</name>
 
   <properties>
-    <webdir>${basedir}/packages/app/dist</webdir>
+    <webdir>${basedir}/src/main/webapp/dist</webdir>
   </properties>
 
   <!--

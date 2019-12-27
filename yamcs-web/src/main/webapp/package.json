@@ -1,0 +1,47 @@
+{
+  "name": "yamcs-web",
+  "version": "1.0.0",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "ng build --prod",
+    "watch": "ng build --watch",
+    "opi-pegjs": "cd src/app/telemetry/displays/opi/formulas && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs",
+    "uss-pegjs": "cd src/app/telemetry/displays/uss/expressions && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^9.0.0-rc.7",
+    "@angular/cdk": "^9.0.0-rc.6",
+    "@angular/common": "^9.0.0-rc.7",
+    "@angular/compiler": "^9.0.0-rc.7",
+    "@angular/core": "^9.0.0-rc.7",
+    "@angular/elements": "^9.0.0-rc.7",
+    "@angular/forms": "^9.0.0-rc.7",
+    "@angular/material": "^9.0.0-rc.6",
+    "@angular/platform-browser": "^9.0.0-rc.7",
+    "@angular/platform-browser-dynamic": "^9.0.0-rc.7",
+    "@angular/router": "^9.0.0-rc.7",
+    "@webcomponents/custom-elements": "^1.2.4",
+    "brace": "^0.11.1",
+    "dygraphs": "^2.1.0",
+    "fontfaceobserver": "^2.0.13",
+    "google-palette": "^1.1.0",
+    "roboto-fontface": "^0.10.0",
+    "rxjs": "^6.2.0",
+    "screenfull": "^4.0.0",
+    "tslib": "^1.10.0",
+    "zone.js": "~0.10.2"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.900.0-rc.7",
+    "@angular/cli": "^9.0.0-rc.7",
+    "@angular/compiler-cli": "^9.0.0-rc.7",
+    "@angular/language-service": "^9.0.0-rc.7",
+    "@types/pegjs": "^0.10.0",
+    "pegjs": "^0.10.0",
+    "codelyzer": "^5.1.2",
+    "tslint": "^5.9.1",
+    "ts-pegjs": "^0.2.1",
+    "typescript": "~3.6.4"
+  }
+}
