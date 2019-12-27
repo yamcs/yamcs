@@ -24,9 +24,6 @@ const dialogComponents = [
     AlarmStateIcon,
     AlarmsTable,
   ],
-  entryComponents: [
-    dialogComponents,
-  ]
 })
 export class AlarmsModule {
 }

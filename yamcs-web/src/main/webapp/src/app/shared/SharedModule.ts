@@ -254,13 +254,6 @@ const guards = [
     sharedComponents,
     pipes,
   ],
-  entryComponents: [
-    HelpDialog,
-    SelectInstanceDialog,
-    SelectParameterDialog,
-    SessionExpiredDialog,
-    StartReplayDialog,
-  ],
   providers: [
     guards,
     pipes, // Make pipes available in components too

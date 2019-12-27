@@ -50,9 +50,6 @@ const pipes = [
     ServicesTable,
     UsersTable,
   ],
-  entryComponents: [
-    dialogComponents,
-  ],
 })
 export class AdminModule {
 }

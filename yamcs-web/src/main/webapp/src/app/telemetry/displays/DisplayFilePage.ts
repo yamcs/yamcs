@@ -79,7 +79,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     });
 
     // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
-    // when inialized from an entryComponent)
+    // when inialized from an entry component)
     if (!!ace) { // Just some code that hopefully does not get treeshaked
       return;
     }

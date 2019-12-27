@@ -96,11 +96,6 @@ const viewers = [
     SeverityMeter,
     Thickness,
   ],
-  entryComponents: [
-    dialogComponents,
-    viewers,
-    Frame,
-  ]
 })
 export class TelemetryModule {
 }

@@ -20,9 +20,6 @@ const dialogComponents = [
     FileTransferTable,
     ObjectSelector,
   ],
-  entryComponents: [
-    dialogComponents,
-  ],
 })
 export class CfdpModule {
 }

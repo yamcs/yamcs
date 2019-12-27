@@ -34,10 +34,6 @@ const pipes = [
     StreamDataComponent,
     TimelineTooltip,
   ],
-  entryComponents: [
-    dialogComponents,
-    TimelineTooltip,
-  ]
 })
 export class ArchiveModule {
 }

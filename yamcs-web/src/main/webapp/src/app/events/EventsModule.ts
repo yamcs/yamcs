@@ -18,9 +18,6 @@ const dialogComponents = [
     dialogComponents,
     EventSeverity,
   ],
-  entryComponents: [
-    dialogComponents,
-  ]
 })
 export class EventsModule {
 }

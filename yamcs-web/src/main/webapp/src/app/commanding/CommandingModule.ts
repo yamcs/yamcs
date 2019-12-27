@@ -30,9 +30,6 @@ const pipes = [
     SendCommandWizardStep,
     TransmissionConstraintsIcon,
   ],
-  entryComponents: [
-    CommandHistoryPrintable,
-  ],
 })
 export class CommandingModule {
 }

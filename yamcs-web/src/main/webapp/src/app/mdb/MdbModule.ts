@@ -32,9 +32,6 @@ const pipes = [
     ParameterCalibration,
     ParameterDetail,
   ],
-  entryComponents: [
-    dialogComponents,
-  ],
 })
 export class MdbModule {
 }
