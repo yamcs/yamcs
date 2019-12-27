@@ -25,7 +25,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   tmstats$: Observable<TmStatistics[]>;
   tmstatsSubscription: Subscription;
 
-  @ViewChild(MatSort, { static: false })
+  @ViewChild(MatSort)
   sort: MatSort;
 
   private statsByName: { [key: string]: PacketStats } = {};

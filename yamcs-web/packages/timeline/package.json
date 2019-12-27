@@ -29,6 +29,6 @@
     "rollup-plugin-terser": "^5.1.0",
     "rollup-plugin-typescript2": "^0.25.2",
     "tslint": "^5.9.1",
-    "typescript": "~3.5.3"
+    "typescript": "~3.6.4"
   }
 }

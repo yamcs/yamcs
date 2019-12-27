@@ -13,7 +13,7 @@ export class UploadFilesDialog {
 
   formGroup: FormGroup;
 
-  @ViewChild('files', { static: false })
+  @ViewChild('files')
   filesInput: ElementRef;
 
   uploading$ = new BehaviorSubject<boolean>(false);

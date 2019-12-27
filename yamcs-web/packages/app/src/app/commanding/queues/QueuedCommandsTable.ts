@@ -15,7 +15,7 @@ export class QueuedCommandsTable implements AfterViewInit {
   @Input()
   cqueues$: Observable<CommandQueue[]>;
 
-  @ViewChild(MatSort, { static: false })
+  @ViewChild(MatSort)
   sort: MatSort;
 
   dataSource = new MatTableDataSource<CommandQueueEntry>();

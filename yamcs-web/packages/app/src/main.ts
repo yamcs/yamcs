@@ -1,6 +1,7 @@
+/// <reference path="typings.d.ts" />
+
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import 'hammerjs'; // Gesture support for some material components
 import { AppModule } from './app/AppModule';
 import { environment } from './environments/environment';
 

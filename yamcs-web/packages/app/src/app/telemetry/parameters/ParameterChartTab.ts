@@ -19,7 +19,7 @@ import { SelectRangeDialog } from './SelectRangeDialog';
 })
 export class ParameterChartTab implements OnDestroy {
 
-  @ViewChild(ParameterPlot, { static: false })
+  @ViewChild(ParameterPlot)
   plot: ParameterPlot;
 
   parameter$: Promise<Parameter>;

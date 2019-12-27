@@ -25,7 +25,7 @@ export class UsersTable implements AfterViewInit, OnChanges {
   @Input()
   filter: string;
 
-  @ViewChild(MatSort, { static: false })
+  @ViewChild(MatSort)
   sort: MatSort;
 
   dataSource = new MatTableDataSource<UserInfo>();

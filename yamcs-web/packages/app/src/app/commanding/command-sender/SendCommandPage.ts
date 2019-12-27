@@ -18,7 +18,7 @@ export class SendCommandPage implements AfterViewInit {
   instance: Instance;
   pageSize = 100;
 
-  @ViewChild(MatPaginator, { static: false })
+  @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
   filterControl = new FormControl();

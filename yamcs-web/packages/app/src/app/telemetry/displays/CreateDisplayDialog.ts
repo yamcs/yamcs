@@ -18,7 +18,7 @@ export class CreateDisplayDialog {
   // Page 2
   filenameForm: FormGroup;
 
-  @ViewChild('filename', { static: false })
+  @ViewChild('filename')
   filenameInput: ElementRef;
 
   private instance: Instance;

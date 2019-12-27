@@ -35,7 +35,7 @@ export class PacketsPage {
 
   instance: Instance;
 
-  @ViewChild('intervalSelect', { static: false })
+  @ViewChild('intervalSelect')
   intervalSelect: Select;
 
   validStart: Date | null;

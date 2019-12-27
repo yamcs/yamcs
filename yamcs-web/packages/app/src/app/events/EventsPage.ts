@@ -29,7 +29,7 @@ const defaultInterval = 'PT1H';
 })
 export class EventsPage {
 
-  @ViewChild('intervalSelect', { static: false })
+  @ViewChild('intervalSelect')
   intervalSelect: Select;
 
   validStart: Date | null;
