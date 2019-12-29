@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package yamcs.protobuf.table;
 
+import "google/protobuf/empty.proto";
+
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/web/rest.proto";
 import "yamcs/protobuf/yamcs.proto";
@@ -57,7 +59,15 @@ service TableApi {
   // Streams back the contents of all rows in key order
   rpc ReadRows(ReadRowsRequest) returns (stream Row) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/tables/{name}:readRows"
+      post: "/api/archive/{instance}/tables/{table}:readRows"
+    };
+  }
+  
+  // Imports a stream of rows
+  rpc WriteRows(stream WriteRowsRequest) returns (WriteRowsResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/tables/{table}:writeRows"
+      body: "row"
     };
   }
 }
@@ -80,18 +90,24 @@ message Row {
   repeated Cell cell = 2;   
 }
 
-message TableLoadResponse {
-  optional uint32 rowsLoaded = 1;
-}
-
 extend web.RestExceptionMessage {
   optional uint32 rowsLoaded = 100;
 }  
 
 message ReadRowsRequest {
   optional string instance = 1;
-  optional string name = 2;
+  optional string table = 2;
   repeated string cols = 3;
+}
+
+message WriteRowsRequest {
+  optional string instance = 1;
+  optional string table = 2;
+  optional Row row = 3;
+}
+
+message WriteRowsResponse {
+  optional uint32 count = 1;
 }
 
 message ExecuteSqlRequest {

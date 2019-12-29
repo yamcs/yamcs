@@ -58,6 +58,7 @@ import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.SetTimeRequest;
 import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
@@ -66,6 +67,8 @@ import org.yamcs.protobuf.SystemInfo;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.time.SimulationTimeService;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TaiUtcConverter.ValidityLine;
 import org.yamcs.utils.TimeEncoding;
@@ -338,6 +341,31 @@ public class ManagementApi extends AbstractManagementApi<Context> {
                 observer.completeExceptionally(t);
             }
         });
+    }
+
+    @Override
+    public void setTime(Context ctx, SetTimeRequest request, Observer<Empty> observer) {
+        String instance = RestHandler.verifyInstance(request.getInstance());
+        YamcsServer yamcs = YamcsServer.getServer();
+        TimeService timeService = yamcs.getInstance(instance).getTimeService();
+
+        if (timeService instanceof SimulationTimeService) {
+            SimulationTimeService sts = (SimulationTimeService) timeService;
+
+            if (request.hasTime0()) {
+                sts.setTime0(TimeEncoding.fromProtobufTimestamp(request.getTime0()));
+            }
+            if (request.hasSpeed()) {
+                sts.setSimSpeed(request.getSpeed());
+            }
+            if (request.hasElapsedTime()) {
+                sts.setSimElapsedTime(request.getElapsedTime());
+            }
+
+            observer.complete(Empty.getDefaultInstance());
+        } else {
+            observer.completeExceptionally(new BadRequestException("Cannot set time for a non-simulation TimeService"));
+        }
     }
 
     @Override

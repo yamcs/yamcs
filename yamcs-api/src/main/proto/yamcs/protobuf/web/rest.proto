@@ -61,19 +61,6 @@ message GetGeneralInfoResponse {
   repeated PluginInfo plugins = 5;
 }
 
-message StreamSubscribeRequest {
-  optional string stream = 1;
-  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
-}
-
-message SetSimulationTimeRequest {
-  optional int64 yamcsTime0 = 1 [deprecated = true];
-  optional string time0UTC = 2 [deprecated = true];
-  optional int64 simElapsedTime = 3;
-  optional double simSpeed = 4;
-  optional google.protobuf.Timestamp time0 = 5;
-}
-
 // Generic holder for an exception
 message RestExceptionMessage {
   optional string type = 1;

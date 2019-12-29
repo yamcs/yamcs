@@ -1,8 +1,5 @@
 package org.yamcs.http.api;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,17 +19,17 @@ import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.HttpContentToByteBufDecoder;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
-import org.yamcs.http.HttpUtils;
 import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.ProtobufRegistry;
-import org.yamcs.http.RouteHandler;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.RouteInfo;
 import org.yamcs.security.User;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 
@@ -50,7 +47,8 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.util.AttributeKey;
 
 /**
@@ -79,8 +77,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private List<Api<Context>> apis = new ArrayList<>();
 
     // Order, because patterns are matched top-down in insertion order
-    private List<RouteElement> defaultRoutes = new ArrayList<>();
-    private List<RouteElement> dynamicRoutes = new ArrayList<>();
+    private List<RouteElement> routes = new ArrayList<>();
 
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
@@ -110,9 +107,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         addApi(new RocksDbApi());
         addApi(new TableApi());
         addApi(new TagApi());
-
-        // Not (yet) converted to Protobuf-style API
-        registerRouteHandler(new ArchiveTableRestHandler());
     }
 
     public void addApi(Api<Context> api) {
@@ -130,84 +124,19 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             }
         }
 
-        registerRouteConfigs(null, routeConfigs);
-    }
-
-    public void registerRouteHandler(RouteHandler routeHandler) {
-        registerRouteHandler(null, routeHandler);
-    }
-
-    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
-        // Using method handles for better invoke performance
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        Method[] methods = getAnnotatedMethods(routeHandler.getClass());
-
-        List<RouteConfig> routeConfigs = new ArrayList<>();
-        try {
-            for (int i = 0; i < methods.length; i++) {
-                Method reflectedMethod = methods[i];
-                MethodHandle handle = lookup.unreflect(reflectedMethod);
-
-                Route[] anns = reflectedMethod.getAnnotationsByType(Route.class);
-                for (Route ann : anns) {
-                    for (String m : ann.method()) {
-                        HttpMethod httpMethod = HttpMethod.valueOf(m);
-
-                        routeConfigs.add(new RouteConfig(routeHandler, ann.path(),
-                                ann.dataLoad(), ann.offThread(), ann.maxBodySize(), httpMethod, handle));
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(
-                    "Could not access @Route annotated method in " + routeHandler.getClass());
-        }
-
-        registerRouteConfigs(yamcsInstance, routeConfigs);
-    }
-
-    private void registerRouteConfigs(String yamcsInstance, List<RouteConfig> routeConfigs) {
         // Sort in a way that increases chances of a good URI match
         Collections.sort(routeConfigs);
 
-        List<RouteElement> targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
-
         for (RouteConfig routeConfig : routeConfigs) {
             String routeString = routeConfig.uriTemplate;
-            if (yamcsInstance != null) { // Expand {instance} upon registration (only for dynamic routes)
-                if (!routeString.contains("{instance}")) {
-                    log.warn("Dynamically added route {} {} is instance-specific, yet does not "
-                            + "contain '{instance}' in its url. Routing of incoming requests "
-                            + "will be ambiguous.", routeConfig.httpMethod, routeConfig.uriTemplate);
-                }
-                routeString = routeString.replace(":instance", yamcsInstance); // Legacy, remove some day
-                routeString = routeString.replace("{instance}", yamcsInstance);
-            }
+
             Pattern pattern = toPattern(routeString);
-            Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
+            Map<HttpMethod, RouteConfig> configByMethod = createAndGet(pattern).configByMethod;
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
     }
 
-    private Method[] getAnnotatedMethods(Class<?> clazz) {
-        List<Method> result = new ArrayList<>();
-        for (Method method : clazz.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(Route.class) || method.isAnnotationPresent(Routes.class)) {
-                result.add(method);
-            }
-        }
-        clazz = clazz.getSuperclass();
-        if (clazz != null) {
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Route.class) || method.isAnnotationPresent(Routes.class)) {
-                    result.add(method);
-                }
-            }
-        }
-        return result.toArray(new Method[result.size()]);
-    }
-
-    private RouteElement createAndGet(List<RouteElement> routes, Pattern pattern) {
+    private RouteElement createAndGet(Pattern pattern) {
         for (RouteElement re : routes) {
             if (re.pattern.pattern().equals(pattern.pattern())) {
                 return re;
@@ -223,9 +152,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
      * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
      * dataLoad routes.
      * 
-     * @param ctx
-     * @param req
-     * @param uri
      * @return true if the request has been scheduled and false if the request is invalid or there was another error
      */
     public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, String uri) {
@@ -242,10 +168,20 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             ctx.channel().attr(CTX_ROUTE_MATCH).set(match);
             RouteConfig rc = match.getRouteConfig();
             rc.requestCount.incrementAndGet();
-            if (rc.isDataLoad()) {
+            if (rc.getMethod().toProto().getClientStreaming()) {
                 try {
-                    RouteHandler target = match.routeConfig.routeHandler;
-                    match.routeConfig.handle.invoke(target, ctx, req, match);
+                    ctx.pipeline().addLast("bytebufextractor", new HttpContentToByteBufDecoder());
+                    ctx.pipeline().addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+
+                    String body = rc.getBody();
+                    Message bodyPrototype = rc.api.getRequestPrototype(rc.getMethod());
+                    if (body != null && !"*".equals(body)) {
+                        FieldDescriptor field = bodyPrototype.getDescriptorForType().findFieldByName(body);
+                        bodyPrototype = field.toProto().getDefaultInstanceForType();
+                    }
+                    ctx.pipeline().addLast("protobufDecoder", new ProtobufDecoder(bodyPrototype));
+                    ctx.pipeline().addLast("streamingClientHandler", new StreamingClientHandler(req));
+
                     if (HttpUtil.is100ContinueExpected(req)) {
                         ctx.writeAndFlush(CONTINUE.retainedDuplicate());
                     }
@@ -277,9 +213,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
         User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
-        String uri = HttpUtils.getUriWithoutContext(req, contextPath);
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(uri);
-        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
+        RestRequest restReq = new RestRequest(ctx, req, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
 
@@ -305,22 +239,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
-        for (RouteElement re : defaultRoutes) {
-            Matcher matcher = re.pattern.matcher(uri);
-            if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
-                if (byMethod.containsKey(method)) {
-                    return new RouteMatch(matcher, byMethod.get(method));
-                } else {
-                    if (allowedMethods == null) {
-                        allowedMethods = new HashSet<>(4);
-                    }
-                    allowedMethods.addAll(byMethod.keySet());
-                }
-            }
-        }
-
-        for (RouteElement re : dynamicRoutes) {
+        for (RouteElement re : routes) {
             Matcher matcher = re.pattern.matcher(uri);
             if (matcher.matches()) {
                 Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
@@ -355,13 +274,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
         try {
-            if (match.routeConfig.api == null) {
-                RouteHandler target = match.routeConfig.routeHandler;
-                match.routeConfig.handle.invoke(target, req);
-            } else {
-                Api<Context> api = match.routeConfig.api;
-                dispatchApiMethod(req, api, match.routeConfig);
-            }
+            Api<Context> api = match.routeConfig.api;
+            dispatchApiMethod(req, api, match.routeConfig);
             req.getCompletableFuture().whenComplete((channelFuture, e) -> {
                 if (e != null) {
                     log.debug("R{}: REST request execution finished with error: {}, transferred bytes: {}",
@@ -403,14 +317,18 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             throw new BadRequestException(e.getMessage());
         }
 
-        Observer<Message> observer = null;
+        Observer<Message> responseObserver;
         if (method.toProto().getServerStreaming()) {
-            observer = new ServerStreamingObserver(apiContext);
+            responseObserver = new ServerStreamingObserver(apiContext);
         } else {
-            observer = new CallObserver(restRequest);
+            responseObserver = new CallObserver(restRequest);
         }
 
-        api.callMethod(method, apiContext, requestMessage, observer);
+        if (method.toProto().getClientStreaming()) {
+            Observer<? extends Message> requestObserver = api.callMethod(method, apiContext, responseObserver);
+        } else {
+            api.callMethod(method, apiContext, requestMessage, responseObserver);
+        }
     }
 
     private void handleException(RestRequest req, Throwable t) {
@@ -494,8 +412,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     public List<RouteInfo> getRouteInfoSet() {
-        List<RouteInfo> routes = new ArrayList<>();
-        for (RouteElement re : defaultRoutes) {
+        List<RouteInfo> result = new ArrayList<>();
+        for (RouteElement re : routes) {
             re.configByMethod.values().forEach(v -> {
                 RouteInfo.Builder routeb = RouteInfo.newBuilder();
                 routeb.setHttpMethod(v.httpMethod.toString());
@@ -515,10 +433,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         routeb.setDeprecated(true);
                     }
                 }
-                routes.add(routeb.build());
+                result.add(routeb.build());
             });
         }
-        return routes;
+        return result;
     }
 
     @Override

@@ -63,14 +63,4 @@ public class CallObserver implements Observer<Message> {
         }
         completed = true;
     }
-
-    @Override
-    public boolean isCancelled() {
-        return false;
-    }
-
-    @Override
-    public void setCancelHandler(Runnable cancelHandler) {
-        throw new UnsupportedOperationException();
-    }
 }

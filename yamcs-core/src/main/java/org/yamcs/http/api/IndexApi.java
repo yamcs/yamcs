@@ -11,9 +11,11 @@ import java.util.Set;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
+import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
 import org.yamcs.archive.IndexServer;
+import org.yamcs.archive.TmIndex;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
@@ -26,17 +28,23 @@ import org.yamcs.protobuf.ListCompletenessIndexRequest;
 import org.yamcs.protobuf.ListEventIndexRequest;
 import org.yamcs.protobuf.ListPacketIndexRequest;
 import org.yamcs.protobuf.ListParameterIndexRequest;
+import org.yamcs.protobuf.RebuildCcsdsIndexRequest;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
-import org.yamcs.protobuf.StreamIndexesRequest;
+import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
+import org.yamcs.yarch.YarchException;
+
+import com.google.protobuf.Empty;
 
 public class IndexApi extends AbstractIndexApi<Context> {
 
@@ -199,7 +207,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     }
 
     @Override
-    public void streamIndexes(Context ctx, StreamIndexesRequest request, Observer<IndexResult> observer) {
+    public void streamIndex(Context ctx, StreamIndexRequest request, Observer<IndexResult> observer) {
         String instance = RestHandler.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
@@ -337,6 +345,40 @@ public class IndexApi extends AbstractIndexApi<Context> {
         }
 
         streamArchiveRecords(indexServer, requestb.build(), observer);
+    }
+
+    @Override
+    public void rebuildCcsdsIndex(Context ctx, RebuildCcsdsIndexRequest request, Observer<Empty> observer) {
+        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+
+        String instance = RestHandler.verifyInstance(request.getInstance());
+        IndexServer indexServer = verifyIndexServer(instance);
+
+        TmIndex indexer = indexServer.getTmIndexer();
+        if (indexer instanceof CcsdsTmIndex) {
+            CcsdsTmIndex ccsdsTmIndex = (CcsdsTmIndex) indexer;
+            TimeInterval interval = new TimeInterval();
+            if (request.hasStart()) {
+                interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            }
+            if (request.hasStop()) {
+                interval.setEnd(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            }
+
+            try {
+                ccsdsTmIndex.rebuild(interval).whenComplete((r, t) -> {
+                    if (t != null) {
+                        observer.completeExceptionally(t);
+                    } else {
+                        observer.complete(Empty.getDefaultInstance());
+                    }
+                });
+            } catch (YarchException e) {
+                observer.completeExceptionally(e);
+            }
+        } else {
+            observer.completeExceptionally(new BadRequestException("Not a CCSDS TM Index"));
+        }
     }
 
     private IndexServer verifyIndexServer(String instance) throws HttpException {

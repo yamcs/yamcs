@@ -119,10 +119,10 @@ public class TagApi extends AbstractTagApi<Context> {
             tagb.setName(request.getName());
         }
         if (request.hasStart()) {
-            tagb.setStart(RestRequest.parseTime(request.getStart()));
+            tagb.setStart(parseTime(request.getStart()));
         }
         if (request.hasStop()) {
-            tagb.setStop(RestRequest.parseTime(request.getStop()));
+            tagb.setStop(parseTime(request.getStop()));
         }
         if (request.hasDescription()) {
             tagb.setDescription(request.getDescription());
@@ -138,6 +138,18 @@ public class TagApi extends AbstractTagApi<Context> {
             throw new InternalServerErrorException(e);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
+        }
+    }
+
+    /**
+     * Interprets the provided string as either an instant, or an ISO 8601 string and returns it as an instant of type
+     * long
+     */
+    private static long parseTime(String datetime) {
+        try {
+            return Long.parseLong(datetime);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(datetime);
         }
     }
 

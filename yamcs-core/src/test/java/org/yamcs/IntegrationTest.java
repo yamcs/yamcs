@@ -27,13 +27,14 @@ import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.http.RouteHandler;
+import org.yamcs.http.StaticFileHandler;
 import org.yamcs.protobuf.AlarmSubscriptionRequest;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmNotificationType;
 import org.yamcs.protobuf.Alarms.EditAlarmRequest;
 import org.yamcs.protobuf.Alarms.EventAlarmData;
 import org.yamcs.protobuf.Alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.Archive.ListCommandsResponse;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
@@ -43,7 +44,6 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
-import org.yamcs.protobuf.ListCommandsResponse;
 import org.yamcs.protobuf.ListServicesResponse;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -1260,7 +1260,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertTrue(com.google.common.io.Files.equal(file1, file2));
 
         // test if not modified since
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(RouteHandler.HTTP_DATE_FORMAT);
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(StaticFileHandler.HTTP_DATE_FORMAT);
 
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));

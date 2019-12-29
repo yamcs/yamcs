@@ -110,6 +110,11 @@ message ManagementSubscriptionRequest {
   optional bool processorStatistics = 3;
 }
 
+message StreamSubscriptionRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
 message AlarmSubscriptionRequest {
   optional bool detail = 1;
 }

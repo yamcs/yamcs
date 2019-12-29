@@ -27,18 +27,18 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmSeverity;
 import org.yamcs.protobuf.Alarms.AlarmType;
 import org.yamcs.protobuf.Alarms.ListAlarmsResponse;
-import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditClientRequest;
+import org.yamcs.protobuf.IndexResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.TableData;
-import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -343,8 +343,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             ByteBuf buf = encode(getRecord(i), getRecord(i + 1), getRecord(i + 2), getRecord(i + 3));
             brds.sendData(buf);
         }
-        TableLoadResponse tlr = TableLoadResponse.parseFrom(brds.completeRequest().get());
-        assertEquals(100, tlr.getRowsLoaded());
+        WriteRowsResponse tlr = WriteRowsResponse.parseFrom(brds.completeRequest().get());
+        assertEquals(100, tlr.getCount());
 
         verifyRecords("table0", 100);
         verifyRecordsDumpFormat("table0", 100);
@@ -385,11 +385,10 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, ir.getGroup(0).getEntryCount());
         assertEquals(2, ir.getGroup(1).getEntryCount());
         assertFalse(ir.hasContinuationToken());
-
     }
 
     @Test
-    public void testTokenizedCompletnessIndexViaRest() throws Exception {
+    public void testTokenizedCompletenessIndexViaRest() throws Exception {
         generatePkt13AndPps("2015-02-04T10:00:00", 120);
         packetGenerator.simulateGap(995);
         generatePkt13AndPps("2015-02-04T10:03:00", 100);

@@ -1,12 +1,12 @@
 package org.yamcs.http.api;
 
-import java.lang.invoke.MethodHandle;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
-import org.yamcs.http.RouteHandler;
 import org.yamcs.http.RpcDescriptor;
+
+import com.google.protobuf.Descriptors.MethodDescriptor;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -17,12 +17,8 @@ public class RouteConfig implements Comparable<RouteConfig> {
 
     Api<Context> api;
 
-    RouteHandler routeHandler;
-    MethodHandle handle;
-
     final String uriTemplate;
     final HttpMethod httpMethod;
-    final boolean dataLoad;
     final int maxBodySize;
     final boolean offThread;
 
@@ -37,7 +33,6 @@ public class RouteConfig implements Comparable<RouteConfig> {
         this.api = api;
         this.descriptor = descriptor;
 
-        dataLoad = httpOptions.getDataLoad();
         offThread = httpOptions.getOffThread();
         deprecated = httpOptions.getDeprecated();
 
@@ -73,20 +68,12 @@ public class RouteConfig implements Comparable<RouteConfig> {
         maxBodySize = httpOptions.hasMaxBodySize() ? httpOptions.getMaxBodySize() : Router.MAX_BODY_SIZE;
     }
 
-    RouteConfig(RouteHandler routeHandler, String uriTemplate, boolean dataLoad,
-            boolean offThread, int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
-        this.routeHandler = routeHandler;
-        this.uriTemplate = uriTemplate;
-        this.httpMethod = httpMethod;
-        this.handle = handle;
-        this.dataLoad = dataLoad;
-        this.maxBodySize = maxBodySize;
-        this.offThread = offThread;
-        descriptor = null;
-    }
-
     public RpcDescriptor getDescriptor() {
         return descriptor;
+    }
+
+    public MethodDescriptor getMethod() {
+        return api.getDescriptorForType().findMethodByName(descriptor.getMethod());
     }
 
     @Override
@@ -97,10 +84,6 @@ public class RouteConfig implements Comparable<RouteConfig> {
         } else {
             return uriTemplate.compareTo(o.uriTemplate);
         }
-    }
-
-    public boolean isDataLoad() {
-        return dataLoad;
     }
 
     public int maxBodySize() {

@@ -6,6 +6,7 @@ option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "IndexServiceProto";
 option java_multiple_files = true;
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
@@ -49,9 +50,9 @@ service IndexApi {
   }
 
   // Streams back index records
-  rpc StreamIndexes(StreamIndexesRequest) returns (stream IndexResult) {
+  rpc StreamIndex(StreamIndexRequest) returns (stream IndexResult) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes:stream"
+      post: "/api/archive/{instance}:streamIndex"
       body: "*"
     };
   }
@@ -59,7 +60,7 @@ service IndexApi {
   // Streams back packet index records
   rpc StreamPacketIndex(StreamPacketIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes/packets:stream"
+      post: "/api/archive/{instance}:streamPacketIndex"
       body: "*"
     };
   }
@@ -67,7 +68,7 @@ service IndexApi {
   // Streams back parameter index records
   rpc StreamParameterIndex(StreamParameterIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes/parameters:stream"
+      post: "/api/archive/{instance}:streamParameterIndex"
       body: "*"
     };
   }
@@ -75,7 +76,7 @@ service IndexApi {
   // Streams back processed parameter index records
   rpc StreamCommandIndex(StreamCommandIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes/commands:stream"
+      post: "/api/archive/{instance}:streamCommandIndex"
       body: "*"
     };
   }
@@ -83,7 +84,7 @@ service IndexApi {
   // Streams back event index records
   rpc StreamEventIndex(StreamEventIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes/events:stream"
+      post: "/api/archive/{instance}:streamEventIndex"
       body: "*"
     };
   }
@@ -91,7 +92,15 @@ service IndexApi {
   // Streams back event index records
   rpc StreamCompletenessIndex(StreamCompletenessIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/indexes/completeness:stream"
+      post: "/api/archive/{instance}:streamCompletenessIndex"
+      body: "*"
+    };
+  }
+  
+  // Rebuild CCSDS TM Index
+  rpc RebuildCcsdsIndex(RebuildCcsdsIndexRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}:rebuildCcsdsIndex"
       body: "*"
     };
   }
@@ -163,7 +172,7 @@ message IndexEntry {
   optional int64 seqStop = 5;
 }
 
-message StreamIndexesRequest {
+message StreamIndexRequest {
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
@@ -197,6 +206,12 @@ message StreamEventIndexRequest {
 }
 
 message StreamCompletenessIndexRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+}
+
+message RebuildCcsdsIndexRequest {
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;

@@ -6,12 +6,12 @@ option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "YamcsManagementProto";
 option java_multiple_files = true;
 
-import "yamcs/protobuf/yamcs.proto";
-import "yamcs/protobuf/mdb/mdb.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 
 service ManagementApi {
 
@@ -83,6 +83,13 @@ service ManagementApi {
   rpc RestartInstance(RestartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:restart"
+    };
+  }
+  
+  // Set (simulation) time of an instance
+  rpc SetTime(SetTimeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:setTime"
     };
   }
   
@@ -401,6 +408,13 @@ message StopInstanceRequest {
 
 message RestartInstanceRequest {
   optional string instance = 1;
+}
+
+message SetTimeRequest {
+  optional string instance = 6;
+  optional google.protobuf.Timestamp time0 = 5;
+  optional int64 elapsedTime = 3;
+  optional double speed = 4;
 }
 
 message ListLinksRequest {

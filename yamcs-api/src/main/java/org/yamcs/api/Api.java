@@ -10,6 +10,8 @@ public interface Api<T> {
 
     void callMethod(MethodDescriptor method, T ctx, Message request, Observer<Message> observer);
 
+    Observer<? extends Message> callMethod(MethodDescriptor method, T ctx, Observer<Message> observer);
+
     Message getRequestPrototype(MethodDescriptor method);
 
     Message getResponsePrototype(MethodDescriptor method);

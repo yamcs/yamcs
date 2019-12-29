@@ -213,14 +213,6 @@ public class HttpServer extends AbstractYamcsService {
         apiRouter.addApi(api);
     }
 
-    public void addApiHandler(RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(routeHandler);
-    }
-
-    public void addApiHandler(String yamcsInstance, RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
-    }
-
     @Override
     protected void doStart() {
         try {

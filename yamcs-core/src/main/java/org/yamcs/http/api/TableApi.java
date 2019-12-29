@@ -1,10 +1,15 @@
 package org.yamcs.http.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
@@ -26,6 +31,8 @@ import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.TableInfo;
+import org.yamcs.protobuf.Table.WriteRowsRequest;
+import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
@@ -154,13 +161,125 @@ public class TableApi extends AbstractTableApi<Context> {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadTables);
 
-        TableDefinition table = verifyTable(ydb, request.getName());
+        TableDefinition table = verifyTable(ydb, request.getTable());
 
         SqlBuilder sqlb = new SqlBuilder(table.getName());
         request.getColsList().forEach(col -> sqlb.select(col));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new RowStreamer(observer));
+        RestStreams.stream(instance, sql, new RowReader(observer));
+    }
+
+    @Override
+    public Observer<WriteRowsRequest> writeRows(Context ctx, Observer<WriteRowsResponse> observer) {
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.WriteTables)) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
+
+        return new Observer<WriteRowsRequest>() {
+
+            Map<Integer, ColumnSerializer<?>> serializers = new HashMap<>();
+            Map<Integer, ColumnDefinition> colDefinitions = new HashMap<>();
+            static final int MAX_COLUMNS = 65535;
+
+            boolean errorState = false;
+            Stream inputStream;
+            int count = 0;
+
+            @Override
+            public void next(WriteRowsRequest request) {
+                if (errorState) {
+                    return;
+                }
+
+                if (count == 0) {
+                    String instance = request.getInstance();
+                    if (!YamcsServer.hasInstance(instance)) {
+                        completeExceptionally(new NotFoundException("No instance named '" + instance + "'"));
+                        return;
+                    }
+                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+                    String tableName = request.getTable();
+                    TableDefinition table = ydb.getTable(tableName);
+                    if (table == null) {
+                        throw new NotFoundException(
+                                "No table named '" + tableName + "' (instance: '" + instance + "')");
+                    }
+                    inputStream = RestStreams.insertStream(instance, table);
+                }
+
+                if (request.hasRow()) {
+                    try {
+                        Tuple t = null; /// rowToTuple(request.getRow());
+                        inputStream.emitTuple(t);
+                        count++;
+                    } catch (IllegalArgumentException e) {
+                        completeExceptionally(e);
+                    }
+                }
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                errorState = true;
+                /// sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, t.toString());
+                inputStream.close();
+            }
+
+            @Override
+            public void complete() {
+                log.debug("Wrote {} rows", count);
+                WriteRowsResponse.Builder responseb = WriteRowsResponse.newBuilder()
+                        .setCount(count);
+                observer.complete(responseb.build());
+            }
+
+            private Tuple rowToTuple(Row row) throws IOException {
+                for (ColumnInfo cinfo : row.getColumnList()) {
+                    if (!cinfo.hasId() || !cinfo.hasName() || !cinfo.hasType()) {
+                        throw new IllegalArgumentException(
+                                "Invalid row provided, no id or name  or type in the column info");
+                    }
+                    int colId = cinfo.getId();
+                    String cname = cinfo.getName();
+                    String ctype = cinfo.getType();
+                    DataType type = DataType.byName(ctype);
+                    ColumnDefinition cd = new ColumnDefinition(cname, type);
+                    ColumnSerializer<?> cs;
+                    if (type.val == _type.PROTOBUF) {
+                        cs = ColumnSerializerFactory.getProtobufSerializer(cd);
+                    } else if (type.val == _type.ENUM) {
+                        cs = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
+                    } else {
+                        cs = ColumnSerializerFactory.getBasicColumnSerializer(type);
+                    }
+                    serializers.put(colId, cs);
+                    colDefinitions.put(colId, cd);
+                    if (serializers.size() > MAX_COLUMNS) {
+                        throw new IllegalArgumentException("Too many columns specified");
+                    }
+                }
+                TupleDefinition tdef = new TupleDefinition();
+                List<Object> values = new ArrayList<>(row.getCellCount());
+                for (Cell cell : row.getCellList()) {
+                    if (!cell.hasColumnId() || !cell.hasData()) {
+                        throw new IllegalArgumentException("Invalid cell provided, no id or no data");
+                    }
+                    int colId = cell.getColumnId();
+                    ColumnDefinition cd = colDefinitions.get(colId);
+                    if (cd == null) {
+                        throw new IllegalArgumentException("Invalid column id " + colId
+                                + " specified. It has to be defined  by a the ColumnInfo message");
+                    }
+                    tdef.addColumn(cd);
+                    ColumnSerializer<?> cs = serializers.get(colId);
+                    Object v = cs.fromByteArray(cell.getData().toByteArray(), cd);
+                    values.add(v);
+                }
+                return new Tuple(tdef, values);
+            }
+        };
     }
 
     @Override
@@ -212,12 +331,12 @@ public class TableApi extends AbstractTableApi<Context> {
         }
     }
 
-    private static class RowStreamer implements StreamSubscriber {
+    private static class RowReader implements StreamSubscriber {
 
         Observer<Row> observer;
         TupleDefinition completeTuple = new TupleDefinition();
 
-        RowStreamer(Observer<Row> observer) {
+        RowReader(Observer<Row> observer) {
             this.observer = observer;
         }
 

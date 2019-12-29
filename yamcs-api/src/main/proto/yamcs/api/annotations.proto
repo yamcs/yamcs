@@ -46,11 +46,5 @@ message HttpRoute {
   // routes should do that).
   optional bool offThread = 9;
   
-  // Data load routes expect to receive a large body piece by piece in
-  // HttpContent objects.
-  // 
-  // If false or unset, a small default is used, sufficient for standard use.
-  optional bool dataLoad = 10;
-  
   repeated HttpRoute additional_bindings = 11;
 }

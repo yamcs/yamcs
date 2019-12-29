@@ -5,9 +5,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
@@ -17,7 +15,6 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.RouteHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterWithId;
@@ -25,7 +22,6 @@ import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.AggregateUtil;
@@ -39,8 +35,6 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
@@ -55,15 +49,9 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 
-/**
- * Contains utility methods for REST handlers. May eventually refactor this out.
- */
-public abstract class RestHandler extends RouteHandler {
+public abstract class RestHandler {
 
     private static final Log log = new Log(RestHandler.class);
-
-    protected final YamcsServer yamcsServer = YamcsServer.getServer();
-    protected final SecurityStore securityStore = yamcsServer.getSecurityStore();
 
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
@@ -78,11 +66,6 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static void completeOK(RestRequest restRequest, String contentType, ByteBuf body) {
-        if (body == null) {
-            throw new NullPointerException(
-                    "body cannot be null; use the completeOK(request) to send an empty response.");
-        }
-
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
         int txSize = body.readableBytes();
@@ -461,36 +444,5 @@ public abstract class RestHandler extends RouteHandler {
 
     public static boolean hasObjectPrivilege(User user, ObjectPrivilegeType type, String privilege) {
         return user.hasObjectPrivilege(type, privilege);
-    }
-
-    protected Object convertToFieldValue(RestRequest req, FieldDescriptor field, String parameter)
-            throws HttpException {
-        if (field.isRepeated()) {
-            if (field.getJavaType() != JavaType.STRING) {
-                throw new UnsupportedOperationException(
-                        "No query parameter conversion for repeated type " + field.getJavaType());
-            }
-            List<Object> values = new ArrayList<>();
-            for (String value : req.getQueryParameterList(field.getJsonName())) {
-                for (String item : value.split(",")) { // Support both repeated query params and comma-separated
-                    values.add(item);
-                }
-            }
-            return values;
-        } else {
-            switch (field.getJavaType()) {
-            case BOOLEAN:
-                return req.getQueryParameterAsBoolean(field.getJsonName());
-            case INT:
-                return req.getQueryParameterAsInt(field.getJsonName());
-            case LONG:
-                return req.getQueryParameterAsLong(field.getJsonName());
-            case STRING:
-                return req.getQueryParameter(field.getJsonName());
-            default:
-                throw new UnsupportedOperationException(
-                        "No query parameter conversion for type " + field.getJavaType());
-            }
-        }
     }
 }
