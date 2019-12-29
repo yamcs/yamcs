@@ -1,15 +1,17 @@
 package org.yamcs.http.api;
 
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.NotThreadSafe;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
-import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.logging.Log;
 
 import com.google.protobuf.Message;
@@ -18,7 +20,14 @@ import com.google.protobuf.util.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 
 /**
@@ -74,7 +83,7 @@ public class ServerStreamingObserver implements Observer<Message> {
             if (buf.readableBytes() >= CHUNK_SIZE) {
                 bufOut.close();
                 ctx.addTransferredSize(buf.readableBytes());
-                HttpRequestHandler.writeChunk(ctx.nettyContext, buf);
+                writeChunk(buf);
                 resetBuffer();
             }
         } catch (ClosedChannelException e) {
@@ -113,8 +122,7 @@ public class ServerStreamingObserver implements Observer<Message> {
             mediaType = Context.deriveTargetContentType(ctx.nettyRequest);
         }
 
-        HttpRequestHandler.startChunkedTransfer(
-                ctx.nettyContext, ctx.nettyRequest, mediaType, filename);
+        startChunkedTransfer(mediaType, filename);
         ctx.reportStatusCode(200);
     }
 
@@ -153,7 +161,7 @@ public class ServerStreamingObserver implements Observer<Message> {
             bufOut.close();
             if (buf.readableBytes() > 0) {
                 ctx.addTransferredSize(buf.readableBytes());
-                HttpRequestHandler.writeChunk(ctx.nettyContext, buf);
+                writeChunk(buf);
             }
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);
@@ -178,5 +186,39 @@ public class ServerStreamingObserver implements Observer<Message> {
     @Override
     public void setCancelHandler(Runnable cancelHandler) {
         this.cancelHandler = cancelHandler;
+    }
+
+    private void startChunkedTransfer(MediaType contentType, String filename) {
+        log.info("{} {} {} 200 starting chunked transfer", ctx.nettyContext.channel().id().asShortText(),
+                ctx.nettyRequest.method(),
+                ctx.nettyRequest.uri());
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
+
+        // Set Content-Disposition header so that supporting clients will treat
+        // response as a downloadable file
+        if (filename != null) {
+            response.headers().set("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        }
+        ctx.nettyContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+    }
+
+    private void writeChunk(ByteBuf buf) throws IOException {
+        Channel ch = ctx.nettyContext.channel();
+        if (!ch.isOpen()) {
+            throw new ClosedChannelException();
+        }
+        ChannelFuture writeFuture = ctx.nettyContext.writeAndFlush(new DefaultHttpContent(buf));
+        try {
+            if (!ch.isWritable()) {
+                boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
+                if (!writeCompleted) {
+                    throw new IOException("Channel did not become writable in 10 seconds");
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

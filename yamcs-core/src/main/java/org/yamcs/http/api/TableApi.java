@@ -35,7 +35,6 @@ import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.security.User;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
@@ -60,14 +59,14 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void listStreams(Context ctx, ListStreamsRequest request, Observer<ListStreamsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         List<Stream> streams = new ArrayList<>(ydb.getStreams());
         streams.sort((s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
         for (Stream stream : streams) {
-            if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.Stream, stream.getName())) {
+            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }
             responseb.addStreams(ArchiveHelper.toStreamInfo(stream));
@@ -77,9 +76,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getStream(Context ctx, GetStreamRequest request, Observer<StreamInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Stream stream = verifyStream(ctx.user, ydb, request.getName());
+        Stream stream = verifyStream(ctx, ydb, request.getName());
 
         StreamInfo response = ArchiveHelper.toStreamInfo(stream);
         observer.complete(response);
@@ -87,9 +86,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void listTables(Context ctx, ListTablesRequest request, Observer<ListTablesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadTables);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
@@ -103,9 +102,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getTable(Context ctx, GetTableRequest request, Observer<TableInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadTables);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(ydb, request.getName());
 
@@ -115,9 +114,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getTableData(Context ctx, GetTableDataRequest request, Observer<TableData> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadTables);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(ydb, request.getName());
 
@@ -139,7 +138,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.stream(instance, sql, args, new StreamSubscriber() {
+        StreamFactory.stream(instance, sql, args, new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -157,9 +156,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void readRows(Context ctx, ReadRowsRequest request, Observer<Row> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadTables);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
 
         TableDefinition table = verifyTable(ydb, request.getTable());
 
@@ -167,7 +166,7 @@ public class TableApi extends AbstractTableApi<Context> {
         request.getColsList().forEach(col -> sqlb.select(col));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new RowReader(observer));
+        StreamFactory.stream(instance, sql, new RowReader(observer));
     }
 
     @Override
@@ -206,7 +205,7 @@ public class TableApi extends AbstractTableApi<Context> {
                         throw new NotFoundException(
                                 "No table named '" + tableName + "' (instance: '" + instance + "')");
                     }
-                    inputStream = RestStreams.insertStream(instance, table);
+                    inputStream = StreamFactory.insertStream(instance, table);
                 }
 
                 if (request.hasRow()) {
@@ -284,9 +283,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ExecuteSqlResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ExecuteSqlResponse.Builder responseb = ExecuteSqlResponse.newBuilder();
@@ -306,10 +305,10 @@ public class TableApi extends AbstractTableApi<Context> {
         observer.complete(responseb.build());
     }
 
-    private Stream verifyStream(User user, YarchDatabaseInstance ydb, String streamName) {
+    private Stream verifyStream(Context ctx, YarchDatabaseInstance ydb, String streamName) {
         Stream stream = ydb.getStream(streamName);
 
-        if (stream != null && !RestHandler.hasObjectPrivilege(user, ObjectPrivilegeType.Stream, streamName)) {
+        if (stream != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;

@@ -12,7 +12,6 @@ import "yamcs/protobuf/clients/clients.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
-import "yamcs/protobuf/iam/iam.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/cop1/cop1.proto";
 
@@ -191,29 +190,4 @@ message ConnectionInfo {
   optional int32 clientId = 1;
   optional yamcsManagement.YamcsInstance instance = 2;
   optional yamcsManagement.ProcessorInfo processor = 3;
-}
-
-message AuthFlow {
-  enum Type {
-    PASSWORD = 1; // Login to Yamcs via standard username/password form
-    REDIRECT = 2; // Instruct client to login via an external URL (not yet implemented)
-    SPNEGO = 3; // Login to Yamcs via HTTP Negotiate (/auth/spnego endpoint)
-  }
-  optional Type type = 1;
-  //optional String uri = 2; //in case of POST is just a relative path to yamcs web
-  //optional string state; //the client has to send this to the POST link and then back to Yamcs
-}
-
-message AuthInfo {
-  optional bool requireAuthentication = 1;
-  repeated AuthFlow flow = 2;
-}
-
-// Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
-message TokenResponse {
-  optional string access_token = 1;
-  optional string token_type = 2;
-  optional int32 expires_in = 3; // In seconds
-  optional string refresh_token = 4;
-  optional iam.UserInfo user = 5;
 }

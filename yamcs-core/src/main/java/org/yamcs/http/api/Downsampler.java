@@ -7,8 +7,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -21,9 +20,9 @@ import org.yamcs.utils.UnsignedLong;
  * The output is not a bunch of parameter values, but instead a range of values limited to n, which should be fit for
  * inclusion in plots.
  */
-public class RestDownsampler implements Consumer<ParameterValueArray> {
+public class Downsampler implements Consumer<ParameterValueArray> {
 
-    private static final Logger log = LoggerFactory.getLogger(RestDownsampler.class);
+    private static final Log log = new Log(Downsampler.class);
     private static final int DEFAULT_SAMPLE_COUNT = 500;
     private static long GAP_TIME = 120000;
 
@@ -32,11 +31,11 @@ public class RestDownsampler implements Consumer<ParameterValueArray> {
     private long stop;
     private long lastSampleTime;
 
-    public RestDownsampler(long start, long stop) {
+    public Downsampler(long start, long stop) {
         this(start, stop, DEFAULT_SAMPLE_COUNT);
     }
 
-    public RestDownsampler(long start, long stop, int sampleCount) {
+    public Downsampler(long start, long stop, int sampleCount) {
         if (start > stop) {
             throw new IllegalArgumentException("start (" + start + ") should be smaller than stop (" + stop + ")");
         }

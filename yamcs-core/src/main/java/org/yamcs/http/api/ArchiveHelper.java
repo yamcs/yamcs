@@ -17,7 +17,7 @@ import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.ParameterRanger.Range;
-import org.yamcs.http.api.RestDownsampler.Sample;
+import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Alarms.AlarmType;

@@ -210,7 +210,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void getInstance(Context ctx, GetInstanceRequest request, Observer<YamcsInstance> observer) {
-        String instanceName = RestHandler.verifyInstance(request.getInstance());
+        String instanceName = verifyInstance(request.getInstance());
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(instanceInfo);
@@ -219,7 +219,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void createInstance(Context ctx, CreateInstanceRequest request, Observer<YamcsInstance> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.CreateInstances);
+        ctx.checkSystemPrivilege(SystemPrivilege.CreateInstances);
         YamcsServer yamcs = YamcsServer.getServer();
 
         if (!request.hasName()) {
@@ -268,8 +268,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void startInstance(Context ctx, StartInstanceRequest request, Observer<YamcsInstance> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
+        String instance = verifyInstance(request.getInstance());
 
         CompletableFuture.supplyAsync(() -> {
             try {
@@ -292,8 +292,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void stopInstance(Context ctx, StopInstanceRequest request, Observer<YamcsInstance> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
+        String instance = verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         if (yamcs.getInstance(instance) == null) {
             throw new BadRequestException("No instance named '" + instance + "'");
@@ -320,8 +320,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void restartInstance(Context ctx, RestartInstanceRequest request, Observer<YamcsInstance> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
+        String instance = verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
 
         CompletableFuture.supplyAsync(() -> {
@@ -345,7 +345,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void setTime(Context ctx, SetTimeRequest request, Observer<Empty> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         TimeService timeService = yamcs.getInstance(instance).getTimeService();
 
@@ -370,7 +370,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void listServices(Context ctx, ListServicesRequest request, Observer<ListServicesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
         YamcsServer yamcs = YamcsServer.getServer();
 
         String instance = request.getInstance();
@@ -378,7 +378,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
-            RestHandler.verifyInstance(instance);
+            verifyInstance(instance);
         }
 
         ListServicesResponse.Builder responseb = ListServicesResponse.newBuilder();
@@ -398,7 +398,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void getService(Context ctx, GetServiceRequest request, Observer<ServiceInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
         YamcsServer yamcs = YamcsServer.getServer();
 
         String instance = request.getInstance();
@@ -406,7 +406,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
-            RestHandler.verifyInstance(instance);
+            verifyInstance(instance);
         }
         String serviceName = request.getName();
         if (global) {
@@ -431,7 +431,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void startService(Context ctx, StartServiceRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
         YamcsServer yamcs = YamcsServer.getServer();
 
         String instance = request.getInstance();
@@ -441,7 +441,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
-            RestHandler.verifyInstance(instance);
+            verifyInstance(instance);
         }
 
         try {
@@ -461,7 +461,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void stopService(Context ctx, StopServiceRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlServices);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlServices);
         YamcsServer yamcs = YamcsServer.getServer();
 
         String instance = request.getInstance();
@@ -471,7 +471,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         if (YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
-            RestHandler.verifyInstance(instance);
+            verifyInstance(instance);
         }
 
         try {
@@ -496,7 +496,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
         String instance = null;
         if (request.hasInstance()) {
-            instance = RestHandler.verifyInstance(request.getInstance());
+            instance = verifyInstance(request.getInstance());
         }
 
         List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
@@ -512,15 +512,15 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void getLink(Context ctx, GetLinkRequest request, Observer<LinkInfo> observer) {
-        LinkInfo linkInfo = RestHandler.verifyLink(request.getInstance(), request.getName());
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
         observer.complete(linkInfo);
     }
 
     @Override
     public void updateLink(Context ctx, EditLinkRequest request, Observer<LinkInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlLinks);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
 
-        LinkInfo linkInfo = RestHandler.verifyLink(request.getInstance(), request.getName());
+        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
 
         String state = null;
         if (request.hasState()) {
@@ -636,5 +636,28 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             serviceb.setProcessor(processor);
         }
         return serviceb.build();
+    }
+
+    public static String verifyInstance(String instance, boolean allowGlobal) {
+        if (allowGlobal && YamcsServer.GLOBAL_INSTANCE.equals(instance)) {
+            return instance;
+        }
+        return verifyInstance(instance);
+    }
+
+    public static String verifyInstance(String instance) {
+        if (!YamcsServer.hasInstance(instance)) {
+            throw new NotFoundException("No instance named '" + instance + "'");
+        }
+        return instance;
+    }
+
+    public static LinkInfo verifyLink(String instance, String linkName) {
+        verifyInstance(instance);
+        LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
+        if (linkInfo == null) {
+            throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
+        }
+        return linkInfo;
     }
 }

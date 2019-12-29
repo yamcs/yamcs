@@ -87,7 +87,7 @@ public class IndexHandler extends Handler {
         // the app from an outdated index.html.
         response.headers().set(HttpHeaderNames.CACHE_CONTROL, "no-store, must-revalidate");
 
-        HttpRequestHandler.sendResponse(ctx, req, response, true);
+        HttpRequestHandler.sendResponse(ctx, req, response);
     }
 
     private synchronized String getHtml() throws IOException {

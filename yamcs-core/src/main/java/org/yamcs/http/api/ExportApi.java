@@ -53,24 +53,18 @@ public class ExportApi extends AbstractExportApi<Context> {
 
     @Override
     public void exportPackets(Context ctx, ExportPacketsRequest request, Observer<HttpBody> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         Set<String> nameSet = new HashSet<>(request.getNameList());
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadPacket, nameSet);
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = TimeEncoding.INVALID_INSTANT;
-            if (request.hasStart()) {
-                start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            }
-            long stop = TimeEncoding.INVALID_INSTANT;
-            if (request.hasStop()) {
-                stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            }
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.getNameCount() > 0) {
@@ -84,7 +78,7 @@ public class ExportApi extends AbstractExportApi<Context> {
                 .build();
         observer.next(metadata);
 
-        RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -109,23 +103,17 @@ public class ExportApi extends AbstractExportApi<Context> {
 
     @Override
     public void exportEvents(Context ctx, ExportEventsRequest request, Observer<HttpBody> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         StreamArchiveApi.verifyEventArchiveSupport(instance);
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadEvents);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = TimeEncoding.INVALID_INSTANT;
-            if (request.hasStart()) {
-                start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            }
-            long stop = TimeEncoding.INVALID_INSTANT;
-            if (request.hasStop()) {
-                stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            }
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.getSourceCount() > 0) {
@@ -164,12 +152,12 @@ public class ExportApi extends AbstractExportApi<Context> {
 
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer));
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer));
     }
 
     @Override
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -190,7 +178,7 @@ public class ExportApi extends AbstractExportApi<Context> {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
 
-            RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
             ids.add(XtceDb.toNamedObjectId(id));
         }
         if (request.hasNamespace()) {
@@ -199,8 +187,7 @@ public class ExportApi extends AbstractExportApi<Context> {
 
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
-                        p.getQualifiedName())) {
+                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
                 }
                 if (namespace != null) {
@@ -228,10 +215,10 @@ public class ExportApi extends AbstractExportApi<Context> {
                 throw new BadRequestException("Unexpected option for parameter 'extra': " + extra);
             }
         }
-        RestParameterReplayListener l = new CsvParameterStreamer(
+        ParameterReplayListener l = new CsvParameterStreamer(
                 observer, filename, ids, addRaw, addMonitoring);
         observer.setCancelHandler(l::requestReplayAbortion);
-        RestReplays.replay(instance, ctx.user, rr.build(), l);
+        ReplayFactory.replay(instance, ctx.user, rr.build(), l);
     }
 
     private static class CsvEventStreamer implements StreamSubscriber {
@@ -315,7 +302,7 @@ public class ExportApi extends AbstractExportApi<Context> {
         }
     }
 
-    private static class CsvParameterStreamer extends RestParameterReplayListener {
+    private static class CsvParameterStreamer extends ParameterReplayListener {
 
         Observer<HttpBody> observer;
         List<NamedObjectId> ids;

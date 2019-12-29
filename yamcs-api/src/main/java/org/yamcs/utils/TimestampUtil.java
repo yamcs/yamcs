@@ -28,8 +28,8 @@ public class TimestampUtil {
     }
 
     /**
-     * Converts protobuf Timestamp into java time in milliseconds
-     * Note: this loses precision (nanoseconds to milliseconds)
+     * Converts protobuf Timestamp into java time in milliseconds Note: this loses precision (nanoseconds to
+     * milliseconds)
      * 
      * @param ts
      *            protobuf timestamp to be converted

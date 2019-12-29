@@ -10,13 +10,13 @@ import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Mdb.CalibratorInfo;
+import org.yamcs.protobuf.Mdb.CalibratorInfo.Type;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
 import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
-import org.yamcs.protobuf.Mdb.CalibratorInfo.Type;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.xtce.AlarmLevels;
@@ -28,9 +28,6 @@ import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
-import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.ResolvedNameReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.NumericAlarm;
@@ -42,6 +39,9 @@ import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ResolvedNameReference;
+import org.yamcs.xtce.util.UnresolvedNameReference;
 
 public class GbpToXtceAssembler {
 
@@ -79,8 +79,10 @@ public class GbpToXtceAssembler {
         return new SplineCalibrator(c);
     }
 
-    //spaceSystemName is the name of the space system used to lookup parameters which may be part of context specification in string format
-    public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, String spaceSystemName, List<ContextCalibratorInfo> ccl)
+    // spaceSystemName is the name of the space system used to lookup parameters which may be part of context
+    // specification in string format
+    public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, String spaceSystemName,
+            List<ContextCalibratorInfo> ccl)
             throws BadRequestException {
         List<ContextCalibrator> l = new ArrayList<>(ccl.size());
         for (ContextCalibratorInfo cci : ccl) {
@@ -89,7 +91,8 @@ public class GbpToXtceAssembler {
         return l;
     }
 
-    public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, String spaceSystemName, ContextCalibratorInfo cci)
+    public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, String spaceSystemName,
+            ContextCalibratorInfo cci)
             throws BadRequestException {
         MatchCriteria mc = null;
         if (cci.hasContext()) {
@@ -276,12 +279,15 @@ public class GbpToXtceAssembler {
     /**
      * 
      * @param xtcedb
-     * @param spaceSystemName - the name of the space system used to lookup parameters reference by relative name in the context specification
+     * @param spaceSystemName
+     *            - the name of the space system used to lookup parameters reference by relative name in the context
+     *            specification
      * @param cai
      * @return
      * @throws BadRequestException
      */
-    public static EnumerationContextAlarm toEnumerationContextAlarm(XtceDb xtcedb, String spaceSystemName, ContextAlarmInfo cai)
+    public static EnumerationContextAlarm toEnumerationContextAlarm(XtceDb xtcedb, String spaceSystemName,
+            ContextAlarmInfo cai)
             throws BadRequestException {
         EnumerationContextAlarm eca = new EnumerationContextAlarm();
         if (cai.hasContext()) {
@@ -291,7 +297,7 @@ public class GbpToXtceAssembler {
         } else {
             throw new BadRequestException("No context provided in the ContextAlarmInfo");
         }
-        
+
         if (!cai.hasAlarm()) {
             throw new BadRequestException("No alarm specified for the context");
         }
@@ -340,10 +346,10 @@ public class GbpToXtceAssembler {
 
         ConditionParser condParser = new ConditionParser(pname -> {
             Parameter p = null;
-            if(pname.startsWith("/")) {
+            if (pname.startsWith("/")) {
                 p = xtcedb.getParameter(pname);
             } else {
-                p = xtcedb.getParameter(spaceSystemName+"/"+pname);
+                p = xtcedb.getParameter(spaceSystemName + "/" + pname);
             }
             if (p != null) {
                 return new ResolvedNameReference(pname, NameReference.Type.PARAMETER, p);

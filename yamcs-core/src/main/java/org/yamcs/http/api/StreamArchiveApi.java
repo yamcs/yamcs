@@ -29,7 +29,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ProtobufRegistry;
-import org.yamcs.http.api.RestDownsampler.Sample;
+import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -105,10 +105,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void listEvents(Context ctx, ListEventsRequest request, Observer<ListEventsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         verifyEventArchiveSupport(instance);
 
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadEvents);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -122,14 +122,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
         }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
+        }
+
         if (request.getSourceCount() > 0) {
             sqlb.whereColIn("source", request.getSourceList());
         }
@@ -173,7 +172,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             Event last;
             int count;
@@ -212,9 +211,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void createEvent(Context ctx, CreateEventRequest request, Observer<Event> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.WriteEvents);
+        ctx.checkSystemPrivilege(SystemPrivilege.WriteEvents);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         if (!request.hasMessage()) {
             throw new BadRequestException("Message is required");
@@ -279,9 +278,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listEventSources(Context ctx, ListEventSourcesRequest request,
             Observer<ListEventSourcesResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         verifyEventArchiveSupport(instance);
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadEvents);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
@@ -301,18 +300,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void streamEvents(Context ctx, StreamEventsRequest request, Observer<Event> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         StreamArchiveApi.verifyEventArchiveSupport(instance);
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ReadEvents);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.getSourceCount() > 0) {
@@ -346,7 +343,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
 
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -374,7 +371,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -383,14 +380,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         SqlBuilder sqlbParam = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
         SqlBuilder sqlbEvent = new SqlBuilder(AlarmRecorder.EVENT_ALARM_TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlbParam.where(ir.asSqlCondition("triggerTime"));
-            sqlbEvent.where(ir.asSqlCondition("triggerTime"));
+        if (request.hasStart()) {
+            sqlbParam.whereColAfterOrEqual("triggerTime", request.getStart());
+            sqlbEvent.whereColAfterOrEqual("triggerTime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlbParam.whereColBefore("triggerTime", request.getStop());
+            sqlbEvent.whereColBefore("triggerTime", request.getStop());
         }
 
         /*
@@ -404,7 +400,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING triggerTime ORDER DESC";
-        RestStreams.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -422,7 +418,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listParameterAlarms(Context ctx, ListParameterAlarmsRequest request,
             Observer<ListAlarmsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -430,17 +426,15 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("triggerTime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("triggerTime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("triggerTime", request.getStop());
         }
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = RestHandler.verifyParameter(ctx.user, mdb, request.getParameter());
+        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getParameter());
         sqlb.where("parameter = ?", p.getQualifiedName());
 
         /*
@@ -450,7 +444,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         sqlb.descend(!ascending);
         sqlb.limit(pos, limit);
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -468,7 +462,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listParameterGroups(Context ctx, ListParameterGroupsRequest request,
             Observer<ParameterGroupInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ParameterGroupInfo.Builder responseb = ParameterGroupInfo.newBuilder();
@@ -488,12 +482,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listParameterHistory(Context ctx, ListParameterHistoryRequest request,
             Observer<ListParameterHistoryResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         String pathName = request.getName();
 
-        ParameterWithId p = RestHandler.verifyParameterWithId(ctx.user, mdb, pathName);
+        ParameterWithId p = MdbApi.verifyParameterWithId(ctx, mdb, pathName);
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -513,7 +507,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(p.getId(), start, stop, descending);
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
-        RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
+        ParameterReplayListener replayListener = new ParameterReplayListener(pos, limit) {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
@@ -533,16 +527,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         };
         replayListener.setNoRepeat(noRepeat);
 
-        RestReplays.replay(instance, ctx.user, rr, replayListener);
+        ReplayFactory.replay(instance, ctx.user, rr, replayListener);
     }
 
     @Override
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = RestHandler.verifyParameter(ctx.user, mdb, request.getName());
+        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ParameterType ptype = p.getParameterType();
         if ((ptype != null) && (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType))) {
@@ -570,9 +564,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         int sampleCount = request.hasCount() ? request.getCount() : 500;
 
-        RestDownsampler sampler = new RestDownsampler(start, stop, sampleCount);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
 
-        RestReplayListener replayListener = new RestReplayListener() {
+        ParameterReplayListener replayListener = new ParameterReplayListener() {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
@@ -595,13 +589,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         };
 
-        RestReplays.replay(instance, ctx.user, rr.build(), replayListener);
+        ReplayFactory.replay(instance, ctx.user, rr.build(), replayListener);
     }
 
     @Override
     public void listPacketNames(Context ctx, ListPacketNamesRequest request,
             Observer<ListPacketNamesResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListPacketNamesResponse.Builder responseb = ListPacketNamesResponse.newBuilder();
@@ -616,7 +610,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             List<String> unsortedPackets = new ArrayList<>();
             for (Entry<String, Short> entry : enumValues.entrySet()) {
                 String packetName = entry.getKey();
-                if (RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadPacket, packetName)) {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
                     unsortedPackets.add(packetName);
                 }
             }
@@ -628,13 +622,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void listPackets(Context ctx, ListPacketsRequest request, Observer<ListPacketsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
 
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadPacket, request.getNameList());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNameList());
         Set<String> nameSet = new HashSet<>(request.getNameList());
         if (nameSet.isEmpty()) {
             for (String packetName : getTmPacketNames(instance, ctx.user)) {
@@ -657,25 +651,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
-        long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                : TimeEncoding.INVALID_INSTANT;
-        long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                : TimeEncoding.INVALID_INSTANT;
-
-        IntervalResult ir = new IntervalResult(start, stop);
-
-        // Query optimization to skip previously outputted pages at the Rocks level.
-        // (because the gentime/seqnum condition used further down is unoptimized)
-        if (nextToken != null) {
-            if (desc) {
-                ir.setStop(nextToken.gentime, true);
-            } else {
-                ir.setStart(nextToken.gentime, true);
-            }
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
         }
-        if (ir.hasInterval()) {
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
+
         if (!nameSet.isEmpty()) {
             sqlb.whereColIn("pname", nameSet);
         }
@@ -693,7 +675,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
         ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             TmPacketData last;
             int count;
@@ -722,7 +704,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void getPacket(Context ctx, GetPacketRequest request, Observer<TmPacketData> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         long gentime = request.getGentime();
         int seqNum = request.getSeqnum();
 
@@ -731,11 +713,11 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                if (RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
                     packets.add(pdata);
                 }
             }
@@ -756,31 +738,28 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void streamPackets(Context ctx, StreamPacketsRequest request, Observer<TmPacketData> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadPacket, request.getNameList());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNameList());
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
-        long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                : TimeEncoding.INVALID_INSTANT;
-        long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                : TimeEncoding.INVALID_INSTANT;
-
-        IntervalResult ir = new IntervalResult(start, stop);
-        if (ir.hasInterval()) {
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("pname", request.getNameList());
         }
 
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                if (RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
                     observer.next(pdata);
                 }
             }
@@ -795,7 +774,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
             Observer<ParameterData> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -815,7 +794,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
             ids.add(id);
         }
         if (request.hasNamespace()) {
@@ -824,8 +803,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
-                        p.getQualifiedName())) {
+                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
                 }
                 if (namespace != null) {
@@ -840,7 +818,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
 
-        RestReplayListener replayListener = new RestParameterReplayListener() {
+        ParameterReplayListener replayListener = new ParameterReplayListener() {
 
             @Override
             protected void onParameterData(List<ParameterValueWithId> params) {
@@ -864,12 +842,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         };
         observer.setCancelHandler(replayListener::requestReplayAbortion);
 
-        RestReplays.replay(instance, ctx.user, rr.build(), replayListener);
+        ReplayFactory.replay(instance, ctx.user, rr.build(), replayListener);
     }
 
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
@@ -888,13 +866,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.hasQ()) {
@@ -916,7 +893,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         sqlb.limit(pos, limit + 1); // one more to detect hasMore
 
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             CommandHistoryEntry last;
             int count;
@@ -946,7 +923,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandHistoryEntry> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -963,7 +940,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .where("origin = ?", origin);
 
         List<CommandHistoryEntry> commands = new ArrayList<>();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
@@ -986,26 +963,24 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.CommandHistory, request.getNameList());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
 
-        if (request.hasStart() || request.hasStop()) {
-            long start = request.hasStart() ? TimeEncoding.fromProtobufTimestamp(request.getStart())
-                    : TimeEncoding.INVALID_INSTANT;
-            long stop = request.hasStop() ? TimeEncoding.fromProtobufTimestamp(request.getStop())
-                    : TimeEncoding.INVALID_INSTANT;
-            IntervalResult ir = new IntervalResult(start, stop);
-            sqlb.where(ir.asSqlCondition("gentime"));
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
         }
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("cmdName", request.getNameList());
         }
 
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);

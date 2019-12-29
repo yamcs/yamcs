@@ -118,7 +118,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
     
     private Cop1TcPacketHandler verifyCop1Link(String instance, String name) {
-        RestHandler.verifyInstance(instance);
+        ManagementApi.verifyInstance(instance);
         Optional<LinkWithInfo> o = ManagementService.getInstance().getLinkWithInfo(instance, name);
         if (!o.isPresent()) {
             throw new BadRequestException("There is no link named '" + name + "' in instance " + instance);

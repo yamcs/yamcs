@@ -22,10 +22,13 @@ import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.BatchGetParametersRequest;
@@ -64,6 +67,7 @@ import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
@@ -76,6 +80,7 @@ import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
@@ -93,9 +98,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void getMissionDatabase(Context ctx, GetMissionDatabaseRequest request,
             Observer<MissionDatabase> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MissionDatabase converted = YamcsToGpbAssembler.toMissionDatabase(instance, mdb);
         observer.complete(converted);
@@ -104,9 +109,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void exportJavaMissionDatabase(Context ctx, ExportJavaMissionDatabaseRequest request,
             Observer<HttpBody> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         try (ByteString.Output output = ByteString.newOutput()) {
@@ -130,8 +135,8 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listSpaceSystems(Context ctx, ListSpaceSystemsRequest request,
             Observer<ListSpaceSystemsResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         // Should eventually be replaced in a generic mdb search operation
@@ -186,12 +191,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getSpaceSystem(Context ctx, GetSpaceSystemRequest request, Observer<SpaceSystemInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        SpaceSystem spaceSystem = RestHandler.verifySpaceSystem(mdb, request.getName());
+        SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
 
         SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem);
         observer.complete(info);
@@ -200,7 +205,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listParameters(Context ctx, ListParametersRequest request,
             Observer<ListParametersResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         List<SpaceSystem> spaceSystems = new ArrayList<>();
@@ -230,8 +235,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
 
         parameters = parameters.stream().filter(p -> {
-            if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter,
-                    p.getQualifiedName())) {
+            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                 return false;
             }
             if (matcher != null && !matcher.matches(p)) {
@@ -268,10 +272,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getParameter(Context ctx, GetParameterRequest request, Observer<ParameterInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = RestHandler.verifyParameter(ctx.user, mdb, request.getName());
+        Parameter p = verifyParameter(ctx, mdb, request.getName());
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, DetailLevel.FULL);
         List<ParameterEntry> parameterEntries = mdb.getParameterEntries(p);
@@ -302,9 +306,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void batchGetParameters(Context ctx, BatchGetParametersRequest request,
             Observer<BatchGetParametersResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         BatchGetParametersResponse.Builder responseb = BatchGetParametersResponse.newBuilder();
@@ -313,7 +317,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!RestHandler.hasObjectPrivilege(ctx.user, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
                 continue;
@@ -331,7 +335,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listParameterTypes(Context ctx, ListParameterTypesRequest request,
             Observer<ListParameterTypesResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         // Should eventually be replaced in a generic mdb search operation
@@ -390,10 +394,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void getParameterType(Context ctx, GetParameterTypeRequest request,
             Observer<ParameterTypeInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        ParameterType p = RestHandler.verifyParameterType(mdb, request.getName());
+        ParameterType p = verifyParameterType(mdb, request.getName());
 
         ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(p, DetailLevel.FULL);
         observer.complete(pinfo);
@@ -402,8 +406,8 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listContainers(Context ctx, ListContainersRequest request,
             Observer<ListContainersResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         List<SpaceSystem> spaceSystems = new ArrayList<>();
@@ -461,12 +465,12 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getContainer(Context ctx, GetContainerRequest request, Observer<ContainerInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        SequenceContainer c = RestHandler.verifyContainer(mdb, request.getName());
+        SequenceContainer c = verifyContainer(mdb, request.getName());
 
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, DetailLevel.FULL);
         List<ContainerEntry> containerEntries = mdb.getContainerEntries(c);
@@ -496,8 +500,8 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         List<SpaceSystem> spaceSystems = new ArrayList<>();
@@ -559,11 +563,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        MetaCommand cmd = RestHandler.verifyCommand(mdb, request.getName());
+        MetaCommand cmd = verifyCommand(mdb, request.getName());
 
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.FULL);
         observer.complete(cinfo);
@@ -572,8 +576,8 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listAlgorithms(Context ctx, ListAlgorithmsRequest request,
             Observer<ListAlgorithmsResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         List<SpaceSystem> spaceSystems = new ArrayList<>();
@@ -631,11 +635,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void getAlgorithm(Context ctx, GetAlgorithmRequest request, Observer<AlgorithmInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.GetMissionDatabase);
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Algorithm algo = RestHandler.verifyAlgorithm(mdb, request.getName());
+        Algorithm algo = verifyAlgorithm(mdb, request.getName());
 
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
         observer.complete(cinfo);
@@ -656,11 +660,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void updateParameter(Context ctx, UpdateParameterRequest request, Observer<ParameterTypeInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ChangeMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
-        Parameter p = RestHandler.verifyParameter(ctx.user, xtcedb, request.getName());
+        Parameter p = verifyParameter(ctx, xtcedb, request.getName());
 
         ProcessorData pdata = processor.getProcessorData();
         ParameterType origParamType = p.getParameterType();
@@ -732,9 +736,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
     @Override
     public void updateAlgorithm(Context ctx, UpdateAlgorithmRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ChangeMissionDatabase);
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
         if (l.size() == 0) {
             throw new BadRequestException("No AlgorithmManager available for this processor");
@@ -745,7 +749,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
         AlgorithmManager algMng = l.get(0);
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
-        Algorithm a = RestHandler.verifyAlgorithm(xtcedb, request.getName());
+        Algorithm a = verifyAlgorithm(xtcedb, request.getName());
         if (!(a instanceof CustomAlgorithm)) {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
         }
@@ -783,5 +787,196 @@ public class MdbApi extends AbstractMdbApi<Context> {
             throw new BadRequestException(
                     "Cannot set a calibrator on a non numeric parameter type (" + ptype.getTypeAsString() + ")");
         }
+    }
+
+    private static SpaceSystem verifySpaceSystem(XtceDb mdb, String pathName) {
+        String namespace;
+        String name;
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            namespace = "";
+            name = pathName;
+        } else {
+            namespace = pathName.substring(0, lastSlash);
+            name = pathName.substring(lastSlash + 1);
+        }
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        SpaceSystem spaceSystem = mdb.getSpaceSystem(id);
+        if (spaceSystem != null) {
+            return spaceSystem;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        spaceSystem = mdb.getSpaceSystem(id);
+        if (spaceSystem != null) {
+            return spaceSystem;
+        }
+
+        throw new NotFoundException("No such space system");
+    }
+
+    static Algorithm verifyAlgorithm(XtceDb mdb, String pathName) {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException("No such algorithm (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        Algorithm algorithm = mdb.getAlgorithm(id);
+        if (algorithm != null) {
+            return algorithm;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        algorithm = mdb.getAlgorithm(id);
+        if (algorithm != null) {
+            return algorithm;
+        }
+
+        throw new NotFoundException("No such algorithm");
+    }
+
+    static ParameterType verifyParameterType(XtceDb mdb, String pathName) {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException("No such parameter type (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        ParameterType type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        throw new NotFoundException("No such parameter type");
+    }
+
+    static SequenceContainer verifyContainer(XtceDb mdb, String pathName) {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException("No such container (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        SequenceContainer container = mdb.getSequenceContainer(id);
+        if (container != null) {
+            return container;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        container = mdb.getSequenceContainer(id);
+        if (container != null) {
+            return container;
+        }
+
+        throw new NotFoundException("No such container");
+    }
+
+    static MetaCommand verifyCommand(XtceDb mdb, String pathName) {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException("No such command (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        MetaCommand cmd = mdb.getMetaCommand(id);
+        if (cmd == null) {
+            // Maybe some non-xtce namespace like MDB:OPS Name
+            id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+            cmd = mdb.getMetaCommand(id);
+        }
+
+        if (cmd == null) {
+            throw new NotFoundException("No such command");
+        } else {
+            return cmd;
+        }
+    }
+
+    static NamedObjectId verifyParameterId(Context ctx, XtceDb mdb, String pathName) {
+        return verifyParameterWithId(ctx, mdb, pathName).getId();
+    }
+
+    public static Parameter verifyParameter(Context ctx, XtceDb mdb, String pathName) {
+        return verifyParameterWithId(ctx, mdb, pathName).getParameter();
+    }
+
+    static ParameterWithId verifyParameterWithId(Context ctx, XtceDb mdb, String pathName) {
+        int aggSep = AggregateUtil.findSeparator(pathName);
+
+        PathElement[] aggPath = null;
+        String nwa = pathName; // name without the aggregate part
+        if (aggSep >= 0) {
+            nwa = pathName.substring(0, aggSep);
+            try {
+                aggPath = AggregateUtil.parseReference(pathName.substring(aggSep));
+            } catch (IllegalArgumentException e) {
+                throw new NotFoundException("Invalid array/aggregate path in name " + pathName);
+            }
+        }
+
+        //
+        // }
+        int lastSlash = nwa.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == nwa.length() - 1) {
+            throw new NotFoundException("No such parameter (missing namespace?)");
+        }
+
+        String _namespace = nwa.substring(0, lastSlash);
+        String name = nwa.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        String namespace = "/" + _namespace;
+        Parameter p = mdb.getParameter(namespace, name);
+        if (p == null) {
+            namespace = _namespace;
+            // Maybe some non-xtce namespace like MDB:OPS Name
+            p = mdb.getParameter(namespace, name);
+        }
+
+        if (p != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+            throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
+        }
+        if (p == null) {
+            throw new NotFoundException("No parameter named " + pathName);
+        }
+
+        if (aggPath != null) {
+            if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {
+                throw new NotFoundException("Nonexistent array/aggregate path in name " + pathName);
+            }
+            name += AggregateUtil.toString(aggPath);
+        }
+
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        return new ParameterWithId(p, id, aggPath);
     }
 }

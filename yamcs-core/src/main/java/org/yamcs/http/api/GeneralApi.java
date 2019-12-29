@@ -11,6 +11,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.Observer;
+import org.yamcs.http.RpcDescriptor;
 import org.yamcs.protobuf.AbstractGeneralApi;
 import org.yamcs.protobuf.GetGeneralInfoResponse;
 import org.yamcs.protobuf.GetGeneralInfoResponse.PluginInfo;
@@ -72,14 +73,36 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
 
     @Override
     public void listRoutes(Context ctx, Empty request, Observer<ListRoutesResponse> observer) {
-        List<RouteInfo> routes = router.getRouteInfoSet();
-        Collections.sort(routes, (r1, r2) -> {
+        List<RouteInfo> result = new ArrayList<>();
+        for (Route route : router.getRoutes()) {
+            RouteInfo.Builder routeb = RouteInfo.newBuilder();
+            routeb.setHttpMethod(route.getHttpMethod().toString());
+            routeb.setUrl(router.getContextPath() + route.getUriTemplate());
+            routeb.setRequestCount(route.getRequestCount());
+            routeb.setErrorCount(route.getErrorCount());
+            RpcDescriptor descriptor = route.getDescriptor();
+            if (descriptor != null) {
+                routeb.setService(descriptor.getService());
+                routeb.setMethod(descriptor.getMethod());
+                routeb.setInputType(descriptor.getInputType().getName());
+                routeb.setOutputType(descriptor.getOutputType().getName());
+                if (descriptor.getDescription() != null) {
+                    routeb.setDescription(descriptor.getDescription());
+                }
+                if (route.isDeprecated()) {
+                    routeb.setDeprecated(true);
+                }
+            }
+            result.add(routeb.build());
+        }
+
+        Collections.sort(result, (r1, r2) -> {
             int rc = r1.getUrl().compareToIgnoreCase(r2.getUrl());
             return rc != 0 ? rc : r1.getMethod().compareTo(r2.getMethod());
         });
 
         ListRoutesResponse.Builder responseb = ListRoutesResponse.newBuilder();
-        responseb.addAllRoutes(routes);
+        responseb.addAllRoutes(result);
         observer.complete(responseb.build());
     }
 }

@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
-import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.ServiceUnavailableException;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -21,18 +20,17 @@ import com.google.common.util.concurrent.Service.State;
 /**
  * Abstracts some common logic for creating replays
  */
-public class RestReplays {
+public class ReplayFactory {
+
     static AtomicInteger count = new AtomicInteger();
     private static int MAX_CONCURRENT_REPLAYS = 2 * Runtime.getRuntime().availableProcessors();
     static AtomicInteger concurrentCount = new AtomicInteger();
 
     /**
      * launches a replay will only return when the replay is done (either through success or through error)
-     * 
-     * TODO we should be more helpful here with catching errored state and throwing it up as RestException
      */
-    public static ReplayWrapper replay(String instance, User user, ReplayRequest replayRequest, RestReplayListener l)
-            throws HttpException {
+    public static ReplayWrapper replay(String instance, User user, ReplayRequest replayRequest,
+            ParameterReplayListener l) {
         int n = concurrentCount.incrementAndGet();
 
         if (n > MAX_CONCURRENT_REPLAYS) {
@@ -41,7 +39,7 @@ public class RestReplays {
         }
 
         try {
-            Processor processor = ProcessorFactory.create(instance, "RestReplays" + count.incrementAndGet(),
+            Processor processor = ProcessorFactory.create(instance, "api_replay" + count.incrementAndGet(),
                     "ArchiveRetrieval", "internal", replayRequest);
             ReplayWrapper wrapper = new ReplayWrapper(l, processor);
 
@@ -70,10 +68,10 @@ public class RestReplays {
     }
 
     private static class ReplayWrapper implements ParameterWithIdConsumer {
-        RestReplayListener wrappedListener;
+        ParameterReplayListener wrappedListener;
         Processor processor;
 
-        ReplayWrapper(RestReplayListener l, Processor processor) {
+        ReplayWrapper(ParameterReplayListener l, Processor processor) {
             this.wrappedListener = l;
             this.processor = processor;
             processor.addListener(l, MoreExecutors.directExecutor());

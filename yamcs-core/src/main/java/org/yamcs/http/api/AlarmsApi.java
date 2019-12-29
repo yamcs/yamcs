@@ -62,7 +62,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
             AlarmServer<Parameter, org.yamcs.parameter.ParameterValue> alarmServer = processor
@@ -83,9 +83,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     @Override
     public void editAlarm(Context ctx, EditAlarmRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlAlarms);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         String alarmName = request.getName();
         if (!alarmName.startsWith("/")) {
             alarmName = "/" + alarmName;

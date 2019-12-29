@@ -4,9 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -15,9 +14,10 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-public class RestStreams {
+public class StreamFactory {
+
     private static AtomicInteger streamCounter = new AtomicInteger();
-    private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
+    private static final Log log = new Log(StreamFactory.class);
 
     public static void stream(String instance, String selectSql, StreamSubscriber subscriber) {
         stream(instance, selectSql, Collections.emptyList(), subscriber);
@@ -26,7 +26,7 @@ public class RestStreams {
     public static void stream(String instance, String selectSql, List<Object> args, StreamSubscriber subscriber) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        String streamName = "rest_archive" + streamCounter.incrementAndGet();
+        String streamName = "http_stream" + streamCounter.incrementAndGet();
         String sql = new StringBuilder("create stream ")
                 .append(streamName)
                 .append(" as ")
@@ -50,7 +50,7 @@ public class RestStreams {
     public static Stream insertStream(String instance, TableDefinition table) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        String streamName = "rest_insert" + streamCounter.incrementAndGet();
+        String streamName = "http_stream" + streamCounter.incrementAndGet();
         String sql = new StringBuilder("create stream ")
                 .append(streamName)
                 .append(" ")

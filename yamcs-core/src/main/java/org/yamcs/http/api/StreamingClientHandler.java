@@ -19,7 +19,7 @@ public class StreamingClientHandler extends SimpleChannelInboundHandler<Message>
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-
+        // System.out.println("Got a message " + msg);
     }
 
     @Override

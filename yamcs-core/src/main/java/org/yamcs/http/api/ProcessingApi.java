@@ -30,6 +30,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -112,7 +113,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void getProcessor(Context ctx, GetProcessorRequest request, Observer<ProcessorInfo> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
         ProcessorInfo pinfo = toProcessorInfo(processor, true);
         observer.complete(pinfo);
@@ -120,9 +121,9 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void deleteProcessor(Context ctx, DeleteProcessorRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlProcessor);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot delete a non-replay processor");
         }
@@ -133,7 +134,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void createProcessor(Context ctx, CreateProcessorRequest request, Observer<Empty> observer) {
-        String yamcsInstance = RestHandler.verifyInstance(request.getInstance());
+        String yamcsInstance = ManagementApi.verifyInstance(request.getInstance());
 
         if (!request.hasName()) {
             throw new BadRequestException("No processor name was specified");
@@ -172,9 +173,9 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void editProcessor(Context ctx, EditProcessorRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlProcessor);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
@@ -233,11 +234,11 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void getParameterValue(Context ctx, GetParameterValueRequest request,
             Observer<ParameterValue> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
-        NamedObjectId id = RestHandler.verifyParameterId(ctx.user, mdb, request.getName());
+        NamedObjectId id = MdbApi.verifyParameterId(ctx, mdb, request.getName());
 
         long timeout = request.hasTimeout() ? request.getTimeout() : 10000;
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
@@ -258,10 +259,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void setParameterValue(Context ctx, SetParameterValueRequest request,
             Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
-        ParameterWithId pid = RestHandler.verifyParameterWithId(ctx.user, mdb, request.getName());
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 
@@ -285,7 +286,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void batchGetParameterValues(Context ctx, BatchGetParameterValuesRequest request,
             Observer<BatchGetParameterValuesResponse> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
         if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
@@ -305,7 +306,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void batchSetParameterValues(Context ctx, BatchSetParameterValuesRequest request,
             Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         ParameterRequestManager prm = processor.getParameterRequestManager();
 
         List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
@@ -315,7 +316,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } catch (InvalidIdentification e) {
             throw new BadRequestException("InvalidIdentification: " + e.getMessage());
         }
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.WriteParameter,
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter,
                 pidList.stream().map(p -> p.getParameter().getQualifiedName()).collect(Collectors.toList()));
 
         Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
@@ -350,18 +351,18 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void issueCommand(Context ctx, IssueCommandRequest request, Observer<IssueCommandResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.Command);
+        ctx.checkSystemPrivilege(SystemPrivilege.Command);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
 
         String requestCommandName = UriEncoder.decode(request.getName());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        MetaCommand cmd = RestHandler.verifyCommand(mdb, requestCommandName);
+        MetaCommand cmd = MdbApi.verifyCommand(mdb, requestCommandName);
 
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.Command, cmd.getQualifiedName());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.Command, cmd.getQualifiedName());
 
         String origin = ctx.getClientAddress();
         int sequenceNumber = 0;
@@ -465,7 +466,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void updateCommandHistory(Context ctx, UpdateCommandHistoryRequest request, Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
@@ -613,6 +614,16 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                     throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }
             }
+        }
+    }
+
+    public static Processor verifyProcessor(String instance, String processorName) {
+        ManagementApi.verifyInstance(instance);
+        Processor processor = Processor.getInstance(instance, processorName);
+        if (processor == null) {
+            throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
+        } else {
+            return processor;
         }
     }
 }

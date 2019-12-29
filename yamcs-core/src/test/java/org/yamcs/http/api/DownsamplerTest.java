@@ -5,14 +5,14 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.http.api.RestDownsampler;
-import org.yamcs.http.api.RestDownsampler.Sample;
+import org.yamcs.http.api.Downsampler;
+import org.yamcs.http.api.Downsampler.Sample;
 
-public class RestDownsamplerTest {
+public class DownsamplerTest {
 
     @Test
     public void testSampling() {
-        RestDownsampler sampler = new RestDownsampler(1, 10, 3);
+        Downsampler sampler = new Downsampler(1, 10, 3);
 
         List<Sample> samples = sampler.collect();
         assertEquals(0, samples.size());
@@ -55,7 +55,7 @@ public class RestDownsamplerTest {
     
     @Test
     public void testSamplingTooMany() {
-        RestDownsampler sampler = new RestDownsampler(1, 2, 3);
+        Downsampler sampler = new Downsampler(1, 2, 3);
         sampler.process(1, 1);
         sampler.process(2, 2);
         sampler.process(2, 2.3);
@@ -65,6 +65,6 @@ public class RestDownsamplerTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void testSamplingInvalid() {
-       new RestDownsampler(2, 1, 3);
+       new Downsampler(2, 1, 3);
     }
 }

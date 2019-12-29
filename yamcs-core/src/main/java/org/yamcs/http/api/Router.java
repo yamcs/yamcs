@@ -3,16 +3,13 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
@@ -20,32 +17,28 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpContentToByteBufDecoder;
 import org.yamcs.http.HttpException;
-import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.HttpUtils;
 import org.yamcs.http.MethodNotAllowedException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.RouteInfo;
-import org.yamcs.security.User;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.util.AttributeKey;
@@ -62,29 +55,22 @@ import io.netty.util.AttributeKey;
 @Sharable
 public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)(\\?|\\*|\\*\\*)?\\}");
     private static final Log log = new Log(Router.class);
 
-    public static final int MAX_BODY_SIZE = 65536;
-    public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
-    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+    public static final AttributeKey<Context> CTX_CONTEXT = AttributeKey.valueOf("routerContext");
 
     private String contextPath;
     private ProtobufRegistry protobufRegistry;
 
     private List<Api<Context>> apis = new ArrayList<>();
-
-    // Order, because patterns are matched top-down in insertion order
-    private List<RouteElement> routes = new ArrayList<>();
+    private List<Route> routes = new ArrayList<>();
 
     private boolean logSlowRequests = true;
-    int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
-    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    private final ExecutorService offThreadExecutor;
+    private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    private final ExecutorService workerPool;
 
     public Router(ExecutorService executor, String contextPath, ProtobufRegistry protobufRegistry) {
-        this.offThreadExecutor = executor;
+        this.workerPool = executor;
         this.contextPath = contextPath;
         this.protobufRegistry = protobufRegistry;
 
@@ -111,177 +97,163 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public void addApi(Api<Context> api) {
         apis.add(api);
 
-        List<RouteConfig> routeConfigs = new ArrayList<>();
         for (MethodDescriptor method : api.getDescriptorForType().getMethods()) {
             RpcDescriptor descriptor = protobufRegistry.getRpc(method.getFullName());
             if (descriptor == null) {
                 throw new UnsupportedOperationException("Unable to find rpc definition: " + method.getFullName());
             }
-            routeConfigs.add(new RouteConfig(api, descriptor.getHttpRoute(), descriptor));
+
+            routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
             for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
-                routeConfigs.add(new RouteConfig(api, route, descriptor));
+                routes.add(new Route(api, route, descriptor));
             }
         }
 
         // Sort in a way that increases chances of a good URI match
-        Collections.sort(routeConfigs);
-
-        for (RouteConfig routeConfig : routeConfigs) {
-            String routeString = routeConfig.uriTemplate;
-
-            Pattern pattern = toPattern(routeString);
-            Map<HttpMethod, RouteConfig> configByMethod = createAndGet(pattern).configByMethod;
-            configByMethod.put(routeConfig.httpMethod, routeConfig);
-        }
-    }
-
-    private RouteElement createAndGet(Pattern pattern) {
-        for (RouteElement re : routes) {
-            if (re.pattern.pattern().equals(pattern.pattern())) {
-                return re;
-            }
-        }
-        RouteElement re = new RouteElement(pattern);
-        routes.add(re);
-        return re;
+        Collections.sort(routes);
     }
 
     /**
      * At this point we do not have the full request (only the header) so we have to configure the pipeline either for
      * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
      * dataLoad routes.
-     * 
-     * @return true if the request has been scheduled and false if the request is invalid or there was another error
      */
-    public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, String uri) {
-        try {
-            RouteMatch match = matchURI(req.method(), uri);
-            if (match == null) {
-                log.debug("No route matching URI: '{}'", req.uri());
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
-                return false;
-            }
-            if (match.routeConfig.isDeprecated()) {
-                log.warn("A client used a deprecated endpoint: {}", match.routeConfig.uriTemplate);
-            }
-            ctx.channel().attr(CTX_ROUTE_MATCH).set(match);
-            RouteConfig rc = match.getRouteConfig();
-            rc.requestCount.incrementAndGet();
-            if (rc.getMethod().toProto().getClientStreaming()) {
-                try {
-                    ctx.pipeline().addLast("bytebufextractor", new HttpContentToByteBufDecoder());
-                    ctx.pipeline().addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+    public void scheduleExecution(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, String uri) {
 
-                    String body = rc.getBody();
-                    Message bodyPrototype = rc.api.getRequestPrototype(rc.getMethod());
-                    if (body != null && !"*".equals(body)) {
-                        FieldDescriptor field = bodyPrototype.getDescriptorForType().findFieldByName(body);
-                        bodyPrototype = field.toProto().getDefaultInstanceForType();
-                    }
-                    ctx.pipeline().addLast("protobufDecoder", new ProtobufDecoder(bodyPrototype));
-                    ctx.pipeline().addLast("streamingClientHandler", new StreamingClientHandler(req));
-
-                    if (HttpUtil.is100ContinueExpected(req)) {
-                        ctx.writeAndFlush(CONTINUE.retainedDuplicate());
-                    }
-                } catch (HttpException e) {
-                    log.warn("Error invoking data load handler on URI '{}': {}", req.uri(), e.getMessage());
-                    HttpRequestHandler.sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
-                } catch (Throwable t) {
-                    log.error("Error invoking data load handler on URI: '{}'", req.uri(), t);
-                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-                }
-            } else {
-                ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-
-                // this will cause the channelRead0 to be called as soon as the request is complete
-                // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
-                ctx.pipeline().addLast(new HttpObjectAggregator(rc.maxBodySize()));
-                ctx.pipeline().addLast(this);
-                ctx.fireChannelRead(req);
-            }
-            return true;
-        } catch (MethodNotAllowedException e) {
-            log.info("Method {} not allowed for URI: '{}'", req.method(), req.uri());
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+        RouteMatch match = matchRoute(nettyRequest.method(), uri);
+        if (match == null) {
+            throw new NotFoundException();
         }
-        return false;
-    }
 
-    @Override
-    protected void channelRead0(ChannelHandlerContext nettyContext, FullHttpRequest req) throws Exception {
-        RouteMatch match = nettyContext.channel().attr(CTX_ROUTE_MATCH).get();
-        User user = nettyContext.channel().attr(HttpRequestHandler.CTX_USER).get();
-        Context ctx = new Context(nettyContext, req, user);
-        ctx.setRouteMatch(match);
-        log.debug("R{}: Routing {} {}", ctx.id, req.method(), req.uri());
+        Context ctx = new Context(nettyContext, nettyRequest, match.route, match.regexMatch);
+        log.debug("{}: Routing {} {}", ctx, nettyRequest.method(), nettyRequest.uri());
+
+        nettyContext.channel().attr(CTX_CONTEXT).set(ctx);
+        match.route.incrementRequestCount();
 
         // Track status for metric purposes
         ctx.requestFuture.whenComplete((channelFuture, e) -> {
             if (ctx.getStatusCode() == 0) {
-                log.warn("R{}: Status code not reported", ctx.id);
+                log.warn("{}: Status code not reported", ctx);
             } else if (ctx.getStatusCode() < 200 || ctx.getStatusCode() >= 300) {
-                match.routeConfig.errorCount.incrementAndGet();
+                match.route.incrementErrorCount();
             }
         });
 
-        if (match.routeConfig.offThread) {
-            ctx.getRequestContent().retain();
-            offThreadExecutor.execute(() -> {
-                dispatch(ctx, match);
-                ctx.getRequestContent().release();
-            });
+        ChannelPipeline pipeline = nettyContext.pipeline();
+        if (ctx.isClientStreaming()) {
+            System.out.println(ctx + " , setting up pipeline for client stream");
+            pipeline.addLast(new HttpContentToByteBufDecoder());
+            pipeline.addLast(new ProtobufVarint32FrameDecoder());
+
+            String body = ctx.getBodySpecifier();
+            Message bodyPrototype = ctx.getRequestPrototype();
+            if (body != null && !"*".equals(body)) {
+                FieldDescriptor field = bodyPrototype.getDescriptorForType().findFieldByName(body);
+                bodyPrototype = bodyPrototype.newBuilderForType().getFieldBuilder(field)
+                        .getDefaultInstanceForType();
+            }
+            pipeline.addLast(new ProtobufDecoder(bodyPrototype));
+            pipeline.addLast(new StreamingClientHandler(nettyRequest));
+
+            if (HttpUtil.is100ContinueExpected(nettyRequest)) {
+                nettyContext.writeAndFlush(HttpUtils.CONTINUE_RESPONSE.retainedDuplicate());
+            }
         } else {
-            dispatch(ctx, match);
+            pipeline.addLast(new HttpContentCompressor());
+
+            // this will cause the channelRead0 to be called as soon as the request is complete
+            // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
+            pipeline.addLast(new HttpObjectAggregator(ctx.getMaxBodySize()));
+            pipeline.addLast(this);
+            nettyContext.fireChannelRead(nettyRequest);
         }
     }
 
-    public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
-        Set<HttpMethod> allowedMethods = null;
-        for (RouteElement re : routes) {
-            Matcher matcher = re.pattern.matcher(uri);
-            if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
-                if (byMethod.containsKey(method)) {
-                    return new RouteMatch(matcher, byMethod.get(method));
-                } else {
-                    if (allowedMethods == null) {
-                        allowedMethods = new HashSet<>(4);
+    @Override
+    protected void channelRead0(ChannelHandlerContext nettyContext, FullHttpRequest req) throws Exception {
+        Context ctx = nettyContext.channel().attr(CTX_CONTEXT).get();
+
+        if (ctx.isOffloaded()) {
+            ctx.getBody().retain();
+            workerPool.execute(() -> {
+                dispatch(ctx);
+                ctx.getBody().release();
+            });
+        } else {
+            dispatch(ctx);
+        }
+    }
+
+    private RouteMatch matchRoute(HttpMethod method, String uri) throws MethodNotAllowedException {
+        for (Route route : routes) {
+            if (route.getHttpMethod().equals(method)) {
+                Matcher matcher = route.matchURI(uri);
+                if (matcher.matches()) {
+                    if (route.isDeprecated()) {
+                        log.warn("A client used a deprecated route: {}", uri);
                     }
-                    allowedMethods.addAll(byMethod.keySet());
+
+                    return new RouteMatch(matcher, route);
                 }
             }
         }
 
-        if (allowedMethods != null) { // One or more rules matched, but with wrong method
-            throw new MethodNotAllowedException(method, uri, allowedMethods);
-        } else { // No rule was matched
-            return null;
+        // Second pass, in case we did not find an exact match
+        Set<HttpMethod> allowedMethods = new HashSet<>(4);
+        for (Route route : routes) {
+            Matcher matcher = route.matchURI(uri);
+            if (matcher.matches()) {
+                allowedMethods.add(method);
+            }
         }
+        if (!allowedMethods.isEmpty()) {
+            throw new MethodNotAllowedException(method, uri, allowedMethods);
+        }
+
+        return null;
     }
 
-    protected void dispatch(Context ctx, RouteMatch match) {
-        boolean offThread = match.routeConfig.offThread;
+    private void dispatch(Context ctx) {
         ScheduledFuture<?> twoSecWarn = null;
-        if (!offThread) {
+        if (!ctx.isOffloaded()) {
             twoSecWarn = timer.schedule(() -> {
-                log.error("R{} blocking the netty thread for 2 seconds. uri: {}", ctx.id,
-                        ctx.nettyRequest.uri());
+                log.error("{}: Blocking the netty thread for 2 seconds. uri: {}", ctx, ctx.getURI());
             }, 2, TimeUnit.SECONDS);
         }
 
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
         try {
-            Api<Context> api = match.routeConfig.api;
-            dispatchApiMethod(ctx, api, match.routeConfig);
+            Message requestMessage;
+            try {
+                requestMessage = HttpTranscoder.transcode(ctx);
+            } catch (HttpTranscodeException e) {
+                throw new BadRequestException(e.getMessage());
+            }
+
+            MethodDescriptor method = ctx.getMethod();
+
+            Observer<Message> responseObserver;
+            if (ctx.isServerStreaming()) {
+                responseObserver = new ServerStreamingObserver(ctx);
+            } else {
+                responseObserver = new CallObserver(ctx);
+            }
+
+            if (ctx.isClientStreaming()) {
+                Observer<? extends Message> requestObserver = ctx.getApi().callMethod(method, ctx, responseObserver);
+            } else {
+                ctx.getApi().callMethod(method, ctx, requestMessage, responseObserver);
+            }
+
             ctx.requestFuture.whenComplete((channelFuture, e) -> {
                 if (e != null) {
-                    log.debug("R{}: API request finished with error: {}, transferred bytes: {}",
-                            ctx.id, e.getMessage(), ctx.getTransferredSize());
+                    log.debug("{}: API request finished with error: {}, transferred bytes: {}",
+                            ctx, e.getMessage(), ctx.getTransferredSize());
                 } else {
-                    log.debug("R{}: API request finished successfully, transferred bytes: {}",
-                            ctx.id, ctx.getTransferredSize());
+                    log.debug("{}: API request finished successfully, transferred bytes: {}",
+                            ctx, ctx.getTransferredSize());
                 }
             });
         } catch (Throwable t) {
@@ -293,36 +265,12 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
 
         if (logSlowRequests) {
-            int numSec = offThread ? 120 : 20;
+            int numSec = ctx.isOffloaded() ? 120 : 20;
             timer.schedule(() -> {
                 if (!ctx.requestFuture.isDone()) {
-                    log.warn("R{} executing for more than 20 seconds. uri: {}", ctx.id, ctx.nettyRequest.uri());
+                    log.warn("{} executing for more than {} seconds. uri: {}", ctx, numSec, ctx.nettyRequest.uri());
                 }
             }, numSec, TimeUnit.SECONDS);
-        }
-    }
-
-    private void dispatchApiMethod(Context ctx, Api<Context> api, RouteConfig routeConfig) {
-        String methodName = routeConfig.getDescriptor().getMethod();
-        MethodDescriptor method = api.getDescriptorForType().findMethodByName(methodName);
-        Message requestMessage;
-        try {
-            requestMessage = HttpTranscoder.transcode(ctx, api, method, routeConfig);
-        } catch (HttpTranscodeException e) {
-            throw new BadRequestException(e.getMessage());
-        }
-
-        Observer<Message> responseObserver;
-        if (method.toProto().getServerStreaming()) {
-            responseObserver = new ServerStreamingObserver(ctx);
-        } else {
-            responseObserver = new CallObserver(ctx);
-        }
-
-        if (method.toProto().getClientStreaming()) {
-            Observer<? extends Message> requestObserver = api.callMethod(method, ctx, responseObserver);
-        } else {
-            api.callMethod(method, ctx, requestMessage, responseObserver);
         }
     }
 
@@ -330,113 +278,42 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         if (t instanceof HttpException) {
             HttpException e = (HttpException) t;
             if (e.isServerError()) {
-                log.error("R{}: Responding '{}': {}", ctx.id, e.getStatus(), e.getMessage(), e);
-                RestHandler.sendRestError(ctx, e.getStatus(), e);
+                log.error("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage(), e);
+                CallObserver.sendError(ctx, e.getStatus(), e);
             } else {
-                log.warn("R{}: Responding '{}': {}", ctx.id, e.getStatus(), e.getMessage());
-                RestHandler.sendRestError(ctx, e.getStatus(), e);
+                log.warn("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage());
+                CallObserver.sendError(ctx, e.getStatus(), e);
             }
         } else {
-            log.error("R{}: Responding '{}'", ctx.id, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
-            RestHandler.sendRestError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            log.error("{}: Responding '{}'", ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            CallObserver.sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }
 
-    private Pattern toPattern(String route) {
-        Matcher matcher = ROUTE_PATTERN.matcher(route);
-        StringBuffer buf = new StringBuffer("^");
-        while (matcher.find()) {
-            boolean star = ("*".equals(matcher.group(3)));
-            boolean optional = ("?".equals(matcher.group(3)));
-            if ("**".equals(matcher.group(3))) {
-                star = true;
-                optional = true;
-            }
-            String slash = (matcher.group(1) != null) ? matcher.group(1) : "";
-            StringBuilder replacement = new StringBuilder();
-            if (optional) {
-                replacement.append("(?:");
-                replacement.append(slash);
-                replacement.append("(?<").append(matcher.group(2)).append(">");
-                replacement.append(star ? ".+?" : "[^/]+");
-                replacement.append(")?)?");
-            } else {
-                replacement.append(slash);
-                replacement.append("(?<").append(matcher.group(2)).append(">");
-                replacement.append(star ? ".+?" : "[^/]+");
-                replacement.append(")");
-            }
-
-            matcher.appendReplacement(buf, replacement.toString());
-        }
-        matcher.appendTail(buf);
-        return Pattern.compile(buf.append("/?$").toString());
+    public List<Route> getRoutes() {
+        return routes;
     }
 
-    /**
-     * Represents a matched route pattern
-     */
-    public static final class RouteMatch {
-        final Matcher regexMatch;
-        final RouteConfig routeConfig;
-
-        RouteMatch(Matcher regexMatch, RouteConfig routeConfig) {
-            this.regexMatch = regexMatch;
-            this.routeConfig = routeConfig;
-        }
-
-        public RouteConfig getRouteConfig() {
-            return routeConfig;
-        }
-
-        public String getRouteParam(String name) {
-            return regexMatch.group(name);
-        }
-    }
-
-    /**
-     * stores the matching patterns together with the config per HttpMethod
-     */
-    public static final class RouteElement {
-        final Pattern pattern;
-        final Map<HttpMethod, RouteConfig> configByMethod = new LinkedHashMap<>();
-
-        RouteElement(Pattern p) {
-            this.pattern = p;
-        }
-    }
-
-    public List<RouteInfo> getRouteInfoSet() {
-        List<RouteInfo> result = new ArrayList<>();
-        for (RouteElement re : routes) {
-            re.configByMethod.values().forEach(v -> {
-                RouteInfo.Builder routeb = RouteInfo.newBuilder();
-                routeb.setHttpMethod(v.httpMethod.toString());
-                routeb.setUrl(contextPath + v.uriTemplate);
-                routeb.setRequestCount(v.requestCount.get());
-                routeb.setErrorCount(v.errorCount.get());
-                RpcDescriptor descriptor = v.getDescriptor();
-                if (descriptor != null) {
-                    routeb.setService(descriptor.getService());
-                    routeb.setMethod(descriptor.getMethod());
-                    routeb.setInputType(descriptor.getInputType().getName());
-                    routeb.setOutputType(descriptor.getOutputType().getName());
-                    if (descriptor.getDescription() != null) {
-                        routeb.setDescription(descriptor.getDescription());
-                    }
-                    if (v.isDeprecated()) {
-                        routeb.setDeprecated(true);
-                    }
-                }
-                result.add(routeb.build());
-            });
-        }
-        return result;
+    public String getContextPath() {
+        return contextPath;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("Closing channel due to exception", cause);
         ctx.close();
+    }
+
+    /**
+     * Represents a matched route pattern
+     */
+    private static final class RouteMatch {
+        final Matcher regexMatch;
+        final Route route;
+
+        RouteMatch(Matcher regexMatch, Route route) {
+            this.regexMatch = regexMatch;
+            this.route = route;
+        }
     }
 }

@@ -23,7 +23,7 @@ import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.ProcessorControlClient;
 import org.yamcs.client.ProcessorListener;
 import org.yamcs.client.YamcsClient;
@@ -63,7 +63,7 @@ public class ProcessorsTest {
             ccc.createProcessor("yproctest0", "test1", "dummy", null, false, new int[] { 10, 14 }).get();
             assertTrue("YamcsException was expected", false);
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("createProcessor invoked with a list full of invalid client ids", excData.getMessage());
         }
         client.close();

@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.MediaType;
-import org.yamcs.client.ClientException.RestExceptionData;
-import org.yamcs.protobuf.RestExceptionMessage;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.protobuf.Table;
 
 import com.google.gson.Gson;
@@ -75,7 +75,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 public class HttpClient {
     // extensions for the RestExceptionMessage
     static ExtensionRegistry exceptionRegistry = ExtensionRegistry.newInstance();
-    static Set<Extension<RestExceptionMessage, ?>> exceptionExtensions = new HashSet<>(1);
+    static Set<Extension<ExceptionMessage, ?>> exceptionExtensions = new HashSet<>(1);
     static {
         exceptionRegistry.add(Table.rowsLoaded);
         exceptionExtensions.add(Table.rowsLoaded);
@@ -296,7 +296,7 @@ public class HttpClient {
             Map<String, Object> obj = jsonToMap(new String(data));
             String type = (String) obj.get("type");
             String message = (String) obj.get("msg");
-            RestExceptionData excData = new RestExceptionData(type, message);
+            ExceptionData excData = new ExceptionData(type, message);
             for (Entry<String, Object> entry : obj.entrySet()) {
                 if (!"type".equals(entry.getKey()) && !"msg".equals(entry.getKey())) {
                     excData.addDetail(entry.getKey(), entry.getValue());
@@ -304,9 +304,9 @@ public class HttpClient {
             }
             return new ClientException(excData);
         } else if (MediaType.PROTOBUF.is(contentType)) {
-            RestExceptionMessage msg = RestExceptionMessage.parseFrom(data, exceptionRegistry);
-            RestExceptionData excData = new RestExceptionData(msg.getType(), msg.getMsg());
-            for (Extension<RestExceptionMessage, ?> extension : exceptionExtensions) {
+            ExceptionMessage msg = ExceptionMessage.parseFrom(data, exceptionRegistry);
+            ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg());
+            for (Extension<ExceptionMessage, ?> extension : exceptionExtensions) {
                 if (msg.hasExtension(extension)) {
                     String key = extension.getDescriptor().getJsonName();
                     excData.addDetail(key, msg.getExtension(extension));

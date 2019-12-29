@@ -12,7 +12,7 @@ import "google/protobuf/timestamp.proto";
 
 
 //the COP1 service is valid for the virtual channel TC links that have useCop1: true
-//the REST interface contains methods for setting/getting the configuration and performing various operations
+//this service contains methods for setting/getting the configuration and performing various operations
 //in addition a websocket subscription is available that will allow receiving periodically the status
 service Cop1Api {
 	//used in case state = UNITIALIZED to initialize COP1

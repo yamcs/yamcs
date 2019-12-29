@@ -9,6 +9,7 @@ import java.util.Objects;
  * rest handlers better.
  */
 public final class MediaType {
+
     static final Map<String, MediaType> knownTypes = new HashMap<>();
     public static final MediaType OCTET_STREAM = new MediaType("application/octet-stream");
     public static final MediaType CSV = new MediaType("text/csv");

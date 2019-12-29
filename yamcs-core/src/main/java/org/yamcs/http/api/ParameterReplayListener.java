@@ -1,18 +1,22 @@
 package org.yamcs.http.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
+import org.yamcs.parameter.Value;
+import org.yamcs.utils.ValueUtility;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 
 /**
- * Expected class type for use with {@link org.yamcs.http.api.RestReplays} Adds functionality for stopping a
- * replay, and has support for pagination
+ * Expected class type for use with {@link org.yamcs.http.api.ReplayFactory} Adds functionality for stopping a replay, and
+ * has support for pagination
  */
-public abstract class RestReplayListener extends Service.Listener implements ParameterWithIdConsumer {
+public abstract class ParameterReplayListener extends Service.Listener implements ParameterWithIdConsumer {
 
     private final boolean paginate;
     private final long pos;
@@ -23,16 +27,23 @@ public abstract class RestReplayListener extends Service.Listener implements Par
 
     private boolean abortReplay = false;
 
-    public RestReplayListener() {
+    private boolean noRepeat = false;
+    private Value lastValue;
+
+    public ParameterReplayListener() {
         paginate = false;
         pos = -1;
         limit = -1;
     }
 
-    public RestReplayListener(long pos, int limit) {
+    public ParameterReplayListener(long pos, int limit) {
         paginate = true;
         this.pos = Math.max(pos, 0);
         this.limit = Math.max(limit, 0);
+    }
+
+    public void setNoRepeat(boolean noRepeat) {
+        this.noRepeat = noRepeat;
     }
 
     public void requestReplayAbortion() {
@@ -55,8 +66,13 @@ public abstract class RestReplayListener extends Service.Listener implements Par
 
     @Override
     public void update(int subscriptionId, List<ParameterValueWithId> params) {
-        List<ParameterValueWithId> filteredData = filter(params);
-        if (filteredData == null) {
+        params = prefilter(params);
+        if (params == null) {
+            return;
+        }
+
+        params = filter(params);
+        if (params == null) {
             return;
         }
 
@@ -64,23 +80,29 @@ public abstract class RestReplayListener extends Service.Listener implements Par
             if (rowNr >= pos) {
                 if (emitted < limit) {
                     emitted++;
-                    onParameterData(filteredData);
+                    onParameterData(params);
                 } else {
                     requestReplayAbortion();
                 }
             }
             rowNr++;
         } else {
-            onParameterData(filteredData);
+            onParameterData(params);
         }
     }
 
     // fast path for one parameter only
     public void update(ParameterValueWithId pvwid) {
+        pvwid = prefilter(pvwid);
+        if (pvwid == null) {
+            return;
+        }
+
         pvwid = filter(pvwid);
         if (pvwid == null) {
             return;
         }
+
         if (paginate) {
             if (rowNr >= pos) {
                 if (emitted < limit) {
@@ -93,6 +115,39 @@ public abstract class RestReplayListener extends Service.Listener implements Par
             rowNr++;
         } else {
             onParameterData(pvwid);
+        }
+    }
+
+    // Default filtering. Not overridable by implementations
+    private List<ParameterValueWithId> prefilter(List<ParameterValueWithId> params) {
+        if (noRepeat) {
+            List<ParameterValueWithId> plist = new ArrayList<>();
+
+            for (ParameterValueWithId pvalid : params) {
+                ParameterValue pval = pvalid.getParameterValue();
+                if (!ValueUtility.equals(lastValue, pval.getEngValue())) {
+                    plist.add(pvalid);
+                }
+                lastValue = pval.getEngValue();
+            }
+            return (plist.size() > 0) ? plist : null;
+        } else {
+            return params;
+        }
+    }
+
+    // Default filtering. Not overridable by implementations
+    private ParameterValueWithId prefilter(ParameterValueWithId pvwid) {
+        if (noRepeat) {
+            ParameterValue pval = pvwid.getParameterValue();
+            if (!ValueUtility.equals(lastValue, pval.getEngValue())) {
+                lastValue = pval.getEngValue();
+                return pvwid;
+            } else {
+                return null;
+            }
+        } else {
+            return pvwid;
         }
     }
 

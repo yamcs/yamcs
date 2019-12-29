@@ -134,11 +134,11 @@ public class StaticFileHandler {
         } else {
             // chunked HTTP is required for compression to work because we don't know the size of the compressed file.
             HttpUtil.setTransferEncodingChunked(response, true);
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpContentCompressor());
             // Note that the CunkedWriteHandler here will just read the file chunk by chunk.
             // The real HTTP chunk encoding is performed by the HttpServerCodec/HttpContentEncoder which sits first in
             // the pipeline
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
+            ctx.pipeline().addLast(new ChunkedWriteHandler());
             // propagate the request to the new handlers in the pipeline that need to configure themselves
             ctx.fireChannelRead(req);
         }

@@ -6,13 +6,11 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.api.Api;
 import org.yamcs.api.HttpBody;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 
@@ -22,24 +20,21 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 /**
  * Converts HTTP requests to Protobuf messages used in API definitions.
  * <p>
- * This is largely inspired on how Google Cloud transcodes HTTP to gRPC. The advantage of transcoding is that our API
+ * This is largely inspired from how Google Cloud transcodes HTTP to gRPC. The advantage of transcoding is that the API
  * implementation can be largely agnostic of HTTP and that it can profit from Protobuf generated code without needing to
  * distinguish between route params, query params, request bodies and so on.
- * <p>
- * In other words: transcoding allow us to design contract-first APIs based on the proto definition.
  */
 public class HttpTranscoder {
 
-    public static Message transcode(Context ctx, Api<Context> api, MethodDescriptor method,
-            RouteConfig routeConfig) throws HttpTranscodeException {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.nettyRequest.uri());
-        Message requestPrototype = api.getRequestPrototype(method);
+    public static Message transcode(Context ctx) throws HttpTranscodeException {
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.getURI());
+        Message requestPrototype = ctx.getRequestPrototype();
         Message.Builder requestb = requestPrototype.newBuilderForType();
 
-        String body = routeConfig.getBody();
+        String body = ctx.getBodySpecifier();
         if (body != null) {
             if ("*".equals(body)) {
-                requestb = ctx.bodyAsMessage(requestb);
+                requestb = ctx.getBodyAsMessage(requestb);
             } else {
                 FieldDescriptor field = requestPrototype.getDescriptorForType().findFieldByName(body);
                 if (field.getMessageType().equals(HttpBody.getDescriptor())) {
@@ -47,7 +42,7 @@ public class HttpTranscoder {
                     requestb.setField(field, httpBody);
                 } else {
                     Message.Builder fieldValueb = requestb.getFieldBuilder(field);
-                    Message fieldValue = ctx.bodyAsMessage(fieldValueb).build();
+                    Message fieldValue = ctx.getBodyAsMessage(fieldValueb).build();
                     requestb.setField(field, fieldValue);
                 }
             }
@@ -77,7 +72,7 @@ public class HttpTranscoder {
             bodyb.setContentType(contentType);
         }
         if (ctx.hasBody()) {
-            try (InputStream bufOut = ctx.bodyAsInputStream()) {
+            try (InputStream bufOut = ctx.getBodyAsInputStream()) {
                 ByteString data = ByteString.readFrom(bufOut);
                 bodyb.setData(data);
             } catch (IOException e) {

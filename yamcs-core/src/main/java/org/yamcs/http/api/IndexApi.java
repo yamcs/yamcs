@@ -51,7 +51,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     @Override
     public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -84,7 +84,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void listEventIndex(Context ctx, ListEventIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -117,7 +117,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void listPacketIndex(Context ctx, ListPacketIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -151,7 +151,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     @Override
     public void listParameterIndex(Context ctx, ListParameterIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 20000;
@@ -185,7 +185,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     @Override
     public void listCompletenessIndex(Context ctx, ListCompletenessIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
@@ -208,7 +208,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void streamIndex(Context ctx, StreamIndexRequest request, Observer<IndexResult> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -249,7 +249,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void streamPacketIndex(Context ctx, StreamPacketIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -272,7 +272,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     @Override
     public void streamParameterIndex(Context ctx, StreamParameterIndexRequest request,
             Observer<ArchiveRecord> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -291,7 +291,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void streamCommandIndex(Context ctx, StreamCommandIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -310,7 +310,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void streamEventIndex(Context ctx, StreamEventIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -330,7 +330,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     @Override
     public void streamCompletenessIndex(Context ctx, StreamCompletenessIndexRequest request,
             Observer<ArchiveRecord> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
@@ -349,9 +349,9 @@ public class IndexApi extends AbstractIndexApi<Context> {
 
     @Override
     public void rebuildCcsdsIndex(Context ctx, RebuildCcsdsIndexRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         IndexServer indexServer = verifyIndexServer(instance);
 
         TmIndex indexer = indexServer.getTmIndexer();
@@ -382,7 +382,7 @@ public class IndexApi extends AbstractIndexApi<Context> {
     }
 
     private IndexServer verifyIndexServer(String instance) throws HttpException {
-        RestHandler.verifyInstance(instance);
+        ManagementApi.verifyInstance(instance);
         YamcsServer yamcs = YamcsServer.getServer();
         List<IndexServer> services = yamcs.getServices(instance, IndexServer.class);
         if (services.isEmpty()) {

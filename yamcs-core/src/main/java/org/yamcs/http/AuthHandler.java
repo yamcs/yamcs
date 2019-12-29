@@ -97,7 +97,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         if (req.method() == HttpMethod.GET) {
             AuthInfo info = createAuthInfo();
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, info, true);
+            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, info);
         } else {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
         }
@@ -290,7 +290,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
             User user = securityStore.getDirectory().getUser(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
             tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response, true);
+            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }

@@ -33,9 +33,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
     @Override
     public void listQueues(Context ctx, ListQueuesRequest request, Observer<ListQueuesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlCommandQueue);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
         ListQueuesResponse.Builder response = ListQueuesResponse.newBuilder();
@@ -49,9 +49,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
     @Override
     public void getQueue(Context ctx, GetQueueRequest request, Observer<CommandQueueInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlCommandQueue);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(mgr, request.getName());
 
@@ -62,9 +62,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
     @Override
     public void updateQueue(Context ctx, EditQueueRequest request, Observer<CommandQueueInfo> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlCommandQueue);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(mgr, request.getName());
 
@@ -139,9 +139,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
     @Override
     public void listQueueEntries(Context ctx, ListQueueEntriesRequest request,
             Observer<ListQueueEntriesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlCommandQueue);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(mgr, request.getName());
 
@@ -155,9 +155,9 @@ public class QueueApi extends AbstractQueueApi<Context> {
 
     @Override
     public void updateQueueEntry(Context ctx, EditQueueEntryRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlCommandQueue);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         UUID entryId = UUID.fromString(request.getUuid());
 

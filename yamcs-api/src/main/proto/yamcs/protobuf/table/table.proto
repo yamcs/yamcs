@@ -2,10 +2,8 @@ syntax = "proto2";
 
 package yamcs.protobuf.table;
 
-import "google/protobuf/empty.proto";
-
 import "yamcs/api/annotations.proto";
-import "yamcs/protobuf/web/rest.proto";
+import "yamcs/api/exception.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 option java_package = "org.yamcs.protobuf";
@@ -90,7 +88,7 @@ message Row {
   repeated Cell cell = 2;   
 }
 
-extend web.RestExceptionMessage {
+extend yamcs.api.ExceptionMessage {
   optional uint32 rowsLoaded = 100;
 }  
 

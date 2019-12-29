@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.http.api.RestHandler;
+import org.yamcs.http.api.ManagementApi;
 import org.yamcs.management.ManagementService;
 import org.yamcs.management.ManagementService.LinkWithInfo;
 import org.yamcs.protobuf.Cop1Status;
@@ -64,7 +64,7 @@ public class Cop1Resource implements WebSocketResource {
         client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
         sendPeriodicStatus();
-        
+
         return null;
     }
 
@@ -87,7 +87,7 @@ public class Cop1Resource implements WebSocketResource {
             m.cop1Link.removeMonitor(m);
         }
         subscribed.clear();
-        if(future!=null) {
+        if (future != null) {
             future.cancel(true);
         }
     }
@@ -149,13 +149,12 @@ public class Cop1Resource implements WebSocketResource {
 
         @Override
         public void disabled() {
-           sendStatus();
+            sendStatus();
         }
-
     }
 
     private Cop1TcPacketHandler verifyCop1Link(int reqId, String instance, String name) throws WebSocketException {
-        RestHandler.verifyInstance(instance);
+        ManagementApi.verifyInstance(instance);
         Optional<LinkWithInfo> o = ManagementService.getInstance().getLinkWithInfo(instance, name);
         if (!o.isPresent()) {
             throw new WebSocketException(reqId, "There is no link named '" + name + "' in instance " + instance);
@@ -194,5 +193,4 @@ public class Cop1Resource implements WebSocketResource {
     public void unselectProcessor() {
         // ignore, we don't have anything to do with processors
     }
-
 }

@@ -27,7 +27,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void listTags(Context ctx, ListTagsRequest request, Observer<ListTagsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         TimeInterval interval = new TimeInterval();
@@ -60,7 +60,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void getTag(Context ctx, GetTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
@@ -72,7 +72,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void createTag(Context ctx, CreateTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         if (!request.hasName()) {
@@ -108,7 +108,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void updateTag(Context ctx, EditTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
         int tagId = request.getTagId();
@@ -155,7 +155,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void deleteTag(Context ctx, DeleteTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());

@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.yamcs.api.MediaType;
 import org.yamcs.client.BulkRestDataSender;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -443,7 +443,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
-        RestExceptionData excData = ((ClientException) t1).getRestData();
+        ExceptionData excData = ((ClientException) t1).getDetail();
         assertTrue(excData.hasDetail("rowsLoaded"));
         assertEquals(50, excData.getDetail("rowsLoaded"));
         verifyRecords("table1", 50);
@@ -470,7 +470,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         }
         assertNotNull(t1);
         assertTrue(t1 instanceof ClientException);
-        RestExceptionData excData = ((ClientException) t1).getRestData();
+        ExceptionData excData = ((ClientException) t1).getDetail();
 
         assertTrue(excData.hasDetail("rowsLoaded"));
         int numRowsLoaded = (int) excData.getDetail("rowsLoaded");

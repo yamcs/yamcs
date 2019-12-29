@@ -5,9 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -23,7 +21,6 @@ import com.google.protobuf.util.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,21 +29,16 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMessage;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.NotSslRecordException;
@@ -83,18 +75,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
 
-    private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
-            HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
-            Unpooled.EMPTY_BUFFER);
-    public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
-    public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
-
-    public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
-
-    static {
-        HttpUtil.setContentLength(BAD_REQUEST, 0);
-    }
-
     private static TokenStore tokenStore = new TokenStore();
 
     private HttpServer httpServer;
@@ -121,14 +101,30 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             DecoderResult dr = ((HttpMessage) msg).decoderResult();
             if (!dr.isSuccess()) {
                 log.warn("{} Exception while decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
-                ctx.writeAndFlush(BAD_REQUEST);
+                ctx.writeAndFlush(HttpUtils.EMPTY_BAD_REQUEST_RESPONSE);
                 return;
             }
         }
 
         if (msg instanceof HttpRequest) {
             contentExpected = false;
-            processRequest(ctx, (HttpRequest) msg);
+
+            HttpRequest req = (HttpRequest) msg;
+
+            // We have this also on info level coupled with the HTTP response status
+            // code, but this is on debug for an earlier reporting while debugging issues
+            log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
+
+            try {
+                handleRequest(ctx, req);
+            } catch (HttpException e) {
+                log.warn("{}: {}", req.uri(), e.getMessage());
+                sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
+            } catch (Throwable t) {
+                log.error("{}", req.uri(), t);
+                sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            }
+
             ReferenceCountUtil.release(msg);
         } else if (msg instanceof HttpContent) {
             if (contentExpected) {
@@ -144,21 +140,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         } else {
             log.error("{} unexpected message received: {}", ctx.channel().id().asShortText(), msg);
             ReferenceCountUtil.release(msg);
-        }
-    }
-
-    private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
-        // We have this also on info level coupled with the HTTP response status
-        // code, but this is on debug for an earlier reporting while debugging issues
-        log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
-
-        try {
-            handleRequest(ctx, req);
-        } catch (IOException e) {
-            log.warn("Exception while handling http request", e);
-            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        } catch (HttpException e) {
-            sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
         }
     }
 
@@ -185,7 +166,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case AUTH_PATH:
-            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpContentCompressor());
             ctx.pipeline().addLast(new HttpObjectAggregator(65536));
             ctx.pipeline().addLast(authHandler);
             ctx.fireChannelRead(req);
@@ -193,7 +174,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         case API_PATH:
             verifyAuthentication(ctx, req);
-            contentExpected = apiRouter.scheduleExecution(ctx, req, pathString);
+            apiRouter.scheduleExecution(ctx, req, pathString);
+            contentExpected = true;
             return;
         case WEBSOCKET_PATH:
             verifyAuthentication(ctx, req);
@@ -220,7 +202,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             handler = httpServer.createHandler(ANY_PATH);
         }
         if (handler != null) {
-            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpContentCompressor());
             ctx.pipeline().addLast(new HttpObjectAggregator(65536));
             ctx.pipeline().addLast(handler);
             ctx.fireChannelRead(req);
@@ -281,11 +263,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
             HttpResponseStatus status, T responseMsg) {
-        return sendMessageResponse(ctx, req, status, responseMsg, true);
-    }
-
-    public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
-            HttpResponseStatus status, T responseMsg, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = getAcceptType(req);
 
@@ -300,18 +277,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 contentType = MediaType.JSON;
                 String str = JsonFormat.printer().preservingProtoFieldNames().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
-                body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
         }
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
-        HttpUtils.setContentTypeHeader(response, contentType);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType.toString());
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
 
-        int txSize = body.readableBytes();
-        HttpUtil.setContentLength(response, txSize);
-
-        return sendResponse(ctx, req, response, autoCloseOnError);
+        return sendResponse(ctx, req, response);
     }
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,
@@ -324,11 +298,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        return sendResponse(ctx, req, response, true);
+        return sendResponse(ctx, req, response);
     }
 
-    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response,
-            boolean autoCloseOnError) {
+    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
         if (response.status() == HttpResponseStatus.OK) {
             log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
                     response.status().code());
@@ -346,9 +319,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                         response.status().code());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
-            if (autoCloseOnError) {
-                writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
-            }
+            writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
             return writeFuture;
         }
     }
@@ -386,56 +357,5 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return MediaType.from(declaredContentType);
         }
         return MediaType.JSON;
-    }
-
-    /**
-     * Sends base HTTP response indicating the use of chunked transfer encoding NM 11-May-2018: We do not put the
-     * ChunckedWriteHandler on the pipeline because the input is already chunked.
-     * 
-     */
-    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
-            String filename) {
-        log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
-
-        // Set Content-Disposition header so that supporting clients will treat
-        // response as a downloadable file
-        if (filename != null) {
-            response.headers().set("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        }
-        return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-    }
-
-    public static ChannelFuture writeChunk(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
-        Channel ch = ctx.channel();
-        if (!ch.isOpen()) {
-            throw new ClosedChannelException();
-        }
-        ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
-        try {
-            if (!ch.isWritable()) {
-                boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
-                if (!writeCompleted) {
-                    throw new IOException("Channel did not become writable in 10 seconds");
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        return writeFuture;
-    }
-
-    public static class ChunkedTransferStats {
-        public int totalBytes = 0;
-        public int chunkCount = 0;
-        HttpMethod originalMethod;
-        String originalUri;
-
-        public ChunkedTransferStats(HttpMethod method, String uri) {
-            originalMethod = method;
-            originalUri = uri;
-        }
     }
 }

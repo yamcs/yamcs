@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.WebSocketRequest;
@@ -125,7 +125,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -145,7 +145,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             ClientException e1 = (ClientException) e.getCause();
-            RestExceptionData excData = e1.getRestData();
+            ExceptionData excData = e1.getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -159,13 +159,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         try {
             updateCommandHistory(getRestClient("operator", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
 

@@ -23,7 +23,6 @@ import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.ProcessorManagementRequest.Operation;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.security.User;
 
 import com.google.protobuf.Empty;
 
@@ -76,7 +75,7 @@ public class ClientsApi extends AbstractClientsApi<Context> {
                     throw new BadRequestException(String.format("No processor for instance '" + newInstance + "'"));
                 }
             }
-            verifyPermission(ctx.user, newProcessor, client.getId());
+            verifyPermission(ctx, newProcessor, client.getId());
 
             ManagementService mservice = ManagementService.getInstance();
             ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
@@ -103,15 +102,15 @@ public class ClientsApi extends AbstractClientsApi<Context> {
         }
     }
 
-    private void verifyPermission(User user, Processor processor, int clientId)
+    private void verifyPermission(Context ctx, Processor processor, int clientId)
             throws HttpException {
-        if (RestHandler.hasSystemPrivilege(user, SystemPrivilege.ControlProcessor)) {
+        if (ctx.user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             // With this privilege, everything is allowed
             return;
         }
 
         // other users can only connect clients to the processor they own
-        if (!(processor.isPersistent() || processor.getCreator().equals(user.getName()))) {
+        if (!(processor.isPersistent() || processor.getCreator().equals(ctx.user.getName()))) {
             throw new ForbiddenException("not allowed to connect clients other than yours");
         }
 
@@ -120,7 +119,7 @@ public class ClientsApi extends AbstractClientsApi<Context> {
         if (client == null) {
             throw new BadRequestException("Invalid client id " + clientId);
         }
-        if (!client.getUser().getName().equals(user.getName())) {
+        if (!client.getUser().getName().equals(ctx.user.getName())) {
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
     }

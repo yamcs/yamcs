@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package yamcs.api;
+
+option java_multiple_files = true;
+option java_outer_classname = "ExceptionProto";
+option java_package = "org.yamcs.api";
+
+// Generic holder for an exception
+message ExceptionMessage {
+  optional string type = 1;
+  optional string msg = 2;
+  extensions 100 to 200;
+}
