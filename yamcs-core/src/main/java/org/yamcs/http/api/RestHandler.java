@@ -41,7 +41,6 @@ import com.google.protobuf.util.JsonFormat;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
@@ -53,48 +52,48 @@ public abstract class RestHandler {
 
     private static final Log log = new Log(RestHandler.class);
 
-    protected static void completeOK(RestRequest restRequest) {
+    protected static void completeOK(Context ctx) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         HttpUtil.setContentLength(httpResponse, 0);
-        completeRequest(restRequest, httpResponse);
+        completeRequest(ctx, httpResponse);
     }
 
-    public static <T extends Message> void completeOK(RestRequest restRequest, T responseMsg) {
-        sendMessageResponse(restRequest, OK, responseMsg).addListener(l -> {
-            restRequest.getCompletableFuture().complete(null);
+    public static <T extends Message> void completeOK(Context ctx, T responseMsg) {
+        sendMessageResponse(ctx, OK, responseMsg).addListener(l -> {
+            ctx.requestFuture.complete(null);
         });
     }
 
-    protected static void completeOK(RestRequest restRequest, String contentType, ByteBuf body) {
+    protected static void completeOK(Context ctx, String contentType, ByteBuf body) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
         int txSize = body.readableBytes();
         HttpUtil.setContentLength(httpResponse, txSize);
-        restRequest.addTransferredSize(txSize);
-        completeRequest(restRequest, httpResponse);
+        ctx.addTransferredSize(txSize);
+        completeRequest(ctx, httpResponse);
     }
 
-    private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
-        ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
-                restRequest.getHttpRequest(), httpResponse, true);
-        restRequest.reportStatusCode(httpResponse.status().code());
+    private static void completeRequest(Context ctx, HttpResponse httpResponse) {
+        ChannelFuture cf = HttpRequestHandler.sendResponse(ctx.nettyContext,
+                ctx.nettyRequest, httpResponse, true);
+        ctx.reportStatusCode(httpResponse.status().code());
         cf.addListener(l -> {
-            restRequest.getCompletableFuture().complete(null);
+            ctx.requestFuture.complete(null);
             if (!l.isSuccess()) {
                 log.error("Network error", l.cause());
             }
         });
     }
 
-    public static <T extends Message> ChannelFuture sendMessageResponse(RestRequest restRequest,
+    public static <T extends Message> ChannelFuture sendMessageResponse(Context ctx,
             HttpResponseStatus status, T responseMsg) {
-        HttpRequest req = restRequest.getHttpRequest();
-        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
-        ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
-        MediaType contentType = restRequest.deriveTargetContentType();
+        HttpRequest req = ctx.nettyRequest;
+
+        ByteBuf body = ctx.nettyContext.alloc().buffer();
+        MediaType contentType = ctx.deriveTargetContentType();
         if (contentType != MediaType.JSON) {
-            restRequest.reportStatusCode(status.code());
-            return HttpRequestHandler.sendMessageResponse(ctx, req, status, responseMsg);
+            ctx.reportStatusCode(status.code());
+            return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, req, status, responseMsg);
         } else {
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
                 contentType = MediaType.JSON;
@@ -102,25 +101,24 @@ public abstract class RestHandler {
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
-                restRequest.reportStatusCode(status.code());
-                return HttpRequestHandler.sendPlainTextError(ctx, req, status, e.toString());
+                ctx.reportStatusCode(status.code());
+                return HttpRequestHandler.sendPlainTextError(ctx.nettyContext, req, status, e.toString());
             }
             HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
             HttpUtils.setContentTypeHeader(response, contentType);
 
             int txSize = body.readableBytes();
             HttpUtil.setContentLength(response, txSize);
-            restRequest.reportStatusCode(status.code());
-            return HttpRequestHandler.sendResponse(ctx, req, response, true);
+            ctx.reportStatusCode(status.code());
+            return HttpRequestHandler.sendResponse(ctx.nettyContext, req, response, true);
         }
 
     }
 
-    protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
-        ChannelHandlerContext ctx = req.getChannelHandlerContext();
+    protected static ChannelFuture sendRestError(Context ctx, HttpResponseStatus status, Throwable t) {
         RestExceptionMessage msg = toException(t).build();
-        req.reportStatusCode(status.code());
-        return HttpRequestHandler.sendMessageResponse(ctx, req.getHttpRequest(), status, msg);
+        ctx.reportStatusCode(status.code());
+        return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, status, msg);
     }
 
     /**
@@ -129,10 +127,10 @@ public abstract class RestHandler {
      * @param req
      * @param e
      */
-    protected static void completeWithError(RestRequest req, HttpException e) {
-        ChannelFuture cf = sendRestError(req, e.getStatus(), e);
+    protected static void completeWithError(Context ctx, HttpException e) {
+        ChannelFuture cf = sendRestError(ctx, e.getStatus(), e);
         cf.addListener(l -> {
-            req.getCompletableFuture().completeExceptionally(e);
+            ctx.requestFuture.completeExceptionally(e);
             if (!l.isSuccess()) {
                 log.error("Network error", l.cause());
             }

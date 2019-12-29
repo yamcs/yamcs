@@ -110,7 +110,7 @@ public class ServerStreamingObserver implements Observer<Message> {
                 filename = body.getFilename();
             }
         } else {
-            mediaType = RestRequest.deriveTargetContentType(ctx.nettyRequest);
+            mediaType = Context.deriveTargetContentType(ctx.nettyRequest);
         }
 
         HttpRequestHandler.startChunkedTransfer(

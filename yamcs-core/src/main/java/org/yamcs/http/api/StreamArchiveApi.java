@@ -30,7 +30,6 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.http.api.RestDownsampler.Sample;
-import org.yamcs.http.api.RestRequest.IntervalResult;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;

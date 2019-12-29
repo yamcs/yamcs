@@ -30,32 +30,32 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  */
 public class HttpTranscoder {
 
-    public static Message transcode(RestRequest restRequest, Api<Context> api, MethodDescriptor method,
+    public static Message transcode(Context ctx, Api<Context> api, MethodDescriptor method,
             RouteConfig routeConfig) throws HttpTranscodeException {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(restRequest.getHttpRequest().uri());
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.nettyRequest.uri());
         Message requestPrototype = api.getRequestPrototype(method);
         Message.Builder requestb = requestPrototype.newBuilderForType();
 
         String body = routeConfig.getBody();
         if (body != null) {
             if ("*".equals(body)) {
-                requestb = restRequest.bodyAsMessage(requestb);
+                requestb = ctx.bodyAsMessage(requestb);
             } else {
                 FieldDescriptor field = requestPrototype.getDescriptorForType().findFieldByName(body);
                 if (field.getMessageType().equals(HttpBody.getDescriptor())) {
-                    HttpBody httpBody = toHttpBody(restRequest);
+                    HttpBody httpBody = toHttpBody(ctx);
                     requestb.setField(field, httpBody);
                 } else {
                     Message.Builder fieldValueb = requestb.getFieldBuilder(field);
-                    Message fieldValue = restRequest.bodyAsMessage(fieldValueb).build();
+                    Message fieldValue = ctx.bodyAsMessage(fieldValueb).build();
                     requestb.setField(field, fieldValue);
                 }
             }
         }
 
         for (FieldDescriptor field : requestPrototype.getDescriptorForType().getFields()) {
-            if (restRequest.hasRouteParam(field.getJsonName())) {
-                Object value = toFieldValue(field, restRequest.getRouteParam(field.getJsonName()));
+            if (ctx.hasRouteParam(field.getJsonName())) {
+                Object value = toFieldValue(field, ctx.getRouteParam(field.getJsonName()));
                 requestb.setField(field, value);
             } else if (body == null) {
                 List<String> queryParameter = qsDecoder.parameters().get(field.getJsonName());
@@ -69,15 +69,15 @@ public class HttpTranscoder {
         return requestb.build();
     }
 
-    private static HttpBody toHttpBody(RestRequest restRequest) {
-        String contentType = restRequest.getHttpRequest().headers().get(HttpHeaderNames.CONTENT_ENCODING);
+    private static HttpBody toHttpBody(Context ctx) {
+        String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
 
         HttpBody.Builder bodyb = HttpBody.newBuilder();
         if (contentType != null) {
             bodyb.setContentType(contentType);
         }
-        if (restRequest.hasBody()) {
-            try (InputStream bufOut = restRequest.bodyAsInputStream()) {
+        if (ctx.hasBody()) {
+            try (InputStream bufOut = ctx.bodyAsInputStream()) {
                 ByteString data = ByteString.readFrom(bufOut);
                 bodyb.setData(data);
             } catch (IOException e) {

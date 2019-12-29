@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -210,30 +209,30 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
-        User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
-        RestRequest restReq = new RestRequest(ctx, req, user);
-        restReq.setRouteMatch(match);
-        log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
+    protected void channelRead0(ChannelHandlerContext nettyContext, FullHttpRequest req) throws Exception {
+        RouteMatch match = nettyContext.channel().attr(CTX_ROUTE_MATCH).get();
+        User user = nettyContext.channel().attr(HttpRequestHandler.CTX_USER).get();
+        Context ctx = new Context(nettyContext, req, user);
+        ctx.setRouteMatch(match);
+        log.debug("R{}: Routing {} {}", ctx.id, req.method(), req.uri());
 
         // Track status for metric purposes
-        restReq.getCompletableFuture().whenComplete((channelFuture, e) -> {
-            if (restReq.statusCode == 0) {
-                log.warn("R{}: Status code not reported", restReq.getRequestId());
-            } else if (restReq.statusCode < 200 || restReq.statusCode >= 300) {
+        ctx.requestFuture.whenComplete((channelFuture, e) -> {
+            if (ctx.getStatusCode() == 0) {
+                log.warn("R{}: Status code not reported", ctx.id);
+            } else if (ctx.getStatusCode() < 200 || ctx.getStatusCode() >= 300) {
                 match.routeConfig.errorCount.incrementAndGet();
             }
         });
 
         if (match.routeConfig.offThread) {
-            restReq.getRequestContent().retain();
+            ctx.getRequestContent().retain();
             offThreadExecutor.execute(() -> {
-                dispatch(restReq, match);
-                restReq.getRequestContent().release();
+                dispatch(ctx, match);
+                ctx.getRequestContent().release();
             });
         } else {
-            dispatch(restReq, match);
+            dispatch(ctx, match);
         }
     }
 
@@ -261,13 +260,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
     }
 
-    protected void dispatch(RestRequest req, RouteMatch match) {
+    protected void dispatch(Context ctx, RouteMatch match) {
         boolean offThread = match.routeConfig.offThread;
         ScheduledFuture<?> twoSecWarn = null;
         if (!offThread) {
             twoSecWarn = timer.schedule(() -> {
-                log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
-                        req.getHttpRequest().uri());
+                log.error("R{} blocking the netty thread for 2 seconds. uri: {}", ctx.id,
+                        ctx.nettyRequest.uri());
             }, 2, TimeUnit.SECONDS);
         }
 
@@ -275,75 +274,71 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         // catch below.
         try {
             Api<Context> api = match.routeConfig.api;
-            dispatchApiMethod(req, api, match.routeConfig);
-            req.getCompletableFuture().whenComplete((channelFuture, e) -> {
+            dispatchApiMethod(ctx, api, match.routeConfig);
+            ctx.requestFuture.whenComplete((channelFuture, e) -> {
                 if (e != null) {
-                    log.debug("R{}: REST request execution finished with error: {}, transferred bytes: {}",
-                            req.getRequestId(), e.getMessage(), req.getTransferredSize());
+                    log.debug("R{}: API request finished with error: {}, transferred bytes: {}",
+                            ctx.id, e.getMessage(), ctx.getTransferredSize());
                 } else {
-                    log.debug("R{}: REST request execution finished successfully, transferred bytes: {}",
-                            req.getRequestId(), req.getTransferredSize());
+                    log.debug("R{}: API request finished successfully, transferred bytes: {}",
+                            ctx.id, ctx.getTransferredSize());
                 }
             });
         } catch (Throwable t) {
-            handleException(req, t);
-            req.getCompletableFuture().completeExceptionally(t);
+            handleException(ctx, t);
+            ctx.requestFuture.completeExceptionally(t);
         }
         if (twoSecWarn != null) {
             twoSecWarn.cancel(true);
         }
 
-        CompletableFuture<Void> cf = req.getCompletableFuture();
         if (logSlowRequests) {
             int numSec = offThread ? 120 : 20;
             timer.schedule(() -> {
-                if (!cf.isDone()) {
-                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(),
-                            req.getHttpRequest().uri());
+                if (!ctx.requestFuture.isDone()) {
+                    log.warn("R{} executing for more than 20 seconds. uri: {}", ctx.id, ctx.nettyRequest.uri());
                 }
             }, numSec, TimeUnit.SECONDS);
         }
     }
 
-    private void dispatchApiMethod(RestRequest restRequest, Api<Context> api, RouteConfig routeConfig) {
-        Context apiContext = new Context(restRequest);
-
+    private void dispatchApiMethod(Context ctx, Api<Context> api, RouteConfig routeConfig) {
         String methodName = routeConfig.getDescriptor().getMethod();
         MethodDescriptor method = api.getDescriptorForType().findMethodByName(methodName);
         Message requestMessage;
         try {
-            requestMessage = HttpTranscoder.transcode(restRequest, api, method, routeConfig);
+            requestMessage = HttpTranscoder.transcode(ctx, api, method, routeConfig);
         } catch (HttpTranscodeException e) {
             throw new BadRequestException(e.getMessage());
         }
 
         Observer<Message> responseObserver;
         if (method.toProto().getServerStreaming()) {
-            responseObserver = new ServerStreamingObserver(apiContext);
+            responseObserver = new ServerStreamingObserver(ctx);
         } else {
-            responseObserver = new CallObserver(restRequest);
+            responseObserver = new CallObserver(ctx);
         }
 
         if (method.toProto().getClientStreaming()) {
-            Observer<? extends Message> requestObserver = api.callMethod(method, apiContext, responseObserver);
+            Observer<? extends Message> requestObserver = api.callMethod(method, ctx, responseObserver);
         } else {
-            api.callMethod(method, apiContext, requestMessage, responseObserver);
+            api.callMethod(method, ctx, requestMessage, responseObserver);
         }
     }
 
-    private void handleException(RestRequest req, Throwable t) {
+    private void handleException(Context ctx, Throwable t) {
         if (t instanceof HttpException) {
             HttpException e = (HttpException) t;
             if (e.isServerError()) {
-                log.error("R{}: Responding '{}': {}", req.getRequestId(), e.getStatus(), e.getMessage(), e);
-                RestHandler.sendRestError(req, e.getStatus(), e);
+                log.error("R{}: Responding '{}': {}", ctx.id, e.getStatus(), e.getMessage(), e);
+                RestHandler.sendRestError(ctx, e.getStatus(), e);
             } else {
-                log.warn("R{}: Responding '{}': {}", req.getRequestId(), e.getStatus(), e.getMessage());
-                RestHandler.sendRestError(req, e.getStatus(), e);
+                log.warn("R{}: Responding '{}': {}", ctx.id, e.getStatus(), e.getMessage());
+                RestHandler.sendRestError(ctx, e.getStatus(), e);
             }
         } else {
-            log.error("R{}: Responding '{}'", req.getRequestId(), HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
-            RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            log.error("R{}: Responding '{}'", ctx.id, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            RestHandler.sendRestError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }
 

@@ -19,24 +19,24 @@ import io.netty.buffer.Unpooled;
 @NotThreadSafe
 public class CallObserver implements Observer<Message> {
 
-    private RestRequest restRequest;
+    private Context ctx;
 
     private boolean completed;
 
-    public CallObserver(RestRequest restRequest) {
-        this.restRequest = restRequest;
+    public CallObserver(Context ctx) {
+        this.ctx = ctx;
     }
 
     @Override
     public void next(Message message) {
         if (message instanceof Empty) {
-            RestHandler.completeOK(restRequest);
+            RestHandler.completeOK(ctx);
         } else if (message instanceof HttpBody) {
             HttpBody responseBody = (HttpBody) message;
             ByteBuf buf = Unpooled.wrappedBuffer(responseBody.getData().toByteArray());
-            RestHandler.completeOK(restRequest, responseBody.getContentType(), buf);
+            RestHandler.completeOK(ctx, responseBody.getContentType(), buf);
         } else {
-            RestHandler.completeOK(restRequest, message);
+            RestHandler.completeOK(ctx, message);
         }
     }
 
@@ -49,10 +49,10 @@ public class CallObserver implements Observer<Message> {
 
         t = ExceptionUtil.unwind(t);
         if (t instanceof HttpException) {
-            RestHandler.completeWithError(restRequest, (HttpException) t);
+            RestHandler.completeWithError(ctx, (HttpException) t);
         } else {
             HttpException httpException = new InternalServerErrorException(t);
-            RestHandler.completeWithError(restRequest, httpException);
+            RestHandler.completeWithError(ctx, httpException);
         }
     }
 
