@@ -15,6 +15,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.logging.Log;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
@@ -38,6 +39,8 @@ import io.netty.handler.codec.http.HttpUtil;
 public class Context {
 
     private static AtomicInteger counter = new AtomicInteger();
+
+    private final Log log;
 
     /**
      * Unique id for this call.
@@ -75,7 +78,7 @@ public class Context {
      * <p>
      * API implementations should use the passed {@link Observer} instead of this future.
      */
-    CompletableFuture<Void> requestFuture = new CompletableFuture<>();
+    final CompletableFuture<Void> requestFuture = new CompletableFuture<>();
 
     Context(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, Route route, Matcher regexMatch) {
         this.id = "R" + counter.incrementAndGet();
@@ -84,6 +87,30 @@ public class Context {
         this.route = route;
         this.regexMatch = regexMatch;
         this.user = nettyContext.channel().attr(HttpRequestHandler.CTX_USER).get();
+
+        log = new Log(Context.class);
+        log.setContext(id);
+
+        route.incrementRequestCount();
+
+        // Track status for metric purposes
+        requestFuture.whenComplete((channelFuture, e) -> {
+            if (e != null) {
+                log.debug("API request finished with error: {}, transferred bytes: {}", e.getMessage(), txSize);
+            } else {
+                log.debug("API request finished successfully, transferred bytes: {}", txSize);
+            }
+
+            if (statusCode == 0) {
+                log.warn("{}: Status code not reported", this);
+            } else if (statusCode < 200 || statusCode >= 300) {
+                route.incrementErrorCount();
+            }
+        });
+    }
+
+    boolean isDone() {
+        return requestFuture.isDone();
     }
 
     public Api<Context> getApi() {

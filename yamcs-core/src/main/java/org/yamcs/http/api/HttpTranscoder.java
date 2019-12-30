@@ -32,7 +32,7 @@ public class HttpTranscoder {
         Message.Builder requestb = requestPrototype.newBuilderForType();
 
         String body = ctx.getBodySpecifier();
-        if (body != null) {
+        if (body != null && !ctx.isClientStreaming()) {
             if ("*".equals(body)) {
                 requestb = ctx.getBodyAsMessage(requestb);
             } else {

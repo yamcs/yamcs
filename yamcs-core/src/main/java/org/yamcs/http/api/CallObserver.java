@@ -83,7 +83,7 @@ public class CallObserver implements Observer<Message> {
             httpException = new InternalServerErrorException(t);
         }
 
-        ChannelFuture cf = sendError(ctx, httpException.getStatus(), httpException);
+        ChannelFuture cf = sendError(ctx, httpException);
         cf.addListener(l -> {
             ctx.requestFuture.completeExceptionally(httpException);
             if (!l.isSuccess()) {
@@ -138,22 +138,9 @@ public class CallObserver implements Observer<Message> {
         }
     }
 
-    static ChannelFuture sendError(Context ctx, HttpResponseStatus status, Throwable t) {
-        ExceptionMessage.Builder msgb = ExceptionMessage.newBuilder();
-        msgb.setType(t.getClass().getSimpleName());
-
-        // Try to get a specific message. i.e. turn "Type1: Type2: Type3: Message" into "Message"
-        Throwable realCause = t;
-        while (realCause.getCause() != null) {
-            realCause = realCause.getCause();
-        }
-        if (realCause.getMessage() != null) {
-            msgb.setMsg(realCause.getMessage());
-        } else {
-            msgb.setMsg(realCause.getClass().getSimpleName());
-        }
-
-        ctx.reportStatusCode(status.code());
-        return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, status, msgb.build());
+    static ChannelFuture sendError(Context ctx, HttpException t) {
+        ExceptionMessage msg = t.toMessage();
+        ctx.reportStatusCode(t.getStatus().code());
+        return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, t.getStatus(), msg);
     }
 }

@@ -1,5 +1,10 @@
 package org.yamcs.http;
 
+import org.yamcs.api.ExceptionMessage;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.Message;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -8,6 +13,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public abstract class HttpException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
+    private Message detail;
 
     public HttpException() {
         super();
@@ -30,5 +36,36 @@ public abstract class HttpException extends RuntimeException {
     public boolean isServerError() {
         int code = getStatus().code();
         return 500 <= code && code < 600;
+    }
+
+    public Message getDetail() {
+        return detail;
+    }
+
+    public void setDetail(Message detail) {
+        this.detail = detail;
+    }
+
+    public ExceptionMessage toMessage() {
+        ExceptionMessage.Builder msgb = ExceptionMessage.newBuilder();
+        msgb.setType(getClass().getSimpleName());
+
+        // Try to get a specific message. i.e. turn "Type1: Type2: Type3: Message" into "Message"
+        Throwable realCause = this;
+        while (realCause.getCause() != null) {
+            realCause = realCause.getCause();
+        }
+        if (realCause.getMessage() != null) {
+            msgb.setMsg(realCause.getMessage());
+        } else {
+            msgb.setMsg(realCause.getClass().getSimpleName());
+        }
+
+        if (detail != null) {
+            Any.Builder anyb = Any.newBuilder().mergeFrom(detail);
+            msgb.setDetail(anyb);
+        }
+
+        return msgb.build();
     }
 }

@@ -1,67 +1,80 @@
 package org.yamcs.http.api;
 
-import org.yamcs.logging.Log;
+import org.yamcs.api.Observer;
+import org.yamcs.http.BadRequestException;
+import org.yamcs.http.HttpRequestHandler;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.DecoderException;
 
 public class StreamingClientHandler extends SimpleChannelInboundHandler<Message> {
 
-    private static final Log log = new Log(StreamingClientHandler.class);
-    private HttpRequest req;
+    private Context ctx;
+    private Message requestPrototype;
+    private Observer<Message> clientObserver;
 
-    public StreamingClientHandler(HttpRequest req) {
-        this.req = req;
+    private boolean errorState = false;
+
+    public StreamingClientHandler(Context ctx) {
+        this.ctx = ctx;
+
+        MethodDescriptor method = ctx.getMethod();
+        if (ctx.isServerStreaming()) {
+            Observer<Message> responseObserver = new ServerStreamingObserver(ctx);
+            clientObserver = ctx.getApi().callMethod(method, ctx, responseObserver);
+        } else {
+            Observer<Message> responseObserver = new CallObserver(ctx);
+            clientObserver = ctx.getApi().callMethod(method, ctx, responseObserver);
+        }
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        // System.out.println("Got a message " + msg);
+    protected void channelRead0(ChannelHandlerContext nettyContext, Message msg) throws Exception {
+        if (errorState) {
+            return;
+        }
+
+        if (requestPrototype == null) {
+            requestPrototype = HttpTranscoder.transcode(ctx);
+        }
+
+        Message.Builder b = requestPrototype.toBuilder();
+
+        String body = ctx.getBodySpecifier();
+        if (body == null || "*".equals(body)) {
+            b.mergeFrom(msg);
+        } else {
+            FieldDescriptor field = ctx.getRequestPrototype().getDescriptorForType().findFieldByName(body);
+            b.setField(field, msg);
+        }
+
+        clientObserver.next(b.build());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        /*-
         if (errorState) {
             return;
         }
+
         errorState = true;
-        log.warn("Exception caught in the table load pipeline, closing the connection: {}", cause.getMessage());
-        inputStream.close();
         if (cause instanceof DecoderException) {
-            Throwable t = cause.getCause();
-            sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, t.toString());
+            cause = cause.getCause();
+            clientObserver.completeExceptionally(new BadRequestException(cause));
         } else {
-            sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, cause.toString());
+            clientObserver.completeExceptionally(cause);
         }
-        */
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object obj) throws Exception {
-        /*-
         if (obj == HttpRequestHandler.CONTENT_FINISHED_EVENT) {
-            inputStream.close();
-            TableLoadResponse tlr = TableLoadResponse.newBuilder().setRowsLoaded(count).build();
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, tlr);
+            clientObserver.complete();
         }
-        */
     }
-
-    /*-
-    void sendErrorAndCloseAfter2Seconds(ChannelHandlerContext ctx, HttpResponseStatus status, String msg) {
-        RestExceptionMessage.Builder exb = RestExceptionMessage.newBuilder().setType("TableLoadError").setMsg(msg);
-        exb.setExtension(Table.rowsLoaded, count);
-        HttpRequestHandler.sendMessageResponse(ctx, req, status, exb.build(), false).addListener(f -> {
-            // schedule close after 2 seconds so the client has the chance to read the error message
-            // see https://groups.google.com/forum/#!topic/netty/eVB6SMcXOHI
-            ctx.executor().schedule(() -> {
-                ctx.close();
-            }, 2, TimeUnit.SECONDS);
-        });
-    }
-    */
 }

@@ -189,9 +189,7 @@ public class ServerStreamingObserver implements Observer<Message> {
     }
 
     private void startChunkedTransfer(MediaType contentType, String filename) {
-        log.info("{} {} {} 200 starting chunked transfer", ctx.nettyContext.channel().id().asShortText(),
-                ctx.nettyRequest.method(),
-                ctx.nettyRequest.uri());
+        log.info("{}: {} {} 200 starting chunked transfer", ctx, ctx.nettyRequest.method(), ctx.nettyRequest.uri());
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);

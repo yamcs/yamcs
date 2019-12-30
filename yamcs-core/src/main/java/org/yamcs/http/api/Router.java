@@ -13,11 +13,11 @@ import java.util.regex.Matcher;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
-import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpContentToByteBufDecoder;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.HttpUtils;
+import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.ProtobufRegistry;
@@ -37,7 +37,6 @@ import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -129,20 +128,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         log.debug("{}: Routing {} {}", ctx, nettyRequest.method(), nettyRequest.uri());
 
         nettyContext.channel().attr(CTX_CONTEXT).set(ctx);
-        match.route.incrementRequestCount();
-
-        // Track status for metric purposes
-        ctx.requestFuture.whenComplete((channelFuture, e) -> {
-            if (ctx.getStatusCode() == 0) {
-                log.warn("{}: Status code not reported", ctx);
-            } else if (ctx.getStatusCode() < 200 || ctx.getStatusCode() >= 300) {
-                match.route.incrementErrorCount();
-            }
-        });
 
         ChannelPipeline pipeline = nettyContext.pipeline();
         if (ctx.isClientStreaming()) {
-            System.out.println(ctx + " , setting up pipeline for client stream");
             pipeline.addLast(new HttpContentToByteBufDecoder());
             pipeline.addLast(new ProtobufVarint32FrameDecoder());
 
@@ -154,7 +142,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         .getDefaultInstanceForType();
             }
             pipeline.addLast(new ProtobufDecoder(bodyPrototype));
-            pipeline.addLast(new StreamingClientHandler(nettyRequest));
+            pipeline.addLast(new StreamingClientHandler(ctx));
 
             if (HttpUtil.is100ContinueExpected(nettyRequest)) {
                 nettyContext.writeAndFlush(HttpUtils.CONTINUE_RESPONSE.retainedDuplicate());
@@ -215,9 +203,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     private void dispatch(Context ctx) {
-        ScheduledFuture<?> twoSecWarn = null;
+        ScheduledFuture<?> blockWarning = null;
         if (!ctx.isOffloaded()) {
-            twoSecWarn = timer.schedule(() -> {
+            blockWarning = timer.schedule(() -> {
                 log.error("{}: Blocking the netty thread for 2 seconds. uri: {}", ctx, ctx.getURI());
             }, 2, TimeUnit.SECONDS);
         }
@@ -233,61 +221,42 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             }
 
             MethodDescriptor method = ctx.getMethod();
-
-            Observer<Message> responseObserver;
             if (ctx.isServerStreaming()) {
-                responseObserver = new ServerStreamingObserver(ctx);
+                ctx.getApi().callMethod(method, ctx, requestMessage, new ServerStreamingObserver(ctx));
             } else {
-                responseObserver = new CallObserver(ctx);
+                ctx.getApi().callMethod(method, ctx, requestMessage, new CallObserver(ctx));
             }
-
-            if (ctx.isClientStreaming()) {
-                Observer<? extends Message> requestObserver = ctx.getApi().callMethod(method, ctx, responseObserver);
-            } else {
-                ctx.getApi().callMethod(method, ctx, requestMessage, responseObserver);
-            }
-
-            ctx.requestFuture.whenComplete((channelFuture, e) -> {
-                if (e != null) {
-                    log.debug("{}: API request finished with error: {}, transferred bytes: {}",
-                            ctx, e.getMessage(), ctx.getTransferredSize());
-                } else {
-                    log.debug("{}: API request finished successfully, transferred bytes: {}",
-                            ctx, ctx.getTransferredSize());
-                }
-            });
         } catch (Throwable t) {
             handleException(ctx, t);
             ctx.requestFuture.completeExceptionally(t);
-        }
-        if (twoSecWarn != null) {
-            twoSecWarn.cancel(true);
+        } finally {
+            if (blockWarning != null) {
+                blockWarning.cancel(true);
+            }
         }
 
         if (logSlowRequests) {
             int numSec = ctx.isOffloaded() ? 120 : 20;
             timer.schedule(() -> {
-                if (!ctx.requestFuture.isDone()) {
-                    log.warn("{} executing for more than {} seconds. uri: {}", ctx, numSec, ctx.nettyRequest.uri());
+                if (!ctx.isDone()) {
+                    log.warn("{}: Executing for more than {} seconds. uri: {}", ctx, numSec, ctx.getURI());
                 }
             }, numSec, TimeUnit.SECONDS);
         }
     }
 
     private void handleException(Context ctx, Throwable t) {
-        if (t instanceof HttpException) {
-            HttpException e = (HttpException) t;
-            if (e.isServerError()) {
-                log.error("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage(), e);
-                CallObserver.sendError(ctx, e.getStatus(), e);
-            } else {
-                log.warn("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage());
-                CallObserver.sendError(ctx, e.getStatus(), e);
-            }
-        } else {
-            log.error("{}: Responding '{}'", ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
-            CallObserver.sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+        if (!(t instanceof HttpException)) {
+            t = new InternalServerErrorException(t);
         }
+
+        HttpException e = (HttpException) t;
+        if (e.isServerError()) {
+            log.error("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage(), e);
+        } else {
+            log.warn("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage());
+        }
+        CallObserver.sendError(ctx, e);
     }
 
     public List<Route> getRoutes() {
@@ -299,9 +268,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext nettyContext, Throwable cause) throws Exception {
         log.error("Closing channel due to exception", cause);
-        ctx.close();
+        nettyContext.close();
     }
 
     /**

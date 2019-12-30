@@ -9,11 +9,9 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,12 +23,9 @@ import javax.net.ssl.TrustManagerFactory;
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.MediaType;
 import org.yamcs.client.ClientException.ExceptionData;
-import org.yamcs.protobuf.Table;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.protobuf.Extension;
-import com.google.protobuf.ExtensionRegistry;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -73,13 +68,6 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
-    // extensions for the RestExceptionMessage
-    static ExtensionRegistry exceptionRegistry = ExtensionRegistry.newInstance();
-    static Set<Extension<ExceptionMessage, ?>> exceptionExtensions = new HashSet<>(1);
-    static {
-        exceptionRegistry.add(Table.rowsLoaded);
-        exceptionExtensions.add(Table.rowsLoaded);
-    }
 
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
@@ -304,14 +292,8 @@ public class HttpClient {
             }
             return new ClientException(excData);
         } else if (MediaType.PROTOBUF.is(contentType)) {
-            ExceptionMessage msg = ExceptionMessage.parseFrom(data, exceptionRegistry);
+            ExceptionMessage msg = ExceptionMessage.parseFrom(data);
             ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg());
-            for (Extension<ExceptionMessage, ?> extension : exceptionExtensions) {
-                if (msg.hasExtension(extension)) {
-                    String key = extension.getDescriptor().getJsonName();
-                    excData.addDetail(key, msg.getExtension(extension));
-                }
-            }
             return new ClientException(excData);
         } else {
             return new ClientException(fullResp.status() + ": " + new String(data));

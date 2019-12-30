@@ -1,6 +1,7 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
+import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
@@ -31,6 +33,7 @@ import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.TableInfo;
+import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
@@ -181,21 +184,15 @@ public class TableApi extends AbstractTableApi<Context> {
             Map<Integer, ColumnDefinition> colDefinitions = new HashMap<>();
             static final int MAX_COLUMNS = 65535;
 
-            boolean errorState = false;
             Stream inputStream;
             int count = 0;
 
             @Override
             public void next(WriteRowsRequest request) {
-                if (errorState) {
-                    return;
-                }
-
                 if (count == 0) {
                     String instance = request.getInstance();
                     if (!YamcsServer.hasInstance(instance)) {
-                        completeExceptionally(new NotFoundException("No instance named '" + instance + "'"));
-                        return;
+                        throw new NotFoundException("No instance named '" + instance + "'");
                     }
                     YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
@@ -208,26 +205,37 @@ public class TableApi extends AbstractTableApi<Context> {
                     inputStream = StreamFactory.insertStream(instance, table);
                 }
 
-                if (request.hasRow()) {
-                    try {
-                        Tuple t = null; /// rowToTuple(request.getRow());
+                try {
+                    if (request.hasRow()) {
+                        Tuple t = rowToTuple(request.getRow());
                         inputStream.emitTuple(t);
                         count++;
-                    } catch (IllegalArgumentException e) {
-                        completeExceptionally(e);
                     }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
             }
 
             @Override
             public void completeExceptionally(Throwable t) {
-                errorState = true;
-                /// sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, t.toString());
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+
+                HttpException e = new InternalServerErrorException(t);
+                e.setDetail(WriteRowsExceptionDetail.newBuilder()
+                        .setCount(count)
+                        .build());
+
+                observer.completeExceptionally(t);
             }
 
             @Override
             public void complete() {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+
                 log.debug("Wrote {} rows", count);
                 WriteRowsResponse.Builder responseb = WriteRowsResponse.newBuilder()
                         .setCount(count);

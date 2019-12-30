@@ -120,7 +120,7 @@ public class SqlBuilder {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder("select ");
-        if (selectExpressions == null) {
+        if (selectExpressions.isEmpty()) {
             buf.append("*");
         } else {
             boolean first = true;
@@ -133,7 +133,7 @@ public class SqlBuilder {
             }
         }
         buf.append(" from ").append(table);
-        if (conditions != null) {
+        if (!conditions.isEmpty()) {
             buf.append(" where ");
             boolean first = true;
             for (String condition : conditions) {

@@ -58,6 +58,7 @@ service TableApi {
   rpc ReadRows(ReadRowsRequest) returns (stream Row) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tables/{table}:readRows"
+      body: "*"
     };
   }
   
@@ -86,10 +87,6 @@ message Row {
   //the column info is only present for new columns in a stream of Row messages
   repeated ColumnInfo column = 1; 
   repeated Cell cell = 2;   
-}
-
-extend yamcs.api.ExceptionMessage {
-  optional uint32 rowsLoaded = 100;
 }  
 
 message ReadRowsRequest {
@@ -105,6 +102,10 @@ message WriteRowsRequest {
 }
 
 message WriteRowsResponse {
+  optional uint32 count = 1;
+}
+
+message WriteRowsExceptionDetail {
   optional uint32 count = 1;
 }
 
