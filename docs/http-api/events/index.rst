@@ -5,6 +5,6 @@ Events
     :maxdepth: 1
 
     list-events
-    download-events
+    export-events
     create-event
     event-updates

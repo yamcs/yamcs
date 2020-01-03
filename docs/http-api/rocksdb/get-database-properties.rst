@@ -3,7 +3,7 @@ Get Database Properties
 
 Get the properties of an open RocksDB database::
 
-    GET /api/archive/:instance/rocksdb/properties/:dbpath*
+    GET /api/archive/{instance}/rocksdb/properties/{dbpath*}
 
 ``dbpath`` is the absolute path of the database on disk.
 
@@ -21,7 +21,7 @@ Get the properties of an open RocksDB database::
 
 .. code-block:: text
 
-    GET /api/archive/:instance/rocksdb/properties//storage/yamcs-data/yops/ParameterArchive
+    GET /api/archive/{instance}/rocksdb/properties//storage/yamcs-data/yops/ParameterArchive
 
 
 .. rubric:: Response

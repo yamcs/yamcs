@@ -3,7 +3,7 @@ Rebuild Parameter Archive
 
 Rebuild (backfill) parts of the parameter archive::
 
-    POST /api/archive/:instance/parameterArchive/rebuild
+    POST /api/archive/{instance}/parameterArchive/rebuild
 
 The back filler has to be enabled for this purpose. The back filling process does not remove data but just overwrites it. That means that if the parameter replay returns less parameters than originally stored in the archive, the old parameters will still be found in the archive.
 

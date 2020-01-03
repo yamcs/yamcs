@@ -987,13 +987,15 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertTrue(commandResponse.hasBinary());
 
         // insert two values in the command history
-        CommandId commandId = commandResponse.getCommandQueueEntry().getCmdId();
+        String commandId = commandResponse.getId();
         UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
-                .setCmdId(commandId);
-        updateHistoryRequest.addHistoryEntry(
-                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
-        updateHistoryRequest.addHistoryEntry(
-                UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
+                .setId(commandId);
+        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
+                .setName("testKey1")
+                .setValue(Value.newBuilder().setStringValue("testValue1")));
+        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
+                .setName("testKey2")
+                .setValue(Value.newBuilder().setStringValue("testValue2")));
         doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST,
                 updateHistoryRequest.build());
 

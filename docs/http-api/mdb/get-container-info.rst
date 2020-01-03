@@ -3,7 +3,7 @@ Get Container Info
 
 Return the data for the given container::
 
-    GET /api/mdb/:instance/containers/:namespace/:name
+    GET /api/mdb/{instance}/containers/{name*}
 
 
 .. rubric:: Response

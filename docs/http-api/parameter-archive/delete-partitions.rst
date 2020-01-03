@@ -3,7 +3,7 @@ Delete Partitions
 
 Delete partitions from the parameter archive::
 
-    GET /api/archive/:instance/parameterArchive/deletePartitions
+    GET /api/archive/{instance}/parameterArchive/deletePartitions
 
 
 .. rubric:: Parameters

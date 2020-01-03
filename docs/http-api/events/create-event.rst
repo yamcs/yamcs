@@ -3,7 +3,7 @@ Create Event
 
 Create an event for the given Yamcs instance:
 
-    POST /api/archive/:instance/events/
+    POST /api/archive/{instance}/events/
 
 
 .. rubric:: Parameters

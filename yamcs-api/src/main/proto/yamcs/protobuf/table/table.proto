@@ -3,7 +3,6 @@ syntax = "proto2";
 package yamcs.protobuf.table;
 
 import "yamcs/api/annotations.proto";
-import "yamcs/api/exception.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 option java_package = "org.yamcs.protobuf";
@@ -85,8 +84,8 @@ message Row {
   }
 
   //the column info is only present for new columns in a stream of Row messages
-  repeated ColumnInfo column = 1; 
-  repeated Cell cell = 2;   
+  repeated ColumnInfo columns = 1; 
+  repeated Cell cells = 2;   
 }  
 
 message ReadRowsRequest {

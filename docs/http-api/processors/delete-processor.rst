@@ -3,7 +3,7 @@ Delete Processor
 
 Delete a processor::
 
-    DELETE /api/processors/:instance/:name
+    DELETE /api/processors/{instance}/{name}
 
 .. note::
 

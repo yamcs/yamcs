@@ -3,7 +3,7 @@ Get Tag
 
 Get info on a specific tag for the given archive instance::
 
-    GET /api/archive/:instance/tags/:start/:id
+    GET /api/archive/{instance}/tags/{start}/{id}
 
 
 .. rubric:: Response

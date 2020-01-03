@@ -3,7 +3,7 @@ Get Table Info
 
 Get info on a Yamcs table::
 
-    GET /api/archive/:instance/tables/:name
+    GET /api/archive/{instance}/tables/{name}
 
 .. note::
 

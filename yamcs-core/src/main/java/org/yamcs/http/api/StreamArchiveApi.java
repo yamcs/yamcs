@@ -781,7 +781,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         List<NamedObjectId> ids = new ArrayList<>();
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        String namespace = null;
 
         if (request.hasStart()) {
             rr.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -797,21 +796,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
             ids.add(id);
         }
-        if (request.hasNamespace()) {
-            namespace = request.getNamespace();
-        }
 
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-                    continue;
-                }
-                if (namespace != null) {
-                    String alias = p.getAlias(namespace);
-                    if (alias != null) {
-                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
-                    }
-                } else {
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
                 }
             }

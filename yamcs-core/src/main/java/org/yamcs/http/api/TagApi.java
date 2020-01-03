@@ -176,10 +176,10 @@ public class TagApi extends AbstractTagApi<Context> {
     private ArchiveTag enrichTag(ArchiveTag tag) {
         ArchiveTag.Builder enrichedTag = ArchiveTag.newBuilder(tag);
         if (tag.hasStart()) {
-            enrichedTag.setStartUTC(TimeEncoding.toString(tag.getStart()));
+            enrichedTag.setStartUTC(TimeEncoding.toProtobufTimestamp(tag.getStart()));
         }
         if (tag.hasStop()) {
-            enrichedTag.setStopUTC(TimeEncoding.toString(tag.getStop()));
+            enrichedTag.setStopUTC(TimeEncoding.toProtobufTimestamp(tag.getStop()));
         }
         return enrichedTag.build();
     }

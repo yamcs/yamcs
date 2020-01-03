@@ -3,7 +3,7 @@ List Objects
 
 List all objects from a bucket::
 
-    GET /api/buckets/:instance/:bucketName/objects
+    GET /api/buckets/{instance}/{bucketName}/objects
 
 ``_global`` can be used as instance name to list the objects from a bucket at the global level.
 

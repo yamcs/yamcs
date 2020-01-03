@@ -3,7 +3,7 @@ Get Parameter Ranges
 
 Retrieve a history of ranges for the specified parameter::
 
-    GET /api/archive/:instance/parameters/:namespace/:name/ranges
+    GET /api/archive/{instance}/parameters/{name*}/ranges
 
 A range is a tuple ``(start, stop, value, count)`` that represents the time interval for which the parameter has been steadily coming in with the same value. This request is useful for retrieving an overview for parameters that change unfrequently in a large time interval. For example an on/off status of a device, or some operational status. Two consecutive ranges containing the same value will be returned if there was a gap in the data. The gap is determined according to the parameter expiration time configured in the Mission Database.
 

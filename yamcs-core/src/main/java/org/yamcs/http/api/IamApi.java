@@ -468,7 +468,6 @@ public class IamApi extends AbstractIamApi<Context> {
         UserInfo.Builder userb;
         userb = UserInfo.newBuilder();
         userb.setName(user.getName());
-        userb.setLogin(user.getName());
         userb.setActive(user.isActive());
         userb.setSuperuser(user.isSuperuser());
         if (user.getDisplayName() != null) {

@@ -432,7 +432,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                     tr = getRecord(i);
                 } else {
                     Row.Builder trb = Row.newBuilder();
-                    trb.addCell(Cell.newBuilder().setColumnId(2)
+                    trb.addCells(Cell.newBuilder().setColumnId(2)
                             .setData(ByteString.copyFrom(csstr.toByteArray("test " + i))).build());
                     tr = trb.build();
                 }
@@ -511,10 +511,10 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     private Row getRecord(int i) {
         // the column info is only required for the first record actually
         Row tr = Row.newBuilder()
-                .addColumn(Row.ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build())
-                .addColumn(Row.ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
-                .addCell(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))).build())
-                .addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test " + i)))
+                .addColumns(Row.ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build())
+                .addColumns(Row.ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
+                .addCells(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))).build())
+                .addCells(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test " + i)))
                         .build())
                 .build();
         return tr;

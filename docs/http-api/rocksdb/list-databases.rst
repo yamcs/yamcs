@@ -3,7 +3,7 @@ List Databases
 
 List all RocksDB databases:
 
-    GET /api/archive/:instance/rocksdb/list
+    GET /api/archive/{instance}/rocksdb/list
 
 
 .. rubric:: Response

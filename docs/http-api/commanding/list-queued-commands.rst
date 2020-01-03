@@ -3,7 +3,7 @@ List Queued Commands
 
 List all queued command entries for the given command queue::
 
-    GET /api/processors/:instance/:processor/cqueues/:name/entries
+    GET /api/processors/{instance}/{processor}/cqueues/{name}/entries
 
 
 .. rubric:: Response

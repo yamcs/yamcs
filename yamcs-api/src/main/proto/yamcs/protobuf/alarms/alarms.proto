@@ -54,8 +54,6 @@ message EditAlarmRequest {
 message AcknowledgeInfo {
   optional string acknowledgedBy = 1;
   optional string acknowledgeMessage = 2;
-  optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];
-  optional string acknowledgeTimeUTC = 4 [deprecated = true];
   optional google.protobuf.Timestamp acknowledgeTime = 5;
 }
 

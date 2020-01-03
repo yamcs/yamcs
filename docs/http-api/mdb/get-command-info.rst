@@ -3,7 +3,7 @@ Get Command Info
 
 Return the data for the given command::
 
-    GET /api/mdb/:instance/commands/:namespace/:name
+    GET /api/mdb/{instance}/commands/{name*}
 
 
 .. rubric:: Response

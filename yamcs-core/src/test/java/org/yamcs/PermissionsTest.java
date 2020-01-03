@@ -17,15 +17,15 @@ import org.yamcs.client.WebSocketRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.UpdateCommandHistoryRequest.KeyValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.ValueHelper;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -173,14 +173,11 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     private byte[] updateCommandHistory(RestClient restClient1) throws Exception {
         // insert a value in the command history on dummy command id
-        CommandId commandId = CommandId.newBuilder()
-                .setSequenceNumber(0)
-                .setOrigin("")
-                .setGenerationTime(0).build();
         UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
-                .setCmdId(commandId);
-        updateHistoryRequest.addHistoryEntry(
-                KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                .setId("0-0");
+        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
+                .setName("testKey1")
+                .setValue(Value.newBuilder().setStringValue("testValue1")));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, updateHistoryRequest.build())

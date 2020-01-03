@@ -7,11 +7,11 @@ List all clients::
 
 List all clients for the given Yamcs instance::
 
-    GET /api/instances/:instance/clients
+    GET /api/instances/{instance}/clients
 
 List all clients for the given processor::
 
-    GET /api/processors/:instance/:processor/clients
+    GET /api/processors/{instance}/{processor}/clients
 
 
 .. rubric:: Response

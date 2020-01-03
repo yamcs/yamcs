@@ -220,9 +220,8 @@ message TmStatistics {
 }
 
 message Statistics {
-  reserved 4,5;
+  reserved 2,4,5;
   optional string instance = 1;
-  optional string yProcessorName = 2 [deprecated=true];
   optional string processor = 7;
   repeated TmStatistics tmstats = 3;
   optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update

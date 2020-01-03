@@ -144,7 +144,6 @@ message StreamParameterValuesRequest {
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated NamedObjectId ids = 4;
-  optional string namespace = 5; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
 }
 
 message ListEventsRequest {

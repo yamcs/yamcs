@@ -3,7 +3,7 @@ Get Parameter Samples
 
 Sample the history of values for the specified parameter by dividing it in a number of intervals and returning aggregated statistics (max,min,avg) about each interval::
 
-    GET /api/archive/:instance/parameters/:namespace/:name/samples
+    GET /api/archive/{instance}/parameters/{name*}/samples
 
 This operation is useful when making high-level overviews (such as plots) of a parameter's value over large time intervals without having to retrieve each and every individual parameter value.
 

@@ -3,7 +3,7 @@ Get Parameter Info
 
 Return the data for the given parameter::
 
-    GET /api/mdb/:instance/parameters/:namespace/:name
+    GET /api/mdb/{instance}/parameters/{name*}
 
 
 .. rubric:: Response
@@ -31,7 +31,7 @@ Return the data for the given parameter::
 
 Combine multiple parameter queries in one and the same request using this address::
 
-    POST /api/mdb/:instance/parameters:batchGet
+    POST /api/mdb/{instance}/parameters:batchGet
 
 Specify the parameter IDs in the request body:
 

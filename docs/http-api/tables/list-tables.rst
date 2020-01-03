@@ -3,7 +3,7 @@ List Tables
 
 List all tables for the given instance::
 
-    GET /api/archive/:instance/tables
+    GET /api/archive/{instance}/tables
 
 .. note::
 

@@ -234,7 +234,6 @@ message RoleAssignment {
 }
 
 message UserInfo {
-  optional string login = 1 [deprecated=true];
   optional string name = 17;
   optional string displayName = 18;
   optional string email = 19;

@@ -41,8 +41,6 @@ public class TimeResource implements WebSocketResource {
                 if (processor != null && processor.isRunning()) {
                     long currentTime = processor.getCurrentTime();
                     client.sendData(ProtoDataType.TIME_INFO, TimeInfo.newBuilder()
-                            .setYamcsCurrentTime(currentTime)
-                            .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
                             .setCurrentTime(TimeEncoding.toProtobufTimestamp(currentTime))
                             .build());
                 }
@@ -57,9 +55,7 @@ public class TimeResource implements WebSocketResource {
         if (processor != null && processor.isRunning()) {
             long currentTime = processor.getCurrentTime();
             responseb.setTimeInfo(TimeInfo.newBuilder()
-                    .setCurrentTime(TimeEncoding.toProtobufTimestamp(currentTime))
-                    .setYamcsCurrentTime(currentTime)
-                    .setCurrentTimeUTC(TimeEncoding.toString(currentTime)));
+                    .setCurrentTime(TimeEncoding.toProtobufTimestamp(currentTime)));
         }
         reply.attachData(TimeResource.class.getSimpleName(), responseb.build());
 

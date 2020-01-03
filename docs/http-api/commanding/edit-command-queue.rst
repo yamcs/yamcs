@@ -3,7 +3,7 @@ Edit Command Queue
 
 Edit a command queue::
 
-    PATCH /api/processors/:instance/:processor/cqueues/:name
+    PATCH /api/processors/{instance}/{processor}/cqueues/{name}
 
 
 .. rubric:: Parameters

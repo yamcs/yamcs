@@ -24,9 +24,9 @@ Wrapper
 
 WebSocket calls should be directed to a URL of the form:
 
-    http://localhost:8090/_websocket/:instance
+    http://localhost:8090/_websocket/{instance}
 
-Replace ``:instance`` with your Yamcs instance name. The frame must contain a text array like so:: json
+Replace ``{instance}`` with your Yamcs instance name. The frame must contain a text array like so:: json
 
     [x,y,z,{"<request-type>":"<request>"}]
 

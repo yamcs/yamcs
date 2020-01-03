@@ -25,6 +25,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.api.Observer;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.ForbiddenException;
@@ -45,8 +46,8 @@ import org.yamcs.protobuf.AbstractProcessingApi;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
@@ -457,8 +458,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
         if (queue != null) {
             responseb.setQueue(queue.getName());
-            CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
-            responseb.setCommandQueueEntry(cqe);
         }
 
         observer.complete(responseb.build());
@@ -470,16 +469,14 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.ModifyCommandHistory)) {
+            throw new ForbiddenException("User has no privilege to update command history");
+        }
 
-        try {
-            CommandId cmdId = request.getCmdId();
-
-            for (UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
-                processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(),
-                        historyEntry.getValue(), ctx.user);
-            }
-        } catch (NoPermissionException e) {
-            throw new ForbiddenException(e);
+        CommandId cmdId = fromStringIdentifier(request.getName(), request.getId());
+        CommandingManager manager = processor.getCommandingManager();
+        for (CommandHistoryAttribute attr : request.getAttributesList()) {
+            manager.setCommandAttribute(cmdId, attr);
         }
 
         observer.complete(Empty.getDefaultInstance());
@@ -558,7 +555,26 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
     }
 
-    private String toStringIdentifier(CommandId commandId) {
+    private static CommandId fromStringIdentifier(String commandName, String id) {
+        CommandId.Builder b = CommandId.newBuilder();
+        b.setCommandName(commandName);
+        int firstDash = id.indexOf('-');
+        long generationTime = Long.parseLong(id.substring(0, firstDash));
+        b.setGenerationTime(generationTime);
+        int lastDash = id.lastIndexOf('-');
+        int sequenceNumber = Integer.parseInt(id.substring(lastDash + 1));
+        b.setSequenceNumber(sequenceNumber);
+        if (firstDash != lastDash) {
+            String origin = id.substring(firstDash + 1, lastDash);
+            b.setOrigin(origin);
+        } else {
+            b.setOrigin("");
+        }
+
+        return b.build();
+    }
+
+    private static String toStringIdentifier(CommandId commandId) {
         String id = commandId.getGenerationTime() + "-";
         if (commandId.hasOrigin() && !"".equals(commandId.getOrigin())) {
             id += commandId.getOrigin() + "-";

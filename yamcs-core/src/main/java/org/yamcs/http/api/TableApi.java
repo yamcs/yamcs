@@ -243,7 +243,7 @@ public class TableApi extends AbstractTableApi<Context> {
             }
 
             private Tuple rowToTuple(Row row) throws IOException {
-                for (ColumnInfo cinfo : row.getColumnList()) {
+                for (ColumnInfo cinfo : row.getColumnsList()) {
                     if (!cinfo.hasId() || !cinfo.hasName() || !cinfo.hasType()) {
                         throw new IllegalArgumentException(
                                 "Invalid row provided, no id or name  or type in the column info");
@@ -268,8 +268,8 @@ public class TableApi extends AbstractTableApi<Context> {
                     }
                 }
                 TupleDefinition tdef = new TupleDefinition();
-                List<Object> values = new ArrayList<>(row.getCellCount());
-                for (Cell cell : row.getCellList()) {
+                List<Object> values = new ArrayList<>(row.getCellsCount());
+                for (Cell cell : row.getCellsList()) {
                     if (!cell.hasColumnId() || !cell.hasData()) {
                         throw new IllegalArgumentException("Invalid cell provided, no id or no data");
                     }
@@ -363,7 +363,7 @@ public class TableApi extends AbstractTableApi<Context> {
                 if (colId == -1) {
                     completeTuple.addColumn(cd);
                     colId = completeTuple.getColumnIndex(cd.getName());
-                    rowb.addColumn(ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
+                    rowb.addColumns(ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
                             .setType(cd.getType().toString()).build());
                 }
                 DataType type = cd.getType();
@@ -376,7 +376,7 @@ public class TableApi extends AbstractTableApi<Context> {
                 } else {
                     cs = ColumnSerializerFactory.getBasicColumnSerializer(cd.getType());
                 }
-                rowb.addCell(Cell.newBuilder()
+                rowb.addCells(Cell.newBuilder()
                         .setColumnId(colId)
                         .setData(ByteString.copyFrom(cs.toByteArray(v)))
                         .build());

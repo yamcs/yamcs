@@ -5,9 +5,8 @@ Indexes
     :maxdepth: 1
 
     get-packet-index
-    download-packet-index
-    download-pp-index
-    download-event-index
-    download-command-index
-    download-completeness-index
-    download-bulk-indexes
+    get-parameter-index
+    get-event-index
+    get-command-index
+    get-completeness-index
+    stream-indexes

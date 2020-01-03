@@ -3,7 +3,7 @@ List Buckets
 
 List all buckets for the given Yamcs instance::
 
-    GET /api/buckets/:instance
+    GET /api/buckets/{instance}
 
 ``_global`` can be used as instance name to list the buckets at the global level.
 

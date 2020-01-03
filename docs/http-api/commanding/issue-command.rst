@@ -3,7 +3,7 @@ Issue Command
 
 Issue a new command of the given type::
 
-    POST /api/processors/:instance/:processor/commands/:namespace/:name
+    POST /api/processors/{instance}/{processor}/commands/{name*}
 
 
 After validating the input parameters, the command will be added to the appropriate command queue for further dispatch.

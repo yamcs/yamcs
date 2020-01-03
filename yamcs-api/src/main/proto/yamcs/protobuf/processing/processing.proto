@@ -223,17 +223,12 @@ message IssueCommandResponse {
   optional bytes binary = 4;
   optional string username = 11;
   optional string queue = 10;
-  
-  optional commanding.CommandQueueEntry commandQueueEntry = 1 [deprecated=true];
 }
 
 message UpdateCommandHistoryRequest {
-  message KeyValue {
-    optional string key = 1;
-    optional string value = 2;
-  }
   optional string instance = 1;
   optional string processor = 2;
-  optional commanding.CommandId cmdId = 3;
-  repeated KeyValue historyEntry = 4;
+  optional string name = 3;
+  optional string id = 4;
+  repeated commanding.CommandHistoryAttribute attributes = 5;
 }

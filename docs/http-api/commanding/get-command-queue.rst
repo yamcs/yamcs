@@ -3,7 +3,7 @@ Get Command Queue
 
 Get data on a command queue::
 
-    GET /api/processors/:instance/:processor/cqueues/:name
+    GET /api/processors/{instance}/{processor}/cqueues/{name}
 
 
 .. rubric:: Response

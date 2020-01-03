@@ -3,7 +3,7 @@ List Tags
 
 List all tags for the given instance::
 
-    GET /api/archive/:instance/tags
+    GET /api/archive/{instance}/tags
 
 
 .. rubric:: Parameters

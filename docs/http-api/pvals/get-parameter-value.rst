@@ -3,7 +3,7 @@ Get Parameter Value
 
 Retrieve the current value of the specified parameter::
 
-    GET /api/processors/:instance/:processor/parameters/:namespace/:name
+    GET /api/processors/{instance}/{processor}/parameters/{name*}
 
 
 .. rubric:: Parameters
@@ -74,7 +74,7 @@ timeout (number)
 
 Get the values of multiple parameters in one and the same request using this address::
 
-    POST /api/processors/:instance/:processor/parameters:batchGet
+    POST /api/processors/{instance}/{processor}/parameters:batchGet
 
 The same options as in the query string can be specified in the request body. Parameter IDs are added to a list:
 

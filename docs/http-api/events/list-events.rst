@@ -3,7 +3,7 @@ List Events
 
 List the history of events::
 
-    GET /api/archive/:instance/events/
+    GET /api/archive/{instance}/events/
 
 .. rubric:: Parameters
 
@@ -46,14 +46,12 @@ The ``pos`` and ``limit`` allow for pagination. Keep in mind that in-between two
     {
       "event" : [ {
         "source" : "AlarmChecker",
-        "generationTime" : 1447425863786,
-        "receptionTime" : 1447425863786,
         "seqNumber" : 15,
         "type" : "IN_LIMITS",
         "message" : "Parameter /YSS/SIMULATOR/BatteryVoltage2 has changed to value 222",
         "severity" : "INFO",
-        "generationTimeUTC" : "2015-11-13T14:43:47.786Z",
-        "receptionTimeUTC" : "2015-11-13T14:43:47.786Z"
+        "generationTime" : "2015-11-13T14:43:47.786Z",
+        "receptionTime" : "2015-11-13T14:43:47.786Z"
       } ]
     }
 
@@ -64,20 +62,3 @@ The ``pos`` and ``limit`` allow for pagination. Keep in mind that in-between two
     message ListEventsResponse {
       repeated yamcs.Event event = 1;
     }
-
-
-.. rubric:: CSV Output
-
-In order to receive a response in CSV format, use this HTTP request header::
-
-    Accept: text/csv
-
-Or, add this query parameter to the URI: `format=csv`.
-
-.. code-block:: text
-    :caption: CSV Output Example
-
-    Source  Generation Time Reception Time  Event Type      Event Text
-    AlarmChecker    2015-11-13T14:46:36.029Z 2015-11-13T14:46:36.029Z IN_LIMITS       Parameter /YSS/SIMULATOR/BatteryVoltage2 has changed to value 195
-    AlarmChecker    2015-11-13T14:46:29.784Z 2015-11-13T14:46:29.784Z IN_LIMITS       Parameter /YSS/SIMULATOR/BatteryVoltage2 has changed to value 196
-    AlarmChecker    2015-11-13T14:46:23.571Z 2015-11-13T14:46:23.571Z IN_LIMITS       Parameter /YSS/SIMULATOR/BatteryVoltage2 has changed to value 197

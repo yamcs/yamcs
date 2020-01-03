@@ -74,10 +74,6 @@ message IndexRequest {
   optional int64 start = 2;
   optional int64 stop = 3;
 
-  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
-  optional string utcStart = 14;
-  optional string utcStop = 15;
-
   //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
   //if not specified, the fully qualified canonical names will be sent
   optional string defaultNamespace = 4;
@@ -114,51 +110,33 @@ message ArchiveRecord {
   optional int64 seqLast = 7;
   optional google.protobuf.Timestamp first = 8;
   optional google.protobuf.Timestamp last = 9;
-
 }
 
 message IndexResult {
-  optional string instance = 1 [deprecated=true];
   repeated ArchiveRecord records = 2;
-  //type can be histogram or completenss
+  //type can be histogram or completeness
   optional string type = 3;
   //if type=histogram, the tableName is the table for which the histogram is sent
   optional string tableName = 4;
 }
 
-message TagRequest {
-  required string instance = 1;
-  optional int64 start = 2;
-  optional int64 stop = 3;
-}
-
 message ArchiveTag {
   optional int32 id = 1;
-  required string name = 2;
+  optional string name = 2;
   optional int64 start = 3;
   optional int64 stop = 4;
   optional string description = 5;
   optional string color = 6;
 
-  optional string startUTC = 7;
-  optional string stopUTC = 8;
+  optional google.protobuf.Timestamp startUTC = 7;
+  optional google.protobuf.Timestamp stopUTC = 8;
 }
 
 message TagResult {
-  required string instance = 1;
+  optional string instance = 1;
   repeated ArchiveTag tag = 2;
 }
 
-//insert (if no oldTag) or update tag
-message UpsertTagRequest {
-  optional ArchiveTag oldTag = 1;
-  required ArchiveTag newTag = 2;
-}
-message DeleteTagRequest {
-  required ArchiveTag tag = 3;
-}
-
-/************************ Replays ****************/
 enum EndAction {
   LOOP = 1;
   QUIT = 2;
@@ -282,23 +260,16 @@ message ReplayStatus {
 }
 
 message TmPacketData {
-  optional int64 yamcsReceptionTime = 1 [deprecated = true];
   required bytes packet = 2;
-  optional int64 yamcsGenerationTime = 3 [deprecated = true];
   optional int32 sequenceNumber = 4;
   optional NamedObjectId id = 5;
-  optional string generationTimeUTC = 6 [deprecated = true];
-  optional string receptionTimeUTC = 7 [deprecated = true];
   optional google.protobuf.Timestamp receptionTime = 8;
   optional google.protobuf.Timestamp generationTime = 9;
 }
 
 message TimeInfo {
-  optional int64 yamcsCurrentTime = 1 [deprecated = true];
-  optional string currentTimeUTC = 2 [deprecated = true];
   optional google.protobuf.Timestamp currentTime = 3;
 }
-
 
 message Event {
   enum EventSeverity {

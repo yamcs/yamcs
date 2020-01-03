@@ -73,7 +73,7 @@
               <id>yamcs</id>
               <groupId>org.yamcs</groupId>
               <artifactId>yamcs-protoc-plugin</artifactId>
-              <version>5.0.1-SNAPSHOT</version>
+              <version>5.1.0</version>
               <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
             </protocPlugin>
           </protocPlugins>
