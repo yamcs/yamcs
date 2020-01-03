@@ -47,7 +47,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
                     .setDataDir(tblsp.getDataDir());
             RDBFactory rdbf = tblsp.getRdbFactory();
             for (String dbPath : rdbf.getOpenDbPaths()) {
-                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                RocksDbDatabaseInfo database = toRocksDbDatabaseInfo(tblsp, dbPath);
                 tablespaceb.addDatabases(database);
             }
             unsorted.add(tablespaceb.build());
@@ -100,7 +100,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
         for (Tablespace tblsp : storageEngine.getTablespaces().values()) {
             RDBFactory rdbf = tblsp.getRdbFactory();
             for (String dbPath : rdbf.getOpenDbPaths()) {
-                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                RocksDbDatabaseInfo database = toRocksDbDatabaseInfo(tblsp, dbPath);
                 unsorted.add(database);
             }
         }
@@ -227,5 +227,13 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
             throw new BadRequestException("No tablespace by name '" + tablespaceName + "'");
         }
         return tablespace;
+    }
+
+    private static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
+        RocksDbDatabaseInfo.Builder databaseb = RocksDbDatabaseInfo.newBuilder()
+                .setTablespace(tablespace.getName())
+                .setDataDir(tablespace.getDataDir())
+                .setDbPath(dbPath);
+        return databaseb.build();
     }
 }

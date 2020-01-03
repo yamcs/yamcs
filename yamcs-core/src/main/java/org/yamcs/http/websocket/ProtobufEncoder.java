@@ -2,7 +2,7 @@ package org.yamcs.http.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.protobuf.Alarms.AlarmData;
+import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;

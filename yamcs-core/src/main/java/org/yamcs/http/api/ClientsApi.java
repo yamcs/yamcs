@@ -23,6 +23,7 @@ import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.ProcessorManagementRequest.Operation;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.Empty;
 
@@ -33,7 +34,7 @@ public class ClientsApi extends AbstractClientsApi<Context> {
         Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ConnectedClient client : clients) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            ClientInfo clientInfo = toClientInfo(client, ClientState.CONNECTED);
             responseb.addClients(clientInfo);
         }
         observer.complete(responseb.build());
@@ -42,7 +43,7 @@ public class ClientsApi extends AbstractClientsApi<Context> {
     @Override
     public void getClient(Context ctx, GetClientRequest request, Observer<ClientInfo> observer) {
         ConnectedClient client = verifyClient(request.getId());
-        ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+        ClientInfo clientInfo = toClientInfo(client, ClientState.CONNECTED);
         observer.complete(clientInfo);
     }
 
@@ -122,5 +123,22 @@ public class ClientsApi extends AbstractClientsApi<Context> {
         if (!client.getUser().getName().equals(ctx.user.getName())) {
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
+    }
+
+    public static ClientInfo toClientInfo(ConnectedClient client, ClientState state) {
+        ClientInfo.Builder clientb = ClientInfo.newBuilder()
+                .setApplicationName(client.getApplicationName())
+                .setAddress(client.getAddress())
+                .setUsername(client.getUser().getName())
+                .setId(client.getId())
+                .setState(state)
+                .setLoginTime(TimeEncoding.toProtobufTimestamp(client.getLoginTime()));
+
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            clientb.setInstance(processor.getInstance());
+            clientb.setProcessorName(processor.getName());
+        }
+        return clientb.build();
     }
 }

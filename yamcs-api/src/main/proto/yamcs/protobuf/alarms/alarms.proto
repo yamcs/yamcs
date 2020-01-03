@@ -1,9 +1,11 @@
 syntax="proto2";
 
 package yamcs.protobuf.alarms;
-option java_package = "org.yamcs.protobuf";
 
-import "google/protobuf/empty.proto";
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "AlarmsProto";
+option java_multiple_files = true;
+
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
@@ -11,45 +13,6 @@ import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 
-
-service AlarmsApi {
-  
-  // List alarms
-  rpc ListAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/processors/{instance}/{processor}/alarms"
-    };
-  }
-  
-  // Update an alarm
-  rpc EditAlarm(EditAlarmRequest) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      patch: "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}"
-      body: "*"
-    };
-  }
-}
-
-message ListAlarmsRequest {
-  optional string instance = 1;
-  optional string processor = 2;
-}
-
-message ListAlarmsResponse {
-  repeated AlarmData alarms = 1;
-}
-
-message EditAlarmRequest {
-  optional string instance = 1;
-  optional string processor = 2;
-  optional string name = 3;
-  optional uint32 seqnum = 4;
-  optional string state = 5;
-  optional string comment = 6;
-  //shelve time in milliseconds (if the state = shelved)
-  //can be left out which means it is shelved indefinitely
-  optional uint64 shelveDuration = 7;
-}
 
 message AcknowledgeInfo {
   optional string acknowledgedBy = 1;

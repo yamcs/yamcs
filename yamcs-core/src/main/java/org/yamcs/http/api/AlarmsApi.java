@@ -1,12 +1,22 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEARED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_CLEAR_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+
 import org.yamcs.Processor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.EventAlarmServer;
+import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.EventId;
+import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.api.Observer;
+import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
@@ -14,20 +24,24 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AbstractAlarmsApi;
-import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
-import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Alarms.AlarmNotificationType;
-import org.yamcs.protobuf.Alarms.AlarmSeverity;
-import org.yamcs.protobuf.Alarms.AlarmType;
-import org.yamcs.protobuf.Alarms.ClearInfo;
-import org.yamcs.protobuf.Alarms.EditAlarmRequest;
-import org.yamcs.protobuf.Alarms.EventAlarmData;
-import org.yamcs.protobuf.Alarms.ListAlarmsRequest;
-import org.yamcs.protobuf.Alarms.ListAlarmsResponse;
-import org.yamcs.protobuf.Alarms.ParameterAlarmData;
-import org.yamcs.protobuf.Alarms.ShelveInfo;
+import org.yamcs.protobuf.AcknowledgeInfo;
+import org.yamcs.protobuf.AlarmData;
+import org.yamcs.protobuf.AlarmNotificationType;
+import org.yamcs.protobuf.AlarmSeverity;
+import org.yamcs.protobuf.AlarmType;
+import org.yamcs.protobuf.ClearInfo;
+import org.yamcs.protobuf.EditAlarmRequest;
+import org.yamcs.protobuf.EventAlarmData;
+import org.yamcs.protobuf.ListAlarmsRequest;
+import org.yamcs.protobuf.ListAlarmsResponse;
+import org.yamcs.protobuf.ListParameterAlarmsRequest;
+import org.yamcs.protobuf.ListParameterAlarmsResponse;
+import org.yamcs.protobuf.ListProcessorAlarmsRequest;
+import org.yamcs.protobuf.ListProcessorAlarmsResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.ShelveInfo;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -36,6 +50,9 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
@@ -62,8 +79,99 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
-        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+
+        long pos = request.hasPos() ? request.getPos() : 0;
+        int limit = request.hasLimit() ? request.getLimit() : 100;
+        boolean ascending = request.getOrder().equals("asc");
+
+        SqlBuilder sqlbParam = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
+        SqlBuilder sqlbEvent = new SqlBuilder(AlarmRecorder.EVENT_ALARM_TABLE_NAME);
+
+        if (request.hasStart()) {
+            sqlbParam.whereColAfterOrEqual("triggerTime", request.getStart());
+            sqlbEvent.whereColAfterOrEqual("triggerTime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlbParam.whereColBefore("triggerTime", request.getStop());
+            sqlbEvent.whereColBefore("triggerTime", request.getStop());
+        }
+
+        /*
+         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
+         * }
+         */
+        sqlbParam.descend(!ascending);
+        sqlbEvent.descend(!ascending);
+        sqlbParam.limit(pos, limit);
+        sqlbEvent.limit(pos, limit);
+
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
+        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING triggerTime ORDER DESC";
+        StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                AlarmData alarm = tupleToAlarmData(tuple, true);
+                responseb.addAlarms(alarm);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete(responseb.build());
+            }
+        });
+    }
+
+    @Override
+    public void listParameterAlarms(Context ctx, ListParameterAlarmsRequest request,
+            Observer<ListParameterAlarmsResponse> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+
+        long pos = request.hasPos() ? request.getPos() : 0;
+        int limit = request.hasLimit() ? request.getLimit() : 100;
+        boolean ascending = request.getOrder().equals("asc");
+
+        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
+
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("triggerTime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("triggerTime", request.getStop());
+        }
+
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getParameter());
+        sqlb.where("parameter = ?", p.getQualifiedName());
+
+        /*
+         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
+         * }
+         */
+        sqlb.descend(!ascending);
+        sqlb.limit(pos, limit);
+        ListParameterAlarmsResponse.Builder responseb = ListParameterAlarmsResponse.newBuilder();
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                AlarmData alarm = tupleToAlarmData(tuple, request.getDetail());
+                responseb.addAlarms(alarm);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete(responseb.build());
+            }
+        });
+    }
+
+    @Override
+    public void listProcessorAlarms(Context ctx, ListProcessorAlarmsRequest request,
+            Observer<ListProcessorAlarmsResponse> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        ListProcessorAlarmsResponse.Builder responseb = ListProcessorAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
             AlarmServer<Parameter, org.yamcs.parameter.ParameterValue> alarmServer = processor
                     .getParameterRequestManager()
@@ -348,5 +456,108 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                     .setName(ev.getType())
                     .build();
         }
+    }
+
+    private static ParameterAlarmData tupleToParameterAlarmData(Tuple tuple) {
+        ParameterAlarmData.Builder alarmb = ParameterAlarmData.newBuilder();
+
+        org.yamcs.protobuf.Pvalue.ParameterValue pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
+                .getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
+        alarmb.setTriggerValue(pval);
+
+        if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+            pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
+                    .getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            alarmb.setMostSevereValue(pval);
+        }
+
+        return alarmb.build();
+    }
+
+    private static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        setAckInfo(alarmb, tuple);
+        setClearInfo(alarmb, tuple);
+
+        if (tuple.hasColumn("parameter")) {
+            alarmb.setType(AlarmType.PARAMETER);
+            org.yamcs.protobuf.Pvalue.ParameterValue pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
+                    .getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
+            alarmb.setId(pval.getId());
+            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
+
+            if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                pval = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
+                        .getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            }
+            alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
+
+            if (detail) {
+                ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
+                alarmb.setParameterDetail(parameterAlarmData);
+            }
+        } else {
+            alarmb.setType(AlarmType.EVENT);
+            Event ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
+            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
+            alarmb.setId(AlarmsApi.getAlarmId(ev));
+
+            if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+                ev = (Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            }
+            alarmb.setSeverity(AlarmsApi.getEventAlarmSeverity(ev.getSeverity()));
+
+        }
+
+        return alarmb.build();
+    }
+
+    private static void setAckInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (tuple.hasColumn("acknowledgedBy")) {
+            AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
+            ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
+            if (tuple.hasColumn("acknowledgeMessage")) {
+                ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
+            }
+            long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
+            ackb.setAcknowledgeTime(TimeEncoding.toProtobufTimestamp(acknowledgeTime));
+            alarmb.setAcknowledgeInfo(ackb);
+        }
+    }
+
+    private static void setClearInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_CLEARED_TIME)) {
+            return;
+        }
+        ClearInfo.Builder clib = ClearInfo.newBuilder();
+        clib.setClearTime(TimeEncoding.toProtobufTimestamp((Long) tuple.getColumn(CNAME_CLEARED_TIME)));
+
+        if (tuple.hasColumn(CNAME_CLEARED_BY)) {
+            clib.setClearedBy((String) tuple.getColumn(CNAME_CLEARED_BY));
+        }
+
+        if (tuple.hasColumn(CNAME_CLEAR_MSG)) {
+            clib.setClearMessage((String) tuple.getColumn(CNAME_CLEAR_MSG));
+        }
+        alarmb.setClearInfo(clib.build());
+    }
+
+    private static void setShelveInfo(AlarmData.Builder alarmb, Tuple tuple) {
+        if (!tuple.hasColumn(CNAME_SHELVED_TIME)) {
+            return;
+        }
+        ShelveInfo.Builder clib = ShelveInfo.newBuilder();
+        clib.setShelveTime(TimeEncoding.toProtobufTimestamp((Long) tuple.getColumn(CNAME_SHELVED_TIME)));
+
+        if (tuple.hasColumn(CNAME_SHELVED_BY)) {
+            clib.setShelvedBy((String) tuple.getColumn(CNAME_SHELVED_BY));
+        }
+
+        if (tuple.hasColumn(CNAME_SHELVED_MSG)) {
+            clib.setShelveMessage((String) tuple.getColumn(CNAME_SHELVED_MSG));
+        }
+
+        alarmb.setShelveInfo(clib.build());
     }
 }

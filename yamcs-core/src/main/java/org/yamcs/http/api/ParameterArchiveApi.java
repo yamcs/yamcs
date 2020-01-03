@@ -50,6 +50,7 @@ import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -197,7 +198,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         TimeSeries.Builder series = TimeSeries.newBuilder();
         for (Sample s : sampler.collect()) {
-            series.addSample(ArchiveHelper.toGPBSample(s));
+            series.addSample(StreamArchiveApi.toGPBSample(s));
         }
 
         observer.complete(series.build());
@@ -245,7 +246,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         Ranges.Builder ranges = Ranges.newBuilder();
         for (Range r : ranger.getRanges()) {
-            ranges.addRange(ArchiveHelper.toGPBRange(r));
+            ranges.addRange(toGPBRange(r));
         }
 
         observer.complete(ranges.build());
@@ -475,5 +476,14 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throw new BadRequestException(
                     "Bad value for parameter 'source'; valid values are: 'ParameterArchive' or 'replay'");
         }
+    }
+
+    private static Ranges.Range toGPBRange(Range r) {
+        Ranges.Range.Builder b = Ranges.Range.newBuilder();
+        b.setTimeStart(TimeEncoding.toString(r.start));
+        b.setTimeStop(TimeEncoding.toString(r.stop));
+        b.setEngValue(ValueUtility.toGbp(r.v));
+        b.setCount(r.count);
+        return b.build();
     }
 }

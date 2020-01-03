@@ -1,0 +1,106 @@
+syntax="proto2";
+
+package yamcs.protobuf.packets;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "PacketsServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+
+service PacketsApi {
+
+  // List packet names
+  rpc ListPacketNames(ListPacketNamesRequest) returns (ListPacketNamesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packet-names"
+    };
+  }
+  
+  // List packets
+  rpc ListPackets(ListPacketsRequest) returns (ListPacketsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packets/{gentime?}"
+    };
+  }
+  
+  // Get a packet
+  rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+    };
+  }
+  
+  // Streams back packets
+  rpc StreamPackets(StreamPacketsRequest) returns (stream TmPacketData) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamPackets"
+      body: "*"
+    };
+  }
+  
+  // Export raw packets
+  rpc ExportPackets(ExportPacketsRequest) returns (stream yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}:exportPackets"
+    };
+  }
+}
+
+message ListPacketNamesRequest {
+  optional string instance = 1;
+}
+
+message ListPacketNamesResponse {
+  repeated string name = 1;
+}
+
+message ListPacketsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional string order = 4;
+  repeated string name = 5;
+  optional string next = 6;
+  optional google.protobuf.Timestamp start = 7;
+  optional google.protobuf.Timestamp stop = 8;
+}
+
+message ListPacketsResponse {
+  repeated TmPacketData packet = 1;
+  optional string continuationToken = 2;
+}
+
+message GetPacketRequest {
+  optional string instance = 1;
+  optional int64 gentime = 2;
+  optional int32 seqnum = 3;
+}
+
+message StreamPacketsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string name = 4;
+}
+
+message ExportPacketsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string name = 4;
+}
+
+message ExportParameterValuesRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string parameters = 4;
+  optional string namespace = 5; // Namespace used to display parameter names in csv header. Only used when no parameter ids were specified.
+  repeated string extra = 6;
+}

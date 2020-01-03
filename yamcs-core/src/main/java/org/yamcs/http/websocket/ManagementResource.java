@@ -5,7 +5,7 @@ import java.util.Set;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.http.api.YamcsToGpbAssembler;
+import org.yamcs.http.api.ClientsApi;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ClientInfo;
@@ -58,7 +58,7 @@ public class ManagementResource implements WebSocketResource, ManagementListener
         if (emitClientInfo) {
             Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
             for (ConnectedClient otherClient : clients) {
-                ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(otherClient, ClientState.CONNECTED);
+                ClientInfo clientInfo = ClientsApi.toClientInfo(otherClient, ClientState.CONNECTED);
                 client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             }
         }
@@ -98,7 +98,7 @@ public class ManagementResource implements WebSocketResource, ManagementListener
     @Override
     public void clientRegistered(ConnectedClient newClient) {
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(newClient, ClientState.CONNECTED);
+            ClientInfo clientInfo = ClientsApi.toClientInfo(newClient, ClientState.CONNECTED);
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
@@ -106,7 +106,7 @@ public class ManagementResource implements WebSocketResource, ManagementListener
     @Override
     public void clientInfoChanged(ConnectedClient changedClient) {
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(changedClient, ClientState.CONNECTED);
+            ClientInfo clientInfo = ClientsApi.toClientInfo(changedClient, ClientState.CONNECTED);
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
@@ -118,7 +118,7 @@ public class ManagementResource implements WebSocketResource, ManagementListener
         }
 
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(oldClient, ClientState.DISCONNECTED);
+            ClientInfo clientInfo = ClientsApi.toClientInfo(oldClient, ClientState.DISCONNECTED);
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }

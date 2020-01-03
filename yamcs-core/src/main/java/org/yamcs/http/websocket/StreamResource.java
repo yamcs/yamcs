@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.http.api.ArchiveHelper;
+import org.yamcs.http.api.TableApi;
 import org.yamcs.protobuf.StreamSubscriptionRequest;
 import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -63,7 +63,10 @@ public class StreamResource implements StreamSubscriber, WebSocketResource {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        StreamData data = ArchiveHelper.toStreamData(stream, tuple);
+        StreamData data = StreamData.newBuilder()
+                .setStream(stream.getName())
+                .addAllColumn(TableApi.toColumnDataList(tuple))
+                .build();
         client.sendData(ProtoDataType.STREAM_DATA, data);
     }
 

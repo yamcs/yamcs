@@ -3,9 +3,11 @@ package org.yamcs.http.api;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
@@ -16,6 +18,9 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractTableApi;
+import org.yamcs.protobuf.Table.ColumnData;
+import org.yamcs.protobuf.Table.ColumnInfo;
+import org.yamcs.protobuf.Table.EnumValue;
 import org.yamcs.protobuf.Table.ExecuteSqlRequest;
 import org.yamcs.protobuf.Table.ExecuteSqlResponse;
 import org.yamcs.protobuf.Table.GetStreamRequest;
@@ -25,10 +30,11 @@ import org.yamcs.protobuf.Table.ListStreamsRequest;
 import org.yamcs.protobuf.Table.ListStreamsResponse;
 import org.yamcs.protobuf.Table.ListTablesRequest;
 import org.yamcs.protobuf.Table.ListTablesResponse;
+import org.yamcs.protobuf.Table.PartitioningInfo;
+import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
-import org.yamcs.protobuf.Table.Row.ColumnInfo;
 import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableData.TableRecord;
@@ -36,14 +42,18 @@ import org.yamcs.protobuf.Table.TableInfo;
 import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.DataType._type;
+import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -54,7 +64,9 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
+import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
 
 public class TableApi extends AbstractTableApi<Context> {
 
@@ -72,7 +84,7 @@ public class TableApi extends AbstractTableApi<Context> {
             if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }
-            responseb.addStreams(ArchiveHelper.toStreamInfo(stream));
+            responseb.addStreams(toStreamInfo(stream));
         }
         observer.complete(responseb.build());
     }
@@ -83,7 +95,7 @@ public class TableApi extends AbstractTableApi<Context> {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream stream = verifyStream(ctx, ydb, request.getName());
 
-        StreamInfo response = ArchiveHelper.toStreamInfo(stream);
+        StreamInfo response = toStreamInfo(stream);
         observer.complete(response);
     }
 
@@ -98,7 +110,7 @@ public class TableApi extends AbstractTableApi<Context> {
         List<TableDefinition> defs = new ArrayList<>(ydb.getTableDefinitions());
         defs.sort((d1, d2) -> d1.getName().compareToIgnoreCase(d2.getName()));
         for (TableDefinition def : defs) {
-            responseb.addTables(ArchiveHelper.toTableInfo(def));
+            responseb.addTables(toTableInfo(def));
         }
         observer.complete(responseb.build());
     }
@@ -111,7 +123,7 @@ public class TableApi extends AbstractTableApi<Context> {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(ydb, request.getName());
 
-        TableInfo response = ArchiveHelper.toTableInfo(table);
+        TableInfo response = toTableInfo(table);
         observer.complete(response);
     }
 
@@ -146,7 +158,7 @@ public class TableApi extends AbstractTableApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
-                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
+                rec.addAllColumn(toColumnDataList(tuple));
                 responseb.addRecord(rec); // TODO estimate byte size
             }
 
@@ -243,7 +255,7 @@ public class TableApi extends AbstractTableApi<Context> {
             }
 
             private Tuple rowToTuple(Row row) throws IOException {
-                for (ColumnInfo cinfo : row.getColumnsList()) {
+                for (Row.ColumnInfo cinfo : row.getColumnsList()) {
                     if (!cinfo.hasId() || !cinfo.hasName() || !cinfo.hasType()) {
                         throw new IllegalArgumentException(
                                 "Invalid row provided, no id or name  or type in the column info");
@@ -254,9 +266,9 @@ public class TableApi extends AbstractTableApi<Context> {
                     DataType type = DataType.byName(ctype);
                     ColumnDefinition cd = new ColumnDefinition(cname, type);
                     ColumnSerializer<?> cs;
-                    if (type.val == _type.PROTOBUF) {
+                    if (type.val == DataType._type.PROTOBUF) {
                         cs = ColumnSerializerFactory.getProtobufSerializer(cd);
-                    } else if (type.val == _type.ENUM) {
+                    } else if (type.val == DataType._type.ENUM) {
                         cs = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
                     } else {
                         cs = ColumnSerializerFactory.getBasicColumnSerializer(type);
@@ -363,15 +375,15 @@ public class TableApi extends AbstractTableApi<Context> {
                 if (colId == -1) {
                     completeTuple.addColumn(cd);
                     colId = completeTuple.getColumnIndex(cd.getName());
-                    rowb.addColumns(ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
+                    rowb.addColumns(Row.ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
                             .setType(cd.getType().toString()).build());
                 }
                 DataType type = cd.getType();
 
                 ColumnSerializer cs;
-                if (type.val == _type.ENUM) {
+                if (type.val == DataType._type.ENUM) {
                     cs = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
-                } else if (type.val == _type.PROTOBUF) {
+                } else if (type.val == DataType._type.PROTOBUF) {
                     cs = ColumnSerializerFactory.getProtobufSerializer(cd);
                 } else {
                     cs = ColumnSerializerFactory.getBasicColumnSerializer(cd.getType());
@@ -389,5 +401,186 @@ public class TableApi extends AbstractTableApi<Context> {
         public void streamClosed(Stream stream) {
             observer.complete();
         }
+    }
+
+    private static TableInfo toTableInfo(TableDefinition def) {
+        TableInfo.Builder infob = TableInfo.newBuilder();
+        infob.setName(def.getName());
+        infob.setCompressed(def.isCompressed());
+        infob.setFormatVersion(def.getFormatVersion());
+        infob.setStorageEngine(def.getStorageEngineName());
+        if (def.getTablespaceName() != null) {
+            infob.setTablespace(def.getTablespaceName());
+        }
+        if (def.hasHistogram()) {
+            infob.addAllHistogramColumn(def.getHistogramColumns());
+        }
+        if (def.hasPartitioning()) {
+            PartitioningInfo.Builder partb = PartitioningInfo.newBuilder();
+            PartitioningSpec spec = def.getPartitioningSpec();
+            switch (spec.type) {
+            case TIME:
+                partb.setType(PartitioningType.TIME);
+                break;
+            case VALUE:
+                partb.setType(PartitioningType.VALUE);
+                break;
+            case TIME_AND_VALUE:
+                partb.setType(PartitioningType.TIME_AND_VALUE);
+                break;
+            case NONE:
+                break;
+            default:
+                throw new IllegalStateException("Unexpected partitioning type " + spec.type);
+            }
+            if (spec.type == PartitioningSpec._type.TIME || spec.type == PartitioningSpec._type.TIME_AND_VALUE) {
+                if (spec.timeColumn != null) {
+                    partb.setTimeColumn(spec.timeColumn);
+                    partb.setTimePartitionSchema(spec.getTimePartitioningSchema().getName());
+                }
+            }
+            if (spec.type == PartitioningSpec._type.VALUE || spec.type == PartitioningSpec._type.TIME_AND_VALUE) {
+                if (spec.valueColumn != null) {
+                    partb.setValueColumn(spec.valueColumn);
+                    partb.setValueColumnType(spec.getValueColumnType().toString());
+                }
+            }
+
+            if (spec.type != PartitioningSpec._type.NONE) {
+                infob.setPartitioningInfo(partb);
+            }
+        }
+        StringBuilder scriptb = new StringBuilder("create table ").append(def.toString());
+        scriptb.append(" engine ").append(def.getStorageEngineName());
+        if (def.hasHistogram()) {
+            scriptb.append(" histogram(").append(String.join(", ", def.getHistogramColumns())).append(")");
+        }
+        if (def.hasPartitioning()) {
+            PartitioningSpec spec = def.getPartitioningSpec();
+            if (spec.type == PartitioningSpec._type.TIME) {
+                scriptb.append(" partition by time(").append(spec.timeColumn)
+                        .append("('").append(spec.getTimePartitioningSchema().getName()).append("'))");
+            } else if (spec.type == PartitioningSpec._type.VALUE) {
+                scriptb.append(" partition by value(").append(spec.valueColumn).append(")");
+            } else if (spec.type == PartitioningSpec._type.TIME_AND_VALUE) {
+                scriptb.append(" partition by time_and_value(").append(spec.timeColumn)
+                        .append("('").append(spec.getTimePartitioningSchema().getName()).append("')")
+                        .append(", ").append(spec.valueColumn).append(")");
+            }
+        }
+        if (def.isCompressed()) {
+            scriptb.append(" table_format=compressed");
+        }
+        infob.setScript(scriptb.toString());
+        for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
+            infob.addKeyColumn(toColumnInfo(cdef, def));
+        }
+        for (ColumnDefinition cdef : def.getValueDefinition().getColumnDefinitions()) {
+            infob.addValueColumn(toColumnInfo(cdef, def));
+        }
+        return infob.build();
+    }
+
+    private static StreamInfo toStreamInfo(Stream stream) {
+        StreamInfo.Builder infob = StreamInfo.newBuilder();
+        infob.setName(stream.getName());
+        infob.setDataCount(stream.getDataCount());
+        infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
+        for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
+            infob.addColumn(toColumnInfo(cdef, null));
+        }
+        return infob.build();
+    }
+
+    private static ColumnInfo toColumnInfo(ColumnDefinition cdef, TableDefinition tableDefinition) {
+        ColumnInfo.Builder infob = ColumnInfo.newBuilder();
+        infob.setName(cdef.getName());
+        infob.setType(cdef.getType().toString());
+        if (tableDefinition != null && cdef.getType() == DataType.ENUM) {
+            BiMap<String, Short> enumValues = tableDefinition.getEnumValues(cdef.getName());
+            if (enumValues != null) {
+                List<EnumValue> enumValueList = new ArrayList<>();
+                for (Entry<String, Short> entry : enumValues.entrySet()) {
+                    EnumValue val = EnumValue.newBuilder().setValue(entry.getValue()).setLabel(entry.getKey()).build();
+                    enumValueList.add(val);
+                }
+                Collections.sort(enumValueList, (v1, v2) -> Integer.compare(v1.getValue(), v2.getValue()));
+                infob.addAllEnumValue(enumValueList);
+            }
+        }
+        return infob.build();
+    }
+
+    public final static List<ColumnData> toColumnDataList(Tuple tuple) {
+        List<ColumnData> result = new ArrayList<>();
+        int i = 0;
+        for (Object column : tuple.getColumns()) {
+            ColumnDefinition cdef = tuple.getColumnDefinition(i);
+
+            Value.Builder v = Value.newBuilder();
+            switch (cdef.getType().val) {
+            case SHORT:
+                v.setType(Type.SINT32);
+                v.setSint32Value((Short) column);
+                break;
+            case DOUBLE:
+                v.setType(Type.DOUBLE);
+                v.setDoubleValue((Double) column);
+                break;
+            case BINARY:
+                v.setType(Type.BINARY);
+                v.setBinaryValue(ByteString.copyFrom((byte[]) column));
+                break;
+            case INT:
+                v.setType(Type.SINT32);
+                v.setSint32Value((Integer) column);
+                break;
+            case TIMESTAMP:
+                v.setType(Type.TIMESTAMP);
+                v.setTimestampValue((Long) column);
+                v.setStringValue(TimeEncoding.toString((Long) column));
+                break;
+            case ENUM:
+            case STRING:
+                v.setType(Type.STRING);
+                v.setStringValue((String) column);
+                break;
+            case BOOLEAN:
+                v.setType(Type.BOOLEAN);
+                v.setBooleanValue((Boolean) column);
+                break;
+            case LONG:
+                v.setType(Type.SINT64);
+                v.setSint64Value((Long) column);
+                break;
+            case PARAMETER_VALUE:
+                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
+                v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
+                break;
+            case PROTOBUF:
+
+                // Perhaps we could be a bit smarter here. Proto3 will have an
+                // any-type
+                // String messageClassname = protoType.substring(9,
+                // protoType.length() - 1);
+                // String schemaClassname =
+                // messageClassname.replace("org.yamcs.protobuf.",
+                // "org.yamcs.protobuf.Schema") + "$BuilderSchema";
+                MessageLite message = (MessageLite) column;
+                v.setType(Type.BINARY);
+                v.setBinaryValue(message.toByteString());
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Tuple column type " + cdef.getType().val + " is currently not supported");
+            }
+
+            ColumnData.Builder colData = ColumnData.newBuilder();
+            colData.setName(cdef.getName());
+            colData.setValue(v);
+            result.add(colData.build());
+            i++;
+        }
+        return result;
     }
 }

@@ -77,13 +77,15 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         addApi(new BucketsApi());
         addApi(new CfdpApi());
         addApi(new ClientsApi());
+        addApi(new CommandHistoryApi());
         addApi(new Cop1Api());
         addApi(new GeneralApi(this));
-        addApi(new ExportApi());
+        addApi(new EventsApi());
         addApi(new IamApi());
         addApi(new IndexApi());
         addApi(new ManagementApi());
         addApi(new MdbApi());
+        addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
         addApi(new ProcessingApi());
         addApi(new QueueApi());

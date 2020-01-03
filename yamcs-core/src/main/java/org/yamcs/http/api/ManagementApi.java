@@ -24,6 +24,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.yamcs.InstanceMetadata;
+import org.yamcs.Processor;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -76,6 +77,7 @@ import org.yamcs.utils.parser.FilterParser;
 import org.yamcs.utils.parser.FilterParser.Result;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.utils.parser.TokenMgrError;
+import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
@@ -201,7 +203,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsServerInstance instance : YamcsServer.getInstances()) {
             if (filter.test(instance)) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(instance.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(instance.getInstanceInfo());
                 instancesb.addInstances(enriched);
             }
         }
@@ -213,7 +215,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         String instanceName = verifyInstance(request.getInstance());
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
-        YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(instanceInfo);
+        YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
         observer.complete(enriched);
     }
 
@@ -256,7 +258,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         cf.whenComplete((v, error) -> {
             if (error == null) {
                 YamcsInstance instanceInfo = v.getInstanceInfo();
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(instanceInfo);
+                YamcsInstance enriched = enrichYamcsInstance(instanceInfo);
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -281,7 +283,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -309,7 +311,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -334,7 +336,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }).whenComplete((v, error) -> {
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
             if (error == null) {
-                YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(ysi.getInstanceInfo());
+                YamcsInstance enriched = enrichYamcsInstance(ysi.getInstanceInfo());
                 observer.complete(enriched);
             } else {
                 Throwable t = ExceptionUtil.unwind(error);
@@ -659,5 +661,26 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
         }
         return linkInfo;
+    }
+
+    private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
+        YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
+
+        if (yamcsInstance.hasMissionDatabase()) {
+            XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
+            if (mdb != null) {
+                instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
+            }
+        }
+
+        for (Processor processor : Processor.getProcessors(instanceb.getName())) {
+            instanceb.addProcessor(ProcessingApi.toProcessorInfo(processor, false));
+        }
+
+        TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());
+        if (timeService != null) {
+            instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+        }
+        return instanceb.build();
     }
 }

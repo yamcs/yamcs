@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
@@ -65,6 +67,7 @@ import org.yamcs.protobuf.Mdb.UpdateAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
@@ -102,7 +105,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         String instance = ManagementApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        MissionDatabase converted = YamcsToGpbAssembler.toMissionDatabase(instance, mdb);
+        MissionDatabase converted = toMissionDatabase(instance, mdb);
         observer.complete(converted);
     }
 
@@ -978,5 +981,21 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
         return new ParameterWithId(p, id, aggPath);
+    }
+
+    public static MissionDatabase toMissionDatabase(String instanceName, XtceDb mdb) {
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
+        YamcsInstance instanceInfo = instance.getInstanceInfo();
+        MissionDatabase.Builder b = MissionDatabase.newBuilder(instanceInfo.getMissionDatabase());
+        b.setParameterCount(mdb.getParameters().size());
+        b.setContainerCount(mdb.getSequenceContainers().size());
+        b.setCommandCount(mdb.getMetaCommands().size());
+        b.setAlgorithmCount(mdb.getAlgorithms().size());
+        b.setParameterTypeCount(mdb.getParameterTypes().size());
+        SpaceSystem ss = mdb.getRootSpaceSystem();
+        for (SpaceSystem sub : ss.getSubSystems()) {
+            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(sub));
+        }
+        return b.build();
     }
 }
