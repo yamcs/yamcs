@@ -1,4 +1,4 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -13,8 +13,10 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.http.TokenStore.RefreshResult;
+import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.HttpUtils;
 import org.yamcs.http.api.IamApi;
+import org.yamcs.http.auth.TokenStore.RefreshResult;
 import org.yamcs.protobuf.AuthFlow;
 import org.yamcs.protobuf.AuthFlow.Type;
 import org.yamcs.protobuf.AuthInfo;

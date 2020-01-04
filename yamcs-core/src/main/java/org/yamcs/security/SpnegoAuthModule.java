@@ -30,8 +30,8 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.http.AuthModuleHttpHandler;
 import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.http.auth.AuthModuleHttpHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

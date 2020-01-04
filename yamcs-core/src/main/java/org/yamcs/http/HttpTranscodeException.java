@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 @SuppressWarnings("serial")
 public class HttpTranscodeException extends Exception {

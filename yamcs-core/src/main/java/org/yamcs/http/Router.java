@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,15 +13,27 @@ import java.util.regex.Matcher;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
-import org.yamcs.http.BadRequestException;
-import org.yamcs.http.HttpContentToByteBufDecoder;
-import org.yamcs.http.HttpException;
-import org.yamcs.http.HttpUtils;
-import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.http.MethodNotAllowedException;
-import org.yamcs.http.NotFoundException;
-import org.yamcs.http.ProtobufRegistry;
-import org.yamcs.http.RpcDescriptor;
+import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.BucketsApi;
+import org.yamcs.http.api.CfdpApi;
+import org.yamcs.http.api.ClientsApi;
+import org.yamcs.http.api.CommandHistoryApi;
+import org.yamcs.http.api.Cop1Api;
+import org.yamcs.http.api.EventsApi;
+import org.yamcs.http.api.GeneralApi;
+import org.yamcs.http.api.IamApi;
+import org.yamcs.http.api.IndexApi;
+import org.yamcs.http.api.ManagementApi;
+import org.yamcs.http.api.MdbApi;
+import org.yamcs.http.api.PacketsApi;
+import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ProcessingApi;
+import org.yamcs.http.api.QueueApi;
+import org.yamcs.http.api.RocksDbApi;
+import org.yamcs.http.api.StreamArchiveApi;
+import org.yamcs.http.api.TableApi;
+import org.yamcs.http.api.TagApi;
 import org.yamcs.logging.Log;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -63,13 +75,14 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private List<Api<Context>> apis = new ArrayList<>();
     private List<Route> routes = new ArrayList<>();
+    private List<Topic> topics = new ArrayList<>();
 
     private boolean logSlowRequests = true;
     private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     private final ExecutorService workerPool;
 
-    public Router(ExecutorService executor, String contextPath, ProtobufRegistry protobufRegistry) {
-        this.workerPool = executor;
+    public Router(ExecutorService workerPool, String contextPath, ProtobufRegistry protobufRegistry) {
+        this.workerPool = workerPool;
         this.contextPath = contextPath;
         this.protobufRegistry = protobufRegistry;
 
@@ -104,9 +117,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 throw new UnsupportedOperationException("Unable to find rpc definition: " + method.getFullName());
             }
 
-            routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
-            for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
-                routes.add(new Route(api, route, descriptor));
+            if (descriptor.isWebSocket()) {
+                topics.add(new Topic(api, descriptor.getWebSocketTopic(), descriptor));
+                for (WebSocketTopic topic : descriptor.getAdditionalWebSocketTopics()) {
+                    topics.add(new Topic(api, topic, descriptor));
+                }
+            } else {
+                routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
+                for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
+                    routes.add(new Route(api, route, descriptor));
+                }
             }
         }
 

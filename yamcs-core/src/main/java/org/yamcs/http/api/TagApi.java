@@ -7,6 +7,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;

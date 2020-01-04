@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -6,13 +6,9 @@ import java.util.regex.Pattern;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
-import org.yamcs.http.RpcDescriptor;
 
 import io.netty.handler.codec.http.HttpMethod;
 
-/**
- * Struct containing all non-path route configuration
- */
 public class Route implements Comparable<Route> {
 
     private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?\\{(\\w+)(\\?|\\*|\\*\\*)?\\}");
@@ -36,7 +32,7 @@ public class Route implements Comparable<Route> {
         this.api = api;
         this.descriptor = descriptor;
 
-        offloaded = httpOptions.getOffThread();
+        offloaded = httpOptions.getOffloaded();
         deprecated = httpOptions.getDeprecated();
 
         switch (httpOptions.getPatternCase()) {

@@ -28,6 +28,7 @@ import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;

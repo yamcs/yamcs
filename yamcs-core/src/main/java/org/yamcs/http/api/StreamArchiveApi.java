@@ -15,6 +15,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;

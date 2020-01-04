@@ -1,4 +1,4 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,7 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YamcsServer;
-import org.yamcs.http.JwtHelper.JwtDecodeException;
+import org.yamcs.http.UnauthorizedException;
+import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.logging.Log;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;

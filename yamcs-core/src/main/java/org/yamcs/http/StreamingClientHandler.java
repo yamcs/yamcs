@@ -1,8 +1,6 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import org.yamcs.api.Observer;
-import org.yamcs.http.BadRequestException;
-import org.yamcs.http.HttpRequestHandler;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;

@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 

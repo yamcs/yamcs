@@ -17,6 +17,7 @@ import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.archive.TmIndex;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.protobuf.AbstractIndexApi;

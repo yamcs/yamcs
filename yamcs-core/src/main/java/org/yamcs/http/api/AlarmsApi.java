@@ -18,6 +18,7 @@ import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;

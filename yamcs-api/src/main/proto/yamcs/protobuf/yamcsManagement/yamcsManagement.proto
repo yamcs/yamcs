@@ -22,13 +22,6 @@ service ManagementApi {
     };
   }
   
-  // Get UTC leap seconds
-  rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
-    option (yamcs.api.route) = {
-      get: "/api/leap-seconds"
-    };
-  }
-  
   // List instance templates
   rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
     option (yamcs.api.route) = {
@@ -83,13 +76,6 @@ service ManagementApi {
   rpc RestartInstance(RestartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:restart"
-    };
-  }
-  
-  // Set (simulation) time of an instance
-  rpc SetTime(SetTimeRequest) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      post: "/api/instances/{instance}:setTime"
     };
   }
   
@@ -379,16 +365,6 @@ message EditInstanceRequest {
   optional string state = 2;
 }
 
-message LeapSecondsTable {
-  message ValidityRange {
-    optional string start = 1; // UTC timestamp (unsmeared)
-    optional string stop = 2; // UTC timestamp (unsmeared)
-    optional int32 leapSeconds = 3;
-    optional int32 taiDifference = 4;
-  }
-  repeated ValidityRange ranges = 1;      
-}
-
 message GetInstanceTemplateRequest {
   optional string template = 1;
 }
@@ -407,13 +383,6 @@ message StopInstanceRequest {
 
 message RestartInstanceRequest {
   optional string instance = 1;
-}
-
-message SetTimeRequest {
-  optional string instance = 6;
-  optional google.protobuf.Timestamp time0 = 5;
-  optional int64 elapsedTime = 3;
-  optional double speed = 4;
 }
 
 message ListLinksRequest {

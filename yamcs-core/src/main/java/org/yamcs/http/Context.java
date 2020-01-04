@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,9 +12,6 @@ import java.util.regex.Matcher;
 import org.yamcs.api.Api;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
-import org.yamcs.http.BadRequestException;
-import org.yamcs.http.ForbiddenException;
-import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.logging.Log;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;

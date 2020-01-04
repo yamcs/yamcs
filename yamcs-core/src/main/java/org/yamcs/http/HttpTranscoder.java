@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.InputStream;

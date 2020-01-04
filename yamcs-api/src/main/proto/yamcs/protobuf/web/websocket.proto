@@ -3,7 +3,7 @@ syntax="proto2";
 package yamcs.protobuf.web;
 
 option java_package = "org.yamcs.protobuf";
-option java_outer_classname = "WebSocketProto";
+option java_outer_classname = "WebProto";
 option java_multiple_files = true;
 
 import "yamcs/protobuf/yamcs.proto";
@@ -14,6 +14,7 @@ import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/cop1/cop1.proto";
+import "yamcs/protobuf/time/time_service.proto";
 
 
 message WebSocketClientMessage {
@@ -58,7 +59,7 @@ message WebSocketServerMessage {
     optional Event event = 8;
     optional table.StreamData streamData = 9;
     optional alarms.AlarmData alarmData = 10;
-    optional TimeInfo timeInfo = 11;
+    optional time.TimeInfo timeInfo = 11;
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
@@ -178,7 +179,7 @@ message ParameterSubscriptionResponse {
 }
 
 message TimeSubscriptionResponse {
-  optional TimeInfo timeInfo = 1;
+  optional time.TimeInfo timeInfo = 1;
 }
 
 message ProcessorSubscriptionResponse {

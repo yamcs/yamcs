@@ -1,6 +1,6 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
-import org.yamcs.http.api.Router;
+import org.yamcs.http.Router;
 import org.yamcs.security.AuthModule;
 
 import io.netty.channel.ChannelHandlerContext;

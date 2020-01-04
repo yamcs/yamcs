@@ -10,6 +10,7 @@ import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;

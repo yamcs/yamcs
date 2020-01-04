@@ -1,7 +1,5 @@
 package org.yamcs.http;
 
-import org.yamcs.http.api.Router;
-
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

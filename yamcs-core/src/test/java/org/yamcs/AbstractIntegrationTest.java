@@ -29,7 +29,7 @@ import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Alarms.AlarmData;
+import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;

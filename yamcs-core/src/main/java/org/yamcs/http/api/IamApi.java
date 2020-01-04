@@ -11,6 +11,7 @@ import java.util.Set;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;

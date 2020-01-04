@@ -10,6 +10,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractCommandHistoryApi;

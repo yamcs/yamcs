@@ -17,6 +17,7 @@ import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractCfdpApi;

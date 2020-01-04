@@ -1,4 +1,4 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;

@@ -16,10 +16,10 @@ import java.util.Map;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.http.AuthHandler;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
 

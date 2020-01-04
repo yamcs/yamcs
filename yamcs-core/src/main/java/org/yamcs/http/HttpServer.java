@@ -31,8 +31,6 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.Api;
-import org.yamcs.http.api.Context;
-import org.yamcs.http.api.Router;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
 import org.yamcs.utils.ExceptionUtil;
@@ -174,7 +172,7 @@ public class HttpServer extends AbstractYamcsService {
             }
         }
 
-        // this is used to execute the routes marked as offThread
+        // this is used to execute the routes marked as offloaded
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
         executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), tf);

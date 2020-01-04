@@ -15,6 +15,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractPacketsApi;

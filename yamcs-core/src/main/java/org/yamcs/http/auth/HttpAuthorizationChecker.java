@@ -1,10 +1,14 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
 import java.util.Base64;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.http.BadRequestException;
+import org.yamcs.http.HttpException;
+import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.UnauthorizedException;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;

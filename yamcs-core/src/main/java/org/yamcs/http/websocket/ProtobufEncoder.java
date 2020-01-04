@@ -14,13 +14,13 @@ import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamData;
+import org.yamcs.protobuf.TimeInfo;
 import org.yamcs.protobuf.WebSocketExtensionData;
 import org.yamcs.protobuf.WebSocketServerMessage;
 import org.yamcs.protobuf.WebSocketServerMessage.MessageType;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 
 import com.google.protobuf.Message;

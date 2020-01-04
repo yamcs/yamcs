@@ -1,4 +1,4 @@
-package org.yamcs.http.api;
+package org.yamcs.http;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -11,9 +11,6 @@ import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
-import org.yamcs.http.HttpException;
-import org.yamcs.http.HttpRequestHandler;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ExceptionUtil;
 

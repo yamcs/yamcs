@@ -267,10 +267,6 @@ message TmPacketData {
   optional google.protobuf.Timestamp generationTime = 9;
 }
 
-message TimeInfo {
-  optional google.protobuf.Timestamp currentTime = 3;
-}
-
 message Event {
   enum EventSeverity {
     INFO = 0;

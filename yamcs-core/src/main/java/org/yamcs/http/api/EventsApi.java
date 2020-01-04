@@ -21,6 +21,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;

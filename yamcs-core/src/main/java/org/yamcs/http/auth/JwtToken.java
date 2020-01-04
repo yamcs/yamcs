@@ -1,9 +1,9 @@
-package org.yamcs.http;
+package org.yamcs.http.auth;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import org.yamcs.http.JwtHelper.JwtDecodeException;
+import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 
 import com.google.gson.JsonObject;
 

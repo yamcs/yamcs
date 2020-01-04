@@ -1,0 +1,63 @@
+syntax="proto2";
+
+package yamcs.protobuf.time;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "TimeServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+
+
+service TimeApi {
+
+  // Get UTC leap seconds
+  rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
+    option (yamcs.api.route) = {
+      get: "/api/leap-seconds"
+    };
+  }
+  
+  // Set (simulation) time of an instance
+  rpc SetTime(SetTimeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:setTime"
+    };
+  }
+
+  // Receive time updates
+  rpc SubscribeTime(SubscribeTimeRequest) returns (stream google.protobuf.Timestamp) {
+    option (yamcs.api.websocket) = {
+      topic: "time"
+    };
+  }
+}
+
+message LeapSecondsTable {
+  message ValidityRange {
+    optional string start = 1; // UTC timestamp (unsmeared)
+    optional string stop = 2; // UTC timestamp (unsmeared)
+    optional int32 leapSeconds = 3;
+    optional int32 taiDifference = 4;
+  }
+  repeated ValidityRange ranges = 1;      
+}
+
+message SetTimeRequest {
+  optional string instance = 6;
+  optional google.protobuf.Timestamp time0 = 5;
+  optional int64 elapsedTime = 3;
+  optional double speed = 4;
+}
+
+message SubscribeTimeRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message TimeInfo {
+  optional google.protobuf.Timestamp currentTime = 3;
+}

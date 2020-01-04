@@ -31,6 +31,7 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
@@ -45,8 +46,6 @@ import org.yamcs.protobuf.GetInstanceTemplateRequest;
 import org.yamcs.protobuf.GetLinkRequest;
 import org.yamcs.protobuf.GetServiceRequest;
 import org.yamcs.protobuf.InstanceTemplate;
-import org.yamcs.protobuf.LeapSecondsTable;
-import org.yamcs.protobuf.LeapSecondsTable.ValidityRange;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstanceTemplatesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
@@ -59,7 +58,6 @@ import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.ServiceInfo;
 import org.yamcs.protobuf.ServiceState;
-import org.yamcs.protobuf.SetTimeRequest;
 import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
@@ -68,10 +66,8 @@ import org.yamcs.protobuf.SystemInfo;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.time.SimulationTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
-import org.yamcs.utils.TaiUtcConverter.ValidityLine;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.FilterParser;
 import org.yamcs.utils.parser.FilterParser.Result;
@@ -145,27 +141,6 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        observer.complete(b.build());
-    }
-
-    @Override
-    public void getLeapSeconds(Context ctx, Empty request, Observer<LeapSecondsTable> observer) {
-        LeapSecondsTable.Builder b = LeapSecondsTable.newBuilder();
-        List<ValidityLine> lines = TimeEncoding.getTaiUtcConversionTable();
-        for (int i = 0; i < lines.size(); i++) {
-            ValidityLine line = lines.get(i);
-            long instant = TimeEncoding.fromUnixMillisec(line.unixMillis);
-            ValidityRange.Builder rangeb = ValidityRange.newBuilder()
-                    .setStart(TimeEncoding.toString(instant))
-                    .setLeapSeconds(line.seconds - 10)
-                    .setTaiDifference(line.seconds);
-            if (i != lines.size() - 1) {
-                ValidityLine next = lines.get(i + 1);
-                instant = TimeEncoding.fromUnixMillisec(next.unixMillis);
-                rangeb.setStop(TimeEncoding.toString(instant));
-            }
-            b.addRanges(rangeb);
-        }
         observer.complete(b.build());
     }
 
@@ -343,31 +318,6 @@ public class ManagementApi extends AbstractManagementApi<Context> {
                 observer.completeExceptionally(t);
             }
         });
-    }
-
-    @Override
-    public void setTime(Context ctx, SetTimeRequest request, Observer<Empty> observer) {
-        String instance = verifyInstance(request.getInstance());
-        YamcsServer yamcs = YamcsServer.getServer();
-        TimeService timeService = yamcs.getInstance(instance).getTimeService();
-
-        if (timeService instanceof SimulationTimeService) {
-            SimulationTimeService sts = (SimulationTimeService) timeService;
-
-            if (request.hasTime0()) {
-                sts.setTime0(TimeEncoding.fromProtobufTimestamp(request.getTime0()));
-            }
-            if (request.hasSpeed()) {
-                sts.setSimSpeed(request.getSpeed());
-            }
-            if (request.hasElapsedTime()) {
-                sts.setSimElapsedTime(request.getElapsedTime());
-            }
-
-            observer.complete(Empty.getDefaultInstance());
-        } else {
-            observer.completeExceptionally(new BadRequestException("Cannot set time for a non-simulation TimeService"));
-        }
     }
 
     @Override
