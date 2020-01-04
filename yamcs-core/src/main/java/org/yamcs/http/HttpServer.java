@@ -10,15 +10,13 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -31,6 +29,28 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.Api;
+import org.yamcs.api.HttpRoute;
+import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.BucketsApi;
+import org.yamcs.http.api.CfdpApi;
+import org.yamcs.http.api.ClientsApi;
+import org.yamcs.http.api.CommandHistoryApi;
+import org.yamcs.http.api.Cop1Api;
+import org.yamcs.http.api.EventsApi;
+import org.yamcs.http.api.GeneralApi;
+import org.yamcs.http.api.IamApi;
+import org.yamcs.http.api.IndexApi;
+import org.yamcs.http.api.ManagementApi;
+import org.yamcs.http.api.MdbApi;
+import org.yamcs.http.api.PacketsApi;
+import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ProcessingApi;
+import org.yamcs.http.api.QueueApi;
+import org.yamcs.http.api.RocksDbApi;
+import org.yamcs.http.api.StreamArchiveApi;
+import org.yamcs.http.api.TableApi;
+import org.yamcs.http.api.TagApi;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
 import org.yamcs.utils.ExceptionUtil;
@@ -39,7 +59,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Descriptors.MethodDescriptor;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -71,14 +91,16 @@ public class HttpServer extends AbstractYamcsService {
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private Router apiRouter;
+
+    private List<Api<Context>> apis = new ArrayList<>();
+    private List<Route> routes = new ArrayList<>();
+    private List<Topic> topics = new ArrayList<>();
 
     private int port;
     private int tlsPort;
     private String contextPath;
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
-    ThreadPoolExecutor executor;
     String tlsCert;
     String tlsKey;
 
@@ -172,12 +194,6 @@ public class HttpServer extends AbstractYamcsService {
             }
         }
 
-        // this is used to execute the routes marked as offloaded
-        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
-        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor, contextPath, protobufRegistry);
-
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
             String[] origins = ycors.getString("allowOrigin").split(",");
@@ -197,6 +213,27 @@ public class HttpServer extends AbstractYamcsService {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+
+        addApi(new AlarmsApi());
+        addApi(new BucketsApi());
+        addApi(new CfdpApi());
+        addApi(new ClientsApi());
+        addApi(new CommandHistoryApi());
+        addApi(new Cop1Api());
+        addApi(new GeneralApi(this));
+        addApi(new EventsApi());
+        addApi(new IamApi());
+        addApi(new IndexApi());
+        addApi(new ManagementApi());
+        addApi(new MdbApi());
+        addApi(new PacketsApi());
+        addApi(new ParameterArchiveApi());
+        addApi(new ProcessingApi());
+        addApi(new QueueApi());
+        addApi(new StreamArchiveApi());
+        addApi(new RocksDbApi());
+        addApi(new TableApi());
+        addApi(new TagApi());
     }
 
     public void addStaticRoot(Path staticRoot) {
@@ -208,7 +245,29 @@ public class HttpServer extends AbstractYamcsService {
     }
 
     public void addApi(Api<Context> api) {
-        apiRouter.addApi(api);
+        apis.add(api);
+
+        for (MethodDescriptor method : api.getDescriptorForType().getMethods()) {
+            RpcDescriptor descriptor = protobufRegistry.getRpc(method.getFullName());
+            if (descriptor == null) {
+                throw new UnsupportedOperationException("Unable to find rpc definition: " + method.getFullName());
+            }
+
+            if (descriptor.isWebSocket()) {
+                topics.add(new Topic(api, descriptor.getWebSocketTopic(), descriptor));
+                for (WebSocketTopic topic : descriptor.getAdditionalWebSocketTopics()) {
+                    topics.add(new Topic(api, topic, descriptor));
+                }
+            } else {
+                routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
+                for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
+                    routes.add(new Route(api, route, descriptor));
+                }
+            }
+        }
+
+        // Sort in a way that increases chances of a good URI match
+        Collections.sort(routes);
     }
 
     @Override
@@ -251,7 +310,7 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(this, sslCtx, apiRouter));
+                .childHandler(new HttpServerChannelInitializer(this, sslCtx));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
@@ -314,6 +373,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public String getContextPath() {
         return contextPath;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
     }
 
     public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {

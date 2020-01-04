@@ -11,12 +11,10 @@ import io.netty.handler.ssl.SslContext;
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private HttpServer httpServer;
-    private Router apiRouter;
     private final SslContext sslCtx;
 
-    public HttpServerChannelInitializer(HttpServer httpServer, SslContext sslCtx, Router apiRouter) {
+    public HttpServerChannelInitializer(HttpServer httpServer, SslContext sslCtx) {
         this.httpServer = httpServer;
-        this.apiRouter = apiRouter;
         this.sslCtx = sslCtx;
     }
 
@@ -35,6 +33,6 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         }
 
         // this has to be the last handler in the pipeline
-        pipeline.addLast(new HttpRequestHandler(httpServer, apiRouter));
+        pipeline.addLast(new HttpRequestHandler(httpServer));
     }
 }

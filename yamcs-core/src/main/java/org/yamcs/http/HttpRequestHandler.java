@@ -6,17 +6,27 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.http.auth.AuthHandler;
-import org.yamcs.http.auth.HttpAuthorizationChecker;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
 import org.yamcs.logging.Log;
+import org.yamcs.security.AuthenticationException;
+import org.yamcs.security.AuthenticationInfo;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
+import org.yamcs.security.UsernamePasswordToken;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
@@ -35,14 +45,20 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.ssl.NotSslRecordException;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -50,6 +66,8 @@ import io.netty.util.ReferenceCountUtil;
 
 /**
  * Handles handshakes and messages.
+ * 
+ * A new instance of this handler is created for every request.
  *
  * We have following different request types
  * <ul>
@@ -69,32 +87,34 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final String AUTH_PATH = "auth";
     private static final String STATIC_PATH = "static";
     private static final String WEBSOCKET_PATH = "_websocket";
+    private static final String AUTH_TYPE_BASIC = "Basic ";
+    private static final String AUTH_TYPE_BEARER = "Bearer ";
 
     public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
+    public static final AttributeKey<Context> CTX_CONTEXT = AttributeKey.valueOf("routerContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
 
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
+    private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
 
     private static TokenStore tokenStore = new TokenStore();
+    private static RouteHandler routeHandler = new RouteHandler();
+    private AuthHandler authHandler;
 
     private HttpServer httpServer;
     private String contextPath;
-    private Router apiRouter;
-    private AuthHandler authHandler;
-    private HttpAuthorizationChecker authChecker;
     private boolean contentExpected = false;
 
     YConfiguration wsConfig;
 
-    public HttpRequestHandler(HttpServer httpServer, Router apiRouter) {
+    public HttpRequestHandler(HttpServer httpServer) {
         this.httpServer = httpServer;
-        this.apiRouter = apiRouter;
+
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
         authHandler = new AuthHandler(tokenStore, contextPath);
-        authChecker = new HttpAuthorizationChecker(tokenStore);
     }
 
     @Override
@@ -145,8 +165,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req)
-            throws IOException, HttpException {
+    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
         cleanPipeline(ctx.pipeline());
 
         if (!req.uri().startsWith(contextPath)) {
@@ -158,6 +177,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Note: pathString starts with / so path[0] is always empty
         String[] path = pathString.split("/", 3);
+
+        User user;
 
         switch (path[1]) {
         case STATIC_PATH:
@@ -175,12 +196,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             contentExpected = true;
             return;
         case API_PATH:
-            verifyAuthentication(ctx, req);
-            apiRouter.scheduleExecution(ctx, req, pathString);
+            user = authorizeUser(ctx, req);
+            ctx.channel().attr(CTX_USER).set(user);
+            scheduleExecution(ctx, req, pathString);
             contentExpected = true;
             return;
         case WEBSOCKET_PATH:
-            verifyAuthentication(ctx, req);
+            user = authorizeUser(ctx, req);
+            ctx.channel().attr(CTX_USER).set(user);
             if (path.length == 2) { // No instance specified
                 prepareChannelForWebSocketUpgrade(ctx, req, null, null);
             } else {
@@ -216,9 +239,106 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         sendPlainTextError(ctx, req, NOT_FOUND);
     }
 
-    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        User user = authChecker.verifyAuth(ctx, req);
-        ctx.channel().attr(CTX_USER).set(user);
+    private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
+            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+            if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
+                return handleBasicAuth(ctx, req);
+            } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+                return handleBearerAuth(ctx, req);
+            } else {
+                throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
+            }
+        }
+
+        // There may be an access token in the cookie. This use case is added because
+        // of web socket requests coming from the browser where it is not possible to
+        // set custom authorization headers. It'd be interesting if we communicate the
+        // access token via the websocket subprotocol instead (e.g. via temp. route).
+        String accessToken = getAccessTokenFromCookie(req);
+        if (accessToken != null) {
+            return handleAccessToken(ctx, req, accessToken);
+        }
+
+        if (securityStore.getGuestUser().isActive()) {
+            return securityStore.getGuestUser();
+        } else {
+            throw new UnauthorizedException("Missing 'Authorization' or 'Cookie' header");
+        }
+    }
+
+    /**
+     * At this point we do not have the full request (only the header) so we have to configure the pipeline either for
+     * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
+     * dataLoad routes.
+     */
+    private void scheduleExecution(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, String uri) {
+        RouteMatch match = matchRoute(nettyRequest.method(), uri);
+        if (match == null) {
+            throw new NotFoundException();
+        }
+
+        Context ctx = new Context(nettyContext, nettyRequest, match.route, match.regexMatch);
+        log.debug("{}: Routing {} {}", ctx, nettyRequest.method(), nettyRequest.uri());
+
+        nettyContext.channel().attr(CTX_CONTEXT).set(ctx);
+
+        ChannelPipeline pipeline = nettyContext.pipeline();
+        if (ctx.isClientStreaming()) {
+            pipeline.addLast(new HttpContentToByteBufDecoder());
+            pipeline.addLast(new ProtobufVarint32FrameDecoder());
+
+            String body = ctx.getBodySpecifier();
+            Message bodyPrototype = ctx.getRequestPrototype();
+            if (body != null && !"*".equals(body)) {
+                FieldDescriptor field = bodyPrototype.getDescriptorForType().findFieldByName(body);
+                bodyPrototype = bodyPrototype.newBuilderForType().getFieldBuilder(field)
+                        .getDefaultInstanceForType();
+            }
+            pipeline.addLast(new ProtobufDecoder(bodyPrototype));
+            pipeline.addLast(new StreamingClientHandler(ctx));
+
+            if (HttpUtil.is100ContinueExpected(nettyRequest)) {
+                nettyContext.writeAndFlush(HttpUtils.CONTINUE_RESPONSE.retainedDuplicate());
+            }
+        } else {
+            pipeline.addLast(new HttpContentCompressor());
+
+            // this will cause the routeHandler read to be called as soon as the request is complete
+            // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
+            pipeline.addLast(new HttpObjectAggregator(ctx.getMaxBodySize()));
+            pipeline.addLast(routeHandler);
+            nettyContext.fireChannelRead(nettyRequest);
+        }
+    }
+
+    private RouteMatch matchRoute(HttpMethod method, String uri) throws MethodNotAllowedException {
+        for (Route route : httpServer.getRoutes()) {
+            if (route.getHttpMethod().equals(method)) {
+                Matcher matcher = route.matchURI(uri);
+                if (matcher.matches()) {
+                    if (route.isDeprecated()) {
+                        log.warn("A client used a deprecated route: {}", uri);
+                    }
+
+                    return new RouteMatch(matcher, route);
+                }
+            }
+        }
+
+        // Second pass, in case we did not find an exact match
+        Set<HttpMethod> allowedMethods = new HashSet<>(4);
+        for (Route route : httpServer.getRoutes()) {
+            Matcher matcher = route.matchURI(uri);
+            if (matcher.matches()) {
+                allowedMethods.add(method);
+            }
+        }
+        if (!allowedMethods.isEmpty()) {
+            throw new MethodNotAllowedException(method, uri, allowedMethods);
+        }
+
+        return null;
     }
 
     /**
@@ -359,5 +479,80 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return MediaType.from(declaredContentType);
         }
         return MediaType.JSON;
+    }
+
+    private String getAccessTokenFromCookie(HttpRequest req) {
+        HttpHeaders headers = req.headers();
+        if (headers.contains(HttpHeaderNames.COOKIE)) {
+            Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
+            for (Cookie c : cookies) {
+                if ("access_token".equalsIgnoreCase(c.name())) {
+                    return c.value();
+                }
+            }
+        }
+        return null;
+    }
+
+    private User handleBasicAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String userpassEncoded = header.substring(AUTH_TYPE_BASIC.length());
+        String userpassDecoded;
+        try {
+            userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Could not decode Base64-encoded credentials");
+        }
+
+        // Username is not allowed to contain ':', but passwords are
+        String[] parts = userpassDecoded.split(":", 2);
+        if (parts.length < 2) {
+            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
+        }
+
+        try {
+            AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof AuthenticationException) {
+                throw new UnauthorizedException(e.getCause().getMessage());
+            } else {
+                throw new InternalServerErrorException(e.getCause());
+            }
+        }
+    }
+
+    private User handleBearerAuth(ChannelHandlerContext ctx, HttpRequest req) throws UnauthorizedException {
+        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String accessToken = header.substring(AUTH_TYPE_BEARER.length());
+        return handleAccessToken(ctx, req, accessToken);
+    }
+
+    private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String accessToken)
+            throws UnauthorizedException {
+        AuthenticationInfo authenticationInfo = tokenStore.verifyAccessToken(accessToken);
+        if (!securityStore.verifyValidity(authenticationInfo)) {
+            tokenStore.revokeAccessToken(accessToken);
+            throw new UnauthorizedException("Could not verify token");
+        }
+
+        return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+    }
+
+    /**
+     * Represents a matched route pattern
+     */
+    private static final class RouteMatch {
+        final Matcher regexMatch;
+        final Route route;
+
+        RouteMatch(Matcher regexMatch, Route route) {
+            this.regexMatch = regexMatch;
+            this.route = route;
+        }
     }
 }

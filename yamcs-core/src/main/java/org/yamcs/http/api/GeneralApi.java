@@ -12,8 +12,8 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.Route;
-import org.yamcs.http.Router;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.protobuf.AbstractGeneralApi;
 import org.yamcs.protobuf.GetGeneralInfoResponse;
@@ -25,10 +25,10 @@ import com.google.protobuf.Empty;
 
 public class GeneralApi extends AbstractGeneralApi<Context> {
 
-    private Router router;
+    private HttpServer httpServer;
 
-    public GeneralApi(Router router) {
-        this.router = router;
+    public GeneralApi(HttpServer httpServer) {
+        this.httpServer = httpServer;
     }
 
     @Override
@@ -77,10 +77,10 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
     @Override
     public void listRoutes(Context ctx, Empty request, Observer<ListRoutesResponse> observer) {
         List<RouteInfo> result = new ArrayList<>();
-        for (Route route : router.getRoutes()) {
+        for (Route route : httpServer.getRoutes()) {
             RouteInfo.Builder routeb = RouteInfo.newBuilder();
             routeb.setHttpMethod(route.getHttpMethod().toString());
-            routeb.setUrl(router.getContextPath() + route.getUriTemplate());
+            routeb.setUrl(httpServer.getContextPath() + route.getUriTemplate());
             routeb.setRequestCount(route.getRequestCount());
             routeb.setErrorCount(route.getErrorCount());
             RpcDescriptor descriptor = route.getDescriptor();
