@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.api.IamApi;
@@ -35,7 +36,6 @@ import org.yamcs.security.UsernamePasswordToken;
 
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -56,7 +56,7 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
  * </dl>
  */
 @Sharable
-public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class AuthHandler extends Handler {
 
     private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
@@ -71,24 +71,23 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
         String path = HttpUtils.getPathWithoutContext(req, contextPath);
         if (path.equals("/auth")) {
             handleAuthInfoRequest(ctx, req);
+            return;
         } else if (path.equals("/auth/token")) {
             handleTokenRequest(ctx, req);
-        } else {
-            for (AuthModule authModule : securityStore.getAuthModules()) {
-                if (authModule instanceof AuthModuleHttpHandler) {
-                    AuthModuleHttpHandler httpHandler = (AuthModuleHttpHandler) authModule;
-                    if (path.equals("/auth/" + httpHandler.path())) {
-                        httpHandler.handle(ctx, req);
-                        return;
-                    }
-                }
+            return;
+        } else if (path.equals("/auth/spnego")) {
+            SpnegoAuthModule spnegoAuthModule = securityStore.getAuthModule(SpnegoAuthModule.class);
+            if (spnegoAuthModule != null) {
+                spnegoAuthModule.handle(ctx, req);
+                return;
             }
-            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
         }
+
+        HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
     }
 
     /**
@@ -96,7 +95,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
      * determine whether Yamcs is secured or not (e.g. in order to detect if a login screen should be shown to the
      * user).
      */
-    private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
         if (req.method() == HttpMethod.GET) {
             AuthInfo info = createAuthInfo();
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, info);

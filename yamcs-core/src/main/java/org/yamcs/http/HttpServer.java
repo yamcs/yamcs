@@ -51,6 +51,8 @@ import org.yamcs.http.api.RocksDbApi;
 import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TagApi;
+import org.yamcs.http.auth.AuthHandler;
+import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
 import org.yamcs.utils.ExceptionUtil;
@@ -101,14 +103,15 @@ public class HttpServer extends AbstractYamcsService {
     private String contextPath;
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
-    String tlsCert;
-    String tlsKey;
+    private String tlsCert;
+    private String tlsKey;
 
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
 
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
     private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
+    private TokenStore tokenStore = new TokenStore();
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -143,12 +146,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
-        spec.addOption("webRoot", OptionType.STRING)
-                .withDeprecationMessage("This property is automatically set by the yamcs-web jar/plugin.");
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
-        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec)
-                .withDeprecationMessage("Define website options under a key 'yamcs-web' in yamcs.yaml");
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
 
         spec.requireOneOf("port", "tlsPort");
@@ -234,6 +233,9 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new RocksDbApi());
         addApi(new TableApi());
         addApi(new TagApi());
+
+        AuthHandler authHandler = new AuthHandler(tokenStore, contextPath);
+        addHandler("auth", () -> authHandler);
     }
 
     public void addStaticRoot(Path staticRoot) {
@@ -369,6 +371,10 @@ public class HttpServer extends AbstractYamcsService {
     Handler createHandler(String pathSegment) {
         Supplier<Handler> supplier = extraHandlers.get(pathSegment);
         return supplier != null ? supplier.get() : null;
+    }
+
+    public TokenStore getTokenStore() {
+        return tokenStore;
     }
 
     public String getContextPath() {

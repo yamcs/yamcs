@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
 import org.yamcs.logging.Log;
@@ -84,7 +83,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static final String ANY_PATH = "*";
     private static final String API_PATH = "api";
-    private static final String AUTH_PATH = "auth";
     private static final String STATIC_PATH = "static";
     private static final String WEBSOCKET_PATH = "_websocket";
     private static final String AUTH_TYPE_BASIC = "Basic ";
@@ -99,9 +97,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
 
-    private static TokenStore tokenStore = new TokenStore();
     private static RouteHandler routeHandler = new RouteHandler();
-    private AuthHandler authHandler;
 
     private HttpServer httpServer;
     private String contextPath;
@@ -114,7 +110,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
-        authHandler = new AuthHandler(tokenStore, contextPath);
     }
 
     @Override
@@ -188,13 +183,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
-        case AUTH_PATH:
-            ctx.pipeline().addLast(new HttpContentCompressor());
-            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
-            ctx.pipeline().addLast(authHandler);
-            ctx.fireChannelRead(req);
-            contentExpected = true;
-            return;
         case API_PATH:
             user = authorizeUser(ctx, req);
             ctx.channel().attr(CTX_USER).set(user);
@@ -221,7 +209,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        // Maybe a plugin registered a custom handler
         Handler handler = httpServer.createHandler(path[1]);
         if (handler == null) {
             handler = httpServer.createHandler(ANY_PATH);
@@ -534,6 +521,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String accessToken)
             throws UnauthorizedException {
+        TokenStore tokenStore = httpServer.getTokenStore();
         AuthenticationInfo authenticationInfo = tokenStore.verifyAccessToken(accessToken);
         if (!securityStore.verifyValidity(authenticationInfo)) {
             tokenStore.revokeAccessToken(accessToken);
