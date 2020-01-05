@@ -1,16 +1,11 @@
 package org.yamcs.http;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 
 import org.yamcs.api.Api;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 import org.yamcs.security.ObjectPrivilegeType;
@@ -20,29 +15,24 @@ import org.yamcs.security.User;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
 import com.google.protobuf.util.JsonFormat;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpUtil;
 
 /**
  * Request context used in RPC-style endpoints.
  */
-public class Context {
+public abstract class Context {
 
     private static AtomicInteger counter = new AtomicInteger();
 
-    private final Log log;
+    protected final Log log;
 
     /**
      * Unique id for this call.
      */
-    private final String id;
+    private final int id;
 
     /**
      * The Netty request context for an RPC call. In general RPC implementation should avoid using this object. It is
@@ -51,24 +41,18 @@ public class Context {
      */
     public final ChannelHandlerContext nettyContext;
 
-    /**
-     * The Netty HTTP request for an RPC call. In general RPC implementations should avoid using this object. It is
-     * exposed only because we need it for some HTTP-specific functionalities that are not covered by our RPC
-     * implementation (e.g. multipart uploading)
-     */
-    public final HttpRequest nettyRequest;
+    protected final Api<Context> api;
 
-    private final Route route;
-
-    private final Matcher regexMatch;
+    private JsonFormat.Parser jsonParser;
+    private JsonFormat.Printer jsonPrinter;
 
     /**
      * The request user.
      */
     public final User user;
 
-    private long txSize = 0;
-    private int statusCode;
+    protected long txSize = 0;
+    protected int statusCode;
 
     /**
      * A future that covers the full API call.
@@ -77,33 +61,17 @@ public class Context {
      */
     final CompletableFuture<Void> requestFuture = new CompletableFuture<>();
 
-    Context(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, Route route, Matcher regexMatch) {
-        this.id = "R" + counter.incrementAndGet();
+    Context(HttpServer httpServer, ChannelHandlerContext nettyContext, User user, Api<Context> api) {
+        this.id = counter.incrementAndGet();
         this.nettyContext = nettyContext;
-        this.nettyRequest = nettyRequest;
-        this.route = route;
-        this.regexMatch = regexMatch;
-        this.user = nettyContext.channel().attr(HttpRequestHandler.CTX_USER).get();
+        this.user = user;
+        this.api = api;
 
         log = new Log(Context.class);
-        log.setContext(id);
+        log.setContext("c" + id);
 
-        route.incrementRequestCount();
-
-        // Track status for metric purposes
-        requestFuture.whenComplete((channelFuture, e) -> {
-            if (e != null) {
-                log.debug("API request finished with error: {}, transferred bytes: {}", e.getMessage(), txSize);
-            } else {
-                log.debug("API request finished successfully, transferred bytes: {}", txSize);
-            }
-
-            if (statusCode == 0) {
-                log.warn("{}: Status code not reported", this);
-            } else if (statusCode < 200 || statusCode >= 300) {
-                route.incrementErrorCount();
-            }
-        });
+        jsonParser = httpServer.getJsonParser();
+        jsonPrinter = httpServer.getJsonPrinter();
     }
 
     boolean isDone() {
@@ -111,13 +79,10 @@ public class Context {
     }
 
     public Api<Context> getApi() {
-        return route.getApi();
+        return api;
     }
 
-    public MethodDescriptor getMethod() {
-        String methodName = route.getDescriptor().getMethod();
-        return getApi().getDescriptorForType().findMethodByName(methodName);
-    }
+    public abstract MethodDescriptor getMethod();
 
     public boolean isServerStreaming() {
         return getMethod().toProto().getServerStreaming();
@@ -129,24 +94,20 @@ public class Context {
 
     public Message getRequestPrototype() {
         MethodDescriptor method = getMethod();
-        return route.getApi().getRequestPrototype(method);
+        return api.getRequestPrototype(method);
     }
 
     public Message getResponsePrototype() {
         MethodDescriptor method = getMethod();
-        return route.getApi().getResponsePrototype(method);
+        return api.getResponsePrototype(method);
     }
 
-    public String getBodySpecifier() {
-        return route.getBody();
+    public void parseJson(String json, Builder builder) throws InvalidProtocolBufferException {
+        jsonParser.merge(json, builder);
     }
 
-    public int getMaxBodySize() {
-        return route.getMaxBodySize();
-    }
-
-    public String getURI() {
-        return nettyRequest.uri();
+    public String printJson(Message message) throws InvalidProtocolBufferException {
+        return jsonPrinter.print(message);
     }
 
     /**
@@ -182,109 +143,6 @@ public class Context {
         return address.getAddress().getHostAddress();
     }
 
-    public boolean hasRouteParam(String name) {
-        try {
-            return regexMatch.group(name) != null;
-        } catch (IllegalArgumentException e) {
-            // Could likely be improved, we need this catch in case of multiple @Route annotations
-            // for the same method. Because then above call could throw an error if the requested
-            // group is not present in one of the patterns
-            return false;
-        }
-    }
-
-    public String getRouteParam(String name) {
-        return regexMatch.group(name);
-    }
-
-    public boolean hasBody() {
-        return HttpUtil.getContentLength(nettyRequest) > 0;
-    }
-
-    public boolean isOffloaded() {
-        return route.isOffloaded();
-    }
-
-    /**
-     * Deserializes the incoming message extracted from the body. This does not care about what the HTTP method is. Any
-     * required checks should be done elsewhere.
-     * <p>
-     * This method is only able to read JSON or Protobuf, the two auto-supported serialization mechanisms. If a certain
-     * operation needs to read anything else, it should check for that itself, and then use
-     * {@link #getBodyAsInputStream()}.
-     */
-    public <T extends Message.Builder> T getBodyAsMessage(T builder) throws BadRequestException {
-        MediaType sourceContentType = deriveSourceContentType();
-        // Allow for empty body, otherwise user has to specify '{}'
-        if (HttpUtil.getContentLength(nettyRequest) > 0) {
-            if (MediaType.PROTOBUF.equals(sourceContentType)) {
-                try (InputStream cin = getBodyAsInputStream()) {
-                    builder.mergeFrom(cin);
-                } catch (IOException e) {
-                    throw new BadRequestException(e);
-                }
-            } else {
-                try {
-                    String json = getBody().toString(StandardCharsets.UTF_8);
-                    JsonFormat.parser().merge(json, builder);
-                } catch (InvalidProtocolBufferException e) {
-                    throw new BadRequestException(e);
-                }
-            }
-        }
-        return builder;
-    }
-
-    public InputStream getBodyAsInputStream() {
-        return new ByteBufInputStream(getBody());
-    }
-
-    /**
-     * returns the body of the http request
-     * 
-     */
-    public ByteBuf getBody() {
-        if (nettyRequest instanceof FullHttpRequest) {
-            return ((FullHttpRequest) nettyRequest).content();
-        } else {
-            throw new IllegalArgumentException("Can only provide body of a FullHttpRequest");
-        }
-    }
-
-    /**
-     * @return see {@link HttpRequestHandler#getContentType(HttpRequest)}
-     */
-    public MediaType deriveSourceContentType() {
-        return HttpRequestHandler.getContentType(nettyRequest);
-    }
-
-    public MediaType deriveTargetContentType() {
-        return deriveTargetContentType(nettyRequest);
-    }
-
-    /**
-     * Derives an applicable content type for the output. This tries to match JSON or BINARY media types with the ACCEPT
-     * header, else it will revert to the (derived) source content type.
-     *
-     * @return the content type that will be used for the response message
-     */
-    public static MediaType deriveTargetContentType(HttpRequest httpRequest) {
-        MediaType mt = MediaType.JSON;
-        if (httpRequest.headers().contains(HttpHeaderNames.ACCEPT)) {
-            String acceptedContentType = httpRequest.headers().get(HttpHeaderNames.ACCEPT);
-            mt = MediaType.from(acceptedContentType);
-        } else if (httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
-            String declaredContentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            mt = MediaType.from(declaredContentType);
-        }
-
-        // we only support one of these two for the output, so just force JSON by default
-        if (mt != MediaType.JSON && mt != MediaType.PROTOBUF) {
-            mt = MediaType.JSON;
-        }
-        return mt;
-    }
-
     public void checkSystemPrivilege(SystemPrivilege privilege) throws ForbiddenException {
         if (!user.hasSystemPrivilege(privilege)) {
             throw new ForbiddenException("No system privilege '" + privilege + "'");
@@ -303,8 +161,12 @@ public class Context {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
-        return id;
+        return Integer.toString(id);
     }
 }

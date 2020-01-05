@@ -51,10 +51,13 @@ import org.yamcs.http.api.RocksDbApi;
 import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TagApi;
+import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
+import org.yamcs.protobuf.CancelOptions;
+import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -62,6 +65,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.TypeRegistry;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -91,6 +96,11 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
  */
 public class HttpServer extends AbstractYamcsService {
 
+    public static final HttpRoute WEBSOCKET_ROUTE = HttpRoute.newBuilder().setGet("/api/websocket").build();
+
+    // Protobuf weirdness. When unspecified it default to "type.googleapis.com" ...
+    public static final String TYPE_URL_PREFIX = "";
+
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
@@ -110,7 +120,11 @@ public class HttpServer extends AbstractYamcsService {
     private CorsConfig corsConfig;
 
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
+
     private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
+    private JsonFormat.Parser jsonParser;
+    private JsonFormat.Printer jsonPrinter;
+
     private TokenStore tokenStore = new TokenStore();
 
     // Extra handlers at root level. Wrapped in a Supplier because
@@ -233,6 +247,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new RocksDbApi());
         addApi(new TableApi());
         addApi(new TagApi());
+        addApi(new TimeApi());
 
         AuthHandler authHandler = new AuthHandler(tokenStore, contextPath);
         addHandler("auth", () -> authHandler);
@@ -248,14 +263,13 @@ public class HttpServer extends AbstractYamcsService {
 
     public void addApi(Api<Context> api) {
         apis.add(api);
-
         for (MethodDescriptor method : api.getDescriptorForType().getMethods()) {
             RpcDescriptor descriptor = protobufRegistry.getRpc(method.getFullName());
             if (descriptor == null) {
                 throw new UnsupportedOperationException("Unable to find rpc definition: " + method.getFullName());
             }
 
-            if (descriptor.isWebSocket()) {
+            if (WEBSOCKET_ROUTE.equals(descriptor.getHttpRoute())) {
                 topics.add(new Topic(api, descriptor.getWebSocketTopic(), descriptor));
                 for (WebSocketTopic topic : descriptor.getAdditionalWebSocketTopics()) {
                     topics.add(new Topic(api, topic, descriptor));
@@ -267,6 +281,16 @@ public class HttpServer extends AbstractYamcsService {
                 }
             }
         }
+
+        // Regenerate JSON converters with type support (needed for the "Any" type)
+        TypeRegistry.Builder typeRegistryb = TypeRegistry.newBuilder();
+        typeRegistryb.add(CancelOptions.getDescriptor());
+        typeRegistryb.add(Reply.getDescriptor());
+        apis.forEach(a -> typeRegistryb.add(a.getDescriptorForType().getFile().getMessageTypes()));
+        TypeRegistry typeRegistry = typeRegistryb.build();
+
+        jsonParser = JsonFormat.parser().usingTypeRegistry(typeRegistry);
+        jsonPrinter = JsonFormat.printer().usingTypeRegistry(typeRegistry);
 
         // Sort in a way that increases chances of a good URI match
         Collections.sort(routes);
@@ -385,6 +409,10 @@ public class HttpServer extends AbstractYamcsService {
         return routes;
     }
 
+    public List<Topic> getTopics() {
+        return topics;
+    }
+
     public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {
         webSocketExtensions.add(extension);
     }
@@ -395,6 +423,14 @@ public class HttpServer extends AbstractYamcsService {
 
     public ProtobufRegistry getProtobufRegistry() {
         return protobufRegistry;
+    }
+
+    public JsonFormat.Parser getJsonParser() {
+        return jsonParser;
+    }
+
+    public JsonFormat.Printer getJsonPrinter() {
+        return jsonPrinter;
     }
 
     public CorsConfig getCorsConfig() {

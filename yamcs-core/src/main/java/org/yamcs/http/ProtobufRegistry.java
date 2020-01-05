@@ -47,6 +47,7 @@ public class ProtobufRegistry {
 
     public ProtobufRegistry() {
         extensionRegistry.add(AnnotationsProto.route);
+        extensionRegistry.add(AnnotationsProto.websocket);
 
         try (InputStream in = getClass().getResourceAsStream("/yamcs-api.protobin")) {
             if (in == null) {
@@ -101,6 +102,10 @@ public class ProtobufRegistry {
                 }
             }
         }
+    }
+
+    public void importMessageTypes() {
+
     }
 
     private void scanComments(FileDescriptorProto file) {

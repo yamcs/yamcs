@@ -1,7 +1,11 @@
 package org.yamcs.http;
 
 import org.yamcs.api.Api;
+import org.yamcs.api.Observer;
 import org.yamcs.api.WebSocketTopic;
+
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Message;
 
 public class Topic {
 
@@ -33,5 +37,23 @@ public class Topic {
 
     public String getName() {
         return name;
+    }
+
+    public MethodDescriptor getMethodDescriptor() {
+        String methodName = descriptor.getMethod();
+        return api.getDescriptorForType().findMethodByName(methodName);
+    }
+
+    public Message getRequestPrototype() {
+        return api.getRequestPrototype(getMethodDescriptor());
+    }
+
+    public Message getResponsePrototype() {
+        return api.getResponsePrototype(getMethodDescriptor());
+    }
+
+    public void callMethod(Context ctx, Message request, Observer<Message> observer) {
+        MethodDescriptor method = getMethodDescriptor();
+        api.callMethod(method, ctx, request, observer);
     }
 }

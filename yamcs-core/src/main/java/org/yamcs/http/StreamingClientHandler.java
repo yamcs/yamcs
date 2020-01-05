@@ -12,13 +12,13 @@ import io.netty.handler.codec.DecoderException;
 
 public class StreamingClientHandler extends SimpleChannelInboundHandler<Message> {
 
-    private Context ctx;
+    private RouteContext ctx;
     private Message requestPrototype;
     private Observer<Message> clientObserver;
 
     private boolean errorState = false;
 
-    public StreamingClientHandler(Context ctx) {
+    public StreamingClientHandler(RouteContext ctx) {
         this.ctx = ctx;
 
         MethodDescriptor method = ctx.getMethod();

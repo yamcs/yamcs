@@ -15,7 +15,6 @@ import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -39,7 +38,7 @@ public class ServerStreamingObserver implements Observer<Message> {
     private static final int CHUNK_SIZE = 8096;
     private static final Log log = new Log(ServerStreamingObserver.class);
 
-    private Context ctx;
+    private RouteContext ctx;
 
     private MediaType mediaType;
 
@@ -51,7 +50,7 @@ public class ServerStreamingObserver implements Observer<Message> {
     private boolean completed;
     private Runnable cancelHandler;
 
-    public ServerStreamingObserver(Context ctx) {
+    public ServerStreamingObserver(RouteContext ctx) {
         this.ctx = ctx;
     }
 
@@ -75,7 +74,7 @@ public class ServerStreamingObserver implements Observer<Message> {
                 if (MediaType.PROTOBUF.equals(mediaType)) {
                     message.writeDelimitedTo(bufOut);
                 } else {
-                    String json = JsonFormat.printer().print(message);
+                    String json = ctx.printJson(message);
                     bufOut.write(json.getBytes(StandardCharsets.UTF_8));
                 }
             }
@@ -119,7 +118,7 @@ public class ServerStreamingObserver implements Observer<Message> {
                 filename = body.getFilename();
             }
         } else {
-            mediaType = Context.deriveTargetContentType(ctx.nettyRequest);
+            mediaType = RouteContext.deriveTargetContentType(ctx.nettyRequest);
         }
 
         startChunkedTransfer(mediaType, filename);

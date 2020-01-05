@@ -10,10 +10,6 @@ import com.google.protobuf.DescriptorProtos.DescriptorProto;
 
 public class RpcDescriptor {
 
-    private static final HttpRoute WEBSOCKET_ROUTE = HttpRoute.newBuilder()
-            .setGet("/api/websocket")
-            .build();
-
     private final String service;
     private final String method;
     private final DescriptorProto inputType;
@@ -39,7 +35,7 @@ public class RpcDescriptor {
 
     public RpcDescriptor(String service, String method, DescriptorProto inputType, DescriptorProto outputType,
             WebSocketTopic websocketTopic, String description) {
-        this(service, method, inputType, outputType, WEBSOCKET_ROUTE, description);
+        this(service, method, inputType, outputType, HttpServer.WEBSOCKET_ROUTE, description);
         this.websocketTopic = websocketTopic;
         additionalWebSocketTopics.addAll(websocketTopic.getAdditionalBindingsList());
     }
@@ -70,10 +66,6 @@ public class RpcDescriptor {
 
     public List<HttpRoute> getAdditionalHttpRoutes() {
         return additionalHttpRoutes;
-    }
-
-    public boolean isWebSocket() {
-        return httpRoute == WEBSOCKET_ROUTE;
     }
 
     public WebSocketTopic getWebSocketTopic() {

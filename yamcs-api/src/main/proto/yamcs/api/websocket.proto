@@ -11,19 +11,52 @@ import "google/protobuf/any.proto";
 import "yamcs/api/exception.proto";
 
 message ClientMessage {
-  uint32 sequenceNumber = 2;
-  string resource = 3;
-  string operation = 4;
-  google.protobuf.Any data = 5;
+  // Message type. Typically the name of a topic to subscribe to, or a built-in like "cancel".
+  string type = 1;
+  
+  // Options specific to the type
+  google.protobuf.Any options = 2;
+  
+  // Optional client-side message identifier, returned in reply messages.
+  int32 id = 3;
 }
 
 message ServerMessage {
 
-  int32 sequenceNumber = 1; // allow for -1
+  // Message type. Typically the name of the subscribed topic, or a built-in like "reply".
+  string type = 1;
+
+  // If applicable, the call associated with this message
+  int32 call = 2;
   
-  oneof type {
-    google.protobuf.Any reply = 2;
-    ExceptionMessage exception = 3;
-    google.protobuf.Any data = 4;
+  // Sequence counter (scoped to the call)
+  int32 seq = 3;
+
+  google.protobuf.Any data = 4;
+}
+
+// Message to be provided in a ClientMessage if type is "cancel".
+// This is a special message type that allows cancelling a call.
+message CancelOptions {
+  int32 call = 1;
+}
+
+// Message to be provided in the data field of a ServerMessage if type is "reply".
+message Reply {
+
+  // The id of the original client message (if provided)
+  int32 reply_to = 1;
+  
+  // If set, the call was not successful.
+  ExceptionMessage exception = 2;
+}
+
+// Message to be provided in the data field of a ServerMessage if type is "state".
+message State {
+  message CallInfo {
+    int32 call = 1;
+    string type = 2;
+    google.protobuf.Any options = 3;
   }
+  repeated CallInfo calls = 1;
 }

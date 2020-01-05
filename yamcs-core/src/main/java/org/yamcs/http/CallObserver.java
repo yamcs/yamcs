@@ -16,7 +16,6 @@ import org.yamcs.utils.ExceptionUtil;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -36,11 +35,11 @@ public class CallObserver implements Observer<Message> {
 
     private static final Log log = new Log(CallObserver.class);
 
-    private Context ctx;
+    private RouteContext ctx;
 
     private boolean completed;
 
-    public CallObserver(Context ctx) {
+    public CallObserver(RouteContext ctx) {
         this.ctx = ctx;
     }
 
@@ -120,7 +119,7 @@ public class CallObserver implements Observer<Message> {
         } else {
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
                 contentType = MediaType.JSON;
-                String str = JsonFormat.printer().print(responseMsg);
+                String str = ctx.printJson(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 HttpResponseStatus status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -135,7 +134,7 @@ public class CallObserver implements Observer<Message> {
         }
     }
 
-    static ChannelFuture sendError(Context ctx, HttpException t) {
+    static ChannelFuture sendError(RouteContext ctx, HttpException t) {
         ExceptionMessage msg = t.toMessage();
         ctx.reportStatusCode(t.getStatus().code());
         return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, t.getStatus(), msg);

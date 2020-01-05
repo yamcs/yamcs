@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,8 +89,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
 
-    public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
-    public static final AttributeKey<Context> CTX_CONTEXT = AttributeKey.valueOf("routerContext");
+    public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
 
@@ -185,22 +185,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         case API_PATH:
             user = authorizeUser(ctx, req);
-            ctx.channel().attr(CTX_USER).set(user);
-            scheduleExecution(ctx, req, pathString);
+            handleApiRequest(ctx, req, user, pathString);
             contentExpected = true;
             return;
         case WEBSOCKET_PATH:
             user = authorizeUser(ctx, req);
-            ctx.channel().attr(CTX_USER).set(user);
             if (path.length == 2) { // No instance specified
-                prepareChannelForWebSocketUpgrade(ctx, req, null, null);
+                prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);
             } else {
                 path = path[2].split("/", 2);
                 if (YamcsServer.hasInstance(path[0])) {
                     if (path.length == 1) {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null);
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null, user);
                     } else {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1]);
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1], user);
                     }
                 } else {
                     sendPlainTextError(ctx, req, NOT_FOUND);
@@ -259,18 +257,29 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
      * dataLoad routes.
      */
-    private void scheduleExecution(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, String uri) {
+    private void handleApiRequest(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, User user, String uri) {
+        if (uri.equals(HttpServer.WEBSOCKET_ROUTE.getGet())) {
+            if (nettyRequest.method() == HttpMethod.GET) {
+                prepareChannelForWebSocketUpgrade(nettyContext, nettyRequest, user);
+                return;
+            } else {
+                throw new MethodNotAllowedException(nettyRequest.method(), uri, Arrays.asList(HttpMethod.GET));
+            }
+        }
+
         RouteMatch match = matchRoute(nettyRequest.method(), uri);
         if (match == null) {
             throw new NotFoundException();
         }
 
-        Context ctx = new Context(nettyContext, nettyRequest, match.route, match.regexMatch);
+        RouteContext ctx = new RouteContext(httpServer, nettyContext, user, nettyRequest, match.route,
+                match.regexMatch);
         log.debug("{}: Routing {} {}", ctx, nettyRequest.method(), nettyRequest.uri());
 
         nettyContext.channel().attr(CTX_CONTEXT).set(ctx);
 
         ChannelPipeline pipeline = nettyContext.pipeline();
+
         if (ctx.isClientStreaming()) {
             pipeline.addLast(new HttpContentToByteBufDecoder());
             pipeline.addLast(new ProtobufVarint32FrameDecoder());
@@ -334,8 +343,38 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      *            context for this channel handler
      */
+    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext nettyContext, HttpRequest req, User user) {
+        contentExpected = true;
+
+        ChannelPipeline pipeline = nettyContext.pipeline();
+        pipeline.addLast(new HttpObjectAggregator(65536));
+
+        int maxFrameLength = wsConfig.getInt("maxFrameLength");
+        int maxDropped = wsConfig.getInt("connectionCloseNumDroppedMsg");
+        int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
+        int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
+        WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
+
+        // Add websocket-specific handlers to channel pipeline
+        String webSocketPath = req.uri();
+        String subprotocols = "json, protobuf";
+        pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
+
+        pipeline.addLast(new NewWebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
+
+        // Effectively trigger websocket-handler (will attempt handshake)
+        nettyContext.fireChannelRead(req);
+    }
+
+    /**
+     * Adapts Netty's pipeline for allowing WebSocket upgrade
+     *
+     * @param ctx
+     *            context for this channel handler
+     * @deprecated
+     */
     private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
-            String processor) {
+            String processor, User user) {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
@@ -353,7 +392,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setProcessor(processor);
-        originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
+        originalRequestInfo.setUser(user);
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)

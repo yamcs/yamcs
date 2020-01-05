@@ -10,7 +10,8 @@ option java_package = "org.yamcs.api";
 
 // Generic holder for an exception
 message ExceptionMessage {
-  string type = 1;
-  string msg = 2;
-  google.protobuf.Any detail = 3;
+  int32 code = 1;
+  string type = 2;
+  string msg = 3;
+  google.protobuf.Any detail = 4;
 }

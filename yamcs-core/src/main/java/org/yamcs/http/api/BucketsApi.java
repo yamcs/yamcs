@@ -16,6 +16,7 @@ import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.RouteContext;
 import org.yamcs.http.ServiceUnavailableException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractBucketsApi;
@@ -45,6 +46,7 @@ import com.google.protobuf.Empty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostMultipartRequestDecoder;
@@ -157,13 +159,13 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         checkManageBucketPrivilege(bucketName, ctx.user);
         Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
 
-        String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        String contentType = ((RouteContext) ctx).nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (contentType.startsWith("multipart/form-data")) {
             uploadObjectMultipartFormData(ctx, bucket);
         } else if (contentType.startsWith("multipart/related")) {
             uploadObjectMultipartRelated(ctx, bucket);
         } else {
-            ByteBuf buf = ctx.getBody();
+            ByteBuf buf = ((RouteContext) ctx).getBody();
             saveObject(bucket, objectName, contentType, buf, null);
         }
         observer.complete(Empty.getDefaultInstance());
@@ -243,7 +245,8 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     private void uploadObjectMultipartFormData(Context ctx, Bucket bucket) throws HttpException {
-        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(ctx.nettyRequest);
+        HttpRequest nettyRequest = ((RouteContext) ctx).nettyRequest;
+        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(nettyRequest);
 
         FileUpload fup = null;
         Map<String, String> metadata = new HashMap<>();

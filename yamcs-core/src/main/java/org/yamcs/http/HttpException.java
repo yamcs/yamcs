@@ -48,6 +48,7 @@ public abstract class HttpException extends RuntimeException {
 
     public ExceptionMessage toMessage() {
         ExceptionMessage.Builder msgb = ExceptionMessage.newBuilder();
+        msgb.setCode(getStatus().code());
         msgb.setType(getClass().getSimpleName());
 
         // Try to get a specific message. i.e. turn "Type1: Type2: Type3: Message" into "Message"
@@ -62,8 +63,7 @@ public abstract class HttpException extends RuntimeException {
         }
 
         if (detail != null) {
-            Any.Builder anyb = Any.newBuilder().mergeFrom(detail);
-            msgb.setDetail(anyb);
+            msgb.setDetail(Any.pack(detail, HttpServer.TYPE_URL_PREFIX));
         }
 
         return msgb.build();

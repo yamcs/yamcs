@@ -37,7 +37,7 @@ public class RouteHandler extends Handler {
 
     @Override
     public void handle(ChannelHandlerContext nettyContext, FullHttpRequest req) {
-        Context ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
+        RouteContext ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
 
         if (ctx.isOffloaded()) {
             ctx.getBody().retain();
@@ -56,7 +56,7 @@ public class RouteHandler extends Handler {
         nettyContext.close();
     }
 
-    private void dispatch(Context ctx) {
+    private void dispatch(RouteContext ctx) {
         ScheduledFuture<?> blockWarning = null;
         if (!ctx.isOffloaded()) {
             blockWarning = timer.schedule(() -> {
@@ -99,7 +99,7 @@ public class RouteHandler extends Handler {
         }
     }
 
-    private void handleException(Context ctx, Throwable t) {
+    private void handleException(RouteContext ctx, Throwable t) {
         if (!(t instanceof HttpException)) {
             t = new InternalServerErrorException(t);
         }

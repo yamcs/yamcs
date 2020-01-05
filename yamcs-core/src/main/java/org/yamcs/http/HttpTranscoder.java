@@ -26,7 +26,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  */
 public class HttpTranscoder {
 
-    public static Message transcode(Context ctx) throws HttpTranscodeException {
+    public static Message transcode(RouteContext ctx) throws HttpTranscodeException {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(ctx.getURI());
         Message requestPrototype = ctx.getRequestPrototype();
         Message.Builder requestb = requestPrototype.newBuilderForType();
@@ -64,7 +64,7 @@ public class HttpTranscoder {
         return requestb.build();
     }
 
-    private static HttpBody toHttpBody(Context ctx) {
+    private static HttpBody toHttpBody(RouteContext ctx) {
         String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_ENCODING);
 
         HttpBody.Builder bodyb = HttpBody.newBuilder();
