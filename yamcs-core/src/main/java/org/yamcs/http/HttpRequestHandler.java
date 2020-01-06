@@ -89,6 +89,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
 
+    public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("httpRequest");
     public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
@@ -110,6 +111,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        httpServer.trackClientChannel(ctx.channel());
+        super.channelActive(ctx);
     }
 
     @Override
@@ -162,6 +169,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
         cleanPipeline(ctx.pipeline());
+        ctx.channel().attr(CTX_HTTP_REQUEST).set(req);
 
         if (!req.uri().startsWith(contextPath)) {
             sendPlainTextError(ctx, req, NOT_FOUND);
@@ -371,7 +379,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      *
      * @param ctx
      *            context for this channel handler
-     * @deprecated
      */
     private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
             String processor, User user) {

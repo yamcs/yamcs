@@ -7,7 +7,7 @@ import { AdminPage } from './AdminPage';
 import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketsPage } from './buckets/BucketsPage';
-import { ClientsPage } from './clients/ClientsPage';
+import { ConnectionsPage } from './connections/ConnectionsPage';
 import { AdminHomePage } from './home/AdminHomePage';
 import { CreateGroupPage } from './iam/CreateGroupPage';
 import { CreateServiceAccountPage } from './iam/CreateServiceAccountPage';
@@ -57,8 +57,8 @@ const routes: Routes = [
         ],
       },
       {
-        path: 'clients',
-        component: ClientsPage,
+        path: 'connections',
+        component: ConnectionsPage,
       },
       {
         path: 'routes',
@@ -190,7 +190,7 @@ export const routingComponents = [
   BucketsPage,
   BucketPage,
   BucketPlaceholderPage,
-  ClientsPage,
+  ConnectionsPage,
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,

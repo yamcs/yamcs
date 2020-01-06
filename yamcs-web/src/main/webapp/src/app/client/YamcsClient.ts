@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { ClientsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
+import { AuthInfo, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -324,22 +324,16 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as RoleInfo;
   }
 
-  async getClients() {
-    const url = `${this.apiUrl}/clients`;
+  async getClientConnections() {
+    const url = `${this.apiUrl}/connections`;
     const response = await this.doFetch(url);
-    const wrapper = await response.json() as ClientsWrapper;
-    return wrapper.clients || [];
+    const wrapper = await response.json() as ClientConnectionsWrapper;
+    return wrapper.connections || [];
   }
 
-  async getClient(id: number) {
-    const url = `${this.apiUrl}/clients/${id}`;
-    const response = await this.doFetch(url);
-    return await response.json() as ClientInfo;
-  }
-
-  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
-    this.prepareWebSocketClient();
-    return this.webSocketClient!.getClientUpdates();
+  async closeClientConnection(id: string) {
+    const url = `${this.apiUrl}/connections/${id}`;
+    return await this.doFetch(url, { method: 'DELETE' });
   }
 
   async getSystemInfo() {

@@ -70,8 +70,11 @@ import com.google.protobuf.util.JsonFormat.TypeRegistry;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -83,6 +86,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
@@ -103,6 +107,7 @@ public class HttpServer extends AbstractYamcsService {
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private ChannelGroup clientChannels;
 
     private List<Api<Context>> apis = new ArrayList<>();
     private List<Route> routes = new ArrayList<>();
@@ -172,6 +177,8 @@ public class HttpServer extends AbstractYamcsService {
     @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
+
+        clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
         port = config.getInt("port", -1);
         tlsPort = config.getInt("tlsPort", -1);
@@ -435,6 +442,18 @@ public class HttpServer extends AbstractYamcsService {
 
     public CorsConfig getCorsConfig() {
         return corsConfig;
+    }
+
+    void trackClientChannel(Channel channel) {
+        clientChannels.add(channel);
+    }
+
+    public List<Channel> getClientChannels() {
+        return new ArrayList<>(clientChannels);
+    }
+
+    public void closeChannel(String id) {
+        clientChannels.close(ch -> ch.id().asShortText().equals(id));
     }
 
     @Override

@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
@@ -24,6 +25,8 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         if (sslCtx != null) {
             pipeline.addLast(sslCtx.newHandler(ch.alloc()));
         }
+
+        pipeline.addLast(new ChannelTrafficShapingHandler(5000));
 
         pipeline.addLast(new HttpServerCodec());
 

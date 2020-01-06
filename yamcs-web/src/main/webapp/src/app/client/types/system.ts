@@ -66,7 +66,7 @@ export interface Instance {
   name: string;
   state: InstanceState;
   processor: Processor[];
-  labels?: { [key: string]: string };
+  labels?: { [key: string]: string; };
 }
 
 export interface InstanceTemplate {
@@ -106,13 +106,31 @@ export interface ClientInfo {
   loginTime: string;
 }
 
+export interface ClientConnectionInfo {
+  id: string;
+  open: boolean;
+  active: boolean;
+  writable: boolean;
+  remoteAddress: string;
+  localAddress: string;
+  readBytes: number;
+  writtenBytes: number;
+  readThroughput: number;
+  writeThroughput: number;
+  httpRequest: HttpRequestInfo;
+}
+
+export interface HttpRequestInfo {
+  protocol: string;
+  method: string;
+  uri: string;
+  keepAlive: string;
+  userAgent: string;
+}
+
 export interface EditClientRequest {
   instance?: string;
   processor?: string;
-}
-
-export interface ClientSubscriptionResponse {
-  client$: Observable<ClientInfo>;
 }
 
 export interface CreateUserRequest {
@@ -436,7 +454,7 @@ export interface ObjectInfo {
   name: string;
   created: string;
   size: number;
-  metadata: { [key: string]: string };
+  metadata: { [key: string]: string; };
 }
 
 export interface CreateBucketRequest {
@@ -451,8 +469,8 @@ export interface ListObjectsOptions {
 export interface CreateInstanceRequest {
   name: string;
   template: string;
-  templateArgs?: { [key: string]: string };
-  labels?: { [key: string]: string };
+  templateArgs?: { [key: string]: string; };
+  labels?: { [key: string]: string; };
 }
 
 export interface CreateGroupRequest {

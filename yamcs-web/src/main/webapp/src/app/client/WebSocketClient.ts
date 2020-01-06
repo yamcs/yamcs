@@ -3,7 +3,7 @@ import { filter, first, map, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { AlarmSubscriptionRequest, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
+import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -285,34 +285,6 @@ export class WebSocketClient {
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt!.endsWith('ALARM_DATA')),
             map(msg => msg[3].data as Alarm),
-          );
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
-  async getClientUpdates() {
-    const requestId = this.emit({
-      management: 'subscribe',
-    });
-
-    return new Promise<ClientSubscriptionResponse>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = {} as ClientSubscriptionResponse;
-          response.client$ = this.webSocketConnection$.pipe(
-            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
-            map(msg => msg[3].data as ClientInfo),
           );
           resolve(response);
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {

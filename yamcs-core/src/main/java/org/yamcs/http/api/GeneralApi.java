@@ -1,5 +1,6 @@
 package org.yamcs.http.api;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,16 +13,27 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
+import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.protobuf.AbstractGeneralApi;
+import org.yamcs.protobuf.ClientConnectionInfo;
+import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
+import org.yamcs.protobuf.CloseConnectionRequest;
 import org.yamcs.protobuf.GetGeneralInfoResponse;
 import org.yamcs.protobuf.GetGeneralInfoResponse.PluginInfo;
+import org.yamcs.protobuf.ListClientConnectionsResponse;
 import org.yamcs.protobuf.ListRoutesResponse;
 import org.yamcs.protobuf.RouteInfo;
 
 import com.google.protobuf.Empty;
+
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.TrafficCounter;
 
 public class GeneralApi extends AbstractGeneralApi<Context> {
 
@@ -107,5 +119,61 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
         ListRoutesResponse.Builder responseb = ListRoutesResponse.newBuilder();
         responseb.addAllRoutes(result);
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void listClientConnections(Context ctx, Empty request, Observer<ListClientConnectionsResponse> observer) {
+        List<ClientConnectionInfo> result = new ArrayList<>();
+        for (Channel channel : httpServer.getClientChannels()) {
+            ClientConnectionInfo.Builder connectionb = ClientConnectionInfo.newBuilder()
+                    .setId(channel.id().asShortText())
+                    .setOpen(channel.isOpen())
+                    .setActive(channel.isActive())
+                    .setWritable(channel.isWritable());
+
+            InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+            if (address != null) {
+                connectionb.setRemoteAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
+            }
+
+            ChannelTrafficShapingHandler trafficHandler = channel.pipeline()
+                    .get(ChannelTrafficShapingHandler.class);
+            if (trafficHandler != null) {
+                TrafficCounter counter = trafficHandler.trafficCounter();
+                if (counter != null) {
+                    connectionb.setReadThroughput(counter.lastReadThroughput());
+                    connectionb.setWriteThroughput(counter.lastWriteThroughput());
+                    connectionb.setReadBytes(counter.cumulativeReadBytes());
+                    connectionb.setWrittenBytes(counter.cumulativeWrittenBytes());
+                }
+            }
+
+            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
+            if (httpRequest != null) {
+                HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
+                        .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
+                        .setProtocol(httpRequest.protocolVersion().text())
+                        .setMethod(httpRequest.method().name())
+                        .setUri(httpRequest.uri());
+                String userAgent = httpRequest.headers().getAsString("User-Agent");
+                if (userAgent != null) {
+                    httpRequestb.setUserAgent(userAgent);
+                }
+
+                connectionb.setHttpRequest(httpRequestb.build());
+            }
+
+            result.add(connectionb.build());
+        }
+
+        ListClientConnectionsResponse.Builder responseb = ListClientConnectionsResponse.newBuilder();
+        responseb.addAllConnections(result);
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void closeConnection(Context ctx, CloseConnectionRequest request, Observer<Empty> observer) {
+        httpServer.closeChannel(request.getId());
+        observer.complete(Empty.getDefaultInstance());
     }
 }
