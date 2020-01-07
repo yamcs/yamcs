@@ -7,7 +7,7 @@ package org.yamcs.yarch;
  *
  */
 public class HistogramInfo {
-    final String columnName;
+    protected final String columnName;
     public HistogramInfo(String columnName) {
         this.columnName = columnName;
     }

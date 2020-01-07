@@ -40,6 +40,8 @@ public class RdbStorageEngine implements StorageEngine {
 
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
+    public static final byte[] ZERO_BYTES = new byte[0];
+
 
     static {
         RocksDB.loadLibrary();

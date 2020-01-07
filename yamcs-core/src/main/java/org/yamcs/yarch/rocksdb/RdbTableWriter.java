@@ -1,5 +1,8 @@
 package org.yamcs.yarch.rocksdb;
 
+import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
+import static org.yamcs.yarch.HistogramSegment.segmentStart;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +26,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;;
 
 /**
@@ -264,12 +266,13 @@ public class RdbTableWriter extends TableWriter {
     }
 
     private void addHistogramForColumn(YRDB rdb, int histoTbsIndex, byte[] columnv, long time) throws RocksDBException {
-        long sstart = time / HistogramSegment.GROUPING_FACTOR;
+        long sstart = segmentStart(time);
+        
         int dtime = (int) (time % HistogramSegment.GROUPING_FACTOR);
 
         HistogramSegment segment;
-        byte[] key = HistogramSegment.key(sstart, columnv);
-        byte[] val = rdb.get(dbKey(histoTbsIndex, key));
+        byte[] histoDbKey = histoDbKey(histoTbsIndex, sstart, columnv);
+        byte[] val = rdb.get(histoDbKey);
         if (val == null) {
             segment = new HistogramSegment(columnv, sstart);
         } else {
@@ -277,8 +280,7 @@ public class RdbTableWriter extends TableWriter {
         }
 
         segment.merge(dtime);
-
-        byte[] k = dbKey(histoTbsIndex, segment.key());
-        rdb.put(k, segment.val());
+        rdb.put(histoDbKey, segment.val());
     }
+    
 }

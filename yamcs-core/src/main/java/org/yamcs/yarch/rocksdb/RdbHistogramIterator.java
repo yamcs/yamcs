@@ -1,7 +1,9 @@
 package org.yamcs.yarch.rocksdb;
 
 import static org.yamcs.yarch.HistogramSegment.segmentStart;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
+
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.*;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -73,8 +75,9 @@ public class RdbHistogramIterator implements HistogramIterator {
         }
 
         PartitionManager.Interval intv = partitionIterator.next();
+        
+        
         RdbHistogramInfo hist = (RdbHistogramInfo) intv.getHistogram(colName);
-
         if (hist == null) {
             readNextPartition();
             return;
@@ -82,8 +85,7 @@ public class RdbHistogramIterator implements HistogramIterator {
         rdb = tablespace.getRdb(hist.partitionDir, false);
 
         long segStart = interval.hasStart() ? segmentStart(interval.getStart()) : 0;
-        byte[] dbKeyStart = ByteArrayUtils.encodeInt(hist.tbsIndex, new byte[12], 0);
-        ByteArrayUtils.encodeLong(segStart, dbKeyStart, TBS_INDEX_SIZE);
+        byte[] dbKeyStart = histoDbKey(hist.tbsIndex, segStart, ZERO_BYTES);
 
         boolean strictEnd;
         byte[] dbKeyStop;
@@ -187,7 +189,7 @@ public class RdbHistogramIterator implements HistogramIterator {
         try {
             records.clear();
             long sstart = segmentStart(time);
-            interval.setStart(sstart);
+            interval.setStart(HistogramSegment.GROUPING_FACTOR * sstart);
             PartitionManager partMgr = RdbStorageEngine.getInstance().getPartitionManager(tblDef);
             partitionIterator = partMgr.intervalIterator(interval);
             if (!partitionIterator.hasNext()) {
@@ -206,10 +208,7 @@ public class RdbHistogramIterator implements HistogramIterator {
             rdb = tablespace.getRdb(hist.partitionDir, false);
 
             long segStart = segmentStart(time);
-            byte[] dbKeyStart = ByteArrayUtils.encodeInt(hist.tbsIndex,
-                    new byte[TBS_INDEX_SIZE + 8 + columnValue.length], 0);
-            ByteArrayUtils.encodeLong(segStart, dbKeyStart, TBS_INDEX_SIZE);
-            System.arraycopy(columnValue, 0, dbKeyStart, TBS_INDEX_SIZE + 8, columnValue.length);
+            byte[] dbKeyStart = histoDbKey(hist.tbsIndex, segStart, columnValue);
 
             boolean strictEnd;
             byte[] dbKeyStop;
@@ -225,7 +224,6 @@ public class RdbHistogramIterator implements HistogramIterator {
             if (segmentIterator != null) {
                 segmentIterator.close();
             }
-
             segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, false, dbKeyStop, strictEnd);
             if (!segmentIterator.isValid()) {
                 readNextPartition();
@@ -237,6 +235,7 @@ public class RdbHistogramIterator implements HistogramIterator {
             long sstart1 = ByteArrayUtils.decodeLong(key, TBS_INDEX_SIZE);
             byte[] columnValue1 = new byte[key.length - TBS_INDEX_SIZE - 8];
             System.arraycopy(key, TBS_INDEX_SIZE + 8, columnValue1, 0, columnValue1.length);
+            
             if (sstart1 != sstart || !Arrays.equals(columnValue, columnValue1)) {
                 readNextSegments();
                 return;

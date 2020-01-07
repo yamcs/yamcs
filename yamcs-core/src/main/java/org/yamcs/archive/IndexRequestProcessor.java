@@ -31,7 +31,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.protobuf.util.Durations;
-import com.google.protobuf.util.TimeUtil;
 import com.google.protobuf.util.Timestamps;
 
 /**
@@ -40,7 +39,7 @@ import com.google.protobuf.util.Timestamps;
  * @author nm
  *
  */
-class IndexRequestProcessor implements Runnable {
+public class IndexRequestProcessor implements Runnable {
     final String yamcsInstance;
     final static AtomicInteger counter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
@@ -80,8 +79,9 @@ class IndexRequestProcessor implements Runnable {
         if (recToken != null) {
             tokenData = tokenCache.getIfPresent(recToken);
             if (tokenData == null) {
-                throw new IllegalArgumentException("Invalid token specified");
+                throw new InvalidTokenException();
             }
+            tokenCache.invalidate(recToken);
             this.token = recToken;
         }
 
@@ -155,10 +155,12 @@ class IndexRequestProcessor implements Runnable {
             }
             HistoRequest hr = hreq[tokenData.lastHistoId];
             if (hr != null) {
-                hr.seekTime = tokenData.lastTime;
+                hr.seekTime = tokenData.lastTime+1;
                 hr.seekValue = tokenData.lastName;
                 hr.seekId = tokenData.lastId;
             }
+            token = getRandomToken();
+            tokenCache.put(token, tokenData);
         } else if (limit > 0) {
             tokenData = new TokenData();
             token = getRandomToken();
@@ -391,5 +393,8 @@ class IndexRequestProcessor implements Runnable {
             this.mergeTime = mergeTime;
             this.name2id = name2id;
         }
+    }
+    
+    static public class InvalidTokenException extends RuntimeException {
     }
 }

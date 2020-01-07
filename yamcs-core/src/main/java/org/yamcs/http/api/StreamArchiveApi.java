@@ -23,6 +23,7 @@ import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.IndexRequestListener;
+import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.archive.XtceTmRecorder;
@@ -634,8 +635,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         } else {
             requestb.setSendAllTm(true);
         }
-
-        handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
+        try {
+            handleOneIndexResult(observer, indexServer, requestb.build(), limit, next);
+        } catch (InvalidTokenException e) {
+            throw new BadRequestException("Invalid token specified");
+        }
+        
     }
 
     @Override
