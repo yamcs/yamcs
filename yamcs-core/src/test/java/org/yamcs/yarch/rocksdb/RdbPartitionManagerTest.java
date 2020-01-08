@@ -125,4 +125,19 @@ public class RdbPartitionManagerTest {
         Path path = Paths.get(tmpdir);
         FileUtils.deleteRecursivelyIfExists(path);
     }
+    
+    @Test
+    public void createAndIteratePartitions1() throws Exception {
+        Tablespace tablespace = new Tablespace("test");
+        String tmpdir = Files.createTempDir().getAbsolutePath();
+        tablespace.setCustomDataDir(tmpdir);
+
+        tablespace.loadDb(false);
+
+        TableDefinition tblDef = getTableDefTimeAndValue();
+
+        RdbPartitionManager pm = new RdbPartitionManager(tablespace, YarchDatabase.getInstance("test"), tblDef);
+        RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("0001-01-01T00:00:00"), 1);
+        assertEquals("0001/001", part.dir);
+    }
 }

@@ -39,7 +39,7 @@ public abstract class PartitionManager {
     final protected TableDefinition tableDefinition;
     final protected PartitioningSpec partitioningSpec;
 
-    protected PartitionedTimeInterval<Interval> intervals = new PartitionedTimeInterval<>();
+    protected final PartitionedTimeInterval<Interval> intervals = new PartitionedTimeInterval<>();
     // pcache is a cache of the last interval where data has been inserted
     // in case of value based partition, it is basically the list of all
     // partitions

@@ -34,7 +34,7 @@ public class TimeEncoding {
     static TaiUtcConverter taiUtcConverter;
     static Pattern iso8601Pattern = Pattern
             .compile("(\\d+)\\-(\\d{2})\\-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?Z?");
-    static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?");
+    static Pattern doyPattern = Pattern.compile("(\\d+)\\/(\\d+)T(\\d{2}):(\\d{2}):(\\d{2})(\\.(\\d{3}))?Z?");
 
     public static void setUp() {
         try {

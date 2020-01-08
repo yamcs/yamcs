@@ -24,4 +24,44 @@ public class TimePartitionSchemaTest {
         assertEquals(TimeEncoding.parse("99993-01-01T00:00:00Z"), tpi.getStart());
         
     }
+    
+    @Test
+    public void testYYYWithPast() {
+        long instant = TimeEncoding.parse("0001-02-03T04:05:06Z");
+        
+        TimePartitionSchema yyyy = TimePartitionSchema.getInstance("YYYY");
+        TimePartitionInfo tpi = yyyy.getPartitionInfo(instant);
+        assertEquals("0001", tpi.getDir());
+        assertEquals(TimeEncoding.parse("0001-01-01T00:00:00Z"), tpi.getStart());
+        assertEquals(TimeEncoding.parse("0002-01-01T00:00:00Z"), tpi.getEnd());
+    }
+    
+    @Test
+    public void testYYYMMDDWithPast() {
+        long instant = TimeEncoding.parse("0001-02-03T04:05:06Z");
+        
+        TimePartitionSchema yyyy = TimePartitionSchema.getInstance("YYYY/MM");
+        TimePartitionInfo tpi = yyyy.getPartitionInfo(instant);
+        assertEquals("0001/02", tpi.getDir());
+        assertEquals(TimeEncoding.parse("0001-02-01T00:00:00Z"), tpi.getStart());
+        assertEquals(TimeEncoding.parse("0001-03-01T00:00:00Z"), tpi.getEnd());
+    }
+    
+    @Test
+    public void testYYYDOYWithPast() {
+        long instant = TimeEncoding.parse("0001-02-03T04:05:06Z");
+        
+        TimePartitionSchema yyyydoy = TimePartitionSchema.getInstance("YYYY/DOY");
+        TimePartitionInfo tpi = yyyydoy.getPartitionInfo(instant);
+        assertEquals("0001/034", tpi.getDir());
+      
+        assertEquals(TimeEncoding.parse("0001-02-03T00:00:00Z"), tpi.getStart());
+        
+        long instant1 = TimeEncoding.parse("0001-12-31T04:05:06Z");
+        TimePartitionInfo tpi1 = yyyydoy.getPartitionInfo(instant1);
+        assertEquals("0001/365", tpi1.getDir());
+        assertEquals(TimeEncoding.parse("0001-12-31T00:00:00Z"), tpi1.getStart());
+        assertEquals(TimeEncoding.parse("0002-01-01T00:00:00Z"), tpi1.getEnd());
+        
+    }
 }
