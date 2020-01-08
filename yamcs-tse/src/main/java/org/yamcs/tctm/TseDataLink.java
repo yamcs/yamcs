@@ -32,8 +32,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.common.util.concurrent.AbstractService;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -41,14 +39,13 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
-public class TseDataLink extends AbstractService implements Link {
+public class TseDataLink extends AbstractLink {
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
 
@@ -69,12 +66,7 @@ public class TseDataLink extends AbstractService implements Link {
 
     private Stream ppStream;
 
-    private EventLoopGroup eventLoopGroup;
     private Channel channel;
-
-    private String yamcsInstance;
-    YConfiguration config;
-    final String name;
 
     private TimeService timeService;
     private CommandHistoryPublisher cmdhistPublisher;
@@ -84,9 +76,7 @@ public class TseDataLink extends AbstractService implements Link {
     }
 
     public TseDataLink(String yamcsInstance, String name, YConfiguration config) {
-        this.yamcsInstance = yamcsInstance;
-        this.config = config;
-        this.name = name;
+        super(yamcsInstance, name, config);
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
@@ -180,17 +170,6 @@ public class TseDataLink extends AbstractService implements Link {
     }
 
     @Override
-    public Status getLinkStatus() {
-        if (disabled) {
-            return Status.DISABLED;
-        }
-        if (channel == null || !channel.isActive()) {
-            return Status.UNAVAIL;
-        }
-        return Status.OK;
-    }
-
-    @Override
     public String getDetailedStatus() {
         return getLinkStatus().toString();
     }
@@ -232,7 +211,7 @@ public class TseDataLink extends AbstractService implements Link {
 
     @Override
     protected void doStart() {
-        eventLoopGroup = new NioEventLoopGroup();
+        EventLoopGroup eventLoopGroup = getEventLoop();
         eventLoopGroup.schedule(() -> createBootstrap(), initialDelay, TimeUnit.MILLISECONDS);
         notifyStarted();
     }
@@ -245,6 +224,7 @@ public class TseDataLink extends AbstractService implements Link {
             return;
         }
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance);
+        EventLoopGroup eventLoopGroup = getEventLoop();
         Bootstrap b = new Bootstrap()
                 .group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
@@ -287,7 +267,7 @@ public class TseDataLink extends AbstractService implements Link {
 
     @Override
     protected void doStop() {
-        eventLoopGroup.shutdownGracefully().addListener(f -> {
+        channel.close().addListener(f -> {
             if (f.isSuccess()) {
                 notifyStopped();
             } else {
@@ -297,12 +277,21 @@ public class TseDataLink extends AbstractService implements Link {
     }
 
     @Override
-    public YConfiguration getConfig() {
-        return config;
+    protected void doDisable() throws Exception {
+        channel.close();
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected void doEnable() throws Exception {
+       createBootstrap();
     }
+
+    @Override
+    protected Status connectionStatus() {
+        if (channel == null || !channel.isActive()) {
+            return Status.UNAVAIL;
+        }
+        return Status.OK;
+    }
+
 }
