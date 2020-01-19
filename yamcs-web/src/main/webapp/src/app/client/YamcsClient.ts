@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { Cop1SubscriptionRequest, Cop1SubscriptionResponse } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
@@ -334,6 +335,17 @@ export default class YamcsClient implements HttpHandler {
   async closeClientConnection(id: string) {
     const url = `${this.apiUrl}/connections/${id}`;
     return await this.doFetch(url, { method: 'DELETE' });
+  }
+
+  async getCop1Updates(options: Cop1SubscriptionRequest): Promise<Cop1SubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.getCop1Updates(options);
+  }
+
+  async unsubscribeCop1Updates() {
+    if (this.webSocketClient) {
+      return this.webSocketClient!.unsubscribeCop1Updates();
+    }
   }
 
   async getSystemInfo() {

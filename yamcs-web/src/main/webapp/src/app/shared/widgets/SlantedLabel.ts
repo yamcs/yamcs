@@ -69,16 +69,6 @@ export class SlantedLabel implements AfterViewInit {
   private iconHolder: ElementRef;
 
   async ngAfterViewInit() {
-    const fontFace = 'Liberation Sans';
-    try { // Times out after 3 seconds
-      await Promise.all([
-        new FontFaceObserver('Roboto', { weight: fontWeight, style: 'normal' }).load(),
-      ]);
-    } catch {
-      // tslint:disable-next-line:no-console
-      console.warn(`Failed to load all font variants for '${fontFace}'. Font metric calculations may not be accurate.`);
-    }
-
     this.redraw();
   }
 

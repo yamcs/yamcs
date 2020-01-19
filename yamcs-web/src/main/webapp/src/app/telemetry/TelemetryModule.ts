@@ -13,17 +13,8 @@ import { ScriptViewer } from './displays/ScriptViewer';
 import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
 import { UploadFilesDialog } from './displays/UploadFilesDialog';
-import { UssDisplayViewer } from './displays/UssDisplayViewer';
-import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
-import { PageContentHost } from './ext/PageContentHost';
-import { CreateLayoutDialog } from './layouts/CreateLayoutDialog';
-import { DisplayNavigator } from './layouts/DisplayNavigator';
-import { Frame } from './layouts/Frame';
-import { FrameHost } from './layouts/FrameHost';
-import { Layout } from './layouts/Layout';
-import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { ColorPalette } from './parameters/ColorPalette';
 import { CompareParameterDialog } from './parameters/CompareParameterDialog';
 import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
@@ -40,12 +31,10 @@ import { routingComponents, TelemetryRoutingModule } from './TelemetryRoutingMod
 const dialogComponents = [
   CompareParameterDialog,
   CreateDisplayDialog,
-  CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
   ExportArchiveDataDialog,
   ModifyParameterDialog,
   RenameDisplayDialog,
-  RenameLayoutDialog,
   SelectRangeDialog,
   SetParameterDialog,
   UploadFilesDialog,
@@ -56,8 +45,6 @@ const pipes = [
 ];
 
 const directives = [
-  FrameHost,
-  PageContentHost,
   ViewerControlsHost,
   ViewerHost,
 ];
@@ -69,8 +56,6 @@ const viewers = [
   ParameterTableViewerControls,
   ScriptViewer,
   TextViewer,
-  UssDisplayViewer,
-  UssDisplayViewerControls,
 ];
 
 @NgModule({
@@ -85,9 +70,6 @@ const viewers = [
     pipes,
     viewers,
     ColorPalette,
-    DisplayNavigator,
-    Frame,
-    Layout,
     MultipleParameterTable,
     ParameterDetail,
     ParameterAlarmsTable,

@@ -13,3 +13,8 @@
   overflow: auto;
   height: 100%;
 }
+
+tr.disabled td, tr.disabled td a {
+  font-style: italic;
+  color: #aaa;
+}

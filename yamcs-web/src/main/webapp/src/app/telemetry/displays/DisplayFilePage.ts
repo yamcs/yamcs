@@ -5,9 +5,8 @@ import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import * as screenfull from 'screenfull';
 import { Instance } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -17,8 +16,6 @@ import { ParameterTableViewer } from './ParameterTableViewer';
 import { ParameterTableViewerControls } from './ParameterTableViewerControls';
 import { ScriptViewer } from './ScriptViewer';
 import { TextViewer } from './TextViewer';
-import { UssDisplayViewer } from './UssDisplayViewer';
-import { UssDisplayViewerControls } from './UssDisplayViewerControls';
 import { Viewer } from './Viewer';
 import { ViewerControlsHost } from './ViewerControlsHost';
 import { ViewerHost } from './ViewerHost';
@@ -48,10 +45,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   private prevFilename: string;
 
-  fullscreenSupported$ = new BehaviorSubject<boolean>(false);
-  fullscreen$ = new BehaviorSubject<boolean>(false);
-  fullscreenListener: () => void;
-
   private routerSubscription: Subscription;
   private syncSubscription: Subscription;
 
@@ -64,8 +57,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     private synchronizer: Synchronizer,
   ) {
     this.instance = yamcs.getInstance();
-    this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
-    screenfull.on('change', this.fullscreenListener);
 
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
@@ -114,20 +105,9 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if (this.filename.toLowerCase().endsWith('.uss')) {
-      const ussDisplayViewer = this.createViewer(UssDisplayViewer);
-      const controls = this.createViewerControls(UssDisplayViewerControls);
-      controls.init(ussDisplayViewer);
-      this.viewer = ussDisplayViewer;
-      this.syncSubscription = this.synchronizer.syncFast(() => {
-        ussDisplayViewer.display.digest();
-      });
-    } else if (this.filename.toLowerCase().endsWith('.opi')) {
+    if (this.filename.toLowerCase().endsWith('.opi')) {
       const opiDisplayViewer = this.createViewer(OpiDisplayViewer);
       this.viewer = opiDisplayViewer;
-      this.syncSubscription = this.synchronizer.syncFast(() => {
-        opiDisplayViewer.display.digest();
-      });
     } else if (this.filename.toLowerCase().endsWith('.par')) {
       const parameterTableViewer = this.createViewer(ParameterTableViewer);
       const controls = this.createViewerControls(ParameterTableViewerControls);
@@ -143,7 +123,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     }
 
     this.viewer.init(this.objectName);
-    this.fullscreenSupported$.next(this.viewer.isFullscreenSupported());
   }
 
   private createViewer<T extends Viewer>(viewer: Type<T>): T {
@@ -167,20 +146,11 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg') || lc.endsWith('jpeg') || lc.endsWith('bmp');
   }
 
-  goFullscreen() {
-    if (screenfull.enabled) {
-      screenfull.request(this.viewerContainer.nativeElement);
-    } else {
-      alert('Your browser does not appear to support going full screen');
-    }
-  }
-
   hasPendingChanges() {
     return this.viewer.hasPendingChanges();
   }
 
   ngOnDestroy() {
-    screenfull.off('change', this.fullscreenListener);
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }

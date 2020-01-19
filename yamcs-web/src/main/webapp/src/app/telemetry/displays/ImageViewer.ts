@@ -36,14 +36,6 @@ export class ImageViewer implements Viewer {
     return Promise.resolve();
   }
 
-  public isFullscreenSupported() {
-    return false;
-  }
-
-  public isScaleSupported() {
-    return false;
-  }
-
   public hasPendingChanges() {
     return false;
   }

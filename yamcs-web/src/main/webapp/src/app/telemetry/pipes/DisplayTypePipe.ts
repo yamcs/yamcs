@@ -10,8 +10,6 @@ export class DisplayTypePipe implements PipeTransform {
     const lc = path.toLowerCase();
     if (lc.endsWith('.opi')) {
       return 'Operator Interface';
-    } else if (lc.endsWith('.uss')) {
-      return 'USS Display';
     } else if (lc.endsWith('.par')) {
       return 'Parameter Table';
     } else if (lc.endsWith('.js')) {

@@ -1,64 +1,62 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { Display } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
+import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { DefaultNavigationHandler } from './DefaultNavigationHandler';
-import { MyDisplayCommunicator } from './MyDisplayCommunicator';
-import { NavigationHandler } from './NavigationHandler';
-import { OpiDisplay } from './opi/OpiDisplay';
 import { Viewer } from './Viewer';
 
 @Component({
   selector: 'app-opi-display-viewer',
   template: `
-    <div class="wrapper">
-      <div #displayContainer style="line-height: 0"></div>
-    </div>
+    <div #displayContainer style="width: 100%; height: 100%"></div>
   `,
-  styles: [`
-    .wrapper {
-      position: absolute;
-      top: 0%;
-      left: 50%;
-      transform: translate(-50%,0%);
-    }
-  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpiDisplayViewer implements Viewer, OnDestroy {
 
+  private storageClient: StorageClient;
+
   @ViewChild('displayContainer', { static: true })
   private displayContainer: ElementRef;
 
-  private objectName: string;
-
-  display: OpiDisplay;
-
   private parameterSubscription: Subscription;
-
-  private navigationHandler: NavigationHandler;
 
   constructor(
     private yamcs: YamcsService,
     private router: Router,
-  ) { }
+  ) {
+    this.storageClient = yamcs.createStorageClient();
+  }
 
   /**
    * Don't call before ngAfterViewInit()
    */
-  public init(objectName: string, navigationHandler?: NavigationHandler) {
-    this.objectName = objectName;
+  public init(objectName: string) {
+    const instance = this.yamcs.getInstance().name;
+    const container: HTMLDivElement = this.displayContainer.nativeElement;
+    const display = new Display(container);
 
-    if (navigationHandler) {
-      this.navigationHandler = navigationHandler;
-    } else {
-      const instance = this.yamcs.getInstance().name;
-      this.navigationHandler = new DefaultNavigationHandler(objectName, instance, this.router);
+    let currentFolder = '';
+    if (objectName.lastIndexOf('/') !== -1) {
+      currentFolder = objectName.substring(0, objectName.lastIndexOf('/') + 1);
     }
 
-    const container: HTMLDivElement = this.displayContainer.nativeElement;
-    const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    this.display = new OpiDisplay(objectName, this.navigationHandler, container, displayCommunicator);
+    display.addEventListener('opendisplay', evt => {
+      this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?instance=${instance}`);
+    });
+
+    display.addEventListener('closedisplay', evt => {
+      this.router.navigateByUrl(`/telemetry/displays/browse?instance=${instance}`);
+    });
+
+    const objectUrl = this.storageClient.getObjectURL('_global', 'displays', objectName);
+
+    const idx = objectUrl.lastIndexOf('/') + 1;
+    display.baseUrl = objectUrl.substring(0, idx);
+    return display.setSource(objectUrl.substring(idx));
+
+    /*
     return this.display.parseAndDraw(objectName).then(() => {
       const ids = this.display.getParameterIds();
       if (ids.length) {
@@ -77,15 +75,7 @@ export class OpiDisplayViewer implements Viewer, OnDestroy {
           });
         });
       }
-    });
-  }
-
-  public isFullscreenSupported() {
-    return true;
-  }
-
-  public isScaleSupported() {
-    return true;
+    });*/
   }
 
   public hasPendingChanges() {

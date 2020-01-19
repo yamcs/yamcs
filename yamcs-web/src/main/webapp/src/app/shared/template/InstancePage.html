@@ -60,13 +60,6 @@
                               [subitem]="true">
           Displays
         </app-sidebar-nav-item>
-
-        <app-sidebar-nav-item *ngIf="config.features.layouts"
-                              routerLink="/telemetry/layouts"
-                              [queryParams]="{instance: instance.name}"
-                              [subitem]="true">
-          Layouts
-        </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
       <app-sidebar-nav-item *ngIf="showEventsItem()"

@@ -33,14 +33,8 @@
               "src/styles/material-theme.scss",
               "src/styles/material-icons.css",
               "src/styles/styles.css",
-              "src/app/telemetry/displays/opi/fonts/stylesheet.css",
-              "src/app/telemetry/displays/uss/fonts/stylesheet.css",
-              "node_modules/dygraphs/dist/dygraph.css",
+              "node_modules/@yamcs/opi/dist/fonts/stylesheet.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
-            ],
-            "scripts": [
-              "node_modules/fontfaceobserver/fontfaceobserver.standalone.js",
-              "node_modules/@webcomponents/custom-elements/src/native-shim.js"
             ]
           },
           "configurations": {

@@ -35,14 +35,6 @@ export class TextViewer implements Viewer {
     return Promise.resolve();
   }
 
-  public isFullscreenSupported() {
-    return false;
-  }
-
-  public isScaleSupported() {
-    return false;
-  }
-
   public hasPendingChanges() {
     return false;
   }

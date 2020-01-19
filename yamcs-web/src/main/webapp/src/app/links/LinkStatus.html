@@ -1,15 +1,14 @@
 <ng-container [ngSwitch]="link.status">
   <mat-icon *ngSwitchCase="'OK'"
-            class="success"
             [matTooltip]="link.status"
             [class.fade]="parentLink && parentLink.status !== 'OK'">
-    check_circle
+    signal_cellular_4_bar
   </mat-icon>
   <mat-icon *ngSwitchCase="'UNAVAIL'"
             class="alert"
             [matTooltip]="link.status"
             [class.fade]="parentLink && parentLink.status !== 'OK'">
-    highlight_off
+    signal_cellular_null
   </mat-icon>
   <mat-icon *ngSwitchCase="'FAILED'"
             class="alert"
@@ -21,6 +20,6 @@
             class="down"
             [matTooltip]="link.status"
             [class.fade]="parentLink && parentLink.status !== 'OK'">
-    lens
+    signal_cellular_off
   </mat-icon>
 </ng-container>

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { StorageClient } from '../../client';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
+import { StorageClient } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
@@ -57,14 +57,6 @@ export class ScriptViewer implements Viewer, OnDestroy {
     });
 
     return Promise.resolve();
-  }
-
-  public isFullscreenSupported() {
-    return false;
-  }
-
-  public isScaleSupported() {
-    return false;
   }
 
   public hasPendingChanges() {

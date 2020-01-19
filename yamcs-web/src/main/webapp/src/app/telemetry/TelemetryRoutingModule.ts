@@ -8,9 +8,6 @@ import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard'
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
 import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
-import { ExtensionPage } from './ext/ExtensionPage';
-import { LayoutPage } from './layouts/LayoutPage';
-import { LayoutsPage } from './layouts/LayoutsPage';
 import { PacketsPage } from './packets/PacketsPage';
 import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
@@ -55,13 +52,6 @@ const routes: Routes = [
           }
         ]
       }, {
-        path: 'layouts',
-        pathMatch: 'full',
-        component: LayoutsPage,
-      }, {
-        path: 'layouts/:name',
-        component: LayoutPage,
-      }, {
         path: 'packets',
         component: PacketsPage,
       }, {
@@ -90,9 +80,6 @@ const routes: Routes = [
             component: ParameterAlarmsTab,
           }
         ]
-      }, {
-        path: 'ext/:name',
-        component: ExtensionPage,
       }
     ]
   }
@@ -112,9 +99,6 @@ export const routingComponents = [
   DisplayFilePage,
   DisplayFolderPage,
   DisplayPage,
-  ExtensionPage,
-  LayoutsPage,
-  LayoutPage,
   PacketsPage,
   ParametersPage,
   ParameterPage,

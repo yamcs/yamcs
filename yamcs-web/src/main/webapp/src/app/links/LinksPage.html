@@ -145,7 +145,8 @@
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
         <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="toggleOne(row)"
-            [class.selected]="selection.isSelected(row)"></tr>
+            [class.selected]="selection.isSelected(row)"
+            [class.disabled]="row.link.status === 'DISABLED'"></tr>
       </table>
     </div>
   </div>
