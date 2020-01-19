@@ -20,7 +20,6 @@ export function structuredClone(obj: {}) {
  * Fractions are not currently supported.
  */
 export function subtractDuration(date: Date, isoDuration: string) {
-  // tslint:disable-next-line:max-line-length
   const regex = /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
 
   const matchResult = isoDuration.match(regex);
@@ -58,7 +57,6 @@ export function subtractDuration(date: Date, isoDuration: string) {
  * This only works with seconds, minutes, hours and days.
  */
 export function convertDurationToMillis(isoDuration: string) {
-  // tslint:disable-next-line:max-line-length
   const regex = /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
 
   const matchResult = isoDuration.match(regex);
