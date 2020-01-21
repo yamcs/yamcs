@@ -10,13 +10,6 @@ import { RecordComponent } from './table/RecordComponent';
 import { ShowEnumDialog } from './table/ShowEnumDialog';
 import { TimelineTooltip } from './TimelineTooltip';
 
-const dialogComponents = [
-  DownloadDumpDialog,
-  JumpToDialog,
-  RequestPlaybackDialog,
-  ShowEnumDialog,
-];
-
 const pipes = [
   ColumnValuePipe,
 ];
@@ -28,9 +21,12 @@ const pipes = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
     pipes,
+    DownloadDumpDialog,
+    JumpToDialog,
     RecordComponent,
+    RequestPlaybackDialog,
+    ShowEnumDialog,
     StreamDataComponent,
     TimelineTooltip,
   ],

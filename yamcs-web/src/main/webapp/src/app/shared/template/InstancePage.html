@@ -87,6 +87,12 @@
                               [subitem]="true">
           Send a command
         </app-sidebar-nav-item>
+        <app-sidebar-nav-item *ngIf="showRunAStack()"
+                              routerLink="/commanding/stack"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Run a stack
+        </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandHistory()"
                               routerLink="/commanding/history"
                               [queryParams]="{instance: instance.name}"

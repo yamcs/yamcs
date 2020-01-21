@@ -7,8 +7,9 @@ import { InstancePage } from '../shared/template/InstancePage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
-import { SendCommandPage as SendCommandPage } from './command-sender/SendCommandPage';
+import { SendCommandPage } from './command-sender/SendCommandPage';
 import { QueuesPage } from './queues/QueuesPage';
+import { RunStackPage } from './stacks/RunStackPage';
 
 const routes: Routes = [
   {
@@ -40,6 +41,10 @@ const routes: Routes = [
         component: QueuesPage,
         canActivate: [MayControlCommandQueueGuard],
       },
+      {
+        path: 'stack',
+        component: RunStackPage,
+      }
     ]
   }
 ];
@@ -55,5 +60,6 @@ export const routingComponents = [
   CommandReportPage,
   ConfigureCommandPage,
   QueuesPage,
+  RunStackPage,
   SendCommandPage,
 ];

@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Inpu
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../client';
-import { YamcsService } from '../core/services/YamcsService';
+import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-object-selector',

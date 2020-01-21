@@ -9,10 +9,6 @@ import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
 
-const dialogComponents = [
-  ArgumentEnumDialog,
-];
-
 const pipes = [
   PolynomialPipe,
 ];
@@ -23,10 +19,10 @@ const pipes = [
     MdbRoutingModule,
   ],
   declarations: [
-    dialogComponents,
     routingComponents,
     pipes,
     AlgorithmDetail,
+    ArgumentEnumDialog,
     CommandDetail,
     ContainerDetail,
     ParameterCalibration,

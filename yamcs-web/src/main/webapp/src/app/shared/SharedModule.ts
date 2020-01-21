@@ -49,9 +49,11 @@ import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { SelectParameterDialog } from './dialogs/SelectParameterDialog';
 import { SessionExpiredDialog } from './dialogs/SessionExpiredDialog';
 import { BinaryInput } from './forms/BinaryInput';
+import { CommandSelector } from './forms/CommandSelector';
 import { DateTime } from './forms/DateTime';
 import { DownloadButton } from './forms/DownloadButton';
 import { DownloadMenuItem } from './forms/DownloadMenuItem';
+import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
@@ -159,6 +161,7 @@ const sharedComponents = [
   Breadcrumb,
   BreadcrumbTrail,
   ColumnChooser,
+  CommandSelector,
   ConnectedLabel,
   DateTime,
   DetailPane,
@@ -178,6 +181,7 @@ const sharedComponents = [
   Label,
   Labels,
   MessageBar,
+  ObjectSelector,
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,

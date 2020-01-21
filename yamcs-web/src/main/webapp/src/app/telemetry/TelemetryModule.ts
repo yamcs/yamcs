@@ -28,18 +28,6 @@ import { Thickness } from './parameters/Thickness';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
 import { routingComponents, TelemetryRoutingModule } from './TelemetryRoutingModule';
 
-const dialogComponents = [
-  CompareParameterDialog,
-  CreateDisplayDialog,
-  DisplayFilePageDirtyDialog,
-  ExportArchiveDataDialog,
-  ModifyParameterDialog,
-  RenameDisplayDialog,
-  SelectRangeDialog,
-  SetParameterDialog,
-  UploadFilesDialog,
-];
-
 const pipes = [
   DisplayTypePipe,
 ];
@@ -65,18 +53,26 @@ const viewers = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
     directives,
     pipes,
     viewers,
     ColorPalette,
+    CompareParameterDialog,
+    CreateDisplayDialog,
+    DisplayFilePageDirtyDialog,
+    ExportArchiveDataDialog,
+    ModifyParameterDialog,
     MultipleParameterTable,
     ParameterDetail,
     ParameterAlarmsTable,
     ParameterValuesTable,
+    RenameDisplayDialog,
     ScrollingParameterTable,
+    SelectRangeDialog,
+    SetParameterDialog,
     SeverityMeter,
     Thickness,
+    UploadFilesDialog,
   ],
 })
 export class TelemetryModule {

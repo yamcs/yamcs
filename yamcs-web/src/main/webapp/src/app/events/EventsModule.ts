@@ -4,10 +4,6 @@ import { CreateEventDialog } from './CreateEventDialog';
 import { EventSeverity } from './EventSeverity';
 import { EventsRoutingModule, routingComponents } from './EventsRoutingModule';
 
-const dialogComponents = [
-  CreateEventDialog,
-];
-
 @NgModule({
   imports: [
     SharedModule,
@@ -15,7 +11,7 @@ const dialogComponents = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
+    CreateEventDialog,
     EventSeverity,
   ],
 })

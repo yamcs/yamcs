@@ -7,11 +7,6 @@ import { AlarmsTable } from './AlarmsTable';
 import { AlarmStateIcon } from './AlarmStateIcon';
 import { ShelveAlarmDialog } from './ShelveAlarmDialog';
 
-const dialogComponents = [
-  AcknowledgeAlarmDialog,
-  ShelveAlarmDialog,
-];
-
 @NgModule({
   imports: [
     SharedModule,
@@ -19,10 +14,11 @@ const dialogComponents = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
+    AcknowledgeAlarmDialog,
     AlarmDetail,
     AlarmStateIcon,
     AlarmsTable,
+    ShelveAlarmDialog,
   ],
 })
 export class AlarmsModule {

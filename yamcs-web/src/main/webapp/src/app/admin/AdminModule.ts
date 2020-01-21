@@ -18,17 +18,6 @@ import { RouteDetail } from './routes/RouteDetail';
 import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
 
-const dialogComponents = [
-  AddMembersDialog,
-  AddRolesDialog,
-  ApplicationCredentialsDialog,
-  ChangeUserPasswordDialog,
-  CreateBucketDialog,
-  RenameObjectDialog,
-  UploadObjectsDialog,
-  UploadProgressDialog,
-];
-
 const pipes = [
   MessageNamePipe,
 ];
@@ -40,14 +29,21 @@ const pipes = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
     pipes,
+    AddMembersDialog,
+    AddRolesDialog,
     AdminPage,
     AdminPageTemplate,
     AdminToolbar,
+    ApplicationCredentialsDialog,
+    ChangeUserPasswordDialog,
+    CreateBucketDialog,
+    RenameObjectDialog,
     RouteDetail,
     ServiceState,
     ServicesTable,
+    UploadObjectsDialog,
+    UploadProgressDialog,
     UsersTable,
   ],
 })

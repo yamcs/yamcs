@@ -165,6 +165,10 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
   }
 
+  showRunAStack() {
+    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
+  }
+
   showCommandHistory() {
     return this.user.hasAnyObjectPrivilegeOfType('CommandHistory');
   }

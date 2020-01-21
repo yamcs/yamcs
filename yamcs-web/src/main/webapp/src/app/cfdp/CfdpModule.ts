@@ -2,12 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { CfdpRoutingModule, routingComponents } from './CfdpRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
-import { ObjectSelector } from './ObjectSelector';
 import { UploadFileDialog } from './UploadFileDialog';
-
-const dialogComponents = [
-  UploadFileDialog,
-];
 
 @NgModule({
   imports: [
@@ -16,9 +11,8 @@ const dialogComponents = [
   ],
   declarations: [
     routingComponents,
-    dialogComponents,
     FileTransferTable,
-    ObjectSelector,
+    UploadFileDialog,
   ],
 })
 export class CfdpModule {
