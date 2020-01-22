@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -27,7 +28,7 @@ public class CcsdsGreenBookCommandEncodingTest {
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         xtcedb = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", xtcedb, false));
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
     }
 
     @Test

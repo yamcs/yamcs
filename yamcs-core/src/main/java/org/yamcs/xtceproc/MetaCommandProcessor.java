@@ -20,8 +20,7 @@ import org.yamcs.xtce.Parameter;
 
 public class MetaCommandProcessor {
     final ProcessorData pdata;
-    final static int MAX_CMD_SIZE = 4096;// should make this configurable
-
+    
     public MetaCommandProcessor(ProcessorData pdata) {
         this.pdata = pdata;
     }
@@ -52,7 +51,7 @@ public class MetaCommandProcessor {
         Map<Parameter, Value> params = new HashMap<>();
         collectParameters(mc.getCommandContainer(), params);
 
-        BitBuffer bitbuf = new BitBuffer(new byte[MAX_CMD_SIZE]);
+        BitBuffer bitbuf = new BitBuffer(new byte[pdata.getProcessorConfig().getMaxCommandSize()]);
         TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
         try {
             pcontext.mccProcessor.encode(mc);

@@ -6,6 +6,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.IndirectParameterRefEntry;
@@ -30,16 +31,18 @@ public class XtceTmExtractor {
 
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
-    ContainerProcessingOptions options = new ContainerProcessingOptions();
+    ContainerProcessingOptions options = new ContainerProcessingOptions(null);
     final ProcessorData pdata;
 
     /**
-     * Creates a TmExtractor extracting data according to the XtceDb
-     * 
+     * Create a standalone TM extractor
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
-        this(xtcedb, new ProcessorData(null, "XTCEPROC", xtcedb, false));
+        this.xtcedb = xtcedb;
+        this.subscription = new Subscription(xtcedb);
+        rootContainer = xtcedb.getRootSequenceContainer();
+        this.pdata = new ProcessorData(null, "XTCEPROC", xtcedb, new ProcessorConfig());
     }
 
     /**

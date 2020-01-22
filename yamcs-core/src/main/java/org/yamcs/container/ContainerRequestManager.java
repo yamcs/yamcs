@@ -30,7 +30,7 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to a newly created XtceTmProcessor.
      */
     public ContainerRequestManager(Processor proc) {
-        this(proc, new XtceTmProcessor(proc, null));
+        this(proc, new XtceTmProcessor(proc));
     }
 
     /**

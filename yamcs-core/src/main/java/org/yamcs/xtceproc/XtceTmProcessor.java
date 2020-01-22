@@ -6,9 +6,9 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.TmPacket;
 import org.yamcs.TmProcessor;
-import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterListener;
@@ -43,27 +43,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public final Processor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
-    final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
-    final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
-
-    public XtceTmProcessor(Processor processor, YConfiguration tmProcessorConfig) {
-        this.processor = processor;
-        this.xtcedb = processor.getXtceDb();
-
-        log = new Log(getClass(), processor.getInstance());
-        log.setContext(processor.getName());
-
-        tmExtractor = new XtceTmExtractor(xtcedb, processor.getProcessorData());
-
-        if (tmProcessorConfig != null) {
-            ContainerProcessingOptions opts = new ContainerProcessingOptions();
-            opts.setIgnoreOutOfContainerEntries(
-                    tmProcessorConfig.getBoolean(CONFIG_KEY_ignoreOutOfContainerEntries, false));
-            opts.setExpirationTolerance(
-                    tmProcessorConfig.getDouble(CONFIG_KEY_expirationTolerance, opts.expirationTolerance));
-            tmExtractor.setOptions(opts);
-        }
-    }
 
     public XtceTmProcessor(Processor processor) {
         this.processor = processor;
@@ -75,12 +54,14 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
     /**
      * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
+     * It still uses the processor config for configuration parameters relevant to container processing
+     * 
      */
-    public XtceTmProcessor(XtceDb xtcedb) {
+    public XtceTmProcessor(XtceDb xtcedb, ProcessorConfig pconfig) {
         this.processor = null;
         this.xtcedb = xtcedb;
         log = new Log(getClass());
-        tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor = new XtceTmExtractor(xtcedb, new ProcessorData(null, "XTCEPROC", xtcedb, pconfig));
     }
 
     @Override

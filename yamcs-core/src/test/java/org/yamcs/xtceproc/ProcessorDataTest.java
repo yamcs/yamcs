@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
@@ -23,7 +24,7 @@ public class ProcessorDataTest {
     public void testInitialValue() {
         XtceDb xtcedb = XtceDbFactory.createInstanceByConfig("refmdb");
 
-        ProcessorData pdata = new ProcessorData("test", "test", xtcedb, false);
+        ProcessorData pdata = new ProcessorData("test", "test", xtcedb, new ProcessorConfig());
         LastValueCache lvc = pdata.getLastValueCache();
 
         ParameterValue pv = lvc.getValue(xtcedb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue1"));

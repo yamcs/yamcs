@@ -49,7 +49,7 @@ public class ContainerProcessingContext {
         this.subscription = subscription;
         this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params, pdata.getLastValueCache());
         this.result = result;
-        this.options = options;
+        this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
 
         sequenceContainerProcessor = new SequenceContainerProcessor(this);
         sequenceEntryProcessor = new SequenceEntryProcessor(this);

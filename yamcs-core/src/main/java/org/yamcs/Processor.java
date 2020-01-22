@@ -56,14 +56,6 @@ import com.google.common.util.concurrent.Service;
  *
  */
 public class Processor extends AbstractService {
-    private static final String CONFIG_KEY_TM_PROCESSOR = "tmProcessor";
-    private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
-    private static final String CONFIG_KEY_ALARM = "alarm";
-    private static final String CONFIG_KEY_GENERATE_EVENTS = "generateEvents";
-    private static final String CONFIG_KEY_SUBSCRIBE_ALL = "subscribeAll";
-    private static final String CONFIG_KEY_RECORD_INITIAL_VALUES = "recordInitialValues";
-    private static final String CONFIG_KEY_RECORD_LOCAL_VALUES = "recordLocalValues";
-
     public static final String PROC_PARAMETERS_STREAM = "proc_param";
 
     // handles subscriptions to parameters
@@ -93,14 +85,10 @@ public class Processor extends AbstractService {
     private String type;
     private final String yamcsInstance;
 
-    private boolean checkParameterAlarms = true;
-    private boolean parameterAlarmServerEnabled = false;
-    private boolean eventAlarmServerEnabled = false;
+    private ProcessorConfig config;
 
     private String creator = "system";
     private boolean persistent = false;
-
-    ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0, 0);
 
     final Log log;
     static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
@@ -110,8 +98,6 @@ public class Processor extends AbstractService {
     // a synchronous processor waits for all the clients to deliver tm packets and parameters
     private boolean synchronous = false;
 
-    // if the PRM should subscribe to all parameters at startup
-    boolean subscribeAll = false;
     XtceTmProcessor tmProcessor;
 
     // unless very good performance reasons, we should try to serialize all the processing in this thread
@@ -125,8 +111,6 @@ public class Processor extends AbstractService {
     @GuardedBy("this")
     HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ServiceWithConfig> serviceList;
-    boolean recordInitialValues;
-    boolean recordLocalValues;
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
 
@@ -165,59 +149,43 @@ public class Processor extends AbstractService {
      * @throws ProcessorException
      * @throws ConfigurationException
      */
-    void init(List<ServiceWithConfig> serviceList, YConfiguration config, Object spec)
+    void init(List<ServiceWithConfig> serviceList, ProcessorConfig config, Object spec)
             throws ProcessorException, ConfigurationException {
+        log.debug("Initialzing the processor with the configuration {}", config);
+        
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        boolean generateEvents = false;
-        if (config != null) {
-            generateEvents = config.getBoolean(CONFIG_KEY_GENERATE_EVENTS, true);
-        }
-
-        processorData = new ProcessorData(this, generateEvents);
+        
+        this.config = config;
+        
+        processorData = new ProcessorData(this, config);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        YConfiguration tmProcessorConfig = null;
 
         synchronized (instances) {
             if (instances.containsKey(key(yamcsInstance, name))) {
                 throw new ProcessorException(
                         "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
-            if (config != null) {
-                for (String key : config.getRoot().keySet()) {
-                    if (CONFIG_KEY_ALARM.equals(key)) {
-                        configureAlarms(config.getConfig(key));
-                    } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(key)) {
-                        subscribeAll = config.getBoolean(CONFIG_KEY_SUBSCRIBE_ALL);
-                    } else if (CONFIG_KEY_PARAMETER_CACHE.equals(key)) {
-                        configureParameterCache(config.getConfig(key));
-                    } else if (CONFIG_KEY_TM_PROCESSOR.equals(key)) {
-                        tmProcessorConfig = config.getConfig(key);
-                    } else if (CONFIG_KEY_RECORD_INITIAL_VALUES.equals(key)) {
-                        recordInitialValues = config.getBoolean(key);
-                    } else if (CONFIG_KEY_RECORD_LOCAL_VALUES.equals(key)) {
-                        recordLocalValues = config.getBoolean(key);
-                    } else {
-                        log.warn("Ignoring unknown config key '{}'", key);
-                    }
-                }
-            }
+            
 
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream pps = ydb.getStream(PROC_PARAMETERS_STREAM);
             if (pps != null) {
                 streamParameterSender = new StreamParameterSender(yamcsInstance, pps);
             }
-            if (recordInitialValues || recordLocalValues) {
+            if (config.recordInitialValues || config.recordLocalValues) {
                 if (pps == null) {
                     throw new ConfigurationException("recordInitialValue is set to true but the stream '"
                             + PROC_PARAMETERS_STREAM + "' does not exist");
                 }
                 streamParameterSender.sendParameters(processorData.getLastValueCache().getValues());
             }
+            if (config.eventAlarmServerEnabled) {
+                eventAlarmServer = new EventAlarmServer(yamcsInstance, config, timer);
+            }
             // Shared between prm and crm
-            tmProcessor = new XtceTmProcessor(this, tmProcessorConfig);
+            tmProcessor = new XtceTmProcessor(this);
             containerRequestManager = new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
 
@@ -271,55 +239,8 @@ public class Processor extends AbstractService {
         return executor;
     }
 
-    private void configureAlarms(YConfiguration alarmConfig) {
-        if (alarmConfig.containsKey("check")) {
-            log.warn(
-                    "Deprecation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
-            checkParameterAlarms = alarmConfig.getBoolean("check");
-        }
-        checkParameterAlarms = alarmConfig.getBoolean("parameterCheck", checkParameterAlarms);
-        if (alarmConfig.containsKey("server")) {
-            log.warn(
-                    "Deprecation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
-            parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
-        }
-        if (alarmConfig.containsKey("parameterServer")) {
-            parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("parameterServer"));
-        }
-        if (parameterAlarmServerEnabled) {
-            checkParameterAlarms = true;
-        }
-
-        eventAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("eventServer", null));
-
-        if (eventAlarmServerEnabled) {
-            eventAlarmServer = new EventAlarmServer(yamcsInstance, alarmConfig, timer);
-        }
-    }
-
-    private void configureParameterCache(YConfiguration cacheConfig) {
-        boolean enabled = cacheConfig.getBoolean("enabled", false);
-
-        if (!enabled) { // this is the default but print a warning if there are some things configured
-            Set<String> keySet = cacheConfig.getRoot().keySet();
-            keySet.remove("enabled");
-            if (!keySet.isEmpty()) {
-                log.warn(
-                        "Parmeter cache is disabled, the following keys are ignored: {}, use enable: true to enable the parameter cache",
-                        keySet);
-            }
-            return;
-        }
-        boolean cacheAll = cacheConfig.getBoolean("cacheAll", false);
-        if (cacheAll) {
-            enabled = true;
-        }
-        long duration = 1000L * cacheConfig.getInt("duration", 300);
-        int maxNumEntries = cacheConfig.getInt("maxNumEntries", 512);
-
-        parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration, maxNumEntries);
-    }
-
+  
+  
     private static String key(String instance, String name) {
         return instance + "." + name;
     }
@@ -689,11 +610,11 @@ public class Processor extends AbstractService {
     }
 
     public boolean hasAlarmChecker() {
-        return checkParameterAlarms;
+        return config.checkParameterAlarms;
     }
 
     public boolean hasAlarmServer() {
-        return parameterAlarmServerEnabled;
+        return config.parameterAlarmServerEnabled;
     }
 
     public ScheduledThreadPoolExecutor getTimer() {
@@ -741,7 +662,7 @@ public class Processor extends AbstractService {
     }
 
     public ParameterCacheConfig getPameterCacheConfig() {
-        return parameterCacheConfig;
+        return config.parameterCacheConfig;
     }
 
     public ParameterCache getParameterCache() {
@@ -762,7 +683,7 @@ public class Processor extends AbstractService {
     }
 
     public boolean isSubscribeAll() {
-        return subscribeAll;
+        return config.subscribeAll;
     }
 
     @SuppressWarnings("unchecked")
@@ -779,10 +700,15 @@ public class Processor extends AbstractService {
     }
 
     public boolean recordLocalValues() {
-        return recordLocalValues;
+        return config.recordLocalValues;
     }
 
     public EventAlarmServer getEventAlarmServer() {
         return eventAlarmServer;
     }
+
+    public ProcessorConfig getConfig() {
+        return config;
+    }
+
 }

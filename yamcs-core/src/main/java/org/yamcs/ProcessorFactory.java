@@ -10,7 +10,7 @@ import org.yamcs.logging.Log;
 /**
  * Used to create processors as defined in processor.yaml
  *
- * @author mache
+ * @author nm
  *
  */
 public class ProcessorFactory {
@@ -45,7 +45,7 @@ public class ProcessorFactory {
      */
     public static Processor create(String yamcsInstance, String name, String type, String creator, Object spec)
             throws ProcessorException, ConfigurationException, ValidationException {
-        YConfiguration processorConfig = null;
+        YConfiguration pc = null;
         YConfiguration conf = YConfiguration.getConfiguration("processor");
 
         List<ServiceWithConfig> serviceList;
@@ -59,11 +59,12 @@ public class ProcessorFactory {
             serviceList = YamcsServer.createServices(yamcsInstance, conf.getServiceConfigList("services"), targetLog);
 
             if (conf.containsKey("config")) {
-                processorConfig = conf.getConfig("config");
+                pc = conf.getConfig("config");
             }
         } catch (IOException e) {
             throw new ConfigurationException("Cannot load service", e);
         }
+        ProcessorConfig processorConfig = new ProcessorConfig(pc);
         return create(yamcsInstance, name, type, serviceList, creator, processorConfig, spec);
     }
 
@@ -82,7 +83,10 @@ public class ProcessorFactory {
      * @throws ConfigurationException
      **/
     public static Processor create(String instance, String name, String type, List<ServiceWithConfig> serviceList,
-            String creator, YConfiguration config, Object spec) throws ProcessorException, ConfigurationException {
+            String creator, ProcessorConfig config, Object spec) throws ProcessorException, ConfigurationException {
+        if (config == null) {
+            throw new NullPointerException("config cannot be null");
+        }
         Processor proc = new Processor(instance, name, type, creator);
 
         proc.init(serviceList, config, spec);
@@ -99,6 +103,6 @@ public class ProcessorFactory {
             serviceList.add(
                     new ServiceWithConfig(service, service.getClass().getName(), service.getClass().getName(), null));
         }
-        return create(yamcsInstance, name, "test", serviceList, "test", null, null);
+        return create(yamcsInstance, name, "test", serviceList, "test", new ProcessorConfig(), null);
     }
 }

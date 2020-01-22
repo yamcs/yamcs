@@ -12,6 +12,8 @@ package org.yamcs;
  */
 public class ServiceWithConfig {
     final YamcsService service;
+ 
+
     final String serviceClass;
     final String name;
     final Object args;
@@ -38,5 +40,11 @@ public class ServiceWithConfig {
 
     public Object getArgs() {
         return args;
+    }
+    
+    @Override
+    public String toString() {
+        return "ServiceWithConfig [service=" + service + ", serviceClass=" + serviceClass + ", name=" + name + ", args="
+                + args + "]";
     }
 }
