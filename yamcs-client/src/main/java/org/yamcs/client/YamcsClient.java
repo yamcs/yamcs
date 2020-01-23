@@ -48,6 +48,7 @@ public class YamcsClient {
     private final WebSocketClient websocketClient;
 
     private volatile boolean connected;
+    private volatile boolean closed = false;
 
     // Latch that resets when the connection handshake protocol was finished
     // (that is: initial ConnectionInfo is set)
@@ -395,6 +396,10 @@ public class YamcsClient {
     }
 
     public void close() {
+        if(closed) {
+            return;
+        }
+        closed = true;
         if (connected) {
             websocketClient.disconnect();
         }
@@ -406,14 +411,16 @@ public class YamcsClient {
 
         @Override
         public void disconnected() {
-            String msg = String.format("Connection to %s:%s lost", host, port);
-            if (connected) {
+            if (!closed) {
+                String msg = String.format("Connection to %s:%s lost", host, port);
+                connectionListeners.forEach(l -> {
+                    l.log(msg);
+                });
                 log.warn(msg);
             }
             connected = false;
             connectionInfo = null;
             connectionListeners.forEach(l -> {
-                l.log(msg);
                 l.disconnected();
             });
             subscribers.forEach(s -> s.disconnected());
