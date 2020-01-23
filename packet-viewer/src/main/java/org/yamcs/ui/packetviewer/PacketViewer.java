@@ -69,6 +69,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
@@ -511,7 +512,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             return false;
         }
 
-        tmProcessor = new XtceTmProcessor(xtcedb);
+        tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
 
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
@@ -543,7 +544,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             return false;
         }
 
-        tmProcessor = new XtceTmProcessor(xtcedb);
+        tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
@@ -553,6 +554,11 @@ public class PacketViewer extends JFrame implements ActionListener,
                 + xtcedb.getParameterNames().size() + " parameters");
 
         return true;
+    }
+
+    private ProcessorConfig getProcessorConfig() {
+        ProcessorConfig pc = new ProcessorConfig();
+        return null;
     }
 
     void loadFile() {
