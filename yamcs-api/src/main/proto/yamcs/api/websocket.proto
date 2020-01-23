@@ -19,6 +19,11 @@ message ClientMessage {
   
   // Optional client-side message identifier, returned in reply messages.
   int32 id = 3;
+  
+  // If applicable, the call associated with this message
+  // This should be used when the client is streaming multiple messages
+  // handled by the same call.
+  int32 call = 4;
 }
 
 message ServerMessage {

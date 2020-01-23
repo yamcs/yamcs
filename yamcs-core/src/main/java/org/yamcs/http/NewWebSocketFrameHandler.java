@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.yamcs.api.ExceptionMessage;
+import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
@@ -51,6 +53,7 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
     private WriteBufferWaterMark writeBufferWaterMark;
 
     private List<TopicContext> contexts = new ArrayList<>();
+    private Map<Integer, Observer<Message>> clientObserversByCall = new HashMap<>();
 
     public NewWebSocketFrameHandler(HttpServer httpServer, HttpRequest req, User user, int connectionCloseNumDroppedMsg,
             WriteBufferWaterMark writeBufferWaterMark) {
@@ -131,7 +134,11 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
                 if (topic == null) {
                     throw new NotFoundException("No such topic");
                 }
-                startNewContext(nettyContext, message, topic);
+                if (message.getCall() > 0) {
+                    streamToExistingCall(nettyContext, message, topic);
+                } else {
+                    startNewContext(nettyContext, message, topic);
+                }
             }
         } catch (HttpException e) {
             Reply reply = Reply.newBuilder()
@@ -187,6 +194,7 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
             for (TopicContext ctx : new ArrayList<>(contexts)) {
                 if (ctx.getId() == callId) {
                     ctx.close();
+                    clientObserversByCall.remove(callId);
                 }
             }
         }
@@ -209,9 +217,32 @@ public class NewWebSocketFrameHandler extends SimpleChannelInboundHandler<WebSoc
         });
 
         contexts.add(ctx);
-        topic.callMethod(ctx, apiRequest, observer);
+
+        if (ctx.isClientStreaming()) {
+            Observer<Message> clientObserver = topic.callMethod(ctx, observer);
+            clientObserversByCall.put(ctx.getId(), clientObserver);
+            clientObserver.next(apiRequest);
+        } else {
+            topic.callMethod(ctx, apiRequest, observer);
+        }
 
         observer.sendReply(Reply.newBuilder().setReplyTo(clientMessage.getId()).build());
+    }
+
+    private void streamToExistingCall(ChannelHandlerContext nettyContext, ClientMessage clientMessage, Topic topic)
+            throws InvalidProtocolBufferException {
+        Observer<Message> clientObserver = clientObserversByCall.get(clientMessage.getCall());
+        if (clientObserver == null) {
+            throw new BadRequestException("Cannot find matching call");
+        }
+
+        Message requestPrototype = topic.getRequestPrototype();
+
+        Message apiRequest = requestPrototype.getDefaultInstanceForType();
+        if (clientMessage.hasOptions()) {
+            apiRequest = clientMessage.getOptions().unpack(requestPrototype.getClass());
+        }
+        clientObserver.next(apiRequest);
     }
 
     void writeMessage(ChannelHandlerContext nettyContext, ServerMessage serverMessage) throws IOException {

@@ -56,4 +56,9 @@ public class Topic {
         MethodDescriptor method = getMethodDescriptor();
         api.callMethod(method, ctx, request, observer);
     }
+
+    public Observer<Message> callMethod(Context ctx, Observer<Message> observer) {
+        MethodDescriptor method = getMethodDescriptor();
+        return api.callMethod(method, ctx, observer);
+    }
 }
