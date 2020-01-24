@@ -8,9 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
-import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
