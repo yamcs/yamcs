@@ -5,6 +5,8 @@ if "%OS%"=="Windows_NT" @setlocal
 rem %~dp0 is expanded pathname of the current script under NT
 set BASE=%~dp0..
 
+cd %BASE%
+
 set LOCALCLASSPATH=
 for %%i in ("%BASE%\lib\*.jar") do call "%BASE%\bin\lcp.bat" %%i
 for %%i in ("%BASE%\lib\ext\*.jar") do call "%BASE%\bin\lcp.bat" %%i

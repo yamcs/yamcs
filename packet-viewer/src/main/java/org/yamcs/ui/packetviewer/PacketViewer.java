@@ -557,8 +557,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     private ProcessorConfig getProcessorConfig() {
-        ProcessorConfig pc = new ProcessorConfig();
-        return null;
+        return new ProcessorConfig();
     }
 
     void loadFile() {
@@ -620,13 +619,15 @@ public class PacketViewer extends JFrame implements ActionListener,
             @Override
             protected void done() {
                 if (progress != null) {
-                    if (progress.isCanceled()) {
-                        clearWindow();
-                        log(String.format("Cancelled loading %s", lastFile.getName()));
-                    } else {
-                        log(String.format("Loaded %d packet%s from \"%s\"",
-                                packetCount,
-                                packetCount != 1 ? "s" : "", lastFile.getPath()));
+                    if (lastFile != null) {
+                        if (progress.isCanceled()) {
+                            clearWindow();
+                            log(String.format("Cancelled loading %s", lastFile.getName()));
+                        } else {
+                            log(String.format("Loaded %d packet%s from \"%s\"",
+                                    packetCount,
+                                    packetCount != 1 ? "s" : "", lastFile.getPath()));
+                        }
                     }
                     progress.close();
                 }
@@ -1103,11 +1104,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             throw new ConfigurationException(e);
         }
 
-        if (config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
-        } else {
-            this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
-        }
+        this.packetInputStreamClassName = config.getString("packetInputStreamClassName",
+                CcsdsPacketInputStream.class.getName());
         this.packetInputStreamArgs = config.get("packetInputStreamArgs");
     }
 
