@@ -22,6 +22,11 @@ q (string)
 system (string)
     List only direct child sub-systems or parameters of the specified system. For example when querying the system "/a" against an MDB with parameters "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the parameter "/a/c".
 
+details (boolean)
+    Include details on each returned parameter (this includes long descriptions, aliases, and detailed type information).
+    
+    If unset, only summary information is returned.
+
 pos (integer)
     The zero-based row number at which to start outputting results. Default: ``0``
 
