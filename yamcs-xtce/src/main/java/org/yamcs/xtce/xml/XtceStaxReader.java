@@ -712,11 +712,17 @@ public class XtceStaxReader {
         StartElement element = xmlEvent.asStartElement();
 
         String name = readMandatoryAttribute("name", element);
-
-        String value = readMandatoryAttribute("numberOfDimensions", element);
-        int dim = Integer.valueOf(value);
-        ArrayParameterType ptype = new ArrayParameterType(name, dim);
-
+        int dim;
+        ArrayParameterType ptype;
+        
+        if(hasAttribute("numberOfDimensions", element)) {
+            dim = readIntAttribute("numberOfDimensions", element);
+            ptype = new ArrayParameterType(name, dim);
+        } else {
+            ptype = new ArrayParameterType(name);
+            dim = -1;
+        }
+        
         String refName = readMandatoryAttribute("arrayTypeRef", xmlEvent.asStartElement());
 
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
@@ -729,7 +735,15 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
                 ptype.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            } else if (isStartElementWithName(XTCE_DIMENSION_LIST)) {
+                List<IntegerValue> dimList = readDimensionList(spaceSystem);
+                dim = dimList.size();
+                ptype.setSize(dimList);
             } else if (isEndElementWithName(XTCE_ARRAY_PARAMETER_TYPE)) {
+                if (dim == -1) {
+                    throw new XMLStreamException("Neither numberOfDimensions (XTCE 1.1) attribute nor "
+                            + XTCE_DIMENSION_LIST + " (XTCE 1.2) element defined for the ArrayParameter " + name);
+                }
                 return ptype;
             } else {
                 logUnknown();
@@ -1302,9 +1316,9 @@ public class XtceStaxReader {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
         } else {
             throw new XMLStreamException(
-                "Unsupported byteOrder '" + byteOrderStr
-                        + "' specified for integer data encoding. Supported are mostSignificantByteFirst or leastSignificantByteFirst.",
-                xmlEvent.getLocation());
+                    "Unsupported byteOrder '" + byteOrderStr
+                            + "' specified for integer data encoding. Supported are mostSignificantByteFirst or leastSignificantByteFirst.",
+                    xmlEvent.getLocation());
         }
         return byteOrder;
     }
@@ -3645,6 +3659,12 @@ public class XtceStaxReader {
         if (xmlEvent.getEventType() != XMLStreamConstants.START_ELEMENT) {
             throw new IllegalStateException("xmlEvent type is not start element");
         }
+    }
+
+    private boolean hasAttribute(String attName, StartElement element) throws XMLStreamException {
+        Attribute attribute = element.getAttributeByName(new QName(attName));
+        return (attribute != null);
+
     }
 
     /**

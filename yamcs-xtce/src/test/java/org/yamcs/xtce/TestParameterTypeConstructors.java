@@ -60,6 +60,9 @@ public class TestParameterTypeConstructors {
         } else if (ptype instanceof StringParameterType) {
             StringParameterType t = (StringParameterType) ptype;
             return new StringParameterType(t);
+        }  else if (ptype instanceof ArrayParameterType) {
+            ArrayParameterType t = (ArrayParameterType) ptype;
+            return new ArrayParameterType(t);
         } else {
             throw new IllegalArgumentException("Cannot clone type "+ptype);
         }

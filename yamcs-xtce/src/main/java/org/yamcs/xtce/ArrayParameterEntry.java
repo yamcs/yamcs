@@ -25,6 +25,10 @@ public class ArrayParameterEntry extends SequenceEntry {
             throw new IllegalArgumentException("Array parameter type required");
         }
         this.parameter = parameter;
+        if(dim==null) {
+            ArrayParameterType pt = (ArrayParameterType)parameter.getParameterType();
+            dim = pt.getSize();
+        }
         validateSize();
     }
 
@@ -56,7 +60,6 @@ public class ArrayParameterEntry extends SequenceEntry {
                                 + ptype.getNumberOfDimensions() + " vs " + dim.size());
             }
         }
-
     }
 
     /**

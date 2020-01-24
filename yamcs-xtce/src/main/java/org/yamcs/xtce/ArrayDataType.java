@@ -18,11 +18,8 @@ public class ArrayDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 1L;
 
     private DataType type;
-    final private int numberOfDimensions;
+    private int numberOfDimensions;
     private Object[] initialValue;
-
-    // TODO check if XTCE has something similar
-    private int[] dimensions;
 
     public ArrayDataType(String name, int numberOfDimensions) {
         super(name);
@@ -56,18 +53,6 @@ public class ArrayDataType extends NameDescription implements DataType {
 
     public int getNumberOfDimensions() {
         return numberOfDimensions;
-    }
-
-    public void setDimensions(int[] dimensions) {
-        if (dimensions.length != numberOfDimensions) {
-            throw new IllegalArgumentException("Number of dimensions does not match: got " + dimensions.length
-                    + " but expected " + numberOfDimensions);
-        }
-        this.dimensions = dimensions;
-    }
-
-    public int[] getDimensions() {
-        return dimensions;
     }
 
     @Override
@@ -117,5 +102,9 @@ public class ArrayDataType extends NameDescription implements DataType {
     @Override
     public Object[] getInitialValue() {
         return initialValue;
+    }
+    
+    protected void setNumberOfDimensions(int numberOfDimensions) {
+        this.numberOfDimensions = numberOfDimensions;
     }
 }
