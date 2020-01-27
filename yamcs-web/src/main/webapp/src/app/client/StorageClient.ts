@@ -39,7 +39,8 @@ export class StorageClient {
   }
 
   getObjectURL(instance: string, bucket: string, name: string) {
-    return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${name}`;
+    const encodedName = encodeURIComponent(name);
+    return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
   }
 
   async uploadObject(instance: string, bucket: string, name: string, value: Blob | File) {
@@ -53,13 +54,14 @@ export class StorageClient {
   }
 
   async deleteObject(instance: string, bucket: string, name: string) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${name}`;
+    const encodedName = encodeURIComponent(name);
+    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });
   }
 
-  private queryString(options: {[key: string]: any}) {
+  private queryString(options: { [key: string]: any }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');
