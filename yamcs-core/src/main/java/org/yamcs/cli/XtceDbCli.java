@@ -44,15 +44,7 @@ public class XtceDbCli extends Command {
                     throw new ConfigurationException(mdbConfigFile,
                             mdbConfigFile + ": top level structure must be a map and not a " + o);
                 }
-                o = ((Map<String, Object>) o).get(configSection);
-                if (o == null) {
-                    throw new ConfigurationException(mdbConfigFile,
-                            mdbConfigFile + ": does not contain a mapping for " + configSection);
-                } else if (!(o instanceof List<?>)) {
-                    throw new ConfigurationException(mdbConfigFile, mdbConfigFile + ": mapping for " + configSection
-                            + " must be a list and not a " + o.getClass());
-                }
-                List<Object> list = (List<Object>) o;
+                List<YConfiguration> list = YConfiguration.wrap((Map<String, Object>) o).getConfigList(configSection);
                 xtcedb = XtceDbFactory.createInstance(list, false, false);
 
             } catch (YAMLException | IOException e) {

@@ -35,11 +35,11 @@ public class XtceDbFactoryTest {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();
 
-        Map<String, Object> mdbConfig = new HashMap<>();
-        mdbConfig.put("type", "sheet");
-        mdbConfig.put("spec", "mdb/refmdb.xls");
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", "sheet");
+        m.put("spec", "mdb/refmdb.xls");
 
-        List<Object> mdbConfigs = Arrays.asList(mdbConfig);
+        List<YConfiguration> mdbConfigs = Arrays.asList(YConfiguration.wrap(m));
         XtceDb db = XtceDbFactory.createInstance(mdbConfigs, true, true);
 
         SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");

@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -146,15 +145,15 @@ public class V6Loader extends V6LoaderBase {
 
     boolean enableAliasReferences = false;
 
-    public V6Loader(Map<String, Object> config, Workbook workbook) {
+    public V6Loader(YConfiguration config, Workbook workbook) {
         this(config);
         this.workbook = workbook;
     }
 
-    public V6Loader(Map<String, Object> config) {
-        this(YConfiguration.getString(config, "file"));
-        enableAliasReferences = YConfiguration.getBoolean(config, "enableAliasReferences", false);
-        enableXtceNameRestrictions = YConfiguration.getBoolean(config, "enableXtceNameRestrictions", true);
+    public V6Loader(YConfiguration config) {
+        this(config.getString( "file"));
+        enableAliasReferences = config.getBoolean("enableAliasReferences", false);
+        enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 
     public V6Loader(String filename) {

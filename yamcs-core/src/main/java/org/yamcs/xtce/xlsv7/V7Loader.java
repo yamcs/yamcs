@@ -175,10 +175,10 @@ public class V7Loader extends V7LoaderBase {
 
     boolean enableAliasReferences = false;
 
-    public V7Loader(Map<String, Object> config) {
-        this(YConfiguration.getString(config, "file"));
-        enableAliasReferences = YConfiguration.getBoolean(config, "enableAliasReferences", false);
-        enableXtceNameRestrictions = YConfiguration.getBoolean(config, "enableXtceNameRestrictions", true);
+    public V7Loader(YConfiguration config) {
+        this(config.getString("file"));
+        enableAliasReferences = config.getBoolean("enableAliasReferences", false);
+        enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 
     public V7Loader(String filename) {
@@ -186,7 +186,7 @@ public class V7Loader extends V7LoaderBase {
         ctx.file = new File(filename).getName();
     }
 
-    public V7Loader(Map<String, Object> config, Workbook workbook) {
+    public V7Loader(YConfiguration config, Workbook workbook) {
         this(config);
         this.workbook = workbook;
     }

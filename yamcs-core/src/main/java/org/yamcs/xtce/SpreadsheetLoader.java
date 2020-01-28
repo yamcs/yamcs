@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.Map;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
@@ -19,9 +17,9 @@ import jxl.Sheet;
 public class SpreadsheetLoader extends BaseSpreadsheetLoader {
     SpaceSystemLoader delegate;
 
-    public SpreadsheetLoader(Map<String, Object> config) {
-        super(YConfiguration.getString(config, "file"));
-        int version = checkVersion(YConfiguration.getString(config, "file"));
+    public SpreadsheetLoader(YConfiguration config) {
+        super(config.getString("file"));
+        int version = checkVersion(config.getString("file"));
         if (version == 6) {
             delegate = new org.yamcs.xtce.xlsv6.V6Loader(config, workbook);
         } else {
@@ -30,7 +28,7 @@ public class SpreadsheetLoader extends BaseSpreadsheetLoader {
     }
 
     public SpreadsheetLoader(String filename) {
-        this(ImmutableMap.of("file", filename));
+        this(YConfiguration.wrap(ImmutableMap.of("file", filename)));
     }
 
     public int checkVersion(String filename) {

@@ -76,8 +76,7 @@ public class XtceDbFactory {
         if (configSection == null) {
             configSection = c.getFirstEntry();
         }
-
-        List<Object> list = c.getList(configSection);
+        List<YConfiguration> list = c.getConfigList(configSection);
         return createInstance(list, attemptToLoadSerialized, true);
     }
 
@@ -97,16 +96,12 @@ public class XtceDbFactory {
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    public static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized,
+    public static synchronized XtceDb createInstance(List<YConfiguration> treeConfig, boolean attemptToLoadSerialized,
             boolean saveSerialized) throws ConfigurationException, DatabaseLoadException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
-        for (Object o : treeConfig) {
-            if (o instanceof Map) {
-                loaderTree.addChild(getLoaderTree((Map<String, Object>) o));
-            } else {
-                throw new ConfigurationException("Expected type Map instead of " + o.getClass());
-            }
+        for (YConfiguration o : treeConfig) {
+            loaderTree.addChild(getLoaderTree(o));
         }
 
         boolean loadSerialized = attemptToLoadSerialized;
@@ -489,14 +484,14 @@ public class XtceDbFactory {
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static LoaderTree getLoaderTree(Map<String, Object> m)
+    private static LoaderTree getLoaderTree(YConfiguration c)
             throws ConfigurationException, DatabaseLoadException {
-        String type = YConfiguration.getString(m, "type");
+        String type = c.getString("type");
         Object args = null;
-        if (m.containsKey("args")) {
-            args = m.get("args");
-        } else if (m.containsKey("spec")) {
-            args = m.get("spec");
+        if (c.containsKey("args")) {
+            args = c.getConfig("args");
+        } else if (c.containsKey("spec")) {
+            args = c.get("spec");
         }
 
         SpaceSystemLoader l;
@@ -520,14 +515,10 @@ public class XtceDbFactory {
 
         ltree = new LoaderTree(l);
 
-        if (m.containsKey("subLoaders")) {
-            List<Object> list = YConfiguration.getList(m, "subLoaders");
-            for (Object o : list) {
-                if (o instanceof Map) {
-                    ltree.addChild(getLoaderTree((Map<String, Object>) o));
-                } else {
-                    throw new ConfigurationException("Expected type Map instead of " + o.getClass());
-                }
+        if (c.containsKey("subLoaders")) {
+            List<YConfiguration> list = c.getConfigList("subLoaders");
+            for (YConfiguration c1 : list) {
+                ltree.addChild(getLoaderTree(c1));
             }
         }
 
@@ -632,7 +623,7 @@ public class XtceDbFactory {
         if (db == null) {
             YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
             if (instanceConfig.isList("mdb")) {
-                db = createInstance(instanceConfig.getList("mdb"), true, true);
+                db = createInstance(instanceConfig.getConfigList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);
             } else {
                 db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdb"));
