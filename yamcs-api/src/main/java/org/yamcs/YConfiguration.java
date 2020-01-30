@@ -351,13 +351,12 @@ public class YConfiguration {
 
     /**
      * 
-     * Please use {@link #getConfig} to get a child config instead of accessing the map directly
+     * Consider using {@link #getConfig} to get a child config instead of accessing the map directly
      */
     @SuppressWarnings("unchecked")
-    @Deprecated
-    public Map<String, Object> getMap(String key) throws ConfigurationException {
+    public <K, V> Map<K, V> getMap(String key) throws ConfigurationException {
         checkKey(key, Map.class);
-        return (Map<String, Object>) root.get(key);
+        return (Map<K, V>) root.get(key);
     }
 
     public Map<String, Object> getSubMap(String key, String key1) throws ConfigurationException {
