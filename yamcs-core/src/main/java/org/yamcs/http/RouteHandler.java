@@ -38,6 +38,7 @@ public class RouteHandler extends Handler {
     @Override
     public void handle(ChannelHandlerContext nettyContext, FullHttpRequest req) {
         RouteContext ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
+        ctx.setFullNettyRequest(req);
 
         if (ctx.isOffloaded()) {
             ctx.getBody().retain();

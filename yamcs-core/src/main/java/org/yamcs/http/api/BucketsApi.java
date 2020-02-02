@@ -245,7 +245,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     private void uploadObjectMultipartFormData(Context ctx, Bucket bucket) throws HttpException {
-        HttpRequest nettyRequest = ((RouteContext) ctx).nettyRequest;
+        HttpRequest nettyRequest = ((RouteContext) ctx).fullNettyRequest;
         HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(nettyRequest);
 
         FileUpload fup = null;

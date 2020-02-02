@@ -29,6 +29,7 @@ public class RouteContext extends Context {
      * implementation (e.g. multipart uploading)
      */
     public final HttpRequest nettyRequest;
+    public FullHttpRequest fullNettyRequest;
 
     private Route route;
     private Matcher regexMatch;
@@ -56,6 +57,10 @@ public class RouteContext extends Context {
                 route.incrementErrorCount();
             }
         });
+    }
+
+    void setFullNettyRequest(FullHttpRequest fullNettyRequest) {
+        this.fullNettyRequest = fullNettyRequest;
     }
 
     @Override
@@ -138,8 +143,8 @@ public class RouteContext extends Context {
      * 
      */
     public ByteBuf getBody() {
-        if (nettyRequest instanceof FullHttpRequest) {
-            return ((FullHttpRequest) nettyRequest).content();
+        if (fullNettyRequest != null) {
+            return fullNettyRequest.content();
         } else {
             throw new IllegalArgumentException("Can only provide body of a FullHttpRequest");
         }
