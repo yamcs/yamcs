@@ -2,8 +2,8 @@ package org.yamcs.http;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
@@ -25,7 +25,8 @@ public class WebSocketObserver implements Observer<Message> {
     private boolean completed;
     private Runnable cancelHandler;
 
-    private CountDownLatch replyTriggered = new CountDownLatch(1);
+    private boolean replied;
+    private List<Message> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
 
     public WebSocketObserver(TopicContext ctx, NewWebSocketFrameHandler frameHandler) {
         this.ctx = ctx;
@@ -37,10 +38,15 @@ public class WebSocketObserver implements Observer<Message> {
     }
 
     void sendReply(Reply reply) {
-        try {
-            sendMessage("reply", reply);
-        } finally {
-            replyTriggered.countDown();
+        synchronized (this) { // Guard 'replied' and 'pendingMessages'
+            try {
+                sendMessage("reply", reply);
+            } finally {
+                replied = true;
+            }
+
+            pendingMessages.forEach(message -> next(message));
+            pendingMessages.clear();
         }
     }
 
@@ -50,21 +56,19 @@ public class WebSocketObserver implements Observer<Message> {
 
     @Override
     public void next(Message message) {
-
-        // Block until the reply was sent. We really want the client to receive data only
-        // *after* the initial call reply.
-        try {
-            replyTriggered.await(5000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            cancelCall(e.getMessage());
-            throw new IllegalStateException("No reply sent in under 5 seconds");
+        synchronized (this) {
+            if (!replied) {
+                pendingMessages.add(message);
+                return;
+            }
         }
 
-        // While we were wating, the call may have been cancelled for some reason.
-        if (cancelled) {
-            return;
-        }
-
+        // Increase even if it not sent.
+        // TODO this was originally designed for some calls (like parameter subscription)
+        // which do not guarantee all messages to arrive (e.g. because the channel is
+        // temporarily not writable). But this is perhaps a property that should be made
+        // specific to the call. It may cause problems for other calls that require all
+        // messages to arrive.
         messageCount++;
 
         if (!ctx.nettyContext.channel().isOpen()) {
