@@ -28,12 +28,13 @@ import java.util.List;
  * <li>ArgumentList Child’s content is appended to parent’s content if present</li>
  * <li>CommandContainer Special Case: inherited like other containers if CommandContainer/BaseContainer set. Otherwise
  * it is not inherited.</li>
- *  <li>TransmissionConstraintList Child’s content prefixed to parent’s content if present</li>
- *  <li>DefaultSignificance Child’s content will override parent’s content if present, otherwise child gets parent’s
+ * <li>TransmissionConstraintList Child’s content prefixed to parent’s content if present</li>
+ * <li>DefaultSignificance Child’s content will override parent’s content if present, otherwise child gets parent’s
  * content if specified</li>
  * <li>VerifierSet Child’s content prefixed to parent’s content if present but: - Same verifiers are overridden by the
  * child</li>
  * </ul>
+ * 
  * @author nm
  */
 public class MetaCommand extends NameDescription {
@@ -247,8 +248,9 @@ public class MetaCommand extends NameDescription {
             out.println("\t baseMetaCommand: " + baseMetaCommand.getName() + " with argument assignment:"
                     + argumentAssignmentList);
         }
-
-        commandContainer.print(out);
+        if (commandContainer != null) {
+            commandContainer.print(out);
+        }
     }
 
     public void setArgumentAssignmentList(List<ArgumentAssignment> argumentAssignmentList) {

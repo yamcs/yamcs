@@ -4,6 +4,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.xtceproc.ContainerProcessingOptions;
+import org.yamcs.xtceproc.MetaCommandProcessor;
 
 /**
  * Configuration options for a processor
@@ -12,7 +13,6 @@ import org.yamcs.xtceproc.ContainerProcessingOptions;
  *
  */
 public class ProcessorConfig {
-  
 
     private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
     private static final String CONFIG_KEY_ALARM = "alarm";
@@ -21,6 +21,8 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_RECORD_INITIAL_VALUES = "recordInitialValues";
     private static final String CONFIG_KEY_RECORD_LOCAL_VALUES = "recordLocalValues";
     private static final String CONFIG_KEY_TM_PROCESSOR = "tmProcessor";
+    private static final String CONFIG_KEY_MAX_TC_SIZE = "maxTcSize";
+    private static final String CONFIG_KEY_CONTAINERLESS_CMDS = "allowContainerlessCommands";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -31,13 +33,21 @@ public class ProcessorConfig {
     int eventAlarmMinViolations = 1;
     boolean subscribeAll = false;
     boolean generateEvents = false;
+    /**
+     * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
+     * MetaCommand has no container associated.
+     * <p>
+     * The link is then responsible to encode the command somehow starting from the command name and argument assignments.
+     *
+     */
+    boolean allowContainerlessCommands = false;
 
     final ContainerProcessingOptions containerProcOptions;
     final ParameterCacheConfig parameterCacheConfig;
     static Log log = new Log(ProcessorConfig.class);
 
     public ProcessorConfig(YConfiguration config) {
-        
+
         YConfiguration contProc = YConfiguration.emptyConfig();
         YConfiguration pcacheConfig = YConfiguration.emptyConfig();
 
@@ -57,6 +67,10 @@ public class ProcessorConfig {
                     recordLocalValues = config.getBoolean(key);
                 } else if (CONFIG_KEY_GENERATE_EVENTS.equals(key)) {
                     generateEvents = config.getBoolean(key);
+                } else if (CONFIG_KEY_MAX_TC_SIZE.equals(key)) {
+                    maxTcSize = config.getInt(key);
+                } else if (CONFIG_KEY_CONTAINERLESS_CMDS.equals(key)) {
+                    allowContainerlessCommands = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -64,7 +78,7 @@ public class ProcessorConfig {
         }
         containerProcOptions = new ContainerProcessingOptions(contProc);
         parameterCacheConfig = new ParameterCacheConfig(pcacheConfig, log);
-        
+
     }
 
     /**
@@ -76,7 +90,7 @@ public class ProcessorConfig {
     }
 
     private void parseAlarmConfig(YConfiguration alarmConfig) {
-        
+
         if (alarmConfig.containsKey("check")) {
             log.warn(
                     "Deprecation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
@@ -99,7 +113,6 @@ public class ProcessorConfig {
         eventAlarmMinViolations = alarmConfig.getInt("eventAlarmMinViolations", eventAlarmMinViolations);
     }
 
-
     public int getMaxCommandSize() {
         return maxTcSize;
     }
@@ -115,7 +128,11 @@ public class ProcessorConfig {
     public ContainerProcessingOptions getContainerProcessingOptions() {
         return containerProcOptions;
     }
-    
+
+    public boolean allowContainerlessCommands() {
+        return allowContainerlessCommands;
+    }
+
     @Override
     public String toString() {
         return "ProcessorConfig [checkParameterAlarms=" + checkParameterAlarms + ", parameterAlarmServerEnabled="

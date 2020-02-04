@@ -58,13 +58,17 @@ public final class ManagementGpbHelper {
                 .setQueueName(q.getName())
                 .setCmdId(pc.getCommandId())
                 .setSource(pc.getSource())
-                .setBinary(ByteString.copyFrom(pc.getBinary()))
+                
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
                 .setYamcsGenerationTime(pc.getGenerationTime())
                 .setGenerationTimeUTC(TimeEncoding.toString(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());
 
+        if(pc.getBinary()!=null) {
+            entryb.setBinary(ByteString.copyFrom(pc.getBinary()));
+        }
+        
         if (pc.getComment() != null) {
             entryb.setComment(pc.getComment());
         }

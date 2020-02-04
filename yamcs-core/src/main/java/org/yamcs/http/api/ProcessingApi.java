@@ -283,9 +283,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
                 .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
                 .setSource(preparedCommand.getSource())
-                .setBinary(ByteString.copyFrom(preparedCommand.getBinary()))
-                .setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()))
                 .setUsername(preparedCommand.getUsername());
+        
+        byte[] binary = preparedCommand.getBinary();
+        if (binary != null) {
+            responseb.setBinary(ByteString.copyFrom(binary))
+                    .setHex(StringConverter.arrayToHexString(binary));
+        }
 
         if (queue != null) {
             responseb.setQueue(queue.getName());

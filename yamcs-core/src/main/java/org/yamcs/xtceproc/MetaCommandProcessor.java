@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
@@ -20,7 +21,7 @@ import org.yamcs.xtce.Parameter;
 
 public class MetaCommandProcessor {
     final ProcessorData pdata;
-    
+
     public MetaCommandProcessor(ProcessorData pdata) {
         this.pdata = pdata;
     }
@@ -36,34 +37,40 @@ public class MetaCommandProcessor {
             throw new ErrorInCommand("Will not build command " + mc.getQualifiedName() + " because it is abstract");
         }
 
-        CommandContainer def = mc.getCommandContainer();
-        if (def == null) {
-            throw new ErrorInCommand("MetaCommand has no container: " + def);
-        }
         Map<Argument, Value> args = new HashMap<>();
         Map<String, String> argAssignment = new HashMap<>();
         for (ArgumentAssignment aa : argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
         }
 
+        ProcessorConfig procConf = pdata.getProcessorConfig();
         collectAndCheckArguments(mc, args, argAssignment);
 
-        Map<Parameter, Value> params = new HashMap<>();
-        collectParameters(mc.getCommandContainer(), params);
-
-        BitBuffer bitbuf = new BitBuffer(new byte[pdata.getProcessorConfig().getMaxCommandSize()]);
-        TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
-        try {
-            pcontext.mccProcessor.encode(mc);
-        } catch (CommandEncodingException e) {
-            throw new ErrorInCommand("Error when encoding command: " + e.getMessage());
+        CommandContainer cmdContainer = mc.getCommandContainer();
+        if (cmdContainer == null && !procConf.allowContainerlessCommands()) {
+            throw new ErrorInCommand("MetaCommand " + mc.getName()
+                    + " has no container (and the processor option allowContainerlessCommands is set to false)");
         }
 
-        int length = pcontext.size;
-        byte[] b = new byte[length];
-        System.arraycopy(bitbuf.array(), 0, b, 0, length);
 
-        return new CommandBuildResult(b, args);
+        byte[] binary = null;
+
+        if (cmdContainer != null) {
+            Map<Parameter, Value> params = new HashMap<>();
+            collectParameters(cmdContainer, params);
+            BitBuffer bitbuf = new BitBuffer(new byte[procConf.getMaxCommandSize()]);
+            TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
+            try {
+                pcontext.mccProcessor.encode(mc);
+            } catch (CommandEncodingException e) {
+                throw new ErrorInCommand("Error when encoding command: " + e.getMessage());
+            }
+
+            int length = pcontext.size;
+            binary = new byte[length];
+            System.arraycopy(bitbuf.array(), 0, binary, 0, length);
+        }
+        return new CommandBuildResult(binary, args);
     }
 
     /**
@@ -92,19 +99,19 @@ public class MetaCommandProcessor {
                 Object argObj = null;
                 if (!argAssignment.containsKey(a.getName())) {
                     argObj = a.getInitialValue();
-                    if(argObj == null) {
+                    if (argObj == null) {
                         argObj = a.getArgumentType().getInitialValue();
                     }
-                    if(argObj==null) {
+                    if (argObj == null) {
                         throw new ErrorInCommand("No value provided for argument " + a.getName()
-                        + " (and the argument has no default value either)");
+                                + " (and the argument has no default value either)");
                     }
                 } else {
                     String stringValue = argAssignment.remove(a.getName());
                     try {
                         argObj = a.getArgumentType().parseString(stringValue);
-                        
-                     } catch (Exception e) {
+
+                    } catch (Exception e) {
                         throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                     }
                 }
@@ -136,8 +143,7 @@ public class MetaCommandProcessor {
     }
 
     // look at the command container if it inherits another container using a condition list and add those parameters
-    // with
-    // the respective values
+    // with the respective values
     private static void collectParameters(Container container, Map<Parameter, Value> params) throws ErrorInCommand {
         Container parent = container.getBaseContainer();
         if (parent != null) {

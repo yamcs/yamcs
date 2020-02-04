@@ -43,7 +43,7 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
 
     @Override
     public void onTuple(Stream s, Tuple tuple) {
-        if (tuple.hasColumn(PreparedCommand.CNAME_SOURCE) && tuple.hasColumn(PreparedCommand.CNAME_BINARY)) {
+        if (tuple.hasColumn(PreparedCommand.CNAME_SOURCE)) {
             XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             chrm.addCommand(pc);
