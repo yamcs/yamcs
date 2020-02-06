@@ -6,38 +6,31 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Wrapper class for work with aliases.
- * 
- * @author mu
- * 
- */
 public class XtceAliasSet implements Serializable {
 
-    private static final long       serialVersionUID = 6841708656383592099L;
+    private static final long serialVersionUID = 6841708656383592099L;
 
-    /**
-     * Map of all aliases the object has
-     */
-    private HashMap<String, String> aliases          = null;
-
-    /**
-     * Constructor
-     */
-    public XtceAliasSet() {
-        aliases = new HashMap<>();
-    }
+    private HashMap<String, String> aliases = new HashMap<>();
 
     /**
      * Add alias name, only one name per namespace is possible
      * 
-     * @param nameSpace
+     * @param namespace
      *            Namespace the alias adheres to
      * @param alias
      *            name in the given namespace
      */
-    public void addAlias(String nameSpace, String alias) {
-        aliases.put(nameSpace, alias);
+    public void addAlias(String namespace, String alias) {
+        if (aliases.containsKey(namespace)) {
+            String existingAlias = aliases.get(namespace);
+            if (!existingAlias.equals(alias)) {
+                throw new IllegalArgumentException(String.format(
+                        "Cannot set alias to '%s'. A different alias '%s' is already"
+                                + " defined under the namespace '%s'",
+                        alias, existingAlias, namespace));
+            }
+        }
+        aliases.put(namespace, alias);
     }
 
     /**

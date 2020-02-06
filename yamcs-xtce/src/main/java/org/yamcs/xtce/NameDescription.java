@@ -7,10 +7,8 @@ import java.util.Map;
 
 import org.yamcs.xtce.xml.XtceAliasSet;
 
-
 /**
- * The type definition used by most elements that require a name with optional
- * descriptions.
+ * The type definition used by most elements that require a name with optional descriptions.
  */
 public class NameDescription implements Serializable {
     private static final long serialVersionUID = 200706050619L;
@@ -24,7 +22,6 @@ public class NameDescription implements Serializable {
      * path separator used in the fully qualified names
      */
     public static char PATH_SEPARATOR = '/';
-
 
     /**
      * fully qualified name (i.e. space system name+"/"+name
@@ -44,12 +41,10 @@ public class NameDescription implements Serializable {
     String shortDescription;
     String longDescription;
 
-
     NameDescription(String name) {
         this.name = name;
     }
 
-    
     /*
      * creates a shallow copy
      * */
@@ -60,13 +55,14 @@ public class NameDescription implements Serializable {
         this.name = t.name;
         this.qualifiedName = t.qualifiedName;
     }
-    
-    
+
     public void setName(String newName) {
         this.name = newName;
     }
+
     /**
      * Returns the non qualified name of the item
+     * 
      * @return
      */
     public String getName() {
@@ -74,17 +70,15 @@ public class NameDescription implements Serializable {
     }
 
     public String getAlias(String namespace) {
-        if(xtceAliasSet==null) {
+        if (xtceAliasSet == null) {
             return null;
         }
         return xtceAliasSet.getAlias(namespace);
     }
 
-
-
     public void setQualifiedName(String qname) {
-        if(!qname.endsWith(name)) {
-            throw new IllegalArgumentException("qualified name '"+qname+"' +must end with '"+name+"'");
+        if (!qname.endsWith(name)) {
+            throw new IllegalArgumentException("qualified name '" + qname + "' +must end with '" + name + "'");
         }
         this.qualifiedName = qname;
         String ssName = getSubsystemName(qname);
@@ -99,8 +93,8 @@ public class NameDescription implements Serializable {
     }
 
     /**
-     * Stores the given ancillary data. If an entry already existed for the
-     * applicable name, that entry will be overriden.
+     * Stores the given ancillary data. If an entry already existed for the applicable name, that entry will be
+     * overriden.
      */
     public void addAncillaryData(AncillaryData data) {
         if (ancillaryDataSet == null) {
@@ -115,6 +109,7 @@ public class NameDescription implements Serializable {
 
     /**
      * Returns the fully qualified name.
+     * 
      * @return a name of shape /system/subsys1/subsys2/item
      */
     public String getQualifiedName() {
@@ -150,32 +145,33 @@ public class NameDescription implements Serializable {
     public XtceAliasSet getAliasSet() {
         return xtceAliasSet;
     }
+
     /**
-     * Adds all aliases to the existing aliases.
-     * The new aliases may overwrite already existing aliases - in this case the old ones will be replaced with the new ones.
+     * Adds all aliases to the existing aliases. The new aliases may overwrite already existing aliases - in this case
+     * the old ones will be replaced with the new ones.
      *
      * @param newAliases
      */
     public void addAliases(XtceAliasSet newAliases) {
-        if(xtceAliasSet==null) {
+        if (xtceAliasSet == null) {
             xtceAliasSet = new XtceAliasSet();
         }
-        for(Map.Entry<String, String> e: newAliases.getAliases().entrySet()) {
+        for (Map.Entry<String, String> e : newAliases.getAliases().entrySet()) {
             xtceAliasSet.addAlias(e.getKey(), e.getValue());
         }
     }
 
     public void addAlias(String namespace, String alias) {
-        if(xtceAliasSet==null) {
+        if (xtceAliasSet == null) {
             xtceAliasSet = new XtceAliasSet();
         }
         xtceAliasSet.addAlias(namespace, alias);
     }
+
     /**
      * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
      *
-     * @return OPS Name alias if defined, otherwise name in the default
-     *         namespace
+     * @return OPS Name alias if defined, otherwise name in the default namespace
      */
     public String getOpsName() {
         if (xtceAliasSet != null) {
@@ -210,7 +206,8 @@ public class NameDescription implements Serializable {
     }
 
     /**
-     * returns the subsystem fully qualified name where this name is valid (i.e. the full path of the directory name if it were a filesystem)
+     * returns the subsystem fully qualified name where this name is valid (i.e. the full path of the directory name if
+     * it were a filesystem)
      *
      * @param fqname
      * @return the fully qualified name
@@ -218,12 +215,12 @@ public class NameDescription implements Serializable {
     public static String getSubsystemName(String fqname) {
         int index = fqname.lastIndexOf(PATH_SEPARATOR);
 
-        if(index==0) {
+        if (index == 0) {
             return String.valueOf(PATH_SEPARATOR);
         }
 
         if (index < 0) {
-            throw new RuntimeException("Illegal qualified name '"+fqname+"'");
+            throw new RuntimeException("Illegal qualified name '" + fqname + "'");
         }
         return fqname.substring(0, index);
     }

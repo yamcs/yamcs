@@ -24,11 +24,11 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 13.x
       - name: Set up webapp
-        run: npm --cwd yamcs-web/src/main/webapp install
+        run: cd yamcs-web/src/main/webapp; npm install
       - name: Build webapp
-        run: npm --cwd yamcs-web/src/main/webapp run build
+        run: cd yamcs-web/src/main/webapp; npm run build
 
   docs:
     name: Documentation
