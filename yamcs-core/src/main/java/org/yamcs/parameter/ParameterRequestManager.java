@@ -569,7 +569,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @param plist
      * @return
      */
-    public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
+    public List<ParameterValue> getValuesFromCache(Collection<Parameter> plist) {
         List<ParameterValue> al = new ArrayList<>(plist.size());
         for (Parameter p : plist) {
             ParameterValue pv = lastValueCache.getValue(p);

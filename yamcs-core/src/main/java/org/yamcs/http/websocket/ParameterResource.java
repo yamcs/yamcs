@@ -137,7 +137,7 @@ public class ParameterResource implements WebSocketResource, ParameterWithIdCons
             }
             client.sendReply(reply);
             if ((!req.hasSendFromCache() || req.getSendFromCache())) {
-                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, client.getUser());
+                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(subscriptionId);
                 if (!pvlist.isEmpty()) {
                     update(subscriptionId, pvlist);
                 }

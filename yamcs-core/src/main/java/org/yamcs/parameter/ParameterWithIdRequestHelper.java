@@ -211,6 +211,41 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         return subscribeAllId;
     }
 
+    /**
+     * retrieve the subscribed values from cache
+     * @param subscriptionId
+     * @return
+     */
+    public List<ParameterValueWithId> getValuesFromCache(int subscriptionId) {
+        Subscription subscr = subscriptions.get(subscriptionId);
+        if (subscr == null) {
+            log.warn("add item requested for an invalid subscription id {}", subscriptionId);
+            throw new InvalidRequestIdentification("Invalid subcription id", subscriptionId);
+        }
+        long now = prm.processor.getCurrentTime();
+        
+        List<ParameterValue> values = prm.getValuesFromCache(subscr.params.keySet());
+        List<ParameterValueWithId> pvlist = new ArrayList<>(values.size());
+        for (ParameterValue pv : values) {
+            if(pv.isExpired(now)) {
+                pv = new ParameterValue(pv);
+                pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+            }
+            if(subscr.checkExpiration && pv.hasExpirationTime()) {
+                subscr.pvexp.put(pv.getParameter(), pv);
+            }
+            List<ParameterWithId> l = subscr.params.get(pv.getParameter());
+            if (l == null) {
+                log.warn("Received values for a parameter not requested: {}", pv.getParameter());
+                continue;
+            }
+            addValueForAllIds(pvlist, l, pv);
+        }
+        
+        return pvlist;
+    }
+    
+
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
         List<ParameterWithId> plist = checkNames(idList);
@@ -409,7 +444,12 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         List<ParameterValueWithId> expired = new ArrayList<>();
         for (ParameterValue pv : items) {
             Parameter p = pv.getParameter();
-            ParameterValue oldPv = subscription.pvexp.put(p, pv);
+            ParameterValue oldPv;
+            if(pv.hasExpirationTime()) {
+                oldPv = subscription.pvexp.put(p, pv);
+            } else {
+                oldPv = subscription.pvexp.remove(p);
+            }
             if ((oldPv != null) && oldPv.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED && oldPv.isExpired(now)) {
                 ParameterValue tmp = new ParameterValue(oldPv); // make a copy because this is shared by other
                                                                 // subscribers
