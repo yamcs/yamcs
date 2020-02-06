@@ -392,18 +392,6 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Instance;
   }
 
-  async getStaticText(path: string) {
-    const response = await this.doFetch(`${this.staticUrl}/${path}`);
-    return await response.text();
-  }
-
-  async getStaticXML(path: string) {
-    const response = await this.doFetch(`${this.staticUrl}/${path}`);
-    const text = await response.text();
-    const xmlParser = new DOMParser();
-    return xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
-  }
-
   async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
       if (!init) {

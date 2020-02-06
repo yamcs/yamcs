@@ -4,7 +4,6 @@ import { Link } from '../client';
 @Component({
   selector: 'app-link-status',
   templateUrl: './LinkStatus.html',
-  styleUrls: ['./LinkStatus.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkStatus {

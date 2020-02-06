@@ -1,25 +1,17 @@
 <ng-container [ngSwitch]="link.status">
-  <mat-icon *ngSwitchCase="'OK'"
-            [matTooltip]="link.status"
-            [class.fade]="parentLink && parentLink.status !== 'OK'">
-    signal_cellular_4_bar
-  </mat-icon>
-  <mat-icon *ngSwitchCase="'UNAVAIL'"
-            class="alert"
-            [matTooltip]="link.status"
-            [class.fade]="parentLink && parentLink.status !== 'OK'">
-    signal_cellular_null
-  </mat-icon>
-  <mat-icon *ngSwitchCase="'FAILED'"
-            class="alert"
-            [matTooltip]="link.status"
-            [class.fade]="parentLink && parentLink.status !== 'OK'">
-    warning
-  </mat-icon>
-  <mat-icon *ngSwitchCase="'DISABLED'"
-            class="down"
-            [matTooltip]="link.status"
-            [class.fade]="parentLink && parentLink.status !== 'OK'">
-    signal_cellular_off
-  </mat-icon>
+  <app-led *ngSwitchCase="'OK'"
+           [matTooltip]="link.status"
+           [fade]="parentLink && parentLink.status !== 'OK'"></app-led>
+  <app-led *ngSwitchCase="'UNAVAIL'"
+           [matTooltip]="link.status"
+           color="red"
+           [fade]="parentLink && parentLink.status !== 'OK'"></app-led>
+  <app-led *ngSwitchCase="'FAILED'"
+           [matTooltip]="link.status"
+           color="red"
+           [fade]="parentLink && parentLink.status !== 'OK'"></app-led>
+  <app-led *ngSwitchCase="'DISABLED'"
+           [matTooltip]="link.status"
+           color="#aaa"
+           [fade]="parentLink && parentLink.status !== 'OK'"></app-led>
 </ng-container>

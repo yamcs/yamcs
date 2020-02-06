@@ -57,6 +57,7 @@ import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
 import { AgoPipe } from './pipes/AgoPipe';
+import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
 import { DataRatePipe } from './pipes/DataRatePipe';
 import { DateTimePipe } from './pipes/DateTimePipe';
@@ -94,6 +95,7 @@ import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
 import { Interval } from './template/Interval';
+import { Led } from './template/Led';
 import { MessageBar } from './template/MessageBar';
 import { SignificanceLevel } from './template/SignificanceLevel';
 import { StartReplayDialog } from './template/StartReplayDialog';
@@ -180,6 +182,7 @@ const sharedComponents = [
   Interval,
   Label,
   Labels,
+  Led,
   MessageBar,
   ObjectSelector,
   ParameterLegend,
@@ -205,6 +208,7 @@ const sharedComponents = [
 
 const pipes = [
   AgoPipe,
+  BasenamePipe,
   BinarySizePipe,
   DataRatePipe,
   DateTimePipe,
