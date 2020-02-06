@@ -1,4 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Synchronizer } from '../../core/services/Synchronizer';
 
 const fontWeight = '500';
 const slopeWidth = 10;
@@ -6,21 +8,19 @@ const slopeWidth = 10;
 @Component({
   selector: 'app-slanted-label',
   host: {
-    '[class.shakeIcon]': 'shake',
     '[class.highlight]': 'highlight',
     '[class.selectable]': 'selectable',
-    '[class.spinIcon]': 'spin',
   },
   template: `
     <div id="wrapper">
       <svg #container
            style="overflow: visible; width: 100px; height: 32px;">
+        <polygon #outline></polygon>
         <text #text y="${16 + 1}" dominant-baseline="middle" text-anchor="middle"
               fill="white"
               style="font-size: 14px; font-weight: ${fontWeight}">
           <ng-content></ng-content>
         </text>
-        <polygon #outline></polygon>
         <polygon #iconHolder></polygon>
       </svg>
       <div *ngIf="icon" id="icon-wrapper" style="position: absolute; top: 0; left: ${slopeWidth}px;">
@@ -30,7 +30,7 @@ const slopeWidth = 10;
   styleUrls: ['./SlantedLabel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SlantedLabel implements AfterViewInit {
+export class SlantedLabel implements AfterViewInit, OnDestroy {
 
   @Input()
   color = 'lime';
@@ -42,13 +42,7 @@ export class SlantedLabel implements AfterViewInit {
   iconColor = 'black';
 
   @Input()
-  shake = false;
-
-  @Input()
   highlight = false;
-
-  @Input()
-  spin = false;
 
   @Input()
   selectable = false;
@@ -67,6 +61,24 @@ export class SlantedLabel implements AfterViewInit {
 
   @ViewChild('iconHolder', { static: true })
   private iconHolder: ElementRef;
+
+  private syncSubscription: Subscription;
+
+  constructor(synchronizer: Synchronizer) {
+    let toggle = true;
+    this.syncSubscription = synchronizer.sync(() => {
+      toggle = !toggle;
+      if (toggle && this.highlight) {
+        this.outline.nativeElement.style.fill = this.color;
+        this.text.nativeElement.style.fill = 'inherit';
+      } else {
+        this.outline.nativeElement.style.fill = 'none';
+        this.outline.nativeElement.style.stroke = this.color;
+        this.iconHolder.nativeElement.style.fill = this.color;
+        this.text.nativeElement.style.fill = this.color;
+      }
+    });
+  }
 
   async ngAfterViewInit() {
     this.redraw();
@@ -102,6 +114,12 @@ export class SlantedLabel implements AfterViewInit {
 
       iconHolderEl.setAttribute('points', points);
       iconHolderEl.setAttribute('fill', this.color);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
     }
   }
 }
