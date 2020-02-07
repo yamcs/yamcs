@@ -111,7 +111,7 @@ public class ServerStreamingObserver implements Observer<Message> {
 
         String filename = null;
 
-        if (firstMessage instanceof HttpBody) {
+        if (firstMessage != null && firstMessage instanceof HttpBody) {
             HttpBody body = (HttpBody) firstMessage;
             mediaType = MediaType.from(body.getContentType());
             if (body.hasFilename()) {
@@ -156,14 +156,18 @@ public class ServerStreamingObserver implements Observer<Message> {
             return;
         }
 
-        try {
-            bufOut.close();
-            if (buf.readableBytes() > 0) {
-                ctx.addTransferredSize(buf.readableBytes());
-                writeChunk(buf);
+        if (messageCount == 0) {
+            initializeHttpResponse(null);
+        } else {
+            try {
+                bufOut.close();
+                if (buf.readableBytes() > 0) {
+                    ctx.addTransferredSize(buf.readableBytes());
+                    writeChunk(buf);
+                }
+            } catch (IOException e) {
+                log.error("Could not write final chunk of data", e);
             }
-        } catch (IOException e) {
-            log.error("Could not write final chunk of data", e);
         }
 
         ctx.nettyContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
