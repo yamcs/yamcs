@@ -74,14 +74,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
      * Sends
      */
     @Override
-    public void sendTc(PreparedCommand pc) {
-        if (disabled) {
-            log.debug("TC disabled, ignoring command {}", pc.getCommandId());
-            if (failCommandOnDisabled) {
-                commandHistoryPublisher.commandFailed(pc.getCommandId(),  getCurrentTime(), "Link " + name + " disabled");
-            }
-            return;
-        }
+    public void uplinkTc(PreparedCommand pc) {
         if (!commandQueue.offer(pc)) {
             log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
             commandHistoryPublisher.commandFailed(pc.getCommandId(), getCurrentTime(), "Link " + name + ": queue full");

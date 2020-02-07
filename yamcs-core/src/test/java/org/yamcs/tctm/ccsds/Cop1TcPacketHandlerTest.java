@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -56,6 +57,7 @@ public class Cop1TcPacketHandlerTest {
         tcParams = new TcManagedParameters(YConfiguration.wrap(m));
         tcFrameFactory = new TcFrameFactory(tcParams);
         TimeEncoding.setUp();
+        EventProducerFactory.setMockup(false);
 
         // org.yamcs.LoggingUtils.enableLogging();
     }

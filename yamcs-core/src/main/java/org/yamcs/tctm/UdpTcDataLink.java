@@ -59,4 +59,9 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
         dataCount++;
         commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(), AckStatus.OK);
     }
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
+    }
 }

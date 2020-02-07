@@ -38,14 +38,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public void sendTc(PreparedCommand preparedCommand) {
-        if (disabled) {
-            log.debug("TC disabled, ignoring command {}", preparedCommand.getCommandId());
-            if (failCommandOnDisabled) {
-                failedCommand(preparedCommand.getCommandId(), "Link "+name+" disabled");
-            }
-            return;
-        }
+    public void uplinkTc(PreparedCommand preparedCommand) {
         if (blockSenderOnQueueFull) {
             try {
                 commandQueue.put(preparedCommand);
@@ -141,5 +134,10 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     public void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore) {
         this.dataAvailableSemaphore = dataAvailableSemaphore;
 
+    }
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
     }
 }

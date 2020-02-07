@@ -35,7 +35,6 @@ import org.yamcs.utils.TimeEncoding;
  */
 public abstract class AbstractTcFrameLink extends AbstractLink
         implements AggregatedDataLink, TcDataLink, SystemParametersProducer {
-    volatile boolean enabled = true;
     protected int frameCount;
     boolean sendCltu;
     protected MasterChannelFrameMultiplexer multiplexer;

@@ -22,6 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -33,6 +34,7 @@ public class TcpTcDataLinkTest {
     @BeforeClass
     public static void beforeClass() throws IOException {
         TimeEncoding.setUp();
+        EventProducerFactory.setMockup(false);
     }
 
     @Before

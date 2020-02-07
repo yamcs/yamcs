@@ -12,7 +12,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -20,8 +19,6 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
-
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Base implementation for a TC data link that initialises a post processor and provides a queueing and rate limiting
@@ -31,25 +28,19 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public abstract class AbstractTcDataLink extends AbstractService
+public abstract class AbstractTcDataLink extends AbstractLink
         implements TcDataLink, SystemParametersProducer {
 
     protected CommandHistoryPublisher commandHistoryPublisher;
-
-    protected volatile boolean disabled = false;
 
     protected volatile long dataCount;
 
     protected String sv_linkStatus_id, sp_dataCount_id;
 
     protected SystemParametersCollector sysParamCollector;
-    protected final Log log;
-    protected final String yamcsInstance;
-    protected final String name;
     TimeService timeService;
 
     protected CommandPostprocessor cmdPostProcessor;
-    final YConfiguration config;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
     protected long housekeepingInterval = 10000;
@@ -60,11 +51,7 @@ public abstract class AbstractTcDataLink extends AbstractService
     
     public AbstractTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
             throws ConfigurationException {
-        log = new Log(getClass(), yamcsInstance);
-        log.setContext(linkName);
-        this.yamcsInstance = yamcsInstance;
-        this.name = linkName;
-        this.config = config;
+        super(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
         
         failCommandOnDisabled = config.getBoolean("failCommandOnDisabled", false);
@@ -106,6 +93,20 @@ public abstract class AbstractTcDataLink extends AbstractService
             throw new ConfigurationException(e);
         }
     }
+    
+    @Override
+    public void sendTc(PreparedCommand preparedCommand) {
+        if (isDisabled()) {
+            log.debug("TC disabled, ignoring command {}", preparedCommand.getCommandId());
+            if (failCommandOnDisabled) {
+                failedCommand(preparedCommand.getCommandId(), "Link "+name+" disabled");
+            }
+            return;
+        }
+        uplinkTc(preparedCommand);
+    }
+
+    protected abstract void uplinkTc(PreparedCommand preparedCommand);
 
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
@@ -117,29 +118,6 @@ public abstract class AbstractTcDataLink extends AbstractService
         return name;
     }
 
-    @Override
-    public Status getLinkStatus() {
-        if(disabled) {
-            return Status.DISABLED;
-        } else {
-            return Status.OK;
-        }
-    }
-
-    @Override
-    public void disable() {
-        disabled = true;
-    }
-
-    @Override
-    public void enable() {
-        disabled = false;
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
 
     @Override
     public long getDataInCount() {

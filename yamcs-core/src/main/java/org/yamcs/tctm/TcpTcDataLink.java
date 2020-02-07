@@ -156,20 +156,8 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     }
 
     @Override
-    public Status getLinkStatus() {
-        if (disabled) {
-            return Status.DISABLED;
-        }
-        if (isSocketOpen()) {
-            return Status.OK;
-        } else {
-            return Status.UNAVAIL;
-        }
-    }
-
-    @Override
     public String getDetailedStatus() {
-        if (disabled) {
+        if (isDisabled()) {
             return String.format("DISABLED (should connect to %s:%d)", host, port);
         }
         if (isSocketOpen()) {
@@ -179,17 +167,10 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
     }
 
-    @Override
-    public void disable() {
-        super.disable();
-        if (isRunning()) {
-            disconnect();
-        }
-    }
 
     @Override
     protected void startUp() throws Exception {
-        if (!disabled) {
+        if (!isDisabled()) {
             openSocket();
         }
     }
@@ -252,9 +233,25 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     protected void doHousekeeping() {
-        if (!isRunning() || disabled) {
+        if (!isRunning() || isDisabled()) {
             return;
         }
         openSocket();
+    }
+
+    @Override
+    protected void doDisable() throws Exception {
+        if (isRunning()) {
+            disconnect();
+        }
+    }
+
+    @Override
+    protected Status connectionStatus() {
+        if (isSocketOpen()) {
+            return Status.OK;
+        } else {
+            return Status.UNAVAIL;
+        }
     }
 }

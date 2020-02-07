@@ -107,12 +107,12 @@ public abstract class AbstractLink extends AbstractService implements Link {
         return disabled.get();
     }
 
-    protected abstract void doDisable() throws Exception;
+    protected void doDisable() throws Exception {};
 
-    protected abstract void doEnable() throws Exception;
+    protected void doEnable() throws Exception {};
     
     /**
-     * In case the link should be connected (i.e. is running and enabled) this method is called to return the actuall connection status
+     * In case the link should be connected (i.e. is running and enabled) this method is called to return the actual connection status
      */
     protected abstract Status connectionStatus();
 

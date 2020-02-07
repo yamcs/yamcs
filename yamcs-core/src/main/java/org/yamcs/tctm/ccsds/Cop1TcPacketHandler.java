@@ -187,14 +187,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void sendTc(PreparedCommand pc) {
-        if (disabled) {
-            log.debug("TC disabled, ignoring command {}", pc.getCommandId());
-            if (failCommandOnDisabled) {
-                failedCommand(pc.getCommandId(), "Link " + name + " disabled");
-            }
-            return;
-        }
+    public void uplinkTc(PreparedCommand pc) {
         log.trace("state: {} new TC {}", externalState, pc);
         if (!cop1Active) {
             if (bypassAll) {
@@ -1237,6 +1230,11 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
         return Arrays.asList(linkStatus, dataCount, cop1Status);
+    }
+
+    @Override
+    protected Status connectionStatus() {
+        return Status.OK;
     }
 
 }

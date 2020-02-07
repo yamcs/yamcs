@@ -5,11 +5,18 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.api.EventProducerFactory;
 
 public class TcpTcUplinkerTest {
 
+    @BeforeClass
+    public static void beforeClass() {
+        EventProducerFactory.setMockup(false);
+    }
+    
     @Test
     public void testConfig1() {
         Map<String, Object> config = new HashMap<>();
