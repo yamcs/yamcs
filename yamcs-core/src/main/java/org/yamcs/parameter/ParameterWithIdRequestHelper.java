@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -500,7 +501,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     static class Subscription {
-        Map<Parameter, List<ParameterWithId>> params = new HashMap<>();
+        Map<Parameter, List<ParameterWithId>> params = new LinkedHashMap<>();
         boolean checkExpiration = false;
         long lastExpirationCheck = -1;
         // contains the parameters that have an expiration time set
