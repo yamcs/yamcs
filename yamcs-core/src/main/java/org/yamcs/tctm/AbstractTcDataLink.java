@@ -181,6 +181,14 @@ public abstract class AbstractTcDataLink extends AbstractLink
         commandHistoryPublisher.commandFailed(commandId,  currentTime, reason);
     }
     
+    /**
+     * send an ack in the command history that the command has been sent out of the link
+     * @param commandId
+     */
+    protected void ackCommand(CommandId commandId) {
+        commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX, getCurrentTime(),
+                AckStatus.OK);
+    }
     public String getYamcsInstance() {
         return yamcsInstance;
     }

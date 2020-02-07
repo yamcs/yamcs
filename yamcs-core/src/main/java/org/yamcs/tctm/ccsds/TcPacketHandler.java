@@ -11,7 +11,6 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
  * Assembles command packets into TC frames as per CCSDS 232.0-B-3.
@@ -45,16 +44,13 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
                 dataAvailableSemaphore.release();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                commandHistoryPublisher.publishAck(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
-                        getCurrentTime(), AckStatus.NOK, "Interrupted");
-                commandHistoryPublisher.commandFailed(preparedCommand.getCommandId(), getCurrentTime(), "Interrupted");
+                failedCommand(preparedCommand.getCommandId(), "Interrupted");
             }
         } else {
             if (commandQueue.offer(preparedCommand)) {
                 dataAvailableSemaphore.release();
             } else {
-                commandHistoryPublisher.publishAck(preparedCommand.getCommandId(), ACK_SENT_CNAME_PREFIX,
-                        getCurrentTime(),  AckStatus.NOK);
+                ackCommand(preparedCommand.getCommandId());
             }
         }
     }

@@ -222,10 +222,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         TcTransferFrame tf = makeFrame(pc, bypass);
         boolean added = outQueue.offer(new QueuedFrame(tf));
         if (!added) {
-            long time = getCurrentTime();
-            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, time, AckStatus.NOK,
-                    "OutQueue on link " + name + " full");
-            commandHistoryPublisher.commandFailed(pc.getCommandId(), time, "OutQueue on link " + name + " full");
+            failedCommand(pc.getCommandId(), "OutQueue on link " + name + " full");
         } else {
             signalDataAvailable();
         }
@@ -1155,8 +1152,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     private void ackFrame(TcTransferFrame tcf) {
         for (PreparedCommand pc : tcf.commands) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(),
-                    AckStatus.OK);
+            ackCommand(pc.getCommandId());
         }
     }
 

@@ -224,8 +224,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
             }
         }
         if (sent) {
-            commandHistoryPublisher.publishAck(pc.getCommandId(), ACK_SENT_CNAME_PREFIX, getCurrentTime(),
-                    AckStatus.OK);
+            ackCommand(pc.getCommandId());
         } else {
             failedCommand(pc.getCommandId(), reason);
         }
