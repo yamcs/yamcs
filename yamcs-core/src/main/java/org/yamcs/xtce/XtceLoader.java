@@ -43,13 +43,13 @@ public class XtceLoader implements SpaceSystemLoader {
         initialize();
     }
 
-    public XtceLoader(Map<String, Object> config) {
+    public XtceLoader(YConfiguration config) {
         if(!config.containsKey("file")) {
             throw new ConfigurationException("the configuration has to contain the keyword 'file' pointing to the XTCE file to be loaded");
         }
         this.xtceFileName = (String) config.get("file");
         if(config.containsKey("excludeTmContainers")) {
-            List<String> ec = YConfiguration.getList(config, "excludeTmContainers");
+            List<String> ec = config.getList("excludeTmContainers");
             excludedContainers = new HashSet<String>(ec);    
         }
     }
