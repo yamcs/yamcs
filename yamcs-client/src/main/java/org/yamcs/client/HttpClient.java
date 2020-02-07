@@ -277,23 +277,15 @@ public class HttpClient {
         byte[] data = getByteArray(fullResp.content());
         String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        // We could probably simplify this by using Any type once using protobuf3
-        // Reason for the complexity is that 'extensions' are not supported by JsonFormat
-        // (note that extensions were removed from proto3)
         if (MediaType.JSON.is(contentType)) {
             Map<String, Object> obj = jsonToMap(new String(data));
             String type = (String) obj.get("type");
             String message = (String) obj.get("msg");
-            ExceptionData excData = new ExceptionData(type, message);
-            for (Entry<String, Object> entry : obj.entrySet()) {
-                if (!"type".equals(entry.getKey()) && !"msg".equals(entry.getKey())) {
-                    excData.addDetail(entry.getKey(), entry.getValue());
-                }
-            }
+            ExceptionData excData = new ExceptionData(type, message, null);
             return new ClientException(excData);
         } else if (MediaType.PROTOBUF.is(contentType)) {
             ExceptionMessage msg = ExceptionMessage.parseFrom(data);
-            ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg());
+            ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg(), msg.getDetail());
             return new ClientException(excData);
         } else {
             return new ClientException(fullResp.status() + ": " + new String(data));

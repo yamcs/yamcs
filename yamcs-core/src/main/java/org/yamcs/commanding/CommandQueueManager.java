@@ -383,6 +383,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         switch (value.getType()) {
         case STRING:
             commandHistoryPublisher.publish(commandId, attribute.getName(), value.getStringValue());
+            break;
         default:
             throw new IllegalStateException("Unexpected value type '" + value.getType() + "'");
         }

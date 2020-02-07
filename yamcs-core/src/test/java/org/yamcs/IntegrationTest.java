@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.StaticFileHandler;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
@@ -992,10 +994,10 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 .setId(commandId);
         updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
                 .setName("testKey1")
-                .setValue(Value.newBuilder().setStringValue("testValue1")));
+                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue1")));
         updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
                 .setName("testKey2")
-                .setValue(Value.newBuilder().setStringValue("testValue2")));
+                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue2")));
         doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST,
                 updateHistoryRequest.build());
 
@@ -1233,6 +1235,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testStaticFile() throws Exception {
+        YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0).addStaticRoot(Paths.get("/tmp/yamcs-web"));
+
         HttpClient httpClient = new HttpClient();
         File dir = new File("/tmp/yamcs-web/");
         dir.mkdirs();

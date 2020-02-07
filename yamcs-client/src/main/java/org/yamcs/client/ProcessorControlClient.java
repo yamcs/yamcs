@@ -50,7 +50,10 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     public CompletableFuture<byte[]> createProcessor(String instance, String name, String type,
             ReplayRequest spec, boolean persistent, int[] clients) throws ClientException {
-        CreateProcessorRequest.Builder cprb = CreateProcessorRequest.newBuilder().setName(name).setType(type);
+        CreateProcessorRequest.Builder cprb = CreateProcessorRequest.newBuilder()
+                .setInstance(instance)
+                .setName(name)
+                .setType(type);
         cprb.setPersistent(persistent);
         for (int cid : clients) {
             cprb.addClientId(cid);
@@ -66,10 +69,8 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         }
 
         RestClient restClient = client.getRestClient();
-        // POST "/api/processors/:instance"
-        String resource = "/processors/" + instance;
 
-        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.POST, cprb.build().toByteArray());
+        CompletableFuture<byte[]> cf = restClient.doRequest("/processors", HttpMethod.POST, cprb.build().toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
                 processorListener.log("Exception creating processor: " + exception.getMessage());

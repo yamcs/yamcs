@@ -25,6 +25,7 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
     ChannelHandlerContext ctx;
     CompletableFuture<byte[]> completeRequestCf = new CompletableFuture<>();
     volatile ClientException clientException = null;
+    int count = 0;
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
@@ -43,8 +44,6 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
         ByteBuf buf = Unpooled.wrappedBuffer(data);
         sendData(buf);
     }
-
-    int count = 0;
 
     public void sendData(ByteBuf buf) throws ClientException {
         if (clientException != null) {
@@ -138,5 +137,4 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
             }
         }
     }
-
 }

@@ -9,9 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +25,6 @@ import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
@@ -112,15 +109,6 @@ public abstract class AbstractIntegrationTest {
         FileUtils.deleteRecursivelyIfExists(dataDir);
 
         YConfiguration.setupTest("IntegrationTest");
-        Map<String, Object> options = new HashMap<>();
-        options.put("port", 9190);
-        HttpServer httpServer = new HttpServer();
-        options = httpServer.getSpec().validate(options);
-        httpServer.init(null, YConfiguration.wrap(options));
-        httpServer.addStaticRoot(Paths.get("/tmp/yamcs-web/"));
-        httpServer.startServer();
-        // artemisServer = ArtemisServer.setupArtemis();
-        // ArtemisManagement.setupYamcsServerControl();
 
         YamcsServer yamcs = YamcsServer.getServer();
         yamcs.prepareStart();

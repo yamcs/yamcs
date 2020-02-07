@@ -35,9 +35,12 @@ import org.yamcs.protobuf.ListAlarmsResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.StreamPacketIndexRequest;
+import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
 import org.yamcs.protobuf.Table.TableData;
+import org.yamcs.protobuf.Table.WriteRowsExceptionDetail;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -93,13 +96,14 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .setInstance("IntegrationTest")
                 .addClientId(connectionInfo.getClientId())
                 .setName("testReplay")
                 .setType("Archive")
                 .setConfig("{\"utcStart\": \"2015-01-01T10:01:00\", \"utcStop\": \"2015-01-01T10:05:00\"}")
                 .build();
 
-        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, prequest).get();
+        restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
 
         connectionInfo = wsClient.getConnectionInfo();
         assertEquals("testReplay", connectionInfo.getProcessor().getName());
@@ -168,13 +172,14 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(connectionInfo);
         // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .setInstance("IntegrationTest")
                 .addClientId(connectionInfo.getClientId())
                 .setName("testReplay")
                 .setType("Archive")
                 .setConfig("{\"utcStart\": \"2019-01-01T10:01:00\", \"utcStop\": \"2019-01-01T10:05:00\"}")
                 .build();
 
-        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, prequest).get();
+        restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
 
         connectionInfo = wsClient.getConnectionInfo();
         assertEquals("testReplay", connectionInfo.getProcessor().getName());
@@ -225,13 +230,14 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .setInstance("IntegrationTest")
                 .addClientId(cinfo.getClientId())
                 .setName("testReplayWithPpExclusion")
                 .setType("ArchiveWithPpExclusion")
                 .setConfig("{\"utcStart\": \"2015-02-01T10:01:00\", \"utcStop\": \"2015-02-01T10:05:00\"}")
                 .build();
 
-        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, prequest).get();
+        restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
@@ -291,7 +297,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testEmptyIndex() throws Exception {
         String response = restClient
-                .doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "")
+                .doRequest("/archive/IntegrationTest/packet-index?start=2035-01-02T00:00:00", HttpMethod.GET, "")
                 .get();
         assertTrue(response.isEmpty());
     }
@@ -301,17 +307,26 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt13AndPps("2015-02-01T10:00:00", 3600);
 
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
+
+        long start = TimeEncoding.parse("2015-02-01T00:00:00");
+        long stop = TimeEncoding.parse("2015-02-01T11:00:00");
+        StreamPacketIndexRequest packetOptions = StreamPacketIndexRequest.newBuilder()
+                .setStart(TimeEncoding.toProtobufTimestamp(start))
+                .setStop(TimeEncoding.toProtobufTimestamp(stop))
+                .build();
+        String resource = "/archive/IntegrationTest:streamPacketIndex";
         MyBulkReceiver mbr = new MyBulkReceiver();
-        restClient.doBulkRequest(HttpMethod.POST,
-                "/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00",
-                mbr).get();
+        restClient.doBulkRequest(HttpMethod.POST, resource, packetOptions.toByteArray(), mbr).get();
 
         assertEquals(4, mbr.dist.size());
 
+        StreamParameterIndexRequest ppOptions = StreamParameterIndexRequest.newBuilder()
+                .setStart(TimeEncoding.toProtobufTimestamp(start))
+                .setStop(TimeEncoding.toProtobufTimestamp(stop))
+                .build();
+        resource = "/archive/IntegrationTest:streamParameterIndex";
         mbr = new MyBulkReceiver();
-        restClient.doBulkRequest(HttpMethod.POST,
-                "/archive/IntegrationTest/indexes/pp?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", mbr)
-                .get();
+        restClient.doBulkRequest(HttpMethod.POST, resource, ppOptions.toByteArray(), mbr).get();
 
         assertEquals(4, mbr.dist.size());
     }
@@ -443,9 +458,12 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
+        assertEquals(ClientException.class, t1.getClass());
         ExceptionData excData = ((ClientException) t1).getDetail();
-        assertTrue(excData.hasDetail("rowsLoaded"));
-        assertEquals(50, excData.getDetail("rowsLoaded"));
+
+        assertTrue(excData.getDetail() != null);
+        WriteRowsExceptionDetail detail = excData.getDetail().unpack(WriteRowsExceptionDetail.class);
+        assertEquals(50, detail.getCount());
         verifyRecords("table1", 50);
     }
 
@@ -469,12 +487,13 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             t1 = e.getCause();
         }
         assertNotNull(t1);
+        t1.printStackTrace();
         assertTrue(t1 instanceof ClientException);
         ExceptionData excData = ((ClientException) t1).getDetail();
 
-        assertTrue(excData.hasDetail("rowsLoaded"));
-        int numRowsLoaded = (int) excData.getDetail("rowsLoaded");
-        assertEquals(50, numRowsLoaded);
+        assertTrue(excData.getDetail() != null);
+        WriteRowsExceptionDetail detail = excData.getDetail().unpack(WriteRowsExceptionDetail.class);
+        assertEquals(50, detail.getCount());
         verifyRecords("table2", 50);
     }
 
@@ -547,8 +566,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private BulkRestDataSender initiateTableLoad(String tblName) throws Exception {
         createTable(tblName);
+        String resource = "/archive/IntegrationTest/tables/" + tblName + ":writeRows";
         CompletableFuture<BulkRestDataSender> cf = restClient
-                .doBulkSendRequest("/archive/IntegrationTest/tables/" + tblName + "/data", HttpMethod.POST);
+                .doBulkSendRequest(resource, HttpMethod.POST);
         BulkRestDataSender brds = cf.get();
 
         return brds;

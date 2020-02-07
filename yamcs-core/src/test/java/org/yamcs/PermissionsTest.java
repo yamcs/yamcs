@@ -26,6 +26,7 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -177,7 +178,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .setId("0-0");
         updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
                 .setName("testKey1")
-                .setValue(Value.newBuilder().setStringValue("testValue1")));
+                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue1")));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, updateHistoryRequest.build())

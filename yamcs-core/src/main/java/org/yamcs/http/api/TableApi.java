@@ -235,12 +235,18 @@ public class TableApi extends AbstractTableApi<Context> {
                     inputStream.close();
                 }
 
-                HttpException e = new InternalServerErrorException(t);
+                HttpException e;
+                if (t instanceof HttpException) {
+                    e = (HttpException) t;
+                } else {
+                    e = new InternalServerErrorException(t);
+                }
+
                 e.setDetail(WriteRowsExceptionDetail.newBuilder()
                         .setCount(count)
                         .build());
 
-                observer.completeExceptionally(t);
+                observer.completeExceptionally(e);
             }
 
             @Override
@@ -259,7 +265,7 @@ public class TableApi extends AbstractTableApi<Context> {
                 for (Row.ColumnInfo cinfo : row.getColumnsList()) {
                     if (!cinfo.hasId() || !cinfo.hasName() || !cinfo.hasType()) {
                         throw new IllegalArgumentException(
-                                "Invalid row provided, no id or name  or type in the column info");
+                                "Invalid row provided, no id or name or type in the column info");
                     }
                     int colId = cinfo.getId();
                     String cname = cinfo.getName();
@@ -290,7 +296,7 @@ public class TableApi extends AbstractTableApi<Context> {
                     ColumnDefinition cd = colDefinitions.get(colId);
                     if (cd == null) {
                         throw new IllegalArgumentException("Invalid column id " + colId
-                                + " specified. It has to be defined  by a the ColumnInfo message");
+                                + " specified. It has to be defined by the ColumnInfo message");
                     }
                     tdef.addColumn(cd);
                     ColumnSerializer<?> cs = serializers.get(colId);
@@ -559,14 +565,6 @@ public class TableApi extends AbstractTableApi<Context> {
                 v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
                 break;
             case PROTOBUF:
-
-                // Perhaps we could be a bit smarter here. Proto3 will have an
-                // any-type
-                // String messageClassname = protoType.substring(9,
-                // protoType.length() - 1);
-                // String schemaClassname =
-                // messageClassname.replace("org.yamcs.protobuf.",
-                // "org.yamcs.protobuf.Schema") + "$BuilderSchema";
                 MessageLite message = (MessageLite) column;
                 v.setType(Type.BINARY);
                 v.setBinaryValue(message.toByteString());
