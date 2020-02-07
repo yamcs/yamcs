@@ -144,7 +144,44 @@ public class ByteArrayUtils {
                 ((a[offset + 6] & 0xFFl) << 8) +
                 ((a[offset + 7] & 0xFFl));
     }
+    
+    public static byte[] encode6Bytes(long x, byte[] a, int offset) {
+        a[offset] = (byte) (x >> 40);
+        a[offset + 1] = (byte) (x >> 32);
+        a[offset + 2] = (byte) (x >> 24);
+        a[offset + 3] = (byte) (x >> 16);
+        a[offset + 4] = (byte) (x >> 8);
+        a[offset + 5] = (byte) (x);
 
+        return a;
+    }
+    
+    public static long decode6Bytes(byte[] a, int offset) {
+        return  ((a[offset] & 0xFFl) << 40) +
+                ((a[offset + 1] & 0xFFl) << 32) +
+                ((a[offset + 2] & 0xFFl) << 24) +
+                ((a[offset + 3] & 0xFFl) << 16) +
+                ((a[offset + 4] & 0xFFl) << 8) +
+                ((a[offset + 5] & 0xFFl));
+    }
+    
+    public static byte[] encode5Bytes(long x, byte[] a, int offset) {
+        a[offset] = (byte) (x >> 32);
+        a[offset + 1] = (byte) (x >> 24);
+        a[offset + 2] = (byte) (x >> 16);
+        a[offset + 3] = (byte) (x >> 8);
+        a[offset + 4] = (byte) (x);
+
+        return a;
+    }
+    public static long decode5Bytes(byte[] a, int offset) {
+        return  ((a[offset] & 0xFFl) << 32) +
+                ((a[offset + 1] & 0xFFl) << 24) +
+                ((a[offset + 2] & 0xFFl) << 16) +
+                ((a[offset + 3] & 0xFFl) << 8) +
+                ((a[offset + 4] & 0xFFl));
+    }
+    
     public static int decodeInt(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 24) +
                 ((a[offset + 1] & 0xFF) << 16) +
@@ -165,8 +202,9 @@ public class ByteArrayUtils {
         a[offset + 2] = (byte) (x);
 
         return a;
-
     }
+    
+
 
     public static int decode3Bytes(byte[] a, int offset) {
         return ((a[offset] & 0xFF) << 16) +
