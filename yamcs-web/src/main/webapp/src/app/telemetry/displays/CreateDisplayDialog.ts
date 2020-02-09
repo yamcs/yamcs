@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Instance, StorageClient } from '../../client';
+import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -21,7 +21,6 @@ export class CreateDisplayDialog {
   @ViewChild('filename')
   filenameInput: ElementRef;
 
-  private instance: Instance;
   private storageClient: StorageClient;
 
   constructor(
@@ -31,7 +30,6 @@ export class CreateDisplayDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
     this.typeForm = formBuilder.group({
       type: ['par', Validators.required],

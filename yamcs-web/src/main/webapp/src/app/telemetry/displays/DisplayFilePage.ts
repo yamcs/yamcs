@@ -28,13 +28,13 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   instance: Instance;
 
-  @ViewChild(ViewerControlsHost, { static: true })
+  @ViewChild(ViewerControlsHost)
   private controlsHost: ViewerControlsHost;
 
-  @ViewChild('viewerContainer', { static: true })
+  @ViewChild('viewerContainer')
   private viewerContainer: ElementRef;
 
-  @ViewChild(ViewerHost, { static: true })
+  @ViewChild(ViewerHost)
   private viewerHost: ViewerHost;
 
   private viewer: Viewer;
@@ -99,8 +99,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.title.setTitle(this.filename);
 
     if (reloadViewer) {
-      //console.log('force reload');
-      ///this.ngAfterViewInit();
+      this.ngAfterViewInit();
     }
   }
 
