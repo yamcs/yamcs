@@ -188,6 +188,11 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
                     GSSContext yamcsContext = gssManager.createContext(cred);
                     yamcsContext.acceptSecContext(spnegoToken, 0, spnegoToken.length);
                     if (yamcsContext.isEstablished()) {
+                        if (yamcsContext.getSrcName() == null) {
+                            log.warn("Unknown user. No TGT?");
+                            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                            return;
+                        }
                         String userPrincipal = yamcsContext.getSrcName().toString();
                         log.debug("Got GSS Src Name {}", userPrincipal);
 
