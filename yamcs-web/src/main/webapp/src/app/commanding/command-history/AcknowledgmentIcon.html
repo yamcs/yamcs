@@ -7,9 +7,12 @@
               [matTooltip]="ack.name! + ': OK'"
               class="icon16"
               style="color: #00c752">check_circle_outline</mat-icon>
+    <!--mat-icon *ngSwitchCase="'PENDING'"
+              [matTooltip]="ack.name! + ': PENDING'"
+              class="icon16 spin">cached</mat-icon-->
     <mat-icon *ngSwitchCase="'PENDING'"
               [matTooltip]="ack.name! + ': PENDING'"
-              class="icon16 spin">cached</mat-icon>
+              class="icon16 down">lens</mat-icon>
     <mat-icon *ngSwitchCase="'CANCELLED'"
               [matTooltip]="ack.name! + ': CANCELLED'"
               class="icon16"

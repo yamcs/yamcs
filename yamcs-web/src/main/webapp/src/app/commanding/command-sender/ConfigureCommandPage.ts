@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,10 +14,13 @@ import { CommandForm } from './CommandForm';
   templateUrl: './ConfigureCommandPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConfigureCommandPage {
+export class ConfigureCommandPage implements AfterViewInit {
 
   @ViewChild('commandForm')
   commandForm: CommandForm;
+
+  @ViewChild('another', { static: false })
+  anotherChild: ElementRef;
 
   instance: Instance;
   config: WebsiteConfig;
@@ -43,19 +46,6 @@ export class ConfigureCommandPage {
 
     title.setTitle(`Send a command: ${qualifiedName}`);
 
-    if (this.config.twoStageCommanding) {
-      this.commandForm.form.valueChanges.subscribe(() => {
-        this.armControl.setValue(false);
-      });
-      this.commandForm.form.statusChanges.subscribe(() => {
-        if (this.commandForm.form.valid) {
-          this.armControl.enable();
-        } else {
-          this.armControl.disable();
-        }
-      });
-    }
-
     const promises: Promise<any>[] = [
       this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
     ];
@@ -75,6 +65,21 @@ export class ConfigureCommandPage {
       this.command$.next(command);
       this.template$.next(template || null);
     });
+  }
+
+  ngAfterViewInit() {
+    if (this.config.twoStageCommanding) {
+      this.commandForm.form.valueChanges.subscribe(() => {
+        this.armControl.setValue(false);
+      });
+      this.commandForm.form.statusChanges.subscribe(() => {
+        if (this.commandForm.form.valid) {
+          this.armControl.enable();
+        } else {
+          this.armControl.disable();
+        }
+      });
+    }
   }
 
   goBack() {

@@ -1,4 +1,4 @@
-<app-instance-page *ngIf="command$ | async as command">
+<app-instance-page>
   <app-instance-toolbar>
     Send a command
   </app-instance-toolbar>
@@ -7,7 +7,7 @@
 
   <div class="form-content">
 
-    <dl class="dl-horizontal no-lead no-trail">
+    <dl class="dl-horizontal no-lead no-trail" *ngIf="command$ | async as command">
       <ng-container *ngFor="let alias of command?.alias">
         <ng-container *ngIf="command?.qualifiedName.startsWith(alias.namespace)">
           <dt>Command</dt>
