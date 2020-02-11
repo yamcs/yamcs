@@ -92,8 +92,8 @@ public abstract class AbstractTcFrameLink extends AbstractLink
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
-            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
+            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
+            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
         }
     }
 

@@ -21,7 +21,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
  */
 public abstract class AbstractLink extends AbstractService implements Link {
     protected final String yamcsInstance;
-    protected final String name;
+    protected final String linkName;
     protected final Log log;
     protected final EventProducer eventProducer;
     protected final YConfiguration config;
@@ -35,7 +35,7 @@ public abstract class AbstractLink extends AbstractService implements Link {
 
     public AbstractLink(String instance, String name, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = instance;
-        this.name = name;
+        this.linkName = name;
         this.config = config;
         log = new Log(getClass(), instance);
         log.setContext(name);
@@ -49,7 +49,7 @@ public abstract class AbstractLink extends AbstractService implements Link {
 
     @Override
     public String getName() {
-        return name;
+        return linkName;
     }
 
     @Override

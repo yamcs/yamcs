@@ -222,7 +222,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         TcTransferFrame tf = makeFrame(pc, bypass);
         boolean added = outQueue.offer(new QueuedFrame(tf));
         if (!added) {
-            failedCommand(pc.getCommandId(), "OutQueue on link " + name + " full");
+            failedCommand(pc.getCommandId(), "OutQueue on link " + linkName + " full");
         } else {
             signalDataAvailable();
         }
@@ -1161,7 +1161,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         super.setupSysVariables();
 
         if (sysParamCollector != null) {
-            sv_cop1Status_id = sysParamCollector.getNamespace() + "/" + name + "/cop1Status";
+            sv_cop1Status_id = sysParamCollector.getNamespace() + "/" + linkName + "/cop1Status";
 
             addMonitor(new Cop1Monitor() {
                 int prevClcw = INVALID_CLCW;

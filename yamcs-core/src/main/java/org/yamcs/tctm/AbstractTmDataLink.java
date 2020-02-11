@@ -77,10 +77,10 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            spDataCount = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
-            spDataRate = sysParamCollector.getNamespace() + "/" + name + "/dataRate";
-            spPacketRate = sysParamCollector.getNamespace() + "/" + name + "/packetRate";
+            spLinkStatus = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
+            spDataCount = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
+            spDataRate = sysParamCollector.getNamespace() + "/" + linkName + "/dataRate";
+            spPacketRate = sysParamCollector.getNamespace() + "/" + linkName + "/packetRate";
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);
         }

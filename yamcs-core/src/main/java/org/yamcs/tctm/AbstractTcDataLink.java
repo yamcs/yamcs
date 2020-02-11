@@ -99,7 +99,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
         if (isDisabled()) {
             log.debug("TC disabled, ignoring command {}", preparedCommand.getCommandId());
             if (failCommandOnDisabled) {
-                failedCommand(preparedCommand.getCommandId(), "Link "+name+" disabled");
+                failedCommand(preparedCommand.getCommandId(), "Link "+linkName+" disabled");
             }
             return;
         }
@@ -115,7 +115,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
     }
 
     public String getLinkName() {
-        return name;
+        return linkName;
     }
 
 
@@ -133,8 +133,8 @@ public abstract class AbstractTcDataLink extends AbstractLink
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
-            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
+            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
+            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
 
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);
@@ -156,7 +156,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
 
     @Override
     public String getName() {
-        return name;
+        return linkName;
     }
 
     @Override
@@ -175,6 +175,7 @@ public abstract class AbstractTcDataLink extends AbstractLink
     
     /**Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
+        log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
         commandHistoryPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
                 currentTime, AckStatus.NOK, reason);
