@@ -229,6 +229,10 @@ public final class ArchiveHelper {
                 v.setType(Type.BOOLEAN);
                 v.setBooleanValue((Boolean)column);
                 break;
+            case LONG:
+                v.setType(Type.SINT64);
+                v.setSint64Value((Long)column);
+                break;
             case PARAMETER_VALUE:
                 org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
                 v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
