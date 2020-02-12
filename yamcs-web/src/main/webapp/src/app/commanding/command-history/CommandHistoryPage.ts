@@ -2,15 +2,18 @@ import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ViewChild
 import { FormControl, FormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetCommandHistoryOptions, Instance } from '../../client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
+import { GetCommandHistoryOptions, Instance } from '../../client';
+import { AuthService } from '../../core/services/AuthService';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PrintService } from '../../core/services/PrintService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { User } from '../../shared/User';
 import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
@@ -77,8 +80,13 @@ export class CommandHistoryPage {
   // only is updated after the callback...
   private filter: string;
 
+  user: User;
+  config: WebsiteConfig;
+
   constructor(
     private yamcs: YamcsService,
+    configService: ConfigService,
+    authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -86,6 +94,8 @@ export class CommandHistoryPage {
     title: Title,
     synchronizer: Synchronizer,
   ) {
+    this.config = configService.getConfig();
+    this.user = authService.getUser()!;
     title.setTitle('Command History');
     this.instance = yamcs.getInstance();
 
@@ -202,6 +212,10 @@ export class CommandHistoryPage {
     }
 
     this.dataSource.loadMoreData({});
+  }
+
+  showResend() {
+    return this.config.features.tc && this.user.hasAnyObjectPrivilegeOfType('Command');
   }
 
   private updateURL() {

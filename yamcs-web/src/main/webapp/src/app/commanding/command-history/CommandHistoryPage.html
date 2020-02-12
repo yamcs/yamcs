@@ -30,7 +30,7 @@
       </app-detail-toolbar>
       <div style="padding: 0 16px">
         <app-command-detail2 [command]="selectedRecord"></app-command-detail2>
-        <ng-container>
+        <ng-container *ngIf="showResend()">
           <br>
           <mat-divider></mat-divider>
           <br>
