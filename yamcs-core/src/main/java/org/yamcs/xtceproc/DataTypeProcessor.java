@@ -17,11 +17,12 @@ import org.yamcs.xtce.FloatDataType;
 import org.yamcs.xtce.IntegerDataType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.StringDataType;
+import org.yamcs.xtce.ValueEnumeration;
 
 public class DataTypeProcessor {
 
     /**
-     * converts the value from the XTCE type to Yamcs Value
+     * converts a (boxed) java value from the XTCE type to Yamcs Value
      * 
      * @param type
      * @return
@@ -59,7 +60,14 @@ public class DataTypeProcessor {
         } else if (type instanceof BinaryDataType) {
             v = ValueUtility.getBinaryValue((byte[]) o);
         } else if (type instanceof EnumeratedDataType) {
-            v = ValueUtility.getStringValue((String) o);
+            EnumeratedDataType edt = (EnumeratedDataType) type;
+            ValueEnumeration ve = edt.enumValue((String) o);
+            if (ve == null) { // EnumeratedDataType supports ranges (i.e. multiple integer values mapped to the same
+                              // label), we cannot create a EnumeratedValue for those so we let it string
+                v = ValueUtility.getStringValue((String) o);
+            } else {
+                v = ValueUtility.getEnumeratedValue(ve.getValue(), ve.getLabel());
+            }
         } else if (type instanceof BooleanDataType) {
             v = ValueUtility.getBooleanValue((Boolean) o);
         } else if (type instanceof AbsoluteTimeDataType) {
