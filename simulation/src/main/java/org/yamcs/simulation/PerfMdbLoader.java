@@ -3,8 +3,6 @@ package org.yamcs.simulation;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -40,10 +38,10 @@ public class PerfMdbLoader implements SpaceSystemLoader {
 
     static String PACKET_ID_PARA_NAME = "packet-id";
 
-    public PerfMdbLoader(Map<String, Object> config) {
-        numPackets = YConfiguration.getInt(config, "numPackets");
-        packetSize = YConfiguration.getInt(config, "packetSize");
-        paramSizeInBits = YConfiguration.getInt(config, "paramSizeInBits", 32);
+    public PerfMdbLoader(YConfiguration config) {
+        numPackets = config.getInt("numPackets");
+        packetSize = config.getInt("packetSize");
+        paramSizeInBits = config.getInt("paramSizeInBits", 32);
         numParam = packetSize * 8 / paramSizeInBits;
     }
 
