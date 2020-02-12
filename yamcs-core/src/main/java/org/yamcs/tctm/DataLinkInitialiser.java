@@ -9,12 +9,14 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
+import org.yamcs.tctm.DataLinkInitialiser.InvalidPacketAction.Action;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
@@ -116,27 +118,11 @@ public class DataLinkInitialiser extends AbstractYamcsService {
             if (s != null) {
                 Stream stream = s;
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
-                boolean dropCorrupted = linkArgs.getBoolean("dropCorruptedPackets", true);
-                tmLink.setTmSink(pwrt -> {
-                    if (pwrt.isCorrupted() && dropCorrupted) {
-                        return;
-                    }
-                    long time = pwrt.getGenerationTime();
-                    byte[] pkt = pwrt.getPacket();
-                    long ertime = pwrt.getEarthReceptionTime();
-                    Tuple t = null;
-                    if (ertime == TimeEncoding.INVALID_INSTANT) {
-                        t = new Tuple(StandardTupleDefinitions.TM,
-                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
-                    } else {
-                        t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
-                                new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt, ertime });
-                    }
-                    stream.emitTuple(t);
-                });
+                InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
+                tmLink.setTmSink(pwrt -> processTmPacket(pwrt, stream, ipa));
             }
         }
-
+        
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
             if (s != null) {
@@ -173,6 +159,52 @@ public class DataLinkInitialiser extends AbstractYamcsService {
         ManagementService.getInstance().registerLink(yamcsInstance, link.getName(), json, link);
     }
 
+    private void processTmPacket(TmPacket pwrt, Stream stream, InvalidPacketAction ipa) {
+        if (pwrt.isInvalid()) {
+            if(ipa.action==Action.DROP) {
+                return;
+            } else if(ipa.action==Action.DIVERT) {
+                Tuple t = new Tuple(StandardTupleDefinitions.INVALID_TM,
+                        new Object[] { pwrt.getReceptionTime(), ipa.divertStream.getDataCount(),  pwrt.getPacket()});
+                ipa.divertStream.emitTuple(t);
+                return;
+            } //if action is PROCESS, continue below
+        }
+        
+        long ertime = pwrt.getEarthReceptionTime();
+        Tuple t = null;
+        if (ertime == TimeEncoding.INVALID_INSTANT) {
+            t = new Tuple(StandardTupleDefinitions.TM,
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getPacket() });
+        } else {
+            t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getPacket(), ertime });
+        }
+        stream.emitTuple(t);
+        
+    }
+
+    private InvalidPacketAction getInvalidPacketAction(String linkName, YConfiguration linkArgs) {
+        InvalidPacketAction ipa = new InvalidPacketAction();
+        if(linkArgs.containsKey("invalidPackets")) {
+            ipa.action = linkArgs.getEnum("invalidPackets", Action.class);
+            if(ipa.action == Action.DIVERT) {
+                String divertStream = linkArgs.getString("invalidPacketsStream", "invalid_tm");
+                ipa.divertStream = ydb.getStream(divertStream);
+                if (ipa.divertStream == null) {
+                    throw new ConfigurationException("Cannot find stream '" + divertStream + "' (required if invalidPackets: DIVERT has been specified)");
+                }
+            }
+        } else if(linkArgs.containsKey("dropCorruptedPackets")) {
+            log.warn("Please repace dropCorruptedPackets with 'invalidPackets: DROP' into "+linkName+" configuration");
+            ipa.action = linkArgs.getBoolean("dropCorruptedPackets")?Action.DROP:Action.PROCESS;
+        } else {
+            ipa.action = Action.DROP;
+        }
+        
+        return ipa;
+    }
+
     @Override
     protected void doStart() {
         linksByName.forEach((name, link) -> {
@@ -204,5 +236,18 @@ public class DataLinkInitialiser extends AbstractYamcsService {
             }
         });
         notifyStopped();
+    }
+    
+    
+    /**
+     * What to do with invalid packets. 
+     * DROP: do nothing
+     * PROCESS: send them on the normal tm stream
+     * DIVERT: send them on a different stream
+     */
+    static class InvalidPacketAction {
+        enum Action {DROP, PROCESS, DIVERT};
+        Stream divertStream;
+        Action action;
     }
 }

@@ -28,7 +28,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
     Thread thread;
-    
+
     /**
      * Creates a new UDP Frame Data Link
      * 
@@ -63,7 +63,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
 
     @Override
     public void run() {
-        while (isRunning() && !isDisabled()) {
+        while (isRunningAndEnabled()) {
             try {
                 tmSocket.receive(datagram);
                 if (log.isTraceEnabled()) {
@@ -86,7 +86,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                 frameHandler.handleFrame(TimeEncoding.getWallclockTime(), datagram.getData(), datagram.getOffset(),
                         length);
             } catch (IOException e) {
-                if(isDisabled()) {
+                if (isDisabled()) {
                     break;
                 }
                 log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
@@ -113,7 +113,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
 
     @Override
     protected void doDisable() {
-        tmSocket.close();
+        if (tmSocket != null) {
+            tmSocket.close();
+            tmSocket = null;
+        }
     }
 
     @Override

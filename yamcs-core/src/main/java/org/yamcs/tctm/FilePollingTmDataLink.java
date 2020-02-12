@@ -56,7 +56,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     public void run() {
         File fdir = incomingDir.toFile();
         try {
-            while (isRunning() && !isDisabled()) {
+            while (isRunningAndEnabled()) {
                 if (fdir.exists()) {
                     play(fdir);
                 }

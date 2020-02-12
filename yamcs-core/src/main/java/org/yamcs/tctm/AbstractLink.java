@@ -106,6 +106,11 @@ public abstract class AbstractLink extends AbstractService implements Link {
     public boolean isDisabled() {
         return disabled.get();
     }
+    
+    public boolean isRunningAndEnabled() {
+        State state = state();
+        return (state==State.RUNNING||state==State.STARTING) && !disabled.get();
+    }
 
     protected void doDisable() throws Exception {};
 

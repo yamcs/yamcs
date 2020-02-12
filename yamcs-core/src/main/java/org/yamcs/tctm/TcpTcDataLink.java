@@ -232,7 +232,7 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     protected void doHousekeeping() {
-        if (!isRunning() || isDisabled()) {
+        if (!isRunningAndEnabled()) {
             return;
         }
         openSocket();

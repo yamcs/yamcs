@@ -101,7 +101,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
             }
         }
 
-        while (isRunning() && !isDisabled()) {
+        while (isRunningAndEnabled()) {
             TmPacket pwrt = getNextPacket();
             if (pwrt == null) {
                 break;

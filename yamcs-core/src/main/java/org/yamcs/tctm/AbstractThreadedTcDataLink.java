@@ -92,7 +92,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
             }
         }
 
-        while (isRunning()) {
+        while (isRunningAndEnabled()) {
             doHousekeeping();
             try {
                 PreparedCommand pc = commandQueue.poll(housekeepingInterval, TimeUnit.MILLISECONDS);

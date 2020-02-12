@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 
