@@ -267,6 +267,17 @@ public class ColumnSerializerFactory {
         public void serialize(DataOutputStream stream, Long v) throws IOException {
             stream.writeLong(v);
         }
+        
+
+        @Override
+        public byte[] toByteArray(Long v) {
+            return ByteArrayUtils.encodeLong(v);
+        }
+
+        @Override
+        public Long fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+            return ByteArrayUtils.decodeLong(b, 0);
+        }
     }
 
     static class StringColumnSerializer extends AbstractColumnSerializer<String> {
