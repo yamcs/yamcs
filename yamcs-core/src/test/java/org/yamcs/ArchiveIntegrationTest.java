@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.api.MediaType;
 import org.yamcs.client.BulkRestDataSender;
@@ -105,6 +106,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         restClient.doRequest("/processors", HttpMethod.POST, prequest).get();
 
+        Thread.sleep(2000);
         connectionInfo = wsClient.getConnectionInfo();
         assertEquals("testReplay", connectionInfo.getProcessor().getName());
 
@@ -437,6 +439,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Ignore("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
     public void testTableLoadWithInvalidRecord() throws Exception {
         Throwable t1 = null;
         BulkRestDataSender brds = initiateTableLoad("table1");
@@ -468,6 +471,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Ignore("Java client does not consistently read all received data after a sudden close, causing the exception from the server to be discarded")
     public void testTableLoadWithInvalidRecord2() throws Exception {
         BulkRestDataSender brds = initiateTableLoad("table2");
         Throwable t1 = null;
