@@ -97,7 +97,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
 
         tmPacket.setSequenceCount(seqCount);
         tmPacket.setGenerationTime(gentime);
-        tmPacket.setCorrupted(corrupted);
+        tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
 }

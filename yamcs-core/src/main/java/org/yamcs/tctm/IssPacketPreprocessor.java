@@ -121,7 +121,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         long genTime = TimeEncoding.fromGpsCcsdsTime( ByteArrayUtils.decodeInt(packet, 6), packet[10]);
         tmPacket.setGenerationTime(genTime);
         tmPacket.setSequenceCount(apidseqcount);
-        tmPacket.setCorrupted(corrupted);
+        tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
 

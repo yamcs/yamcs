@@ -9,9 +9,7 @@ import java.net.UnknownHostException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
  * Sends raw packets on UDP socket.

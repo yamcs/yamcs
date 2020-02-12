@@ -65,6 +65,8 @@ public class StreamInitializer {
                 createStream(sce.name, StandardTupleDefinitions.PARAMETER_ALARM);
             } else if (sce.type == StreamConfig.StandardStreamType.eventAlarm) {
                 createStream(sce.name, StandardTupleDefinitions.EVENT_ALARM);
+            } else if (sce.type == StreamConfig.StandardStreamType.invalidTm) {
+                createStream(sce.name, StandardTupleDefinitions.INVALID_TM);
             } else if (sce.type == StreamConfig.StandardStreamType.sqlFile) {
                 loadSqlFile(sce.name); // filename in fact
             } else {

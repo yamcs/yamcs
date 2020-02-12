@@ -14,12 +14,14 @@ public class StandardTupleDefinitions {
 
     public static final String PARAMETER_COL_RECTIME = "rectime";
     public static final String PARAMETER_COL_SEQ_NUM = "seqNum";
+   
     public static final String PARAMETER_COL_GROUP = "group";
     public static final String PARAMETER_COL_GENTIME = "gentime";
     
     public static final String TC_ORIGIN_COLUMN = "origin";
     
     public static final TupleDefinition TM = new TupleDefinition();
+    public static final TupleDefinition INVALID_TM = new TupleDefinition();
     public static final TupleDefinition TM_WITH_ERT;
     static {
         TM.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
@@ -31,6 +33,11 @@ public class StandardTupleDefinitions {
         
         TM_WITH_ERT = TM.copy();
         TM_WITH_ERT.addColumn(TM_ERTIME_COLUMN, DataType.TIMESTAMP);
+    }
+    static {
+        INVALID_TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
+        INVALID_TM.addColumn(SEQNUM_COLUMN, DataType.LONG);
+        INVALID_TM.addColumn(TM_PACKET_COLUMN, DataType.BINARY);
     }
 
     public static final TupleDefinition TC = new TupleDefinition();

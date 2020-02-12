@@ -173,7 +173,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         
         tmPacket.setSequenceCount(apidseqcount);
         tmPacket.setGenerationTime(gentime);
-        tmPacket.setCorrupted(corrupted);
+        tmPacket.setInvalid(corrupted);
         return tmPacket;
     }
 
@@ -194,7 +194,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
-        tmPacket.setCorrupted(corrupted);
+        tmPacket.setInvalid(corrupted);
         tmPacket.setSequenceCount(apidseqcount);
         tmPacket.setGenerationTime(gentime);
     }

@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -16,7 +15,6 @@ import java.util.Map;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 
 /**

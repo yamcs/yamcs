@@ -17,7 +17,7 @@ public class TmPacket {
 
     private int seqCount;
     private byte[] pkt;
-    boolean corrupted = false;
+    boolean invalid = false;
 
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
@@ -76,12 +76,12 @@ public class TmPacket {
         return pkt;
     }
 
-    public void setCorrupted(boolean corrupted) {
-        this.corrupted = corrupted;
+    public void setInvalid(boolean corrupted) {
+        this.invalid = corrupted;
     }
 
-    public boolean isCorrupted() {
-        return corrupted;
+    public boolean isInvalid() {
+        return invalid;
     }
 
     /**

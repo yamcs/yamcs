@@ -185,6 +185,8 @@ dataLinks:
               errorDetection: #last two bytes are used for the error detection
                 type: "CRC-16-CCIIT" 
             stream: "tm2_realtime"
+            invalidPackets: DIVERT
+            invalidPacketsStream: invalid_tm_stream
           - vcId: 2
             ocfPresent: true
             service: "PACKET" 
@@ -218,6 +220,7 @@ streamConfig:
     - name: "tm2_realtime"
       rootContainer: "/YSS/SIMULATOR/tm2_container"
     - name: "tm_dump"
+  invalidTm: "invalid_tm_stream"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
