@@ -1,6 +1,7 @@
 <ng-container [ngSwitch]="link.status">
   <app-led *ngSwitchCase="'OK'"
            [matTooltip]="link.status"
+           [color]="okColor$ | async"
            [fade]="parentLink && parentLink.status !== 'OK'"></app-led>
   <app-led *ngSwitchCase="'UNAVAIL'"
            [matTooltip]="link.status"

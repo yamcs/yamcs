@@ -41,7 +41,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   private selectionSubscription: Subscription;
   private linkSubscription: Subscription;
 
-  private itemsByName: { [key: string]: LinkItem } = {};
+  private itemsByName: { [key: string]: LinkItem; } = {};
 
   constructor(
     private yamcs: YamcsService,
@@ -164,6 +164,11 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       case 'REGISTERED':
       case 'UPDATED':
         this.itemsByName[evt.linkInfo.name].link = evt.linkInfo;
+        for (const item of Object.values(this.itemsByName)) {
+          if (item.parentLink && item.parentLink.name === evt.linkInfo.name) {
+            item.parentLink = evt.linkInfo;
+          }
+        }
         this.updateDataSource();
         break;
       case 'UNREGISTERED':
