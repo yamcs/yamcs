@@ -1,7 +1,15 @@
-Version 4.10.5 released 25-Nov-2020
+Version 4.10.6 released 13-Feb-2020
+- allow to save invalid packets into a stream/table for later retrieval
+- several improvements to CFDP
+- allow to configure CLTU start and tail sequence
+- added COP1 status subscription via websocket
+- other small fixes and improvements (see detailed git log for a list)
+
+
+Version 4.10.5 released 25-Nov-2019
 - small random fixes and improvements (see detailed git log for a list)
 
-Version 4.10.4 relesed 5-Nov-2020
+Version 4.10.4 relesed 5-Nov-2019
 - made the command acknowledgments more uniform 
 - cancel the pending verifiers on command completion
 - improvements into the command queue definition
