@@ -41,6 +41,7 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueReques
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ListCommandsResponse;
@@ -923,23 +924,43 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Message",
                 "Transmission constraints check failed");
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "NOK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
                 "Transmission constraints check failed");
     }
 
+    
+    @Test
+    public void testSendCommandDisableTransmissionConstraint() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
+        wsClient.sendRequest(wsr);
+
+        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstrains(true).build();
+        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
+        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
+        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
+        assertTrue(commandResponse.hasBinary());
+
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+
+        assertNotNull(cmdhist);
+        CommandId cmdid = cmdhist.getCommandId();
+        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdid.getCommandName());
+        assertEquals(6, cmdid.getSequenceNumber());
+        assertEquals("IntegrationTest", cmdid.getOrigin());
+
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+    }
+    
     @Test
     public void testSendCommandSucceedTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -958,11 +979,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "PENDING");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
 
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
         assertNull(cmdhist);
@@ -970,11 +989,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/AllowCriticalTC2",
                 HttpMethod.POST, v).get();
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
 
     @Test

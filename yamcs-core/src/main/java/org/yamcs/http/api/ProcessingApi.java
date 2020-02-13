@@ -36,7 +36,9 @@ import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
+import org.yamcs.protobuf.Commanding.CommandVerifierOption;
 import org.yamcs.protobuf.GetParameterValueRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
@@ -230,6 +232,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             if (comment != null && !comment.trim().isEmpty()) {
                 preparedCommand.setComment(comment);
             }
+            if (request.hasCommandOptions()) {
+                RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.CommandOptions);
+                handleCommandOptions(preparedCommand, request.getCommandOptions());
+            }
 
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
@@ -283,7 +289,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
                 .setSource(preparedCommand.getSource())
                 .setUsername(preparedCommand.getUsername());
-        
+
         byte[] binary = preparedCommand.getBinary();
         if (binary != null) {
             responseb.setBinary(ByteString.copyFrom(binary))
@@ -297,6 +303,47 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
 
         observer.complete(responseb.build());
+    }
+
+    private void handleCommandOptions(PreparedCommand preparedCommand, CommandOptions cmdOpt) {
+        cmdOpt.getAttributeList().forEach(cha -> preparedCommand.addAttribute(cha));
+        MetaCommand cmd = preparedCommand.getMetaCommand();
+
+        if (cmdOpt.hasDisableCommandVerifiers()) {
+            preparedCommand.disableCommandVerifiers(cmdOpt.getDisableCommandVerifiers());
+        }
+        if (cmdOpt.hasDisableTransmissionConstrains()) {
+            preparedCommand.disableTransmissionContraints(cmdOpt.getDisableTransmissionConstrains());
+        } else {
+            List<CommandVerifierOption> l = cmdOpt.getVerifierOptionList();
+            if (!l.isEmpty()) {
+                List<String> invalidVerifiers = new ArrayList<>();
+                for (CommandVerifierOption cvo : l) {
+                    if (!hasVerifier(cmd, cvo.getStage())) {
+                        invalidVerifiers.add(cvo.getStage());
+                    }
+                }
+                if (!invalidVerifiers.isEmpty()) {
+                    throw new BadRequestException(
+                            "The command does not have the following verifiers: " + invalidVerifiers.toString());
+                }
+                preparedCommand.setVerifierOverride(l);
+            }
+        }
+    }
+
+    private boolean hasVerifier(MetaCommand cmd, String stage) {
+        boolean hasVerifier = cmd.getCommandVerifiers().stream().anyMatch(cv -> cv.getStage().equals(stage));
+        if (hasVerifier) {
+            return true;
+        } else {
+            MetaCommand parent = cmd.getBaseMetaCommand();
+            if (parent == null) {
+                return false;
+            } else {
+                return hasVerifier(parent, stage);
+            }
+        }
     }
 
     @Override

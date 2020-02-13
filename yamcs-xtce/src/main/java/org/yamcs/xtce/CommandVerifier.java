@@ -70,6 +70,18 @@ public class CommandVerifier implements Serializable {
         this.checkWindow = checkWindow;
     }
 
+    //copy constructor
+    public CommandVerifier(CommandVerifier cv) {
+       this.algorithm = cv.algorithm;
+       this.checkWindow = cv.checkWindow;
+       this.type = cv.type;
+       this.stage = cv.stage;
+       this.containerRef = cv.containerRef;
+       this.onSuccess = cv.onSuccess;
+       this.onFail = cv.onFail;
+       this.onTimeout = cv.onTimeout;
+    }
+
     public String getStage() {
         return stage;
     }

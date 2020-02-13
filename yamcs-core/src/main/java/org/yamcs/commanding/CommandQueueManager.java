@@ -275,19 +275,27 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         } else if (q.state == QueueState.ENABLED) {
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
-            if (pc.getMetaCommand().hasTransmissionConstraints()) {
-                startTransmissionConstraintChecker(q, pc);
-            } else {
-                commandHistoryPublisher.publishAck(pc.getCommandId(),
-                        CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
-                q.remove(pc, true);
-                releaseCommand(q, pc, true, false);
-                commandHistoryPublisher.publishAck(pc.getCommandId(),
-                        CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
-            }
+            preReleaseCommad(q, pc, false);
+        
         }
 
         return q;
+    }
+    
+    //if there are transmission constrains, start the checker;
+    // if not just release the command
+    private void preReleaseCommad(CommandQueue q, PreparedCommand pc, boolean rebuild) {
+        long missionTime = timeService.getMissionTime();
+        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionContraints()) {
+            startTransmissionConstraintChecker(q, pc);
+        } else {
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
+            q.remove(pc, true);
+            releaseCommand(q, pc, true, rebuild);
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
+        }
     }
 
     private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
@@ -311,18 +319,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         pendingTcCheckers.remove(tcChecker);
 
-        if (q.getState() == QueueState.BLOCKED) {
-            log.debug("Queue for command {} is blocked, leaving command in the queue", pc);
-            return;
-        }
-        if (q.getState() == QueueState.DISABLED) {
-            log.debug("Queue for command {} is disabled, dropping command", pc);
-            q.remove(pc, false);
-        }
-
-        if (!q.remove(pc, true)) {
-            return; // command has been removed in the meanwhile
-        }
         if (status == TCStatus.OK) {
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
                     missionTime, AckStatus.OK);
@@ -406,7 +402,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
         // start the verifiers
         MetaCommand mc = pc.getMetaCommand();
-        if (mc.hasCommandVerifiers()) {
+        if (mc.hasCommandVerifiers() && !pc.disableCommandVerifiers()) {
             log.debug("Starting command verification for {}", pc);
             CommandVerificationHandler cvh = new CommandVerificationHandler(processor, pc);
             cvh.start();
@@ -516,11 +512,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if (command != null) {
-            long missionTime = timeService.getMissionTime();
             queue.remove(command, true);
-            releaseCommand(queue, command, true, rebuild);
-            commandHistoryPublisher.publishAck(commandId,
-                    CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
+            preReleaseCommad(queue, command, rebuild);
         }
         return command;
     }
@@ -572,15 +565,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         queue.state = newState;
         if (queue.state == QueueState.ENABLED) {
-            long missionTime = timeService.getMissionTime();
             for (PreparedCommand pc : queue.getCommands()) {
-                if (pc.getMetaCommand().hasTransmissionConstraints()) {
-                    startTransmissionConstraintChecker(queue, pc);
-                } else {
-                    releaseCommand(queue, pc, true, false);
-                    commandHistoryPublisher.publishAck(pc.getCommandId(),
-                            CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
-                }
+                preReleaseCommad(queue, pc, false);
             }
             queue.clear(true);
         }

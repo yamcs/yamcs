@@ -123,6 +123,8 @@ message IssueCommandRequest {
   optional bool dryRun = 4;
   
   optional string comment = 5;
+  // other command options
+  optional commanding.CommandOptions commandOptions = 10;
 }
 
 message IssueCommandResponse {

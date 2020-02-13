@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -13,21 +15,29 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandOptions;
+import org.yamcs.protobuf.Commanding.CommandVerifierOption;
+import org.yamcs.protobuf.Commanding.CommandVerifierOption.CheckWindow;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.tctm.TcDataLink;
+import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
-    @Test
-    public void testCommandVerificationContainer() throws Exception {
+    @Before
+    public void subscribeCmdHistory() {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
+    }
 
+    @Test
+    public void testCommandVerificationContainer() throws Exception {
         IssueCommandRequest cmdreq = getCommand(7);
         byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
                 HttpMethod.POST, cmdreq).get();
@@ -44,31 +54,17 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Execution_Status", "PENDING");
-        checkNextCmdHistoryAttr("Verifier_Execution_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
-        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
-        checkNextCmdHistoryAttr("Verifier_Complete_Status", "PENDING");
-        checkNextCmdHistoryAttr("Verifier_Complete_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Complete_Status", "OK");
-        checkNextCmdHistoryAttr("Verifier_Complete_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
 
         // check commands histogram
         String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);
@@ -82,9 +78,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr).get();
-
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
         byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
                 HttpMethod.POST, cmdreq).get();
@@ -100,14 +93,9 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeQueued_KEY + "_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Status", "NA");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.TransmissionContraints_KEY + "_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Execution_Status", "PENDING");
-        checkNextCmdHistoryAttr("Verifier_Execution_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -119,93 +107,125 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
 
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Status", "OK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Execution_Status", "OK");
-        checkNextCmdHistoryAttr("Verifier_Execution_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Complete_Status", "PENDING");
-        checkNextCmdHistoryAttr("Verifier_Complete_Time");
-
-        checkNextCmdHistoryAttr("Verifier_Complete_Status", "NOK");
-        checkNextCmdHistoryAttr("Verifier_Complete_Time");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Status", "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Time");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "NOK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "NOK");
         checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
                 "Verifier Complete result: NOK");
     }
 
-    public static class MyTcDataLink implements TcDataLink {
+    @Test
+    public void testCommandWithOneVerifierDisabled() throws Exception {
+        CommandOptions co = CommandOptions.newBuilder()
+                .addVerifierOption(CommandVerifierOption.newBuilder().setStage("Execution").setDisable(true).build())
+                .build();
+
+        issueCommand(8, co);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
+
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
+
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
+    }
+
+    @Test
+    public void testCommandWithAllVerifiersDisabled() throws Exception {
+        CommandOptions co = CommandOptions.newBuilder().setDisableCommandVerifiers(true).build();
+
+        issueCommand(9, co);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
+
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
+
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+    }
+
+    @Test
+    public void testCommandVerificationWithModifiedWindow() throws Exception {
+        // modify the timeout for the Complete stage from 1000 (in refmdb.xls) to 5000 and sleep 1500 before sending the
+        // ack
+        CommandOptions co = CommandOptions.newBuilder()
+                .addVerifierOption(CommandVerifierOption.newBuilder()
+                        .setStage("Complete").setCheckWindow(CheckWindow.newBuilder()
+                                .setTimeToStartChecking(0).setTimeToStopChecking(5000))
+                        .build())
+                .build();
+
+        issueCommand(10, co);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
+
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
+
+        Thread.sleep(1500); //the default verifier would have timed out in 1000ms
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
+
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
+        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
+    }
+
+    private void issueCommand(int id, CommandOptions co) throws Exception {
+        IssueCommandRequest cmdreq = getCommand(id);
+        if (co != null) {
+            cmdreq = cmdreq.toBuilder().setCommandOptions(co).build();
+        }
+
+        byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
+                HttpMethod.POST, cmdreq).get();
+        IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
+
+        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertEquals(id, cmdhist.getCommandId().getSequenceNumber());
+
+    }
+
+    public static class MyTcDataLink extends AbstractTcDataLink {
         static short seqNum = 5000;
-        CommandHistoryPublisher commandHistoryPublisher;
-        String name;
 
         public MyTcDataLink(String yamcsInstance, String name, YConfiguration config) {
-            this.name = name;
+            super(yamcsInstance, name, config);
         }
 
         @Override
-        public Status getLinkStatus() {
+        protected void uplinkTc(PreparedCommand preparedCommand) {
+            if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
+                commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
+            }
+
+        }
+
+        @Override
+        protected Status connectionStatus() {
             return Status.OK;
         }
 
         @Override
-        public String getDetailedStatus() {
-            return "OK";
+        protected void doStart() {
+            notifyStarted();
         }
 
         @Override
-        public void enable() {
-
-        }
-
-        @Override
-        public void disable() {
-
-        }
-
-        @Override
-        public boolean isDisabled() {
-            return false;
-        }
-
-        @Override
-        public long getDataInCount() {
-            return 0;
-        }
-
-        @Override
-        public long getDataOutCount() {
-            return 0;
-        }
-
-        @Override
-        public void resetCounters() {
-        }
-
-        @Override
-        public void sendTc(PreparedCommand preparedCommand) {
-            if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
-                commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
-            }
-        }
-
-        @Override
-        public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher) {
-            this.commandHistoryPublisher = commandHistoryPublisher;
-
-        }
-
-        @Override
-        public YConfiguration getConfig() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return name;
+        protected void doStop() {
+            notifyStopped();
         }
     }
 }

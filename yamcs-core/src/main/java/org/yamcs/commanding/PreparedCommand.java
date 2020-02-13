@@ -1,7 +1,9 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +17,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandVerifierOption;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
@@ -47,9 +50,17 @@ public class PreparedCommand {
     // -1 means it has not been set yet
     private long transmissionContraintCheckStart = -1;
 
+    //if true, the transmission constraints (if existing) will not be checked
+    boolean disableTransmissionConstraints = false;
+    
+    boolean disableCommandVerifiers = false;
+    
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, Value> argAssignment;
     private Set<String> userAssignedArgumentNames;
+    
+    //if not-null, contains a list of options that override the verrifiers settingss from XTCEDB 
+    private List<CommandVerifierOption> verifierOverride = Collections.emptyList();
 
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
@@ -61,6 +72,18 @@ public class PreparedCommand {
     public final static String CNAME_SOURCE = "source";
     public final static String CNAME_ASSIGNMENTS = "assignments";
     public final static String CNAME_COMMENT = "comment";
+    
+    private static Set<String> reservedNames = new HashSet<String>();
+    static {
+        reservedNames.add(CNAME_GENTIME);
+        reservedNames.add(CNAME_SEQNUM);
+        reservedNames.add(CNAME_ORIGIN);
+        reservedNames.add(CNAME_USERNAME);
+        reservedNames.add(CNAME_BINARY);
+        reservedNames.add(CNAME_CMDNAME);
+        reservedNames.add(CNAME_SOURCE);
+        reservedNames.add(CNAME_ASSIGNMENTS);
+    }
 
     public PreparedCommand(CommandId id) {
         this.id = id;
@@ -321,4 +344,43 @@ public class PreparedCommand {
     public String toString() {
         return "PreparedCommand(" + uuid + ", " + StringConverter.toString(id) + ")";
     }
+
+    public void disableTransmissionContraints(boolean b) {
+        disableTransmissionConstraints = b;
+    }
+    
+    /**
+     * 
+     * @return true if the transmission constrains have to be disabled for this command
+     */
+    public boolean disableTransmissionContraints() {
+        return disableTransmissionConstraints;
+    }
+    
+    
+    /**
+     * 
+     * @return true if the command verifiers have to be disabled for this command
+     */
+    public boolean disableCommandVerifiers() {
+        return disableCommandVerifiers;
+    }
+    public void disableCommandVerifiers(boolean b) {
+        disableCommandVerifiers = b;
+    }
+
+    
+    public void setVerifierOverride(List<CommandVerifierOption> verifierOverride) {
+        this.verifierOverride = verifierOverride;
+        
+    }
+    
+    /**
+     * 
+     * @return a list of command verifiers options overriding the settings in the XTCEDB.
+     */
+    public List<CommandVerifierOption> getVerifierOverride() {
+        return verifierOverride;
+    }
+    
 }

@@ -27,6 +27,7 @@ import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -223,6 +224,12 @@ public abstract class AbstractIntegrationTest {
         assertEquals(name, cha.getName());
         assertEquals(value, cha.getValue().getStringValue());
     }
+    
+    protected void checkNextCmdHistoryAttrStatusTime(String name, String value) throws InterruptedException {
+        checkNextCmdHistoryAttr(name + "_Status", value);
+        checkNextCmdHistoryAttr(name+"_Time");
+    }
+    
 
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);

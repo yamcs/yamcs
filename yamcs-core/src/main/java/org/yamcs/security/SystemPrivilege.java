@@ -22,6 +22,10 @@ public class SystemPrivilege {
      * Allows to issue any commands
      */
     public static final SystemPrivilege Command = new SystemPrivilege("Command");
+    /**
+     * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
+     */
+    public static final SystemPrivilege CommandOptions = new SystemPrivilege("CommandOptions");
 
     /**
      * Allows to read the entire Mission Database.

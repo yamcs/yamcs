@@ -27,6 +27,7 @@ public class CheckWindow implements Serializable{
         this.timeWindowIsRelativeTo = timeWindowIsRelativeTo;
     }
 
+
     public long getTimeToStartChecking() {
         return timeToStartChecking;
     }
