@@ -112,7 +112,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     public TmPacket getNextPacket() {
         TmPacket pwt = null;
-        while (isRunning() && !isDisabled()) {
+        while (isRunningAndEnabled()) {
             try {
                 if (tmSocket == null) {
                     openSocket();
@@ -136,7 +136,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
                 }
                 tmSocket = null;
                 for (int i = 0; i < 10; i++) {
-                    if (!isRunning() || isDisabled()) {
+                    if (!isRunningAndEnabled()) {
                         break;
                     }
                     try {
