@@ -24,6 +24,7 @@ secretKey: "changeme"
 yamcs-web:
   tag: DEMO
   displayPath: etc/displays
+  stackPath: etc/stacks
   features:
     cfdp: true
 

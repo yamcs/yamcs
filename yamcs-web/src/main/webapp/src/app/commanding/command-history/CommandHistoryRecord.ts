@@ -92,6 +92,10 @@ export class CommandHistoryRecord {
     }
   }
 
+  getId() {
+    return utils.printCommandId(this.commandId);
+  }
+
   mergeEntry(entry: CommandHistoryEntry): CommandHistoryRecord {
     const mergedAttr = [
       ...this.entry.attr,

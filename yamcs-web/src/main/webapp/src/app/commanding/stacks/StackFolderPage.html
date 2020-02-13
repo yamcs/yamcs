@@ -1,0 +1,168 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Command Stacks
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            *ngIf="mayManageStacks()"
+            color="primary"
+            (click)="createStack()">
+      <mat-icon>add</mat-icon>
+      CREATE STACK
+    </button>
+    <button mat-button
+            *ngIf="mayManageStacks()"
+            color="primary"
+            (click)="importStack()">
+      <mat-icon>cloud_upload</mat-icon>
+      IMPORT STACK
+    </button>
+    <button mat-button
+            *ngIf="mayManageStacks()"
+            color="primary"
+            (click)="deleteSelectedStacks()"
+            [disabled]="!selection.hasValue()">
+      <mat-icon>delete</mat-icon>
+      DELETE
+    </button>
+  </app-instance-toolbar>
+
+  <div #droparea
+       class="droparea"
+       [class.active]="dragActive$ | async"
+       (dragenter)="dragEnter($event)">
+
+    <div class="droparea-overlay"
+         [class.hide]="!(dragActive$ | async)"
+         (dragover)="dragOver($event)"
+         (dragleave)="dragLeave($event)"
+         (drop)="drop($event)">
+    </div>
+
+    <div class="panel-content">
+      <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+        <app-breadcrumb-trail *ngIf="breadcrumb.length">
+          <app-breadcrumb link="/commanding/stacks/browse"
+                          [queryParams]="{instance: instance.name}"
+                          icon="account_tree"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [link]="item.route"
+                          [queryParams]="{instance: instance.name}"
+                          [label]="item.name"></app-breadcrumb>
+        </app-breadcrumb-trail>
+      </ng-container>
+      <table mat-table
+             *ngIf="dataSource && dataSource.data.length; else empty"
+             [dataSource]="dataSource"
+             class="ya-data-table"
+             style="width: 100%">
+
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input type="checkbox"
+                   *ngIf="mayManageStacks()"
+                   (change)="$event ? masterToggle() : null"
+                   [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input type="checkbox"
+                   *ngIf="mayManageStacks()"
+                   (click)="$event.stopPropagation()"
+                   (change)="$event ? selection.toggle(row) : null"
+                   [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="name">
+          <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+          <td mat-cell *cdkCellDef="let item">
+            <ng-container *ngIf="item.folder">
+              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
+              <a [routerLink]="'/commanding/stacks/browse/' + item.name"
+                 [queryParams]="{instance: instance.name}"
+                 (click)="$event.stopPropagation()">
+                {{ item.name | filename }}
+              </a>
+            </ng-container>
+            <ng-container *ngIf="!item.folder">
+              <a [routerLink]="'/commanding/stacks/files/' + item.name"
+                 [queryParams]="{instance: instance.name}"
+                 (click)="$event.stopPropagation()">
+                {{ item.name | basename }}
+              </a>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="visibility">
+          <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Visibility</th>
+          <td mat-cell *cdkCellDef="let item">
+            Private
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="modified">
+          <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+          <td mat-cell *cdkCellDef="let item">
+            {{ (item.modified | datetime) || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let item">
+            <ng-container *ngIf="!item.folder">
+              <mat-menu #fileMenu="matMenu" overlapTrigger="false" class="ya-menu">
+                <button mat-menu-item
+                        (click)="renameFile(item)">
+                  Rename
+                </button>
+                <a mat-menu-item
+                   [href]="item.objectUrl"
+                   download>
+                  Download
+                </a>
+                <mat-divider></mat-divider>
+                <button mat-menu-item
+                        (click)="deleteFile(item)">
+                  Delete
+                </button>
+              </mat-menu>
+              <button mat-button
+                      *ngIf="mayManageStacks()"
+                      [matMenuTriggerFor]="fileMenu"
+                      (click)="$event.stopPropagation()"
+                      class="icon">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row
+            *cdkRowDef="let row; columns: displayedColumns;"
+            [class.selected]="selection.isSelected(row)"
+            (click)="toggleOne(row)"></tr>
+      </table>
+
+      <ng-template #empty>
+        <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+          <app-empty-message *ngIf="breadcrumb.length">
+            Empty directory.
+          </app-empty-message>
+          <app-empty-message headerTitle="Command Stacks" *ngIf="!breadcrumb.length">
+            <p>
+              Command stacks are used to interactively execute a prepared set of commands.
+              To start, either:
+            </p>
+            <p *ngIf="mayManageStacks()">
+              <button class="ya-button primary" (click)="createStack()">Create a stack</button>
+              or
+              <button class="ya-button" (click)="importStack()">Import a stack</button>
+            </p>
+          </app-empty-message>
+        </ng-container>
+      </ng-template>
+    </div>
+  </div>
+</app-instance-page>

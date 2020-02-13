@@ -9,7 +9,10 @@ import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage } from './command-sender/SendCommandPage';
 import { QueuesPage } from './queues/QueuesPage';
-import { RunStackPage } from './stacks/RunStackPage';
+import { StackFilePage } from './stacks/StackFilePage';
+import { StackFolderPage } from './stacks/StackFolderPage';
+import { StackPage } from './stacks/StackPage';
+import { StacksPage } from './stacks/StacksPage';
 
 const routes: Routes = [
   {
@@ -23,27 +26,41 @@ const routes: Routes = [
         path: 'send',
         pathMatch: 'full',
         component: SendCommandPage,
-      },
-      {
+      }, {
         path: 'send/:qualifiedName',
         component: ConfigureCommandPage,
-      },
-      {
+      }, {
         path: 'report/:commandId',
         component: CommandReportPage,
-      },
-      {
+      }, {
         path: 'history',
         component: CommandHistoryPage,
-      },
-      {
+      }, {
         path: 'queues',
         component: QueuesPage,
         canActivate: [MayControlCommandQueueGuard],
-      },
-      {
-        path: 'stack',
-        component: RunStackPage,
+      }, {
+        path: 'stacks',
+        pathMatch: 'full',
+        redirectTo: 'stacks/browse',
+      }, {
+        path: 'stacks/browse',
+        component: StacksPage,
+        children: [
+          {
+            path: '**',
+            component: StackFolderPage,
+          }
+        ]
+      }, {
+        path: 'stacks/files',
+        component: StackPage,
+        children: [
+          {
+            path: '**',
+            component: StackFilePage,
+          }
+        ]
       }
     ]
   }
@@ -60,6 +77,9 @@ export const routingComponents = [
   CommandReportPage,
   ConfigureCommandPage,
   QueuesPage,
-  RunStackPage,
   SendCommandPage,
+  StacksPage,
+  StackFilePage,
+  StackPage,
+  StackFolderPage,
 ];

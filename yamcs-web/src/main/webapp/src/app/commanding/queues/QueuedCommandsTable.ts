@@ -49,14 +49,18 @@ export class QueuedCommandsTable implements AfterViewInit {
   }
 
   releaseEntry(entry: CommandQueueEntry) {
-    this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
-      state: 'released',
-    });
+    if (confirm(`Are you sure you want to accept this command?\n\n ${entry.source}`)) {
+      this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
+        state: 'released',
+      });
+    }
   }
 
   rejectEntry(entry: CommandQueueEntry) {
-    this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
-      state: 'rejected',
-    });
+    if (confirm(`Are you sure you want to reject this command?\n\n ${entry.source}`)) {
+      this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
+        state: 'rejected',
+      });
+    }
   }
 }

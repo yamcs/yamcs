@@ -3,7 +3,9 @@ import { SharedModule } from '../shared/SharedModule';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
 import { CommandDetail } from './command-history/CommandDetail';
 import { CommandHistoryPrintable } from './command-history/CommandHistoryPrintable';
+import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgmentsTable';
 import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
+import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
 import { CommandForm } from './command-sender/CommandForm';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
@@ -11,7 +13,9 @@ import { CommandIdPipe } from './pipes/CommandIdPipe';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
 import { QueuesTable } from './queues/QueuesTable';
 import { AddCommandDialog } from './stacks/AddCommandDialog';
-import { RunStackWizardStep } from './stacks/RunStackWizardStep';
+import { CreateStackDialog } from './stacks/CreateStackDialog';
+import { ImportStackDialog } from './stacks/ImportStackDialog';
+import { RenameStackDialog } from './stacks/RenameStackDialog';
 
 const pipes = [
   CommandIdPipe,
@@ -30,11 +34,15 @@ const pipes = [
     CommandDetail,
     CommandForm,
     CommandHistoryPrintable,
+    CreateStackDialog,
+    ExtraAcknowledgmentsTable,
+    ImportStackDialog,
     QueuedCommandsTable,
     QueuesTable,
-    RunStackWizardStep,
+    RenameStackDialog,
     SendCommandWizardStep,
     TransmissionConstraintsIcon,
+    YamcsAcknowledgmentsTable,
   ],
 })
 export class CommandingModule {

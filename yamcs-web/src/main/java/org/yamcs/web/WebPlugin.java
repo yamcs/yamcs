@@ -36,6 +36,7 @@ public class WebPlugin implements Plugin {
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
+        spec.addOption("stackPath", OptionType.STRING);
         spec.addOption("staticRoot", OptionType.STRING);
         spec.addOption("twoStageCommanding", OptionType.BOOLEAN).withDefault(false);
 
@@ -103,6 +104,20 @@ public class WebPlugin implements Plugin {
             }
         } catch (IOException e) {
             throw new PluginException("Could not create displays bucket", e);
+        }
+        
+        try {
+            if (config.containsKey("stackPath")) {
+                Path stackPath = Paths.get(config.getString("stackPath")).toAbsolutePath().normalize();
+                yarch.addFileSystemBucket("stacks", stackPath);
+            } else {
+                Bucket bucket = yarch.getBucket("stacks");
+                if (bucket == null) {
+                    yarch.createBucket("stacks");
+                }
+            }
+        } catch (IOException e) {
+            throw new PluginException("Could not create stacks bucket", e);
         }
 
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);

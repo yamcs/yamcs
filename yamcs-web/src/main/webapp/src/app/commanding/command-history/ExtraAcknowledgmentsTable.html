@@ -1,0 +1,18 @@
+<table yaDataTable style="width: 100%">
+    <tr *ngFor="let ack of command.extraAcks">
+        <td style="width: 16px">
+            <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
+        </td>
+        <td style="width: 150px">{{ ack.name }}</td>
+        <td style="width: 70px">{{ ack.status }}</td>
+        <td>
+            <ng-container [ngSwitch]="ack.status">
+                <span *ngSwitchCase="'SCHEDULED'">-</span>
+                <span *ngSwitchCase="'PENDING'">-</span>
+                <span *ngSwitchDefault [matTooltip]="ack.time">
+                    {{ ack.time | deltaWith:command.generationTime }}
+                </span>
+            </ng-container>
+        </td>
+    </tr>
+</table>

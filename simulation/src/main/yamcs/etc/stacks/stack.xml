@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<commandStack>
+    <command qualifiedName="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON" selectedAlias="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON">
+        <commandArgument argumentName="voltage_num" argumentValue="2"/>
+        <commandArgument argumentName="checksumIndicator" argumentValue="1"/>
+    </command>
+    <command qualifiedName="/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF" selectedAlias="/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF" comment="it's really off">
+        <commandArgument argumentName="voltage_num" argumentValue="3"/>
+        <commandArgument argumentName="checksumIndicator" argumentValue="1"/>
+    </command>
+    <command qualifiedName="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON_ENUM" selectedAlias="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON_ENUM">
+        <commandArgument argumentName="checksumIndicator" argumentValue="1"/>
+        <commandArgument argumentName="voltage_num" argumentValue="SECONDARY"/>
+    </command>
+    <command qualifiedName="/TSE/simulator/get_battery_voltage" selectedAlias="/TSE/simulator/get_battery_voltage">
+        <commandArgument argumentName="n" argumentValue="2"/>
+    </command>
+</commandStack>

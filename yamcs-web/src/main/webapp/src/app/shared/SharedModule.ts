@@ -1,3 +1,4 @@
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CdkTableModule } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
@@ -117,6 +118,7 @@ import { TimestampTracker } from './widgets/TimestampTracker';
 const materialModules = [
   OverlayModule,
   CdkTableModule,
+  DragDropModule,
   MatAutocompleteModule,
   MatBadgeModule,
   MatButtonModule,
