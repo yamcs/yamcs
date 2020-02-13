@@ -44,7 +44,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
 
     @Override
     public void run() {
-        while (isRunning()&& !isDisabled()) {
+        while (isRunningAndEnabled()) {
             TcTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();
