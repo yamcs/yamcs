@@ -320,14 +320,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         long missionTime = timeService.getMissionTime();
 
         pendingTcCheckers.remove(tcChecker);
-
+        
         if (status == TCStatus.OK) {
+            q.remove(pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
                     missionTime, AckStatus.OK);
             releaseCommand(q, pc, true, false);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
+            q.remove(pc, false);
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
                     missionTime, AckStatus.NOK);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
