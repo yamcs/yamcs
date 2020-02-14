@@ -50,7 +50,6 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandOptions;
-import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandVerifierOption;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;

@@ -116,6 +116,14 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
         evtb.setData(data);
         client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
+    @Override
+    public void commandUpdated(CommandQueue q, PreparedCommand pc) {
+        CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_UPDATED);
+        evtb.setData(data);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+    }
 
     @Override
     public void commandRejected(CommandQueue q, PreparedCommand pc) {

@@ -308,6 +308,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
+        notifyUpdated(tcChecker.queue, tcChecker.pc);
         commandHistoryPublisher.publishAck(tcChecker.pc.getCommandId(),
                 CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
     }
@@ -350,6 +351,17 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         notifyUpdateQueue(q);
+    }
+    
+    private void notifyUpdated(CommandQueue q, PreparedCommand pc) {
+        for (CommandQueueListener m : monitoringClients) {
+            try {
+                m.commandUpdated(q, pc);
+            } catch (Exception e) {
+                log.warn("got exception when notifying a monitor, removing it from the list", e);
+                monitoringClients.remove(m);
+            }
+        }
     }
 
     // Notify the monitoring clients
@@ -527,7 +539,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if (command != null) {
-            queue.remove(command, true);
             preReleaseCommad(queue, command, rebuild);
         }
         return command;
@@ -583,7 +594,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             for (PreparedCommand pc : queue.getCommands()) {
                 preReleaseCommad(queue, pc, false);
             }
-            queue.clear(true);
         }
         if (queue.state == QueueState.DISABLED) {
             long missionTime = timeService.getMissionTime();

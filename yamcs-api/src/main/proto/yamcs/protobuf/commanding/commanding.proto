@@ -48,6 +48,9 @@ message CommandQueueEntry {
   optional string uuid = 9;
   optional string comment = 11;
   optional google.protobuf.Timestamp generationTime = 12;
+  //if this is set to true , it means the command has been accepted for being released out of the queue 
+  //but it is still there because it is pending transmission contraints
+  optional bool pendingTransmissionConstraint = 13;
 }
 
 message CommandQueueEvent {
@@ -55,6 +58,7 @@ message CommandQueueEvent {
     COMMAND_ADDED = 1;
     COMMAND_REJECTED = 2;
     COMMAND_SENT = 3;
+    COMMAND_UPDATED = 4;
   }
   optional Type type = 1;
   optional CommandQueueEntry data = 2;

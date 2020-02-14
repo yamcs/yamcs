@@ -57,7 +57,7 @@ public final class ManagementGpbHelper {
                 .setQueueName(q.getName())
                 .setCmdId(pc.getCommandId())
                 .setSource(pc.getSource())
-                
+                .setPendingTransmissionConstraint(pc.isPendingTransmissionConstraints())
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());

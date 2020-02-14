@@ -13,6 +13,9 @@ public interface CommandQueueListener {
 
     default void commandAdded(CommandQueue q, PreparedCommand pc) {
     }
+    
+    default void commandUpdated(CommandQueue q, PreparedCommand pc) {
+    }
 
     default void commandRejected(CommandQueue q, PreparedCommand pc) {
     }
