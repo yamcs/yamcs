@@ -144,7 +144,8 @@ public class FileSystemBucket implements Bucket {
         ObjectProperties.Builder props = ObjectProperties.newBuilder();
         props.setName(objectName);
         props.setContentType(mimetypes.getMimetype(file));
-        props.setCreated(attrs.creationTime().toMillis());
+        // Not creation time. Objects are always replaced.
+        props.setCreated(attrs.lastModifiedTime().toMillis());
         props.setSize(attrs.size());
         return props.build();
     }
