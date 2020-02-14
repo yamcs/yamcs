@@ -30,7 +30,7 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.http.AuthModuleHttpHandler;
+import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -54,7 +54,7 @@ import io.netty.util.CharsetUtil;
  * 
  * @author nm
  */
-public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
+public class SpnegoAuthModule extends Handler implements AuthModule {
 
     private static final Logger log = LoggerFactory.getLogger(SpnegoAuthModule.class);
     private static final String JAAS_ENTRY_NAME = "YamcsHTTP";
@@ -155,11 +155,6 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         return new AuthorizationInfo();
     }
 
-    @Override
-    public String path() {
-        return "spnego";
-    }
-
     private synchronized GSSCredential getGSSCredential() throws GSSException {
         if (yamcsCred == null || yamcsCred.getRemainingLifetime() == 0) {
             yamcsCred = Subject.doAs(yamcsLogin.getSubject(), (PrivilegedAction<GSSCredential>) () -> {
@@ -176,9 +171,6 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         return yamcsCred;
     }
 
-    /**
-     * Implements the /auth/spnego handler
-     */
     @Override
     public void handle(ChannelHandlerContext ctx, FullHttpRequest req) {
         if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
@@ -196,6 +188,11 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
                     GSSContext yamcsContext = gssManager.createContext(cred);
                     yamcsContext.acceptSecContext(spnegoToken, 0, spnegoToken.length);
                     if (yamcsContext.isEstablished()) {
+                        if (yamcsContext.getSrcName() == null) {
+                            log.warn("Unknown user. No TGT?");
+                            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                            return;
+                        }
                         String userPrincipal = yamcsContext.getSrcName().toString();
                         log.debug("Got GSS Src Name {}", userPrincipal);
 

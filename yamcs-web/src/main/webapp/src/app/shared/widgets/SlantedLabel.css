@@ -1,0 +1,16 @@
+:host:focus {
+  outline: none;
+}
+
+:host(.selectable) svg:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+#wrapper {
+  position: relative;
+}
+
+text, polygon, #icon-wrapper {
+  pointer-events: none;
+}

@@ -5,25 +5,34 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.http.api.Router;
+import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
 import org.yamcs.logging.Log;
+import org.yamcs.security.AuthenticationException;
+import org.yamcs.security.AuthenticationInfo;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
+import org.yamcs.security.UsernamePasswordToken;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,13 +41,11 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -46,9 +53,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.ssl.NotSslRecordException;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -56,6 +66,8 @@ import io.netty.util.ReferenceCountUtil;
 
 /**
  * Handles handshakes and messages.
+ * 
+ * A new instance of this handler is created for every request.
  *
  * We have following different request types
  * <ul>
@@ -72,47 +84,39 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static final String ANY_PATH = "*";
     private static final String API_PATH = "api";
-    private static final String AUTH_PATH = "auth";
     private static final String STATIC_PATH = "static";
     private static final String WEBSOCKET_PATH = "_websocket";
+    private static final String AUTH_TYPE_BASIC = "Basic ";
+    private static final String AUTH_TYPE_BEARER = "Bearer ";
 
-    public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
+    public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("httpRequest");
+    public static final AttributeKey<RouteContext> CTX_CONTEXT = AttributeKey.valueOf("routeContext");
 
     private static final Log log = new Log(HttpRequestHandler.class);
 
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
+    private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
 
-    private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
-            HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
-            Unpooled.EMPTY_BUFFER);
-    public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
-    public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
-
-    public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
-
-    static {
-        HttpUtil.setContentLength(BAD_REQUEST, 0);
-    }
-
-    private static TokenStore tokenStore = new TokenStore();
+    private static RouteHandler routeHandler = new RouteHandler();
 
     private HttpServer httpServer;
     private String contextPath;
-    private Router apiRouter;
-    private AuthHandler authHandler;
-    private HttpAuthorizationChecker authChecker;
     private boolean contentExpected = false;
 
     YConfiguration wsConfig;
 
-    public HttpRequestHandler(HttpServer httpServer, Router apiRouter) {
+    public HttpRequestHandler(HttpServer httpServer) {
         this.httpServer = httpServer;
-        this.apiRouter = apiRouter;
+
         wsConfig = httpServer.getConfig().getConfig("webSocket");
         contextPath = httpServer.getContextPath();
-        authHandler = new AuthHandler(tokenStore, contextPath);
-        authChecker = new HttpAuthorizationChecker(tokenStore);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        httpServer.trackClientChannel(ctx.channel());
+        super.channelActive(ctx);
     }
 
     @Override
@@ -121,14 +125,30 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             DecoderResult dr = ((HttpMessage) msg).decoderResult();
             if (!dr.isSuccess()) {
                 log.warn("{} Exception while decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
-                ctx.writeAndFlush(BAD_REQUEST);
+                ctx.writeAndFlush(HttpUtils.EMPTY_BAD_REQUEST_RESPONSE);
                 return;
             }
         }
 
         if (msg instanceof HttpRequest) {
             contentExpected = false;
-            processRequest(ctx, (HttpRequest) msg);
+
+            HttpRequest req = (HttpRequest) msg;
+
+            // We have this also on info level coupled with the HTTP response status
+            // code, but this is on debug for an earlier reporting while debugging issues
+            log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
+
+            try {
+                handleRequest(ctx, req);
+            } catch (HttpException e) {
+                log.warn("{}: {}", req.uri(), e.getMessage());
+                sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
+            } catch (Throwable t) {
+                log.error("{}", req.uri(), t);
+                sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            }
+
             ReferenceCountUtil.release(msg);
         } else if (msg instanceof HttpContent) {
             if (contentExpected) {
@@ -147,24 +167,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
-        // We have this also on info level coupled with the HTTP response status
-        // code, but this is on debug for an earlier reporting while debugging issues
-        log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
-
-        try {
-            handleRequest(ctx, req);
-        } catch (IOException e) {
-            log.warn("Exception while handling http request", e);
-            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        } catch (HttpException e) {
-            sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
-        }
-    }
-
-    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req)
-            throws IOException, HttpException {
+    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) throws IOException {
         cleanPipeline(ctx.pipeline());
+        ctx.channel().attr(CTX_HTTP_REQUEST).set(req);
 
         if (!req.uri().startsWith(contextPath)) {
             sendPlainTextError(ctx, req, NOT_FOUND);
@@ -176,6 +181,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // Note: pathString starts with / so path[0] is always empty
         String[] path = pathString.split("/", 3);
 
+        User user;
+
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
@@ -184,28 +191,22 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
-        case AUTH_PATH:
-            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
-            ctx.pipeline().addLast(authHandler);
-            ctx.fireChannelRead(req);
+        case API_PATH:
+            user = authorizeUser(ctx, req);
+            handleApiRequest(ctx, req, user, pathString);
             contentExpected = true;
             return;
-        case API_PATH:
-            verifyAuthentication(ctx, req);
-            contentExpected = apiRouter.scheduleExecution(ctx, req, pathString);
-            return;
         case WEBSOCKET_PATH:
-            verifyAuthentication(ctx, req);
+            user = authorizeUser(ctx, req);
             if (path.length == 2) { // No instance specified
-                prepareChannelForWebSocketUpgrade(ctx, req, null, null);
+                prepareChannelForWebSocketUpgrade(ctx, req, null, null, user);
             } else {
                 path = path[2].split("/", 2);
                 if (YamcsServer.hasInstance(path[0])) {
                     if (path.length == 1) {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null);
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null, user);
                     } else {
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1]);
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1], user);
                     }
                 } else {
                     sendPlainTextError(ctx, req, NOT_FOUND);
@@ -214,13 +215,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        // Maybe a plugin registered a custom handler
         Handler handler = httpServer.createHandler(path[1]);
         if (handler == null) {
             handler = httpServer.createHandler(ANY_PATH);
         }
         if (handler != null) {
-            ctx.pipeline().addLast(HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpContentCompressor());
             ctx.pipeline().addLast(new HttpObjectAggregator(65536));
             ctx.pipeline().addLast(handler);
             ctx.fireChannelRead(req);
@@ -232,9 +232,146 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         sendPlainTextError(ctx, req, NOT_FOUND);
     }
 
-    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        User user = authChecker.verifyAuth(ctx, req);
-        ctx.channel().attr(CTX_USER).set(user);
+    private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
+            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+            if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
+                return handleBasicAuth(ctx, req);
+            } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+                return handleBearerAuth(ctx, req);
+            } else {
+                throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
+            }
+        }
+
+        // There may be an access token in the cookie. This use case is added because
+        // of web socket requests coming from the browser where it is not possible to
+        // set custom authorization headers. It'd be interesting if we communicate the
+        // access token via the websocket subprotocol instead (e.g. via temp. route).
+        String accessToken = getAccessTokenFromCookie(req);
+        if (accessToken != null) {
+            return handleAccessToken(ctx, req, accessToken);
+        }
+
+        if (securityStore.getGuestUser().isActive()) {
+            return securityStore.getGuestUser();
+        } else {
+            throw new UnauthorizedException("Missing 'Authorization' or 'Cookie' header");
+        }
+    }
+
+    /**
+     * At this point we do not have the full request (only the header) so we have to configure the pipeline either for
+     * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
+     * dataLoad routes.
+     */
+    private void handleApiRequest(ChannelHandlerContext nettyContext, HttpRequest nettyRequest, User user, String uri) {
+        if (uri.equals(HttpServer.WEBSOCKET_ROUTE.getGet())) {
+            if (nettyRequest.method() == HttpMethod.GET) {
+                prepareChannelForWebSocketUpgrade(nettyContext, nettyRequest, user);
+                return;
+            } else {
+                throw new MethodNotAllowedException(nettyRequest.method(), uri, Arrays.asList(HttpMethod.GET));
+            }
+        }
+
+        RouteMatch match = matchRoute(nettyRequest.method(), uri);
+        if (match == null) {
+            throw new NotFoundException();
+        }
+
+        RouteContext ctx = new RouteContext(httpServer, nettyContext, user, nettyRequest, match.route,
+                match.regexMatch);
+        log.debug("{}: Routing {} {}", ctx, nettyRequest.method(), nettyRequest.uri());
+
+        nettyContext.channel().attr(CTX_CONTEXT).set(ctx);
+
+        ChannelPipeline pipeline = nettyContext.pipeline();
+
+        if (ctx.isClientStreaming()) {
+            pipeline.addLast(new HttpContentToByteBufDecoder());
+            pipeline.addLast(new ProtobufVarint32FrameDecoder());
+
+            String body = ctx.getBodySpecifier();
+            Message bodyPrototype = ctx.getRequestPrototype();
+            if (body != null && !"*".equals(body)) {
+                FieldDescriptor field = bodyPrototype.getDescriptorForType().findFieldByName(body);
+                bodyPrototype = bodyPrototype.newBuilderForType().getFieldBuilder(field)
+                        .getDefaultInstanceForType();
+            }
+            pipeline.addLast(new ProtobufDecoder(bodyPrototype));
+            pipeline.addLast(new StreamingClientHandler(ctx));
+
+            if (HttpUtil.is100ContinueExpected(nettyRequest)) {
+                nettyContext.writeAndFlush(HttpUtils.CONTINUE_RESPONSE.retainedDuplicate());
+            }
+        } else {
+            pipeline.addLast(new HttpContentCompressor());
+
+            // this will cause the routeHandler read to be called as soon as the request is complete
+            // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
+            pipeline.addLast(new HttpObjectAggregator(ctx.getMaxBodySize()));
+            pipeline.addLast(routeHandler);
+            nettyContext.fireChannelRead(nettyRequest);
+        }
+    }
+
+    private RouteMatch matchRoute(HttpMethod method, String uri) throws MethodNotAllowedException {
+        for (Route route : httpServer.getRoutes()) {
+            if (route.getHttpMethod().equals(method)) {
+                Matcher matcher = route.matchURI(uri);
+                if (matcher.matches()) {
+                    if (route.isDeprecated()) {
+                        log.warn("A client used a deprecated route: {}", uri);
+                    }
+
+                    return new RouteMatch(matcher, route);
+                }
+            }
+        }
+
+        // Second pass, in case we did not find an exact match
+        Set<HttpMethod> allowedMethods = new HashSet<>(4);
+        for (Route route : httpServer.getRoutes()) {
+            Matcher matcher = route.matchURI(uri);
+            if (matcher.matches()) {
+                allowedMethods.add(method);
+            }
+        }
+        if (!allowedMethods.isEmpty()) {
+            throw new MethodNotAllowedException(method, uri, allowedMethods);
+        }
+
+        return null;
+    }
+
+    /**
+     * Adapts Netty's pipeline for allowing WebSocket upgrade
+     *
+     * @param ctx
+     *            context for this channel handler
+     */
+    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext nettyContext, HttpRequest req, User user) {
+        contentExpected = true;
+
+        ChannelPipeline pipeline = nettyContext.pipeline();
+        pipeline.addLast(new HttpObjectAggregator(65536));
+
+        int maxFrameLength = wsConfig.getInt("maxFrameLength");
+        int maxDropped = wsConfig.getInt("connectionCloseNumDroppedMsg");
+        int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
+        int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
+        WriteBufferWaterMark waterMark = new WriteBufferWaterMark(lo, hi);
+
+        // Add websocket-specific handlers to channel pipeline
+        String webSocketPath = req.uri();
+        String subprotocols = "json, protobuf";
+        pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false, maxFrameLength));
+
+        pipeline.addLast(new NewWebSocketFrameHandler(httpServer, req, user, maxDropped, waterMark));
+
+        // Effectively trigger websocket-handler (will attempt handshake)
+        nettyContext.fireChannelRead(req);
     }
 
     /**
@@ -244,7 +381,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      *            context for this channel handler
      */
     private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
-            String processor) {
+            String processor, User user) {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
@@ -262,7 +399,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setProcessor(processor);
-        originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
+        originalRequestInfo.setUser(user);
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo, maxDropped, waterMark));
 
         // Effectively trigger websocket-handler (will attempt handshake)
@@ -272,7 +409,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof NotSslRecordException) {
-            log.info("Non TLS connection (HTTP?) attempted on the HTTPS port, closing channel");
+            log.info("Expected a TLS/SSL packet. Closing channel");
         } else {
             log.error("Closing channel: {}", cause.getMessage());
         }
@@ -281,11 +418,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
             HttpResponseStatus status, T responseMsg) {
-        return sendMessageResponse(ctx, req, status, responseMsg, true);
-    }
-
-    public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
-            HttpResponseStatus status, T responseMsg, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = getAcceptType(req);
 
@@ -300,18 +432,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 contentType = MediaType.JSON;
                 String str = JsonFormat.printer().preservingProtoFieldNames().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
-                body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
         }
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
-        HttpUtils.setContentTypeHeader(response, contentType);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType.toString());
+        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
 
-        int txSize = body.readableBytes();
-        HttpUtil.setContentLength(response, txSize);
-
-        return sendResponse(ctx, req, response, autoCloseOnError);
+        return sendResponse(ctx, req, response);
     }
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,
@@ -324,11 +453,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        return sendResponse(ctx, req, response, true);
+        return sendResponse(ctx, req, response);
     }
 
-    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response,
-            boolean autoCloseOnError) {
+    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
         if (response.status() == HttpResponseStatus.OK) {
             log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
                     response.status().code());
@@ -346,9 +474,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                         response.status().code());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
-            if (autoCloseOnError) {
-                writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
-            }
+            writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
             return writeFuture;
         }
     }
@@ -388,54 +514,79 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         return MediaType.JSON;
     }
 
-    /**
-     * Sends base HTTP response indicating the use of chunked transfer encoding NM 11-May-2018: We do not put the
-     * ChunckedWriteHandler on the pipeline because the input is already chunked.
-     * 
-     */
-    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
-            String filename) {
-        log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
-
-        // Set Content-Disposition header so that supporting clients will treat
-        // response as a downloadable file
-        if (filename != null) {
-            response.headers().set("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        }
-        return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-    }
-
-    public static ChannelFuture writeChunk(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
-        Channel ch = ctx.channel();
-        if (!ch.isOpen()) {
-            throw new ClosedChannelException();
-        }
-        ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
-        try {
-            if (!ch.isWritable()) {
-                boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
-                if (!writeCompleted) {
-                    throw new IOException("Channel did not become writable in 10 seconds");
+    private String getAccessTokenFromCookie(HttpRequest req) {
+        HttpHeaders headers = req.headers();
+        if (headers.contains(HttpHeaderNames.COOKIE)) {
+            Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
+            for (Cookie c : cookies) {
+                if ("access_token".equalsIgnoreCase(c.name())) {
+                    return c.value();
                 }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
-        return writeFuture;
+        return null;
     }
 
-    public static class ChunkedTransferStats {
-        public int totalBytes = 0;
-        public int chunkCount = 0;
-        HttpMethod originalMethod;
-        String originalUri;
+    private User handleBasicAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
+        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String userpassEncoded = header.substring(AUTH_TYPE_BASIC.length());
+        String userpassDecoded;
+        try {
+            userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Could not decode Base64-encoded credentials");
+        }
 
-        public ChunkedTransferStats(HttpMethod method, String uri) {
-            originalMethod = method;
-            originalUri = uri;
+        // Username is not allowed to contain ':', but passwords are
+        String[] parts = userpassDecoded.split(":", 2);
+        if (parts.length < 2) {
+            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
+        }
+
+        try {
+            AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
+            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof AuthenticationException) {
+                throw new UnauthorizedException(e.getCause().getMessage());
+            } else {
+                throw new InternalServerErrorException(e.getCause());
+            }
+        }
+    }
+
+    private User handleBearerAuth(ChannelHandlerContext ctx, HttpRequest req) throws UnauthorizedException {
+        String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+        String accessToken = header.substring(AUTH_TYPE_BEARER.length());
+        return handleAccessToken(ctx, req, accessToken);
+    }
+
+    private User handleAccessToken(ChannelHandlerContext ctx, HttpRequest req, String accessToken)
+            throws UnauthorizedException {
+        TokenStore tokenStore = httpServer.getTokenStore();
+        AuthenticationInfo authenticationInfo = tokenStore.verifyAccessToken(accessToken);
+        if (!securityStore.verifyValidity(authenticationInfo)) {
+            tokenStore.revokeAccessToken(accessToken);
+            throw new UnauthorizedException("Could not verify token");
+        }
+
+        return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+    }
+
+    /**
+     * Represents a matched route pattern
+     */
+    private static final class RouteMatch {
+        final Matcher regexMatch;
+        final Route route;
+
+        RouteMatch(Matcher regexMatch, Route route) {
+            this.regexMatch = regexMatch;
+            this.route = route;
         }
     }
 }

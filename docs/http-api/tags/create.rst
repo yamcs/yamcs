@@ -3,7 +3,7 @@ Create Tag
 
 Create a tag for the given archive instance::
 
-    POST /api/archive/:instance/tags
+    POST /api/archive/{instance}/tags
 
 
 .. rubric:: Parameters

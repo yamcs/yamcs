@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "module": "esnext",
+    "target": "es2015",
+    "outDir": "./dist/out-tsc",
+    "baseUrl": "./",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": false,
+    "strictInjectionParameters": true
+  }
+}

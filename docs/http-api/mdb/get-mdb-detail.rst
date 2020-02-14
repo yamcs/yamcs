@@ -3,7 +3,7 @@ Get MDB Detail
 
 Get data on a the Mission Database for the given Yamcs instance::
 
-    GET /api/mdb/:instance
+    GET /api/mdb/{instance}
 
 
 .. rubric:: Response

@@ -42,7 +42,7 @@ public class WebPlugin implements Plugin {
         Spec featuresSpec = new Spec();
         featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
         featuresSpec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
-        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false);
+        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false).withDeprecationMessage("The layout functionality was removed");
         featuresSpec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
         featuresSpec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("features", OptionType.MAP)

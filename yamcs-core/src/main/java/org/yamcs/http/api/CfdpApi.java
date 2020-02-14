@@ -17,6 +17,7 @@ import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractCfdpApi;
@@ -45,7 +46,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     @Override
     public void listTransfers(Context ctx, ListTransfersRequest request,
             Observer<ListTransfersResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
 
         List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers(true));
@@ -64,14 +65,14 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpTransfer transaction = verifyTransaction(instance, request.getId());
         observer.complete(toTransferInfo(transaction));
     }
 
     @Override
     public void createTransfer(Context ctx, CreateTransferRequest request, Observer<TransferInfo> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
 
         if (!request.hasDirection()) {
@@ -138,7 +139,7 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
 
     @Override
     public void updateTransfer(Context ctx, EditTransferRequest request, Observer<Empty> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
         CfdpTransfer transaction = verifyTransaction(instance, request.getId());
         if (request.hasOperation()) {

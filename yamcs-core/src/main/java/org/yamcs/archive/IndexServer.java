@@ -80,6 +80,10 @@ public class IndexServer extends AbstractYamcsService {
         notifyStarted();
     }
 
+    public TmIndex getTmIndexer() {
+        return tmIndexer;
+    }
+
     private List<StreamConfigEntry> getStreams() {
         List<StreamConfigEntry> r = new ArrayList<>();
         if (!readonly) {

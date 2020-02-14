@@ -10,15 +10,13 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -31,22 +29,52 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.Api;
-import org.yamcs.http.api.Context;
-import org.yamcs.http.api.Router;
+import org.yamcs.api.HttpRoute;
+import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.BucketsApi;
+import org.yamcs.http.api.CfdpApi;
+import org.yamcs.http.api.ClientsApi;
+import org.yamcs.http.api.CommandHistoryApi;
+import org.yamcs.http.api.Cop1Api;
+import org.yamcs.http.api.EventsApi;
+import org.yamcs.http.api.GeneralApi;
+import org.yamcs.http.api.IamApi;
+import org.yamcs.http.api.IndexApi;
+import org.yamcs.http.api.ManagementApi;
+import org.yamcs.http.api.MdbApi;
+import org.yamcs.http.api.PacketsApi;
+import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ProcessingApi;
+import org.yamcs.http.api.QueueApi;
+import org.yamcs.http.api.RocksDbApi;
+import org.yamcs.http.api.StreamArchiveApi;
+import org.yamcs.http.api.TableApi;
+import org.yamcs.http.api.TagApi;
+import org.yamcs.http.api.TimeApi;
+import org.yamcs.http.auth.AuthHandler;
+import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.ConnectedWebSocketClient;
 import org.yamcs.http.websocket.WebSocketResource;
+import org.yamcs.protobuf.CancelOptions;
+import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.TypeRegistry;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -58,6 +86,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
@@ -71,24 +100,37 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
  */
 public class HttpServer extends AbstractYamcsService {
 
+    public static final HttpRoute WEBSOCKET_ROUTE = HttpRoute.newBuilder().setGet("/api/websocket").build();
+
+    // Protobuf weirdness. When unspecified it default to "type.googleapis.com" ...
+    public static final String TYPE_URL_PREFIX = "";
+
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private Router apiRouter;
+    private ChannelGroup clientChannels;
+
+    private List<Api<Context>> apis = new ArrayList<>();
+    private List<Route> routes = new ArrayList<>();
+    private List<Topic> topics = new ArrayList<>();
 
     private int port;
     private int tlsPort;
     private String contextPath;
     private boolean zeroCopyEnabled;
     private List<String> staticRoots = new ArrayList<>(2);
-    ThreadPoolExecutor executor;
-    String tlsCert;
-    String tlsKey;
+    private String tlsCert;
+    private String tlsKey;
 
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
 
     private Set<Function<ConnectedWebSocketClient, ? extends WebSocketResource>> webSocketExtensions = new HashSet<>();
+
     private ProtobufRegistry protobufRegistry = new ProtobufRegistry();
+    private JsonFormat.Parser jsonParser;
+    private JsonFormat.Printer jsonPrinter;
+
+    private TokenStore tokenStore = new TokenStore();
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -123,12 +165,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
-        spec.addOption("webRoot", OptionType.STRING)
-                .withDeprecationMessage("This property is automatically set by the yamcs-web jar/plugin.");
         spec.addOption("gpbExtensions", OptionType.LIST).withElementType(OptionType.MAP).withSpec(gpbSpec);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
-        spec.addOption("website", OptionType.MAP).withSpec(websiteSpec)
-                .withDeprecationMessage("Define website options under a key 'yamcs-web' in yamcs.yaml");
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
 
         spec.requireOneOf("port", "tlsPort");
@@ -139,6 +177,8 @@ public class HttpServer extends AbstractYamcsService {
     @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
+
+        clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
         port = config.getInt("port", -1);
         tlsPort = config.getInt("tlsPort", -1);
@@ -174,12 +214,6 @@ public class HttpServer extends AbstractYamcsService {
             }
         }
 
-        // this is used to execute the routes marked as offThread
-        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
-        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), tf);
-        apiRouter = new Router(executor, contextPath, protobufRegistry);
-
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
             String[] origins = ycors.getString("allowOrigin").split(",");
@@ -199,6 +233,31 @@ public class HttpServer extends AbstractYamcsService {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+
+        addApi(new AlarmsApi());
+        addApi(new BucketsApi());
+        addApi(new CfdpApi());
+        addApi(new ClientsApi());
+        addApi(new CommandHistoryApi());
+        addApi(new Cop1Api());
+        addApi(new GeneralApi(this));
+        addApi(new EventsApi());
+        addApi(new IamApi());
+        addApi(new IndexApi());
+        addApi(new ManagementApi());
+        addApi(new MdbApi());
+        addApi(new PacketsApi());
+        addApi(new ParameterArchiveApi());
+        addApi(new ProcessingApi());
+        addApi(new QueueApi());
+        addApi(new StreamArchiveApi());
+        addApi(new RocksDbApi());
+        addApi(new TableApi());
+        addApi(new TagApi());
+        addApi(new TimeApi());
+
+        AuthHandler authHandler = new AuthHandler(tokenStore, contextPath);
+        addHandler("auth", () -> authHandler);
     }
 
     public void addStaticRoot(Path staticRoot) {
@@ -210,15 +269,38 @@ public class HttpServer extends AbstractYamcsService {
     }
 
     public void addApi(Api<Context> api) {
-        apiRouter.addApi(api);
-    }
+        apis.add(api);
+        for (MethodDescriptor method : api.getDescriptorForType().getMethods()) {
+            RpcDescriptor descriptor = protobufRegistry.getRpc(method.getFullName());
+            if (descriptor == null) {
+                throw new UnsupportedOperationException("Unable to find rpc definition: " + method.getFullName());
+            }
 
-    public void addApiHandler(RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(routeHandler);
-    }
+            if (WEBSOCKET_ROUTE.equals(descriptor.getHttpRoute())) {
+                topics.add(new Topic(api, descriptor.getWebSocketTopic(), descriptor));
+                for (WebSocketTopic topic : descriptor.getAdditionalWebSocketTopics()) {
+                    topics.add(new Topic(api, topic, descriptor));
+                }
+            } else {
+                routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
+                for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
+                    routes.add(new Route(api, route, descriptor));
+                }
+            }
+        }
 
-    public void addApiHandler(String yamcsInstance, RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+        // Regenerate JSON converters with type support (needed for the "Any" type)
+        TypeRegistry.Builder typeRegistryb = TypeRegistry.newBuilder();
+        typeRegistryb.add(CancelOptions.getDescriptor());
+        typeRegistryb.add(Reply.getDescriptor());
+        apis.forEach(a -> typeRegistryb.add(a.getDescriptorForType().getFile().getMessageTypes()));
+        TypeRegistry typeRegistry = typeRegistryb.build();
+
+        jsonParser = JsonFormat.parser().usingTypeRegistry(typeRegistry);
+        jsonPrinter = JsonFormat.printer().usingTypeRegistry(typeRegistry);
+
+        // Sort in a way that increases chances of a good URI match
+        Collections.sort(routes);
     }
 
     @Override
@@ -261,7 +343,7 @@ public class HttpServer extends AbstractYamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(this, sslCtx, apiRouter));
+                .childHandler(new HttpServerChannelInitializer(this, sslCtx));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
@@ -322,8 +404,20 @@ public class HttpServer extends AbstractYamcsService {
         return supplier != null ? supplier.get() : null;
     }
 
+    public TokenStore getTokenStore() {
+        return tokenStore;
+    }
+
     public String getContextPath() {
         return contextPath;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    public List<Topic> getTopics() {
+        return topics;
     }
 
     public void addWebSocketExtension(Function<ConnectedWebSocketClient, ? extends WebSocketResource> extension) {
@@ -338,8 +432,28 @@ public class HttpServer extends AbstractYamcsService {
         return protobufRegistry;
     }
 
+    public JsonFormat.Parser getJsonParser() {
+        return jsonParser;
+    }
+
+    public JsonFormat.Printer getJsonPrinter() {
+        return jsonPrinter;
+    }
+
     public CorsConfig getCorsConfig() {
         return corsConfig;
+    }
+
+    void trackClientChannel(Channel channel) {
+        clientChannels.add(channel);
+    }
+
+    public List<Channel> getClientChannels() {
+        return new ArrayList<>(clientChannels);
+    }
+
+    public void closeChannel(String id) {
+        clientChannels.close(ch -> ch.id().asShortText().equals(id));
     }
 
     @Override

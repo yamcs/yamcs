@@ -1,0 +1,73 @@
+<app-message-bar #messageBar></app-message-bar>
+
+<mat-sidenav-container class="mat-typography"
+                       [class.message-bar-visible]="messageBar.show$ | async">
+  <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
+    <mat-toolbar class="top module-title">
+      <mat-toolbar-row>
+        <mat-icon class="icon32" style="margin-right: 16px">security</mat-icon>
+        Admin Area
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <mat-nav-list dense>
+      <app-sidebar-nav-item routerLink="/admin" exact="true">
+        <mat-icon class="item-icon">home</mat-icon>
+        Home
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/plugins">
+        <mat-icon class="item-icon">pages</mat-icon>
+        Plugins
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-group label="Access control" icon="supervised_user_circle"
+                             [active]="userManagementActive"
+                             [expanded]="userManagementExpanded"
+                             (toggle)="toggleUserManagementGroup()">
+        <app-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
+          Users
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
+          Service accounts
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
+          Groups
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/admin/iam/roles" [subitem]="true">
+          Roles
+        </app-sidebar-nav-item>
+      </app-sidebar-nav-group>
+      <app-sidebar-nav-item routerLink="/admin/connections">
+        <mat-icon class="item-icon">devices</mat-icon>
+        Client connections
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/services">
+        <mat-icon class="item-icon">traffic</mat-icon>
+        Services
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/buckets">
+        <mat-icon class="item-icon">shopping_basket</mat-icon>
+        Buckets
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-group label="RocksDB" svgIcon="rocksdb"
+                             [active]="rocksDbActive"
+                             [expanded]="rocksDbExpanded"
+                             (toggle)="toggleRocksDbGroup()">
+        <app-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
+          Open databases
+        </app-sidebar-nav-item>
+      </app-sidebar-nav-group>
+      <app-sidebar-nav-item routerLink="/admin/routes">
+        <mat-icon class="item-icon">http</mat-icon>
+        API routes
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/admin/leap-seconds">
+        <mat-icon class="item-icon">access_time</mat-icon>
+        Leap seconds
+      </app-sidebar-nav-item>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

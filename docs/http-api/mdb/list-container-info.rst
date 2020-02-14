@@ -3,7 +3,7 @@ List Container Info
 
 List all containers defined in the Mission Database for the given Yamcs instance::
 
-    GET /api/mdb/:instance/containers
+    GET /api/mdb/{instance}/containers
 
 
 .. rubric:: Parameters

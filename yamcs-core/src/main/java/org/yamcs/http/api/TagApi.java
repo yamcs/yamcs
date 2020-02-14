@@ -7,6 +7,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
@@ -27,7 +28,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void listTags(Context ctx, ListTagsRequest request, Observer<ListTagsResponse> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         TimeInterval interval = new TimeInterval();
@@ -60,7 +61,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void getTag(Context ctx, GetTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
@@ -72,7 +73,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void createTag(Context ctx, CreateTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         if (!request.hasName()) {
@@ -108,7 +109,7 @@ public class TagApi extends AbstractTagApi<Context> {
 
     @Override
     public void updateTag(Context ctx, EditTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
         int tagId = request.getTagId();
@@ -119,10 +120,10 @@ public class TagApi extends AbstractTagApi<Context> {
             tagb.setName(request.getName());
         }
         if (request.hasStart()) {
-            tagb.setStart(RestRequest.parseTime(request.getStart()));
+            tagb.setStart(parseTime(request.getStart()));
         }
         if (request.hasStop()) {
-            tagb.setStop(RestRequest.parseTime(request.getStop()));
+            tagb.setStop(parseTime(request.getStop()));
         }
         if (request.hasDescription()) {
             tagb.setDescription(request.getDescription());
@@ -141,9 +142,21 @@ public class TagApi extends AbstractTagApi<Context> {
         }
     }
 
+    /**
+     * Interprets the provided string as either an instant, or an ISO 8601 string and returns it as an instant of type
+     * long
+     */
+    private static long parseTime(String datetime) {
+        try {
+            return Long.parseLong(datetime);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(datetime);
+        }
+    }
+
     @Override
     public void deleteTag(Context ctx, DeleteTagRequest request, Observer<ArchiveTag> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
         long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
@@ -164,10 +177,10 @@ public class TagApi extends AbstractTagApi<Context> {
     private ArchiveTag enrichTag(ArchiveTag tag) {
         ArchiveTag.Builder enrichedTag = ArchiveTag.newBuilder(tag);
         if (tag.hasStart()) {
-            enrichedTag.setStartUTC(TimeEncoding.toString(tag.getStart()));
+            enrichedTag.setStartUTC(TimeEncoding.toProtobufTimestamp(tag.getStart()));
         }
         if (tag.hasStop()) {
-            enrichedTag.setStopUTC(TimeEncoding.toString(tag.getStop()));
+            enrichedTag.setStopUTC(TimeEncoding.toProtobufTimestamp(tag.getStop()));
         }
         return enrichedTag.build();
     }

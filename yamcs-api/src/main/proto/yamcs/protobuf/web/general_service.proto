@@ -1,0 +1,102 @@
+syntax = "proto2";
+
+package yamcs.protobuf.web;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "GeneralServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+
+// Handles incoming requests related to api routes
+service GeneralApi {
+
+  // Get general info
+  rpc GetGeneralInfo(google.protobuf.Empty) returns (GetGeneralInfoResponse) {
+    option (yamcs.api.route) = {
+      get: "/api"
+    };
+  }
+
+  // List routes
+  rpc ListRoutes(google.protobuf.Empty) returns (ListRoutesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/routes"
+    };
+  }
+  
+  // List client connections
+  rpc ListClientConnections(google.protobuf.Empty) returns (ListClientConnectionsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/connections"
+    };
+  }
+  
+  // Close a client connection
+  rpc CloseConnection(CloseConnectionRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/connections/{id}"
+    };
+  }
+}
+
+message ListRoutesResponse {
+  repeated RouteInfo routes = 1;
+}
+
+message ListClientConnectionsResponse {
+  repeated ClientConnectionInfo connections = 1;
+}
+
+message CloseConnectionRequest {
+  optional string id = 1;
+}
+
+message RouteInfo {
+  optional string service = 1;
+  optional string method = 2;
+  optional string description = 3;
+  optional string httpMethod = 4;
+  optional string url = 5;
+  optional string inputType = 6;
+  optional string outputType = 7;
+  optional bool deprecated = 8;
+  optional int64 requestCount = 9;
+  optional int64 errorCount = 10;
+}
+
+message GetGeneralInfoResponse {
+  message PluginInfo {
+    optional string name = 1;
+    optional string description = 2;
+    optional string version = 3;
+    optional string vendor = 4;
+  }
+  optional string yamcsVersion = 1;
+  optional string revision = 6;
+  optional string serverId = 2;
+  optional string defaultYamcsInstance = 3;
+  repeated PluginInfo plugins = 5;
+}
+
+message ClientConnectionInfo {
+  message HttpRequestInfo {
+    optional string protocol = 1;
+    optional string method = 2;
+    optional string uri = 3;
+    optional bool keepAlive = 4;
+    optional string userAgent = 5;
+  }
+  optional string id = 1;
+  optional bool open = 2;
+  optional bool active = 3;
+  optional bool writable = 4;
+  optional string remoteAddress = 5;
+  optional uint64 readBytes = 6;
+  optional uint64 writtenBytes = 7;
+  optional uint64 readThroughput = 8;
+  optional uint64 writeThroughput = 9;
+  optional HttpRequestInfo httpRequest = 10;
+}

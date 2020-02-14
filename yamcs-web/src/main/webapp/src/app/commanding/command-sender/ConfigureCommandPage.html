@@ -1,0 +1,64 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Send a command
+  </app-instance-toolbar>
+
+  <app-send-command-wizard-step step="2"></app-send-command-wizard-step>
+
+  <div class="form-content">
+
+    <dl class="dl-horizontal no-lead no-trail" *ngIf="command$ | async as command">
+      <ng-container *ngFor="let alias of command?.alias">
+        <ng-container *ngIf="command?.qualifiedName.startsWith(alias.namespace)">
+          <dt>Command</dt>
+          <dd>{{ alias.name }}</dd>
+
+          <dt>Space system</dt>
+          <dd>{{ alias.namespace }}</dd>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngFor="let alias of command?.alias">
+        <ng-container *ngIf="!command?.qualifiedName.startsWith(alias.namespace)">
+          <dt>{{ alias.namespace }}</dt>
+          <dd>{{ alias.name }}</dd>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="command?.longDescription || command?.shortDescription">
+        <dt>Description</dt>
+        <dd>{{ command?.longDescription || command?.shortDescription || '-' }}</dd>
+      </ng-container>
+
+      <dt>Significance</dt>
+      <dd>
+        <app-significance-level [significance]="command?.significance"></app-significance-level>
+        &nbsp;&nbsp;{{ command?.significance?.reasonForWarning }}
+      </dd>
+    </dl>
+
+    <p *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">&nbsp;</p>
+    <h3 *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">Arguments</h3>
+    <app-command-form #commandForm [command]="command$ | async"
+                      [template]="template$ | async"></app-command-form>
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <button class="ya-button"
+              (click)="goBack()">
+        Cancel
+      </button>
+      <span style="flex: 1 1 auto"></span>
+      <mat-slide-toggle *ngIf="config.twoStageCommanding"
+                        [formControl]="armControl" color="primary">
+        Arm
+      </mat-slide-toggle>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <button class="ya-button primary"
+              [disabled]="(config.twoStageCommanding && !armControl.value) || !commandForm.form.valid"
+              (click)="sendCommand()">
+        <mat-icon>send</mat-icon>
+        Send
+      </button>
+    </mat-toolbar>
+  </div>
+</app-instance-page>

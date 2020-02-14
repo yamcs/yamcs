@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.yamcs.api.AnnotationsProto;
 import org.yamcs.api.HttpRoute;
+import org.yamcs.api.WebSocketTopic;
 import org.yamcs.logging.Log;
 
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
@@ -46,6 +47,7 @@ public class ProtobufRegistry {
 
     public ProtobufRegistry() {
         extensionRegistry.add(AnnotationsProto.route);
+        extensionRegistry.add(AnnotationsProto.websocket);
 
         try (InputStream in = getClass().getResourceAsStream("/yamcs-api.protobin")) {
             if (in == null) {
@@ -77,16 +79,22 @@ public class ProtobufRegistry {
             for (ServiceDescriptorProto service : file.getServiceList()) {
                 for (MethodDescriptorProto method : service.getMethodList()) {
                     MethodOptions options = method.getOptions();
+                    String serviceName = service.getName();
+                    String methodName = method.getName();
+                    DescriptorProto inputType = messageTypes.get(method.getInputType().substring(1));
+                    DescriptorProto outputType = messageTypes.get(method.getOutputType().substring(1));
+                    String description = methodComments.get(method);
                     if (options.hasExtension(AnnotationsProto.route)) {
                         HttpRoute route = options.getExtension(AnnotationsProto.route);
-
-                        String serviceName = service.getName();
-                        String methodName = method.getName();
-                        DescriptorProto inputType = messageTypes.get(method.getInputType().substring(1));
-                        DescriptorProto outputType = messageTypes.get(method.getOutputType().substring(1));
-                        String description = methodComments.get(method);
                         RpcDescriptor descriptor = new RpcDescriptor(serviceName, methodName, inputType, outputType,
                                 route, description);
+
+                        String qname = String.join(".", file.getPackage(), serviceName, methodName);
+                        rpcs.put(qname, descriptor);
+                    } else if (options.hasExtension(AnnotationsProto.websocket)) {
+                        WebSocketTopic topic = options.getExtension(AnnotationsProto.websocket);
+                        RpcDescriptor descriptor = new RpcDescriptor(serviceName, methodName, inputType, outputType,
+                                topic, description);
 
                         String qname = String.join(".", file.getPackage(), serviceName, methodName);
                         rpcs.put(qname, descriptor);
@@ -94,6 +102,10 @@ public class ProtobufRegistry {
                 }
             }
         }
+    }
+
+    public void importMessageTypes() {
+
     }
 
     private void scanComments(FileDescriptorProto file) {

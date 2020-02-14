@@ -9,11 +9,9 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -22,15 +20,12 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.MediaType;
-import org.yamcs.client.ClientException.RestExceptionData;
-import org.yamcs.protobuf.RestExceptionMessage;
-import org.yamcs.protobuf.Table;
+import org.yamcs.client.ClientException.ExceptionData;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.protobuf.Extension;
-import com.google.protobuf.ExtensionRegistry;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -73,13 +68,6 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
-    // extensions for the RestExceptionMessage
-    static ExtensionRegistry exceptionRegistry = ExtensionRegistry.newInstance();
-    static Set<Extension<RestExceptionMessage, ?>> exceptionExtensions = new HashSet<>(1);
-    static {
-        exceptionRegistry.add(Table.rowsLoaded);
-        exceptionExtensions.add(Table.rowsLoaded);
-    }
 
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
@@ -289,29 +277,15 @@ public class HttpClient {
         byte[] data = getByteArray(fullResp.content());
         String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        // We could probably simplify this by using Any type once using protobuf3
-        // Reason for the complexity is that 'extensions' are not supported by JsonFormat
-        // (note that extensions were removed from proto3)
         if (MediaType.JSON.is(contentType)) {
             Map<String, Object> obj = jsonToMap(new String(data));
             String type = (String) obj.get("type");
             String message = (String) obj.get("msg");
-            RestExceptionData excData = new RestExceptionData(type, message);
-            for (Entry<String, Object> entry : obj.entrySet()) {
-                if (!"type".equals(entry.getKey()) && !"msg".equals(entry.getKey())) {
-                    excData.addDetail(entry.getKey(), entry.getValue());
-                }
-            }
+            ExceptionData excData = new ExceptionData(type, message, null);
             return new ClientException(excData);
         } else if (MediaType.PROTOBUF.is(contentType)) {
-            RestExceptionMessage msg = RestExceptionMessage.parseFrom(data, exceptionRegistry);
-            RestExceptionData excData = new RestExceptionData(msg.getType(), msg.getMsg());
-            for (Extension<RestExceptionMessage, ?> extension : exceptionExtensions) {
-                if (msg.hasExtension(extension)) {
-                    String key = extension.getDescriptor().getJsonName();
-                    excData.addDetail(key, msg.getExtension(extension));
-                }
-            }
+            ExceptionMessage msg = ExceptionMessage.parseFrom(data);
+            ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg(), msg.getDetail());
             return new ClientException(excData);
         } else {
             return new ClientException(fullResp.status() + ": " + new String(data));

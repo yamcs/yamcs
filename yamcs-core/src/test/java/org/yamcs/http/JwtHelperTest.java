@@ -8,7 +8,8 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.http.JwtHelper.JwtDecodeException;
+import org.yamcs.http.auth.JwtHelper;
+import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 

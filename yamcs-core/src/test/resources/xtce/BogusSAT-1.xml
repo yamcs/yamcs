@@ -904,7 +904,7 @@ limitations under the License.
 					<xtce:Parameter name="Solar_Array_Voltage_2" parameterTypeRef="Solar_Array_Voltage_Type">
 						<xtce:AliasSet>
 							<xtce:Alias nameSpace="ID" alias="100445"/>
-							<xtce:Alias nameSpace="ID" alias="123456"/>
+							<!-- xtce:Alias nameSpace="ID" alias="123456"/-->
 						</xtce:AliasSet>
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>EPS</xtce:SystemName>

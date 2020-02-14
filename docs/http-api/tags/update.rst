@@ -3,7 +3,7 @@ Update Tag
 
 Update a tag::
 
-    PATCH /api/archive/:instance/tags/:start/:id
+    PATCH /api/archive/{instance}/tags/{start}/{id}
 
 
 .. rubric:: Parameters

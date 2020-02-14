@@ -3,7 +3,7 @@ List Streams
 
 List all streams for the given instance::
 
-    GET /api/archive/:instance/streams
+    GET /api/archive/{instance}/streams
 
 .. note::
 

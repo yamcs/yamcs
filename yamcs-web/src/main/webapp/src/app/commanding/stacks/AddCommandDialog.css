@@ -1,0 +1,34 @@
+::ng-deep .mat-dialog-container {
+    border-radius: 0;
+    position: relative;
+}
+
+.command-selector {
+    position: relative;
+    height: calc(50% - 32px);
+}
+
+.command-table-wrapper {
+    position: absolute;
+    overflow: auto;
+    border: 1px solid #d3d3d3;
+    /* 24 + 32 */
+    top: 56px;
+    bottom: 1em;
+    left: 0;
+    right: 0;
+}
+
+.command-detail {
+    position: relative;
+    height: calc(50% - 32px);
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 64px;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #d3d3d3;
+}

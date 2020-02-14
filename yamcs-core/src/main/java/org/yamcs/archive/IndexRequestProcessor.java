@@ -66,8 +66,7 @@ public class IndexRequestProcessor implements Runnable {
     HistoRequest[] hreq = new HistoRequest[5];
     MergingResult mergingResult;
     static Random random = new Random();
-    
-    
+
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
         log.debug("new index request: {}", req);
         this.yamcsInstance = req.getInstance();
@@ -144,11 +143,11 @@ public class IndexRequestProcessor implements Runnable {
                     StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
         }
 
-        if(req.getSendCompletenessIndex()) {
+        if (req.getSendCompletenessIndex()) {
             int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : -1);
             hreq[4] = new HistoRequest(null, null, mergeTime, null);
         }
-        
+
         if (tokenData != null) {
             for (int i = 0; i < tokenData.lastHistoId; i++) {
                 hreq[i] = null;
@@ -257,7 +256,7 @@ public class IndexRequestProcessor implements Runnable {
                 String name = histoColumnSerializer.fromByteArray(hr.getColumnv(), histoColumnDefinition);
 
                 NamedObjectId id;
-                if (hreq.name2id!=null && !hreq.name2id.isEmpty()) {
+                if (hreq.name2id != null && !hreq.name2id.isEmpty()) {
                     id = hreq.name2id.get(name);
                     if (id == null) {
                         log.debug("Not sending {} because no id for it", name);
@@ -272,7 +271,8 @@ public class IndexRequestProcessor implements Runnable {
                 }
 
                 ArchiveRecord ar = ArchiveRecord.newBuilder().setId(id)
-                        .setFirst(TimeEncoding.toProtobufTimestamp(hr.getStart())).setLast(TimeEncoding.toProtobufTimestamp(hr.getStop()))
+                        .setFirst(TimeEncoding.toProtobufTimestamp(hr.getStart()))
+                        .setLast(TimeEncoding.toProtobufTimestamp(hr.getStop()))
                         .setYamcsFirst(hr.getStart()).setYamcsLast(hr.getStop())
                         .setNum(hr.getNumTuples()).build();
                 sendData(ar);
@@ -301,15 +301,15 @@ public class IndexRequestProcessor implements Runnable {
     }
 
     private boolean sendCompletenessIndex(HistoRequest hreq) {
-       
+
         long start = req.hasStart() ? req.getStart() : TimeEncoding.INVALID_INSTANT;
         long stop = req.hasStop() ? req.getStop() : TimeEncoding.INVALID_INSTANT;
-        
-        if(hreq.seekId!=null) {
-            start = hreq.seekTime; 
+
+        if (hreq.seekId != null) {
+            start = hreq.seekTime;
         }
         IndexIterator it = tmIndexer.getIterator(null, start, stop);
-       
+
         ArchiveRecord ar;
         while ((ar = it.getNextRecord()) != null) {
             sendData(ar);
@@ -364,7 +364,7 @@ public class IndexRequestProcessor implements Runnable {
         int lastHistoId = 0;
         byte[] lastName;
         NamedObjectId lastId;
-        
+
         long lastTime;
         MergingResult mergingResult = new MergingResult();
 

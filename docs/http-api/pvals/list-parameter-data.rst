@@ -3,7 +3,7 @@ List Parameter Data
 
 List the history of values for the specified parameter::
 
-    GET /api/archive/:instance/parameters/:namespace/:name
+    GET /api/archive/{instance}/parameters/{name*}
 
 
 .. rubric:: Parameters
@@ -41,16 +41,6 @@ The ``pos`` and ``limit`` allow for pagination. Keep in mind that in-between two
 
     ?pos=0&limit=50&order=desc
     ?pos=45&limit=50&order=desc
-
-When using CSV output some columns are hidden by default. You can add them via the `extra` flag:
-
-extra (array of strings)
-    Extra columns added to the CSV output:
-
-    * ``raw``: Raw parameter values
-    * ``monitoring``: Monitoring status
-
-    Example: ``?extra=raw,monitoring``
 
 
 .. rubric:: Response
@@ -105,20 +95,3 @@ extra (array of strings)
     message ParameterData {
       repeated ParameterValue parameter = 1;
     }
-
-
-.. rubric:: CSV Output
-
-In order to receive a response in CSV format, use this HTTP request header::
-
-    Accept: text/csv
-
-Or add this query parameter to the URI: `format=csv`.
-
-.. code-block:: text
-    :caption: CSV Output Example
-
-    Time    BatteryVoltage2
-    2015-11-13T12:21:55.199 157
-    2015-11-13T12:21:48.972 158
-    2015-11-13T12:21:42.750 159

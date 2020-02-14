@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.yamcs.utils.TimeEncoding;
+
+import com.google.protobuf.Timestamp;
+
 public class SqlBuilder {
 
     private String table;
-    private List<String> selectExpressions;
-    private List<String> conditions;
+    private List<String> selectExpressions = new ArrayList<>();
+    private List<String> conditions = new ArrayList<>(2);
     private Boolean descend;
     private Long offset;
     private Long limit;
@@ -23,9 +27,6 @@ public class SqlBuilder {
      * Additive! Calling multiple times will add extra select expressions to the already specified list.
      */
     public SqlBuilder select(String... exprs) {
-        if (selectExpressions == null) {
-            selectExpressions = new ArrayList<>(exprs.length);
-        }
         for (String expr : exprs) {
             selectExpressions.add(expr);
         }
@@ -36,9 +37,6 @@ public class SqlBuilder {
      * Additive! Calling multiple times will add extra conditions to the already specified list.
      */
     public SqlBuilder where(String whereCondition, Object... args) {
-        if (conditions == null) {
-            conditions = new ArrayList<>(2);
-        }
         conditions.add(whereCondition);
         for (Object o : args) {
             queryArgs.add(o);
@@ -46,10 +44,41 @@ public class SqlBuilder {
         return this;
     }
 
+    public SqlBuilder whereColAfter(String colName, Timestamp timestamp) {
+        return whereColAfter(colName, timestamp, true);
+    }
+
+    public SqlBuilder whereColAfterOrEqual(String colName, Timestamp timestamp) {
+        return whereColAfter(colName, timestamp, false);
+    }
+
+    private SqlBuilder whereColAfter(String colName, Timestamp timestamp, boolean strict) {
+        StringBuilder cond = new StringBuilder();
+        cond.append(colName);
+        cond.append(strict ? " > " : " >= ");
+        cond.append(TimeEncoding.fromProtobufTimestamp(timestamp));
+        conditions.add(cond.toString());
+        return this;
+    }
+
+    public SqlBuilder whereColBeforeOrEqual(String colName, Timestamp timestamp) {
+        return whereColBefore(colName, timestamp, false);
+    }
+
+    public SqlBuilder whereColBefore(String colName, Timestamp timestamp) {
+        return whereColBefore(colName, timestamp, true);
+    }
+
+    private SqlBuilder whereColBefore(String colName, Timestamp timestamp, boolean strict) {
+        StringBuilder cond = new StringBuilder();
+        cond.append(colName);
+        cond.append(strict ? " < " : " <= ");
+        cond.append(TimeEncoding.fromProtobufTimestamp(timestamp));
+        conditions.add(cond.toString());
+        return this;
+    }
+
     public SqlBuilder whereColIn(String colName, Collection<?> values) {
-        if (conditions == null) {
-            conditions = new ArrayList<>(2);
-        }
         StringBuilder cond = new StringBuilder();
         cond.append(colName).append(" IN (");
         boolean first = true;
@@ -91,7 +120,7 @@ public class SqlBuilder {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder("select ");
-        if (selectExpressions == null) {
+        if (selectExpressions.isEmpty()) {
             buf.append("*");
         } else {
             boolean first = true;
@@ -104,7 +133,7 @@ public class SqlBuilder {
             }
         }
         buf.append(" from ").append(table);
-        if (conditions != null) {
+        if (!conditions.isEmpty()) {
             buf.append(" where ");
             boolean first = true;
             for (String condition : conditions) {

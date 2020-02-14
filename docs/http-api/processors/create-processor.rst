@@ -3,7 +3,7 @@ Create Processor
 
 Create a processor for the given Yamcs instance::
 
-    POST /api/processors/:instance
+    POST /api/processors/{instance}
 
 
 .. rubric:: Parameters

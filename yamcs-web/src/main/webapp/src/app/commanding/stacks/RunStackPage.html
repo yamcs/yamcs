@@ -1,0 +1,94 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Run a stack
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button color="primary" (click)="addEntry()">
+      <mat-icon>add</mat-icon>
+      ADD COMMAND
+    </button>
+  </app-instance-toolbar>
+
+  <app-run-stack-wizard-step step="1"></app-run-stack-wizard-step>
+
+  <div class="panel-content" *ngIf="connectionInfo$ | async as connectionInfo">
+    <div [class.noDisplay]="!connectionInfo?.processor?.hasCommanding">
+
+      <table mat-table
+             [dataSource]="dataSource"
+             *ngIf="dataSource.data.length"
+             class="ya-data-table">
+
+        <ng-container matColumnDef="seq">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let i = index">
+            {{ i + 1 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="command">
+          <th mat-header-cell *matHeaderCellDef>Command</th>
+          <td mat-cell *matCellDef="let entry">
+            <strong>{{ entry.name }}</strong>
+            <table class="args">
+              <tr *ngFor="let arg of entry.arguments">
+                <td width="1" style="white-space: nowrap;">{{ arg.name }}:</td>
+                <td>{{ arg.value }}</td>
+              </tr>
+            </table>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="comment">
+          <th mat-header-cell *matHeaderCellDef class="iconcol">
+            <mat-icon matTooltip="Comment" class="icon16">comment</mat-icon>
+          </th>
+          <td mat-cell *matCellDef="let entry" class="iconcol">
+            <mat-icon *ngIf="entry.comment" class="icon16"
+                      [matTooltip]="entry.comment">comment</mat-icon>
+            <ng-container *ngIf="!entry.comment">-</ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let entry">
+            <button mat-button>
+              <mat-icon>keyboard_arrow_down</mat-icon>
+            </button>
+            <button mat-button>
+              <mat-icon>keyboard_arrow_up</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row
+            *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <app-empty-message headerTitle="Run a stack" *ngIf="!dataSource.data.length">
+        <p>
+          Stacks allow to prepare and run several commands in sequence.
+          To start, either:
+        </p>
+        <p>
+          <button class="ya-button primary" (click)="addEntry()">add a command</button>
+          or
+          <button class="ya-button">load an existing stack</button>
+        </p>
+      </app-empty-message>
+
+    </div>
+    <app-empty-message *ngIf="!connectionInfo?.processor?.hasCommanding"
+                       headerTitle="Send a command">
+      <p>
+        You are connected to the
+        <ng-container *ngIf="connectionInfo?.processor?.replay">replay</ng-container>
+        processor <strong>{{ connectionInfo?.processor?.name }}</strong>.
+      </p>
+      <p>
+        This processor does not support commanding.
+      </p>
+    </app-empty-message>
+  </div>
+</app-instance-page>

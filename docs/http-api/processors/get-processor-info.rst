@@ -3,7 +3,7 @@ Get Processor Info
 
 Get info on a specific Yamcs processor::
 
-    GET /api/processors/:instance/:name
+    GET /api/processors/{instance}/{name}
 
 
 .. rubric:: Response

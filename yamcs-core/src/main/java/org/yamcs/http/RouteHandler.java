@@ -1,48 +1,116 @@
 package org.yamcs.http;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponse;
+import org.yamcs.logging.Log;
 
-public class RouteHandler {
-    
-    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
-    
-    /**
-     * Sets the Date header for the HTTP response
-     */
-    protected static void setDateHeader(HttpResponse response) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
-        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
-    
-        Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Message;
+
+import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+
+@Sharable
+public class RouteHandler extends Handler {
+
+    private static final Log log = new Log(RouteHandler.class);
+
+    private boolean logSlowRequests = true;
+    private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
+    // this is used to execute the routes marked as offloaded
+    private final ExecutorService workerPool;
+
+    public RouteHandler() {
+        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
+        workerPool = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(), tf);
     }
-    
-    /**
-     * Sets the Date and Cache headers for the HTTP Response
-     * 
-     * @param lastModified
-     *            the time when the file has been last mdified
-     */
-    protected static void setDateAndCacheHeaders(HttpResponse response, Date lastModified) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
-        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
-    
-        // Date header
-        Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
-    
-        // Add cache headers
-        //   time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-        //  response.setHeader(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
-        // response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-        response.headers().set(HttpHeaderNames.LAST_MODIFIED, dateFormatter.format(lastModified));
+
+    @Override
+    public void handle(ChannelHandlerContext nettyContext, FullHttpRequest req) {
+        RouteContext ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
+        ctx.setFullNettyRequest(req);
+
+        if (ctx.isOffloaded()) {
+            ctx.getBody().retain();
+            workerPool.execute(() -> {
+                dispatch(ctx);
+                ctx.getBody().release();
+            });
+        } else {
+            dispatch(ctx);
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext nettyContext, Throwable cause) throws Exception {
+        log.error("Closing channel due to exception", cause);
+        nettyContext.close();
+    }
+
+    private void dispatch(RouteContext ctx) {
+        ScheduledFuture<?> blockWarning = null;
+        if (!ctx.isOffloaded()) {
+            blockWarning = timer.schedule(() -> {
+                log.error("{}: Blocking the netty thread for 2 seconds. uri: {}", ctx, ctx.getURI());
+            }, 2, TimeUnit.SECONDS);
+        }
+
+        // the handlers will send themselves the response unless they throw an exception, case which is handled in the
+        // catch below.
+        try {
+            Message requestMessage;
+            try {
+                requestMessage = HttpTranscoder.transcode(ctx);
+            } catch (HttpTranscodeException e) {
+                throw new BadRequestException(e.getMessage());
+            }
+
+            MethodDescriptor method = ctx.getMethod();
+            if (ctx.isServerStreaming()) {
+                ctx.getApi().callMethod(method, ctx, requestMessage, new ServerStreamingObserver(ctx));
+            } else {
+                ctx.getApi().callMethod(method, ctx, requestMessage, new CallObserver(ctx));
+            }
+        } catch (Throwable t) {
+            handleException(ctx, t);
+            ctx.requestFuture.completeExceptionally(t);
+        } finally {
+            if (blockWarning != null) {
+                blockWarning.cancel(true);
+            }
+        }
+
+        if (logSlowRequests) {
+            int numSec = ctx.isOffloaded() ? 120 : 20;
+            timer.schedule(() -> {
+                if (!ctx.isDone()) {
+                    log.warn("{}: Executing for more than {} seconds. uri: {}", ctx, numSec, ctx.getURI());
+                }
+            }, numSec, TimeUnit.SECONDS);
+        }
+    }
+
+    private void handleException(RouteContext ctx, Throwable t) {
+        if (!(t instanceof HttpException)) {
+            t = new InternalServerErrorException(t);
+        }
+
+        HttpException e = (HttpException) t;
+        if (e.isServerError()) {
+            log.error("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage(), e);
+        } else {
+            log.warn("{}: Responding '{}': {}", ctx, e.getStatus(), e.getMessage());
+        }
+        CallObserver.sendError(ctx, e);
     }
 }

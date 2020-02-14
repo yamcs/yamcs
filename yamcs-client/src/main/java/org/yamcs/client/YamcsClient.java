@@ -15,15 +15,18 @@ import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.Observer;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.client.SpnegoUtils.SpnegoException;
 import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.SubscribeTimeRequest;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.YamcsInstance;
 
 import com.google.protobuf.MessageLite;
+import com.google.protobuf.Timestamp;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
@@ -46,6 +49,7 @@ public class YamcsClient {
 
     private final RestClient restClient;
     private final WebSocketClient websocketClient;
+    private final WebSocketClient2 websocketClient2;
 
     private volatile boolean connected;
     private volatile boolean closed = false;
@@ -81,6 +85,10 @@ public class YamcsClient {
         websocketClient = new WebSocketClient(null, new WebSocketCallbackHandler());
         websocketClient.enableReconnection(false);
         websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
+
+        websocketClient2 = new WebSocketClient2(host, port, tls, new WebSocketClient2Callback() {
+        });
+        websocketClient2.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
     }
 
     public static Builder newBuilder(String host, int port) {
@@ -227,6 +235,7 @@ public class YamcsClient {
         websocketClient.setConnectionProperties(yprops);
         try {
             websocketClient.connect(accessToken).get(5000, TimeUnit.MILLISECONDS);
+            websocketClient2.connect(accessToken).get(5000, TimeUnit.MILLISECONDS);
             // now the TCP connection is established but we have to wait for the websocket protocol to
             // finish its initial setup.
 
@@ -309,12 +318,41 @@ public class YamcsClient {
         return websocketClient;
     }
 
+    public WebSocketClient2 getWebSocketClient2() {
+        return websocketClient2;
+    }
+
     public String getUrl() {
         if (tls) {
             return String.format("https://%s:%s", host, port);
         } else {
             return String.format("http://%s:%s", host, port);
         }
+    }
+
+    public Observer<SubscribeTimeRequest> subscribeTime(Observer<Timestamp> observer) {
+        return websocketClient2.call("time", new DataObserver<Timestamp>() {
+
+            @Override
+            public Class<Timestamp> getMessageClass() {
+                return Timestamp.class;
+            }
+
+            @Override
+            public void next(Timestamp message) {
+                observer.next(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                observer.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                observer.complete();
+            }
+        });
     }
 
     public CompletableFuture<byte[]> get(String uri) {
@@ -402,9 +440,11 @@ public class YamcsClient {
         closed = true;
         if (connected) {
             websocketClient.disconnect();
+            websocketClient2.disconnect();
         }
         restClient.close();
         websocketClient.shutdown();
+        websocketClient2.shutdown();
     }
 
     private class WebSocketCallbackHandler implements WebSocketClientCallback {
@@ -510,16 +550,19 @@ public class YamcsClient {
                     exactInitialInstance, connectionAttempts, retryDelay);
             client.restClient.setInsecureTls(!verifyTls);
             client.websocketClient.setInsecureTls(!verifyTls);
+            client.websocketClient2.setInsecureTls(!verifyTls);
             if (caCertFile != null) {
                 try {
                     client.restClient.setCaCertFile(caCertFile.toString());
                     client.websocketClient.setCaCertFile(caCertFile.toString());
+                    client.websocketClient2.setCaCertFile(caCertFile.toString());
                 } catch (IOException | GeneralSecurityException e) {
                     throw new RuntimeException("Cannot set CA Cert file", e);
                 }
             }
             if (userAgent != null) {
                 client.websocketClient.setUserAgent(userAgent);
+                client.websocketClient2.setUserAgent(userAgent);
             }
             return client;
         }

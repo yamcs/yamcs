@@ -1,0 +1,108 @@
+syntax="proto2";
+
+package yamcs.protobuf.events;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "EventsServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+
+service EventsApi {
+
+  // List events
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/events"
+    };
+  }
+
+  // Create an event
+  rpc CreateEvent(CreateEventRequest) returns (Event) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/events"
+      body: "*"
+    };
+  }
+  
+  // List event sources
+  rpc ListEventSources(ListEventSourcesRequest) returns (ListEventSourcesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/events/sources"
+    };
+  }
+  
+  // Streams back events
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamEvents"
+      body: "*"
+    };
+  }
+  
+  // Export events in CSV format
+  rpc ExportEvents(ExportEventsRequest) returns (stream yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}:exportEvents"
+    };
+  }
+}
+
+message ListEventsRequest {
+  optional string instance = 1;
+  optional int64 pos = 2;
+  optional int32 limit = 3;
+  optional string order = 4;
+  optional string severity = 5;
+  repeated string source = 6;
+  optional string next = 7;
+  optional google.protobuf.Timestamp start = 8;
+  optional google.protobuf.Timestamp stop = 9;
+  optional string q = 10;
+}
+
+message ListEventsResponse {
+  repeated Event event = 1;
+  optional string continuationToken = 2;
+}
+
+message CreateEventRequest {
+  optional string instance = 1;
+  optional string type = 2;
+  optional string message = 3;
+  optional string severity = 4;
+  optional string time = 5;
+  optional string source = 6;
+  optional int32 sequenceNumber = 7;
+}
+
+message StreamEventsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string source = 4;
+  optional string severity = 5;
+  optional string q = 6;
+}
+
+message ListEventSourcesRequest {
+  optional string instance = 1; 
+}
+
+message ListEventSourcesResponse {
+  repeated string source = 1;
+}
+
+message ExportEventsRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string source = 4;
+  optional string severity = 5;
+  optional string q = 6;
+}

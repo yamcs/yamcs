@@ -3,7 +3,7 @@ List Table Data
 
 List the most recent data of a Yamcs table::
 
-    GET /api/archive/:instance/tables/:table/data
+    GET /api/archive/{instance}/tables/{table}/data
 
 .. note::
 

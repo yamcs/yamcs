@@ -11,16 +11,12 @@ import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.api.archive.ArchiveHelper;
-import org.yamcs.http.api.archive.ParameterRanger;
-import org.yamcs.http.api.archive.ParameterRanger.Range;
-import org.yamcs.http.api.archive.RestDownsampler;
-import org.yamcs.http.api.archive.RestDownsampler.Sample;
-import org.yamcs.http.api.archive.SingleParameterRetriever;
-import org.yamcs.http.api.archive.TimeSortedPageToken;
+import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
@@ -55,6 +51,7 @@ import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -69,8 +66,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void rebuildRange(Context ctx, RebuildRangeRequest request, Observer<Empty> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasStart()) {
             throw new BadRequestException("no start specified");
@@ -95,8 +92,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void deletePartitions(Context ctx, DeletePartitionsRequest request,
             Observer<StringMessage> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasStart()) {
             throw new BadRequestException("no start specified");
@@ -134,8 +131,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getArchivedParameterInfo(Context ctx, GetArchivedParameterInfoRequest request,
             Observer<StringMessage> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         String fqn = request.getName();
         ParameterArchive parchive = getParameterArchive(instance);
@@ -153,11 +150,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             return;
         }
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        ParameterWithId pid = RestHandler.verifyParameterWithId(ctx.user, mdb, request.getName());
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         /*
          * TODO check commented out, in order to support sampling system parameters which don't have a type
@@ -181,7 +178,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
         int sampleCount = request.hasCount() ? request.getCount() : 500;
 
-        RestDownsampler sampler = new RestDownsampler(start, stop, sampleCount);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
         ParameterArchive parchive = getParameterArchive(instance);
 
         ParameterCache pcache = null;
@@ -202,7 +199,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         TimeSeries.Builder series = TimeSeries.newBuilder();
         for (Sample s : sampler.collect()) {
-            series.addSample(ArchiveHelper.toGPBSample(s));
+            series.addSample(StreamArchiveApi.toGPBSample(s));
         }
 
         observer.complete(series.build());
@@ -210,11 +207,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
-        ParameterWithId pid = RestHandler.verifyParameterWithId(ctx.user, mdb, request.getName());
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         long start = 0;
         if (request.hasStart()) {
@@ -250,7 +247,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         Ranges.Builder ranges = Ranges.newBuilder();
         for (Range r : ranger.getRanges()) {
-            ranges.addRange(ArchiveHelper.toGPBRange(r));
+            ranges.addRange(toGPBRange(r));
         }
 
         observer.complete(ranges.build());
@@ -264,11 +261,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             return;
         }
 
-        String instance = RestHandler.verifyInstance(request.getInstance());
+        String instance = ManagementApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        ParameterWithId requestedParamWithId = RestHandler.verifyParameterWithId(
-                ctx.user, mdb, request.getName());
+        ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         NamedObjectId requestedId = requestedParamWithId.getId();
 
@@ -332,7 +328,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
         final int fLimit = limit + 1; // one extra to detect continuation token
 
-        RestParameterReplayListener replayListener = new RestParameterReplayListener(0, fLimit) {
+        ParameterReplayListener replayListener = new ParameterReplayListener(0, fLimit) {
 
             @Override
             public void onParameterData(ParameterValueWithId pvwid) {
@@ -379,7 +375,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     }
 
     private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
-            MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener)
+            MultipleParameterValueRequest mpvr, ParameterReplayListener replayListener)
             throws RocksDBException, DecodingException, IOException {
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
@@ -418,7 +414,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     // send data from cache with timestamps in (start, stop) if ascending or (start, stop] if descending interval
     private void sendFromCache(ParameterWithId pid, ParameterCache pcache, boolean ascending, long start,
-            long stop, RestParameterReplayListener replayListener) {
+            long stop, ParameterReplayListener replayListener) {
         List<ParameterValue> pvlist = pcache.getAllValues(pid.getParameter());
 
         if (pvlist == null) {
@@ -454,7 +450,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
     }
 
-    private void sendToListener(ParameterValue pv, ParameterWithId pid, RestParameterReplayListener replayListener) {
+    private void sendToListener(ParameterValue pv, ParameterWithId pid, ParameterReplayListener replayListener) {
         ParameterValue pv1;
         if (pid.getPath() != null) {
             try {
@@ -481,5 +477,14 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throw new BadRequestException(
                     "Bad value for parameter 'source'; valid values are: 'ParameterArchive' or 'replay'");
         }
+    }
+
+    private static Ranges.Range toGPBRange(Range r) {
+        Ranges.Range.Builder b = Ranges.Range.newBuilder();
+        b.setTimeStart(TimeEncoding.toString(r.start));
+        b.setTimeStop(TimeEncoding.toString(r.stop));
+        b.setEngValue(ValueUtility.toGbp(r.v));
+        b.setCount(r.count);
+        return b.build();
     }
 }

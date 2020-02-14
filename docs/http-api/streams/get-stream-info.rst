@@ -3,7 +3,7 @@ Get Stream Info
 
 Get info on a Yamcs stream::
 
-    GET /api/archive/:instance/streams/:name
+    GET /api/archive/{instance}/streams/{name}
 
 .. note::
 

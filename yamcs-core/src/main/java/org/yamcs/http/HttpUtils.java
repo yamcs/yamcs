@@ -1,24 +1,25 @@
 package org.yamcs.http;
 
-import org.yamcs.api.MediaType;
-
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
 public class HttpUtils {
 
-    /**
-     * Sets the content type header for the HTTP Response
-     * 
-     * @param response
-     * 
-     * @param type
-     *            content type of file to extract
-     */
-    public static void setContentTypeHeader(HttpResponse response, MediaType type) {
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, type.toString());
+    public static final FullHttpResponse EMPTY_BAD_REQUEST_RESPONSE = new DefaultFullHttpResponse(
+            HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
+            Unpooled.EMPTY_BUFFER);
+
+    public static final FullHttpResponse CONTINUE_RESPONSE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+
+    static {
+        EMPTY_BAD_REQUEST_RESPONSE.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
     }
 
     /**

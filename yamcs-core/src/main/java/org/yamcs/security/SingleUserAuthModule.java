@@ -107,7 +107,12 @@ public class SingleUserAuthModule implements AuthModule {
 
     @Override
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
-        return authorizationInfo;
+        String incomingUsername = authenticationInfo.getUsername();
+        if (incomingUsername.equals(this.authenticationInfo.getUsername())) {
+            return authorizationInfo;
+        } else {
+            return new AuthorizationInfo();
+        }
     }
 
     @Override

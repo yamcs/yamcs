@@ -3,7 +3,7 @@ Get Instance Detail
 
 Get data on a Yamcs instance::
 
-    GET /api/instances/:instance
+    GET /api/instances/{instance}
 
 
 .. rubric:: Response

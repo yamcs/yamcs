@@ -3,7 +3,7 @@ Edit Queued Command
 
 Edit a command queue entry::
 
-    PATCH /api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid
+    PATCH /api/processors/{instance}/{processor}/cqueues/{cqueue}/entries/{uuid}
 
 
 .. rubric:: Parameters

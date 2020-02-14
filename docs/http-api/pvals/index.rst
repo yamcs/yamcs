@@ -9,5 +9,5 @@ Parameter Values
     get-parameter-samples
     get-parameter-ranges
     list-parameter-data
-    download-parameter-data
+    export-parameter-values
     parameter-updates

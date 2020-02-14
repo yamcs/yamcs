@@ -3,7 +3,7 @@ List Command
 
 List the command history of all commands::
 
-    GET /api/archive/:instance/commands
+    GET /api/archive/{instance}/commands
 
 
 .. rubric:: Parameters

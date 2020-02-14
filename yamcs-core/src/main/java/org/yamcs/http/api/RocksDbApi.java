@@ -10,9 +10,9 @@ import org.yamcs.api.HttpBody;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.http.api.archive.ArchiveHelper;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractRocksDbApi;
 import org.yamcs.protobuf.BackupDatabaseRequest;
@@ -38,7 +38,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void listTablespaces(Context ctx, Empty request, Observer<ListRocksDbTablespacesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         List<RocksDbTablespaceInfo> unsorted = new ArrayList<>();
         RdbStorageEngine storageEngine = RdbStorageEngine.getInstance();
@@ -48,7 +48,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
                     .setDataDir(tblsp.getDataDir());
             RDBFactory rdbf = tblsp.getRdbFactory();
             for (String dbPath : rdbf.getOpenDbPaths()) {
-                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                RocksDbDatabaseInfo database = toRocksDbDatabaseInfo(tblsp, dbPath);
                 tablespaceb.addDatabases(database);
             }
             unsorted.add(tablespaceb.build());
@@ -62,7 +62,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void backupDatabase(Context ctx, BackupDatabaseRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         Tablespace tablespace = verifyTablespace(request.getTablespace());
         String dbpath = request.hasDbpath() ? request.getDbpath() : null;
@@ -94,14 +94,14 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void listDatabases(Context ctx, Empty request, Observer<ListRocksDbDatabasesResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         List<RocksDbDatabaseInfo> unsorted = new ArrayList<>();
         RdbStorageEngine storageEngine = RdbStorageEngine.getInstance();
         for (Tablespace tblsp : storageEngine.getTablespaces().values()) {
             RDBFactory rdbf = tblsp.getRdbFactory();
             for (String dbPath : rdbf.getOpenDbPaths()) {
-                RocksDbDatabaseInfo database = ArchiveHelper.toRocksDbDatabaseInfo(tblsp, dbPath);
+                RocksDbDatabaseInfo database = toRocksDbDatabaseInfo(tblsp, dbPath);
                 unsorted.add(database);
             }
         }
@@ -120,7 +120,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void compactDatabase(Context ctx, CompactDatabaseRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(request.getTablespace());
         String dbpath = request.hasDbpath() ? request.getDbpath() : null;
 
@@ -156,7 +156,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void describeRocksDb(Context ctx, Empty request, Observer<HttpBody> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         StringBuilder sb = new StringBuilder();
         for (Tablespace tblsp : rse.getTablespaces().values()) {
@@ -182,7 +182,7 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     @Override
     public void describeDatabase(Context ctx, DescribeDatabaseRequest request, Observer<HttpBody> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ControlArchiving);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(request.getTablespace());
         String dbpath = request.getDbpath();
 
@@ -228,5 +228,13 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
             throw new BadRequestException("No tablespace by name '" + tablespaceName + "'");
         }
         return tablespace;
+    }
+
+    private static RocksDbDatabaseInfo toRocksDbDatabaseInfo(Tablespace tablespace, String dbPath) {
+        RocksDbDatabaseInfo.Builder databaseb = RocksDbDatabaseInfo.newBuilder()
+                .setTablespace(tablespace.getName())
+                .setDataDir(tablespace.getDataDir())
+                .setDbPath(dbPath);
+        return databaseb.build();
     }
 }

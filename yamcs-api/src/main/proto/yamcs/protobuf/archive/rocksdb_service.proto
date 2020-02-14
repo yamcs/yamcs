@@ -19,36 +19,36 @@ service RocksDbApi {
       get: "/api/archive/rocksdb/tablespaces"
     };
   }
-  
+
   // Backup database
   rpc BackupDatabase(BackupDatabaseRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/archive/rocksdb/{tablespace}/{dbpath*}:backup"
     };
   }
-  
+
   // List databases
   rpc ListDatabases(google.protobuf.Empty) returns (ListRocksDbDatabasesResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/rocksdb/databases"
     };
   }
-  
+
   // Compact database
   rpc CompactDatabase(CompactDatabaseRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/archive/rocksdb/{tablespace}/{dbpath**}:compact"
-      offThread: true
+      offloaded: true
     };
   }
-  
+
   // Get a text-dump with general RocksDB info
   rpc DescribeRocksDb(google.protobuf.Empty) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/archive/rocksdb:describe"
     };
   }
-  
+
   // Get a text-dump describing a database
   rpc DescribeDatabase(DescribeDatabaseRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {

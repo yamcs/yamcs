@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package yamcs.api;
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "ExceptionProto";
+option java_package = "org.yamcs.api";
+
+// Generic holder for an exception
+message ExceptionMessage {
+  int32 code = 1;
+  string type = 2;
+  string msg = 3;
+  google.protobuf.Any detail = 4;
+}

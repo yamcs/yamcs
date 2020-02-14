@@ -33,10 +33,14 @@ public interface Observer<T> {
     /**
      * Returns whether this call has been cancelled by the remote peer
      */
-    boolean isCancelled();
+    default boolean isCancelled() {
+        return false;
+    }
 
     /**
      * Set a {@link Runnable} that will be called when the call is cancelled. (example: peer disconnect)
      */
-    void setCancelHandler(Runnable cancelHandler);
+    default void setCancelHandler(Runnable cancelHandler) {
+        throw new UnsupportedOperationException();
+    }
 }

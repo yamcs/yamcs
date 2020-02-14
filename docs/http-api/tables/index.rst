@@ -7,5 +7,5 @@ Tables
     list-tables
     get-table-info
     list-table-data
-    download-table-data
-    load-table-data
+    read-table-rows
+    write-table-rows

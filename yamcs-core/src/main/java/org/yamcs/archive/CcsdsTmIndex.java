@@ -13,17 +13,9 @@ import org.rocksdb.RocksIterator;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.ThreadSafe;
-import org.yamcs.YamcsServer;
-import org.yamcs.http.HttpException;
-import org.yamcs.http.HttpServer;
-import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.http.api.RestHandler;
-import org.yamcs.http.api.RestRequest;
-import org.yamcs.http.api.Route;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -86,9 +78,6 @@ public class CcsdsTmIndex implements TmIndex {
             openDb();
         } catch (RocksDBException e) {
             throw new IOException("Failed to open rocksdb", e);
-        }
-        for (HttpServer httpServer : YamcsServer.getServer().getGlobalServices(HttpServer.class)) {
-            httpServer.addApiHandler(instance, new CcsdsTmIndexRestHandler());
         }
     }
 
@@ -345,9 +334,10 @@ public class CcsdsTmIndex implements TmIndex {
                     String pn = "apid_" + apid;
                     NamedObjectId id = NamedObjectId.newBuilder().setName(pn).build();
                     ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
-                            .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime())).setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
+                            .setFirst(TimeEncoding.toProtobufTimestamp(r.firstTime()))
+                            .setLast(TimeEncoding.toProtobufTimestamp(r.lastTime))
                             .setYamcsFirst(r.firstTime()).setYamcsLast(r.lastTime())
-                            
+
                             .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
                     // WARN: this string is parsed in the CompletenessGUI
                     // TODO: remove it
@@ -525,28 +515,6 @@ public class CcsdsTmIndex implements TmIndex {
 
                 it.seek(keyEnd);
                 db.getDb().deleteRange(keyStart, keyEnd);
-            }
-        }
-    }
-
-    public class CcsdsTmIndexRestHandler extends RestHandler {
-        @Route(path = "/api/ccsdstmindex/{instance}/rebuild", method = { "PUT", "POST" })
-        public void rebuildIndex(RestRequest req) throws HttpException {
-            checkSystemPrivilege(req.getUser(), SystemPrivilege.ControlArchiving);
-
-            TimeInterval interval = req.scanForInterval().asTimeInterval();
-            try {
-                rebuild(interval).whenComplete((r, t) -> {
-                    if (t != null) {
-                        log.error("Error rebuilding ccsds tm index", t);
-                        completeWithError(req, new InternalServerErrorException(t));
-                    } else {
-                        completeOK(req);
-                    }
-                });
-            } catch (YarchException e) {
-                log.error("Error rebuilding ccsds tm index", e);
-                completeWithError(req, new InternalServerErrorException(e));
             }
         }
     }

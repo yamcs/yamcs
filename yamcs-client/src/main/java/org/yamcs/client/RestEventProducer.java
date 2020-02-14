@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.AbstractEventProducer;
-import org.yamcs.protobuf.Archive.CreateEventRequest;
+import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;

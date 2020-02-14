@@ -8,15 +8,13 @@ import "yamcs/protobuf/mdb/mdb.proto";
 import "google/protobuf/timestamp.proto";
 
 
-
 message CommandId {
   required int64 generationTime = 1;
   required string origin = 2;
-  required int32 sequenceNumber = 3; //this has to be unique in relation to the generation time and origin
+  required int32 sequenceNumber = 3; //unique in relation to generationTime and origin
   optional string commandName = 4;
 }
 
-/************* Command Queue Control ********************/
 enum QueueState {
   BLOCKED = 1;
   DISABLED = 2;
@@ -47,8 +45,6 @@ message CommandQueueEntry {
   optional string source = 5;
   optional bytes binary = 6;
   optional string username = 7;
-  optional int64 yamcsGenerationTime = 8 [deprecated = true];
-  optional string generationTimeUTC = 10 [deprecated = true];
   optional string uuid = 9;
   optional string comment = 11;
   optional google.protobuf.Timestamp generationTime = 12;
@@ -63,7 +59,6 @@ message CommandQueueEvent {
   optional Type type = 1;
   optional CommandQueueEntry data = 2;
 }
-
 
 message CommandQueueRequest {
   optional CommandQueueInfo queueInfo = 1; // for SetQueueState

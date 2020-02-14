@@ -1,12 +1,11 @@
 package org.yamcs.client;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.protobuf.Any;
 
 @SuppressWarnings("serial")
 public class ClientException extends Exception {
 
-    private RestExceptionData restData;
+    private ExceptionData detail;
 
     public ClientException(String message) {
         super(message);
@@ -20,27 +19,24 @@ public class ClientException extends Exception {
         super(t);
     }
 
-    public ClientException(RestExceptionData restData) {
-        super(restData.getMessage());
-        this.restData = restData;
+    public ClientException(ExceptionData detail) {
+        super(detail.getMessage());
+        this.detail = detail;
     }
 
-    public RestExceptionData getRestData() {
-        return restData;
+    public ExceptionData getDetail() {
+        return detail;
     }
 
-    public static class RestExceptionData {
+    public static class ExceptionData {
         private String type;
         private String message;
-        private Map<String, Object> details = new HashMap<>(0);
+        private Any detail;
 
-        public RestExceptionData(String type, String message) {
+        public ExceptionData(String type, String message, Any detail) {
             this.type = type;
             this.message = message;
-        }
-
-        public void addDetail(String key, Object detail) {
-            details.put(key, detail);
+            this.detail = detail;
         }
 
         public String getType() {
@@ -51,12 +47,8 @@ public class ClientException extends Exception {
             return message;
         }
 
-        public boolean hasDetail(String key) {
-            return details.containsKey(key);
-        }
-
-        public Object getDetail(String key) {
-            return details.get(key);
+        public Any getDetail() {
+            return detail;
         }
     }
 }

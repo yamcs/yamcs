@@ -56,12 +56,6 @@ Build Requirements
 
 * **npm** is needed to compile the web interface sources. We find the simplest way to install npm is to install a node.js distribution from https://github.com/nodesource/distributions.
 
-* **yarn** must be installed in addition to npm. The sources for the web interface make use of *yarn workspaces* to interlink multiple projects. Once ``npm`` is installed, you can install yarn using npm:
-
-  .. code:: text
-
-      npm -g install yarn
-
 * **make** is used to make it easier to work with other build tools. Find GNU Make at http://www.gnu.org/software/make/
 
 * Yamcs can be built on Windows, Linux or macOS, however we currently only support building on **Linux**. Other platforms may require tweaks not part of this guide.

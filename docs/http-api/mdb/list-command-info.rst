@@ -3,7 +3,7 @@ List Command Info
 
 List all commands defined in the Mission Database for the given Yamcs instance::
 
-    GET /api/mdb/:instance/commands
+    GET /api/mdb/{instance}/commands
 
 
 .. rubric:: Parameters

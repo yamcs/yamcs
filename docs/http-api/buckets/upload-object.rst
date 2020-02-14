@@ -3,8 +3,8 @@ Upload Object
 
 Upload an object::
 
-    POST /api/archive/:instance/:bucketName/objects/:objectName
-    POST /api/archive/:instance/:bucketName/objects
+    POST /api/archive/{instance}/{bucketName}/objects/{objectName}
+    POST /api/archive/{instance}/{bucketName}/objects
 
 ``_global`` can be used as instance name to upload to a bucket at the global level.
 

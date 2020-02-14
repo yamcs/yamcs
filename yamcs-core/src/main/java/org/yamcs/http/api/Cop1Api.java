@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.management.ManagementService.LinkWithInfo;
@@ -118,7 +119,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
     
     private Cop1TcPacketHandler verifyCop1Link(String instance, String name) {
-        RestHandler.verifyInstance(instance);
+        ManagementApi.verifyInstance(instance);
         Optional<LinkWithInfo> o = ManagementService.getInstance().getLinkWithInfo(instance, name);
         if (!o.isPresent()) {
             throw new BadRequestException("There is no link named '" + name + "' in instance " + instance);
