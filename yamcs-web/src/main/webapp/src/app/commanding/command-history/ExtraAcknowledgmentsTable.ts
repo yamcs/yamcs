@@ -11,4 +11,7 @@ export class ExtraAcknowledgmentsTable {
 
     @Input()
     command: CommandHistoryRecord;
+
+    @Input()
+    inline = false;
 }

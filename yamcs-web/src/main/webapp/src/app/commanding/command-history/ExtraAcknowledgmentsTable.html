@@ -1,4 +1,4 @@
-<table yaDataTable style="width: 100%">
+<table yaDataTable [class.inline]="inline">
     <tr *ngFor="let ack of command.extraAcks">
         <td style="width: 16px">
             <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>

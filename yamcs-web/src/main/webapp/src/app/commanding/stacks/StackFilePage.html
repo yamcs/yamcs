@@ -7,7 +7,7 @@
             <mat-icon>arrow_back</mat-icon>
         </a> {{ filename | basename }}
         &nbsp;&nbsp;&nbsp;
-        <button mat-button color="primary" matTooltip="Save"
+        <button mat-button color="primary" matTooltip="Save stack"
                 (click)="saveStack()"
                 [disabled]="!(dirty$ | async)">
             <mat-icon>save</mat-icon>
@@ -24,9 +24,23 @@
             <mat-icon>play_arrow</mat-icon>
             RUN COMMAND
         </button>
-        <button mat-icon-button color="primary" matTooltip="Clear all outputs"
-                (click)="clearOutputs()">
-            <mat-icon>clear_all</mat-icon>
+        <mat-menu #moreMenu="matMenu" overlapTrigger="false">
+            <button mat-menu-item (click)="clearSelectedOutputs()"
+                    [disabled]="!((selectedEntry$ | async)?.record)">
+                Clear output of selected command
+            </button>
+            <button mat-menu-item (click)="clearOutputs()"
+                    [disabled]="!(hasOutputs$ | async)">
+                Clear all outputs
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="deleteSelectedCommands()"
+                    [disabled]="!(selectedEntry$ | async)">
+                Delete selected command
+            </button>
+        </mat-menu>
+        <button mat-icon-button color="primary" [matMenuTriggerFor]="moreMenu">
+            <mat-icon>more_vert</mat-icon>
         </button>
     </app-instance-toolbar>
 
@@ -61,13 +75,14 @@
                 <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
                     <div class="seq" (click)="selectEntry(entry)"></div>
                     <div class="body">
-                        <app-yamcs-acknowledgments-table [command]="entry.record">
+                        <app-yamcs-acknowledgments-table [command]="entry.record"
+                                                         [inline]="true">
                         </app-yamcs-acknowledgments-table>
 
                         <ng-container *ngIf="entry.record?.extra.length">
-                            <br>
                             <div class="block">
-                                <app-extra-acknowledgments-table [command]="entry.record">
+                                <app-extra-acknowledgments-table [command]="entry.record"
+                                                                 [inline]="true">
                                 </app-extra-acknowledgments-table>
                             </div>
                         </ng-container>

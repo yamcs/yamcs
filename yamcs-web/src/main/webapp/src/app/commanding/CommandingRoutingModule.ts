@@ -10,6 +10,7 @@ import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
 import { SendCommandPage } from './command-sender/SendCommandPage';
 import { QueuesPage } from './queues/QueuesPage';
 import { StackFilePage } from './stacks/StackFilePage';
+import { StackFilePageDirtyGuard } from './stacks/StackFilePageDirtyGuard';
 import { StackFolderPage } from './stacks/StackFolderPage';
 import { StackPage } from './stacks/StackPage';
 import { StacksPage } from './stacks/StacksPage';
@@ -59,6 +60,7 @@ const routes: Routes = [
           {
             path: '**',
             component: StackFilePage,
+            canDeactivate: [StackFilePageDirtyGuard],
           }
         ]
       }
@@ -69,6 +71,9 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
+  providers: [
+    StackFilePageDirtyGuard,
+  ]
 })
 export class CommandingRoutingModule { }
 

@@ -1,4 +1,4 @@
-<table yaDataTable style="width: 100%" *ngIf="command">
+<table yaDataTable [class.inline]="inline" *ngIf="command">
     <tr>
         <td style="width: 16px">
             <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>

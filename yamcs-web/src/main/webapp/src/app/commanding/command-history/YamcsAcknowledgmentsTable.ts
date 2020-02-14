@@ -11,4 +11,7 @@ export class YamcsAcknowledgmentsTable {
 
     @Input()
     command: CommandHistoryRecord;
+
+    @Input()
+    inline = false;
 }

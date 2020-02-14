@@ -16,6 +16,7 @@ import { AddCommandDialog } from './stacks/AddCommandDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { ImportStackDialog } from './stacks/ImportStackDialog';
 import { RenameStackDialog } from './stacks/RenameStackDialog';
+import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
 const pipes = [
   CommandIdPipe,
@@ -41,6 +42,7 @@ const pipes = [
     QueuesTable,
     RenameStackDialog,
     SendCommandWizardStep,
+    StackFilePageDirtyDialog,
     TransmissionConstraintsIcon,
     YamcsAcknowledgmentsTable,
   ],

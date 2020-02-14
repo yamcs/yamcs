@@ -5,7 +5,7 @@
 table.args {
     margin: 0;
     margin-left: 10px;
-    font-size: 0.7em;
+    font-size: 10px;
 }
 
 table.args td {
@@ -20,6 +20,7 @@ table.args td.key {
 
 table.args td.value {
     color: #0055aa;
+    padding-left: 10px;
 }
 
 div.entry {

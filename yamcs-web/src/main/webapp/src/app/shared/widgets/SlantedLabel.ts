@@ -66,7 +66,7 @@ export class SlantedLabel implements AfterViewInit, OnDestroy {
 
   constructor(synchronizer: Synchronizer) {
     let toggle = true;
-    this.syncSubscription = synchronizer.sync(() => {
+    this.syncSubscription = synchronizer.syncFast(() => {
       toggle = !toggle;
       if (toggle && this.highlight) {
         this.outline.nativeElement.style.fill = this.color;

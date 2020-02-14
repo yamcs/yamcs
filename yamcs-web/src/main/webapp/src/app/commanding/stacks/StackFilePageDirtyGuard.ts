@@ -3,21 +3,21 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CanDeactivate } from '@angular/router';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { DisplayFilePage } from './DisplayFilePage';
-import { DisplayFilePageDirtyDialog } from './DisplayFilePageDirtyDialog';
+import { StackFilePage } from './StackFilePage';
+import { StackFilePageDirtyDialog } from './StackFilePageDirtyDialog';
 
 @Injectable()
-export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage> {
+export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
 
   // TODO this is just a workaround around the fact that our current version
   // of Angular seems to trigger our deactivate guard twice...
   private dialogOpen$ = new BehaviorSubject<boolean>(false);
-  private dialogRef: MatDialogRef<DisplayFilePageDirtyDialog, any>;
+  private dialogRef: MatDialogRef<StackFilePageDirtyDialog, any>;
 
   constructor(private dialog: MatDialog, private authService: AuthService) {
   }
 
-  canDeactivate(component: DisplayFilePage) {
+  canDeactivate(component: StackFilePage) {
     // Copy the result of the first triggered dialog
     if (this.dialogOpen$.value) {
       return Observable.create((observer: Observer<boolean>) => {
@@ -31,10 +31,10 @@ export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage>
       });
     }
 
-    if (component.hasPendingChanges() && this.mayManageDisplays()) {
+    if (component.hasPendingChanges() && this.mayManageStacks()) {
       return Observable.create((observer: Observer<boolean>) => {
         this.dialogOpen$.next(true);
-        this.dialogRef = this.dialog.open(DisplayFilePageDirtyDialog, {
+        this.dialogRef = this.dialog.open(StackFilePageDirtyDialog, {
           width: '400px',
         });
         this.dialogRef.afterClosed().subscribe(result => {
@@ -52,9 +52,9 @@ export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage>
     }
   }
 
-  private mayManageDisplays() {
+  private mayManageStacks() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'displays')
+    return user.hasObjectPrivilege('ManageBucket', 'stacks')
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 }

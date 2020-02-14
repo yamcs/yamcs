@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Instance, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { printCommandId } from '../../shared/utils';
@@ -27,6 +28,16 @@ export class StackFilePage implements OnDestroy {
 
     dirty$ = new BehaviorSubject<boolean>(false);
     entries$ = new BehaviorSubject<StackEntry[]>([]);
+    hasOutputs$ = this.entries$.pipe(
+        map(entries => {
+            for (const entry of entries) {
+                if (entry.record) {
+                    return true;
+                }
+            }
+            return false;
+        })
+    );
 
     private commandSubscription: Subscription;
     selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
@@ -136,6 +147,27 @@ export class StackFilePage implements OnDestroy {
         this.selectedEntry$.next(entry);
     }
 
+    deleteSelectedCommands() {
+        const entry = this.selectedEntry$.value;
+        if (entry) {
+            const idx = this.entries$.value.indexOf(entry);
+            if (idx !== -1) {
+                this.entries$.value.splice(idx, 1);
+                this.entries$.next([...this.entries$.value]);
+                this.selectedEntry$.next(null);
+            }
+        }
+    }
+
+    clearSelectedOutputs() {
+        const entry = this.selectedEntry$.value;
+        if (entry) {
+            entry.executionNumber = undefined;
+            entry.id = undefined;
+            entry.record = undefined;
+        }
+    }
+
     clearOutputs() {
         for (const entry of this.entries$.value) {
             entry.executionNumber = undefined;
@@ -147,6 +179,10 @@ export class StackFilePage implements OnDestroy {
         if (this.entries$.value.length) {
             this.selectEntry(this.entries$.value[0]);
         }
+    }
+
+    hasPendingChanges() {
+        return this.dirty$.value;
     }
 
     runSelection() {
@@ -168,6 +204,9 @@ export class StackFilePage implements OnDestroy {
             if (rec) {
                 entry.record = rec;
             }
+
+            // Refresh subject, to be sure
+            this.entries$.next([...this.entries$.value]);
 
             this.advanceSelection(entry);
         });
@@ -237,18 +276,22 @@ export class StackFilePage implements OnDestroy {
                     command: result.command,
                 };
 
-                this.entries$.next([
-                    ... this.entries$.value,
-                    entry,
-                ]);
+                const relto = this.selectedEntry$.value;
+                if (relto) {
+                    const entries = this.entries$.value;
+                    const idx = entries.indexOf(relto);
+                    entries.splice(idx + 1, 0, entry);
+                    this.entries$.next([...this.entries$.value]);
+                } else {
+                    this.entries$.next([... this.entries$.value, entry]);
+                }
+                this.selectEntry(entry);
                 this.dirty$.next(true);
             }
         });
     }
 
     saveStack() {
-        this.dirty$.next(false);
-
         const doc = document.implementation.createDocument(null, null, null);
         const rootEl = doc.createElement('commandStack');
         doc.appendChild(rootEl);
@@ -270,6 +313,11 @@ export class StackFilePage implements OnDestroy {
 
         let xmlString = new XMLSerializer().serializeToString(rootEl);
         xmlString = this.formatXml(xmlString);
+
+        const b = new Blob([xmlString]);
+        this.storageClient.uploadObject('_global', 'stacks', this.objectName, b).then(() => {
+            this.dirty$.next(false);
+        });
     }
 
     private formatXml(xml: string) {
