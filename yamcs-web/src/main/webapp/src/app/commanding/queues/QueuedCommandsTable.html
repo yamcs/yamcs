@@ -62,8 +62,18 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef>Actions</th>
     <td mat-cell *matCellDef="let entry">
-      <app-text-action icon="check" (click)="releaseEntry(entry)">ACCEPT</app-text-action>
-      <app-text-action icon="close" (click)="rejectEntry(entry)">REJECT</app-text-action>
+      <span style="color: #999" *ngIf="entry.pendingTransmissionConstraints">
+        <mat-icon class="icon16 spin" style="vertical-align: middle;">cached</mat-icon>
+        Checking transmission constraints
+      </span>
+      <ng-container *ngIf="!entry.pendingTransmissionConstraints">
+        <app-text-action icon="check"
+                         (click)="releaseEntry(entry)"
+                         [disabled]="entry.pendingTransmissionConstraints">ACCEPT</app-text-action>
+        <app-text-action icon="close"
+                         (click)="rejectEntry(entry)"
+                         [disabled]="entry.pendingTransmissionConstraints">REJECT</app-text-action>
+      </ng-container>
     </td>
   </ng-container>
 

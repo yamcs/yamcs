@@ -427,7 +427,7 @@ export interface EditCommandQueueOptions {
 }
 
 export interface CommandQueueEvent {
-  type: 'COMMAND_ADDED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
+  type: 'COMMAND_ADDED' | 'COMMAND_UPDATED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
   data: CommandQueueEntry;
 }
 

@@ -533,6 +533,7 @@ export interface CommandQueueEntry {
   username: string;
   generationTime: string;
   uuid: string;
+  pendingTransmissionConstraints: boolean;
 }
 
 export interface GetTagsOptions {
