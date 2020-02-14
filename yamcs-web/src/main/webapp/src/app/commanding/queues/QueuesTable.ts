@@ -1,7 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { CommandQueue } from '../../client';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -9,7 +10,7 @@ import { YamcsService } from '../../core/services/YamcsService';
   templateUrl: './QueuesTable.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QueuesTable implements AfterViewInit {
+export class QueuesTable implements AfterViewInit, OnDestroy {
 
   @Input()
   cqueues$: Observable<CommandQueue[]>;
@@ -26,7 +27,17 @@ export class QueuesTable implements AfterViewInit {
     'actions',
   ];
 
-  constructor(private yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+  visibility$ = new BehaviorSubject<boolean>(true);
+  syncSubscription: Subscription;
+
+  constructor(
+    private yamcs: YamcsService,
+    private changeDetection: ChangeDetectorRef,
+    synchronizer: Synchronizer,
+  ) {
+    this.syncSubscription = synchronizer.syncFast(() => {
+      this.visibility$.next(!this.visibility$.value);
+    });
   }
 
   ngAfterViewInit() {
@@ -79,5 +90,11 @@ export class QueuesTable implements AfterViewInit {
     this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
       state: 'blocked',
     });
+  }
+
+  ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
   }
 }

@@ -41,7 +41,7 @@
       <span *ngIf="queue.state === 'ENABLED'">
         ACCEPT
       </span>
-      <span *ngIf="queue.state === 'BLOCKED'" class="blink">
+      <span *ngIf="queue.state === 'BLOCKED'" [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'">
         HOLD
       </span>
       <span *ngIf="queue.state === 'DISABLED'">
