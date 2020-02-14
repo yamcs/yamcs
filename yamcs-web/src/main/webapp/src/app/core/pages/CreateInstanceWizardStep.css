@@ -1,0 +1,26 @@
+span {
+  cursor: default;
+}
+
+span span {
+  opacity: 0.3;
+}
+
+span span.active {
+  opacity: 1;
+}
+
+mat-toolbar.sub {
+  border-bottom: 1px solid #d3d3d3;
+  background-color: #fff;
+  font-size: 12px;
+}
+
+.mat-toolbar-row {
+  height: 32px;
+  padding: 0 24px;
+}
+
+.mat-toolbar-multiple-rows {
+  min-height: 32px;
+}

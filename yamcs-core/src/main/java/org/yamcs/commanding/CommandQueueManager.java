@@ -31,8 +31,10 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.CriteriaEvaluator;
@@ -372,8 +374,15 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
-    public void addToCommandHistory(CommandId commandId, String key, String value) {
-        commandHistoryPublisher.publish(commandId, key, value);
+    public void addToCommandHistory(CommandId commandId, CommandHistoryAttribute attribute) {
+        Value value = attribute.getValue();
+        switch (value.getType()) {
+        case STRING:
+            commandHistoryPublisher.publish(commandId, attribute.getName(), value.getStringValue());
+            break;
+        default:
+            throw new IllegalStateException("Unexpected value type '" + value.getType() + "'");
+        }
     }
 
     /**
@@ -417,7 +426,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     private void unhandledCommand(PreparedCommand pc) {
         commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), "No matching queue");
-        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
+        CommandHistoryAttribute attr = CommandHistoryAttribute.newBuilder()
+                .setName(CommandHistoryPublisher.CommandComplete_KEY)
+                .setValue(Value.newBuilder().setStringValue("NOK"))
+                .build();
+        addToCommandHistory(pc.getCommandId(), attr);
         for (CommandQueueListener m : monitoringClients) {
             try {
                 m.commandUnhandled(pc);

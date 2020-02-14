@@ -23,7 +23,7 @@ For commercial licensing please contact [Space Applications Services](https://ww
 
 ## Development Setup
 
-To work on the core components of Yamcs you need JDK8, Maven and yarn.
+To work on the core components of Yamcs you need JDK8, Maven and npm.
 
 Build Java jars:
 
@@ -32,11 +32,11 @@ Build Java jars:
 Build web interface:
 
     cd yamcs-web
-    yarn install
-    yarn build
+    npm install
+    npm run build
     cd ..
 
-These commands will produce an optimized production version of the web interface. This process will take a few minutes. For faster incremental builds refer to instructions under `yamcs-web`.
+These commands will produce an optimized production version of the web interface. This process will take a few minutes. For faster incremental builds run in watch mode (`npm run watch`).
 
 For demo and development purposes we work with an all-in-one simulation environment that uses many Yamcs features. In this simulation, Yamcs receives TM from a simple simulator of a landing spacecraft. Yamcs can also send some basic TC. The simulator starts together with Yamcs as a subprocess.
 

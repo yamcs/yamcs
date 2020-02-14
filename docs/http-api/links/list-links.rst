@@ -7,7 +7,7 @@ List all links::
 
 List all links for the given Yamcs instance::
 
-    GET /api/links/:instance
+    GET /api/links/{instance}
 
 
 .. rubric:: Response

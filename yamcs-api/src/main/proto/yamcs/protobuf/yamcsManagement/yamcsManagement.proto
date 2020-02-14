@@ -6,12 +6,12 @@ option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "YamcsManagementProto";
 option java_multiple_files = true;
 
-import "yamcs/protobuf/yamcs.proto";
-import "yamcs/protobuf/mdb/mdb.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 
 service ManagementApi {
 
@@ -19,13 +19,6 @@ service ManagementApi {
   rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
     option (yamcs.api.route) = {
       get: "/api/sysinfo"
-    };
-  }
-  
-  // Get UTC leap seconds
-  rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {
-    option (yamcs.api.route) = {
-      get: "/api/leap-seconds"
     };
   }
   
@@ -200,24 +193,6 @@ message ProcessorInfo {
   optional bool replay = 19;
 }
 
-message ClientInfo {
-  reserved 8,9;
-  enum ClientState {
-    CONNECTED = 0;
-    DISCONNECTED = 1;
-  }
-  optional int32 id = 2;
-  optional string username = 3;
-  optional string applicationName = 4;
-  optional string address = 10;
-
-  optional string instance = 1;  
-  optional string processorName = 5;
-  
-  optional ClientState state = 6;
-  optional google.protobuf.Timestamp loginTime = 11;
-}
-
 message TmStatistics {
   reserved 3,4,7, 8;
   optional string packetName = 1;
@@ -231,9 +206,8 @@ message TmStatistics {
 }
 
 message Statistics {
-  reserved 4,5;
+  reserved 2,4,5;
   optional string instance = 1;
-  optional string yProcessorName = 2 [deprecated=true];
   optional string processor = 7;
   repeated TmStatistics tmstats = 3;
   optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update
@@ -389,16 +363,6 @@ message ListInstanceTemplatesResponse {
 message EditInstanceRequest {
   optional string instance = 1;
   optional string state = 2;
-}
-
-message LeapSecondsTable {
-  message ValidityRange {
-    optional string start = 1; // UTC timestamp (unsmeared)
-    optional string stop = 2; // UTC timestamp (unsmeared)
-    optional int32 leapSeconds = 3;
-    optional int32 taiDifference = 4;
-  }
-  repeated ValidityRange ranges = 1;      
 }
 
 message GetInstanceTemplateRequest {

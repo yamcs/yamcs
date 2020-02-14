@@ -7,7 +7,7 @@ public class UnauthorizedException extends ClientException {
         super("Unauthorized");
     }
 
-    public UnauthorizedException(RestExceptionData restData) {
+    public UnauthorizedException(ExceptionData restData) {
         super(restData);
     }
 }

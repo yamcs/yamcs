@@ -7,7 +7,7 @@ List all processors, across all Yamcs instances::
 
 List all processors for the given Yamcs instance::
 
-    GET /api/processors/:instance
+    GET /api/processors/{instance}
 
 
 .. rubric:: Parameters

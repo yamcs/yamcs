@@ -20,6 +20,7 @@ import org.yamcs.protobuf.Commanding.CommandVerifierOption;
 import org.yamcs.protobuf.Commanding.CommandVerifierOption.CheckWindow;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
+import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.utils.TimeEncoding;
@@ -67,10 +68,13 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
 
         // check commands histogram
-        String start = TimeEncoding.toString(TimeEncoding.getWallclockTime() - 10000);
-        String stop = TimeEncoding.toString(TimeEncoding.getWallclockTime());
-        resp = restClient.doRequest("/archive/IntegrationTest/indexes/commands?start=" + start + "&stop=" + stop,
-                HttpMethod.GET).get();
+        long now = TimeEncoding.getWallclockTime();
+        StreamCommandIndexRequest options = StreamCommandIndexRequest.newBuilder()
+                .setStart(TimeEncoding.toProtobufTimestamp(now - 10000))
+                .setStop(TimeEncoding.toProtobufTimestamp(now))
+                .build();
+        resp = restClient.doRequest("/archive/IntegrationTest:streamCommandIndex",
+                HttpMethod.POST, options).get();
         ArchiveRecord ar = ArchiveRecord.parseDelimitedFrom(new ByteArrayInputStream(resp));
         assertEquals(1, ar.getNum());
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", ar.getId().getName());

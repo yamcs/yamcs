@@ -69,7 +69,6 @@ message TransactionId {
 //message sent as reponse to the info and also when starting a new transfer
 message TransferInfo {
   //unique identifier assigned by the CfdpService
-  //can be used to refer to individual transfers in the REST calls
   optional uint32 id = 1;
   
   optional google.protobuf.Timestamp startTime = 2;

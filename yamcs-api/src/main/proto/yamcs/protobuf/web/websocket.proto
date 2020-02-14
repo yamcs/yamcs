@@ -3,17 +3,18 @@ syntax="proto2";
 package yamcs.protobuf.web;
 
 option java_package = "org.yamcs.protobuf";
-option java_outer_classname = "WebSocketProto";
+option java_outer_classname = "WebProto";
 option java_multiple_files = true;
 
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/table/table.proto";
+import "yamcs/protobuf/clients/clients.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
-import "yamcs/protobuf/iam/iam.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/cop1/cop1.proto";
+import "yamcs/protobuf/time/time_service.proto";
 
 
 message WebSocketClientMessage {
@@ -53,12 +54,12 @@ message WebSocketServerMessage {
     optional pvalue.ParameterData parameterData = 3;
     optional commanding.CommandHistoryEntry command = 4;
     optional yamcsManagement.ProcessorInfo processorInfo = 5;
-    optional yamcsManagement.ClientInfo clientInfo = 6;
+    optional clients.ClientInfo clientInfo = 6;
     optional yamcsManagement.Statistics statistics = 7;
     optional Event event = 8;
     optional table.StreamData streamData = 9;
     optional alarms.AlarmData alarmData = 10;
-    optional TimeInfo timeInfo = 11;
+    optional time.TimeInfo timeInfo = 11;
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
@@ -107,6 +108,11 @@ message ProcessorSubscriptionRequest {
 message ManagementSubscriptionRequest {
   optional bool clientInfo = 1;
   optional bool processorStatistics = 3;
+}
+
+message StreamSubscriptionRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
 }
 
 message AlarmSubscriptionRequest {
@@ -173,7 +179,7 @@ message ParameterSubscriptionResponse {
 }
 
 message TimeSubscriptionResponse {
-  optional TimeInfo timeInfo = 1;
+  optional time.TimeInfo timeInfo = 1;
 }
 
 message ProcessorSubscriptionResponse {
@@ -185,29 +191,4 @@ message ConnectionInfo {
   optional int32 clientId = 1;
   optional yamcsManagement.YamcsInstance instance = 2;
   optional yamcsManagement.ProcessorInfo processor = 3;
-}
-
-message AuthFlow {
-  enum Type {
-    PASSWORD = 1; // Login to Yamcs via standard username/password form
-    REDIRECT = 2; // Instruct client to login via an external URL (not yet implemented)
-    SPNEGO = 3; // Login to Yamcs via HTTP Negotiate (/auth/spnego endpoint)
-  }
-  optional Type type = 1;
-  //optional String uri = 2; //in case of POST is just a relative path to yamcs web
-  //optional string state; //the client has to send this to the POST link and then back to Yamcs
-}
-
-message AuthInfo {
-  optional bool requireAuthentication = 1;
-  repeated AuthFlow flow = 2;
-}
-
-// Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
-message TokenResponse {
-  optional string access_token = 1;
-  optional string token_type = 2;
-  optional int32 expires_in = 3; // In seconds
-  optional string refresh_token = 4;
-  optional iam.UserInfo user = 5;
 }

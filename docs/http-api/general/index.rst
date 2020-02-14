@@ -36,18 +36,6 @@ All timestamps are returned as UTC and formatted according to ISO 8601. For exam
     2015-08-26
 
 
-.. rubric:: Namespaces
-
-Mission Database entries like parameters and containers may be available under different namespaces. When an operation documents the use of ``/:namespace/:name`` in the URI, the namespace segment can be repeated for every subsystem in case of hierarchical XTCE names. For example, these resources evaluate to the same parameter resource:
-
-.. code-block:: text
-
-    /api/mdb/simulator/parameters/MDB%3AOPS+Name/SIMULATOR_BatteryVoltage2
-    /api/mdb/simulator/parameters/YSS/SIMULATOR/BatteryVoltage2
-
-Notice the use of `%3A` and `+` to URL-encode `MDB:OPS Name` to the ASCII character set. The server supports UTF-8 but your client may not.
-
-
 .. rubric:: Error Handling
 
 When an exception is caught while handling an HTTP request, the server will try to give some feedback to the client by wrapping it in a generic exception message like so:

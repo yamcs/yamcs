@@ -3,11 +3,11 @@ List Packets
 
 List the history of packets::
 
-    GET /api/archive/:instance/packets
+    GET /api/archive/{instance}/packets
 
 List the packets for the specified generation time::
 
-    GET /api/archive/:instance/packets/:gentime
+    GET /api/archive/{instance}/packets/{gentime}
 
 The ``:gentime`` must be in ISO 8601 format. E.g. 2015-10-20T06:47:02.000Z
 

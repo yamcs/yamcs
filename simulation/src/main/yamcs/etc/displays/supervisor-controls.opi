@@ -105,7 +105,7 @@ $(pv_value)</tooltip>
       <keep_wh_ratio>true</keep_wh_ratio>
     </scale_options>
     <visible>true</visible>
-    <pv_name>sw:///YSS/SIMULATOR/AllowCriticalTC1</pv_name>
+    <pv_name>/YSS/SIMULATOR/AllowCriticalTC1</pv_name>
     <border_color>
       <color red="0" green="128" blue="255" />
     </border_color>
@@ -375,7 +375,7 @@ $(pv_value)</tooltip>
       <keep_wh_ratio>true</keep_wh_ratio>
     </scale_options>
     <visible>true</visible>
-    <pv_name>sw:///YSS/SIMULATOR/AllowCriticalTC2</pv_name>
+    <pv_name>/YSS/SIMULATOR/AllowCriticalTC2</pv_name>
     <border_color>
       <color red="0" green="128" blue="255" />
     </border_color>

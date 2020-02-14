@@ -3,7 +3,7 @@ Edit Client
 
 Edit a client::
 
-    PATCH /api/clients/:id
+    PATCH /api/clients/{id}
 
 
 .. rubric:: Parameters

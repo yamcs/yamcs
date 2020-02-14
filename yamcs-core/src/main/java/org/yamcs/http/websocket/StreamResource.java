@@ -5,8 +5,8 @@ import java.util.Set;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.http.api.archive.ArchiveHelper;
-import org.yamcs.protobuf.StreamSubscribeRequest;
+import org.yamcs.http.api.TableApi;
+import org.yamcs.protobuf.StreamSubscriptionRequest;
 import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.yarch.Stream;
@@ -46,7 +46,7 @@ public class StreamResource implements StreamSubscriber, WebSocketResource {
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
         Stream stream;
-        StreamSubscribeRequest req = decoder.decodeMessageData(ctx, StreamSubscribeRequest.newBuilder()).build();
+        StreamSubscriptionRequest req = decoder.decodeMessageData(ctx, StreamSubscriptionRequest.newBuilder()).build();
         if (req.hasStream()) {
             stream = ydb.getStream(req.getStream());
         } else {
@@ -63,7 +63,10 @@ public class StreamResource implements StreamSubscriber, WebSocketResource {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        StreamData data = ArchiveHelper.toStreamData(stream, tuple);
+        StreamData data = StreamData.newBuilder()
+                .setStream(stream.getName())
+                .addAllColumn(TableApi.toColumnDataList(tuple))
+                .build();
         client.sendData(ProtoDataType.STREAM_DATA, data);
     }
 

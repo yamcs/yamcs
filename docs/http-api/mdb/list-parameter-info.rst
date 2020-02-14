@@ -3,7 +3,7 @@ List Parameter Info
 
 List all parameters defined in the Mission Database for the given Yamcs instance::
 
-    GET /api/mdb/:instance/parameters
+    GET /api/mdb/{instance}/parameters
 
 
 .. rubric:: Parameters

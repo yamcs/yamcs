@@ -29,6 +29,7 @@ public class FileSystemBucket implements Bucket {
     private boolean includeHidden = false;
 
     public FileSystemBucket(String bucketName, Path root) throws IOException {
+        this.bucketName = bucketName;
         this.root = root;
         mimetypes = Mimetypes.getInstance();
     }

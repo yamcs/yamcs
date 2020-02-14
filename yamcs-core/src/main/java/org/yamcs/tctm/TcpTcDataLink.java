@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -165,12 +164,16 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         }
     }
 
-
     @Override
     protected void startUp() throws Exception {
         if (!isDisabled()) {
             openSocket();
         }
+    }
+
+    @Override
+    protected void doEnable() throws Exception {
+        this.openSocket();
     }
 
     @Override

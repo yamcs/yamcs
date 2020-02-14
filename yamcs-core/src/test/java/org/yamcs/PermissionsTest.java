@@ -10,22 +10,23 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
-import org.yamcs.client.ClientException.RestExceptionData;
+import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
-import org.yamcs.protobuf.UpdateCommandHistoryRequest.KeyValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -125,7 +126,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -145,7 +146,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             ClientException e1 = (ClientException) e.getCause();
-            RestExceptionData excData = e1.getRestData();
+            ExceptionData excData = e1.getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         restClient1.close();
@@ -159,13 +160,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
         try {
             updateCommandHistory(getRestClient("operator", "password"));
         } catch (ExecutionException e) {
-            RestExceptionData excData = ((ClientException) e.getCause()).getRestData();
+            ExceptionData excData = ((ClientException) e.getCause()).getDetail();
             assertEquals("ForbiddenException", excData.getType());
         }
 
@@ -173,14 +174,11 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     private byte[] updateCommandHistory(RestClient restClient1) throws Exception {
         // insert a value in the command history on dummy command id
-        CommandId commandId = CommandId.newBuilder()
-                .setSequenceNumber(0)
-                .setOrigin("")
-                .setGenerationTime(0).build();
         UpdateCommandHistoryRequest.Builder updateHistoryRequest = UpdateCommandHistoryRequest.newBuilder()
-                .setCmdId(commandId);
-        updateHistoryRequest.addHistoryEntry(
-                KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+                .setId("0-0");
+        updateHistoryRequest.addAttributes(CommandHistoryAttribute.newBuilder()
+                .setName("testKey1")
+                .setValue(Value.newBuilder().setType(Type.STRING).setStringValue("testValue1")));
         return restClient1
                 .doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC",
                         HttpMethod.POST, updateHistoryRequest.build())

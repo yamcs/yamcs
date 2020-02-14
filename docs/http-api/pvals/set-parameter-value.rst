@@ -3,7 +3,7 @@ Set Parameter Value
 
 Parameters are usually read-only. But software parameters can be updated::
 
-    PUT /api/processors/:instance/:processor/parameters/:namespace/:name
+    PUT /api/processors/{instance}/{processor}/parameters/{name*}
 
 
 .. rubric:: Example
@@ -19,7 +19,7 @@ Parameters are usually read-only. But software parameters can be updated::
 
 To update multiple parameters at once, send a request to this address::
 
-    POST /api/processors/:instance/:processor/parameters:batchSet
+    POST /api/processors/{instance}/{processor}/parameters:batchSet
 
 .. code-block:: json
 

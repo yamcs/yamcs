@@ -41,10 +41,12 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
-public class StaticFileHandler extends RouteHandler {
+public class StaticFileHandler {
 
     private static Mimetypes mimetypes;
     public static final int HTTP_CACHE_SECONDS = 60;
+    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
 
     private static List<String> staticRoots;
     private static boolean zeroCopyEnabled;
@@ -132,11 +134,11 @@ public class StaticFileHandler extends RouteHandler {
         } else {
             // chunked HTTP is required for compression to work because we don't know the size of the compressed file.
             HttpUtil.setTransferEncodingChunked(response, true);
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpContentCompressor());
             // Note that the CunkedWriteHandler here will just read the file chunk by chunk.
             // The real HTTP chunk encoding is performed by the HttpServerCodec/HttpContentEncoder which sits first in
             // the pipeline
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
+            ctx.pipeline().addLast(new ChunkedWriteHandler());
             // propagate the request to the new handlers in the pipeline that need to configure themselves
             ctx.fireChannelRead(req);
         }
@@ -235,5 +237,16 @@ public class StaticFileHandler extends RouteHandler {
             return null;
         }
         return path;
+    }
+
+    /**
+     * Sets the Date header for the HTTP response
+     */
+    protected static void setDateHeader(HttpResponse response) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
+
+        Calendar time = new GregorianCalendar();
+        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
     }
 }

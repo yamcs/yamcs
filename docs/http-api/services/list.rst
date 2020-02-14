@@ -7,7 +7,7 @@ List global services::
 
 List all services for the given Yamcs instance::
 
-    GET /api/services/:instance
+    GET /api/services/{instance}
 
 
 .. rubric:: Response

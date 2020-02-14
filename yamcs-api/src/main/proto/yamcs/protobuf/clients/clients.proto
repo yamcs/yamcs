@@ -1,0 +1,69 @@
+syntax="proto2";
+  
+package yamcs.protobuf.clients;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ClientsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+ 
+service ClientsApi {
+
+  // List clients
+  rpc ListClients(google.protobuf.Empty) returns (ListClientsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/clients"
+    };
+  }
+  
+  // Get a client
+  rpc GetClient(GetClientRequest) returns (ClientInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/clients/{id}"
+    };
+  }
+  
+  // Update a client
+  rpc UpdateClient(EditClientRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/clients/{id}"
+      body: "*"
+    };
+  }
+}
+
+message ListClientsResponse {
+  repeated ClientInfo clients = 1;
+}
+
+message GetClientRequest {
+  optional int32 id = 1;
+}
+
+message EditClientRequest {
+  optional int32 id = 1;
+  optional string instance = 2;
+  optional string processor = 3;
+}
+
+message ClientInfo {
+  reserved 8,9;
+  enum ClientState {
+    CONNECTED = 0;
+    DISCONNECTED = 1;
+  }
+  optional int32 id = 2;
+  optional string username = 3;
+  optional string applicationName = 4;
+  optional string address = 10;
+
+  optional string instance = 1;  
+  optional string processorName = 5;
+  
+  optional ClientState state = 6;
+  optional google.protobuf.Timestamp loginTime = 11;
+}

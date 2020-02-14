@@ -3,4 +3,4 @@ Delete Tag
 
 Delete a tag::
 
-    DELETE /api/archive/:instance/tags/:start/:id
+    DELETE /api/archive/{instance}/tags/{start}/{id}

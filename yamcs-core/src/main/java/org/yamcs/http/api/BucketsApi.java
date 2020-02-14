@@ -11,10 +11,12 @@ import java.util.regex.Pattern;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.RouteContext;
 import org.yamcs.http.ServiceUnavailableException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractBucketsApi;
@@ -44,6 +46,7 @@ import com.google.protobuf.Empty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostMultipartRequestDecoder;
@@ -62,7 +65,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void listBuckets(Context ctx, ListBucketsRequest request, Observer<ListBucketsResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ManageAnyBucket);
+        ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         YarchDatabaseInstance yarch = getYarch(request.getInstance());
         try {
@@ -87,7 +90,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void createBucket(Context ctx, CreateBucketRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ManageAnyBucket);
+        ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         verifyBucketName(request.getName());
         YarchDatabaseInstance yarch = getYarch(request.getInstance());
@@ -104,7 +107,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void deleteBucket(Context ctx, DeleteBucketRequest request, Observer<Empty> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.ManageAnyBucket);
+        ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         String instance = request.getInstance();
         String bucketName = request.getBucketName();
@@ -156,13 +159,13 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         checkManageBucketPrivilege(bucketName, ctx.user);
         Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
 
-        String contentType = ctx.nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        String contentType = ((RouteContext) ctx).nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (contentType.startsWith("multipart/form-data")) {
             uploadObjectMultipartFormData(ctx, bucket);
         } else if (contentType.startsWith("multipart/related")) {
             uploadObjectMultipartRelated(ctx, bucket);
         } else {
-            ByteBuf buf = ctx.nettyRequest.content();
+            ByteBuf buf = ((RouteContext) ctx).getBody();
             saveObject(bucket, objectName, contentType, buf, null);
         }
         observer.complete(Empty.getDefaultInstance());
@@ -242,7 +245,8 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     private void uploadObjectMultipartFormData(Context ctx, Bucket bucket) throws HttpException {
-        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(ctx.nettyRequest);
+        HttpRequest nettyRequest = ((RouteContext) ctx).fullNettyRequest;
+        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(nettyRequest);
 
         FileUpload fup = null;
         Map<String, String> metadata = new HashMap<>();
@@ -352,7 +356,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     static YarchDatabaseInstance getYarch(String instance) throws HttpException {
-        String yamcsInstance = RestHandler.verifyInstance(instance, true);
+        String yamcsInstance = ManagementApi.verifyInstance(instance, true);
         return YarchDatabase.getInstance(yamcsInstance);
     }
 

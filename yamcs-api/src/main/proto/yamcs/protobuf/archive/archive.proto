@@ -7,47 +7,11 @@ option java_package = "org.yamcs.protobuf";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
-import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service StreamArchiveApi {
-
-  // List events
-  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/events"
-    };
-  }
-
-  // Create an event
-  rpc CreateEvent(CreateEventRequest) returns (Event) {
-    option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/events"
-      body: "*"
-    };
-  }
-  
-  // List event sources
-  rpc ListEventSources(ListEventSourcesRequest) returns (ListEventSourcesResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/events/sources"
-    };
-  }
-  
-  // List alarms
-  rpc ListAlarms(ListAlarmsRequest) returns (ListAlarmsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/alarms"
-    };
-  }
-  
-  // List alarms for a specific parameter
-  rpc ListParameterAlarms(ListParameterAlarmsRequest) returns (ListAlarmsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/alarms/{parameter*}"
-    };
-  }
   
   // List parameter groups
   rpc ListParameterGroups(ListParameterGroupsRequest) returns (ParameterGroupInfo) {
@@ -78,59 +42,10 @@ service StreamArchiveApi {
     };
   }
   
-  // List command history index
-  rpc ListCommandHistoryIndex(ListCommandHistoryIndexRequest) returns (IndexResponse) {
+  // Export parameter values in CSV format
+  rpc ExportParameterValues(ExportParameterValuesRequest) returns (stream yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/command-index"
-    };
-  }
-  
-  // List event index
-  rpc ListEventIndex(ListEventIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/event-index"
-    };
-  }
-  
-  // List packet index
-  rpc ListPacketIndex(ListPacketIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packet-index"
-    };
-  }
-  
-  // List parameter index
-  rpc ListParameterIndex(ListParameterIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameter-index"
-    };
-  }
-  
-  // List completeness index
-  rpc ListCompletenessIndex(ListCompletenessIndexRequest) returns (IndexResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/completeness-index"
-    };
-  }
-  
-  // List packet names
-  rpc ListPacketNames(ListPacketNamesRequest) returns (ListPacketNamesResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packet-names"
-    };
-  }
-  
-  // List packets
-  rpc ListPackets(ListPacketsRequest) returns (ListPacketsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime?}"
-    };
-  }
-  
-  // Get a packet
-  rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+      get: "/api/archive/{instance}:exportParameterValues"
     };
   }
 }
@@ -140,145 +55,10 @@ message StreamParameterValuesRequest {
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated NamedObjectId ids = 4;
-  optional string namespace = 5; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
-}
-
-message ListEventsRequest {
-  optional string instance = 1;
-  optional int64 pos = 2;
-  optional int32 limit = 3;
-  optional string order = 4;
-  optional string severity = 5;
-  repeated string source = 6;
-  optional string next = 7;
-  optional google.protobuf.Timestamp start = 8;
-  optional google.protobuf.Timestamp stop = 9;
-  optional string q = 10;
-}
-
-message ListEventsResponse {
-  repeated Event event = 1;
-  optional string continuationToken = 2;
-}
-
-message CreateEventRequest {
-  optional string instance = 1;
-  optional string type = 2;
-  optional string message = 3;
-  optional string severity = 4;
-  optional string time = 5;
-  optional string source = 6;
-  optional int32 sequenceNumber = 7;
-}
-
-message ListAlarmsRequest {
-  optional string instance = 1;
-  optional int64 pos = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string order = 6;
-}
-
-message ListAlarmsResponse {
-  repeated alarms.AlarmData alarm = 1;
-}
-
-message ListParameterAlarmsRequest {
-  optional string instance = 1;
-  optional string parameter = 2;
-  optional int64 pos = 3;
-  optional int32 limit = 4;
-  optional google.protobuf.Timestamp start = 5;
-  optional google.protobuf.Timestamp stop = 6;
-  optional string order = 7;
-  optional bool detail = 8;
-}
-
-message ListEventSourcesRequest {
-  optional string instance = 1; 
-}
-
-message ListEventSourcesResponse {
-  repeated string source = 1;
 }
 
 message ParameterGroupInfo {
   repeated string group = 1;
-}
-
-message ListCommandHistoryIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string name = 7;
-}
-
-message ListEventIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string source = 7;
-}
-
-message ListPacketIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string name = 7;
-}
-
-message ListParameterIndexRequest {
-  optional string instance = 1;
-  optional int32 mergeTime = 2;
-  optional int32 limit = 3;
-  optional google.protobuf.Timestamp start = 4;
-  optional google.protobuf.Timestamp stop = 5;
-  optional string next = 6;
-  repeated string group = 7;
-}
-
-message ListCompletenessIndexRequest {
-  optional string instance = 1;
-  optional int32 limit = 2;
-  optional google.protobuf.Timestamp start = 3;
-  optional google.protobuf.Timestamp stop = 4;
-  optional string next = 5;
-}
-
-message IndexResponse {
-  repeated IndexGroup group = 1;
-  optional string continuationToken = 2;
-}
-
-message IndexGroup {
-  optional NamedObjectId id = 1;
-  repeated IndexEntry entry = 2;
-}
-
-message IndexEntry {
-  optional string start = 1;
-  optional string stop = 2;
-  optional int32 count = 3;
-  optional int64 seqStart = 4;
-  optional int64 seqStop = 5;
-}
-
-message ListPacketNamesRequest {
-  optional string instance = 1;
-}
-
-message ListPacketNamesResponse {
-  repeated string name = 1;
 }
 
 message ListParameterGroupsRequest {
@@ -304,28 +84,6 @@ message ListParameterHistoryResponse {
   optional string continuationToken = 2;
 }
 
-message ListPacketsRequest {
-  optional string instance = 1;
-  optional int64 pos = 2;
-  optional int32 limit = 3;
-  optional string order = 4;
-  repeated string name = 5;
-  optional string next = 6;
-  optional google.protobuf.Timestamp start = 7;
-  optional google.protobuf.Timestamp stop = 8;
-}
-
-message ListPacketsResponse {
-  repeated TmPacketData packet = 1;
-  optional string continuationToken = 2;
-}
-
-message GetPacketRequest {
-  optional string instance = 1;
-  optional int64 gentime = 2;
-  optional int32 seqnum = 3;
-}
-
 message GetParameterSamplesRequest {
   optional string instance = 1;
   optional string name = 2;
@@ -335,4 +93,13 @@ message GetParameterSamplesRequest {
   optional bool norealtime = 6;
   optional string processor = 7;
   optional string source = 8;
+}
+
+message ExportParameterValuesRequest {
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+  repeated string parameters = 4;
+  optional string namespace = 5; // Namespace used to display parameter names in csv header. Only used when no parameter ids were specified.
+  repeated string extra = 6;
 }

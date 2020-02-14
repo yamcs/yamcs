@@ -1,0 +1,119 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Client connections
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            [disabled]="!isGroupCloseEnabled()"
+            (click)="refresh()">
+      <mat-icon>close</mat-icon>
+      KILL
+    </button>
+    <button mat-icon-button
+            color="primary"
+            (click)="refresh()"
+            matTooltip="Refresh view">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <app-table-container>
+      <table mat-table
+             [dataSource]="dataSource"
+             [trackBy]="tableTrackerFn"
+             class="ya-data-table"
+             matSort
+             matSortActive="id"
+             matSortDirection="asc"
+             matSortDisableClear>
+
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input type="checkbox" (change)="$event ? masterToggle() : null"
+                   [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input type="checkbox" (click)="$event.stopPropagation()"
+                   (change)="$event ? selection.toggle(row) : null"
+                   [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">Id</th>
+          <td mat-cell *matCellDef="let conn">{{ conn.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="userAgent">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>User Agent</th>
+          <td mat-cell *matCellDef="let conn">{{ conn.httpRequest?.userAgent || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="protocol">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Protocol</th>
+          <td mat-cell *matCellDef="let conn">{{ conn.httpRequest?.protocol || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="remoteAddress">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Remote Address</th>
+          <td mat-cell *matCellDef="let conn">{{ conn.remoteAddress || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="readBytes">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Read</th>
+          <td mat-cell *matCellDef="let conn">{{ (conn.readBytes | formatBytes) || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="writtenBytes">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Written</th>
+          <td mat-cell *matCellDef="let conn">{{ (conn.writtenBytes | formatBytes) || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="readThroughput">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Rx</th>
+          <td mat-cell *matCellDef="let conn">{{ (conn.readThroughput * 8)  | dataRate }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="writeThroughput">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tx</th>
+          <td mat-cell *matCellDef="let conn">{{ (conn.writeThroughput * 8)  | dataRate }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="request">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Request</th>
+          <td mat-cell *matCellDef="let conn">
+            {{ conn.httpRequest?.method }}
+            {{ conn.httpRequest?.uri }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let conn">
+            <mat-menu #connMenu="matMenu" overlapTrigger="false" class="ya-menu">
+              <button mat-menu-item
+                      (click)="closeConnection(conn.id)">
+                Kill
+              </button>
+            </mat-menu>
+            <button mat-button [matMenuTriggerFor]="connMenu"
+                    (click)="$event.stopPropagation()"
+                    class="icon">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.selected]="selection.isSelected(row)"
+            (click)="toggleOne(row)"></tr>
+      </table>
+      <mat-paginator [pageSize]="100"
+                     [hidePageSize]="true"
+                     [showFirstLastButtons]="true">
+      </mat-paginator>
+    </app-table-container>
+  </div>
+</app-admin-page>

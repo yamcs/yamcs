@@ -1,0 +1,17 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <a mat-icon-button
+       [routerLink]="folderLink"
+       [queryParams]="{instance: instance.name}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ filename }}
+
+
+    <ng-template app-viewer-controls-host></ng-template>
+  </app-instance-toolbar>
+
+  <div #viewerContainer style="height: 100%; width: 100%">
+    <ng-template app-viewer-host></ng-template>
+  </div>
+</app-instance-page>

@@ -3,7 +3,7 @@ Get Packet
 
 Get a single packet::
 
-    GET /api/archive/:instance/packets/:gentime/:seqnum
+    GET /api/archive/{instance}/packets/{gentime}/{seqnum}
 
 The gentime must be an exact match of the packet's generation time in ISO 8601 format. Example::
 

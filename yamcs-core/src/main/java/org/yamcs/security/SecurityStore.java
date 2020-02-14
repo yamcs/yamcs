@@ -172,6 +172,14 @@ public class SecurityStore {
         objectPrivilegeTypes.add(ObjectPrivilegeType.WriteParameter);
     }
 
+    public void addSystemPrivilege(SystemPrivilege privilege) {
+        systemPrivileges.add(privilege);
+    }
+
+    public void addObjectPrivilegeType(ObjectPrivilegeType privilegeType) {
+        objectPrivilegeTypes.add(privilegeType);
+    }
+
     private AuthModule loadAuthModule(YConfiguration moduleConfig) throws InitException {
         String moduleClass = moduleConfig.getString("class");
         YConfiguration moduleArgs = YConfiguration.emptyConfig();

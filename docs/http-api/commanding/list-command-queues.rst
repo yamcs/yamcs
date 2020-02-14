@@ -3,7 +3,7 @@ List Command Queues
 
 List all command queues for the given processor::
 
-    GET /api/processors/:instance/:processor/cqueues
+    GET /api/processors/{instance}/{processor}/cqueues
 
 
 .. rubric:: Response

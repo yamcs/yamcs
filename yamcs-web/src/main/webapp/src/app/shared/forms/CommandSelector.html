@@ -1,0 +1,50 @@
+<table mat-table
+       *ngIf="dataSource"
+       [dataSource]="dataSource"
+       class="ya-data-table"
+       style="width: 100%">
+
+  <ng-container cdkColumnDef="name">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+    <td mat-cell *cdkCellDef="let item">
+      <ng-container *ngIf="item.folder">
+        <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+        {{ item.name | filename }}
+      </ng-container>
+      <ng-container *ngIf="!item.folder">
+        <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
+        {{ item.name | filename }}
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="description">
+    <th mat-header-cell *cdkHeaderCellDef>Description</th>
+    <td mat-cell *cdkCellDef="let command">
+      {{ command.shortDescription || '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="significance">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 1px">Significance</th>
+    <td mat-cell *cdkCellDef="let command">
+      <app-significance-level [significance]="command.significance"></app-significance-level>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="parent">
+    <td mat-header-cell *cdkHeaderCellDef [attr.colspan]="displayedColumns.length">
+      <mat-icon class="icon12" style="vertical-align: middle; visibility: hidden">description</mat-icon>
+      ..
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *cdkHeaderRowDef="['parent']"
+      class="parent-row"
+      [class.hide]="(currentSystem$ | async) === '/'"
+      (click)="selectParent()"></tr>
+  <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+      [class.selected]="(selectedCommand$ | async) === row"
+      (click)="selectRow(row)"></tr>
+</table>

@@ -3,7 +3,7 @@ Edit Alarm
 
 Edit an alarm::
 
-    PATCH /api/processors/:instance/:processor/parameters/:namespace/:name/alarms/:seqnum
+    PATCH /api/processors/{instance}/{processor}/parameters/{name*}/alarms/{seqnum}
 
 
 .. rubric:: Parameters

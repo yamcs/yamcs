@@ -6,7 +6,6 @@ Commanding
 
     issue-command
     list-commands
-    download-commands
     list-command-queues
     get-command-queue
     edit-command-queue

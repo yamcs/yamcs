@@ -6,6 +6,5 @@ Packets
 
     list-packets
     get-packet
-    download-packets
+    export-packets
     packet-updates
-

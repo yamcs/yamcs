@@ -1,7 +1,5 @@
 package org.yamcs.http;
 
-import org.yamcs.http.api.Router;
-
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -9,16 +7,15 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private HttpServer httpServer;
-    private Router apiRouter;
     private final SslContext sslCtx;
 
-    public HttpServerChannelInitializer(HttpServer httpServer, SslContext sslCtx, Router apiRouter) {
+    public HttpServerChannelInitializer(HttpServer httpServer, SslContext sslCtx) {
         this.httpServer = httpServer;
-        this.apiRouter = apiRouter;
         this.sslCtx = sslCtx;
     }
 
@@ -29,6 +26,8 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
             pipeline.addLast(sslCtx.newHandler(ch.alloc()));
         }
 
+        pipeline.addLast(new ChannelTrafficShapingHandler(5000));
+
         pipeline.addLast(new HttpServerCodec());
 
         CorsConfig corsConfig = httpServer.getCorsConfig();
@@ -37,6 +36,6 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         }
 
         // this has to be the last handler in the pipeline
-        pipeline.addLast(new HttpRequestHandler(httpServer, apiRouter));
+        pipeline.addLast(new HttpRequestHandler(httpServer));
     }
 }

@@ -3,7 +3,7 @@ Edit Processor
 
 Edit a processor::
 
-    PATCH /api/processors/:instance/:name
+    PATCH /api/processors/{instance}/{name}
 
 .. note::
 

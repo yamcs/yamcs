@@ -2,27 +2,39 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.yamcs.ConnectedClient;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Observer;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
+import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -35,18 +47,30 @@ import org.yamcs.protobuf.AbstractProcessingApi;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandVerifierOption;
+import org.yamcs.protobuf.CreateProcessorRequest;
+import org.yamcs.protobuf.DeleteProcessorRequest;
+import org.yamcs.protobuf.EditProcessorRequest;
 import org.yamcs.protobuf.GetParameterValueRequest;
+import org.yamcs.protobuf.GetProcessorRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.IssueCommandResponse;
+import org.yamcs.protobuf.ListProcessorTypesResponse;
+import org.yamcs.protobuf.ListProcessorsRequest;
+import org.yamcs.protobuf.ListProcessorsResponse;
+import org.yamcs.protobuf.ProcessorInfo;
+import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
@@ -70,13 +94,156 @@ import com.google.protobuf.Empty;
 public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
+    public void listProcessorTypes(Context ctx, Empty request, Observer<ListProcessorTypesResponse> observer) {
+        ListProcessorTypesResponse.Builder response = ListProcessorTypesResponse.newBuilder();
+        List<String> processorTypes = ProcessorFactory.getProcessorTypes();
+        Collections.sort(processorTypes);
+        response.addAllTypes(processorTypes);
+        observer.complete(response.build());
+    }
+
+    @Override
+    public void listProcessors(Context ctx, ListProcessorsRequest request, Observer<ListProcessorsResponse> observer) {
+        ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
+        Collection<Processor> processors = Processor.getProcessors();
+        if (request.hasInstance()) {
+            processors.removeIf(p -> !p.getInstance().equals(request.getInstance()));
+        }
+
+        for (Processor processor : processors) {
+            response.addProcessors(toProcessorInfo(processor, true));
+        }
+        observer.complete(response.build());
+    }
+
+    @Override
+    public void getProcessor(Context ctx, GetProcessorRequest request, Observer<ProcessorInfo> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+
+        ProcessorInfo pinfo = toProcessorInfo(processor, true);
+        observer.complete(pinfo);
+    }
+
+    @Override
+    public void deleteProcessor(Context ctx, DeleteProcessorRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
+
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        if (!processor.isReplay()) {
+            throw new BadRequestException("Cannot delete a non-replay processor");
+        }
+
+        processor.quit();
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void createProcessor(Context ctx, CreateProcessorRequest request, Observer<Empty> observer) {
+        String yamcsInstance = ManagementApi.verifyInstance(request.getInstance());
+
+        if (!request.hasName()) {
+            throw new BadRequestException("No processor name was specified");
+        }
+        String processorName = request.getName();
+
+        if (!request.hasType()) {
+            throw new BadRequestException("No processor type was specified");
+        }
+        String processorType = request.getType();
+
+        ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
+        reqb.setInstance(yamcsInstance);
+        reqb.setName(processorName);
+        reqb.setType(processorType);
+        if (request.hasPersistent()) {
+            reqb.setPersistent(request.getPersistent());
+        }
+        Set<Integer> clientIds = new HashSet<>(request.getClientIdList());
+        // this will remove any invalid clientIds from the set
+        verifyPermissions(reqb.getPersistent(), processorType, clientIds, ctx.user);
+
+        if (request.hasConfig()) {
+            reqb.setConfig(request.getConfig());
+        }
+
+        reqb.addAllClientId(clientIds);
+        ManagementService mservice = ManagementService.getInstance();
+        try {
+            mservice.createProcessor(reqb.build(), ctx.user.getName());
+            observer.complete(Empty.getDefaultInstance());
+        } catch (YamcsException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void editProcessor(Context ctx, EditProcessorRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
+
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+        if (!processor.isReplay()) {
+            throw new BadRequestException("Cannot update a non-replay processor");
+        }
+
+        if (request.hasState()) {
+            switch (request.getState().toLowerCase()) {
+            case "running":
+                processor.resume();
+                break;
+            case "paused":
+                processor.pause();
+                break;
+            default:
+                throw new BadRequestException("Invalid processor state '" + request.getState() + "'");
+            }
+        }
+
+        if (request.hasSeek()) {
+            long seek = TimeEncoding.fromProtobufTimestamp(request.getSeek());
+            processor.seek(seek);
+        }
+
+        String speed = null;
+        if (request.hasSpeed()) {
+            speed = request.getSpeed().toLowerCase();
+        }
+        if (speed != null) {
+            ReplaySpeed replaySpeed;
+            if ("afap".equals(speed)) {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
+            } else if (speed.endsWith("x")) {
+                try {
+                    float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.REALTIME)
+                            .setParam(factor).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Speed factor is not a valid number");
+                }
+
+            } else {
+                try {
+                    int fixedDelay = Integer.parseInt(speed);
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.FIXED_DELAY)
+                            .setParam(fixedDelay).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Fixed delay value is not an integer");
+                }
+            }
+            processor.changeSpeed(replaySpeed);
+        }
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void getParameterValue(Context ctx, GetParameterValueRequest request,
             Observer<ParameterValue> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
-        NamedObjectId id = RestHandler.verifyParameterId(ctx.user, mdb, request.getName());
+        NamedObjectId id = MdbApi.verifyParameterId(ctx, mdb, request.getName());
 
         long timeout = request.hasTimeout() ? request.getTimeout() : 10000;
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
@@ -97,10 +264,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void setParameterValue(Context ctx, SetParameterValueRequest request,
             Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
-        ParameterWithId pid = RestHandler.verifyParameterWithId(ctx.user, mdb, request.getName());
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 
@@ -124,7 +291,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void batchGetParameterValues(Context ctx, BatchGetParameterValuesRequest request,
             Observer<BatchGetParameterValuesResponse> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
         if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
@@ -144,7 +311,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void batchSetParameterValues(Context ctx, BatchSetParameterValuesRequest request,
             Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         ParameterRequestManager prm = processor.getParameterRequestManager();
 
         List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
@@ -154,7 +321,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } catch (InvalidIdentification e) {
             throw new BadRequestException("InvalidIdentification: " + e.getMessage());
         }
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.WriteParameter,
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter,
                 pidList.stream().map(p -> p.getParameter().getQualifiedName()).collect(Collectors.toList()));
 
         Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
@@ -189,18 +356,18 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void issueCommand(Context ctx, IssueCommandRequest request, Observer<IssueCommandResponse> observer) {
-        RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.Command);
+        ctx.checkSystemPrivilege(SystemPrivilege.Command);
 
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
 
         String requestCommandName = UriEncoder.decode(request.getName());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        MetaCommand cmd = RestHandler.verifyCommand(mdb, requestCommandName);
+        MetaCommand cmd = MdbApi.verifyCommand(mdb, requestCommandName);
 
-        RestHandler.checkObjectPrivileges(ctx.user, ObjectPrivilegeType.Command, cmd.getQualifiedName());
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.Command, cmd.getQualifiedName());
 
         String origin = ctx.getClientAddress();
         int sequenceNumber = 0;
@@ -233,7 +400,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 preparedCommand.setComment(comment);
             }
             if (request.hasCommandOptions()) {
-                RestHandler.checkSystemPrivilege(ctx.user, SystemPrivilege.CommandOptions);
+                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 handleCommandOptions(preparedCommand, request.getCommandOptions());
             }
 
@@ -298,8 +465,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
         if (queue != null) {
             responseb.setQueue(queue.getName());
-            CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
-            responseb.setCommandQueueEntry(cqe);
         }
 
         observer.complete(responseb.build());
@@ -348,20 +513,18 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void updateCommandHistory(Context ctx, UpdateCommandHistoryRequest request, Observer<Empty> observer) {
-        Processor processor = RestHandler.verifyProcessor(request.getInstance(), request.getProcessor());
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.ModifyCommandHistory)) {
+            throw new ForbiddenException("User has no privilege to update command history");
+        }
 
-        try {
-            CommandId cmdId = request.getCmdId();
-
-            for (UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
-                processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(),
-                        historyEntry.getValue(), ctx.user);
-            }
-        } catch (NoPermissionException e) {
-            throw new ForbiddenException(e);
+        CommandId cmdId = fromStringIdentifier(request.getName(), request.getId());
+        CommandingManager manager = processor.getCommandingManager();
+        for (CommandHistoryAttribute attr : request.getAttributesList()) {
+            manager.setCommandAttribute(cmdId, attr);
         }
 
         observer.complete(Empty.getDefaultInstance());
@@ -440,11 +603,91 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
     }
 
-    private String toStringIdentifier(CommandId commandId) {
+    private static CommandId fromStringIdentifier(String commandName, String id) {
+        CommandId.Builder b = CommandId.newBuilder();
+        b.setCommandName(commandName);
+        int firstDash = id.indexOf('-');
+        long generationTime = Long.parseLong(id.substring(0, firstDash));
+        b.setGenerationTime(generationTime);
+        int lastDash = id.lastIndexOf('-');
+        int sequenceNumber = Integer.parseInt(id.substring(lastDash + 1));
+        b.setSequenceNumber(sequenceNumber);
+        if (firstDash != lastDash) {
+            String origin = id.substring(firstDash + 1, lastDash);
+            b.setOrigin(origin);
+        } else {
+            b.setOrigin("");
+        }
+
+        return b.build();
+    }
+
+    private static String toStringIdentifier(CommandId commandId) {
         String id = commandId.getGenerationTime() + "-";
         if (commandId.hasOrigin() && !"".equals(commandId.getOrigin())) {
             id += commandId.getOrigin() + "-";
         }
         return id + commandId.getSequenceNumber();
+    }
+
+    public static ProcessorInfo toProcessorInfo(Processor processor, boolean detail) {
+        ProcessorInfo.Builder b;
+        if (detail) {
+            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+            b = ProcessorInfo.newBuilder(pinfo);
+        } else {
+            b = ProcessorInfo.newBuilder().setName(processor.getName());
+        }
+
+        String instance = processor.getInstance();
+        String name = processor.getName();
+
+        for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
+            b.addService(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
+        }
+        return b.build();
+    }
+
+    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
+            throws ForbiddenException {
+        String username = user.getName();
+        if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
+            if (persistent) {
+                throw new ForbiddenException("No permission to create persistent processors");
+            }
+            if (!"Archive".equals(processorType)) {
+                throw new ForbiddenException("No permission to create processors of type " + processorType);
+            }
+            verifyClientsBelongToUser(username, clientIds);
+        }
+    }
+
+    /**
+     * verifies that clients with ids are all belonging to this username. If not, throw a ForbiddenException If there is
+     * any invalid id (maybe client disconnected), remove it from the set
+     */
+    public static void verifyClientsBelongToUser(String username, Set<Integer> clientIds) throws ForbiddenException {
+        ManagementService mgrsrv = ManagementService.getInstance();
+        for (Iterator<Integer> it = clientIds.iterator(); it.hasNext();) {
+            int id = it.next();
+            ConnectedClient client = mgrsrv.getClient(id);
+            if (client == null) {
+                it.remove();
+            } else {
+                if (!username.equals(client.getUser().getName())) {
+                    throw new ForbiddenException("Not allowed to connect clients other than your own");
+                }
+            }
+        }
+    }
+
+    public static Processor verifyProcessor(String instance, String processorName) {
+        ManagementApi.verifyInstance(instance);
+        Processor processor = Processor.getInstance(instance, processorName);
+        if (processor == null) {
+            throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
+        } else {
+            return processor;
+        }
     }
 }

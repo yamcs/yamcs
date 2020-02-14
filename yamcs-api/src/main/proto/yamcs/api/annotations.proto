@@ -10,6 +10,7 @@ option java_package = "org.yamcs.api";
 
 extend google.protobuf.MethodOptions {
   optional HttpRoute route = 6433;
+  optional WebSocketTopic websocket = 6443;
 }
 
 message HttpRoute {
@@ -38,19 +39,21 @@ message HttpRoute {
   // represents the body (excepting route params).
   optional string body = 7;
   
-  optional int32 maxBodySize = 8;
+  optional int32 max_body_size = 8;
   
   // Set true if the execution of the route is expected to take a long time
   // (more than 0.5 seconds). It will be offloaded to a worker thread.
   // Leave false if the route uses its own threading mechanism (most of the
   // routes should do that).
-  optional bool offThread = 9;
-  
-  // Data load routes expect to receive a large body piece by piece in
-  // HttpContent objects.
-  // 
-  // If false or unset, a small default is used, sufficient for standard use.
-  optional bool dataLoad = 10;
+  optional bool offloaded = 9;
   
   repeated HttpRoute additional_bindings = 11;
+}
+
+message WebSocketTopic {
+
+  optional string topic = 1;
+  optional bool deprecated = 2;
+  
+  repeated WebSocketTopic additional_bindings = 3;
 }

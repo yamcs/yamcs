@@ -21,7 +21,7 @@ service ParameterArchiveApi {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/parameterArchive:rebuild"
       body: "*"
-      offThread: true
+      offloaded: true
     };
   }
 

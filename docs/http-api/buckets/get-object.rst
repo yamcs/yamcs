@@ -3,7 +3,7 @@ Get Object
 
 Get an object::
 
-    GET /api/buckets/:instance/:bucketName/:objectName
+    GET /api/buckets/{instance}/{bucketName}/{objectName}
 
 ``_global`` can be used as instance name to get an object from a bucket at the global level.
 

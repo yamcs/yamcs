@@ -3,7 +3,7 @@ Get Link
 
 Get data on a specific link for the given Yamcs instance::
 
-    GET /api/links/:instance/:name
+    GET /api/links/{instance}/{name}
 
 
 .. rubric:: Response

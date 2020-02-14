@@ -1,19 +1,22 @@
 syntax="proto2";
 
 package yamcs.protobuf.alarms;
-option java_package = "org.yamcs.protobuf";
 
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "AlarmsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
-import "google/protobuf/timestamp.proto";
 
 
 message AcknowledgeInfo {
   optional string acknowledgedBy = 1;
   optional string acknowledgeMessage = 2;
-  optional int64 yamcsAcknowledgeTime = 3 [deprecated = true];
-  optional string acknowledgeTimeUTC = 4 [deprecated = true];
   optional google.protobuf.Timestamp acknowledgeTime = 5;
 }
 
@@ -42,9 +45,9 @@ enum AlarmNotificationType {
   RTN = 7; // When the parameter that triggered the alarm has returned to normal (the alarm may still be triggered if it has not been acknowledged)
   SHELVED = 8; //when the alarm has been shelved
   UNSHELVED = 9; //when the alarm has been unshelved (either by operator request or automatically at timer expiration)
-  RESET = 10; //when a latching alarm has been reset
-  
+  RESET = 10; //when a latching alarm has been reset  
 }
+
 enum AlarmType {
   PARAMETER = 1;
   EVENT = 2;
@@ -115,12 +118,4 @@ message EventAlarmData {
   optional Event triggerEvent = 1;
   optional Event mostSevereEvent = 2;
   optional Event currentEvent = 3;
-}
-
-message EditAlarmRequest {
-  optional string state = 1;
-  optional string comment = 2;
-  //shelve time in milliseconds (if the state = shelved)
-  //can be left out which means it is shelved indefinitely
-  optional uint64 shelveDuration = 3;
 }

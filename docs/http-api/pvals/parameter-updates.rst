@@ -9,7 +9,7 @@ Subscribe to parameter updates:
         "parameter": "subscribe",
         "data": {
             "id": [
-                { "namespace": ":namespace", "name": ":name" }
+                { "namespace": "{namespace}", "name": "{name}" }
             ],
             "updateOnExpiration": false,
             "abortOnInvalid": false,

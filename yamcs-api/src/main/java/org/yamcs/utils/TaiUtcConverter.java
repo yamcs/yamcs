@@ -361,7 +361,7 @@ public class TaiUtcConverter {
     long utcToInstant(DateTimeComponents dtc) {
         long day = caldateToMjd(dtc);
 
-        long s = (long)(dtc.hour * 60 + dtc.minute);
+        long s = (long) (dtc.hour * 60 + dtc.minute);
         s = s * 60 + dtc.second + (day - 40587) * 86400L;
 
         int ls = diffTaiUtc;

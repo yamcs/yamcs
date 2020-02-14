@@ -3,7 +3,7 @@ Edit Link
 
 Edit a link::
 
-    PATCH /api/links/:instance/:name
+    PATCH /api/links/{instance}/{name}
 
 
 .. rubric:: Parameters

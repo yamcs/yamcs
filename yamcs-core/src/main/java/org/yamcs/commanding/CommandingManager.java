@@ -7,14 +7,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
-import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.security.ObjectPrivilegeType;
-import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -56,15 +54,8 @@ public class CommandingManager extends AbstractService {
      * pc is a command whose source is included. parse the source populate the binary part and the definition.
      */
     public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin,
-            int seq, User user) throws ErrorInCommand, NoPermissionException, YamcsException {
+            int seq, User user) throws ErrorInCommand, YamcsException {
         log.debug("Building command {} with arguments {}", mc.getName(), argAssignmentList);
-
-        if (!user.hasObjectPrivilege(ObjectPrivilegeType.Command, mc.getName())) {
-            throw new NoPermissionException("User has no privilege on command " + mc.getName());
-        }
-        if (origin == null) {
-            origin = "anonymous";
-        }
 
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList);
 
@@ -91,13 +82,8 @@ public class CommandingManager extends AbstractService {
         return commandQueueManager.addCommand(user, pc);
     }
 
-    public void addToCommandHistory(CommandId commandId, String key, String value, User user)
-            throws NoPermissionException {
-        if (!user.hasSystemPrivilege(SystemPrivilege.ModifyCommandHistory)) {
-            throw new NoPermissionException("User has no privilege to update command history");
-        }
-
-        commandQueueManager.addToCommandHistory(commandId, key, value);
+    public void setCommandAttribute(CommandId commandId, CommandHistoryAttribute attribute) {
+        commandQueueManager.addToCommandHistory(commandId, attribute);
     }
 
     public Processor getProcessor() {

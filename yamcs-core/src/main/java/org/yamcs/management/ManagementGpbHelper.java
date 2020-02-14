@@ -26,7 +26,6 @@ public final class ManagementGpbHelper {
         Statistics.Builder statsb = Statistics.newBuilder()
                 .setInstance(processor.getInstance())
                 .setProcessor(processor.getName())
-                .setYProcessorName(processor.getName())
                 .setLastUpdated(TimestampUtil.java2Timestamp(ps.getLastUpdated()));
         statsb.addAllTmstats(statistics);
         return statsb.build();
@@ -61,8 +60,6 @@ public final class ManagementGpbHelper {
                 
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
-                .setYamcsGenerationTime(pc.getGenerationTime())
-                .setGenerationTimeUTC(TimeEncoding.toString(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());
 
         if(pc.getBinary()!=null) {
