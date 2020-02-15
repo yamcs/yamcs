@@ -88,7 +88,10 @@ public class ProcessorFactory {
             throw new NullPointerException("config cannot be null");
         }
         Processor proc = new Processor(instance, name, type, creator);
-
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
+        if (ysi != null) {//Unit Tests create processors outside of any instance
+            ysi.addProcessor(proc);
+        }
         proc.init(serviceList, config, spec);
         return proc;
     }

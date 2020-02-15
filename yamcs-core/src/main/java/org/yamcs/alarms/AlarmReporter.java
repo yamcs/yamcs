@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
@@ -33,8 +31,6 @@ import com.google.common.util.concurrent.AbstractService;
  * Generates alarm events for a processor, by subscribing to all relevant parameters.
  */
 public class AlarmReporter extends AbstractService implements ParameterConsumer, ProcessorService {
-
-    private static final Logger log = LoggerFactory.getLogger(AlarmReporter.class);
 
     private String yamcsInstance;
     private Processor processor;
@@ -64,12 +60,6 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
 
     @Override
     public void doStart() {
-        if (processor == null) {
-            log.warn("DEPRECATION: Define AlarmReporter as a processor service in processor.yaml"
-                    + " rather than an instance service in yamcs.(instance).yaml");
-            init(Processor.getFirstProcessor(yamcsInstance));
-        }
-
         ParameterRequestManager prm = processor.getParameterRequestManager();
         prm.getAlarmChecker().enableReporting(this);
 

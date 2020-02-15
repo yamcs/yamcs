@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpRequestInfo;
 import org.yamcs.management.ManagementService;
@@ -86,12 +88,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         User user = originalRequestInfo.getUser();
         InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
         String hostAddress = address.getAddress().getHostAddress();
-        if (yamcsInstance != null) {
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+        if (ysi != null) {
             Processor processor;
             if (processorName == null) {
-                processor = Processor.getFirstProcessor(yamcsInstance);
+                processor = ysi.getFirstProcessor();
             } else {
-                processor = Processor.getInstance(yamcsInstance, processorName);
+                processor = ysi.getProcessor(processorName);
             }
             wsClient = new ConnectedWebSocketClient(user, applicationName, hostAddress, processor, this);
         } else {

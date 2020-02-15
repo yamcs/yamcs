@@ -55,26 +55,30 @@ public class ClientsApi extends AbstractClientsApi<Context> {
         if (request.hasInstance() || request.hasProcessor()) {
             String newInstance;
             Processor newProcessor;
-            if (request.hasProcessor()) {
-                newInstance = (request.hasInstance()) ? request.getInstance() : client.getProcessor().getInstance();
-                newProcessor = Processor.getInstance(newInstance, request.getProcessor());
-            } else { // Switch to default processor of the instance
-                newInstance = request.getInstance();
-                newProcessor = Processor.getFirstProcessor(request.getInstance());
-            }
+            newInstance = (request.hasInstance()) ? request.getInstance() : client.getProcessor().getInstance();
 
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(newInstance);
+
             if (ysi == null) {
                 throw new BadRequestException(String.format("Cannot join unknown instance '" + newInstance + "'"));
             } else if (ysi.state() == InstanceState.OFFLINE) {
                 throw new BadRequestException("Cannot join an offline instance");
-            } else if (newProcessor == null) {
+            } else {
                 if (request.hasProcessor()) {
-                    throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
-                            newInstance, request.getProcessor()));
-                } else {
-                    // TODO we should allow this...
-                    throw new BadRequestException(String.format("No processor for instance '" + newInstance + "'"));
+                    newProcessor = ysi.getProcessor(request.getProcessor());
+                } else { // Switch to default processor of the instance
+                    newProcessor = ysi.getFirstProcessor();
+                }
+
+                if (newProcessor == null) {
+                    if (request.hasProcessor()) {
+                        throw new BadRequestException(
+                                String.format("Cannot switch user to non-existing processor %s/%s",
+                                        newInstance, request.getProcessor()));
+                    } else {
+                        // TODO we should allow this...
+                        throw new BadRequestException(String.format("No processor for instance '" + newInstance + "'"));
+                    }
                 }
             }
             verifyPermission(ctx, newProcessor, client.getId());

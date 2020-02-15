@@ -117,7 +117,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
             // this means that the instance has just re-started, need to move over to the new processor
             // currently we take the first processor (probably realtime).
             // maybe we should try to switch to one of the same name like the previous one
-            processor = Processor.getFirstProcessor(instanceName);
+            processor = ysi.getFirstProcessor();
             if (processor == null) {
                 log.error("No processor for newly created instance {} ", instanceName);
             } else {

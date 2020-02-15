@@ -603,6 +603,13 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
         return instance;
     }
+    public static YamcsServerInstance verifyInstanceObj(String instance) {
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
+        if (ysi==null) {
+            throw new NotFoundException("No instance named '" + instance + "'");
+        }
+        return ysi;
+    }
 
     public static LinkInfo verifyLink(String instance, String linkName) {
         verifyInstance(instance);
@@ -615,7 +622,12 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
-
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
+        
+        if(ysi==null) {
+            throw new BadRequestException("Invalid Yamcs instance "+yamcsInstance.getName());
+        }
+        
         if (yamcsInstance.hasMissionDatabase()) {
             XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {
@@ -623,11 +635,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             }
         }
 
-        for (Processor processor : Processor.getProcessors(instanceb.getName())) {
+        for (Processor processor : ysi.getProcessors()) {
             instanceb.addProcessor(ProcessingApi.toProcessorInfo(processor, false));
         }
 
-        TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());
+        TimeService timeService = ysi.getTimeService();
         if (timeService != null) {
             instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
         }

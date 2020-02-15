@@ -1278,4 +1278,12 @@ public class YamcsServer {
         // Report start success to internal listeners
         readyListeners.forEach(ReadyListener::onReady);
     }
+
+    public Processor getProcessor(String yamcsInstance, String processorName) {
+        YamcsServerInstance ysi = getInstance(yamcsInstance);
+        if (ysi == null) {
+            return null;
+        }
+        return ysi.getProcessor(processorName);
+    }
 }

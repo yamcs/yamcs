@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
-import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
@@ -66,7 +66,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void rebuildRange(Context ctx, RebuildRangeRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasStart()) {
@@ -79,7 +79,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
         long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
 
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
         try {
             parchive.reprocess(start, stop);
         } catch (IllegalArgumentException e) {
@@ -92,7 +92,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void deletePartitions(Context ctx, DeletePartitionsRequest request,
             Observer<StringMessage> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasStart()) {
@@ -105,7 +105,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
         long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
 
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
         try {
             List<Partition> removed = parchive.deletePartitions(start, stop);
             StringBuilder sb = new StringBuilder();
@@ -131,11 +131,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getArchivedParameterInfo(Context ctx, GetArchivedParameterInfoRequest request,
             Observer<StringMessage> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         String fqn = request.getName();
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
@@ -150,9 +150,9 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             return;
         }
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -179,12 +179,12 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         int sampleCount = request.hasCount() ? request.getCount() : 500;
 
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
 
         ParameterCache pcache = null;
         if (!request.getNorealtime()) {
             String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = Processor.getInstance(instance, processorName);
+            Processor processor = ysi.getProcessor(processorName);
             pcache = processor.getParameterCache();
         }
 
@@ -207,9 +207,9 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -225,12 +225,12 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long minGap = request.hasMinGap() ? request.getMinGap() : 0;
         long maxGap = request.hasMaxGap() ? request.getMaxGap() : Long.MAX_VALUE;
 
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
 
         ParameterCache pcache = null;
         if (!request.getNorealtime()) {
             String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = Processor.getInstance(instance, processorName);
+            Processor processor = ysi.getProcessor(processorName);
             pcache = processor.getParameterCache();
         }
 
@@ -261,9 +261,9 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             return;
         }
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         NamedObjectId requestedId = requestedParamWithId.getId();
@@ -281,7 +281,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         boolean ascending = request.getOrder().equals("asc");
 
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(ysi);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
         IntArray pgidArray = new IntArray();
@@ -321,7 +321,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterCache pcache = null;
         if (!request.getNorealtime()) {
             String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = Processor.getInstance(instance, processorName);
+            Processor processor = ysi.getProcessor(processorName);
             pcache = processor.getParameterCache();
         }
 
@@ -363,9 +363,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         observer.complete(resultb.build());
     }
 
-    private ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        YamcsServer yamcs = YamcsServer.getServer();
-        List<ParameterArchive> l = yamcs.getServices(instance, ParameterArchive.class);
+    private ParameterArchive getParameterArchive(YamcsServerInstance ysi) throws BadRequestException {
+        List<ParameterArchive> l = ysi.getServices(ParameterArchive.class);
 
         if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");

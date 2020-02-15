@@ -25,8 +25,6 @@ import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.http.HttpServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
@@ -70,6 +68,7 @@ public abstract class AbstractIntegrationTest {
     protected char[] adminPassword = "rootpassword".toCharArray();
     RefMdbPacketGenerator packetGenerator; // sends data to tm_realtime
     RefMdbPacketGenerator packetGenerator2; // sends data to tm2_realtime
+    static YamcsServer yamcs;
 
     static {
         // LoggingUtils.enableLogging();
@@ -91,7 +90,7 @@ public abstract class AbstractIntegrationTest {
                 .withInitialInstance("IntegrationTest")
                 .build();
         yamcsClient.addWebSocketListener(wsListener);
-        if (!YamcsServer.getServer().getSecurityStore().getGuestUser().isActive()) {
+        if (!yamcs.getSecurityStore().getGuestUser().isActive()) {
             yamcsClient.connect(adminUsername, adminPassword);
         }
 
@@ -103,7 +102,8 @@ public abstract class AbstractIntegrationTest {
         packetGenerator2 = PacketProvider.instance[1].mdbPacketGenerator;
         packetGenerator2.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
-        Processor.getInstance(yamcsInstance, "realtime").getParameterRequestManager().getAlarmServer().clearAll();
+        yamcs.getInstance(yamcsInstance).getProcessor("realtime").getParameterRequestManager().getAlarmServer()
+                .clearAll();
     }
 
     private static void setupYamcs() throws Exception {
@@ -112,7 +112,7 @@ public abstract class AbstractIntegrationTest {
 
         YConfiguration.setupTest("IntegrationTest");
 
-        YamcsServer yamcs = YamcsServer.getServer();
+        yamcs = YamcsServer.getServer();
         yamcs.prepareStart();
         yamcs.start();
     }
@@ -213,12 +213,11 @@ public abstract class AbstractIntegrationTest {
         assertEquals(name, cha.getName());
         assertEquals(value, cha.getValue().getStringValue());
     }
-    
+
     protected void checkNextCmdHistoryAttrStatusTime(String name, String value) throws InterruptedException {
         checkNextCmdHistoryAttr(name + "_Status", value);
-        checkNextCmdHistoryAttr(name+"_Time");
+        checkNextCmdHistoryAttr(name + "_Time");
     }
-    
 
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);

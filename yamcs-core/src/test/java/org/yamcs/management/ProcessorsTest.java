@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -42,6 +44,8 @@ public class ProcessorsTest {
         YConfiguration.setupTest("ProcessorsTest");
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
+        //to avoid getting warnings in the test console for invalid client id
+        Logger.getLogger("org.yamcs").setLevel(Level.SEVERE);
     }
 
     @AfterClass
@@ -86,7 +90,7 @@ public class ProcessorsTest {
 
         ConnectedClient client = new ConnectedClient(new User("random-test-user", null), "random-app-name",
                 "random-address");
-        Processor processor1 = Processor.getInstance("yproctest1", "yproc1");
+        Processor processor1 = YamcsServer.getServer().getProcessor("yproctest1", "yproc1");
         assertNotNull(processor1);
 
         processor1.connect(client);

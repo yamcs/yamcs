@@ -24,6 +24,7 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorListener;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
@@ -240,7 +241,11 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
-        Processor processor = Processor.getInstance(cr.getInstance(), cr.getName());
+        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(cr.getInstance());
+        if(ysi==null) {
+            throw new YamcsException("Unexisting yamcs instance " + cr.getInstance()+" specified");
+        }
+        Processor processor = ysi.getProcessor(cr.getName());
         if (processor == null) {
             throw new YamcsException("Unexisting processor " + cr.getInstance() + "/" + cr.getName() + " specified");
         }

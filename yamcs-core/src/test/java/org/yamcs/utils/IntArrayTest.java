@@ -30,7 +30,6 @@ public class IntArrayTest {
         }
         List<Integer> l = toList(a);
         a.sort(l);
-        System.out.println("a.count: "+a.count);
         assertEquals(n, a.size());
     
         checkSortedAndEqual(a, l);

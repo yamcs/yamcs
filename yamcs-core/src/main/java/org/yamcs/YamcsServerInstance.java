@@ -4,6 +4,7 @@ import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -33,7 +34,7 @@ import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
- * Represents a Yamcs instance together with the instance specific services
+ * Represents a Yamcs instance together with the instance specific services and the processors
  * 
  * @author nm
  *
@@ -49,6 +50,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     InstanceMetadata metadata;
     YConfiguration config;
+    final Map<String, Processor> processors = new LinkedHashMap<>();
 
     YamcsServerInstance(String name) {
         this(name, new InstanceMetadata());
@@ -75,8 +77,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
 
         /*
-         *  TODO not possible to activate this validation because mdb is being used
-         *  ambiguously as both LIST and STRING with completely different meanings.
+         * TODO not possible to activate this validation because mdb is being used
+         * ambiguously as both LIST and STRING with completely different meanings.
          */
         // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("mdb", OptionType.ANY);
@@ -309,5 +311,43 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public Map<String, String> getLabels() {
         return metadata.getLabels();
+    }
+
+    /**
+     * Adds the processor to the instance. If already existing a processor with the same name, an exception is thrown
+     * @param proc
+     * @throws ProcessorException
+     */
+    public synchronized void addProcessor(Processor proc) throws ProcessorException {
+        if (processors.containsKey(proc.getName())) {
+            throw new ProcessorException("A processor named '" + proc.getName() + "' already exists in instance " + name);
+        }
+        processors.put(proc.getName(), proc);
+        proc.setYamcsServerInstance(this);
+    }
+    
+    /**
+     * Returns the first register processor or null if there is no processor registered.
+     * 
+     * @return the first registered processor
+     */
+    public synchronized Processor getFirstProcessor() {
+        if(processors.isEmpty()) {
+            return null;
+        } else {
+            return processors.values().iterator().next();
+        }
+    }
+
+    public synchronized List<Processor> getProcessors() {
+        return new ArrayList<Processor>(processors.values());
+    }
+
+    public synchronized Processor getProcessor(String processorName) {
+        return processors.get(processorName);
+    }
+
+    public synchronized void removeProcessor(String processorName) {
+        processors.remove(processorName);
     }
 }

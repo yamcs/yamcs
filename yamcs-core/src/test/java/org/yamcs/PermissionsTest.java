@@ -6,7 +6,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
@@ -33,6 +36,12 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class PermissionsTest extends AbstractIntegrationTest {
 
+    @BeforeClass
+    public static void silenceWarnings() {
+        //to avoid getting warnings in the test console for invalid permissions
+        Logger.getLogger("org.yamcs").setLevel(Level.SEVERE);
+    }
+    
     @Test
     public void testAuthenticationWebServices() throws Exception {
         try {

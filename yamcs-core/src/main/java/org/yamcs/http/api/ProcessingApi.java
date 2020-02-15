@@ -2,7 +2,6 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +21,8 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
@@ -104,14 +105,19 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void listProcessors(Context ctx, ListProcessorsRequest request, Observer<ListProcessorsResponse> observer) {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        Collection<Processor> processors = Processor.getProcessors();
         if (request.hasInstance()) {
-            processors.removeIf(p -> !p.getInstance().equals(request.getInstance()));
+            YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+            for (Processor processor : ysi.getProcessors()) {
+                response.addProcessors(toProcessorInfo(processor, true));
+            } 
+        } else {
+            for(YamcsServerInstance ysi: YamcsServer.getInstances()) {
+                for (Processor processor : ysi.getProcessors()) {
+                    response.addProcessors(toProcessorInfo(processor, true));
+                }    
+            }
         }
 
-        for (Processor processor : processors) {
-            response.addProcessors(toProcessorInfo(processor, true));
-        }
         observer.complete(response.build());
     }
 
@@ -681,8 +687,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     public static Processor verifyProcessor(String instance, String processorName) {
-        ManagementApi.verifyInstance(instance);
-        Processor processor = Processor.getInstance(instance, processorName);
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        Processor processor = ysi.getProcessor(processorName);
         if (processor == null) {
             throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");
         } else {

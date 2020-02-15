@@ -13,6 +13,7 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
@@ -127,7 +128,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
     @Override
     protected void startUp() {
         // subscribe to the realtime processor
-        realtimeProcessor = Processor.getInstance(yamcsInstance, processorName);
+        realtimeProcessor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
         if (realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '" + processorName + "' in instance " + yamcsInstance);
         }

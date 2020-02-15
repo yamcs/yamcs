@@ -1,12 +1,8 @@
 package org.yamcs;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -77,12 +73,10 @@ public class Processor extends AbstractService {
     private CommandHistoryProvider commandHistoryProvider;
     private CommandReleaser commandReleaser;
 
-    private static Map<String, Processor> instances = Collections.synchronizedMap(new LinkedHashMap<>());
-
     private XtceDb xtcedb;
 
-    private String name;
-    private String type;
+    private final String name;
+    private final String type;
     private final String yamcsInstance;
 
     private ProcessorConfig config;
@@ -113,6 +107,7 @@ public class Processor extends AbstractService {
     List<ServiceWithConfig> serviceList;
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
+    YamcsServerInstance ysi;
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
@@ -152,57 +147,48 @@ public class Processor extends AbstractService {
     void init(List<ServiceWithConfig> serviceList, ProcessorConfig config, Object spec)
             throws ProcessorException, ConfigurationException {
         log.debug("Initialzing the processor with the configuration {}", config);
-        
+
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        
+
         this.config = config;
-        
+
         processorData = new ProcessorData(this, config);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
 
-        synchronized (instances) {
-            if (instances.containsKey(key(yamcsInstance, name))) {
-                throw new ProcessorException(
-                        "A processor named '" + name + "' already exists in instance " + yamcsInstance);
-            }
-            
-
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-            Stream pps = ydb.getStream(PROC_PARAMETERS_STREAM);
-            if (pps != null) {
-                streamParameterSender = new StreamParameterSender(yamcsInstance, pps);
-            }
-            if (config.recordInitialValues || config.recordLocalValues) {
-                if (pps == null) {
-                    throw new ConfigurationException("recordInitialValue is set to true but the stream '"
-                            + PROC_PARAMETERS_STREAM + "' does not exist");
-                }
-                streamParameterSender.sendParameters(processorData.getLastValueCache().getValues());
-            }
-            if (config.eventAlarmServerEnabled) {
-                eventAlarmServer = new EventAlarmServer(yamcsInstance, config, timer);
-            }
-            // Shared between prm and crm
-            tmProcessor = new XtceTmProcessor(this);
-            containerRequestManager = new ContainerRequestManager(this, tmProcessor);
-            parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
-
-            for (ServiceWithConfig swc : serviceList) {
-                ProcessorService service = (ProcessorService) swc.service;
-                if (spec == null) {
-                    service.init(this);
-                } else {
-                    service.init(this, spec);
-                }
-            }
-
-            parameterRequestManager.init();
-
-            instances.put(key(yamcsInstance, name), this);
-            listeners.forEach(l -> l.processorAdded(this));
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        Stream pps = ydb.getStream(PROC_PARAMETERS_STREAM);
+        if (pps != null) {
+            streamParameterSender = new StreamParameterSender(yamcsInstance, pps);
         }
+        if (config.recordInitialValues || config.recordLocalValues) {
+            if (pps == null) {
+                throw new ConfigurationException("recordInitialValue is set to true but the stream '"
+                        + PROC_PARAMETERS_STREAM + "' does not exist");
+            }
+            streamParameterSender.sendParameters(processorData.getLastValueCache().getValues());
+        }
+        if (config.eventAlarmServerEnabled) {
+            eventAlarmServer = new EventAlarmServer(yamcsInstance, config, timer);
+        }
+        // Shared between prm and crm
+        tmProcessor = new XtceTmProcessor(this);
+        containerRequestManager = new ContainerRequestManager(this, tmProcessor);
+        parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
+
+        for (ServiceWithConfig swc : serviceList) {
+            ProcessorService service = (ProcessorService) swc.service;
+            if (spec == null) {
+                service.init(this);
+            } else {
+                service.init(this, spec);
+            }
+        }
+
+        parameterRequestManager.init();
+
+        listeners.forEach(l -> l.processorAdded(this));
     }
 
     public void setPacketProvider(TmPacketProvider tpp) {
@@ -237,12 +223,6 @@ public class Processor extends AbstractService {
 
     public ExecutorService getExecutor() {
         return executor;
-    }
-
-  
-  
-    private static String key(String instance, String name) {
-        return instance + "." + name;
     }
 
     public CommandHistoryPublisher getCommandHistoryPublisher() {
@@ -318,6 +298,10 @@ public class Processor extends AbstractService {
         }
     }
 
+    void setYamcsServerInstance(YamcsServerInstance ysi) {
+        this.ysi = ysi;
+    }
+
     private void awaitIfNecessary(Service service) {
         if (service != null) {
             service.awaitRunning();
@@ -390,44 +374,6 @@ public class Processor extends AbstractService {
         return connectedClients.size();
     }
 
-    public static Processor getInstance(String yamcsInstance, String name) {
-        return instances.get(key(yamcsInstance, name));
-    }
-
-    /**
-     * Returns the first register processor for the given instance or null if there is no processor registered.
-     * 
-     * @param yamcsInstance
-     *            - instance name for which the processor has to be returned.
-     * @return the first registered processor for the given instance
-     */
-    public static Processor getFirstProcessor(String yamcsInstance) {
-        for (Map.Entry<String, Processor> me : instances.entrySet()) {
-            if (me.getKey().startsWith(yamcsInstance + ".")) {
-                return me.getValue();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Increase with one the number of connected clients to the named processor and return the processor.
-     * 
-     * @param yamcsInstance
-     * @param name
-     * @param s
-     * @return the processor with the given name
-     * @throws ProcessorException
-     */
-    public static Processor connect(String yamcsInstance, String name, ConnectedClient s) throws ProcessorException {
-        Processor ds = instances.get(key(yamcsInstance, name));
-        if (ds == null) {
-            throw new ProcessorException("There is no processor named '" + name + "'");
-        }
-        ds.connect(s);
-        return ds;
-    }
-
     /**
      * Increase with one the number of connected clients
      */
@@ -461,20 +407,6 @@ public class Processor extends AbstractService {
         }
     }
 
-    public static Collection<Processor> getProcessors() {
-        return instances.values();
-    }
-
-    public static Collection<Processor> getProcessors(String instance) {
-        List<Processor> processors = new ArrayList<>();
-        for (Processor processor : instances.values()) {
-            if (instance.equals(processor.getInstance())) {
-                processors.add(processor);
-            }
-        }
-        return processors;
-    }
-
     /**
      * Closes the processor by stoping the tm/pp and tc It can be that there are still clients connected, but they will
      * not get any data and new clients can not connect to these processors anymore. Once it is closed, you can create a
@@ -497,8 +429,6 @@ public class Processor extends AbstractService {
             swc.service.stopAsync();
         }
 
-        instances.remove(key(yamcsInstance, name));
-
         if (commandReleaser != null) {
             commandReleaser.stopAsync();
             commandingManager.stopAsync();
@@ -514,6 +444,9 @@ public class Processor extends AbstractService {
         }
         log.info("Processor {} is out of business", name);
 
+        if (ysi != null) {
+            ysi.removeProcessor(name);
+        }
         if (getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
             notifyStopped();
         }
@@ -588,11 +521,6 @@ public class Processor extends AbstractService {
         return commandingManager;
     }
 
-    @Override
-    public String toString() {
-        return "name: " + name + " type: " + type + " connectedClients:" + connectedClients.size();
-    }
-
     /**
      *
      * @return the yamcs instance this processor is part of
@@ -650,17 +578,6 @@ public class Processor extends AbstractService {
         propagateProcessorStateChange();
     }
 
-    /**
-     * returns a list of all processors names
-     * 
-     * @return all processors names as a list of instance.processorName
-     */
-    public static List<String> getAllProcessors() {
-        List<String> l = new ArrayList<>(instances.size());
-        l.addAll(instances.keySet());
-        return l;
-    }
-
     public ParameterCacheConfig getPameterCacheConfig() {
         return config.parameterCacheConfig;
     }
@@ -709,6 +626,11 @@ public class Processor extends AbstractService {
 
     public ProcessorConfig getConfig() {
         return config;
+    }
+
+    @Override
+    public String toString() {
+        return "name: " + name + " type: " + type + " connectedClients:" + connectedClients.size();
     }
 
 }
