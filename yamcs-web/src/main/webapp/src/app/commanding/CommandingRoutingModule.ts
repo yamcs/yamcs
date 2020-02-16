@@ -4,6 +4,8 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
+import { ClearancesEnabledGuard } from './clearances/ClearancesEnabledGuard';
+import { ClearancesPage } from './clearances/ClearancesPage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandReportPage } from './command-sender/CommandReportPage';
 import { ConfigureCommandPage } from './command-sender/ConfigureCommandPage';
@@ -24,6 +26,11 @@ const routes: Routes = [
     component: InstancePage,
     children: [
       {
+        path: 'clearances',
+        pathMatch: 'full',
+        component: ClearancesPage,
+        canActivate: [ClearancesEnabledGuard],
+      }, {
         path: 'send',
         pathMatch: 'full',
         component: SendCommandPage,
@@ -78,6 +85,7 @@ const routes: Routes = [
 export class CommandingRoutingModule { }
 
 export const routingComponents = [
+  ClearancesPage,
   CommandHistoryPage,
   CommandReportPage,
   ConfigureCommandPage,

@@ -38,6 +38,7 @@ message UserAccountRecordDetail {
   optional bool superuser = 3;
   repeated string roles = 5;
   repeated ExternalIdentity identities = 4;
+  optional Clearance clearance = 6;
 }
 
 message ServiceAccountRecordDetail {
@@ -48,6 +49,12 @@ message ServiceAccountRecordDetail {
 message ExternalIdentity {
   optional string identity = 1;
   optional string provider = 2;
+}
+
+message Clearance {
+  optional string level = 1;
+  optional int32 issuedBy = 2;
+  optional google.protobuf.Timestamp issueTime = 3;
 }
 
 message GroupCollection {

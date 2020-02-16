@@ -40,7 +40,8 @@ public final class ManagementGpbHelper {
                 .setState(processor.getState())
                 .setPersistent(processor.isPersistent())
                 .setTime(TimeEncoding.toString(processor.getCurrentTime()))
-                .setReplay(processor.isReplay());
+                .setReplay(processor.isReplay())
+                .setCheckCommandClearance(processor.getConfig().checkCommandClearance());
 
         if (processor.isReplay()) {
             processorb.setReplayRequest(processor.getReplayRequest());

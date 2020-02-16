@@ -105,6 +105,12 @@
                               [subitem]="true">
           Queues
         </app-sidebar-nav-item>
+        <app-sidebar-nav-item *ngIf="showCommandClearancesItem()"
+                              routerLink="/commanding/clearances"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Clearances
+        </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 
       <app-sidebar-nav-item *ngIf="config.features.cfdp"

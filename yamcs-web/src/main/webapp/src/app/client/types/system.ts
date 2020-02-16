@@ -29,6 +29,10 @@ export interface ListRoutesResponse {
   routes: Route[];
 }
 
+export interface ListClearancesResponse {
+  clearances: Clearance[];
+}
+
 export interface Route {
   service: string;
   method: string;
@@ -84,6 +88,7 @@ export interface ConnectionInfo {
   clientId: number;
   instance: Instance;
   processor: Processor;
+  clearance?: string;
 }
 
 export interface ConnectionInfoSubscriptionResponse {
@@ -133,6 +138,10 @@ export interface EditClientRequest {
   processor?: string;
 }
 
+export interface EditClearanceRequest {
+  level: string;
+}
+
 export interface CreateUserRequest {
   name: string;
   displayName: string;
@@ -163,6 +172,7 @@ export interface UserInfo {
   roles: RoleInfo[];
   clientInfo: ClientInfo[];
   identities: ExternalIdentity[];
+  clearance: string;
 
   systemPrivilege: string[];
   objectPrivilege: ObjectPrivilege[];
@@ -224,6 +234,13 @@ export interface RoleInfo {
   description: string;
   systemPrivileges: string[];
   objectPrivileges: ObjectPrivilege[];
+}
+
+export interface Clearance {
+  username: string;
+  level: string;
+  issuedBy: string;
+  issueTime: string;
 }
 
 export interface Service {

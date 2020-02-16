@@ -32,10 +32,14 @@
 
       <dt>Significance</dt>
       <dd>
-        <app-significance-level [significance]="command?.significance"></app-significance-level>
+        <app-significance-level [level]="command?.significance?.consequenceLevel"></app-significance-level>
         &nbsp;&nbsp;{{ command?.significance?.reasonForWarning }}
       </dd>
     </dl>
+
+    <app-warning-message *ngIf="!(cleared$ | async)">
+      You're not cleared to send this command
+    </app-warning-message>
 
     <p *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">&nbsp;</p>
     <h3 *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">Arguments</h3>
@@ -54,7 +58,7 @@
       </mat-slide-toggle>
       &nbsp;&nbsp;&nbsp;&nbsp;
       <button class="ya-button primary"
-              [disabled]="(config.twoStageCommanding && !armControl.value) || !commandForm.form.valid"
+              [disabled]="(config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid"
               (click)="sendCommand()">
         <mat-icon>send</mat-icon>
         Send

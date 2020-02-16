@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Significance } from '../../client';
 
 @Component({
   selector: 'app-significance-level',
@@ -10,7 +9,7 @@ import { Significance } from '../../client';
 export class SignificanceLevel {
 
   @Input()
-  significance: Significance;
+  level: string;
 
   @Input()
   grayscale = false;

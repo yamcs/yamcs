@@ -191,6 +191,7 @@ message ProcessorInfo {
   optional bool persistent = 17;
   optional string time = 18;
   optional bool replay = 19;
+  optional bool checkCommandClearance = 20;
 }
 
 message TmStatistics {

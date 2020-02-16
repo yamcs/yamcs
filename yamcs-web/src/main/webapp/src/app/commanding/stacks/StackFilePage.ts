@@ -165,6 +165,7 @@ export class StackFilePage implements OnDestroy {
             entry.executionNumber = undefined;
             entry.id = undefined;
             entry.record = undefined;
+            entry.err = undefined;
         }
     }
 
@@ -173,6 +174,7 @@ export class StackFilePage implements OnDestroy {
             entry.executionNumber = undefined;
             entry.id = undefined;
             entry.record = undefined;
+            entry.err = undefined;
         }
         this.executionCounter = 0;
         this.entries$.next([...this.entries$.value]);
@@ -208,6 +210,10 @@ export class StackFilePage implements OnDestroy {
             // Refresh subject, to be sure
             this.entries$.next([...this.entries$.value]);
 
+            this.advanceSelection(entry);
+        }).catch(err => {
+            entry.executionNumber = ++this.executionCounter;
+            entry.err = err.message || err;
             this.advanceSelection(entry);
         });
     }

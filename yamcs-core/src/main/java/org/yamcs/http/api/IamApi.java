@@ -35,6 +35,7 @@ import org.yamcs.protobuf.ListPrivilegesResponse;
 import org.yamcs.protobuf.ListRolesResponse;
 import org.yamcs.protobuf.ListServiceAccountsResponse;
 import org.yamcs.protobuf.ListUsersResponse;
+import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.ObjectPrivilegeInfo;
 import org.yamcs.protobuf.RoleInfo;
 import org.yamcs.protobuf.ServiceAccountInfo;
@@ -489,6 +490,11 @@ public class IamApi extends AbstractIamApi<Context> {
             }
             if (user.getLastLoginTime() != TimeEncoding.INVALID_INSTANT) {
                 userb.setLastLoginTime(TimeEncoding.toProtobufTimestamp(user.getLastLoginTime()));
+            }
+
+            if (user.getClearance() != null) {
+                SignificanceLevelType level = SignificanceLevelType.valueOf(user.getClearance().getLevel());
+                userb.setClearance(level);
             }
 
             List<String> unsortedSystemPrivileges = new ArrayList<>();

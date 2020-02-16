@@ -7,8 +7,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.yamcs.security.protobuf.AccountRecord;
+import org.yamcs.security.protobuf.Clearance;
 import org.yamcs.security.protobuf.ExternalIdentity;
 import org.yamcs.security.protobuf.UserAccountRecordDetail;
 
@@ -31,6 +33,7 @@ public class User extends Account {
     private String hash; // Password hash, only for internal users
 
     private boolean superuser;
+    private Clearance clearance;
 
     private Map<String, String> identitiesByProvider = new HashMap<>();
     private Set<String> roles = new HashSet<>();
@@ -43,6 +46,8 @@ public class User extends Account {
     // Effective privileges (= external privileges + privileges from directory roles
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
+
+    private Set<ClearanceListener> clearanceListeners = new CopyOnWriteArraySet<>();
 
     public User(String username, User createdBy) {
         super(username, createdBy);
@@ -62,6 +67,9 @@ public class User extends Account {
             identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
         }
         roles.addAll(userDetail.getRolesList());
+        if (userDetail.hasClearance()) {
+            clearance = userDetail.getClearance();
+        }
     }
 
     public String getEmail() {
@@ -86,6 +94,15 @@ public class User extends Account {
 
     public void deleteIdentity(String provider) {
         identitiesByProvider.remove(provider);
+    }
+
+    public Clearance getClearance() {
+        return clearance;
+    }
+
+    public void setClearance(Clearance clearance) {
+        this.clearance = clearance;
+        clearanceListeners.forEach(l -> l.onChange(clearance));
     }
 
     public Set<String> getRoles() {
@@ -192,6 +209,14 @@ public class User extends Account {
         return false;
     }
 
+    public void addClearanceListener(ClearanceListener listener) {
+        clearanceListeners.add(listener);
+    }
+
+    public void removeClearanceListener(ClearanceListener listener) {
+        clearanceListeners.remove(listener);
+    }
+
     AccountRecord toRecord() {
         UserAccountRecordDetail.Builder userDetailb = UserAccountRecordDetail.newBuilder();
         if (hash != null) {
@@ -207,6 +232,9 @@ public class User extends Account {
                     .setProvider(provider)
                     .setIdentity(identity));
         });
+        if (clearance != null) {
+            userDetailb.setClearance(clearance);
+        }
 
         return newRecordBuilder().setUserDetail(userDetailb).build();
     }

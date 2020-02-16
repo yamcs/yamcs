@@ -99,8 +99,6 @@ message CommandOptions {
 	repeated CommandVerifierOption verifierOption = 5; //can be used to change individually the command verifiers
 }
 
-/********************* Command History ***********************/
-
 message CommandHistoryAttribute {
   optional string name = 1;
   optional Value value = 2;

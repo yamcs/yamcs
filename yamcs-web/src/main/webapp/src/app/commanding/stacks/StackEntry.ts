@@ -16,4 +16,5 @@ export interface StackEntry {
     executionNumber?: number;
     id?: string;
     record?: CommandHistoryRecord;
+    err?: string;
 }

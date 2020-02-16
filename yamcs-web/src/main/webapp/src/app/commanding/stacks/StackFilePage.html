@@ -74,17 +74,22 @@
                 </div>
                 <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
                     <div class="seq" (click)="selectEntry(entry)"></div>
-                    <div class="body">
-                        <app-yamcs-acknowledgments-table [command]="entry.record"
-                                                         [inline]="true">
-                        </app-yamcs-acknowledgments-table>
+                    <div class="body" [class.err]="entry.err">
+                        <ng-container *ngIf="entry.err">
+                            {{ entry.err }}
+                        </ng-container>
+                        <ng-container *ngIf="!entry.err">
+                            <app-yamcs-acknowledgments-table [command]="entry.record"
+                                                             [inline]="true">
+                            </app-yamcs-acknowledgments-table>
 
-                        <ng-container *ngIf="entry.record?.extra.length">
-                            <div class="block">
-                                <app-extra-acknowledgments-table [command]="entry.record"
-                                                                 [inline]="true">
-                                </app-extra-acknowledgments-table>
-                            </div>
+                            <ng-container *ngIf="entry.record?.extra.length">
+                                <div class="block">
+                                    <app-extra-acknowledgments-table [command]="entry.record"
+                                                                     [inline]="true">
+                                    </app-extra-acknowledgments-table>
+                                </div>
+                            </ng-container>
                         </ng-container>
                     </div>
                 </div>

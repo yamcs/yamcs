@@ -189,6 +189,10 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.user.hasAnyObjectPrivilegeOfType('Stream');
   }
 
+  showCommandClearancesItem() {
+    return this.config.commandClearances && this.user.hasSystemPrivilege('ControlCommandClearances');
+  }
+
   ngOnDestroy() {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();

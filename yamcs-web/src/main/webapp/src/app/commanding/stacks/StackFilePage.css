@@ -74,6 +74,11 @@ div.entry div.in .body {
     font-family: 'Roboto Mono', monospace;
 }
 
+div.entry div.out .body.err {
+    background-color: #fcc;
+    color: crimson;
+}
+
 .cdk-drag-placeholder {
     opacity: 0.6;
 }

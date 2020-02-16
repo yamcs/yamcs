@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.xtceproc.ContainerProcessingOptions;
@@ -23,6 +22,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_TM_PROCESSOR = "tmProcessor";
     private static final String CONFIG_KEY_MAX_TC_SIZE = "maxTcSize";
     private static final String CONFIG_KEY_CONTAINERLESS_CMDS = "allowContainerlessCommands";
+    private static final String CONFIG_KEY_CHECK_COMMAND_CLEARANCE = "checkCommandClearance";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -33,11 +33,13 @@ public class ProcessorConfig {
     int eventAlarmMinViolations = 1;
     boolean subscribeAll = false;
     boolean generateEvents = false;
+    boolean checkCommandClearance = false;
     /**
      * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
      * MetaCommand has no container associated.
      * <p>
-     * The link is then responsible to encode the command somehow starting from the command name and argument assignments.
+     * The link is then responsible to encode the command somehow starting from the command name and argument
+     * assignments.
      *
      */
     boolean allowContainerlessCommands = false;
@@ -71,6 +73,8 @@ public class ProcessorConfig {
                     maxTcSize = config.getInt(key);
                 } else if (CONFIG_KEY_CONTAINERLESS_CMDS.equals(key)) {
                     allowContainerlessCommands = config.getBoolean(key);
+                } else if (CONFIG_KEY_CHECK_COMMAND_CLEARANCE.equals(key)) {
+                    checkCommandClearance = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -131,6 +135,10 @@ public class ProcessorConfig {
 
     public boolean allowContainerlessCommands() {
         return allowContainerlessCommands;
+    }
+
+    public boolean checkCommandClearance() {
+        return checkCommandClearance;
     }
 
     @Override

@@ -14,6 +14,7 @@ import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/alarms/alarms.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/cop1/cop1.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/time/time_service.proto";
 
 
@@ -191,4 +192,5 @@ message ConnectionInfo {
   optional int32 clientId = 1;
   optional yamcsManagement.YamcsInstance instance = 2;
   optional yamcsManagement.ProcessorInfo processor = 3;
+  optional mdb.SignificanceInfo.SignificanceLevelType clearance = 4;
 }

@@ -1,26 +1,26 @@
-<ng-container [ngSwitch]="significance?.consequenceLevel">
+<ng-container [ngSwitch]="level">
 
-  <div *ngSwitchCase="'WATCH'"
-        class="watch"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchCase="'WATCH'"
+           class="watch"
+           [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'WARNING'"
-        class="warning"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchCase="'WARNING'"
+           class="warning"
+           [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'DISTRESS'"
-        class="distress"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchCase="'DISTRESS'"
+           class="distress"
+           [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'CRITICAL'"
-        class="critical"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchCase="'CRITICAL'"
+           class="critical"
+           [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'SEVERE'"
-        class="severe"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchCase="'SEVERE'"
+           class="severe"
+           [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchDefault
-        class="none"
-        [class.grayscale]="grayscale"></div>
+      <div *ngSwitchDefault
+           class="none"
+           [class.grayscale]="grayscale"></div>
 </ng-container>

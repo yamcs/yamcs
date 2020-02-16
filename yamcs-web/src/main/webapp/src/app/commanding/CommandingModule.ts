@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
+import { ChangeLevelDialog } from './clearances/ChangeLevelDialog';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
 import { CommandDetail } from './command-history/CommandDetail';
 import { CommandHistoryPrintable } from './command-history/CommandHistoryPrintable';
@@ -32,6 +33,7 @@ const pipes = [
     pipes,
     AcknowledgmentIcon,
     AddCommandDialog,
+    ChangeLevelDialog,
     CommandDetail,
     CommandForm,
     CommandHistoryPrintable,
