@@ -96,11 +96,3 @@ message ExportPacketsRequest {
   repeated string name = 4;
 }
 
-message ExportParameterValuesRequest {
-  optional string instance = 1;
-  optional google.protobuf.Timestamp start = 2;
-  optional google.protobuf.Timestamp stop = 3;
-  repeated string parameters = 4;
-  optional string namespace = 5; // Namespace used to display parameter names in csv header. Only used when no parameter ids were specified.
-  repeated string extra = 6;
-}
