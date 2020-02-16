@@ -714,15 +714,15 @@ public class XtceStaxReader {
         String name = readMandatoryAttribute("name", element);
         int dim;
         ArrayParameterType ptype;
-        
-        if(hasAttribute("numberOfDimensions", element)) {
+
+        if (hasAttribute("numberOfDimensions", element)) {
             dim = readIntAttribute("numberOfDimensions", element);
             ptype = new ArrayParameterType(name, dim);
         } else {
             ptype = new ArrayParameterType(name);
             dim = -1;
         }
-        
+
         String refName = readMandatoryAttribute("arrayTypeRef", xmlEvent.asStartElement());
 
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
@@ -770,6 +770,10 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_ENCODING)) {
                 readEncoding(spaceSystem, ptype);
             } else if (isEndElementWithName(XTCE_ABSOLUTE_TIME_PARAMETER_TYPE)) {
+                if (ptype.getReferenceTime() == null) {
+                    throw new XMLStreamException("AbsoluteTimeParameterType without a reference time not supported",
+                            xmlEvent.getLocation());
+                }
                 return ptype;
             } else {
                 logUnknown();
