@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * A range of numbers [min, max) where both min and max can be inclusive or exclusive.
- * 
+ * <p>
  * Both min and max can be Double.NaN meaning that the range is open at that end.
  * 
  * @author nm
@@ -46,16 +46,16 @@ public class DoubleRange implements Serializable {
             double maxInclusive) {
         double min = minExclusive;
         double max = maxExclusive;
-        boolean minIncl = true;
-        boolean maxIncl = true;
+        boolean minIncl = false;
+        boolean maxIncl = false;
 
         if (!Double.isNaN(minInclusive)) {
             min = minInclusive;
-            minIncl = false;
+            minIncl = true;
         }
         if (!Double.isNaN(maxInclusive)) {
             max = maxInclusive;
-            maxIncl = false;
+            maxIncl = true;
         }
 
         return new DoubleRange(min, max, minIncl, maxIncl);
