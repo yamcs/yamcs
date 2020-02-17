@@ -147,7 +147,9 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
 
     @Override
     protected void doDisable() {
-        thread.interrupt();
+        if(thread!=null) {
+            thread.interrupt();
+        }
     }
 
     /**
