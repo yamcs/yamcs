@@ -54,13 +54,15 @@
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 <h6 style="padding-top: 0">Yamcs acknowledgments</h6>
 <div class="block">
-  <app-yamcs-acknowledgments-table [command]="command"></app-yamcs-acknowledgments-table>
+  <app-yamcs-acknowledgments-table [command]="command"
+                                   [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
 </div>
 
 <ng-container *ngIf="command.extraAcks.length">
   <h6>Extra acknowledgments</h6>
   <div class="block">
-    <app-extra-acknowledgments-table [command]="command"></app-extra-acknowledgments-table>
+    <app-extra-acknowledgments-table [command]="command"
+                                     [showIcons]="showIcons"></app-extra-acknowledgments-table>
   </div>
 </ng-container>
 

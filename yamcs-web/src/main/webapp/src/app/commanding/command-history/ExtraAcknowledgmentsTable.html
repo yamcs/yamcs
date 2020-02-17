@@ -1,6 +1,6 @@
 <table yaDataTable [class.inline]="inline">
     <tr *ngFor="let ack of command.extraAcks">
-        <td style="width: 16px">
+        <td *ngIf="showIcons" style="width: 16px">
             <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
         </td>
         <td style="width: 150px">{{ ack.name }}</td>

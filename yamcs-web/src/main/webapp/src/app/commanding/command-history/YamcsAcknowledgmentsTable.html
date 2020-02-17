@@ -1,6 +1,6 @@
 <table yaDataTable [class.inline]="inline" *ngIf="command">
     <tr>
-        <td style="width: 16px">
+        <td *ngIf="showIcons" style="width: 16px">
             <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
         </td>
         <td style="width: 150px">Queued</td>
@@ -12,7 +12,7 @@
         </td>
     </tr>
     <tr>
-        <td>
+        <td *ngIf="showIcons">
             <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
             </app-transmission-constraints-icon>
             <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
@@ -28,7 +28,7 @@
         </td>
     </tr>
     <tr>
-        <td>
+        <td *ngIf="showIcons">
             <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
         </td>
         <td>Sent</td>

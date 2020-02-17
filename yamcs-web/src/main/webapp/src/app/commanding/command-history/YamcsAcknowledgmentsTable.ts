@@ -14,4 +14,7 @@ export class YamcsAcknowledgmentsTable {
 
     @Input()
     inline = false;
+
+    @Input()
+    showIcons = true;
 }

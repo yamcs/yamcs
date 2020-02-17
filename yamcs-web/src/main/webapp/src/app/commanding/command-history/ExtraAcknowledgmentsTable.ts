@@ -14,4 +14,7 @@ export class ExtraAcknowledgmentsTable {
 
     @Input()
     inline = false;
+
+    @Input()
+    showIcons = true;
 }
