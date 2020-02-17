@@ -12,6 +12,9 @@ import org.yamcs.commanding.PreparedCommand;
 import com.google.common.util.concurrent.RateLimiter;
 
 /**
+ * Abstract link that starts a thread when it's enabled and stops it when it's disabled.
+ * <p>
+ * The {@link #startUp()} and {@link #shutDown()} methods are called at startup/enable and shutdown/disable times on the working thread.
  * 
  */
 public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink implements Runnable {
@@ -19,7 +22,6 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     RateLimiter rateLimiter;
     protected BlockingQueue<PreparedCommand> commandQueue;
     long initialDelay;
-  
 
     public AbstractThreadedTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
             throws ConfigurationException {
@@ -35,39 +37,37 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
-        
-        
+
     }
 
     @Override
     protected void doStart() {
-
-        try {
-            startUp();
-        } catch (Exception e) {
-            notifyFailed(e);
+        if (!isDisabled()) {
+            doEnable();
         }
-        thread = new Thread(this);
-        thread.start();
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
-        try {
-            shutDown();
-        } catch (Exception e) {
-            notifyFailed(e);
+        if (!isDisabled()) {
+            try {
+                shutDown();
+                commandQueue.clear();
+                commandQueue.offer(SIGNAL_QUIT);
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    log.warn("Interrupted while waiting for thread shutdown");
+                    Thread.currentThread().interrupt();
+                }
+                notifyStopped();
+            } catch (Exception e) {
+                notifyFailed(e);
+            }
+        } else {
+            notifyStopped();
         }
-        commandQueue.clear();
-        commandQueue.offer(SIGNAL_QUIT);
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            log.warn("Interrupted while waiting for thread shutdown");
-            Thread.currentThread().interrupt();
-        }
-        notifyStopped();
     }
 
     /**
@@ -77,7 +77,8 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     public void uplinkTc(PreparedCommand pc) {
         if (!commandQueue.offer(pc)) {
             log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
-            commandHistoryPublisher.commandFailed(pc.getCommandId(), getCurrentTime(), "Link " + linkName + ": queue full");
+            commandHistoryPublisher.commandFailed(pc.getCommandId(), getCurrentTime(),
+                    "Link " + linkName + ": queue full");
         }
     }
 
@@ -90,6 +91,11 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
                 Thread.currentThread().interrupt();
                 return;
             }
+        }
+        try {
+            startUp();
+        } catch (Exception e) {
+            log.error("Failed to startUp", e);
         }
 
         while (isRunningAndEnabled()) {
@@ -107,22 +113,62 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
                     rateLimiter.acquire();
                 }
                 uplinkCommand(pc);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             } catch (Exception e) {
                 log.error("Error when sending command: ", e);
                 throw new RuntimeException(e);
             }
         }
+        
+        try {
+            shutDown();
+        } catch (Exception e) {
+            log.error("Failed to shutDown", e);
+            //TODO we should effectively fail the service here but we cannot because we already notified started
+            // so we disable it instead
+            disable();
+        }
     }
 
-    protected abstract void uplinkCommand(PreparedCommand pc) throws IOException;
-
-    protected abstract void startUp() throws Exception;
-
-    protected abstract void shutDown() throws Exception;
     
+
+    @Override
+    protected void doEnable() {
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    @Override
+    protected void doDisable() {
+        thread.interrupt();
+    }
+
     /**
-     * Called each {@link #housekeepingInterval} milliseconds, can be used to establish tcp connections or similar things
+     * Called each {@link #housekeepingInterval} milliseconds, can be used to establish tcp connections or similar
+     * things
      */
     protected void doHousekeeping() {
     }
+
+    /**
+     * Called 
+     * @param pc
+     * @throws IOException
+     */
+    protected abstract void uplinkCommand(PreparedCommand pc) throws IOException;
+
+
+    /**
+     * Called at start up (if the link is enabled) or when the link is enabled
+     * @throws Exception
+     */
+    protected abstract void startUp() throws Exception;
+
+    /**
+     * Called at shutdown (if the link is enabled) or when the link is disabled
+     * @throws Exception
+     */
+    protected abstract void shutDown() throws Exception;
 }

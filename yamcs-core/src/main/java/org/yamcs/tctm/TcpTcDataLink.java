@@ -165,17 +165,13 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         if (!isDisabled()) {
             openSocket();
         }
     }
 
-    @Override
-    protected void doEnable() throws Exception {
-        this.openSocket();
-    }
-
+  
     @Override
     public void shutDown() throws Exception {
         disconnect();
@@ -239,12 +235,6 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
         openSocket();
     }
 
-    @Override
-    protected void doDisable() throws Exception {
-        if (isRunning()) {
-            disconnect();
-        }
-    }
 
     @Override
     protected Status connectionStatus() {
