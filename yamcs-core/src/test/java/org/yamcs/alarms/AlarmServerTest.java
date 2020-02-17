@@ -7,7 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -138,13 +141,13 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
-        alarmServer.shelve(aa, "cucu", "looking at it later", 500);
+        alarmServer.shelve(aa, "busy operator", "looking at it later", 500);
         assertEquals(1, l.shelved.size());
         assertEquals(aa, l.shelved.remove());
         
-        Thread.sleep(1000);
-        assertEquals(1, l.unshelved.size());
-        assertEquals(aa, l.unshelved.remove());
+        ActiveAlarm<ParameterValue> aa1 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
+
+        assertEquals(aa, aa1);
         assertFalse(aa.isShelved());
     }
 
@@ -208,7 +211,7 @@ public class AlarmServerTest {
         Queue<ActiveAlarm<ParameterValue>> cleared = new LinkedList<>();
         Queue<ActiveAlarm<ParameterValue>> rtn = new LinkedList<>();
         Queue<ActiveAlarm<ParameterValue>> shelved = new LinkedList<>();
-        Queue<ActiveAlarm<ParameterValue>> unshelved = new LinkedList<>();
+        BlockingQueue<ActiveAlarm<ParameterValue>> unshelved = new LinkedBlockingQueue<>();
         Queue<ActiveAlarm<ParameterValue>> reset = new LinkedList<>();
 
         @Override
