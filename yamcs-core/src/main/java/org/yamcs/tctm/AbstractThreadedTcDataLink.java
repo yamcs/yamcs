@@ -21,6 +21,8 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     Thread thread;
     RateLimiter rateLimiter;
     protected BlockingQueue<PreparedCommand> commandQueue;
+    
+    //the initial delay applies only if the link is enabled at startup
     long initialDelay;
 
     public AbstractThreadedTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
@@ -44,6 +46,8 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     protected void doStart() {
         if (!isDisabled()) {
             doEnable();
+        } else {
+            initialDelay = 0;
         }
         notifyStarted();
     }
@@ -87,6 +91,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
         if (initialDelay > 0) {
             try {
                 Thread.sleep(initialDelay);
+                initialDelay = 0;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
