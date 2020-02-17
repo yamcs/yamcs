@@ -12,6 +12,7 @@ import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
  * It gives back a partition start/end and a directory where data shall be stored.
  * 
  * Currently the following are implemented:
+ * YYYY
  * YYYY/DOY
  * YYYY/MM
  * 
@@ -124,7 +125,7 @@ public abstract class TimePartitionSchema {
             String start = String.format("%04d-%02d-01T00:00:00Z", year, month);
             int endm = month+1;
             int endy = year;
-            if (endm == 12) {
+            if (endm == 13) {
                 endm = 1;
                 endy++;
             }
