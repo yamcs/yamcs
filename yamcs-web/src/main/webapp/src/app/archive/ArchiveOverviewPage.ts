@@ -322,7 +322,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             }
             events.push(event);
           }
-          const extraStyles: { [key: string]: any } = {};
+          const extraStyles: { [key: string]: any; } = {};
           if (i < completenessGroups.length - 1) {
             extraStyles['dividerColor'] = 'transparent';
           }
@@ -368,7 +368,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
                 events.push(event);
               }
             }
-            const extraStyles: { [key: string]: any } = {};
+            const extraStyles: { [key: string]: any; } = {};
             if (i < this.packetNames.length - 1) {
               extraStyles['dividerColor'] = 'transparent';
             }
@@ -409,7 +409,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             }
             events.push(event);
           }
-          const extraStyles: { [key: string]: any } = {};
+          const extraStyles: { [key: string]: any; } = {};
           if (i < parameterGroups.length - 1) {
             extraStyles['dividerColor'] = 'transparent';
           }
@@ -448,7 +448,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             }
             events.push(event);
           }
-          const extraStyles: { [key: string]: any } = {};
+          const extraStyles: { [key: string]: any; } = {};
           if (i < commandGroups.length - 1) {
             extraStyles['dividerColor'] = 'transparent';
           }
@@ -538,7 +538,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
           this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
             horizontalPosition: 'end',
           });
-          this.yamcs.getInstanceClient()!.createProcessor(result).then(() => {
+          this.yamcs.yamcsClient.createProcessor(result).then(() => {
             this.snackBar.open(`Joined replay ${result.name}`, undefined, {
               duration: 3000,
               horizontalPosition: 'end',

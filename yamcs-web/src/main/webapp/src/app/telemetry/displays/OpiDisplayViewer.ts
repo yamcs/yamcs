@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
 import { NamedObjectId, ParameterValue, StorageClient, Value } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
@@ -35,6 +36,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     private yamcs: YamcsService,
     private router: Router,
     private synchronizer: Synchronizer,
+    private messageService: MessageService,
   ) {
     this.storageClient = yamcs.createStorageClient();
   }
@@ -145,7 +147,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       currentFolder = objectName.substring(0, objectName.lastIndexOf('/') + 1);
     }
 
-    this.display.addScriptLibrary('Yamcs', new YamcsScriptLibrary(this.yamcs, instance));
+    this.display.addScriptLibrary('Yamcs', new YamcsScriptLibrary(
+      this.yamcs, this.messageService, instance));
 
     this.display.addEventListener('opendisplay', evt => {
       this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?instance=${instance}`);

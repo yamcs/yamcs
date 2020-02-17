@@ -355,6 +355,7 @@ export interface CreateEventRequest {
 }
 
 export interface CreateProcessorRequest {
+  instance: string;
   name: string;
   type: string;
   clientId?: number[];

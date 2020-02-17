@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { Cop1SubscriptionRequest, Cop1SubscriptionResponse } from '.';
+import { Cop1SubscriptionRequest, Cop1SubscriptionResponse, CreateProcessorRequest } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
@@ -156,6 +156,14 @@ export default class YamcsClient implements HttpHandler {
   async deleteClearance(username: string) {
     return this.doFetch(`${this.apiUrl}/clearances/${username}`, {
       method: 'DELETE',
+    });
+  }
+
+  async createProcessor(options: CreateProcessorRequest) {
+    const body = JSON.stringify(options);
+    return await this.doFetch(`${this.apiUrl}/processors`, {
+      body,
+      method: 'POST',
     });
   }
 
