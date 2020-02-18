@@ -7,4 +7,13 @@
   </a>
   <mat-icon class="icon12 sep">navigate_next</mat-icon>
 </ng-container>
-<ng-container *ngIf="!link">{{ label }}</ng-container>
+<ng-container *ngIf="!link && action">
+  <a class="ya-link action">
+    <mat-icon *ngIf="icon" class="icon12 item" [class.with-label]="label">
+      {{ icon }}
+    </mat-icon>
+    <ng-container *ngIf="label">{{ label }}</ng-container>
+  </a>
+  <mat-icon class="icon12 sep">navigate_next</mat-icon>
+</ng-container>
+<ng-container *ngIf="!link && !action">{{ label }}</ng-container>

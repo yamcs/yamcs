@@ -10,3 +10,7 @@
 .mat-icon {
   vertical-align: middle;
 }
+
+.action {
+  cursor: pointer;
+}

@@ -87,7 +87,7 @@
               <a [routerLink]="'/commanding/stacks/files/' + item.name"
                  [queryParams]="{instance: instance.name}"
                  (click)="$event.stopPropagation()">
-                {{ item.name | basename }}
+                {{ item.name | filename | basename }}
               </a>
             </ng-container>
           </td>

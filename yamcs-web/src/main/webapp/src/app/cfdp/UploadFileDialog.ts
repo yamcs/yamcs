@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, Instance, StorageClient } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
+import { ObjectSelector } from '../shared/forms/ObjectSelector';
 
 @Component({
   selector: 'app-upload-file-dialog',
@@ -23,6 +24,10 @@ export class UploadFileDialog {
   displayedColumns = ['name'];
 
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
+  breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
+
+  @ViewChild('selector')
+  objectSelector: ObjectSelector;
 
   constructor(
     private dialogRef: MatDialogRef<UploadFileDialog>,
@@ -60,4 +65,37 @@ export class UploadFileDialog {
       this.dialogRef.close();
     });
   }
+
+  updateBreadcrumb(prefix: string) {
+    if (!prefix) {
+      this.breadcrumb$.next([]);
+      return;
+    }
+
+    if (prefix.endsWith('/')) {
+      prefix = prefix.substr(0, prefix.length - 1);
+    }
+
+    const items: BreadcrumbItem[] = [];
+    const parts = prefix.split('/');
+    for (let i = 0; i < parts.length; i++) {
+      items.push({
+        name: parts[i],
+        prefix: parts.slice(0, i + 1).join('/'),
+      });
+    }
+    this.breadcrumb$.next(items);
+  }
+
+  changePrefix(prefix: string) {
+    if (prefix) {
+      prefix = prefix + '/';
+    }
+    this.objectSelector.changePrefix(prefix);
+  }
+}
+
+interface BreadcrumbItem {
+  name: string;
+  prefix: string;
 }
