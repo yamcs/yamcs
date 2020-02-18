@@ -37,7 +37,7 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
-import org.yamcs.management.ManagementService;
+import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.AbstractManagementApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.EditLinkRequest;
@@ -446,19 +446,22 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
-        String instance = null;
-        if (request.hasInstance()) {
-            instance = verifyInstance(request.getInstance());
-        }
-
-        List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
         ListLinksResponse.Builder responseb = ListLinksResponse.newBuilder();
 
-        for (LinkInfo link : links) {
-            if (instance == null || instance.equals(link.getInstance())) {
+        if (request.hasInstance()) {
+            LinkManager lmgr = verifyInstanceObj(request.getInstance()).getLinkManager();
+            for (LinkInfo link : lmgr.getLinkInfo()) {
                 responseb.addLinks(link);
             }
+        } else {
+            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
+                LinkManager lmgr = ysi.getLinkManager();
+                for (LinkInfo link : lmgr.getLinkInfo()) {
+                    responseb.addLinks(link);
+                }
+            }
         }
+
         observer.complete(responseb.build());
     }
 
@@ -479,19 +482,19 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             state = request.getState();
         }
 
-        ManagementService mservice = ManagementService.getInstance();
+        LinkManager lmgr = verifyInstanceObj(request.getInstance()).getLinkManager();
         if (state != null) {
             switch (state.toLowerCase()) {
             case "enabled":
                 try {
-                    mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
+                    lmgr.enableLink(linkInfo.getName());
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
                 break;
             case "disabled":
                 try {
-                    mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
+                    lmgr.disableLink(linkInfo.getName());
                 } catch (IllegalArgumentException e) {
                     throw new NotFoundException(e);
                 }
@@ -503,13 +506,13 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
         if (request.hasResetCounters() && request.getResetCounters()) {
             try {
-                mservice.resetCounters(linkInfo.getInstance(), linkInfo.getName());
+                lmgr.resetCounters(linkInfo.getName());
             } catch (IllegalArgumentException e) {
                 throw new NotFoundException(e);
             }
         }
 
-        linkInfo = ManagementService.getInstance().getLinkInfo(request.getInstance(), request.getName());
+        linkInfo = lmgr.getLinkInfo(request.getName());
         observer.complete(linkInfo);
     }
 
@@ -603,17 +606,19 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
         return instance;
     }
+
     public static YamcsServerInstance verifyInstanceObj(String instance) {
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
-        if (ysi==null) {
+        if (ysi == null) {
             throw new NotFoundException("No instance named '" + instance + "'");
         }
         return ysi;
     }
 
     public static LinkInfo verifyLink(String instance, String linkName) {
-        verifyInstance(instance);
-        LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
+        YamcsServerInstance ysi = verifyInstanceObj(instance);
+        LinkManager lmgr = ysi.getLinkManager();
+        LinkInfo linkInfo = lmgr.getLinkInfo(linkName);
         if (linkInfo == null) {
             throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
         }
@@ -623,11 +628,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
-        
-        if(ysi==null) {
-            throw new BadRequestException("Invalid Yamcs instance "+yamcsInstance.getName());
+
+        if (ysi == null) {
+            throw new BadRequestException("Invalid Yamcs instance " + yamcsInstance.getName());
         }
-        
+
         if (yamcsInstance.hasMissionDatabase()) {
             XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {

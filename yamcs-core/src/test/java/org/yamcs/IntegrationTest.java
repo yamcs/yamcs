@@ -1116,7 +1116,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         byte[] resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET).get();
         ListServicesResponse r = ListServicesResponse.parseFrom(resp);
-        assertEquals(10, r.getServicesList().size());
+        assertEquals(9, r.getServicesList().size());
 
         ServiceInfo servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))

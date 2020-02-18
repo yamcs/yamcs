@@ -2,8 +2,11 @@ package org.yamcs.http.websocket;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
+import org.yamcs.http.api.ManagementApi;
 import org.yamcs.management.LinkListener;
-import org.yamcs.management.ManagementService;
+import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.LinkEvent;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.LinkSubscriptionRequest;
@@ -36,27 +39,37 @@ public class LinkResource implements WebSocketResource, LinkListener {
                 instance = req.getInstance();
             }
         }
-
-        ManagementService mservice = ManagementService.getInstance();
-
-        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
-
-        for (LinkInfo linkInfo : mservice.getLinkInfo()) {
-            if (instance == null || instance.equals(linkInfo.getInstance())) {
-                sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+        if(instance!=null) {
+            YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+            subscribe(ysi);
+        } else {
+            for(YamcsServerInstance ysi : YamcsServer.getInstances()) {
+                subscribe(ysi);
             }
         }
-        mservice.addLinkListener(this);
+        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+
+        
         return null;
     }
+    
+    private void subscribe(YamcsServerInstance ysi) {
+        LinkManager lmgr = ysi.getLinkManager();
+        
+        for (LinkInfo linkInfo : lmgr.getLinkInfo()) {
+            sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+        }
+        lmgr.addLinkListener(this);
+    }
+    
 
     @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        ManagementService mservice = ManagementService.getInstance();
-        mservice.removeLinkListener(this);
+        unsubscribeAll();
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
+    
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
         // Ignore
@@ -69,10 +82,24 @@ public class LinkResource implements WebSocketResource, LinkListener {
 
     @Override
     public void socketClosed() {
-        ManagementService mservice = ManagementService.getInstance();
-        mservice.removeLinkListener(this);
+        unsubscribeAll();
+    }
+    
+    private void unsubscribeAll() {
+        if(instance!=null) {
+            unsubscribe(ManagementApi.verifyInstanceObj(instance));
+        } else {
+            for(YamcsServerInstance ysi : YamcsServer.getInstances()) {
+                unsubscribe(ysi);
+            }
+        }
     }
 
+    
+    private void unsubscribe(YamcsServerInstance ysi) {
+        LinkManager lmgr = ysi.getLinkManager();
+        lmgr.removeLinkListener(this);
+    }
     @Override
     public void linkRegistered(LinkInfo linkInfo) {
         if (instance == null || instance.equals(linkInfo.getInstance())) {
