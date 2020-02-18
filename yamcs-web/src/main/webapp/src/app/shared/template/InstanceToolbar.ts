@@ -72,7 +72,7 @@ export class InstanceToolbar implements OnDestroy {
         this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
           horizontalPosition: 'end',
         });
-        this.yamcs.getInstanceClient()!.createProcessor(result).then(() => {
+        this.yamcs.yamcsClient.createProcessor(result).then(() => {
           this.snackBar.open(`Joined replay ${result.name}`, undefined, {
             duration: 3000,
             horizontalPosition: 'end',

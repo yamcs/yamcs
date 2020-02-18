@@ -17,6 +17,7 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadCommandHistory = new SystemPrivilege("ReadCommandHistory");
     public static final SystemPrivilege ModifyCommandHistory = new SystemPrivilege("ModifyCommandHistory");
     public static final SystemPrivilege ControlCommandQueue = new SystemPrivilege("ControlCommandQueue");
+    public static final SystemPrivilege ControlCommandClearances = new SystemPrivilege("ControlCommandClearances");
 
     /**
      * Allows to issue any commands

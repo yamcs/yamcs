@@ -148,6 +148,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.Command);
         systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
+        systemPrivileges.add(SystemPrivilege.ControlCommandClearances);
         systemPrivileges.add(SystemPrivilege.ControlCommandQueue);
         systemPrivileges.add(SystemPrivilege.ControlLinks);
         systemPrivileges.add(SystemPrivilege.ControlProcessor);

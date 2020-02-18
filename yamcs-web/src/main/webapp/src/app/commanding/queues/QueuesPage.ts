@@ -17,7 +17,7 @@ export class QueuesPage implements OnDestroy {
   cqueueEventSubscription: Subscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
-  private cqueueByName: { [key: string]: CommandQueue } = {};
+  private cqueueByName: { [key: string]: CommandQueue; } = {};
 
   constructor(yamcs: YamcsService, title: Title) {
     const processor = yamcs.getProcessor();
@@ -51,6 +51,13 @@ export class QueuesPage implements OnDestroy {
           if (cqueueEvent.type === 'COMMAND_ADDED') {
             queue.entry = queue.entry || [];
             queue.entry.push(cqueueEvent.data);
+          } else if (cqueueEvent.type === 'COMMAND_UPDATED') {
+            const idx = (queue.entry || []).findIndex(entry => {
+              return entry.uuid === cqueueEvent.data.uuid;
+            });
+            if (idx !== -1) {
+              queue.entry[idx] = cqueueEvent.data;
+            }
           } else if (cqueueEvent.type === 'COMMAND_REJECTED') {
             queue.entry = queue.entry || [];
             queue.entry = queue.entry.filter(entry => {

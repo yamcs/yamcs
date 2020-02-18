@@ -16,11 +16,14 @@ import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ConnectionInfo;
+import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
+import org.yamcs.security.ClearanceListener;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
+import org.yamcs.security.protobuf.Clearance;
 
 import com.google.protobuf.Message;
 
@@ -34,6 +37,8 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
 
     private List<WebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
+
+    private ClearanceListener clearanceListener = clearance -> this.sendConnectionInfo();
 
     public ConnectedWebSocketClient(User user, String applicationName, String address, Processor processor,
             WebSocketFrameHandler wsHandler) {
@@ -102,6 +107,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         managementService.unregisterClient(getId());
         managementService.removeManagementListener(this);
         resources.forEach(WebSocketResource::socketClosed);
+        getUser().removeClearanceListener(clearanceListener);
     }
 
     @Override
@@ -132,8 +138,13 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         sendConnectionInfo();
     }
 
-    void sendConnectionInfo() {
-        ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder()
+    void sendInitialState() {
+        sendConnectionInfo();
+        getUser().addClearanceListener(clearanceListener);
+    }
+
+    private void sendConnectionInfo() {
+        ConnectionInfo.Builder infob = ConnectionInfo.newBuilder()
                 .setClientId(getId());
 
         Processor processor = getProcessor();
@@ -142,11 +153,17 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
             YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instanceName);
             YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
                     .setState(ysi.state()).build();
-            conninf.setInstance(yi);
-            conninf.setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
+            infob.setInstance(yi);
+            infob.setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
         }
 
-        wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
+        Clearance clearance = getUser().getClearance();
+        if (clearance != null) {
+            SignificanceLevelType level = SignificanceLevelType.valueOf(clearance.getLevel());
+            infob.setClearance(level);
+        }
+
+        wsHandler.sendData(ProtoDataType.CONNECTION_INFO, infob.build());
     }
 
     public void checkSystemPrivilege(int requestId, SystemPrivilege systemPrivilege) throws WebSocketException {

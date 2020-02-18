@@ -8,6 +8,7 @@ export interface WebsiteConfig {
   tag: string;
   features: FeaturesConfig;
   events?: EventsConfig;
+  commandClearances: boolean;
   twoStageCommanding: boolean;
 }
 

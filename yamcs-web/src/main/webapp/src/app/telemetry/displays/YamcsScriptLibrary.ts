@@ -1,4 +1,5 @@
 import { ArgumentAssignment } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 /**
@@ -6,10 +7,13 @@ import { YamcsService } from '../../core/services/YamcsService';
  */
 export class YamcsScriptLibrary {
 
-    constructor(private yamcs: YamcsService, private instance: string) {
-    }
+    constructor(
+        private yamcs: YamcsService,
+        private messageService: MessageService,
+        private instance: string,
+    ) { }
 
-    issueCommand(qname: string, args: { [key: string]: any }) {
+    issueCommand(qname: string, args: { [key: string]: any; }) {
         const processor = this.yamcs.getProcessor();
         const instanceClient = this.yamcs.getInstanceClient()!;
 
@@ -20,6 +24,6 @@ export class YamcsScriptLibrary {
 
         instanceClient.issueCommand(processor.name, qname, {
             assignment: assignments,
-        });
+        }).catch(err => this.messageService.showError(err));
     }
 }

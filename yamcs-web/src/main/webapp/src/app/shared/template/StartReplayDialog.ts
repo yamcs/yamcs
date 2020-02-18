@@ -42,7 +42,7 @@ export class StartReplayDialog {
   }
 
   start() {
-    const replayConfig: { [key: string]: any } = {
+    const replayConfig: { [key: string]: any; } = {
       utcStart: utils.toISOString(this.form.value.start),
     };
     if (this.form.value.stop) {
@@ -50,6 +50,7 @@ export class StartReplayDialog {
     }
 
     this.dialogRef.close({
+      instance: this.yamcs.getInstance().name,
       name: this.form.value.name,
       type: 'Archive', // TODO make configurable?
       clientId: [this.yamcs.getClientId()],

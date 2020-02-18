@@ -83,6 +83,7 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -442,6 +443,20 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             throw new BadRequestException(e);
         } catch (YamcsException e) { // could be anything, consider as internal server error
             throw new InternalServerErrorException(e);
+        }
+
+        if (!dryRun && processor.getConfig().checkCommandClearance()) {
+            if (ctx.user.getClearance() == null) {
+                throw new ForbiddenException("Not cleared for commanding");
+            }
+            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
+            Levels level = null;
+            if (preparedCommand.getMetaCommand().getDefaultSignificance() != null) {
+                level = preparedCommand.getMetaCommand().getDefaultSignificance().getConsequenceLevel();
+            }
+            if (level != null && level.isMoreSevere(clearance)) {
+                throw new ForbiddenException("Not cleared for this level of commands");
+            }
         }
 
         // Good, now send

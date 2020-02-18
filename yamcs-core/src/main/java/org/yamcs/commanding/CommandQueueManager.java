@@ -278,13 +278,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
             preReleaseCommad(q, pc, false);
-        
+
         }
 
         return q;
     }
-    
-    //if there are transmission constrains, start the checker;
+
+    // if there are transmission constrains, start the checker;
     // if not just release the command
     private void preReleaseCommad(CommandQueue q, PreparedCommand pc, boolean rebuild) {
         long missionTime = timeService.getMissionTime();
@@ -308,6 +308,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
+        tcChecker.pc.setPendingTransmissionConstraints(true);
         notifyUpdated(tcChecker.queue, tcChecker.pc);
         commandHistoryPublisher.publishAck(tcChecker.pc.getCommandId(),
                 CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
@@ -315,13 +316,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
         PreparedCommand pc = tcChecker.pc;
+        pc.setPendingTransmissionConstraints(false);
         CommandQueue q = tcChecker.queue;
         TCStatus status = tcChecker.aggregateStatus;
         log.info("transmission constraint finished for {} status: {}", pc.getCmdName(), status);
         long missionTime = timeService.getMissionTime();
 
         pendingTcCheckers.remove(tcChecker);
-        
+
         if (status == TCStatus.OK) {
             q.remove(pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
@@ -352,7 +354,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         notifyUpdateQueue(q);
     }
-    
+
     private void notifyUpdated(CommandQueue q, PreparedCommand pc) {
         for (CommandQueueListener m : monitoringClients) {
             try {

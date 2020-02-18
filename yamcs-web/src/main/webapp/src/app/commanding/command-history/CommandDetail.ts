@@ -14,6 +14,9 @@ export class CommandDetail {
   @Input()
   command: CommandHistoryRecord;
 
+  @Input()
+  showIcons = true;
+
   instance: Instance;
 
   constructor(yamcs: YamcsService) {

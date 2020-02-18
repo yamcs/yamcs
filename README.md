@@ -31,10 +31,10 @@ Build Java jars:
 
 Build web interface:
 
-    cd yamcs-web
+    cd yamcs-web/src/main/webapp
     npm install
     npm run build
-    cd ..
+    cd -
 
 These commands will produce an optimized production version of the web interface. This process will take a few minutes. For faster incremental builds run in watch mode (`npm run watch`).
 

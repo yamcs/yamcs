@@ -1,0 +1,42 @@
+<table yaDataTable [class.inline]="inline" *ngIf="command">
+    <tr>
+        <td *ngIf="showIcons" style="width: 16px">
+            <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
+        </td>
+        <td style="width: 150px">Queued</td>
+        <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
+        <td>
+            <span [matTooltip]="command.queued?.time">
+                {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td *ngIf="showIcons">
+            <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
+            </app-transmission-constraints-icon>
+            <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
+        </td>
+        <td>Released</td>
+        <td>
+            {{ command.released?.status || command.transmissionConstraints?.status || '-' }}
+        </td>
+        <td>
+            <span [matTooltip]="command.released?.time">
+                {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td *ngIf="showIcons">
+            <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
+        </td>
+        <td>Sent</td>
+        <td>{{ command.sent?.status || '-' }}</td>
+        <td>
+            <span [matTooltip]="command.sent?.time">
+                {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
+            </span>
+        </td>
+    </tr>
+</table>

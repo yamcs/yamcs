@@ -87,7 +87,7 @@
                               [subitem]="true">
           Send a command
         </app-sidebar-nav-item>
-        <app-sidebar-nav-item *ngIf="false && showRunAStack()"
+        <app-sidebar-nav-item *ngIf="showRunAStack()"
                               routerLink="/commanding/stacks"
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
@@ -104,6 +104,12 @@
                               [queryParams]="{instance: instance.name}"
                               [subitem]="true">
           Queues
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item *ngIf="showCommandClearancesItem()"
+                              routerLink="/commanding/clearances"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Clearances
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
 

@@ -54,71 +54,15 @@
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 <h6 style="padding-top: 0">Yamcs acknowledgments</h6>
 <div class="block">
-  <table yaDataTable style="width: 100%">
-    <tr>
-      <td style="width: 16px">
-        <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
-      </td>
-      <td style="width: 150px">Queued</td>
-      <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
-      <td>
-        <span [matTooltip]="command.queued?.time">
-          {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
-        </span>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
-        </app-transmission-constraints-icon>
-        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
-      </td>
-      <td>Released</td>
-      <td>
-        {{ command.released?.status || command.transmissionConstraints?.status || '-' }}
-      </td>
-      <td>
-        <span [matTooltip]="command.released?.time">
-          {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
-        </span>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
-      </td>
-      <td>Sent</td>
-      <td>{{ command.sent?.status || '-' }}</td>
-      <td>
-        <span [matTooltip]="command.sent?.time">
-          {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
-        </span>
-      </td>
-    </tr>
-  </table>
+  <app-yamcs-acknowledgments-table [command]="command"
+                                   [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
 </div>
 
 <ng-container *ngIf="command.extraAcks.length">
   <h6>Extra acknowledgments</h6>
   <div class="block">
-    <table yaDataTable style="width: 100%">
-      <tr *ngFor="let ack of command.extraAcks">
-        <td style="width: 16px">
-          <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
-        </td>
-        <td style="width: 150px">{{ ack.name }}</td>
-        <td style="width: 70px">{{ ack.status }}</td>
-        <td>
-          <ng-container [ngSwitch]="ack.status">
-            <span *ngSwitchCase="'SCHEDULED'">-</span>
-            <span *ngSwitchCase="'PENDING'">-</span>
-            <span *ngSwitchDefault [matTooltip]="ack.time">
-              {{ ack.time | deltaWith:command.generationTime }}
-            </span>
-          </ng-container>
-        </td>
-      </tr>
-    </table>
+    <app-extra-acknowledgments-table [command]="command"
+                                     [showIcons]="showIcons"></app-extra-acknowledgments-table>
   </div>
 </ng-container>
 

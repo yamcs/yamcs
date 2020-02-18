@@ -128,7 +128,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             ctx.pipeline().remove(HttpRequestHandler.class);
 
             // Send data with server-assigned connection state (clientId, instance, processor)
-            wsClient.sendConnectionInfo();
+            wsClient.sendInitialState();
         } else {
             super.userEventTriggered(ctx, evt);
         }

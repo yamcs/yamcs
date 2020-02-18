@@ -50,7 +50,7 @@ message CommandQueueEntry {
   optional google.protobuf.Timestamp generationTime = 12;
   //if this is set to true , it means the command has been accepted for being released out of the queue 
   //but it is still there because it is pending transmission contraints
-  optional bool pendingTransmissionConstraint = 13;
+  optional bool pendingTransmissionConstraints = 13;
 }
 
 message CommandQueueEvent {
@@ -98,8 +98,6 @@ message CommandOptions {
 	optional bool disableCommandVerifiers = 4 [default = false]; //disable all post transmission verifiers (if any specified in the MDB)
 	repeated CommandVerifierOption verifierOption = 5; //can be used to change individually the command verifiers
 }
-
-/********************* Command History ***********************/
 
 message CommandHistoryAttribute {
   optional string name = 1;

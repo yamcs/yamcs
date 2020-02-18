@@ -399,6 +399,7 @@ button.ya-button:hover {
 button.ya-button:disabled {
   /*color: rgba(0, 0, 0, .25);*/
   opacity: 0.6;
+  cursor: default;
 }
 
 button.ya-button .material-icons {
@@ -413,12 +414,6 @@ button.ya-button.primary {
   background-color: #222d4b;
   color: white;
   border-color: #5787b1;
-}
-
-.shake {
-  animation: yshake 0.82s infinite cubic-bezier(.36, .07, .19, .97) both;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
 }
 
 .filter-bar {
@@ -439,21 +434,6 @@ button.ya-button.primary {
   animation: yspin 2s infinite linear;
 }
 
-@keyframes yshake {
-  10%, 90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%, 80% {
-    transform: translate3d(2px, 0, 0);
-  }
-  30%, 50%, 70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-  40%, 60% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-
 @keyframes yspin {
   0% {
     -webkit-transform: rotate(0deg) scaleX(-1);
@@ -462,16 +442,6 @@ button.ya-button.primary {
   100% {
     -webkit-transform: rotate(359deg) scaleX(-1);
     transform: rotate(359deg) scaleX(-1);
-  }
-}
-
-.blink {
-  animation: yblink 1s linear infinite;
-}
-
-@keyframes yblink {
-  50% {
-    opacity: 0;
   }
 }
 

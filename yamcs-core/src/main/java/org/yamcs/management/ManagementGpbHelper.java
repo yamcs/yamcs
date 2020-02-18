@@ -40,7 +40,8 @@ public final class ManagementGpbHelper {
                 .setState(processor.getState())
                 .setPersistent(processor.isPersistent())
                 .setTime(TimeEncoding.toString(processor.getCurrentTime()))
-                .setReplay(processor.isReplay());
+                .setReplay(processor.isReplay())
+                .setCheckCommandClearance(processor.getConfig().checkCommandClearance());
 
         if (processor.isReplay()) {
             processorb.setReplayRequest(processor.getReplayRequest());
@@ -57,15 +58,15 @@ public final class ManagementGpbHelper {
                 .setQueueName(q.getName())
                 .setCmdId(pc.getCommandId())
                 .setSource(pc.getSource())
-                .setPendingTransmissionConstraint(pc.isPendingTransmissionConstraints())
+                .setPendingTransmissionConstraints(pc.isPendingTransmissionConstraints())
                 .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
                 .setUsername(pc.getUsername());
 
-        if(pc.getBinary()!=null) {
+        if (pc.getBinary() != null) {
             entryb.setBinary(ByteString.copyFrom(pc.getBinary()));
         }
-        
+
         if (pc.getComment() != null) {
             entryb.setComment(pc.getComment());
         }

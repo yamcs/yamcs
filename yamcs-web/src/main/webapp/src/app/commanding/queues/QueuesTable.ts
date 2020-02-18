@@ -1,7 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { CommandQueue } from '../../client';
+import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -9,7 +10,7 @@ import { YamcsService } from '../../core/services/YamcsService';
   templateUrl: './QueuesTable.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class QueuesTable implements AfterViewInit {
+export class QueuesTable implements AfterViewInit, OnDestroy {
 
   @Input()
   cqueues$: Observable<CommandQueue[]>;
@@ -26,7 +27,17 @@ export class QueuesTable implements AfterViewInit {
     'actions',
   ];
 
-  constructor(private yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+  visibility$ = new BehaviorSubject<boolean>(true);
+  syncSubscription: Subscription;
+
+  constructor(
+    private yamcs: YamcsService,
+    private changeDetection: ChangeDetectorRef,
+    synchronizer: Synchronizer,
+  ) {
+    this.syncSubscription = synchronizer.syncFast(() => {
+      this.visibility$.next(!this.visibility$.value);
+    });
   }
 
   ngAfterViewInit() {
@@ -42,12 +53,34 @@ export class QueuesTable implements AfterViewInit {
   tableTrackerFn = (index: number, queue: CommandQueue) => queue.name;
 
   enableQueue(queue: CommandQueue) {
+    const count = queue.entry?.length || 0;
+    let msg = 'Are you sure you want to change this queue\'s action to ACCEPT?\n\n';
+    if (count === 1) {
+      msg += `There is ${count} queued command that will be accepted immediately.`;
+    } else {
+      msg += `There are ${count} queued commands that will be accepted immediately.`;
+    }
+    if (count && !confirm(msg)) {
+      return;
+    }
+
     this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
       state: 'enabled',
     });
   }
 
   disableQueue(queue: CommandQueue) {
+    const count = queue.entry?.length || 0;
+    let msg = 'Are you sure you want to change this queue\'s action to REJECT?\n\n';
+    if (count === 1) {
+      msg += `There is ${count} queued command that will be rejected immediately.`;
+    } else {
+      msg += `There are ${count} queued commands that will be rejected immediately.`;
+    }
+    if (count && !confirm(msg)) {
+      return;
+    }
+
     this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
       state: 'disabled',
     });
@@ -57,5 +90,11 @@ export class QueuesTable implements AfterViewInit {
     this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
       state: 'blocked',
     });
+  }
+
+  ngOnDestroy() {
+    if (this.syncSubscription) {
+      this.syncSubscription.unsubscribe();
+    }
   }
 }

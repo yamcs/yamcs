@@ -1,0 +1,97 @@
+.ya-data-table td {
+    vertical-align: top;
+}
+
+table.args {
+    margin: 0;
+    margin-left: 10px;
+    font-size: 10px;
+}
+
+table.args td {
+    padding: 0;
+    border: 0;
+}
+
+table.args td.key {
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+table.args td.value {
+    color: #0055aa;
+    padding-left: 10px;
+}
+
+div.entry {
+    font-size: 13px;
+    line-height: 17px;
+}
+
+div.entry div.in {
+    display: flex;
+    border-left: 8px solid transparent;
+    margin-bottom: 10px;
+}
+
+div.entry div.out {
+    display: flex;
+    border-left: 8px solid transparent;
+    margin-bottom: 10px;
+}
+
+div.entry.selected div.in, div.entry.selected div.out {
+    border-color: #2196f3;
+}
+
+div.entry .seq {
+    width: 64px;
+    text-align: right;
+    padding-top: 5px;
+    padding-right: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Roboto Mono', monospace;
+    color: #bdbdbd;
+}
+
+div.entry div.in .seq {
+    cursor: move;
+}
+
+div.entry.selected .seq {
+    color: #2196f3;
+}
+
+div.entry .body {
+    flex-grow: 1;
+    padding: 5px;
+}
+
+div.entry div.in .body {
+    background-color: rgb(245, 245, 245);
+    border: 1px solid rgb(224, 224, 224);
+    font-family: 'Roboto Mono', monospace;
+}
+
+div.entry div.out .body.err {
+    background-color: #fcc;
+    color: crimson;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.6;
+}
+
+h6 {
+    font-weight: 500;
+    font-size: 12px;
+    padding-bottom: 0;
+    padding-top: 1em;
+    margin: 0;
+}
+
+.block {
+    font-weight: normal;
+    font-size: 12px;
+}

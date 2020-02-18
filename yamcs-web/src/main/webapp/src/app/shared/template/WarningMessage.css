@@ -1,0 +1,15 @@
+.panel {
+    background-color: #fcc;
+    color: crimson;
+    display: flex;
+    align-items: center;
+    margin-top: 1em;
+}
+
+.panel .icon {
+    padding: 10px;
+}
+
+.panel .icon .material-icons {
+    vertical-align: middle;
+}

@@ -1,0 +1,20 @@
+table {
+    width: 100%;
+}
+
+table.inline {
+    width: auto;
+}
+
+table.inline td {
+    border: none;
+    padding: 0;
+}
+
+table.inline td:not(:first-child), table.inline th:not(:first-child) {
+    padding-left: 10px;
+}
+
+table tr:last-child td {
+    border-bottom: none;
+}

@@ -355,6 +355,7 @@ export interface CreateEventRequest {
 }
 
 export interface CreateProcessorRequest {
+  instance: string;
   name: string;
   type: string;
   clientId?: number[];
@@ -533,6 +534,7 @@ export interface CommandQueueEntry {
   username: string;
   generationTime: string;
   uuid: string;
+  pendingTransmissionConstraints: boolean;
 }
 
 export interface GetTagsOptions {

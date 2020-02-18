@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>Import Stack</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form *ngIf="!(uploading$ | async)" [formGroup]="formGroup" class="ya-form">
+    <label>
+      Files<br>
+      <input #files type="file" formControlName="files" accept=".xml" multiple>
+    </label>
+    <br>
+    <label>
+      Path
+      <input type="text" formControlName="path">
+    </label>
+  </form>
+  <app-dots *ngIf="uploading$ | async"></app-dots>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button"
+          mat-dialog-close
+          [disabled]="uploading$ | async">CANCEL</button>
+  <button class="ya-button primary"
+          [disabled]="uploading$ | async"
+          (click)="save()">IMPORT</button>
+</mat-dialog-actions>

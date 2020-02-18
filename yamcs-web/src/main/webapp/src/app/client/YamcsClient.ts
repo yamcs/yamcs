@@ -1,11 +1,11 @@
 import { Observable } from 'rxjs';
-import { Cop1SubscriptionRequest, Cop1SubscriptionResponse } from '.';
+import { Cop1SubscriptionRequest, Cop1SubscriptionResponse, CreateProcessorRequest } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 
@@ -137,6 +137,34 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/routes`;
     const response = await this.doFetch(url);
     return await response.json() as ListRoutesResponse;
+  }
+
+  async getClearances() {
+    const url = `${this.apiUrl}/clearances`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListClearancesResponse;
+  }
+
+  async changeClearance(username: string, options: EditClearanceRequest) {
+    const body = JSON.stringify(options);
+    return this.doFetch(`${this.apiUrl}/clearances/${username}`, {
+      method: 'PATCH',
+      body,
+    });
+  }
+
+  async deleteClearance(username: string) {
+    return this.doFetch(`${this.apiUrl}/clearances/${username}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async createProcessor(options: CreateProcessorRequest) {
+    const body = JSON.stringify(options);
+    return await this.doFetch(`${this.apiUrl}/processors`, {
+      body,
+      method: 'POST',
+    });
   }
 
   async getLeapSeconds() {
@@ -418,7 +446,14 @@ export default class YamcsClient implements HttpHandler {
     if (response.ok) {
       return Promise.resolve(response);
     } else {
-      return Promise.reject(new HttpError(response));
+      return new Promise<Response>((resolve, reject) => {
+        response.json().then(json => {
+          reject(new HttpError(response, json['msg']));
+        }).catch(err => {
+          console.error('Failure while handling server error', err);
+          reject(new HttpError(response));
+        });
+      });
     }
   }
 

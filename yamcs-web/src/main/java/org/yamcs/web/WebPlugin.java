@@ -36,13 +36,16 @@ public class WebPlugin implements Plugin {
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
+        spec.addOption("stackPath", OptionType.STRING);
         spec.addOption("staticRoot", OptionType.STRING);
         spec.addOption("twoStageCommanding", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("commandClearances", OptionType.BOOLEAN).withDefault(false);
 
         Spec featuresSpec = new Spec();
         featuresSpec.addOption("cfdp", OptionType.BOOLEAN).withDefault(false);
         featuresSpec.addOption("dass", OptionType.BOOLEAN).withDefault(false);
-        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false).withDeprecationMessage("The layout functionality was removed");
+        featuresSpec.addOption("layouts", OptionType.BOOLEAN).withDefault(false)
+                .withDeprecationMessage("The layout functionality was removed");
         featuresSpec.addOption("tc", OptionType.BOOLEAN).withDefault(true);
         featuresSpec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("features", OptionType.MAP)
@@ -103,6 +106,20 @@ public class WebPlugin implements Plugin {
             }
         } catch (IOException e) {
             throw new PluginException("Could not create displays bucket", e);
+        }
+
+        try {
+            if (config.containsKey("stackPath")) {
+                Path stackPath = Paths.get(config.getString("stackPath")).toAbsolutePath().normalize();
+                yarch.addFileSystemBucket("stacks", stackPath);
+            } else {
+                Bucket bucket = yarch.getBucket("stacks");
+                if (bucket == null) {
+                    yarch.createBucket("stacks");
+                }
+            }
+        } catch (IOException e) {
+            throw new PluginException("Could not create stacks bucket", e);
         }
 
         HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
