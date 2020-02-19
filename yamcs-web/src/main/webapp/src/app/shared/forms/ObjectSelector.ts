@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Input, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -18,7 +18,7 @@ import { YamcsService } from '../../core/services/YamcsService';
     }
   ]
 })
-export class ObjectSelector implements ControlValueAccessor, OnChanges {
+export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestroy {
 
   @Input()
   instance: string;
@@ -28,6 +28,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
 
   @Input()
   path: string;
+
+  @Output()
+  prefixChange = new EventEmitter<string | null>();
 
   displayedColumns = ['name', 'size', 'modified'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
@@ -40,9 +43,11 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
   private onChange = (_: string | null) => { };
   private onTouched = () => { };
 
+  private selectionSubscription: Subscription;
+
   constructor(yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
     this.storageClient = yamcs.createStorageClient();
-    this.selectedObject$.subscribe(item => {
+    this.selectionSubscription = this.selectedObject$.subscribe(item => {
       if (item) {
         return this.onChange(item.name);
       } else {
@@ -57,6 +62,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
     }
   }
 
+  changePrefix(prefix: string) {
+    this.loadCurrentFolder(prefix);
+  }
+
   private loadCurrentFolder(prefix?: string) {
     const options: ListObjectsOptions = {
       delimiter: '/',
@@ -67,7 +76,11 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
 
     this.storageClient.listObjects(this.instance, this.bucket.name, options).then(dir => {
       this.changedir(dir);
-      this.currentPrefix$.next(prefix || null);
+      const newPrefix = prefix || null;
+      if (newPrefix !== this.currentPrefix$.value) {
+        this.currentPrefix$.next(newPrefix);
+        this.prefixChange.emit(newPrefix);
+      }
     });
   }
 
@@ -125,6 +138,12 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges {
 
   registerOnTouched(fn: any) {
     this.onTouched = fn;
+  }
+
+  ngOnDestroy() {
+    if (this.selectionSubscription) {
+      this.selectionSubscription.unsubscribe();
+    }
   }
 }
 

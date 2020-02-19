@@ -18,6 +18,9 @@ export class Breadcrumb {
   link?: any[] | string;
 
   @Input()
+  action = false;
+
+  @Input()
   queryParams: {
     [k: string]: any;
   };

@@ -111,7 +111,7 @@ export class StackFilePage implements OnDestroy {
             this.filename = this.objectName;
         } else {
             this.folderLink = '/commanding/stacks/browse/' + this.objectName.substring(0, idx);
-            this.filename = this.objectName.substring(idx);
+            this.filename = this.objectName.substring(idx + 1);
         }
 
         this.title.setTitle(this.filename);

@@ -1,7 +1,19 @@
 <div class="local-selector mat-typography">
   <form [formGroup]="localForm" class="ya-form">
     <h2>Select local file</h2>
-    <label class="table-caption">Bucket</label>
+    <div class="table-caption-wrapper">
+      <label class="table-caption">Bucket</label>
+    </div>
+    <div class="table-breadcrumb" *ngIf="breadcrumb$ | async as breadcrumb">
+      <app-breadcrumb-trail>
+        <app-breadcrumb icon="account_tree" [action]="true"
+                        (click)="changePrefix('')"></app-breadcrumb>
+        <app-breadcrumb *ngFor="let item of breadcrumb"
+                        [label]="item.name"
+                        [action]="true"
+                        (click)="changePrefix(item.prefix)"></app-breadcrumb>
+      </app-breadcrumb-trail>
+    </div>
     <div class="bucket-table-wrapper">
       <table mat-table [dataSource]="dataSource" class="ya-data-table">
 
@@ -19,7 +31,11 @@
     </div>
     <div class="object-table-wrapper">
       <ng-container *ngIf="selectedBucket$ | async as bucket">
-        <app-object-selector formControlName="object" instance="_global" [bucket]="bucket"></app-object-selector>
+        <app-object-selector #selector
+                             formControlName="object"
+                             instance="_global"
+                             [bucket]="bucket"
+                             (prefixChange)="updateBreadcrumb($event)"></app-object-selector>
       </ng-container>
     </div>
   </form>

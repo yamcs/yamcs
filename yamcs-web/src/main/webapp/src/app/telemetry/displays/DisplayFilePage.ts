@@ -93,7 +93,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       this.filename = this.objectName;
     } else {
       this.folderLink = '/telemetry/displays/browse/' + this.objectName.substring(0, idx);
-      this.filename = this.objectName.substring(idx);
+      this.filename = this.objectName.substring(idx + 1);
     }
 
     this.title.setTitle(this.filename);

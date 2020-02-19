@@ -55,6 +55,20 @@ table.ya-data-table {
   left: calc(250px + 1em);
 }
 
+.table-caption-wrapper {
+  position: absolute;
+  top: 48px;
+  left: 0;
+}
+
 label.table-caption {
   margin: 0;
+}
+
+.table-breadcrumb {
+  position: absolute;
+  top: 42px;
+  left: calc(250px + 1em);
+  right: 0;
+  overflow: hidden;
 }

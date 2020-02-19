@@ -44,11 +44,7 @@ export class CreateStackDialog {
     }
     const fullPath = path ? path + '/' + name : name;
 
-    const display = {
-      scroll: false,
-      parameters: [],
-    };
-    const b = new Blob([JSON.stringify(display, undefined, 2)], {
+    const b = new Blob([], {
       type: 'application/xml'
     });
     this.storageClient.uploadObject('_global', 'stacks', fullPath, b).then(() => {

@@ -22,6 +22,7 @@
 .command-detail {
     position: relative;
     height: calc(50% - 32px);
+    overflow: auto;
 }
 
 .footer {
