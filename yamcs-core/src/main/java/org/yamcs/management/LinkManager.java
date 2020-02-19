@@ -1,6 +1,9 @@
 package org.yamcs.management;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +22,12 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
@@ -46,16 +52,18 @@ import com.google.gson.Gson;
 /**
  * Service that manages all the data links
  *
- *<p>
+ * <p>
  *
  * Compared to the old DataLinkInitializer this one:
  * <ul>
- * <li> is the endpoint for the /links API calls</li> 
- * <li> takes care for the commanding links to subcribe/unsubscribe them from the streams whenever they are enabled/disabled</li>
+ * <li>is the endpoint for the /links API calls</li>
+ * <li>takes care for the commanding links to subcribe/unsubscribe them from the streams whenever they are
+ * enabled/disabled</li>
  * <li>TODO: can set exclusive flags - i.e. only one link from a group can be enabled at a time</li>
  * </ul>
  * 
  * The configuration of this service is done in the "dataLinks" sections of the yamcs.&lt;instance-name&gt;.yaml file.
+ * 
  * @author nm
  */
 public class LinkManager {
@@ -66,12 +74,15 @@ public class LinkManager {
     final String yamcsInstance;
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
+    final CommandHistoryPublisher cmdHistPublisher;
+    Map<Stream, TcStreamSubscriber> tcStreamSubscribers = new HashMap<>();
     
     public LinkManager(String instanceName) throws InitException {
         this.yamcsInstance = instanceName;
         log = new Log(getClass(), instanceName);
         ydb = YarchDatabase.getInstance(instanceName);
-
+        cmdHistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
+        
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YConfiguration instanceConfig = instance.getConfig();
 
@@ -87,8 +98,9 @@ public class LinkManager {
         } else {
             log.info("No link created because the section dataLinks was not found");
         }
-        
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
+
+        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1,
+                TimeUnit.SECONDS);
     }
 
     private void createDataLink(YConfiguration linkConfig) throws IOException {
@@ -130,48 +142,40 @@ public class LinkManager {
             linkArgs = YConfiguration.emptyConfig();
         }
 
-        Stream s = null;
+        Stream stream = null;
         String streamName = linkLevelStreamName;
         if (linkArgs.containsKey("stream")) {
             streamName = linkArgs.getString("stream");
         }
         if (streamName != null) {
-            s = ydb.getStream(streamName);
-            if (s == null) {
+            stream = ydb.getStream(streamName);
+            if (stream == null) {
                 throw new ConfigurationException("Cannot find stream '" + streamName + "'");
             }
         }
 
         if (link instanceof TmPacketDataLink) {
-            if (s != null) {
-                Stream stream = s;
+            if (stream != null) {
+                Stream streamf = stream;
                 TmPacketDataLink tmLink = (TmPacketDataLink) link;
                 InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                tmLink.setTmSink(pwrt -> processTmPacket(pwrt, stream, ipa));
+                tmLink.setTmSink(pwrt -> processTmPacket(pwrt, streamf, ipa));
             }
         }
-        
+
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
-            if (s != null) {
-                s.addSubscriber(new StreamSubscriber() {
-                    @Override
-                    public void onTuple(Stream s, Tuple tuple) {
-                        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-                        tcLink.sendTc(PreparedCommand.fromTuple(tuple, xtcedb));
-                    }
-
-                    @Override
-                    public void streamClosed(Stream s) {
-                    }
-                });
+            if (stream != null) {
+                TcStreamSubscriber tcs = tcStreamSubscribers.computeIfAbsent(stream, s->new TcStreamSubscriber(true));
+                tcs.addLink(tcLink);
+                stream.addSubscriber(tcs);
             }
-            tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
+            tcLink.setCommandHistoryPublisher(cmdHistPublisher);
         }
 
         if (link instanceof ParameterDataLink) {
-            if (s != null) {
-                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, s));
+            if (stream != null) {
+                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
             }
         }
 
@@ -188,47 +192,51 @@ public class LinkManager {
 
     private void processTmPacket(TmPacket pwrt, Stream stream, InvalidPacketAction ipa) {
         if (pwrt.isInvalid()) {
-            if(ipa.action==Action.DROP) {
+            if (ipa.action == Action.DROP) {
                 return;
-            } else if(ipa.action==Action.DIVERT) {
+            } else if (ipa.action == Action.DIVERT) {
                 Tuple t = new Tuple(StandardTupleDefinitions.INVALID_TM,
-                        new Object[] { pwrt.getReceptionTime(), ipa.divertStream.getDataCount(),  pwrt.getPacket()});
+                        new Object[] { pwrt.getReceptionTime(), ipa.divertStream.getDataCount(), pwrt.getPacket() });
                 ipa.divertStream.emitTuple(t);
                 return;
-            } //if action is PROCESS, continue below
+            } // if action is PROCESS, continue below
         }
-        
+
         long ertime = pwrt.getEarthReceptionTime();
         Tuple t = null;
         if (ertime == TimeEncoding.INVALID_INSTANT) {
             t = new Tuple(StandardTupleDefinitions.TM,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getPacket() });
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
+                            pwrt.getPacket() });
         } else {
             t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), pwrt.getPacket(), ertime });
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
+                            pwrt.getPacket(), ertime });
         }
         stream.emitTuple(t);
-        
+
     }
 
     private InvalidPacketAction getInvalidPacketAction(String linkName, YConfiguration linkArgs) {
         InvalidPacketAction ipa = new InvalidPacketAction();
-        if(linkArgs.containsKey("invalidPackets")) {
+        if (linkArgs.containsKey("invalidPackets")) {
             ipa.action = linkArgs.getEnum("invalidPackets", Action.class);
-            if(ipa.action == Action.DIVERT) {
+            if (ipa.action == Action.DIVERT) {
                 String divertStream = linkArgs.getString("invalidPacketsStream", "invalid_tm");
                 ipa.divertStream = ydb.getStream(divertStream);
                 if (ipa.divertStream == null) {
-                    throw new ConfigurationException("Cannot find stream '" + divertStream + "' (required if invalidPackets: DIVERT has been specified)");
+                    throw new ConfigurationException("Cannot find stream '" + divertStream
+                            + "' (required if invalidPackets: DIVERT has been specified)");
                 }
             }
-        } else if(linkArgs.containsKey("dropCorruptedPackets")) {
-            log.warn("Please repace dropCorruptedPackets with 'invalidPackets: DROP' into "+linkName+" configuration");
-            ipa.action = linkArgs.getBoolean("dropCorruptedPackets")?Action.DROP:Action.PROCESS;
+        } else if (linkArgs.containsKey("dropCorruptedPackets")) {
+            log.warn("Please repace dropCorruptedPackets with 'invalidPackets: DROP' into " + linkName
+                    + " configuration");
+            ipa.action = linkArgs.getBoolean("dropCorruptedPackets") ? Action.DROP : Action.PROCESS;
         } else {
             ipa.action = Action.DROP;
         }
-        
+
         return ipa;
     }
 
@@ -248,7 +256,7 @@ public class LinkManager {
 
     public void stopLinks() {
         linksByName.forEach((name, link) -> {
-           unregisterLink(name);
+            unregisterLink(name);
             if (link instanceof Service) {
                 ((Service) link).stopAsync();
             }
@@ -259,7 +267,6 @@ public class LinkManager {
             }
         });
     }
-    
 
     private void checkLinkUpdate() {
         // see if any link has changed
@@ -300,7 +307,7 @@ public class LinkManager {
             linkListeners.forEach(l -> l.linkUnregistered(lwi.linkInfo));
         }
     }
-    
+
     public Optional<LinkWithInfo> getLinkWithInfo(String linkName) {
         return links.stream()
                 .filter(lwi -> linkName.equals(lwi.linkInfo.getName()))
@@ -315,8 +322,6 @@ public class LinkManager {
         return linkListeners.add(l);
     }
 
-    
-
     public void enableLink(String linkName) {
         log.debug("received enableLink for {}", linkName);
         Optional<LinkWithInfo> o = getLinkWithInfo(linkName);
@@ -324,7 +329,8 @@ public class LinkManager {
             LinkWithInfo lci = o.get();
             lci.link.enable();
         } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + yamcsInstance);
+            throw new IllegalArgumentException(
+                    "There is no link named '" + linkName + "' in instance " + yamcsInstance);
         }
     }
 
@@ -335,7 +341,8 @@ public class LinkManager {
             LinkWithInfo lci = o.get();
             lci.link.disable();
         } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + yamcsInstance);
+            throw new IllegalArgumentException(
+                    "There is no link named '" + linkName + "' in instance " + yamcsInstance);
         }
     }
 
@@ -345,10 +352,10 @@ public class LinkManager {
             LinkWithInfo lci = o.get();
             lci.link.resetCounters();
         } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + yamcsInstance);
+            throw new IllegalArgumentException(
+                    "There is no link named '" + linkName + "' in instance " + yamcsInstance);
         }
     }
-    
 
     public boolean removeLinkListener(LinkListener l) {
         return linkListeners.remove(l);
@@ -369,19 +376,21 @@ public class LinkManager {
             return null;
         }
     }
+
     /**
-     * What to do with invalid packets. 
+     * What to do with invalid packets.
      * DROP: do nothing
      * PROCESS: send them on the normal tm stream
      * DIVERT: send them on a different stream
      */
     static class InvalidPacketAction {
-        enum Action {DROP, PROCESS, DIVERT};
+        enum Action {
+            DROP, PROCESS, DIVERT
+        };
+
         Stream divertStream;
         Action action;
     }
-    
-    
 
     public static class LinkWithInfo {
         final Link link;
@@ -419,4 +428,44 @@ public class LinkManager {
         }
     }
 
+    class TcStreamSubscriber implements StreamSubscriber {
+        final List<TcDataLink> tcLinks = new ArrayList<>();
+        final boolean failIfNoLinkAvailable;
+        
+
+        public TcStreamSubscriber(boolean failIfNoLinkAvailable) {
+            this.failIfNoLinkAvailable = failIfNoLinkAvailable;
+        }
+
+        void addLink(TcDataLink tcLink) {
+            tcLinks.add(tcLink);
+        }
+        
+        @Override
+        public void onTuple(Stream s, Tuple tuple) {
+            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
+            boolean sent = false;
+            for (TcDataLink tcLink : tcLinks) {
+                if (!tcLink.isDisabled()) {
+                    tcLink.sendTc(pc);
+                    sent = true;
+                }
+            }
+
+            if (!sent && failIfNoLinkAvailable) {
+                CommandId commandId = pc.getCommandId();
+                String reason = "no link available";
+                log.info("Failing command {}: {}", pc.getCommandId(), reason);
+                long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+                cmdHistPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
+                        currentTime, AckStatus.NOK, reason);
+                cmdHistPublisher.commandFailed(commandId,  currentTime, reason);
+            }
+        }
+
+        @Override
+        public void streamClosed(Stream s) {
+        }
+    }
 }

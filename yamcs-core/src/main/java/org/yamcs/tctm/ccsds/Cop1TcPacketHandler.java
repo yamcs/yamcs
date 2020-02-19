@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
@@ -33,8 +32,6 @@ import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.util.AggregateMemberNames;
-
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.*;
 
 /**
  * Assembles TC packets into TC frames as per CCSDS 232.0-B-3 and sends them out via FOP1
@@ -187,7 +184,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void uplinkTc(PreparedCommand pc) {
+    public void sendTc(PreparedCommand pc) {
         log.trace("state: {} new TC {}", externalState, pc);
         if (!cop1Active) {
             if (bypassAll) {

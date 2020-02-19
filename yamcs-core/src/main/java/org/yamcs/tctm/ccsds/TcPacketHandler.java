@@ -37,7 +37,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public void uplinkTc(PreparedCommand preparedCommand) {
+    public void sendTc(PreparedCommand preparedCommand) {
         if (blockSenderOnQueueFull) {
             try {
                 commandQueue.put(preparedCommand);
