@@ -1,3 +1,9 @@
+Version 4.10.7 released 19-Feb-2020
+- added command stacks on the yamcs-web
+- added command clearance functionality
+- allow to specify command options (such as enabling/disabling
+pre-transmission contrains and post-transmission command verifiers) when sending commands
+
 Version 4.10.6 released 13-Feb-2020
 - allow to save invalid packets into a stream/table for later retrieval
 - several improvements to CFDP
