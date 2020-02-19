@@ -54,6 +54,10 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
+import com.google.protobuf.Message;
+
+import io.netty.handler.codec.http.HttpMethod;
+
 public abstract class AbstractIntegrationTest {
     final String yamcsInstance = "IntegrationTest";
     ParameterProvider parameterProvider;
@@ -219,6 +223,10 @@ public abstract class AbstractIntegrationTest {
         checkNextCmdHistoryAttr(name + "_Time");
     }
 
+    protected <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
+        return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
+    }
+    
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);

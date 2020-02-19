@@ -27,7 +27,6 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.HttpClient;
 import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.StaticFileHandler;
 import org.yamcs.protobuf.AlarmData;
@@ -39,8 +38,6 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.EditAlarmRequest;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.IssueCommandRequest;
@@ -85,8 +82,6 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
-
-import com.google.protobuf.Message;
 
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -872,25 +867,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(v, pv.getEngValue());
     }
 
-    @Test
-    public void testSendCommandNoTransmissionConstraint() throws Exception {
-        // first subscribe to command history
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
-        wsListener.cmdHistoryDataList.clear();
-
-        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
-
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertNotNull(cmdhist);
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/ONE_INT_ARG_TC", cmdid.getCommandName());
-        assertEquals(5, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
-    }
+  
 
     /*-@Test
     public void testValidateCommand() throws Exception {
@@ -908,93 +885,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     
     }*/
 
-    @Test
-    public void testSendCommandFailedTransmissionConstraint() throws Exception {
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
-
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
-
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-
-        assertNotNull(cmdhist);
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
-
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.AcknowledgeReleased_KEY + "_Message",
-                "Transmission constraints check failed");
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "NOK");
-        checkNextCmdHistoryAttr(CommandHistoryPublisher.CommandComplete_KEY + "_Message",
-                "Transmission constraints check failed");
-    }
-
-    
-    @Test
-    public void testSendCommandDisableTransmissionConstraint() throws Exception {
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
-
-        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstrains(true).build();
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
-
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-
-        assertNotNull(cmdhist);
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC1", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-    }
-    
-    @Test
-    public void testSendCommandSucceedTransmissionConstraint() throws Exception {
-        WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
-
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
-        byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq);
-        IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
-        assertTrue(commandResponse.hasBinary());
-
-        CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-
-        assertNotNull(cmdhist);
-        CommandId cmdid = cmdhist.getCommandId();
-        assertEquals("/REFMDB/SUBSYS1/CRITICAL_TC2", cmdid.getCommandName());
-        assertEquals(6, cmdid.getSequenceNumber());
-        assertEquals("IntegrationTest", cmdid.getOrigin());
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
-
-        cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
-        assertNull(cmdhist);
-        Value v = ValueHelper.newValue(true);
-        restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/AllowCriticalTC2",
-                HttpMethod.POST, v).get();
-
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
-        checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
-    }
-
+   
     @Test
     public void testUpdateCommandHistory() throws Exception {
 
@@ -1048,9 +939,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
 
-    private <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
-        return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
-    }
+    
 
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
         checkPvals(2, pvals, packetProvider);
