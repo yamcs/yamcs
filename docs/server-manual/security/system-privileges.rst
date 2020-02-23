@@ -9,6 +9,8 @@ CreateInstances
     Allows to create instances.
 ModifyCommandHistory
     Allows to modify command history.
+ControlCommandClearances
+    Allows to clear users for commanding.
 ControlCommandQueue
     Allows to manage command queues.
 Command

@@ -14,7 +14,7 @@ List all links for the given Yamcs instance::
 .. code-block:: json
 
     {
-      "link" : [ {
+      "links" : [ {
         "instance" : "simulator",
         "name" : "tm1",
         "type" : "HkDataHandler",
@@ -32,5 +32,5 @@ List all links for the given Yamcs instance::
 .. code-block:: proto
 
     message ListLinkInfoResponse {
-      repeated yamcsManagement.LinkInfo link = 1;
+      repeated yamcsManagement.LinkInfo links = 1;
     }

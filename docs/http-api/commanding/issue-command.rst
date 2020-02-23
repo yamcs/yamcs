@@ -60,10 +60,17 @@ The binary is encoded in Base64 format.
         optional string name = 1;
         optional string value = 2;
       }
+      optional string instance = 6;
+      optional string processor = 7;
+      optional string name = 8;
       repeated Assignment assignment = 1;
       optional string origin = 2;
       optional int32 sequenceNumber = 3;
       optional bool dryRun = 4;
+      
+      optional string comment = 5;
+      // other command options
+      optional commanding.CommandOptions commandOptions = 10;
     }
 
 
@@ -71,8 +78,14 @@ The binary is encoded in Base64 format.
 .. code-block:: proto
 
     message IssueCommandResponse {
-      optional string queue = 1;
+      optional string id = 5;
+      optional google.protobuf.Timestamp generationTime = 6;
+      optional string origin = 7;
+      optional int32 sequenceNumber = 8;
+      optional string commandName = 9;
       optional string source = 2;
       optional string hex = 3;
       optional bytes binary = 4;
+      optional string username = 11;
+      optional string queue = 10;
     }

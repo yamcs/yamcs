@@ -5,7 +5,7 @@ yamcsadmin rocksdb compact
 
 **NAME**
 
-    yamcsadmin rocksdb compact - Compact rocksdb database
+    yamcsadmin rocksdb compact - Compact RocksDB database
 
 
 **SYNOPSIS**

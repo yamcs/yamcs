@@ -3,7 +3,7 @@ Edit Command Queue
 
 Edit a command queue::
 
-    PATCH /api/processors/{instance}/{processor}/cqueues/{name}
+    PATCH /api/processors/{instance}/{processor}/queues/{name}
 
 
 .. rubric:: Parameters
@@ -41,7 +41,7 @@ The response contains the updated queue information:
 .. rubric:: Request Schema (protobuf)
 .. code-block:: proto
 
-    message EditCommandQueueRequest {
+    message EditQueueRequest {
       optional string state = 1;
     }
 

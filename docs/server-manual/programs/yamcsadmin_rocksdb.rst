@@ -16,9 +16,9 @@ yamcsadmin rocksdb
 **COMMANDS**
 
     :doc:`compact <yamcsadmin_rocksdb_compact>`
-        Compact rocksdb database
+        Compact RocksDB database
     :doc:`bench <yamcsadmin_rocksdb_bench>`
-        Benchmark rocksdb storage engine
+        Benchmark RocksDB storage engine
 
 
 .. toctree::

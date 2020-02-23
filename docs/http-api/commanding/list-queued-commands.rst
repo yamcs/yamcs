@@ -3,14 +3,14 @@ List Queued Commands
 
 List all queued command entries for the given command queue::
 
-    GET /api/processors/{instance}/{processor}/cqueues/{name}/entries
+    GET /api/processors/{instance}/{processor}/queues/{name}/entries
 
 
 .. rubric:: Response
 .. code-block:: json
 
     {
-      "entry" : [ {
+      "entries" : [ {
         "instance" : "simulator",
         "processorName" : "realtime",
         "queueName" : "default",
@@ -32,6 +32,6 @@ List all queued command entries for the given command queue::
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListCommandQueueEntries {
-      repeated commanding.CommandQueueEntry entry = 1;
+    message ListCommandQueueEntriesResponse {
+      repeated CommandQueueEntry entries = 1;
     }

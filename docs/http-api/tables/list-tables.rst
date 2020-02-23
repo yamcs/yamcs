@@ -18,7 +18,7 @@ List all tables for the given instance::
 .. code-block:: json
 
     {
-      "table" : [ {
+      "tables" : [ {
         "name" : "tm",
         "keyColumn" : [ {
           "name" : "gentime",
@@ -45,5 +45,5 @@ List all tables for the given instance::
 .. code-block:: proto
 
     message ListTablesResponse {
-      repeated archive.TableInfo table = 1;
+      repeated TableInfo tables = 1;
     }

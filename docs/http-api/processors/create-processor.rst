@@ -1,12 +1,15 @@
 Create Processor
 ================
 
-Create a processor for the given Yamcs instance::
+Create a processor::
 
-    POST /api/processors/{instance}
+    POST /api/processors
 
 
 .. rubric:: Parameters
+
+instance (string)
+    **Required.** The name of the Yamcs instance.
 
 name (string)
     **Required.** The name of the processor. Must be unique for the Yamcs instance.
@@ -68,6 +71,7 @@ Start a replay at January 1st 2015 at 4.5x the original speed, and add client 12
 .. code-block:: json
 
     {
+      "instance": "simulator",
       "name" : "An example processor",
       "type": "Archive",
       "clientId" : [ 12 ],
@@ -79,9 +83,10 @@ Start a replay at January 1st 2015 at 4.5x the original speed, and add client 12
 .. code-block:: proto
 
     message CreateProcessorRequest {
-      optional string name = 1;
-      repeated int32 clientId = 6;
-      optional bool persistent = 11;
-      optional string type = 12;
-      optional string config = 13;
+      optional string instance = 1;
+      optional string name = 2;
+      repeated int32 clientId = 3;
+      optional bool persistent = 4;
+      optional string type = 5;
+      optional string config = 6;
     }

@@ -43,5 +43,5 @@ An alternative is to download the command history instead.
 .. code-block:: proto
 
     message ListCommandsResponse {
-      repeated commanding.CommandHistoryEntry entry = 1;
+      repeated CommandHistoryEntry entry = 1;
     }

@@ -43,5 +43,5 @@ order (string)
 .. code-block:: proto
 
     message ListAlarmsResponse {
-      repeated alarms.AlarmData alarm = 1;
+      repeated AlarmData alarms = 1;
     }

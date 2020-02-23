@@ -3,14 +3,14 @@ List Command Queues
 
 List all command queues for the given processor::
 
-    GET /api/processors/{instance}/{processor}/cqueues
+    GET /api/processors/{instance}/{processor}/queues
 
 
 .. rubric:: Response
 .. code-block:: json
 
     {
-      "queue" : [ {
+      "queues" : [ {
         "instance" : "simulator",
         "processorName" : "realtime",
         "name" : "default",
@@ -25,5 +25,5 @@ List all command queues for the given processor::
 .. code-block:: proto
 
     message ListCommandQueuesResponse {
-      repeated commanding.CommandQueueInfo queue = 1;
+      repeated CommandQueueInfo queues = 1;
     }

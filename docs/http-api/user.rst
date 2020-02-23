@@ -6,11 +6,11 @@ Get information on the authenticated user::
     GET /api/user
 
 
-.. ruburic:: Example
+.. rubric:: Example
 .. code-block:: json
 
     {
-      "login": "admin",
+      "name": "admin",
       "superuser": true
     }
 

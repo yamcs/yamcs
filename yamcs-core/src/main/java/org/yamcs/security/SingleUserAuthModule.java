@@ -30,7 +30,7 @@ public class SingleUserAuthModule implements AuthModule {
         spec.addOption("password", OptionType.STRING).withRequired(true).withSecret(true);
         spec.addOption("name", OptionType.STRING);
         spec.addOption("email", OptionType.STRING);
-        spec.addOption("superuser", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("superuser", OptionType.BOOLEAN);
         spec.addOption("privileges", OptionType.ANY);
         spec.addOption("hasher", OptionType.STRING);
         return spec;

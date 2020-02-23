@@ -3,7 +3,7 @@ Get Command Queue
 
 Get data on a command queue::
 
-    GET /api/processors/{instance}/{processor}/cqueues/{name}
+    GET /api/processors/{instance}/{processor}/queues/{name}
 
 
 .. rubric:: Response
@@ -16,7 +16,7 @@ Get data on a command queue::
       "state" : "BLOCKED",
       "nbSentCommands" : 0,
       "nbRejectedCommands" : 0,
-      "entry" : [ {
+      "entries" : [ {
         "instance" : "simulator",
         "processorName" : "realtime",
         "queueName" : "default",
@@ -39,11 +39,16 @@ Get data on a command queue::
 .. code-block:: proto
 
     message CommandQueueInfo {
-      required string instance = 1;
-      required string processorName = 2;
-      required string name = 3;
+      optional string instance = 1;
+      optional string processorName = 2;
+      optional string name = 3;
       optional QueueState state = 4;
-      required int32 nbSentCommands = 5;
-      required int32 nbRejectedCommands = 6;
+      optional int32 nbSentCommands = 5;
+      optional int32 nbRejectedCommands = 6;
       optional int32 stateExpirationTimeS = 7;
+      repeated CommandQueueEntry entry = 8;
+      optional int32 order = 9;
+      repeated string users = 10;
+      repeated string groups = 11;
+      optional mdb.SignificanceInfo.SignificanceLevelType minLevel = 12;
     }

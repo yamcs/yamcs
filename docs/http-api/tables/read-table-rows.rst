@@ -31,7 +31,7 @@ The response is a stream of individual table rows. When using Protobuf, every ro
         optional uint32 id = 1;
         optional string name = 2;  
         optional string type = 3;
-        optional string protoClass = 4; //the name of the class implementing the proto object if the     dataType=PROTOBUF
+        optional string protoClass = 4; //the name of the class implementing the proto object if the dataType is PROTOBUF
       }
     
       message Cell {

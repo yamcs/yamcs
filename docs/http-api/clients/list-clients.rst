@@ -5,20 +5,12 @@ List all clients::
 
     GET /api/clients
 
-List all clients for the given Yamcs instance::
-
-    GET /api/instances/{instance}/clients
-
-List all clients for the given processor::
-
-    GET /api/processors/{instance}/{processor}/clients
-
 
 .. rubric:: Response
 .. code-block:: json
 
     {
-      "client": [{
+      "clients": [{
         "instance": "simulator",
         "id": 6,
         "username": "admin",
@@ -35,5 +27,5 @@ List all clients for the given processor::
 .. code-block:: proto
 
     message ListClientsResponse {
-      repeated yamcsManagement.ClientInfo client = 1;
+      repeated ClientInfo clients = 1;
     }

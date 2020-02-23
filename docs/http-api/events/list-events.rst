@@ -50,8 +50,8 @@ The ``pos`` and ``limit`` allow for pagination. Keep in mind that in-between two
         "type" : "IN_LIMITS",
         "message" : "Parameter /YSS/SIMULATOR/BatteryVoltage2 has changed to value 222",
         "severity" : "INFO",
-        "generationTime" : "2015-11-13T14:43:47.786Z",
-        "receptionTime" : "2015-11-13T14:43:47.786Z"
+        "generationTimeUTC" : "2015-11-13T14:43:47.786Z",
+        "receptionTimeUTC" : "2015-11-13T14:43:47.786Z"
       } ]
     }
 

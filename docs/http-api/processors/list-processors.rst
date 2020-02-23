@@ -5,12 +5,11 @@ List all processors, across all Yamcs instances::
 
     GET /api/processors
 
-List all processors for the given Yamcs instance::
-
-    GET /api/processors/{instance}
-
 
 .. rubric:: Parameters
+
+instance (string)
+    Return only processors of the specified instance
 
 type (string)
     Indicates the type of the processors to return. Can be either ``replay``, ``realtime`` or ``all``. Default: ``all``
@@ -20,7 +19,7 @@ type (string)
 .. code-block:: json
 
     {
-      "processor" : [ {
+      "processors" : [ {
         "instance" : "simulator",
         "name" : "realtime",
         "type" : "realtime",
@@ -35,5 +34,5 @@ type (string)
 .. code-block:: proto
 
     message ListProcessorsResponse {
-      repeated yamcsManagement.ProcessorInfo processor = 1;
+      repeated yamcsManagement.ProcessorInfo processors = 1;
     }

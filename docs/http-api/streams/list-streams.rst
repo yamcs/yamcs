@@ -14,7 +14,7 @@ List all streams for the given instance::
 .. code-block:: json
 
     {
-      "stream" : [ {
+      "streams" : [ {
         "name" : "tm_realtime",
         "column" : [ {
           "name" : "gentime",
@@ -39,5 +39,5 @@ Note that this will only list the fixed columns of the stream. Tuples may always
 .. code-block:: proto
 
     message ListStreamsResponse {
-      repeated archive.StreamInfo stream = 1;
+      repeated StreamInfo streams = 1;
     }

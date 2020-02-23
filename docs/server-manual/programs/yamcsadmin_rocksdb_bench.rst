@@ -5,7 +5,7 @@ yamcsadmin rocksdb bench
 
 **NAME**
 
-    yamcsadmin rocksdb bench - Benchmark rocksdb storage engine
+    yamcsadmin rocksdb bench - Benchmark RocksDB storage engine
 
 
 **SYNOPSIS**
