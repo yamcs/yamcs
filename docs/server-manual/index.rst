@@ -7,7 +7,6 @@ Yamcs Server Manual
     :titlesonly:
 
     general/index
-    installation/index
     administration/index
     mdb/index
     data-management/index
