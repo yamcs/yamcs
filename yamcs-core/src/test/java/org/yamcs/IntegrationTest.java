@@ -876,7 +876,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testSendCommandNoTransmissionConstraint() throws Exception {
         // first subscribe to command history
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
         wsListener.cmdHistoryDataList.clear();
 
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
@@ -895,7 +895,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     /*-@Test
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
     
         ValidateCommandRequest cmdreq = getValidateCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 10, "p1", "2");
         String resp = doRequest("/commanding/validator", HttpMethod.POST, cmdreq, SchemaRest.ValidateCommandRequest.WRITE);
@@ -911,7 +911,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
 
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
         byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
@@ -938,11 +938,10 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 "Transmission constraints check failed");
     }
 
-    
     @Test
     public void testSendCommandDisableTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
 
         CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstrains(true).build();
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
@@ -962,11 +961,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
-    
+
     @Test
     public void testSendCommandSucceedTransmissionConstraint() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
 
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
         byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC2", HttpMethod.POST, cmdreq);
