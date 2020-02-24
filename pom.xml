@@ -9,7 +9,7 @@
   <packaging>pom</packaging>
 
   <name>Yamcs</name>
-  <url>https://www.yamcs.org</url>
+  <url>https://yamcs.org</url>
   <description>Yamcs Mission Control</description>
   
   <licenses>

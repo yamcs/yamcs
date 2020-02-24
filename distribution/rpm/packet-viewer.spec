@@ -8,7 +8,7 @@ Summary: Yamcs Packet Viewer
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: AGPL (client) + LGPL (API)
-URL: https://www.yamcs.org
+URL: https://yamcs.org
 Prefix: /opt/packet-viewer
 BuildArch: noarch
 

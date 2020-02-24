@@ -5,12 +5,12 @@
 
 Yamcs is a mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom Java classes.
 
-To start developing your own Yamcs application, we recommend to clone our [quickstart template repository](https://github.com/yamcs/quickstart).
+To start developing your own Yamcs application, follow our [Getting Started](https://yamcs.org/getting-started) guide.
 
 
 ## Documentation
 
-* Server Manual: https://www.yamcs.org/docs/server/
+* Server Manual: https://yamcs.org/docs/yamcs-server-manual/
 * Javadoc: https://yamcs.github.io/yamcs/javadoc/
 
 
@@ -49,4 +49,4 @@ When Yamcs started successfully, you can visit the built-in web interface by nav
 
 ## Contributions
 
-While Yamcs is managed and developed by Space Applications Services, we also consider pull requests from other contributors. For non-trivial patches we ask you to sign our [CLA](https://www.yamcs.org/assets/pdf/Yamcs_Contributor_Agreement_v2.0.pdf). You need to do this only once.
+While Yamcs is managed and developed by Space Applications Services, we also consider pull requests from other contributors. For non-trivial patches we ask you to sign our [CLA](https://yamcs.org/media/Yamcs_Contributor_Agreement_v2.0.pdf). You need to do this only once.

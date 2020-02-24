@@ -5,7 +5,7 @@ Yamcs provides an HTTP API allowing external tools to integrate with Yamcs resou
 
 .. hint::
 
-    If you develop in Python consider using the `Python Client <https://www.yamcs.org/yamcs-python/yamcs-client/>`_ which provides an idiomatic mapping for most of the operations documented here.
+    If you develop in Python consider using the `Python Client <https://yamcs.org/docs/yamcs-python/>`_ which provides an idiomatic mapping for most of the operations documented here.
 
 .. toctree::
     :hidden:

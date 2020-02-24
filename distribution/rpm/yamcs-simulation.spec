@@ -8,7 +8,7 @@ Summary: Example of how Yamcs can be configured, with simulated data.
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: AGPL
-URL: https://www.yamcs.org
+URL: https://yamcs.org
 Prefix: /opt/yamcs
 BuildArch: noarch
 Requires: yamcs
