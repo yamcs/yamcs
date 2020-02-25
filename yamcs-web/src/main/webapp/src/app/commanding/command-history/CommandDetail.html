@@ -19,6 +19,13 @@
   </ng-container>
 </div>
 
+<ng-container *ngIf="command.queue">
+  <h6>Queue</h6>
+  <div class="block">
+    {{ command.queue || '-' }}
+  </div>
+</ng-container>
+
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
 
 <h6 style="padding-top: 0">Source</h6>

@@ -264,6 +264,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         q.add(pc);
         notifyAdded(q, pc);
 
+        commandHistoryPublisher.publish(pc.getCommandId(), CommandHistoryPublisher.Queue_KEY, q.getName());
+
         if (q.state == QueueState.DISABLED) {
             q.remove(pc, false);
             commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeQueued_KEY,

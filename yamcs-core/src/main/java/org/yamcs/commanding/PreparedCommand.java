@@ -50,16 +50,16 @@ public class PreparedCommand {
     // -1 means it has not been set yet
     private long transmissionContraintCheckStart = -1;
 
-    //if true, the transmission constraints (if existing) will not be checked
+    // if true, the transmission constraints (if existing) will not be checked
     boolean disableTransmissionConstraints = false;
-    
+
     boolean disableCommandVerifiers = false;
-    
+
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, Value> argAssignment;
     private Set<String> userAssignedArgumentNames;
-    
-    //if not-null, contains a list of options that override the verrifiers settingss from XTCEDB 
+
+    // if not-null, contains a list of options that override the verrifiers settingss from XTCEDB
     private List<CommandVerifierOption> verifierOverride = Collections.emptyList();
 
     // column names to use when converting to tuple
@@ -72,8 +72,8 @@ public class PreparedCommand {
     public final static String CNAME_SOURCE = "source";
     public final static String CNAME_ASSIGNMENTS = "assignments";
     public final static String CNAME_COMMENT = "comment";
-    
-    private static Set<String> reservedNames = new HashSet<String>();
+
+    private static Set<String> reservedNames = new HashSet<>();
     static {
         reservedNames.add(CNAME_GENTIME);
         reservedNames.add(CNAME_SEQNUM);
@@ -291,10 +291,10 @@ public class PreparedCommand {
     }
 
     public void addAttribute(CommandHistoryAttribute cha) {
-        String  name = cha.getName();
+        String name = cha.getName();
         if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
                 || CNAME_ASSIGNMENTS.equals(name)) {
-            throw new IllegalArgumentException("Cannot use '"+name+"' as a command attribute");
+            throw new IllegalArgumentException("Cannot use '" + name + "' as a command attribute");
         }
         attributes.add(cha);
     }
@@ -348,7 +348,7 @@ public class PreparedCommand {
     public void disableTransmissionContraints(boolean b) {
         disableTransmissionConstraints = b;
     }
-    
+
     /**
      * 
      * @return true if the transmission constrains have to be disabled for this command
@@ -356,8 +356,7 @@ public class PreparedCommand {
     public boolean disableTransmissionContraints() {
         return disableTransmissionConstraints;
     }
-    
-    
+
     /**
      * 
      * @return true if the command verifiers have to be disabled for this command
@@ -365,16 +364,16 @@ public class PreparedCommand {
     public boolean disableCommandVerifiers() {
         return disableCommandVerifiers;
     }
+
     public void disableCommandVerifiers(boolean b) {
         disableCommandVerifiers = b;
     }
 
-    
     public void setVerifierOverride(List<CommandVerifierOption> verifierOverride) {
         this.verifierOverride = verifierOverride;
-        
+
     }
-    
+
     /**
      * 
      * @return a list of command verifiers options overriding the settings in the XTCEDB.
@@ -382,5 +381,5 @@ public class PreparedCommand {
     public List<CommandVerifierOption> getVerifierOverride() {
         return verifierOverride;
     }
-    
+
 }

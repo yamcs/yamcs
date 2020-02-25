@@ -23,6 +23,7 @@ export class CommandHistoryRecord {
   binary: string;
 
   comment?: string;
+  queue?: string;
 
   transmissionConstraints?: Acknowledgment;
 
@@ -33,9 +34,9 @@ export class CommandHistoryRecord {
 
   completed?: Acknowledgment;
 
-  extra: { [key: string]: string }[] = [];
+  extra: { [key: string]: string; }[] = [];
 
-  private acksByName: { [key: string]: Acknowledgment } = {};
+  private acksByName: { [key: string]: Acknowledgment; } = {};
 
   constructor(entry: CommandHistoryEntry) {
     this.entry = entry;
@@ -61,6 +62,8 @@ export class CommandHistoryRecord {
         this.binary = attr.value.binaryValue!;
       } else if (attr.name === 'comment') {
         this.comment = attr.value.stringValue;
+      } else if (attr.name === 'queue') {
+        this.queue = attr.value.stringValue;
       } else if (attr.name.endsWith('_Message')) {
         const ackName = attr.name.substring(0, attr.name.length - '_Message'.length);
         this.saveAckMessage(ackName, attr.value.stringValue!);

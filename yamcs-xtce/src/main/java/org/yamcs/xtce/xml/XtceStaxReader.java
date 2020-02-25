@@ -3790,7 +3790,7 @@ public class XtceStaxReader {
     private void logUnknown() {
         if (xmlEvent.isStartElement()) {
             StartElement element = xmlEvent.asStartElement();
-            log.warn("Skipping unkown tag {} at {}:{}", element.getName().getLocalPart(),
+            log.warn("Skipping unknown tag {} at {}:{}", element.getName().getLocalPart(),
                     element.getLocation().getLineNumber(), element.getLocation().getColumnNumber());
         }
     }

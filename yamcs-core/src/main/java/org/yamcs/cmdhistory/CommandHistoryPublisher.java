@@ -25,6 +25,7 @@ public interface CommandHistoryPublisher {
     public final static String AcknowledgeSent_KEY = "Acknowledge_Sent";
     public final static String Verifier_KEY_PREFIX = "Verifier";
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
+    public final static String Queue_KEY = "queue";
 
     /**
      * Used by the links to add entries in the command history when the command has been sent via the link.
