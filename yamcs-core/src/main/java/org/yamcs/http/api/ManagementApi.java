@@ -446,6 +446,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
+
         String instance = null;
         if (request.hasInstance()) {
             instance = verifyInstance(request.getInstance());
@@ -464,6 +466,8 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void getLink(Context ctx, GetLinkRequest request, Observer<LinkInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
+
         LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
         observer.complete(linkInfo);
     }
@@ -603,9 +607,10 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
         return instance;
     }
+
     public static YamcsServerInstance verifyInstanceObj(String instance) {
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
-        if (ysi==null) {
+        if (ysi == null) {
             throw new NotFoundException("No instance named '" + instance + "'");
         }
         return ysi;
@@ -623,11 +628,11 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {
         YamcsInstance.Builder instanceb = YamcsInstance.newBuilder(yamcsInstance);
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(yamcsInstance.getName());
-        
-        if(ysi==null) {
-            throw new BadRequestException("Invalid Yamcs instance "+yamcsInstance.getName());
+
+        if (ysi == null) {
+            throw new BadRequestException("Invalid Yamcs instance " + yamcsInstance.getName());
         }
-        
+
         if (yamcsInstance.hasMissionDatabase()) {
             XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {

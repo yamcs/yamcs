@@ -33,7 +33,8 @@
         Home
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/links"
-                            [queryParams]="{instance: instance.name}">
+                            [queryParams]="{instance: instance.name}"
+                            *ngIf="showLinksItem()">
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
       </app-sidebar-nav-item>

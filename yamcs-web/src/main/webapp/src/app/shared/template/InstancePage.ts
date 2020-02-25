@@ -133,6 +133,10 @@ export class InstancePage implements OnInit, OnDestroy {
     this.archiveExpanded = !expanded;
   }
 
+  showLinksItem() {
+    return this.user.hasSystemPrivilege('ReadLinks');
+  }
+
   showPacketsItem() {
     return this.config.features.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }

@@ -48,7 +48,7 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadAlarms = new SystemPrivilege("ReadAlarms");
 
     /**
-     * Allows to read and control alarm state
+     * Allows to read alarm state
      */
     public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");
 
@@ -60,7 +60,7 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadLinks = new SystemPrivilege("ReadLinks");
 
     /**
-     * Allows to read and control link state.
+     * Allows to read link state.
      */
     public static final SystemPrivilege ControlLinks = new SystemPrivilege("ControlLinks");
 
