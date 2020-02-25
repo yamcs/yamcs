@@ -8,11 +8,6 @@ export class HexPipe implements PipeTransform {
     if (!value) {
       return null;
     }
-    const hex = utils.convertBase64ToHex(value);
-    if (value.length > 8) {
-      return '0x' + hex.slice(0, 8) + '...';
-    } else {
-      return '0x' + hex;
-    }
+    return utils.printHexPreview(value);
   }
 }

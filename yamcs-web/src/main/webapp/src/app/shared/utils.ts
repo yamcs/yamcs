@@ -195,7 +195,7 @@ function printValueWithoutPreview(value: Value): string {
     case 'SINT32':
       return '' + value.sint32Value;
     case 'BINARY':
-      return '<binary>';
+      return printHexPreview('' + value.binaryValue);
     case 'ENUMERATED':
     case 'STRING':
       return value.stringValue!;
@@ -207,6 +207,17 @@ function printValueWithoutPreview(value: Value): string {
       return '' + value.sint64Value;
     default:
       return 'Unsupported data type';
+  }
+}
+
+export function printHexPreview(binaryValue: string) {
+  const hex = convertBase64ToHex(binaryValue);
+  if (hex.length > 8) {
+    return '0x' + hex.slice(0, 8) + '…';
+  } else if (hex.length > 0) {
+    return '0x' + hex;
+  } else {
+    return '';
   }
 }
 
