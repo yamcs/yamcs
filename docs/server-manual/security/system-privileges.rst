@@ -25,8 +25,10 @@ ControlAlarms
     Allows to manage alarms.
 ControlArchiving
     Allows to manage archiving properties of Yamcs.
+ReadLinks
+    Allows to read link state.
 ControlLinks
-    Allows to control the lifecycle of any data link.
+    Allows to control the lifecycle of any link.
 ControlServices
     Allows to manage the lifecycle of services.
 ManageAnyBucket

@@ -25,14 +25,9 @@ Note that only some display types are supported by the Yamcs web interface. The 
       - Edit
     * - ``opi``
       - Yamcs Studio displays
-      - Planned
+      - Basics
       - | No plans to support
         | (use Yamcs studio)
-    * - ``uss``
-      - USS displays
-      - Advanced support
-      - | No plans to support
-        | (use USS Editor)
     * - ``par``
       - Parameter tables
       - Full support
@@ -57,5 +52,3 @@ In addition there is file preview support for the following display resources:
       - Planned
 
 Any other file is displayed in a basic text viewer.
-
-Displays may be visualized in full screen, which helps remove distractions. This will not scale the display, so make use of the zoom in/out buttons before going full screen if you would like your display to appear larger.

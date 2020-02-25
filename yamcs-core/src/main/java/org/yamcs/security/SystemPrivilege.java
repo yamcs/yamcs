@@ -16,13 +16,22 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlProcessor = new SystemPrivilege("ControlProcessor");
     public static final SystemPrivilege ReadCommandHistory = new SystemPrivilege("ReadCommandHistory");
     public static final SystemPrivilege ModifyCommandHistory = new SystemPrivilege("ModifyCommandHistory");
+
+    /**
+     * Allows to control the state of command queues.
+     */
     public static final SystemPrivilege ControlCommandQueue = new SystemPrivilege("ControlCommandQueue");
+
+    /**
+     * Allows to clear users for commanding.
+     */
     public static final SystemPrivilege ControlCommandClearances = new SystemPrivilege("ControlCommandClearances");
 
     /**
      * Allows to issue any commands
      */
     public static final SystemPrivilege Command = new SystemPrivilege("Command");
+
     /**
      * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
      */
@@ -33,11 +42,33 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege GetMissionDatabase = new SystemPrivilege("GetMissionDatabase");
 
+    /**
+     * Allows to read alarm state
+     */
     public static final SystemPrivilege ReadAlarms = new SystemPrivilege("ReadAlarms");
+
+    /**
+     * Allows to read and control alarm state
+     */
     public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");
+
     public static final SystemPrivilege ControlArchiving = new SystemPrivilege("ControlArchiving");
+
+    /**
+     * Allows to read link state.
+     */
+    public static final SystemPrivilege ReadLinks = new SystemPrivilege("ReadLinks");
+
+    /**
+     * Allows to read and control link state.
+     */
     public static final SystemPrivilege ControlLinks = new SystemPrivilege("ControlLinks");
+
+    /**
+     * Allows to control the lifecycle of services
+     */
     public static final SystemPrivilege ControlServices = new SystemPrivilege("ControlServices");
+
     public static final SystemPrivilege CreateInstances = new SystemPrivilege("CreateInstances");
 
     /**
