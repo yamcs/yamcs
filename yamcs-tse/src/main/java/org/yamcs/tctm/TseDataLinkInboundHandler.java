@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.time.TimeService;
@@ -51,9 +52,11 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
 
     private void handleCommandResponse(TseCommandResponse cmdResponse) {
         if (cmdResponse.getSuccess()) {
-            cmdhistPublisher.publish(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");
+            cmdhistPublisher.publishAck(cmdResponse.getId(), CommandHistoryPublisher.CommandComplete_KEY,
+                    timeService.getMissionTime(), AckStatus.OK);
         } else {
-            cmdhistPublisher.commandFailed(cmdResponse.getId(), timeService.getMissionTime(), cmdResponse.getErrorMessage());
+            cmdhistPublisher.commandFailed(cmdResponse.getId(), timeService.getMissionTime(),
+                    cmdResponse.getErrorMessage());
         }
     }
 
