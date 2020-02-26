@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -24,8 +23,6 @@ import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.utils.TimeEncoding;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -55,6 +52,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
@@ -97,6 +95,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
         packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
@@ -130,6 +129,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
 
@@ -149,6 +149,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
 
@@ -172,6 +173,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "PENDING");
@@ -179,7 +181,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "OK");
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
 
-        Thread.sleep(1500); //the default verifier would have timed out in 1000ms
+        Thread.sleep(1500); // the default verifier would have timed out in 1000ms
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
