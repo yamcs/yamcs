@@ -1,7 +1,6 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +16,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandVerifierOption;
+import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
@@ -59,8 +58,8 @@ public class PreparedCommand {
     private Map<Argument, Value> argAssignment;
     private Set<String> userAssignedArgumentNames;
 
-    // if not-null, contains a list of options that override the verrifiers settingss from XTCEDB
-    private List<CommandVerifierOption> verifierOverride = Collections.emptyList();
+    // Verifier-specific configuration options (that override the MDB verifier settings)
+    private Map<String, VerifierConfig> verifierConfig = new HashMap<>();
 
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
@@ -351,7 +350,7 @@ public class PreparedCommand {
 
     /**
      * 
-     * @return true if the transmission constrains have to be disabled for this command
+     * @return true if the transmission constraints have to be disabled for this command
      */
     public boolean disableTransmissionContraints() {
         return disableTransmissionConstraints;
@@ -369,17 +368,14 @@ public class PreparedCommand {
         disableCommandVerifiers = b;
     }
 
-    public void setVerifierOverride(List<CommandVerifierOption> verifierOverride) {
-        this.verifierOverride = verifierOverride;
-
+    public void addVerifierConfig(String name, VerifierConfig verifierConfig) {
+        this.verifierConfig.put(name, verifierConfig);
     }
 
     /**
-     * 
-     * @return a list of command verifiers options overriding the settings in the XTCEDB.
+     * @return a list of command verifiers options overriding MDB settings.
      */
-    public List<CommandVerifierOption> getVerifierOverride() {
-        return verifierOverride;
+    public Map<String, VerifierConfig> getVerifierOverride() {
+        return verifierConfig;
     }
-
 }

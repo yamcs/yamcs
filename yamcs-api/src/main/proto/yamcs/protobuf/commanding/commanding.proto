@@ -77,26 +77,25 @@ message CommandSignificance {
 }
 
 //can be used when sending commands to affect the way post transmission verifiers are running
-message CommandVerifierOption {
-	message CheckWindow {
-  		optional int64 timeToStartChecking = 1;
-  		optional int64 timeToStopChecking = 2;
-	}
-	
-    optional string stage = 1; //name of the verifier (it has to be defined in the XTCEDB)
-    optional bool disable = 2[default = false]; //disable the verifier
-    optional CheckWindow checkWindow = 3;
+message VerifierConfig {
+  message CheckWindow {
+    optional int64 timeToStartChecking = 1;
+    optional int64 timeToStopChecking = 2;
+  }
+
+  optional bool disable = 2; //disable the verifier
+  optional CheckWindow checkWindow = 3;
 }
 
 //can be sent together with the command to affect how the command is processed
-//requires elevated provilege
+//requires elevated privilege
 message CommandOptions {
-    //on which stream the command should be sent out
-	optional string stream = 1;
-	repeated CommandHistoryAttribute attribute = 2;
-	optional bool disableTransmissionConstrains = 3 [default = false]; //disable verification of all transmission constrains (if any specified in the MDB)
-	optional bool disableCommandVerifiers = 4 [default = false]; //disable all post transmission verifiers (if any specified in the MDB)
-	repeated CommandVerifierOption verifierOption = 5; //can be used to change individually the command verifiers
+  // on which stream the command should be sent out
+  optional string stream = 1;
+  repeated CommandHistoryAttribute attributes = 2;
+  optional bool disableTransmissionConstraints = 3; // disable verification of all transmission constrains (if any specified in the MDB)
+  optional bool disableVerifiers = 4; // disable all post transmission verifiers (if any specified in the MDB)
+  map<string, VerifierConfig> verifierConfig = 5; // keyed by verifier name
 }
 
 message CommandHistoryAttribute {

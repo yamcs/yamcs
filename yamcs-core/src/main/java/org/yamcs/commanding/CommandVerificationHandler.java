@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +21,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandVerifierOption;
+import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -141,8 +140,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
      * verifiers for the same stage
      */
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers,
-            List<CommandVerifierOption> verifierOverride) {
-        
+            Map<String, VerifierConfig> verifierOverride) {
+
         for (CommandVerifier cv : cmd.getCommandVerifiers()) {
             boolean found = false;
             for (CommandVerifier existingv : cmdVerifiers) {
@@ -152,22 +151,16 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 }
             }
             if (!found) {
-                if (verifierOverride.isEmpty()) {
+                VerifierConfig extraOptions = verifierOverride.get(cv.getStage());
+                if (extraOptions == null) {
                     cmdVerifiers.add(cv);
                 } else {
-                    Optional<CommandVerifierOption> o = verifierOverride.stream()
-                            .filter(cvo -> cv.getStage().equals(cvo.getStage())).findFirst();
-                    if (o.isPresent()) {
-                        CommandVerifierOption cvo = o.get();
-                        if(cvo.hasDisable() && cvo.getDisable()) {
-                            log.debug("skipping verifier {}", cvo.getStage());
-                            continue;
-                        }
-                        cmdVerifiers.add(overrideVerifier(cv, o.get()));
-                    } else {
-                        cmdVerifiers.add(cv);
+                    if (extraOptions.getDisable()) {
+                        log.debug("skipping verifier {}", cv.getStage());
+                        continue;
                     }
-                } 
+                    cmdVerifiers.add(overrideVerifier(cv, extraOptions));
+                }
             }
         }
         MetaCommand basecmd = cmd.getBaseMetaCommand();
@@ -176,12 +169,13 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
     }
 
-    private CommandVerifier overrideVerifier(CommandVerifier cv, CommandVerifierOption cvo) {
-        if(!cvo.hasCheckWindow()) { //maybe we should throw an exception here
+    private CommandVerifier overrideVerifier(CommandVerifier cv, VerifierConfig extraOptions) {
+        if (!extraOptions.hasCheckWindow()) { // maybe we should throw an exception here
             return cv;
         }
-        org.yamcs.protobuf.Commanding.CommandVerifierOption.CheckWindow cw = cvo.getCheckWindow();
-        CheckWindow cw1 = new CheckWindow(cw.getTimeToStartChecking(), cw.getTimeToStopChecking(), cv.getCheckWindow().getTimeWindowIsRelativeTo());
+        VerifierConfig.CheckWindow cw = extraOptions.getCheckWindow();
+        CheckWindow cw1 = new CheckWindow(cw.getTimeToStartChecking(), cw.getTimeToStopChecking(),
+                cv.getCheckWindow().getTimeWindowIsRelativeTo());
         CommandVerifier cv1 = new CommandVerifier(cv);
         cv1.setCheckWindow(cw1);
         log.debug("Replacing verifier {} with {}", cv, cv1);

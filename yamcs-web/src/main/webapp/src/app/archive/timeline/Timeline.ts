@@ -24,7 +24,7 @@ export default class Timeline {
 
   containerEl: HTMLElement;
   contributions: any[] = [];
-  private contributionsById: { [key: string]: any } = {};
+  private contributionsById: { [key: string]: any; } = {};
 
   theme: any;
   style: any;
@@ -58,8 +58,8 @@ export default class Timeline {
 
   selectedRange?: Range;
 
-  private plugins: { [key: string]: any } = {};
-  private themes: { [key: string]: any } = {};
+  private plugins: { [key: string]: any; } = {};
+  private themes: { [key: string]: any; } = {};
 
   private eventListeners: any /*TimelineEventHandlers*/ = {
     loadRange: [],
@@ -87,7 +87,7 @@ export default class Timeline {
   private measurerSvg: SVGElement;
 
   // action-type -> id
-  private actionTargetsByType: { [key: string]: string[] } = {};
+  private actionTargetsByType: { [key: string]: string[]; } = {};
 
   private _style: any;
   private tracker: TrackerMode;
@@ -184,7 +184,7 @@ export default class Timeline {
   }
 
   static get maxZoom(): number {
-    return 14;
+    return 15;
   }
 
   getFontMetrics(textString: string, textSize: number) {
@@ -414,6 +414,8 @@ export default class Timeline {
         return 400;
       case 14:
         return 200;
+      case 15:
+        return 100;
       default:
         throw new Error(`Unexpected zoom level ${this.zoom}`);
     }

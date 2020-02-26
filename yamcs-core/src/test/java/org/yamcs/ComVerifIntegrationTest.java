@@ -15,8 +15,8 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandOptions;
-import org.yamcs.protobuf.Commanding.CommandVerifierOption;
-import org.yamcs.protobuf.Commanding.CommandVerifierOption.CheckWindow;
+import org.yamcs.protobuf.Commanding.VerifierConfig;
+import org.yamcs.protobuf.Commanding.VerifierConfig.CheckWindow;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
@@ -122,7 +122,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCommandWithOneVerifierDisabled() throws Exception {
         CommandOptions co = CommandOptions.newBuilder()
-                .addVerifierOption(CommandVerifierOption.newBuilder().setStage("Execution").setDisable(true).build())
+                .putVerifierConfig("Execution", VerifierConfig.newBuilder().setDisable(true).build())
                 .build();
 
         issueCommand(8, co);
@@ -143,7 +143,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandWithAllVerifiersDisabled() throws Exception {
-        CommandOptions co = CommandOptions.newBuilder().setDisableCommandVerifiers(true).build();
+        CommandOptions co = CommandOptions.newBuilder().setDisableVerifiers(true).build();
 
         issueCommand(9, co);
 
@@ -163,9 +163,10 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         // modify the timeout for the Complete stage from 1000 (in refmdb.xls) to 5000 and sleep 1500 before sending the
         // ack
         CommandOptions co = CommandOptions.newBuilder()
-                .addVerifierOption(CommandVerifierOption.newBuilder()
-                        .setStage("Complete").setCheckWindow(CheckWindow.newBuilder()
-                                .setTimeToStartChecking(0).setTimeToStopChecking(5000))
+                .putVerifierConfig("Complete", VerifierConfig.newBuilder()
+                        .setCheckWindow(CheckWindow.newBuilder()
+                                .setTimeToStartChecking(0)
+                                .setTimeToStopChecking(5000))
                         .build())
                 .build();
 

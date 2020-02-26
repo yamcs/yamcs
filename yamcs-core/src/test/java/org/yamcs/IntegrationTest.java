@@ -944,7 +944,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
 
-        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstrains(true).build();
+        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstraints(true).build();
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
         byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
         IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);

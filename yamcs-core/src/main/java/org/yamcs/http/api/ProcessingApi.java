@@ -51,7 +51,6 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandOptions;
-import org.yamcs.protobuf.Commanding.CommandVerifierOption;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
@@ -110,12 +109,12 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
             for (Processor processor : ysi.getProcessors()) {
                 response.addProcessors(toProcessorInfo(processor, true));
-            } 
+            }
         } else {
-            for(YamcsServerInstance ysi: YamcsServer.getInstances()) {
+            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
                 for (Processor processor : ysi.getProcessors()) {
                     response.addProcessors(toProcessorInfo(processor, true));
-                }    
+                }
             }
         }
 
@@ -491,29 +490,29 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     private void handleCommandOptions(PreparedCommand preparedCommand, CommandOptions cmdOpt) {
-        cmdOpt.getAttributeList().forEach(cha -> preparedCommand.addAttribute(cha));
+        cmdOpt.getAttributesList().forEach(cha -> preparedCommand.addAttribute(cha));
         MetaCommand cmd = preparedCommand.getMetaCommand();
 
-        if (cmdOpt.hasDisableCommandVerifiers()) {
-            preparedCommand.disableCommandVerifiers(cmdOpt.getDisableCommandVerifiers());
+        if (cmdOpt.hasDisableVerifiers()) {
+            preparedCommand.disableCommandVerifiers(cmdOpt.getDisableVerifiers());
         }
-        if (cmdOpt.hasDisableTransmissionConstrains()) {
-            preparedCommand.disableTransmissionContraints(cmdOpt.getDisableTransmissionConstrains());
+        if (cmdOpt.hasDisableTransmissionConstraints()) {
+            preparedCommand.disableTransmissionContraints(cmdOpt.getDisableTransmissionConstraints());
         } else {
-            List<CommandVerifierOption> l = cmdOpt.getVerifierOptionList();
-            if (!l.isEmpty()) {
-                List<String> invalidVerifiers = new ArrayList<>();
-                for (CommandVerifierOption cvo : l) {
-                    if (!hasVerifier(cmd, cvo.getStage())) {
-                        invalidVerifiers.add(cvo.getStage());
-                    }
+            List<String> invalidVerifiers = new ArrayList<>();
+            for (String stage : cmdOpt.getVerifierConfigMap().keySet()) {
+                if (!hasVerifier(cmd, stage)) {
+                    invalidVerifiers.add(stage);
                 }
-                if (!invalidVerifiers.isEmpty()) {
-                    throw new BadRequestException(
-                            "The command does not have the following verifiers: " + invalidVerifiers.toString());
-                }
-                preparedCommand.setVerifierOverride(l);
             }
+            if (!invalidVerifiers.isEmpty()) {
+                throw new BadRequestException(
+                        "The command does not have the following verifiers: " + invalidVerifiers.toString());
+            }
+
+            cmdOpt.getVerifierConfigMap().forEach((k, v) -> {
+                preparedCommand.addVerifierConfig(k, v);
+            });
         }
     }
 
