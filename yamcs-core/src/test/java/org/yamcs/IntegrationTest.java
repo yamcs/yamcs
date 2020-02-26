@@ -926,6 +926,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
@@ -957,6 +958,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
@@ -980,6 +982,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
 
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
