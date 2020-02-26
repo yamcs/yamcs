@@ -9,6 +9,10 @@
   <artifactId>packet-viewer</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs :: Packet Viewer</name>
+
+  <properties>
+    <javaModuleName>org.yamcs.packetviewer</javaModuleName>
+  </properties>
   
   <dependencies>
     <dependency>

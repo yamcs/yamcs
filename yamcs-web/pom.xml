@@ -12,6 +12,7 @@
 
   <properties>
     <webdir>${basedir}/src/main/webapp/dist</webdir>
+    <javaModuleName>org.yamcs.web</javaModuleName>
   </properties>
 
   <!--

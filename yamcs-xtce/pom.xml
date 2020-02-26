@@ -12,6 +12,10 @@
   <packaging>jar</packaging>
   <name>Yamcs :: XTCE</name>
 
+  <properties>
+    <javaModuleName>org.yamcs.xtce</javaModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>

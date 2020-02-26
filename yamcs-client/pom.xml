@@ -16,6 +16,10 @@
       <url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
     </license>
   </licenses>
+
+  <properties>
+    <javaModuleName>org.yamcs.client</javaModuleName>
+  </properties>
   
   <dependencies>
     <dependency>

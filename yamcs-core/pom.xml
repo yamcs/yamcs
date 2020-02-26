@@ -10,6 +10,10 @@
   <packaging>jar</packaging>
   <name>Yamcs :: Core</name>
 
+  <properties>
+    <javaModuleName>org.yamcs.core</javaModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>

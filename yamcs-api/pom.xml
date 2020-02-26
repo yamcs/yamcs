@@ -12,6 +12,10 @@
   <name>Yamcs :: API</name>
   <description>Used by external clients to communicate with Yamcs</description>
 
+  <properties>
+    <javaModuleName>org.yamcs.api</javaModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.google.protobuf</groupId>

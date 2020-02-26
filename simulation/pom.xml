@@ -12,6 +12,10 @@
   <packaging>jar</packaging>
   <name>Yamcs :: Example Simulation</name>
 
+  <properties>
+    <javaModuleName>org.yamcs.simulation</javaModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>

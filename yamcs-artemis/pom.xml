@@ -10,6 +10,10 @@
   <name>Yamcs :: Artemis</name>
   <description>Yamcs Artemis senders/receivers</description>
 
+  <properties>
+    <javaModuleName>org.yamcs.artemis</javaModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
