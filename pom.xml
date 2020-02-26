@@ -267,10 +267,10 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.1.1</version>
           <configuration>
             <!-- Adding the source fixes a javadoc bug in JDK11 -->
-            <source>1.8</source>
+            <source>8</source>
             <author>false</author>
             <breakiterator>true</breakiterator>
             <additionalOptions>
@@ -280,6 +280,9 @@
               <!-- the 'syntax' group is too strict with @param and @throws -->
               <!-- additionalOption>-Xdoclint:syntax</additionalOption-->
             </additionalOptions>
+            <additionalJOptions>
+              <additionalJOption>--no-module-directories</additionalJOption>
+            </additionalJOptions>
           </configuration>
         </plugin>
         <plugin>

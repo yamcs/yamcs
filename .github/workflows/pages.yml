@@ -17,7 +17,7 @@ jobs:
           java-version: 11
       - name: Generate site
         run: |
-          mvn -B --no-transfer-progress -DskipTests javadoc:aggregate
+          mvn -B --no-transfer-progress -DskipTests package javadoc:aggregate
           touch target/site/apidocs/.nojekyll
       - name: Deploy to GitHub Pages
         uses: maxheld83/ghpages@v0.2.1
