@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,9 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  *
  */
 public class RealtimeArchiveFiller extends AbstractExecutionThreadService implements ParameterConsumer {
+
+    private static final List<ParameterValue> POISON = new ArrayList<>(0);
+
     int flushInterval; // seconds
     String processorName = "realtime";
     final String yamcsInstance;
@@ -79,6 +83,10 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
     protected void run() throws Exception {
         while (isRunning()) {
             List<ParameterValue> items = queue.poll(flushInterval, TimeUnit.SECONDS);
+            if (items == POISON) { // Service wants to stop
+                break;
+            }
+
             if ((items == null) || items.isEmpty()) {
                 flush();
                 continue;
@@ -133,6 +141,15 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
             throw new ConfigurationException("No processor named '" + processorName + "' in instance " + yamcsInstance);
         }
         subscriptionId = realtimeProcessor.getParameterRequestManager().subscribeAll(this);
+    }
+
+    @Override
+    protected void triggerShutdown() {
+        try {
+            queue.put(POISON);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
