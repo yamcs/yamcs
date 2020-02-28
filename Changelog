@@ -1,3 +1,9 @@
+Version 4.10.8 released 28-Feb-2020
+- Fixed a shutdown issue with RealtimeArchiveFiller (#377)
+- Link activity is now protected by the ``ReadLinks`` privilege
+- Fixed an issue with completion of TSE commands
+- Minor other tweaks and fixes
+
 Version 4.10.7 released 19-Feb-2020
 - added command stacks on the yamcs-web
 - added command clearance functionality
