@@ -74,6 +74,9 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         File[] files = fdir.listFiles();
         Arrays.sort(files);
         for (File f : files) {
+            if (f.isHidden() || !f.isFile()) {
+                continue;
+            }
             log.info("Injecting the content of {}", f);
             try {
                 TmFileReader prov = getTmFileReader(f.getAbsolutePath());
