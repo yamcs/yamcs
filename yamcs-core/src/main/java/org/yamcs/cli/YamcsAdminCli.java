@@ -26,11 +26,11 @@ public class YamcsAdminCli extends Command {
         super("yamcsadmin", null);
         addSubCommand(new BackupCli(this));
         addSubCommand(new CheckConfig(this));
+        addSubCommand(new MdbCli(this));
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new UsersCli(this));
-        addSubCommand(new XtceDbCli(this));
     }
 
     @Parameter(names = "--etc-dir", converter = PathConverter.class, description = "Path to config directory")
@@ -48,11 +48,11 @@ public class YamcsAdminCli extends Command {
     }
 
     public static void main(String[] args) {
-        YamcsAdminCli yamcsCli = new YamcsAdminCli();
-        yamcsCli.parse(args);
+        YamcsAdminCli cli = new YamcsAdminCli();
+        cli.parse(args);
 
         Level logLevel;
-        switch (yamcsCli.verbose) {
+        switch (cli.verbose) {
         case 0:
             logLevel = Level.OFF;
             break;
@@ -71,11 +71,11 @@ public class YamcsAdminCli extends Command {
         }
         Log.forceStandardStreams(logLevel);
 
-        YConfiguration.setResolver(new FileBasedConfigurationResolver(yamcsCli.configDirectory));
+        YConfiguration.setResolver(new FileBasedConfigurationResolver(cli.configDirectory));
 
         try {
-            yamcsCli.validate();
-            yamcsCli.execute();
+            cli.validate();
+            cli.execute();
         } catch (ExecutionException e) {
             System.err.println(e.getCause());
             System.exit(1);
