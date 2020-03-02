@@ -23,13 +23,13 @@ export class YamcsService {
 
   constructor(@Inject(APP_BASE_HREF) baseHref: string) {
     this.yamcsClient = new YamcsClient(baseHref);
+    this.yamcsClient.prepareWebSocketClient();
   }
 
   /**
    * Prepares a (new) instance.
    */
   selectInstance(instanceId: string) {
-    this.yamcsClient.closeConnection();
     return new Promise<Instance>((resolve, reject) => {
       const currentConnectionInfo = this.connectionInfo$.value;
       if (currentConnectionInfo) {

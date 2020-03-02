@@ -1,19 +1,15 @@
-import { Observable } from 'rxjs';
 import { CreateTransferRequest, Transfer, TransfersPage } from './types/cfdp';
+import { Cop1Config } from './types/cop1';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CommandHistoryPage, Cop1Config, CreateEventRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
-import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CommandHistoryPage, CreateEventRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
-import { WebSocketClient2 } from './WebSocketClient2';
 import YamcsClient from './YamcsClient';
 
 export class InstanceClient {
 
-  public connected$: Observable<boolean>;
   private webSocketClient?: WebSocketClient;
-  private webSocketClient2?: WebSocketClient2;
 
   constructor(
     readonly instance: string,
@@ -23,16 +19,6 @@ export class InstanceClient {
   async getTimeUpdates(): Promise<TimeSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient!.getTimeUpdates();
-  }
-
-  createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
-    this.prepareWebSocketClient();
-    return this.webSocketClient2!.createSubscription('time', options, observer);
-  }
-
-  async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
-    this.prepareWebSocketClient();
-    return this.webSocketClient!.getInstanceUpdates();
   }
 
   async getPackets(options: GetPacketsOptions = {}) {
@@ -587,20 +573,11 @@ export class InstanceClient {
       this.webSocketClient.close();
       this.webSocketClient = undefined;
     }
-    if (this.webSocketClient2) {
-      this.webSocketClient2.close();
-      this.webSocketClient2 = undefined;
-    }
   }
 
   private prepareWebSocketClient() {
     if (!this.webSocketClient) {
       this.webSocketClient = new WebSocketClient(this.yamcs.baseHref, this.instance);
-      this.connected$ = this.webSocketClient.connected$;
-    }
-    if (!this.webSocketClient2) {
-      this.webSocketClient2 = new WebSocketClient2(this.yamcs.apiUrl);
-      // this.connected$ = this.webSocketClient2.connected$;
     }
   }
 

@@ -5,7 +5,6 @@ option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "Cop1Proto";
 option java_multiple_files = true;
 
-
 import "yamcs/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -17,175 +16,187 @@ import "google/protobuf/timestamp.proto";
 service Cop1Api {
 	//used in case state = UNITIALIZED to initialize COP1
 	rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {
-        option (yamcs.api.route) = {
-            post: "/api/cop1/{instance}/{name}:initialize"
-            body: "*"
-        };
-    }
+    option (yamcs.api.route) = {
+      post: "/api/cop1/{instance}/{link}:initialize"
+      body: "*"
+    };
+  }
     
-    //used in case state = SUSPENDED to resume COP1 operation
-    rpc Resume(ResumeRequest) returns (google.protobuf.Empty) {
-        option (yamcs.api.route) = {
-            post: "/api/cop1/{instance}/{name}:resume"
-            body: "*"
-        };
-    }
+  //used in case state = SUSPENDED to resume COP1 operation
+  rpc Resume(ResumeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/cop1/{instance}/{link}:resume"
+      body: "*"
+    };
+  }
     
-    //disable COP1 operation, causing the sent queue to be purged
-    //all TCs from the wait queue and the newly received ones will be sent immediately
-    rpc Disable(DisableRequest) returns (google.protobuf.Empty) {
-        option (yamcs.api.route) = {
-            post: "/api/cop1/{instance}/{name}:disable"
-            body: "*"
-        };
-    }
-     
-    rpc SetConfig(SetConfigRequest) returns (google.protobuf.Empty) {
-        option (yamcs.api.route) = {
-            patch: "/api/cop1/{instance}/{name}/config"
-            body: "*"
-        };
-    }
+  //disable COP1 operation, causing the sent queue to be purged
+  //all TCs from the wait queue and the newly received ones will be sent immediately
+  rpc Disable(DisableRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/cop1/{instance}/{link}:disable"
+      body: "*"
+    };
+  }
     
-    rpc GetConfig(GetConfigRequest) returns (Cop1Config) {
-        option (yamcs.api.route) = {
-            get: "/api/cop1/{instance}/{name}/config"
-        };
-    }
-    
-    rpc GetStatus(GetStatusRequest) returns (Cop1Status) {
-        option (yamcs.api.route) = {
-            get: "/api/cop1/{instance}/{name}/status"
-        };
-    }
+  rpc SetConfig(SetConfigRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      patch: "/api/cop1/{instance}/{link}/config"
+      body: "*"
+    };
+  }
+  
+  // Get COP1 configuration
+  rpc GetConfig(GetConfigRequest) returns (Cop1Config) {
+    option (yamcs.api.route) = {
+      get: "/api/cop1/{instance}/{link}/config"
+    };
+  }
+  
+  // Get COP1 status
+  rpc GetStatus(GetStatusRequest) returns (Cop1Status) {
+    option (yamcs.api.route) = {
+      get: "/api/cop1/{instance}/{link}/status"
+    };
+  }
+  
+  // Receive COP1 status updates
+  rpc SubscribeStatus(SubscribeStatusRequest) returns (stream Cop1Status) {
+    option (yamcs.api.websocket) = {
+      topic: "cop1"
+    };
+  }
 }
 
 enum InitializationType {
-   WITH_CLCW_CHECK = 1;    //CLCW will be expected from the remote system and used to initialise the vS
-   WITHOUT_CLCW_CHECK = 2; //initialize without waiting for CLCW 
-   UNLOCK = 3;             //This causes a BC Unlock frame to be sent to the remote system. 
-   SET_VR = 4;             //Initiate AD with set V(R). This will cause a BC frame to be sent to the remote system
+  WITH_CLCW_CHECK = 1;    //CLCW will be expected from the remote system and used to initialise the vS
+  WITHOUT_CLCW_CHECK = 2; //initialize without waiting for CLCW 
+  UNLOCK = 3;             //This causes a BC Unlock frame to be sent to the remote system. 
+  SET_VR = 4;             //Initiate AD with set V(R). This will cause a BC frame to be sent to the remote system
 }
 
 message InitializeRequest {
- 	optional string instance = 1;
-    optional string name = 2;
+  optional string instance = 1;
+  optional string link = 2;
     
-	optional InitializationType type = 3;
+  optional InitializationType type = 3;
 	
-	//timeout in milliseconds for initialize with CLCW check
-	optional uint64 clcwCheckInitializeTimeout = 4;
+  //timeout in milliseconds for initialize with CLCW check
+  optional uint64 clcwCheckInitializeTimeout = 4;
 	
-	//vR value for initialize with set V(R)
-	optional uint32 vR = 5;
+  //vR value for initialize with set V(R)
+  optional uint32 vR = 5;
 }
 
 message SetConfigRequest {
-   optional string instance = 1;
-   optional string name = 2;
-   optional Cop1Config cop1Config = 3;
+  optional string instance = 1;
+  optional string link = 2;
+  optional Cop1Config cop1Config = 3;
 }
 
 message GetConfigRequest {
-   optional string instance = 1;
-   optional string name = 2;
+  optional string instance = 1;
+  optional string link = 2;
 }
 
 
 message GetStatusRequest {
-   optional string instance = 1;
-   optional string name = 2;
+  optional string instance = 1;
+  optional string link = 2;
 }
 
 message ResumeRequest {
   optional string instance = 1;
-  optional string name = 2;
+  optional string link = 2;
 }
 
 message DisableRequest {
-	optional string instance = 1;
-  	optional string name = 2;
+  optional string instance = 1;
+  optional string link = 2;
   	
-    //if set to true, all transmitted  frames while COP1 is disabled, will have the bypass flag set
-    optional bool setBypassAll = 3;
+  //if set to true, all transmitted  frames while COP1 is disabled, will have the bypass flag set
+  optional bool setBypassAll = 3;
 }
 
 enum Cop1State {
-	 ACTIVE=1;
-     RETRANSMIT_WITHOUT_WAIT=2;
-     RETRANSMIT_WITH_WAIT = 3;
-     INITIALIZING_WITHOUT_BC = 4;
-     INITIALIZING_WITH_BC = 5;
-     UNINITIALIZED = 6;
-     SUSPENDED = 7;
+  ACTIVE=1;
+  RETRANSMIT_WITHOUT_WAIT=2;
+  RETRANSMIT_WITH_WAIT = 3;
+  INITIALIZING_WITHOUT_BC = 4;
+  INITIALIZING_WITH_BC = 5;
+  UNINITIALIZED = 6;
+  SUSPENDED = 7;
 }
 
 message Clcw {
-    optional google.protobuf.Timestamp receptionTime = 1 ;
-	optional bool lockout = 2;
-	optional bool wait = 3;
-	optional bool retransmit = 4;
-	optional uint32 nR = 5;
+  optional google.protobuf.Timestamp receptionTime = 1 ;
+  optional bool lockout = 2;
+  optional bool wait = 3;
+  optional bool retransmit = 4;
+  optional uint32 nR = 5;
 }
 
-//this message will be sent periodically via the websocket
 message Cop1Status {
-     //link name for which this status applies 
-     // it is present when this message is sent over the websocket as there might be multiple COP1 links subscribed
-    optional string name = 11;
-    
-    //if false, all frames are immediately transmitted (i.e. COP1 is disabled)
-    optional bool cop1Active = 1;
-    
-    //relevant if cop1Active = false -> set the bypass flag on all outgoing frames 
-    optional bool setBypassAll = 2;
-   
-    //last received CLCW
-    optional Clcw clcw = 3;
-	
-	//current state of FOP1 state machine, only relevant if cop1Active = true
-	optional Cop1State state = 4;
-	
-	 // V(S) - Transmitter Frame Sequence Number;
-	optional uint32 vS = 5;
-	
-	//the nR from the previous CLCW
-	optional uint32 nnR = 6;
-	
-	//number of TC packets in the wait queue
-	optional uint32 waitQueueNumTC = 7;
-		
-	//number of unacknowledged frames in the sent queue
-	optional uint32 sentQueueNumFrames = 8; 
-	
-	//number of frames in the out queue (waiting to be picked up by the master chain multiplexer)
-	optional uint32 outQueueNumFrames = 9;
-	
-	 //how many times the last frame has been transmitted
-	optional uint32 txCount = 10;
-	
+  //link name for which this status applies 
+  // it is present when this message is sent over the websocket as there might be multiple COP1 links subscribed
+  optional string link = 11;
+  
+  //if false, all frames are immediately transmitted (i.e. COP1 is disabled)
+  optional bool cop1Active = 1;
+  
+  //relevant if cop1Active = false -> set the bypass flag on all outgoing frames 
+  optional bool setBypassAll = 2;
+  
+  //last received CLCW
+  optional Clcw clcw = 3;
+  
+  //current state of FOP1 state machine, only relevant if cop1Active = true
+  optional Cop1State state = 4;
+  
+  // V(S) - Transmitter Frame Sequence Number;
+  optional uint32 vS = 5;
+  
+  //the nR from the previous CLCW
+  optional uint32 nnR = 6;
+  
+  //number of TC packets in the wait queue
+  optional uint32 waitQueueNumTC = 7;
+  
+  //number of unacknowledged frames in the sent queue
+  optional uint32 sentQueueNumFrames = 8; 
+  
+  //number of frames in the out queue (waiting to be picked up by the master chain multiplexer)
+  optional uint32 outQueueNumFrames = 9;
+  
+  //how many times the last frame has been transmitted
+  optional uint32 txCount = 10;
 }
 
 enum TimeoutType {
-   UNITIALIZE = 0;
-   SUSPEND = 1;
+  UNITIALIZE = 0;
+  SUSPEND = 1;
 }
 
 message Cop1Config {
-    optional uint32 vcId = 1;
-    
-    //if true, the BD frames are sent immediately, without going to the waiting queue
-    optional bool bdAbsolutePriority = 3;
-    
-    //maximum size of the sent queue (i.e. how many unackonwledged frames can be in the queue before timing out)
-    optional uint32 windowWidth = 4;
-    
-    //what should happen on timeout go to SUSPEND or go to UNITIALIZED
-    optional TimeoutType timeoutType = 5;
-    
-    //how many times the frames are transmitted before timing out
-    optional uint32 txLimit = 6;
-    
-    //how many milliseconds to wait between retransmissions
-	optional uint64 t1 = 7;
+  optional uint32 vcId = 1;
+  
+  //if true, the BD frames are sent immediately, without going to the waiting queue
+  optional bool bdAbsolutePriority = 3;
+  
+  //maximum size of the sent queue (i.e. how many unackonwledged frames can be in the queue before timing out)
+  optional uint32 windowWidth = 4;
+  
+  //what should happen on timeout go to SUSPEND or go to UNITIALIZED
+  optional TimeoutType timeoutType = 5;
+  
+  //how many times the frames are transmitted before timing out
+  optional uint32 txLimit = 6;
+  
+  //how many milliseconds to wait between retransmissions
+  optional uint64 t1 = 7;
+}
+
+message SubscribeStatusRequest {
+  optional string instance = 1;
+  optional string link = 2;
 }

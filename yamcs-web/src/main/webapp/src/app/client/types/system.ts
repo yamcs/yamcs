@@ -96,10 +96,6 @@ export interface ConnectionInfoSubscriptionResponse {
   connectionInfo$: Observable<ConnectionInfo>;
 }
 
-export interface InstanceSubscriptionResponse {
-  instance$: Observable<Instance>;
-}
-
 export interface ClientInfo {
   id: number;
   instance: string;
@@ -430,10 +426,6 @@ export interface CommandQueueSubscriptionResponse {
   commandQueue$: Observable<CommandQueue>;
 }
 
-export interface ListInstancesOptions {
-  filter?: string;
-}
-
 export interface EditLinkOptions {
   state?: 'enabled' | 'disabled';
   resetCounters?: boolean;
@@ -481,13 +473,6 @@ export interface CreateBucketRequest {
 export interface ListObjectsOptions {
   prefix?: string;
   delimiter?: string;
-}
-
-export interface CreateInstanceRequest {
-  name: string;
-  template: string;
-  templateArgs?: { [key: string]: string; };
-  labels?: { [key: string]: string; };
 }
 
 export interface CreateGroupRequest {

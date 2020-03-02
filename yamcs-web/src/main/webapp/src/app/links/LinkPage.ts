@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Cop1Config, Cop1Status, Instance, Link } from '../client';
+import { Cop1Config, Cop1Status, Cop1Subscription, Instance, Link } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 
@@ -18,7 +18,7 @@ export class LinkPage implements OnDestroy {
   cop1Status$ = new BehaviorSubject<Cop1Status | null>(null);
 
   private linkSubscription: Subscription;
-  private cop1Subscription: Subscription;
+  private cop1Subscription: Cop1Subscription;
 
   constructor(
     private title: Title,
@@ -43,6 +43,10 @@ export class LinkPage implements OnDestroy {
   }
 
   private changeLink(name: string) {
+    if (this.cop1Subscription) {
+      this.cop1Subscription.cancel();
+    }
+
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
 
@@ -52,16 +56,14 @@ export class LinkPage implements OnDestroy {
       if (link.type.indexOf('Cop1Tc') !== -1) {
         this.yamcs.getInstanceClient()!.getCop1Config(name).then(cop1Config => {
           this.cop1Config$.next(cop1Config);
-          console.log('have', cop1Config);
         });
 
-        this.yamcs.yamcsClient.getCop1Updates({
+        this.cop1Subscription = this.yamcs.yamcsClient.createCop1Subscription({
           instance: link.instance,
-          linkName: name,
-        }).then(response => {
-          this.cop1Subscription = response.status$.subscribe(status => {
-            this.cop1Status$.next(status);
-          });
+          link: name,
+        }, status => {
+          this.cop1Status$.next(status);
+          console.log('have', status);
         });
       }
     });
@@ -90,11 +92,7 @@ export class LinkPage implements OnDestroy {
       this.linkSubscription.unsubscribe();
     }
     if (this.cop1Subscription) {
-      this.cop1Subscription.unsubscribe();
-    }
-    const yamcsClient = this.yamcs.yamcsClient!;
-    if (yamcsClient) {
-      yamcsClient.unsubscribeCop1Updates();
+      this.cop1Subscription.cancel();
     }
     const instanceClient = this.yamcs.getInstanceClient();
     if (instanceClient) {

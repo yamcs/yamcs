@@ -38,6 +38,8 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
+import org.yamcs.management.ManagementListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractManagementApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.EditLinkRequest;
@@ -172,8 +174,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     @Override
-    public void listInstances(Context ctx, ListInstancesRequest request,
-            Observer<ListInstancesResponse> observer) {
+    public void listInstances(Context ctx, ListInstancesRequest request, Observer<ListInstancesResponse> observer) {
         Predicate<YamcsServerInstance> filter = getFilter(request.getFilterList());
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsServerInstance instance : YamcsServer.getInstances()) {
@@ -183,6 +184,19 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             }
         }
         observer.complete(instancesb.build());
+    }
+
+    @Override
+    public void subscribeInstances(Context ctx, Empty request, Observer<YamcsInstance> observer) {
+        ManagementListener listener = new ManagementListener() {
+            @Override
+            public void instanceStateChanged(YamcsServerInstance ysi) {
+                observer.next(ysi.getInstanceInfo());
+            }
+        };
+
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeManagementListener(listener));
+        ManagementService.getInstance().addManagementListener(listener);
     }
 
     @Override

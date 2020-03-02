@@ -6,8 +6,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { Instance } from '../../client';
+import { Instance, InstancesSubscription } from '../../client';
 import { AuthService } from '../services/AuthService';
 import { MessageService } from '../services/MessageService';
 import { YamcsService } from '../services/YamcsService';
@@ -28,12 +27,12 @@ export class HomePage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  private instancesByName: { [key: string]: Instance } = {};
+  private instancesByName: { [key: string]: Instance; } = {};
 
   dataSource = new MatTableDataSource<Instance>([]);
   selection = new SelectionModel<Instance>(true, []);
 
-  instanceSubscription: Subscription;
+  instancesSubscription: InstancesSubscription;
 
   displayedColumns = [
     'select',
@@ -78,11 +77,9 @@ export class HomePage implements AfterViewInit, OnDestroy {
       }
       this.dataSource.data = Object.values(this.instancesByName);
 
-      this.yamcs.yamcsClient.getInstanceUpdates().then(response => {
-        this.instanceSubscription = response.instance$.subscribe(instance => {
-          this.instancesByName[instance.name] = instance;
-          this.dataSource.data = Object.values(this.instancesByName);
-        });
+      this.instancesSubscription = this.yamcs.yamcsClient.createInstancesSubscription(instance => {
+        this.instancesByName[instance.name] = instance;
+        this.dataSource.data = Object.values(this.instancesByName);
       });
     });
 
@@ -202,8 +199,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.instanceSubscription) {
-      this.instanceSubscription.unsubscribe();
+    if (this.instancesSubscription) {
+      this.instancesSubscription.cancel();
     }
   }
 }

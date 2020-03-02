@@ -43,6 +43,13 @@ service ManagementApi {
     };
   }
   
+  // Receive instance updates
+  rpc SubscribeInstances(google.protobuf.Empty) returns (stream YamcsInstance) {
+    option (yamcs.api.websocket) = {
+      topic: "instances"
+    };
+  }
+  
   // Get an instance
   rpc GetInstance(GetInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {

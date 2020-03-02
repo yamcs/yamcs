@@ -2,8 +2,8 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, first, map, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { WebSocketServerMessage } from './types/internal';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Cop1Status, Cop1SubscriptionRequest, Cop1SubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
+import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -343,32 +343,6 @@ export class WebSocketClient {
     });
   }
 
-  async getInstanceUpdates() {
-    const requestId = this.emit({ instance: 'subscribe' });
-
-    return new Promise<InstanceSubscriptionResponse>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = {} as InstanceSubscriptionResponse;
-          response.instance$ = this.webSocketConnection$.pipe(
-            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'INSTANCE'),
-            map(msg => msg[3].data as Instance),
-          );
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
   async getProcessorUpdates(options?: ProcessorSubscriptionRequest) {
     const requestId = this.emit({ processor: 'subscribe', data: options });
 
@@ -510,57 +484,6 @@ export class WebSocketClient {
             }),
           );
           resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
-  async getCop1Updates(options: Cop1SubscriptionRequest) {
-    const requestId = this.emit({
-      cop1: 'subscribe',
-      data: options,
-    });
-
-    return new Promise<Cop1SubscriptionResponse>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = {} as Cop1SubscriptionResponse;
-          response.status$ = this.webSocketConnection$.pipe(
-            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'COP1_STATUS'),
-            map(msg => msg[3].data as Cop1Status),
-          );
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
-  async unsubscribeCop1Updates() {
-    const requestId = this.emit({
-      cop1: 'unsubscribe',
-    });
-
-    return new Promise<void>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          resolve();
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           reject(msg[3].et);
         } else {

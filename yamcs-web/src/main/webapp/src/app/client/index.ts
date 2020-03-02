@@ -4,6 +4,8 @@ export { HttpInterceptor } from './HttpInterceptor';
 export { InstanceClient } from './InstanceClient';
 export { StorageClient } from './StorageClient';
 export * from './types/cfdp';
+export * from './types/cop1';
+export * from './types/management';
 export * from './types/mdb';
 export * from './types/monitoring';
 export * from './types/system';

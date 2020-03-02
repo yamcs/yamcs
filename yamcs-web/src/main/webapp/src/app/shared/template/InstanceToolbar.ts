@@ -44,12 +44,11 @@ export class InstanceToolbar implements OnDestroy {
       });
     });
 
-    this.connected$ = this.yamcs.getInstanceClient()!.connected$;
+    this.connected$ = this.yamcs.yamcsClient.connected$;
 
-    console.log('a new one');
-    this.timeSubscription = this.yamcs.getInstanceClient()!.createTimeSubscription({
+    this.timeSubscription = this.yamcs.yamcsClient.createTimeSubscription({
       instance: this.yamcs.getInstance().name,
-      processor: 'realtime',
+      processor: 'realtime', // TODO
     }, time => this.time$.next(time.value));
 
     this.connectedSubscription = this.connected$.subscribe(connected => {

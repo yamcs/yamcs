@@ -1,12 +1,14 @@
 import { Observable } from 'rxjs';
-import { Cop1SubscriptionRequest, Cop1SubscriptionResponse, CreateProcessorRequest } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
+import { Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
-import { AuthInfo, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
-import { WebSocketClient } from './WebSocketClient';
+import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
+import { CreateProcessorRequest } from './types/monitoring';
+import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { WebSocketClient2 } from './WebSocketClient2';
 
 
@@ -21,8 +23,7 @@ export default class YamcsClient implements HttpHandler {
   private interceptor: HttpInterceptor;
 
   public connected$: Observable<boolean>;
-  private webSocketClient?: WebSocketClient;
-  private webSocketClient2?: WebSocketClient2;
+  private webSocketClient?: WebSocketClient2;
 
   constructor(readonly baseHref = '/') {
     this.apiUrl = `${this.baseHref}api`;
@@ -34,9 +35,9 @@ export default class YamcsClient implements HttpHandler {
     return new InstanceClient(instance, this);
   }
 
-  async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
+  createInstancesSubscription(observer: (instance: Instance) => void): InstancesSubscription {
     this.prepareWebSocketClient();
-    return this.webSocketClient!.getInstanceUpdates();
+    return this.webSocketClient!.createSubscription('instances', {}, observer);
   }
 
   /**
@@ -367,15 +368,14 @@ export default class YamcsClient implements HttpHandler {
     return await this.doFetch(url, { method: 'DELETE' });
   }
 
-  async getCop1Updates(options: Cop1SubscriptionRequest): Promise<Cop1SubscriptionResponse> {
+  createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
     this.prepareWebSocketClient();
-    return this.webSocketClient!.getCop1Updates(options);
+    return this.webSocketClient!.createSubscription('time', options, observer);
   }
 
-  async unsubscribeCop1Updates() {
-    if (this.webSocketClient) {
-      return this.webSocketClient!.unsubscribeCop1Updates();
-    }
+  createCop1Subscription(options: SubscribeCop1Request, observer: (cop1Status: Cop1Status) => void): Cop1Subscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('cop1', options, observer);
   }
 
   async getSystemInfo() {
@@ -466,25 +466,10 @@ export default class YamcsClient implements HttpHandler {
     return fetch(url, init);
   }
 
-  private prepareWebSocketClient() {
+  prepareWebSocketClient() {
     if (!this.webSocketClient) {
-      this.webSocketClient = new WebSocketClient(this.baseHref);
+      this.webSocketClient = new WebSocketClient2(this.apiUrl);
       this.connected$ = this.webSocketClient.connected$;
-    }
-    if (!this.webSocketClient2) {
-      this.webSocketClient2 = new WebSocketClient2(this.apiUrl);
-      // this.connected$ = this.webSocketClient2.connected$;
-    }
-  }
-
-  closeConnection() {
-    if (this.webSocketClient) {
-      this.webSocketClient.close();
-      this.webSocketClient = undefined;
-    }
-    if (this.webSocketClient2) {
-      this.webSocketClient2.close();
-      this.webSocketClient2 = undefined;
     }
   }
 

@@ -105,55 +105,6 @@ export interface SubscribedParameter {
   numericId: number;
 }
 
-export interface Cop1SubscriptionRequest {
-  instance: string;
-  linkName: string;
-}
-
-export interface Clcw {
-  receptionTime: string;
-  lockout: boolean;
-  wait: boolean;
-  retransmit: boolean;
-  nR: number;
-}
-
-export type Cop1State = 'ACTIVE'
-  | 'RETRANSMIT_WITHOUT_WAIT'
-  | 'RETRANSMIT_WITH_WAIT'
-  | 'INITIALIZING_WITHOUT_BC'
-  | 'INITIALIZING_WITH_BC'
-  | 'UNINTIALIZED'
-  | 'SUSPENDED';
-
-export interface Cop1Status {
-  name: string;
-  cop1Active: boolean;
-  setBypassAll: boolean;
-  clcw: Clcw;
-  state: Cop1State;
-  vS: number;
-  nnR: number;
-  waitQueueNumTC: number;
-  sentQueueNumFrames: number;
-  outQueueNumFrames: number;
-  txCount: number;
-}
-
-export interface Cop1SubscriptionResponse {
-  status$: Observable<Cop1Status>;
-}
-
-export interface Cop1Config {
-  name: string;
-  vcId: number;
-  bdAbsolutePriority: boolean;
-  windowWidth: number;
-  timeoutType: string;
-  txLimit: number;
-  t1: number;
-}
-
 export interface EventSubscriptionResponse {
   event$: Observable<Event>;
 }
