@@ -11,10 +11,6 @@ const MESSAGE_TYPE_REPLY = 2;
 const MESSAGE_TYPE_EXCEPTION = 3;
 const MESSAGE_TYPE_DATA = 4;
 
-/**
- * Automatically reconnecting web socket client. It also
- * transfers subscriptions between different connections.
- */
 export class WebSocketClient {
 
   readonly connected$ = new BehaviorSubject<boolean>(false);

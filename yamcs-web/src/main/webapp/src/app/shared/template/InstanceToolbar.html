@@ -15,12 +15,12 @@
 
     <ng-container *ngIf="connected$ | async; else noConnection">
       <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-        <button mat-button class="toolbar-text" *ngIf="timeInfo$ | async as timeInfo"
+        <button mat-button class="toolbar-text" *ngIf="time$ | async as time"
                 [matMenuTriggerFor]="processorMenu">
           <mat-icon *ngIf="!processor.replay" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'RUNNING'" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'PAUSED'" class="down icon16">lens</mat-icon>
-          {{ connectionInfo.processor.name }} / {{ timeInfo.currentTime | datetime }}
+          {{ connectionInfo.processor.name }} / {{ time | datetime }}
         </button>
       </ng-container>
     </ng-container>

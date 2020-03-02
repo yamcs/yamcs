@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/c
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, Processor, TimeInfo } from '../../client';
+import { ConnectionInfo, Processor, TimeSubscription } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
@@ -22,14 +22,14 @@ export class InstanceToolbar implements OnDestroy {
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: Subscription;
 
-  timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
-  timeInfoSubscription: Subscription;
+  time$ = new BehaviorSubject<string | null>(null);
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
   showDetailPane$: Observable<boolean>;
 
-  connectedSubscription: Subscription;
+  private connectedSubscription: Subscription;
+  private timeSubscription: TimeSubscription;
 
   constructor(
     private dialog: MatDialog,
@@ -44,14 +44,13 @@ export class InstanceToolbar implements OnDestroy {
       });
     });
 
-    this.yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
-      this.timeInfo$.next(response.timeInfo);
-      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
-        this.timeInfo$.next(timeInfo);
-      });
-    });
-
     this.connected$ = this.yamcs.getInstanceClient()!.connected$;
+
+    console.log('a new one');
+    this.timeSubscription = this.yamcs.getInstanceClient()!.createTimeSubscription({
+      instance: this.yamcs.getInstance().name,
+      processor: 'realtime',
+    }, time => this.time$.next(time.value));
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
       if (!connected) {
@@ -107,11 +106,10 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   ngOnDestroy() {
+    this.timeSubscription.cancel();
+
     if (this.processorSubscription) {
       this.processorSubscription.unsubscribe();
-    }
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
     }
     if (this.connectedSubscription) {
       this.connectedSubscription.unsubscribe();

@@ -7,6 +7,7 @@ import { InstanceClient } from './InstanceClient';
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
 import { AuthInfo, CreateGroupRequest, CreateInstanceRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListInstancesOptions, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
+import { WebSocketClient2 } from './WebSocketClient2';
 
 
 export default class YamcsClient implements HttpHandler {
@@ -21,6 +22,7 @@ export default class YamcsClient implements HttpHandler {
 
   public connected$: Observable<boolean>;
   private webSocketClient?: WebSocketClient;
+  private webSocketClient2?: WebSocketClient2;
 
   constructor(readonly baseHref = '/') {
     this.apiUrl = `${this.baseHref}api`;
@@ -469,12 +471,20 @@ export default class YamcsClient implements HttpHandler {
       this.webSocketClient = new WebSocketClient(this.baseHref);
       this.connected$ = this.webSocketClient.connected$;
     }
+    if (!this.webSocketClient2) {
+      this.webSocketClient2 = new WebSocketClient2(this.apiUrl);
+      // this.connected$ = this.webSocketClient2.connected$;
+    }
   }
 
   closeConnection() {
     if (this.webSocketClient) {
       this.webSocketClient.close();
       this.webSocketClient = undefined;
+    }
+    if (this.webSocketClient2) {
+      this.webSocketClient2.close();
+      this.webSocketClient2 = undefined;
     }
   }
 
