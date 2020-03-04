@@ -429,7 +429,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
         // start the verifiers
         MetaCommand mc = pc.getMetaCommand();
-        if (mc.hasCommandVerifiers() && !pc.disableCommandVerifiers()) {
+        if (mc.hasCommandVerifiers()) {
             log.debug("Starting command verification for {}", pc);
             CommandVerificationHandler cvh = new CommandVerificationHandler(processor, pc);
             cvh.start();

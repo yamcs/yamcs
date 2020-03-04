@@ -65,6 +65,16 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         MetaCommand cmd = preparedCommand.getMetaCommand();
         List<CommandVerifier> cmdVerifiers = new ArrayList<>();
         collectCmdVerifiers(cmd, cmdVerifiers, preparedCommand.getVerifierOverride());
+        
+        if(preparedCommand.disableCommandVerifiers()) {
+            log.debug("All verifiers are disabled");
+            CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
+            cmdVerifiers.forEach( cv -> cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv), yproc.getCurrentTime(),
+                    AckStatus.DISABLED));
+            return;
+        }
+        
+        
         Verifier prevVerifier = null;
 
         try {
