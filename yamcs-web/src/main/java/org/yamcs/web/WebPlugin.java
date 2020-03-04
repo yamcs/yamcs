@@ -138,7 +138,11 @@ public class WebPlugin implements Plugin {
                 throw new PluginException("Could not deploy website", e);
             }
         }
-        log.debug("Serving yamcs-web from {}", staticRoot);
+        if(Files.exists(staticRoot)) {
+            log.debug("Serving yamcs-web from {}", staticRoot);
+        } else {
+            log.warn("Static root for yamcs yamcs-web not found at '{}'", staticRoot);
+        }
         httpServer.addStaticRoot(staticRoot);
 
         // Set-up HTML5 deep-linking:
