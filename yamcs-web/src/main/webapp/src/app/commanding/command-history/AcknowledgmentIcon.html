@@ -17,6 +17,10 @@
               [matTooltip]="ack.name! + ': CANCELLED'"
               class="icon16"
               style="color: lightgrey">block</mat-icon>
+    <mat-icon *ngSwitchCase="'DISABLED'"
+              [matTooltip]="ack.name! + ': DISABLED'"
+              class="icon16"
+              style="color: lightgrey">block</mat-icon>
     <mat-icon *ngSwitchCase="'TIMEOUT'"
               [matTooltip]="ack.name! + ': TIMEOUT'"
               class="icon16"
