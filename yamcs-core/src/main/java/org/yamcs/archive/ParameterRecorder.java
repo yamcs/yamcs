@@ -24,7 +24,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 /**
  * ParameterRecorder Records (processed) Parameters
  * 
- * The base table definition is {@link org.yamcs.tctm.DataLinkInitialiser}
+ * The base table definition is {@link org.yamcs.tctm.LinkManager}
  * 
  * This records parameters as tuples - good for realtime recording but not very efficient for retrieval of a few
  * parameters over long time periods.

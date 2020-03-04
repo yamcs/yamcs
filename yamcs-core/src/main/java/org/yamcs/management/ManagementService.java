@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -29,12 +28,10 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamInfo;
-import org.yamcs.tctm.Link;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -45,7 +42,6 @@ import com.google.common.util.concurrent.Service;
  * Responsible for providing to interested listeners info related to creation/removal/update of:
  * <ul>
  * <li>instances, processors and clients - see {@link ManagementListener}
- * <li>links - see {@link LinkListener}
  * <li>streams and tables - see {@link TableStreamListener}
  * <li>command queues - see {@link CommandQueueListener}
  * </ul>
@@ -57,18 +53,17 @@ public class ManagementService implements ProcessorListener {
     Map<Integer, ConnectedClient> clients = Collections.synchronizedMap(new HashMap<Integer, ConnectedClient>());
     private AtomicInteger clientIdGenerator = new AtomicInteger();
 
-    List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
+  
     List<StreamWithInfo> streams = new CopyOnWriteArrayList<>();
     List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
     List<Processor> processors = new CopyOnWriteArrayList<>();
 
-    // Used to update TM-statistics, and Link State
-    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    
 
     // Processors & Clients. Should maybe split up
     Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
 
-    Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
+   
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
 
@@ -79,10 +74,10 @@ public class ManagementService implements ProcessorListener {
     private InstanceStateListener instanceListener;
 
     private ManagementService() {
+        ScheduledThreadPoolExecutor timer = YamcsServer.getServer().getThreadPoolExecutor();
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkStreamUpdate(), 1, 1, TimeUnit.SECONDS);
-        timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
     }
 
     public void shutdown() {
@@ -95,42 +90,6 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterService(String instance, String serviceName) {
         managementListeners.forEach(l -> l.serviceUnregistered(instance, serviceName));
-    }
-
-    public void registerLink(String instance, String linkName, String spec, Link link) {
-        LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
-                .setName(linkName)
-                .setDisabled(link.isDisabled())
-                .setStatus(link.getLinkStatus().name())
-                .setType(link.getClass().getName())
-                .setSpec(spec)
-                .setDataInCount(link.getDataInCount())
-                .setDataOutCount(link.getDataOutCount());
-        if (link.getDetailedStatus() != null) {
-            linkb.setDetailedStatus(link.getDetailedStatus());
-        }
-        Link parent = link.getParent();
-        if (parent != null) {
-            linkb.setParentName(parent.getName());
-        }
-        LinkInfo linkInfo = linkb.build();
-        links.add(new LinkWithInfo(link, linkInfo));
-        linkListeners.forEach(l -> l.linkRegistered(linkInfo));
-    }
-
-    public void unregisterLink(String instance, String linkName) {
-        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lwi = o.get();
-            links.remove(lwi);
-            linkListeners.forEach(l -> l.linkUnregistered(lwi.linkInfo));
-        }
-    }
-
-    public Optional<LinkWithInfo> getLinkWithInfo(String instance, String linkName) {
-        return links.stream()
-                .filter(lwi -> instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
-                .findFirst();
     }
 
     public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
@@ -302,37 +261,6 @@ public class ManagementService implements ProcessorListener {
         return null;
     }
 
-    public void enableLink(String instance, String linkName) {
-        log.debug("received enableLink for {}/{}", instance, linkName);
-        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.enable();
-        } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
-        }
-    }
-
-    public void disableLink(String instance, String linkName) {
-        log.debug("received disableLink for {}/{}", instance, linkName);
-        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.disable();
-        } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
-        }
-    }
-
-    public void resetCounters(String instance, String linkName) {
-        Optional<LinkWithInfo> o = getLinkWithInfo(instance, linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.resetCounters();
-        } else {
-            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
-        }
-    }
 
     /**
      * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
@@ -340,14 +268,6 @@ public class ManagementService implements ProcessorListener {
      */
     public boolean addManagementListener(ManagementListener l) {
         return managementListeners.add(l);
-    }
-
-    /**
-     * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
-     * has no extra effects. Either you listen, or you don't.
-     */
-    public boolean addLinkListener(LinkListener l) {
-        return linkListeners.add(l);
     }
 
     public boolean removeManagementListener(ManagementListener l) {
@@ -372,32 +292,6 @@ public class ManagementService implements ProcessorListener {
         return removed;
     }
 
-    public boolean removeLinkListener(LinkListener l) {
-        return linkListeners.remove(l);
-    }
-
-    public List<LinkInfo> getLinkInfo() {
-        return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
-    }
-
-    public List<LinkInfo> getLinkInfo(String instance) {
-        return links.stream()
-                .map(lwi -> lwi.linkInfo)
-                .filter(li -> li.getInstance().equals(instance))
-                .collect(Collectors.toList());
-    }
-
-    public LinkInfo getLinkInfo(String instance, String name) {
-        Optional<LinkInfo> o = links.stream()
-                .map(lwi -> lwi.linkInfo)
-                .filter(li -> li.getInstance().equals(instance) && li.getName().equals(name))
-                .findFirst();
-        if (o.isPresent()) {
-            return o.get();
-        } else {
-            return null;
-        }
-    }
 
     public Set<ConnectedClient> getClients() {
         synchronized (clients) {
@@ -432,16 +326,6 @@ public class ManagementService implements ProcessorListener {
             if (stream.hasChanged()) {
                 tableStreamListeners.forEach(l -> l.streamUpdated(
                         stream.instance, stream.streamInfo));
-            }
-        }
-    }
-
-    private void checkLinkUpdate() {
-        // see if any link has changed
-        for (LinkWithInfo lwi : links) {
-            if (lwi.hasChanged()) {
-                LinkInfo li = lwi.linkInfo;
-                linkListeners.forEach(l -> l.linkChanged(li));
             }
         }
     }
@@ -525,44 +409,6 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterStream(String instance, String name) {
         tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
-    }
-
-    public static class LinkWithInfo {
-        final Link link;
-        LinkInfo linkInfo;
-
-        public LinkWithInfo(Link link, LinkInfo linkInfo) {
-            this.link = link;
-            this.linkInfo = linkInfo;
-        }
-
-        boolean hasChanged() {
-            if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
-                    || linkInfo.getDisabled() != link.isDisabled()
-                    || linkInfo.getDataInCount() != link.getDataInCount()
-                    || linkInfo.getDataOutCount() != link.getDataOutCount()
-                    || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
-
-                LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
-                        .setDisabled(link.isDisabled())
-                        .setStatus(link.getLinkStatus().name())
-                        .setDataInCount(link.getDataInCount())
-                        .setDataOutCount(link.getDataOutCount());
-                String ds = link.getDetailedStatus();
-                if (ds != null) {
-                    lib.setDetailedStatus(ds);
-                }
-                linkInfo = lib.build();
-
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        public Link getLink() {
-            return link;
-        }
     }
 
     static class StreamWithInfo {

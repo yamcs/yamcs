@@ -78,7 +78,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
      * Sends
      */
     @Override
-    public void uplinkTc(PreparedCommand pc) {
+    public void sendTc(PreparedCommand pc) {
         if (!commandQueue.offer(pc)) {
             log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
             commandHistoryPublisher.commandFailed(pc.getCommandId(), getCurrentTime(),

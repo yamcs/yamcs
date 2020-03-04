@@ -3,12 +3,13 @@ package org.yamcs.http.api;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.management.ManagementService;
-import org.yamcs.management.ManagementService.LinkWithInfo;
+import org.yamcs.management.LinkManager;
+import org.yamcs.management.LinkManager.LinkWithInfo;
 import org.yamcs.protobuf.AbstractCop1Api;
 import org.yamcs.protobuf.Cop1Config;
 import org.yamcs.protobuf.Cop1Status;
@@ -119,8 +120,9 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
     
     private Cop1TcPacketHandler verifyCop1Link(String instance, String name) {
-        ManagementApi.verifyInstance(instance);
-        Optional<LinkWithInfo> o = ManagementService.getInstance().getLinkWithInfo(instance, name);
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        LinkManager lmgr = ysi.getLinkManager();
+        Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(name);
         if (!o.isPresent()) {
             throw new BadRequestException("There is no link named '" + name + "' in instance " + instance);
         }

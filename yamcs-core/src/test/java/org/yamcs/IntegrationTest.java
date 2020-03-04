@@ -86,8 +86,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 
-import com.google.protobuf.Message;
-
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -872,6 +870,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(v, pv.getEngValue());
     }
 
+
     @Test
     public void testSendCommandNoTransmissionConstraint() throws Exception {
         // first subscribe to command history
@@ -892,6 +891,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
 
+
     /*-@Test
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -907,6 +907,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("this is a critical command, pay attention", significance.getSignificance().getReasonForWarning());
     
     }*/
+
 
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
@@ -997,6 +998,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
 
+   
+
     @Test
     public void testUpdateCommandHistory() throws Exception {
 
@@ -1050,9 +1053,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
 
-    private <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
-        return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
-    }
+    
 
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
         checkPvals(2, pvals, packetProvider);
@@ -1118,7 +1119,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         byte[] resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET).get();
         ListServicesResponse r = ListServicesResponse.parseFrom(resp);
-        assertEquals(10, r.getServicesList().size());
+        assertEquals(9, r.getServicesList().size());
 
         ServiceInfo servInfo = r.getServicesList().stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))

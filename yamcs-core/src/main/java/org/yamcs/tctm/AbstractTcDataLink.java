@@ -47,14 +47,11 @@ public abstract class AbstractTcDataLink extends AbstractLink
     private AggregatedDataLink parent = null;
     
    
-    protected boolean failCommandOnDisabled;
-    
     public AbstractTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
             throws ConfigurationException {
         super(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
         
-        failCommandOnDisabled = config.getBoolean("failCommandOnDisabled", false);
         initPostprocessor(yamcsInstance, config);
     }
 
@@ -94,20 +91,6 @@ public abstract class AbstractTcDataLink extends AbstractLink
         }
     }
     
-    @Override
-    public void sendTc(PreparedCommand preparedCommand) {
-        if (isDisabled()) {
-            log.debug("TC disabled, ignoring command {}", preparedCommand.getCommandId());
-            if (failCommandOnDisabled) {
-                failedCommand(preparedCommand.getCommandId(), "Link "+linkName+" disabled");
-            }
-            return;
-        }
-        uplinkTc(preparedCommand);
-    }
-
-    protected abstract void uplinkTc(PreparedCommand preparedCommand);
-
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
         this.commandHistoryPublisher = commandHistoryListener;

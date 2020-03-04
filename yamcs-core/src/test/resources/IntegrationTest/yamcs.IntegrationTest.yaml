@@ -1,5 +1,4 @@
-services:  
-  - class: org.yamcs.tctm.DataLinkInitialiser
+services:
   - class: org.yamcs.archive.XtceTmRecorder
   - class: org.yamcs.archive.ParameterRecorder
   - class: org.yamcs.archive.EventRecorder
@@ -30,7 +29,7 @@ dataLinks:
     args:
       stream: pp_realtime
   - name: tc_realtime
-    class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
+    class: org.yamcs.CmdIntegrationTest$MyTcDataLink
     args:
       stream: tc_realtime
 

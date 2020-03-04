@@ -1,5 +1,4 @@
 services:
-  - class: org.yamcs.tctm.DataLinkInitialiser
   - class: org.yamcs.archive.XtceTmRecorder
   - class: org.yamcs.archive.ParameterRecorder
   - class: org.yamcs.archive.AlarmRecorder

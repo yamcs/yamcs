@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
+import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -51,6 +52,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     InstanceMetadata metadata;
     YConfiguration config;
     final Map<String, Processor> processors = new LinkedHashMap<>();
+    LinkManager linkManager;
 
     YamcsServerInstance(String name) {
         this(name, new InstanceMetadata());
@@ -72,7 +74,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("tablespace", OptionType.STRING);
 
         // Detailed validation on these is done
-        // in DataLinkInitialiser, XtceDbFactory, and StreamInitializer
+        // in LinkManager, XtceDbFactory, and StreamInitializer
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
 
@@ -112,6 +114,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)
             xtceDb = XtceDbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
+            linkManager = new LinkManager(name);
+
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
             services = YamcsServer.createServices(name, serviceConfigs, log);
             notifyInitialized();
@@ -122,6 +126,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStart() {
+        linkManager.startLinks();
         for (ServiceWithConfig swc : services) {
             log.debug("Starting service {}", swc.getName());
             swc.service.startAsync();
@@ -135,6 +140,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStop() {
+        linkManager.stopLinks();
         ListeningExecutorService serviceStoppers = listeningDecorator(Executors.newCachedThreadPool());
         List<ListenableFuture<?>> stopFutures = new ArrayList<>();
         for (ServiceWithConfig swc : services) {
@@ -315,24 +321,26 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     /**
      * Adds the processor to the instance. If already existing a processor with the same name, an exception is thrown
+     * 
      * @param proc
      * @throws ProcessorException
      */
     public synchronized void addProcessor(Processor proc) throws ProcessorException {
         if (processors.containsKey(proc.getName())) {
-            throw new ProcessorException("A processor named '" + proc.getName() + "' already exists in instance " + name);
+            throw new ProcessorException(
+                    "A processor named '" + proc.getName() + "' already exists in instance " + name);
         }
         processors.put(proc.getName(), proc);
         proc.setYamcsServerInstance(this);
     }
-    
+
     /**
      * Returns the first register processor or null if there is no processor registered.
      * 
      * @return the first registered processor
      */
     public synchronized Processor getFirstProcessor() {
-        if(processors.isEmpty()) {
+        if (processors.isEmpty()) {
             return null;
         } else {
             return processors.values().iterator().next();
@@ -349,5 +357,9 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public synchronized void removeProcessor(String processorName) {
         processors.remove(processorName);
+    }
+
+    public LinkManager getLinkManager() {
+        return linkManager;
     }
 }

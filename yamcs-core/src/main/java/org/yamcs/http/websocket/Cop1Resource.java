@@ -12,9 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.api.ManagementApi;
-import org.yamcs.management.ManagementService;
-import org.yamcs.management.ManagementService.LinkWithInfo;
+import org.yamcs.management.LinkManager;
+import org.yamcs.management.LinkManager.LinkWithInfo;
 import org.yamcs.protobuf.Cop1Status;
 import org.yamcs.protobuf.Cop1SubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -154,8 +155,9 @@ public class Cop1Resource implements WebSocketResource {
     }
 
     private Cop1TcPacketHandler verifyCop1Link(int reqId, String instance, String name) throws WebSocketException {
-        ManagementApi.verifyInstance(instance);
-        Optional<LinkWithInfo> o = ManagementService.getInstance().getLinkWithInfo(instance, name);
+        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        LinkManager lmgr = ysi.getLinkManager();
+        Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(name);
         if (!o.isPresent()) {
             throw new WebSocketException(reqId, "There is no link named '" + name + "' in instance " + instance);
         }

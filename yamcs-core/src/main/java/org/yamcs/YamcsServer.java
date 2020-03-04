@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -87,7 +88,11 @@ public class YamcsServer {
 
     private static final Pattern INSTANCE_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml(.offline)?");
     private static final YamcsServer YAMCS = new YamcsServer();
-
+ 
+    //used to schedule various tasks throughout the yamcs server (to avoid each service creating its own)
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+ 
+    
     /**
      * During shutdown, allow services this number of seconds for stopping
      */
@@ -1285,5 +1290,9 @@ public class YamcsServer {
             return null;
         }
         return ysi.getProcessor(processorName);
+    }
+
+    public ScheduledThreadPoolExecutor getThreadPoolExecutor() {
+        return timer;
     }
 }
