@@ -15,7 +15,7 @@ public interface CommandHistoryPublisher {
      *
      */
     enum AckStatus {
-        NA, SCHEDULED, PENDING, OK, NOK, TIMEOUT, CANCELLED
+        NA, SCHEDULED, PENDING, OK, NOK, TIMEOUT, CANCELLED, DISABLED
     };
 
     public final static String CommandComplete_KEY = "CommandComplete";

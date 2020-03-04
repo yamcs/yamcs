@@ -141,7 +141,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
      */
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers,
             Map<String, VerifierConfig> verifierOverride) {
-
+        CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
+        
         for (CommandVerifier cv : cmd.getCommandVerifiers()) {
             boolean found = false;
             for (CommandVerifier existingv : cmdVerifiers) {
@@ -156,6 +157,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                     cmdVerifiers.add(cv);
                 } else {
                     if (extraOptions.getDisable()) {
+                        cmdHistPublisher.publishAck(preparedCommand.getCommandId(), getHistKey(cv), yproc.getCurrentTime(),
+                                AckStatus.DISABLED);
                         log.debug("skipping verifier {}", cv.getStage());
                         continue;
                     }
@@ -195,7 +198,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
 
     private void scheduleVerifier(final Verifier verifier, long windowStart, long windowStop) {
         CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
-        String histKey = CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + verifier.cv.getStage();
+        String histKey = getHistKey(verifier.cv);
 
         if (windowStart > 0) {
             timer.schedule(() -> {
@@ -224,6 +227,9 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }, windowStop, TimeUnit.MILLISECONDS);
     }
 
+    String getHistKey( CommandVerifier cv) {
+        return CommandHistoryPublisher.Verifier_KEY_PREFIX + "_" + cv.getStage();
+    }
     void onVerifierFinished(Verifier v, String failureReason) {
         Verifier.State state = v.getState();
         log.debug("Command {} verifier finished: {} result: {}",
@@ -281,6 +287,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             return AckStatus.TIMEOUT;
         case CANCELLED:
             return AckStatus.CANCELLED;
+        case DISABLED:
+            return AckStatus.DISABLED;
         default:
             throw new IllegalArgumentException("Unknown state " + state);
         }

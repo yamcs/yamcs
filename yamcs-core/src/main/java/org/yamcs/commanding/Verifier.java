@@ -8,7 +8,7 @@ abstract class Verifier {
     final protected CommandVerificationHandler cvh;
 
     enum State {
-        NEW, RUNNING, OK, NOK, TIMEOUT, CANCELLED
+        NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
     };
 
     volatile State state = State.NEW;
