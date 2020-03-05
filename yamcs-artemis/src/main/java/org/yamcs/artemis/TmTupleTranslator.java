@@ -12,8 +12,7 @@ import org.yamcs.yarch.TupleDefinition;
 import com.google.protobuf.ByteString;
 
 /**
- * Translates between tuples as defined in {@link org.yamcs.tctm.DataLinkManager} and ActiveMQ messages containing
- * TmPacketData
+ * Translates between TM tuples and ActiveMQ messages containing TmPacketData
  * 
  * @author nm
  *

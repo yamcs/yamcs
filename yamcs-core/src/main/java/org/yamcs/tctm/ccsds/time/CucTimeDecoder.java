@@ -1,15 +1,22 @@
 package org.yamcs.tctm.ccsds.time;
 
+import org.yamcs.tctm.TimeDecoder;
 import org.yamcs.utils.ByteSupplier;
 
 /**
  * Decoder for CCSDS Unsegmented time Code as specified in 
  * TIME CODE FORMATS, CCSDS 301.0-B-4, Nov 2010 
  * 
+ * The time code is composed by
+ * <ul>
+ * <li>P-Field (preamble field) 8 bits optional</li>
+ * <li>T-Field - up to 7 bytes (although it could be longer for custom codes)</li>
+ * </ul>
+ * 
  * @author nm
  *
  */
-public class CucTimeDecoder implements CcsdsTimeDecoder {
+public class CucTimeDecoder implements TimeDecoder {
     
     final int implicitPField;
 

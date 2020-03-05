@@ -1,16 +1,12 @@
-package org.yamcs.tctm.ccsds.time;
+package org.yamcs.tctm;
 
 import org.yamcs.utils.ByteSupplier;
 
 /**
- * Decodes CCSDS as per CCSDS 301.0-B-4
- * 
- * The time code is composed by
- * P-Field (preamble field) 8 bits optional
- * T-Field - up to 7 bytes (although it could be longer for custom codes)
+ * Interface for time decoders used in the {@link PacketPreprocessor}
  * 
  */
-public interface CcsdsTimeDecoder {
+public interface TimeDecoder {
     /**
      * Decodes the time from the packet and returns the time in milliseconds.
      * The value returned can be either absolute or relative (this has to be known by the caller)

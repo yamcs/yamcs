@@ -54,7 +54,6 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(IssPacketPreprocessor.class);
     private boolean checkForSequenceDiscontinuity = true;
 
     public IssPacketPreprocessor(String yamcsInstance) {
