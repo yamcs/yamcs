@@ -17,6 +17,14 @@ public class EventIdTest {
         assertEquals("bloe", id.type);
     }
 
+    
+    @Test
+    public void testStringParse2() {
+        EventId id = new EventId("/yamcs/event/CustomAlgorithm//YSS/SIMULATOR/Random_event_generator");
+        assertEquals("CustomAlgorithm", id.source);
+        assertEquals("/YSS/SIMULATOR/Random_event_generator", id.type);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testStringParseException1() {
         new EventId("huh");

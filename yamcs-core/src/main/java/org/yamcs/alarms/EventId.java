@@ -16,6 +16,7 @@ public class EventId {
     private static final Pattern QNAME_PATTERN = Pattern.compile("(.+)\\/([^\\/]+)");
     public static final String DEFAULT_NAMESPACE = "/yamcs/event/";
 
+    private static final String CA_NAME = "/yamcs/event/CustomAlgorithm/";
     final String source;
     final String type;
 
@@ -25,12 +26,17 @@ public class EventId {
     }
 
     public EventId(String qualifiedName) {
-        Matcher matcher = QNAME_PATTERN.matcher(qualifiedName);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid qualified name '" + qualifiedName + "'");
+        if (qualifiedName.startsWith(CA_NAME)) {//FIXME: hack for events generated from custom algorithms
+            this.source = "CustomAlgorithm";
+            this.type = qualifiedName.substring(CA_NAME.length());
+        } else {
+            Matcher matcher = QNAME_PATTERN.matcher(qualifiedName);
+            if (!matcher.matches()) {
+                throw new IllegalArgumentException("Invalid qualified name '" + qualifiedName + "'");
+            }
+            source = matcher.group(1).replace(DEFAULT_NAMESPACE, "");
+            type = matcher.group(2);
         }
-        source = matcher.group(1).replace(DEFAULT_NAMESPACE, "");
-        type = matcher.group(2);
     }
 
     @Override
