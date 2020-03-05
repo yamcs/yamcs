@@ -39,29 +39,25 @@ public class LinkResource implements WebSocketResource, LinkListener {
                 instance = req.getInstance();
             }
         }
-        if(instance!=null) {
+        if (instance != null) {
             YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
             subscribe(ysi);
         } else {
-            for(YamcsServerInstance ysi : YamcsServer.getInstances()) {
+            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
                 subscribe(ysi);
             }
         }
         client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
-
-        
         return null;
     }
-    
+
     private void subscribe(YamcsServerInstance ysi) {
         LinkManager lmgr = ysi.getLinkManager();
-        
         for (LinkInfo linkInfo : lmgr.getLinkInfo()) {
             sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
         }
         lmgr.addLinkListener(this);
     }
-    
 
     @Override
     public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
@@ -69,7 +65,6 @@ public class LinkResource implements WebSocketResource, LinkListener {
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
-    
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
         // Ignore
@@ -84,22 +79,22 @@ public class LinkResource implements WebSocketResource, LinkListener {
     public void socketClosed() {
         unsubscribeAll();
     }
-    
+
     private void unsubscribeAll() {
-        if(instance!=null) {
+        if (instance != null) {
             unsubscribe(ManagementApi.verifyInstanceObj(instance));
         } else {
-            for(YamcsServerInstance ysi : YamcsServer.getInstances()) {
+            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
                 unsubscribe(ysi);
             }
         }
     }
 
-    
     private void unsubscribe(YamcsServerInstance ysi) {
         LinkManager lmgr = ysi.getLinkManager();
         lmgr.removeLinkListener(this);
     }
+
     @Override
     public void linkRegistered(LinkInfo linkInfo) {
         if (instance == null || instance.equals(linkInfo.getInstance())) {
