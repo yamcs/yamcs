@@ -1,7 +1,5 @@
 package org.yamcs.tctm.ccsds.error;
 
-import java.util.Map;
-
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 
@@ -22,11 +20,6 @@ public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
 
     public CrcCciitCalculator() {
         initialValue = 0xFFFF;
-    }
-
-    @Deprecated
-    public CrcCciitCalculator(Map<String, Object> c) {
-        this(YConfiguration.wrap(c));
     }
 
     public CrcCciitCalculator(YConfiguration c) {
