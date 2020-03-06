@@ -6,7 +6,7 @@ Export a CSV of archived parameter values::
     GET /api/archive/{instance}:exportParameterValues
 
 
-.. rubric:: Parameters
+.. rubric:: Query Parameters
 
 start (string)
     Filter the lower bound of the parameter's generation time. Specify a date string in ISO 8601 format.
@@ -14,8 +14,8 @@ start (string)
 stop (string)
     Filter the upper bound of the parameter's generation time. Specify a date string in ISO 8601 format.
 
-norepeat (bool)
-    Whether to filter out consecutive identical values. Default ``no``.
+parameters (array of string)
+    The parameters to add to the export.
 
 order (string)
     The order of the returned results. Can be either ``asc`` or ``desc``. Default: ``asc``.
