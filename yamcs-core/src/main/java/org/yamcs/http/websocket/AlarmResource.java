@@ -1,8 +1,5 @@
 package org.yamcs.http.websocket;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
@@ -33,18 +30,6 @@ public class AlarmResource implements WebSocketResource {
     MyAlarmListener<ParameterValue> plistener = new MyAlarmListener<>();
     MyAlarmListener<Event> elistener = new MyAlarmListener<>();
     private boolean sendDetail;
-
-    static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
-    static {
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.ACKNOWLEDGED,
-                AlarmNotificationType.ACKNOWLEDGED);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.CLEARED, AlarmNotificationType.CLEARED);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RESET, AlarmNotificationType.RESET);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RTN, AlarmNotificationType.RTN);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
-        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
-    }
 
     public AlarmResource(ConnectedWebSocketClient client) {
         this.client = client;
@@ -162,7 +147,7 @@ public class AlarmResource implements WebSocketResource {
 
         @Override
         public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm<T> activeAlarm) {
-            sendAlarm(AlarmResource.protoNotificationType.get(notificationType), activeAlarm);
+            sendAlarm(AlarmsApi.protoNotificationType.get(notificationType), activeAlarm);
 
         }
     }

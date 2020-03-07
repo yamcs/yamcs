@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Cop1Config, Cop1Status, Cop1Subscription, Instance, Link } from '../client';
+import { BehaviorSubject } from 'rxjs';
+import { Cop1Config, Cop1Status, Cop1Subscription, Instance, Link, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 
@@ -17,7 +17,7 @@ export class LinkPage implements OnDestroy {
   cop1Config$ = new BehaviorSubject<Cop1Config | null>(null);
   cop1Status$ = new BehaviorSubject<Cop1Status | null>(null);
 
-  private linkSubscription: Subscription;
+  private linkSubscription: LinkSubscription;
   private cop1Subscription: Cop1Subscription;
 
   constructor(
@@ -32,13 +32,13 @@ export class LinkPage implements OnDestroy {
       this.changeLink(linkName);
     });
 
-    this.yamcs.getInstanceClient()!.getLinkUpdates().then(response => {
-      this.linkSubscription = response.linkEvent$.subscribe(evt => {
-        const link = this.link$.value;
-        if (link && link.name === evt.linkInfo.name) {
-          this.link$.next(evt.linkInfo);
-        }
-      });
+    this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
+      instance: this.instance.name,
+    }, evt => {
+      const link = this.link$.value;
+      if (link && link.name === evt.linkInfo.name) {
+        this.link$.next(evt.linkInfo);
+      }
     });
   }
 
@@ -88,14 +88,10 @@ export class LinkPage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.linkSubscription) {
-      this.linkSubscription.unsubscribe();
+      this.linkSubscription.cancel();
     }
     if (this.cop1Subscription) {
       this.cop1Subscription.cancel();
-    }
-    const instanceClient = this.yamcs.getInstanceClient();
-    if (instanceClient) {
-      instanceClient.unsubscribeLinkUpdates();
     }
   }
 }

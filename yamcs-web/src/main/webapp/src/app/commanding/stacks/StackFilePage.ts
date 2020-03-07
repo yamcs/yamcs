@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } 
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Instance, StorageClient } from '../../client';
+import { CommandSubscription, Instance, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { printCommandId } from '../../shared/utils';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -39,7 +39,7 @@ export class StackFilePage implements OnDestroy {
     })
   );
 
-  private commandSubscription: Subscription;
+  private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
   private commandHistoryRecords = new Map<string, CommandHistoryRecord>();
 
@@ -60,29 +60,29 @@ export class StackFilePage implements OnDestroy {
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
 
-    yamcs.getInstanceClient()!.getCommandUpdates({
+    this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
+      instance: this.instance.name,
+      processor: yamcs.getProcessor().name,
       ignorePastCommands: true,
-    }).then(response => {
-      this.commandSubscription = response.command$.subscribe(entry => {
-        const id = printCommandId(entry.commandId);
-        let rec = this.commandHistoryRecords.get(id);
-        if (rec) {
-          rec = rec.mergeEntry(entry);
-        } else {
-          rec = new CommandHistoryRecord(entry);
-        }
-        this.commandHistoryRecords.set(id, rec);
+    }, entry => {
+      const id = printCommandId(entry.commandId);
+      let rec = this.commandHistoryRecords.get(id);
+      if (rec) {
+        rec = rec.mergeEntry(entry);
+      } else {
+        rec = new CommandHistoryRecord(entry);
+      }
+      this.commandHistoryRecords.set(id, rec);
 
-        // Try to find an entry with matching id. If it's there
-        // update it. If not: no problem, the link will be made when
-        // handling the command response.
-        for (const entry of this.entries$.value) {
-          if (entry.id === id) {
-            entry.record = rec;
-            break;
-          }
+      // Try to find an entry with matching id. If it's there
+      // update it. If not: no problem, the link will be made when
+      // handling the command response.
+      for (const entry of this.entries$.value) {
+        if (entry.id === id) {
+          entry.record = rec;
+          break;
         }
-      });
+      }
     });
   }
 
@@ -349,11 +349,7 @@ export class StackFilePage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.commandSubscription) {
-      this.commandSubscription.unsubscribe();
-      const client = this.yamcs.getInstanceClient();
-      if (client) {
-        client.unsubscribeCommandUpdates();
-      }
+      this.commandSubscription.cancel();
     }
   }
 }

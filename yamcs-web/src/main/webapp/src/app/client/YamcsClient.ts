@@ -4,12 +4,17 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
+import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
+import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
+import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
-import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
-import { Alarm, CommandHistoryEntry, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, ExportXtceOptions, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
-import { AuthInfo, CommandQueue, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditGroupRequest, EditLinkOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, Link, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, Processor, Record, RoleInfo, Service, ServiceAccount, Stream, SystemInfo, Table, TokenResponse, UserInfo } from './types/system';
+import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExportXtceOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
+import { Statistics, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
+import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
+import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, Processor, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { WebSocketClient2 } from './WebSocketClient2';
 
@@ -396,6 +401,51 @@ export default class YamcsClient implements HttpHandler {
   createGlobalAlarmStatusSubscription(options: SubscribeGlobalAlarmStatusRequest, observer: (status: GlobalAlarmStatus) => void): GlobalAlarmStatusSubscription {
     this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('global-alarm-status', options, observer);
+  }
+
+  createTMStatisticsSubscription(options: SubscribeTMStatisticsRequest, observer: (time: Statistics) => void): TMStatisticsSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('tmstats', options, observer);
+  }
+
+  createEventSubscription(options: SubscribeEventsRequest, observer: (event: Event) => void): EventSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('events', options, observer);
+  }
+
+  createLinkSubscription(options: SubscribeLinksRequest, observer: (linkEvent: LinkEvent) => void): LinkSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('links', options, observer);
+  }
+
+  createStreamStatisticsSubscription(options: SubscribeStreamStatisticsRequest, observer: (event: StreamEvent) => void): StreamStatisticsSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('stream-stats', options, observer);
+  }
+
+  createStreamSubscription(options: SubscribeStreamRequest, observer: (data: StreamData) => void): StreamSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('stream', options, observer);
+  }
+
+  createQueueStatisticsSubscription(options: SubscribeQueueStatisticsRequest, observer: (queue: CommandQueue) => void): QueueStatisticsSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('queue-stats', options, observer);
+  }
+
+  createQueueEventsSubscription(options: SubscribeQueueEventsRequest, observer: (event: CommandQueueEvent) => void): QueueEventsSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('queue-events', options, observer);
+  }
+
+  createAlarmSubscription(options: SubscribeAlarmsRequest, observer: (alarm: Alarm) => void): AlarmSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('alarms', options, observer);
+  }
+
+  createCommandSubscription(options: SubscribeCommandsRequest, observer: (entry: CommandHistoryEntry) => void): CommandSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('commands', options, observer);
   }
 
   async getSystemInfo() {

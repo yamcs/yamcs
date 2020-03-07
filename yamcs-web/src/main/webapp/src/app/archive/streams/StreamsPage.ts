@@ -2,8 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { Subscription } from 'rxjs';
-import { Instance, StreamEvent } from '../../client';
+import { Instance, StreamEvent, StreamStatisticsSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export interface StreamItem {
@@ -26,9 +25,9 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
 
   dataSource = new MatTableDataSource<StreamItem>();
 
-  private streamEventSubscription: Subscription;
+  private streamStatisticsSubscription: StreamStatisticsSubscription;
 
-  private itemsByName: { [key: string]: StreamItem } = {};
+  private itemsByName: { [key: string]: StreamItem; } = {};
 
   constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Streams');
@@ -41,10 +40,10 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
 
-    this.yamcs.getInstanceClient()!.getStreamEventUpdates().then(response => {
-      this.streamEventSubscription = response.streamEvent$.subscribe(evt => {
-        this.processStreamEvent(evt);
-      });
+    this.streamStatisticsSubscription = this.yamcs.yamcsClient.createStreamStatisticsSubscription({
+      instance: this.instance.name,
+    }, evt => {
+      this.processStreamEvent(evt);
     });
   }
 
@@ -82,12 +81,8 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.streamEventSubscription) {
-      this.streamEventSubscription.unsubscribe();
-    }
-    const client = this.yamcs.getInstanceClient();
-    if (client) {
-      client.unsubscribeStreamEventUpdates();
+    if (this.streamStatisticsSubscription) {
+      this.streamStatisticsSubscription.cancel();
     }
   }
 }

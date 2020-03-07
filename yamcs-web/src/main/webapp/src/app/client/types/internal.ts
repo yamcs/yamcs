@@ -1,7 +1,11 @@
+import { Alarm } from './alarms';
+import { Event } from './events';
+import { Link } from './management';
 import { SpaceSystem } from './mdb';
-import { Alarm, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientConnectionInfo, CommandQueue, GroupInfo, Instance, InstanceTemplate, Link, Processor, Record, RocksDbDatabase, RoleInfo, Service, Stream, Table, UserInfo } from './system';
-
+import { IndexGroup, Range, Sample } from './monitoring';
+import { CommandQueue } from './queue';
+import { Bucket, ClientConnectionInfo, GroupInfo, Instance, InstanceTemplate, Processor, RocksDbDatabase, RoleInfo, Service, UserInfo } from './system';
+import { Record, Stream, Table } from './table';
 
 export type WebSocketClientMessage = [
   number, // Protocol

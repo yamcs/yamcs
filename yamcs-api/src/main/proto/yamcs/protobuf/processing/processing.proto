@@ -111,6 +111,13 @@ service ProcessingApi {
       body: "*"
     };
   }
+  
+  // Receive TM statistics updates
+  rpc SubscribeTMStatistics(SubscribeTMStatisticsRequest) returns (stream yamcsManagement.Statistics) {
+    option (yamcs.api.websocket) = {
+      topic: "tmstats"
+    };
+  }
 }
 
 message ListProcessorTypesResponse {
@@ -123,6 +130,11 @@ message ListProcessorsRequest {
 
 message ListProcessorsResponse {
   repeated yamcsManagement.ProcessorInfo processors = 1;
+}
+
+message SubscribeTMStatisticsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
 }
 
 message GetProcessorRequest {

@@ -50,6 +50,13 @@ service AlarmsApi {
       topic: "global-alarm-status"
     };
   }
+  
+  // Receive alarm updates
+  rpc SubscribeAlarms(SubscribeAlarmsRequest) returns (stream AlarmData) {
+    option (yamcs.api.websocket) = {
+      topic: "alarms"
+    };
+  }
 }
 
 message ListAlarmsRequest {
@@ -87,6 +94,11 @@ message ListProcessorAlarmsRequest {
 
 message ListProcessorAlarmsResponse {
   repeated AlarmData alarms = 1;
+}
+
+message SubscribeAlarmsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
 }
 
 message EditAlarmRequest {

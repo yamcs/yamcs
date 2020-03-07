@@ -135,6 +135,13 @@ service ManagementApi {
       body: "*"
     };
   }
+  
+  // Receive link updates
+  rpc SubscribeLinks(SubscribeLinksRequest) returns (stream LinkEvent) {
+    option (yamcs.api.websocket) = {
+      topic: "links"
+    };
+  }
 }
 
 /*service states coming from guava (numbers have to correspond)*/
@@ -273,6 +280,10 @@ message LinkEvent {
   }
   optional Type type = 1;
   optional LinkInfo linkInfo = 2;
+}
+
+message SubscribeLinksRequest {
+  optional string instance = 1;
 }
 
 message ServiceInfo {

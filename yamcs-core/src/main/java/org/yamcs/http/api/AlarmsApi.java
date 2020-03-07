@@ -8,7 +8,9 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.yamcs.Processor;
 import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.EventAlarmServer;
@@ -54,6 +57,7 @@ import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
 import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
@@ -73,6 +77,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
     private static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
+    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
 
     static {
         PARAM_ALARM_SEVERITY[MonitoringResult.WATCH_VALUE] = AlarmSeverity.WATCH;
@@ -87,6 +92,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         EVENT_ALARM_SEVERITY[EventSeverity.CRITICAL_VALUE] = AlarmSeverity.CRITICAL;
         EVENT_ALARM_SEVERITY[EventSeverity.SEVERE_VALUE] = AlarmSeverity.SEVERE;
         EVENT_ALARM_SEVERITY[EventSeverity.ERROR_VALUE] = AlarmSeverity.CRITICAL;
+
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.ACKNOWLEDGED,
+                AlarmNotificationType.ACKNOWLEDGED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.CLEARED, AlarmNotificationType.CLEARED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RESET, AlarmNotificationType.RESET);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RTN, AlarmNotificationType.RTN);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
     }
 
     @Override
@@ -202,6 +216,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void editAlarm(Context ctx, EditAlarmRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
 
@@ -262,6 +277,55 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void subscribeAlarms(Context ctx, SubscribeAlarmsRequest request, Observer<AlarmData> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+
+        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        if (processor.hasAlarmServer()) {
+            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+        }
+        if (processor.getEventAlarmServer() != null) {
+            alarmServers.add(processor.getEventAlarmServer());
+        }
+
+        boolean sendDetail = true;
+
+        AlarmListener listener = new AlarmListener() {
+
+            @Override
+            public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm activeAlarm) {
+                AlarmNotificationType type = protoNotificationType.get(notificationType);
+                AlarmData alarmData = toAlarmData(type, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+
+            @Override
+            public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+
+            @Override
+            public void notifyValueUpdate(ActiveAlarm activeAlarm) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+        };
+
+        observer.setCancelHandler(() -> {
+            alarmServers.forEach(alarmServer -> alarmServer.removeAlarmListener(listener));
+        });
+        for (AlarmServer<?, ?> alarmServer : alarmServers) {
+            for (ActiveAlarm<?> activeAlarm : alarmServer.getActiveAlarms().values()) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+            alarmServer.addAlarmListener(listener);
         }
     }
 

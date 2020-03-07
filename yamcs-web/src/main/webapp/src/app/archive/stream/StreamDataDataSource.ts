@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { StreamData } from '../../client';
+import { StreamData, StreamSubscription } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { StreamBuffer } from './StreamBuffer';
@@ -17,7 +17,7 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
   public streaming$ = new BehaviorSubject<boolean>(false);
   public columns$ = new BehaviorSubject<string[]>([]);
 
-  private streamSubscription: Subscription;
+  private streamSubscription: StreamSubscription;
   private streamBuffer = new StreamBuffer();
 
   private syncSubscription: Subscription;
@@ -37,36 +37,36 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
   }
 
   startStreaming() {
-    this.yamcs.getInstanceClient()!.getStreamUpdates(this.stream).then(response => {
-      this.streaming$.next(true);
-      this.streamSubscription = response.streamData$.subscribe(streamData => {
-        if (!this.loading$.getValue()) {
-          (streamData as AnimatableStreamData).animate = true;
-          this.streamBuffer.add(streamData);
+    this.streaming$.next(true);
+    this.streamSubscription = this.yamcs.yamcsClient.createStreamSubscription({
+      instance: this.yamcs.getInstance().name,
+      stream: this.stream,
+    }, streamData => {
+      if (!this.loading$.getValue()) {
+        (streamData as AnimatableStreamData).animate = true;
+        this.streamBuffer.add(streamData);
 
-          const columns = this.columns$.value;
-          for (const newColumn of streamData.column) {
-            if (columns.indexOf(newColumn.name) === -1) {
-              columns.push(newColumn.name);
-            }
+        const columns = this.columns$.value;
+        for (const newColumn of streamData.column) {
+          if (columns.indexOf(newColumn.name) === -1) {
+            columns.push(newColumn.name);
           }
-          this.columns$.next([...columns]);
         }
-      });
+        this.columns$.next([...columns]);
+      }
     });
   }
 
   stopStreaming() {
     if (this.streamSubscription) {
-      this.streamSubscription.unsubscribe();
-      this.yamcs.getInstanceClient()!.unsubscribeStreamUpdates();
+      this.streamSubscription.cancel();
     }
     this.streaming$.next(false);
   }
 
   disconnect() {
     if (this.streamSubscription) {
-      this.streamSubscription.unsubscribe();
+      this.streamSubscription.cancel();
     }
     if (this.syncSubscription) {
       this.syncSubscription.unsubscribe();

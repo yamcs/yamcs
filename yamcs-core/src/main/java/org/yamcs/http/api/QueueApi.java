@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
 import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
@@ -16,6 +17,8 @@ import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractQueueApi;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
+import org.yamcs.protobuf.Commanding.CommandQueueEvent;
+import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.EditQueueEntryRequest;
@@ -25,6 +28,8 @@ import org.yamcs.protobuf.ListQueueEntriesRequest;
 import org.yamcs.protobuf.ListQueueEntriesResponse;
 import org.yamcs.protobuf.ListQueuesRequest;
 import org.yamcs.protobuf.ListQueuesResponse;
+import org.yamcs.protobuf.SubscribeQueueEventsRequest;
+import org.yamcs.protobuf.SubscribeQueueStatisticsRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.xtce.Significance.Levels;
 
@@ -59,6 +64,81 @@ public class QueueApi extends AbstractQueueApi<Context> {
         int order = mgr.getQueues().indexOf(queue) + 1;
         CommandQueueInfo info = toCommandQueueInfo(queue, order, true);
         observer.complete(info);
+    }
+
+    @Override
+    public void subscribeQueueStatistics(Context ctx, SubscribeQueueStatisticsRequest request,
+            Observer<CommandQueueInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+
+        for (CommandQueue q : mgr.getQueues()) {
+            int order = mgr.getQueues().indexOf(q) + 1;
+            CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, true);
+            observer.next(info);
+        }
+
+        CommandQueueListener listener = new CommandQueueListener() {
+            @Override
+            public void updateQueue(CommandQueue q) {
+                int order = mgr.getQueues().indexOf(q) + 1;
+                CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, order, false);
+                observer.next(info);
+            }
+        };
+        observer.setCancelHandler(() -> mgr.removeListener(listener));
+        mgr.registerListener(listener);
+    }
+
+    @Override
+    public void subscribeQueueEvents(Context ctx, SubscribeQueueEventsRequest request,
+            Observer<CommandQueueEvent> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
+
+        CommandQueueListener listener = new CommandQueueListener() {
+            @Override
+            public void commandAdded(CommandQueue q, PreparedCommand pc) {
+                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+                evtb.setType(Type.COMMAND_ADDED);
+                evtb.setData(data);
+                observer.next(evtb.build());
+            }
+
+            @Override
+            public void commandUpdated(CommandQueue q, PreparedCommand pc) {
+                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+                evtb.setType(Type.COMMAND_UPDATED);
+                evtb.setData(data);
+                observer.next(evtb.build());
+            }
+
+            @Override
+            public void commandRejected(CommandQueue q, PreparedCommand pc) {
+                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+                evtb.setType(Type.COMMAND_REJECTED);
+                evtb.setData(data);
+                observer.next(evtb.build());
+            }
+
+            @Override
+            public void commandSent(CommandQueue q, PreparedCommand pc) {
+                CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
+                CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+                evtb.setType(Type.COMMAND_SENT);
+                evtb.setData(data);
+                observer.next(evtb.build());
+            }
+        };
+        observer.setCancelHandler(() -> mgr.removeListener(listener));
+        mgr.registerListener(listener);
     }
 
     @Override

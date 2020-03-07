@@ -5,7 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, LinkEvent } from '../client';
+import { Instance, LinkEvent, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
@@ -39,7 +39,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   selection = new SelectionModel<LinkItem>(true, []);
 
   private selectionSubscription: Subscription;
-  private linkSubscription: Subscription;
+  private linkSubscription: LinkSubscription;
 
   private itemsByName: { [key: string]: LinkItem; } = {};
 
@@ -99,10 +99,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
       this.updateDataSource();
 
-      this.yamcs.getInstanceClient()!.getLinkUpdates().then(response => {
-        this.linkSubscription = response.linkEvent$.subscribe(evt => {
-          this.processLinkEvent(evt);
-        });
+      this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
+        instance: this.instance.name,
+      }, evt => {
+        this.processLinkEvent(evt);
       });
     });
   }
@@ -269,11 +269,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       this.selectionSubscription.unsubscribe();
     }
     if (this.linkSubscription) {
-      this.linkSubscription.unsubscribe();
-    }
-    const instanceClient = this.yamcs.getInstanceClient();
-    if (instanceClient) {
-      instanceClient.unsubscribeLinkUpdates();
+      this.linkSubscription.cancel();
     }
   }
 }

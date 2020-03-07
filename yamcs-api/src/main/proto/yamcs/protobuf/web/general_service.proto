@@ -83,10 +83,9 @@ message TopicInfo {
   optional string service = 2;
   optional string method = 3;
   optional string description = 4;
-  optional string httpMethod = 5;
-  optional string inputType = 6;
-  optional string outputType = 7;
-  optional bool deprecated = 8;
+  optional string inputType = 5;
+  optional string outputType = 6;
+  optional bool deprecated = 7;
 }
 
 message GetGeneralInfoResponse {

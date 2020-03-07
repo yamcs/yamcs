@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { CommandHistoryEntry, Instance } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { CommandHistoryEntry, CommandSubscription, Instance } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { printCommandId } from '../../shared/utils';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -16,26 +15,27 @@ export class CommandReportPage implements OnDestroy {
 
   instance: Instance;
 
-  private commandSubscription: Subscription;
+  private commandSubscription: CommandSubscription;
   command$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   constructor(
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
   ) {
     const id = route.snapshot.paramMap.get('commandId')!;
 
     this.instance = yamcs.getInstance();
 
-    yamcs.getInstanceClient()!.getCommandUpdates({
-      ignorePastCommands: false,
-    }).then(response => {
-
-      yamcs.yamcsClient.getCommandHistoryEntry(this.instance.name, id).then(entry => {
-        this.mergeEntry(entry);
-        this.commandSubscription = response.command$.pipe(
-          filter(wsEntry => printCommandId(wsEntry.commandId) === id),
-        ).subscribe(wsEntry => this.mergeEntry(wsEntry));
+    yamcs.yamcsClient.getCommandHistoryEntry(this.instance.name, id).then(entry => {
+      this.mergeEntry(entry);
+      this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
+        instance: this.instance.name,
+        processor: yamcs.getProcessor().name,
+        ignorePastCommands: false,
+      }, wsEntry => {
+        if (printCommandId(wsEntry.commandId) === id) {
+          this.mergeEntry(wsEntry);
+        }
       });
     });
   }
@@ -52,11 +52,7 @@ export class CommandReportPage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.commandSubscription) {
-      this.commandSubscription.unsubscribe();
-      const client = this.yamcs.getInstanceClient();
-      if (client) {
-        client.unsubscribeCommandUpdates();
-      }
+      this.commandSubscription.cancel();
     }
   }
 }

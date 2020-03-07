@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/table';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Alarm, AlarmSeverity } from '../client';
+import { Alarm, AlarmSeverity, AlarmSubscription } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
 export class AlarmsDataSource extends DataSource<Alarm> {
@@ -15,7 +15,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loading$ = new BehaviorSubject<boolean>(false);
 
-  alarmSubscription: Subscription;
+  private alarmSubscription: AlarmSubscription;
 
   private alarmsByName: { [key: string]: Alarm; } = {};
 
@@ -59,11 +59,12 @@ export class AlarmsDataSource extends DataSource<Alarm> {
         this.updateSubject();
       });
 
-    this.yamcs.getInstanceClient()!.getAlarmUpdates().then(response => {
-      this.alarmSubscription = response.alarm$.subscribe(alarm => {
-        this.processAlarm(alarm);
-        this.updateSubject();
-      });
+    this.alarmSubscription = this.yamcs.yamcsClient.createAlarmSubscription({
+      instance: this.yamcs.getInstance().name,
+      processor: processorName,
+    }, alarm => {
+      this.processAlarm(alarm);
+      this.updateSubject();
     });
   }
 
@@ -114,7 +115,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     this.filteredAlarms$.complete();
     this.loading$.complete();
     if (this.alarmSubscription) {
-      this.alarmSubscription.unsubscribe();
+      this.alarmSubscription.cancel();
     }
   }
 

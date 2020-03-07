@@ -1,5 +1,4 @@
 import { Observable } from 'rxjs';
-import { CommandHistoryEntry, CommandId, CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -245,22 +244,6 @@ export interface Service {
   className: string;
 }
 
-export interface Link {
-  instance: string;
-  name: string;
-  type: string;
-  spec: string;
-  stream: string;
-  disabled: boolean;
-  dataInCount: number;
-  dataOutCount: number;
-  status: LinkStatus;
-  detailedStatus: string;
-  parentName?: string;
-}
-
-export type LinkStatus = 'OK' | 'UNAVAIL' | 'DISABLED' | 'FAILED';
-
 export interface Processor {
   instance: string;
   name: string;
@@ -299,152 +282,6 @@ export interface ProcessorSubscriptionRequest {
 export interface ProcessorSubscriptionResponse {
   processor: Processor;
   processor$: Observable<Processor>;
-}
-
-export interface LinkEvent {
-  type: string;
-  linkInfo: Link;
-}
-
-export interface LinkSubscriptionResponse {
-  linkEvent$: Observable<LinkEvent>;
-}
-
-export interface StreamEvent {
-  type: string;
-  name: string;
-  dataCount: number;
-}
-
-export interface StreamEventSubscriptionResponse {
-  streamEvent$: Observable<StreamEvent>;
-}
-
-export interface StreamSubscriptionResponse {
-  streamData$: Observable<StreamData>;
-}
-
-export interface Stream {
-  name: string;
-  column: Column[];
-  script: string;
-  dataCount: number;
-}
-
-export interface StreamData {
-  stream: string;
-  column: ColumnData[];
-}
-
-export interface Column {
-  name: string;
-  type: string;
-  enumValue: SQLEnumValue[];
-}
-
-export interface SQLEnumValue {
-  value: number;
-  label: string;
-}
-
-export interface Table {
-  name: string;
-  keyColumn: Column[];
-  valueColumn: Column[];
-  histogramColumn?: string[];
-  storageEngine: string;
-  formatVersion: number;
-  tablespace?: string;
-  compressed: boolean;
-  partitioningInfo?: PartitioningInfo;
-}
-
-export interface PartitioningInfo {
-  type: 'TIME' | 'VALUE' | 'TIME_AND_VALUE';
-  timeColumn: string;
-  timePartitionSchema: string;
-  valueColumn: string;
-  valueColumnType: string;
-}
-
-export interface Record {
-  column: ColumnData[];
-}
-
-export interface ColumnData {
-  name: string;
-  value: Value;
-}
-
-export interface Statistics {
-  instance: string;
-  processor: string;
-  tmstats: TmStatistics[];
-  lastUpdated: string;
-}
-
-export interface StatisticsSubscriptionResponse {
-  statistics$: Observable<Statistics>;
-}
-
-export interface TmStatistics {
-  packetName: string;
-  receivedPackets: number;
-  packetRate: number;
-  dataRate: number;
-  lastReceived: string;
-  lastPacketTime: string;
-  subscribedParameterCount: number;
-}
-
-export interface CommandQueue {
-  instance: string;
-  processorName: string;
-  name: string;
-  state: 'BLOCKED' | 'DISABLED' | 'ENABLED';
-  users: string[];
-  groups: string[];
-  minLevel: string;
-  nbSentCommands: number;
-  nbRejectCommands: number;
-  stateExpirationTimeS: number;
-  entry: CommandQueueEntry[];
-  order: number;
-}
-
-export interface CommandSubscriptionRequest {
-  commandId?: CommandId[];
-  ignorePastCommands?: boolean;
-}
-
-export interface CommandSubscriptionResponse {
-  command$: Observable<CommandHistoryEntry>;
-}
-
-export interface CommandQueueSubscriptionResponse {
-  commandQueue$: Observable<CommandQueue>;
-}
-
-export interface EditLinkOptions {
-  state?: 'enabled' | 'disabled';
-  resetCounters?: boolean;
-}
-
-export interface EditCommandQueueOptions {
-  state: 'enabled' | 'disabled' | 'blocked';
-}
-
-export interface CommandQueueEvent {
-  type: 'COMMAND_ADDED' | 'COMMAND_UPDATED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
-  data: CommandQueueEntry;
-}
-
-export interface CommandQueueEventSubscriptionResponse {
-  commandQueueEvent$: Observable<CommandQueueEvent>;
-}
-
-export interface EditCommandQueueEntryOptions {
-  state: 'released' | 'rejected';
 }
 
 export interface Bucket {

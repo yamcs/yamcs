@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { CommandQueue, ConnectionInfo } from '../../client';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { CommandQueue, ConnectionInfo, QueueEventsSubscription, QueueStatisticsSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -13,69 +13,71 @@ export class QueuesPage implements OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
-  cqueueSubscription: Subscription;
-  cqueueEventSubscription: Subscription;
+
+  private queueSubscription: QueueStatisticsSubscription;
+  private queueEventSubscription: QueueEventsSubscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue; } = {};
 
   constructor(yamcs: YamcsService, title: Title) {
     const processor = yamcs.getProcessor();
-    const instanceClient = yamcs.getInstanceClient()!;
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
-    yamcs.yamcsClient.getCommandQueues(processor.instance, processor.name).then(cqueues => {
+    yamcs.yamcsClient.getCommandQueues(yamcs.getInstance().name, processor.name).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
       }
       this.emitChange();
     });
 
-    instanceClient.getCommandQueueUpdates(processor.name).then(response => {
-      this.cqueueSubscription = response.commandQueue$.subscribe(cqueue => {
-        const existingQueue = this.cqueueByName[cqueue.name];
-        if (existingQueue) {
-          // Update queue (but keep already known entries)
-          cqueue.entry = existingQueue.entry;
-          this.cqueueByName[cqueue.name] = cqueue;
-          this.emitChange();
-        }
-      });
+    this.queueSubscription = yamcs.yamcsClient.createQueueStatisticsSubscription({
+      instance: yamcs.getInstance().name,
+      processor: processor.name,
+    }, queue => {
+      const existingQueue = this.cqueueByName[queue.name];
+      if (existingQueue) {
+        // Update queue (but keep already known entries)
+        queue.entry = existingQueue.entry;
+        this.cqueueByName[queue.name] = queue;
+        this.emitChange();
+      }
     });
 
-    instanceClient.getCommandQueueEventUpdates(processor.name).then(response => {
-      this.cqueueEventSubscription = response.commandQueueEvent$.subscribe(cqueueEvent => {
-        const queue = this.cqueueByName[cqueueEvent.data.queueName];
-        if (queue) {
-          if (cqueueEvent.type === 'COMMAND_ADDED') {
-            queue.entry = queue.entry || [];
-            queue.entry.push(cqueueEvent.data);
-          } else if (cqueueEvent.type === 'COMMAND_UPDATED') {
-            const idx = (queue.entry || []).findIndex(entry => {
-              return entry.uuid === cqueueEvent.data.uuid;
-            });
-            if (idx !== -1) {
-              queue.entry[idx] = cqueueEvent.data;
-            }
-          } else if (cqueueEvent.type === 'COMMAND_REJECTED') {
-            queue.entry = queue.entry || [];
-            queue.entry = queue.entry.filter(entry => {
-              return entry.uuid !== cqueueEvent.data.uuid;
-            });
-          } else if (cqueueEvent.type === 'COMMAND_SENT') {
-            queue.entry = queue.entry || [];
-            queue.entry = queue.entry.filter(entry => {
-              return entry.uuid !== cqueueEvent.data.uuid;
-            });
-          } else {
-            throw new Error(`Unexpected queue event ${cqueueEvent.type}`);
+    this.queueEventSubscription = yamcs.yamcsClient.createQueueEventsSubscription({
+      instance: yamcs.getInstance().name,
+      processor: processor.name,
+    }, queueEvent => {
+      const queue = this.cqueueByName[queueEvent.data.queueName];
+      if (queue) {
+        if (queueEvent.type === 'COMMAND_ADDED') {
+          queue.entry = queue.entry || [];
+          queue.entry.push(queueEvent.data);
+        } else if (queueEvent.type === 'COMMAND_UPDATED') {
+          const idx = (queue.entry || []).findIndex(entry => {
+            return entry.uuid === queueEvent.data.uuid;
+          });
+          if (idx !== -1) {
+            queue.entry[idx] = queueEvent.data;
           }
-          this.emitChange();
+        } else if (queueEvent.type === 'COMMAND_REJECTED') {
+          queue.entry = queue.entry || [];
+          queue.entry = queue.entry.filter(entry => {
+            return entry.uuid !== queueEvent.data.uuid;
+          });
+        } else if (queueEvent.type === 'COMMAND_SENT') {
+          queue.entry = queue.entry || [];
+          queue.entry = queue.entry.filter(entry => {
+            return entry.uuid !== queueEvent.data.uuid;
+          });
         } else {
-          console.warn('Received an event for an unknown queue', cqueueEvent);
+          throw new Error(`Unexpected queue event ${queueEvent.type}`);
         }
-      });
+        this.emitChange();
+      } else {
+        console.warn('Received an event for an unknown queue', queueEvent);
+      }
     });
   }
 
@@ -96,11 +98,11 @@ export class QueuesPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.cqueueSubscription) {
-      this.cqueueSubscription.unsubscribe();
+    if (this.queueSubscription) {
+      this.queueSubscription.cancel();
     }
-    if (this.cqueueEventSubscription) {
-      this.cqueueEventSubscription.unsubscribe();
+    if (this.queueEventSubscription) {
+      this.queueEventSubscription.cancel();
     }
   }
 }

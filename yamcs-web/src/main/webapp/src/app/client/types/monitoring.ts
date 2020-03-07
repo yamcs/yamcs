@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { AlarmRange, ArgumentAssignment, NamedObjectId, Parameter } from './mdb';
+import { AlarmRange, ArgumentAssignment, NamedObjectId } from './mdb';
 
 export interface Value {
   type: 'AGGREGATE'
@@ -34,11 +34,6 @@ export interface AggregateValue {
   value: Value[];
 }
 
-export type EventSeverity =
-  'INFO' | 'WARNING' | 'ERROR' |
-  'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
-  ;
-
 export type MonitoringResult = 'DISABLED'
   | 'IN_LIMITS'
   | 'WATCH'
@@ -46,16 +41,6 @@ export type MonitoringResult = 'DISABLED'
   | 'DISTRESS'
   | 'CRITICAL'
   | 'SEVERE';
-
-export interface Event {
-  source: string;
-  generationTimeUTC: string;
-  receptionTimeUTC: string;
-  seqNumber: number;
-  type: string;
-  message: string;
-  severity: EventSeverity;
-}
 
 export interface ParameterData {
   parameter: ParameterValue[];
@@ -99,22 +84,6 @@ export interface ParameterSubscriptionResponse {
 export interface SubscribedParameter {
   id: NamedObjectId;
   numericId: number;
-}
-
-export interface EventSubscriptionResponse {
-  event$: Observable<Event>;
-}
-
-export interface ListAlarmsResponse {
-  alarms: Alarm[];
-}
-
-export interface AlarmSubscriptionResponse {
-  alarm$: Observable<Alarm>;
-}
-
-export interface ManagementSubscriptionRequest {
-  processorStatistics?: boolean;
 }
 
 export interface Sample {
@@ -183,94 +152,6 @@ export interface CommandHistoryPage {
   continuationToken?: string;
 }
 
-export type AlarmNotificationType = 'ACTIVE'
-  | 'TRIGGERED'
-  | 'SEVERITY_INCREASED'
-  | 'VALUE_UPDATED'
-  | 'ACKNOWLEDGED'
-  | 'CLEARED'
-  | 'RTN'
-  | 'SHELVED'
-  | 'UNSHELVED'
-  | 'RESET'
-  ;
-
-export type AlarmSeverity = 'WATCH'
-  | 'WARNING'
-  | 'DISTRESS'
-  | 'CRITICAL'
-  | 'SEVERE'
-  ;
-
-export interface Alarm {
-  seqNum: number;
-  type: 'EVENT' | 'PARAMETER';
-  notificationType: AlarmNotificationType;
-  id: NamedObjectId;
-  triggerTime: string;
-  violations: number;
-  count: number;
-  acknowledgeInfo: AcknowledgeInfo;
-  shelveInfo: ShelveInfo;
-  clearInfo: ClearInfo;
-  severity: AlarmSeverity;
-
-  latching: boolean;
-  processOK: boolean;
-  triggered: boolean;
-  acknowledged: boolean;
-
-  parameterDetail?: ParameterAlarmData;
-  eventDetail?: EventAlarmData;
-}
-
-export interface ParameterAlarmData {
-  triggerValue: ParameterValue;
-  mostSevereValue: ParameterValue;
-  currentValue: ParameterValue;
-  parameter: Parameter;
-}
-
-export interface EventAlarmData {
-  triggerEvent: Event;
-  mostSevereEvent: Event;
-  currentEvent: Event;
-}
-
-export interface AcknowledgeInfo {
-  acknowledgedBy: string;
-  acknowledgeMessage: string;
-  acknowledgeTime: string;
-}
-
-export interface ShelveInfo {
-  shelvedBy: string;
-  shelveMessage: string;
-  shelveTime: string;
-  shelveExpiration: string;
-}
-
-export interface ClearInfo {
-  clearedBy: string;
-  clearTime: string;
-  clearMessage: string;
-}
-
-export interface GetAlarmsOptions {
-  start?: string;
-  stop?: string;
-  detail?: boolean;
-  pos?: number;
-  limit?: number;
-  order?: 'asc' | 'desc';
-}
-
-export interface EditAlarmOptions {
-  state: 'acknowledged' | 'shelved' | 'unshelved' | 'cleared';
-  comment?: string;
-  shelveDuration?: number;
-}
-
 export interface GetCommandHistoryOptions {
   start?: string;
   stop?: string;
@@ -279,13 +160,6 @@ export interface GetCommandHistoryOptions {
   next?: string;
   q?: string;
   order?: 'asc' | 'desc';
-}
-
-export interface CreateEventRequest {
-  message: string;
-  type?: string;
-  severity?: EventSeverity;
-  time?: string;
 }
 
 export interface CreateProcessorRequest {
@@ -328,43 +202,6 @@ export interface Packet {
   generationTime: string;
   sequenceNumber: number;
   packet: string;
-}
-
-export interface GetEventsOptions {
-  /**
-   * Inclusive lower bound
-   */
-  start?: string;
-  /**
-   * Exclusive upper bound
-   */
-  stop?: string;
-  /**
-   * Search string
-   */
-  q?: string;
-  severity?: EventSeverity;
-  source?: string | string[];
-  pos?: number;
-  limit?: number;
-  order?: 'asc' | 'desc';
-}
-
-export interface DownloadEventsOptions {
-  /**
-   * Inclusive lower bound
-   */
-  start?: string;
-  /**
-   * Exclusive upper bound
-   */
-  stop?: string;
-  /**
-   * Search string
-   */
-  q?: string;
-  severity?: EventSeverity;
-  source?: string | string[];
 }
 
 export interface GetParameterValuesOptions {
@@ -455,19 +292,6 @@ export interface IndexEntry {
   start: string;
   stop: string;
   count: number;
-}
-
-export interface CommandQueueEntry {
-  instance: string;
-  processorName: string;
-  queueName: string;
-  cmdId: CommandId;
-  source: string;
-  binary: string;
-  username: string;
-  generationTime: string;
-  uuid: string;
-  pendingTransmissionConstraints: boolean;
 }
 
 export interface GetTagsOptions {
