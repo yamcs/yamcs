@@ -14,8 +14,8 @@
       Instance name<br>
       <input formControlName="name" type="text">
     </label>
-    <ng-container *ngIf="template.variable">
-      <label *ngFor="let v of template.variable">
+    <ng-container *ngIf="template.variables">
+      <label *ngFor="let v of template.variables">
         {{ v.description || v.name }}<br>
         <input [formControlName]="v.name" type="text">
       </label>

@@ -662,7 +662,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         String name = processor.getName();
 
         for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
-            b.addService(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
+            b.addServices(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
         }
         return b.build();
     }

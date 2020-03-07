@@ -61,8 +61,8 @@ public class YamcsConnector implements SessionFailureListener {
             YamcsInstances ainst = (YamcsInstances) mc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS,
                     "getYamcsInstances", null, YamcsInstances.newBuilder());
             mc.close();
-            List<String> instances = new ArrayList<>(ainst.getInstanceCount());
-            for (YamcsInstance ai : ainst.getInstanceList()) {
+            List<String> instances = new ArrayList<>(ainst.getInstancesCount());
+            for (YamcsInstance ai : ainst.getInstancesList()) {
                 instances.add(ai.getName());
             }
             ys.close();

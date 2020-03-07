@@ -29,6 +29,14 @@ export interface ListRoutesResponse {
   routes: Route[];
 }
 
+export interface ListTopicsResponse {
+  topics: Topic[];
+}
+
+export interface ListProcessorTypesResponse {
+  types: string[];
+}
+
 export interface ListClearancesResponse {
   clearances: Clearance[];
 }
@@ -42,6 +50,15 @@ export interface Route {
   url: string;
   httpMethod: string;
   requestCount: number;
+}
+
+export interface Topic {
+  topic: string;
+  service: string;
+  method: string;
+  inputType: string;
+  outputType: string;
+  deprecated: boolean;
 }
 
 export interface PluginInfo {
@@ -69,13 +86,13 @@ export type InstanceState = 'OFFLINE'
 export interface Instance {
   name: string;
   state: InstanceState;
-  processor: Processor[];
+  processors: Processor[];
   labels?: { [key: string]: string; };
 }
 
 export interface InstanceTemplate {
   name: string;
-  variable: TemplateVariable[];
+  variables: TemplateVariable[];
 }
 
 export interface TemplateVariable {
@@ -274,7 +291,7 @@ export interface Processor {
   time: string;
   replay: boolean;
   replayRequest?: ReplayRequest;
-  service: Service[];
+  services: Service[];
 }
 
 export interface ReplayRequest {

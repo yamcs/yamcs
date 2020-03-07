@@ -148,7 +148,7 @@ enum ServiceState {
 }
 
 message YamcsInstances {
-  repeated YamcsInstance instance = 1;
+  repeated YamcsInstance instances = 1;
 }
 
 message YamcsInstance {
@@ -163,7 +163,7 @@ message YamcsInstance {
   }
   optional string name = 1;
   optional mdb.MissionDatabase missionDatabase = 3;
-  repeated ProcessorInfo processor = 4;
+  repeated ProcessorInfo processors = 4;
   optional InstanceState state = 11;
   //in case the state=FAILED, this field will indicate the cause of the failure
   // the missionDatabase and other fields may not be filled when this happens
@@ -174,7 +174,7 @@ message YamcsInstance {
 
 message InstanceTemplate {
   optional string name = 1;
-  repeated TemplateVariable variable = 2;
+  repeated TemplateVariable variables = 2;
 }
 
 message TemplateVariable {
@@ -194,7 +194,7 @@ message ProcessorInfo {
   optional ServiceState state = 8;
   optional ReplayRequest replayRequest = 9; //in case of replay
   optional ReplayStatus.ReplayState replayState = 10; //in case of replay
-  repeated ServiceInfo service = 16;
+  repeated ServiceInfo services = 16;
   optional bool persistent = 17;
   optional string time = 18;
   optional bool replay = 19;

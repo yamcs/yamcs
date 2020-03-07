@@ -659,7 +659,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
 
         for (Processor processor : ysi.getProcessors()) {
-            instanceb.addProcessor(ProcessingApi.toProcessorInfo(processor, false));
+            instanceb.addProcessors(ProcessingApi.toProcessorInfo(processor, false));
         }
 
         TimeService timeService = ysi.getTimeService();

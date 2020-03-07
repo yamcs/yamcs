@@ -27,6 +27,13 @@ service GeneralApi {
     };
   }
   
+  // List topics
+  rpc ListTopics(google.protobuf.Empty) returns (ListTopicsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/topics"
+    };
+  }
+  
   // List client connections
   rpc ListClientConnections(google.protobuf.Empty) returns (ListClientConnectionsResponse) {
     option (yamcs.api.route) = {
@@ -44,6 +51,10 @@ service GeneralApi {
 
 message ListRoutesResponse {
   repeated RouteInfo routes = 1;
+}
+
+message ListTopicsResponse {
+  repeated TopicInfo topics = 1;
 }
 
 message ListClientConnectionsResponse {
@@ -65,6 +76,17 @@ message RouteInfo {
   optional bool deprecated = 8;
   optional int64 requestCount = 9;
   optional int64 errorCount = 10;
+}
+
+message TopicInfo {
+  optional string topic = 1;
+  optional string service = 2;
+  optional string method = 3;
+  optional string description = 4;
+  optional string httpMethod = 5;
+  optional string inputType = 6;
+  optional string outputType = 7;
+  optional bool deprecated = 8;
 }
 
 message GetGeneralInfoResponse {

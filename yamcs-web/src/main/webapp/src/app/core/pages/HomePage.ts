@@ -38,6 +38,7 @@ export class HomePage implements AfterViewInit, OnDestroy {
     'select',
     'status',
     'name',
+    'processor',
     'labels',
     // 'state',
     'actions',

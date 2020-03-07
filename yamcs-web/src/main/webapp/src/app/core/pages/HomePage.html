@@ -109,6 +109,14 @@
       </td>
     </ng-container>
 
+    <ng-container cdkColumnDef="processor">
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Default Processor</th>
+      <td mat-cell *cdkCellDef="let row">
+        <ng-container *ngIf="row.processors">{{ row.processors[0].name }}</ng-container>
+        <ng-container *ngIf="!row.processors">-</ng-container>
+      </td>
+    </ng-container>
+
     <ng-container cdkColumnDef="labels">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Labels</th>
       <td mat-cell *cdkCellDef="let row">

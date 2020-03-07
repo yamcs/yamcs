@@ -8,7 +8,7 @@ import { Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
 import { CreateProcessorRequest } from './types/monitoring';
-import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListRoutesResponse, ListServiceAccountsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { WebSocketClient2 } from './WebSocketClient2';
 
@@ -141,6 +141,18 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/routes`;
     const response = await this.doFetch(url);
     return await response.json() as ListRoutesResponse;
+  }
+
+  async getTopics() {
+    const url = `${this.apiUrl}/topics`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListTopicsResponse;
+  }
+
+  async getProcessorTypes() {
+    const url = `${this.apiUrl}/processor-types`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListProcessorTypesResponse;
   }
 
   async getClearances() {
