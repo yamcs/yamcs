@@ -8,7 +8,7 @@ import { Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
 import { CreateProcessorRequest } from './types/monitoring';
-import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditClientRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { WebSocketClient2 } from './WebSocketClient2';
 
@@ -419,15 +419,6 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:compact`;
     return await this.doFetch(url, {
       method: 'POST',
-    });
-  }
-
-  async editClient(clientId: number, options: EditClientRequest) {
-    const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/clients/${clientId}`;
-    return await this.doFetch(url, {
-      body,
-      method: 'PATCH',
     });
   }
 

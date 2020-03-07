@@ -110,9 +110,9 @@ export class AppComponent implements OnDestroy {
 
   leaveReplay() {
     const instance = this.yamcs.getInstance()!.name;
-    const clientId = this.yamcs.getClientId();
+    /*const clientId = this.yamcs.getClientId();
     // Switch to the 'default' processor of the currently connected instance
-    this.yamcs.yamcsClient.editClient(clientId, { instance });
+    this.yamcs.yamcsClient.editClient(clientId, { instance });*/
   }
 
   mayReadAlarms() {

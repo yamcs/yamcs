@@ -102,26 +102,14 @@ export interface TemplateVariable {
 }
 
 export interface ConnectionInfo {
-  clientId: number;
   instance: Instance;
-  processor: Processor;
+  processor?: Processor;
   clearance?: string;
 }
 
 export interface ConnectionInfoSubscriptionResponse {
   connectionInfo: ConnectionInfo;
   connectionInfo$: Observable<ConnectionInfo>;
-}
-
-export interface ClientInfo {
-  id: number;
-  instance: string;
-  username: string;
-  applicationName: string;
-  address: string;
-  processorName: string;
-  state: 'CONNECTED' | 'DISCONNECTED';
-  loginTime: string;
 }
 
 export interface ClientConnectionInfo {
@@ -144,11 +132,6 @@ export interface HttpRequestInfo {
   uri: string;
   keepAlive: string;
   userAgent: string;
-}
-
-export interface EditClientRequest {
-  instance?: string;
-  processor?: string;
 }
 
 export interface EditClearanceRequest {
@@ -183,7 +166,6 @@ export interface UserInfo {
   lastLoginTime: string;
   groups: GroupInfo[];
   roles: RoleInfo[];
-  clientInfo: ClientInfo[];
   identities: ExternalIdentity[];
   clearance: string;
 

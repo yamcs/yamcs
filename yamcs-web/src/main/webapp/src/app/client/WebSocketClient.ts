@@ -1,9 +1,9 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { filter, first, map, take } from 'rxjs/operators';
+import { filter, first, map } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
+import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -21,7 +21,7 @@ export class WebSocketClient {
   private webSocketConnectionSubscription: Subscription;
 
   // Server-controlled metadata on the connected client
-  // (clientId, instance, processor)
+  // (instance, processor)
   private connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
 
   private requestSequence = 0;
@@ -142,27 +142,6 @@ export class WebSocketClient {
           reject('Unexpected response code');
         }
       });
-    });
-  }
-
-  async getConnectionInfoUpdates() {
-    // No need to emit anything for this, all clients receive these events.
-    return new Promise<ConnectionInfoSubscriptionResponse>((resolve, reject) => {
-      // Wait for the intial connection info data to arrive. Yamcs will always
-      // sent this as the first data packet of a new connection.
-      this.connectionInfo$.pipe(
-        filter(connectionInfo => connectionInfo != null),
-        take(1),
-      ).subscribe(connectionInfo => {
-        const response = {} as ConnectionInfoSubscriptionResponse;
-        response.connectionInfo = connectionInfo!;
-        response.connectionInfo$ = this.webSocketConnection$.pipe(
-          filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-          filter((msg: WebSocketServerMessage) => msg[3].dt === 'CONNECTION_INFO'),
-          map(msg => msg[3].data as ConnectionInfo),
-        );
-        resolve(response);
-      }, err => reject(err));
     });
   }
 

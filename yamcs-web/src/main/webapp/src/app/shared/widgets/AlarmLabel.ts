@@ -26,13 +26,15 @@ export class AlarmLabel implements OnDestroy {
         }
         this.instance$.next(connectionInfo.instance);
 
-        const options = {
-          instance: connectionInfo.instance.name,
-          processor: connectionInfo.processor.name,
-        };
-        this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
-          this.status$.next(status);
-        });
+        if (connectionInfo.processor) {
+          const options = {
+            instance: connectionInfo.instance.name,
+            processor: connectionInfo.processor.name,
+          };
+          this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
+            this.status$.next(status);
+          });
+        }
       } else {
         this.clearAlarmSubscription();
         this.instance$.next(null);

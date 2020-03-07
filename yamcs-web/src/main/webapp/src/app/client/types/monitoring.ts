@@ -130,7 +130,6 @@ export interface TimeSubscriptionResponse {
 }
 
 export interface ManagementSubscriptionRequest {
-  clientInfo?: boolean;
   processorStatistics?: boolean;
 }
 
@@ -309,7 +308,6 @@ export interface CreateProcessorRequest {
   instance: string;
   name: string;
   type: string;
-  clientId?: number[];
   persistent?: boolean;
   config?: string;
 }

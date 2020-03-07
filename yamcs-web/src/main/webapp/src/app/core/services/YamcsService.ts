@@ -16,7 +16,6 @@ export class YamcsService {
   private selectedInstance: InstanceClient | null;
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
-  private connectionInfoSubscription: Subscription;
 
   private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
   private timeInfoSubscription: Subscription;
@@ -43,18 +42,15 @@ export class YamcsService {
         this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
 
         Promise.all([
-          this.selectedInstance.getConnectionInfoUpdates(),
           this.selectedInstance.getTimeUpdates(),
         ]).then(responses => {
-          // Listen to server-controlled connection state (e.g. active instance, processor, clientId)
-          const connectionInfoResponse = responses[0];
-          this.connectionInfo$.next(connectionInfoResponse.connectionInfo);
-          this.connectionInfoSubscription = connectionInfoResponse.connectionInfo$.subscribe(connectionInfo => {
-            this.connectionInfo$.next(connectionInfo);
+          this.connectionInfo$.next({
+            instance: instance,
+            processor: (instance.processors ? instance.processors[0] : undefined),
           });
 
           // Listen to time updates, so that we can easily provide actual mission time to components
-          const timeResponse = responses[1];
+          const timeResponse = responses[0];
           this.timeInfo$.next(timeResponse.timeInfo);
           this.timeInfoSubscription = timeResponse.timeInfo$.subscribe(timeInfo => {
             this.timeInfo$.next(timeInfo);
@@ -72,9 +68,6 @@ export class YamcsService {
   unselectInstance() {
     this.connectionInfo$.next(null);
     this.timeInfo$.next(null);
-    if (this.connectionInfoSubscription) {
-      this.connectionInfoSubscription.unsubscribe();
-    }
     if (this.timeInfoSubscription) {
       this.timeInfoSubscription.unsubscribe();
     }
@@ -92,18 +85,10 @@ export class YamcsService {
   }
 
   /**
-   * Returns the server-assigned client-id for the currently
-   * active WebSocket connection.
-   */
-  getClientId() {
-    return this.connectionInfo$.getValue()!.clientId;
-  }
-
-  /**
    * Returns the currently active processor (if any).
    */
   getProcessor(): Processor {
-    return this.connectionInfo$.getValue()!.processor;
+    return this.connectionInfo$.getValue()!.processor!;
   }
 
   /**

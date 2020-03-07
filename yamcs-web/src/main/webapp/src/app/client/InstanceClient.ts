@@ -3,7 +3,7 @@ import { Cop1Config } from './types/cop1';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CommandHistoryPage, CreateEventRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
+import { CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditLinkOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, StreamEventSubscriptionResponse, StreamSubscriptionResponse, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
@@ -100,21 +100,6 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/links/${this.instance}/${name}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Link;
-  }
-
-  /**
-   * Returns Connection Info messages whenever a major event on
-   * the websocket connection happens. This includes:
-   * - Changed active instance
-   * - Changed active processor
-   * - Restart of connected instance
-   *
-   * Note especially that this does not provide info about the connection
-   * state itself (e.g. no disconnect event).
-   */
-  async getConnectionInfoUpdates(): Promise<ConnectionInfoSubscriptionResponse> {
-    this.prepareWebSocketClient();
-    return this.webSocketClient!.getConnectionInfoUpdates();
   }
 
   async getLinkUpdates(): Promise<LinkSubscriptionResponse> {
