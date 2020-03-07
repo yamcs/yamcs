@@ -73,6 +73,8 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
+        
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
@@ -102,6 +104,8 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
+        
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
@@ -122,6 +126,7 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals(6, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
+        checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
 
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
@@ -237,6 +242,8 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "DISABLED");
+        
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
@@ -257,6 +264,8 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
+        checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "DISABLED");
+        checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "DISABLED");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
 
