@@ -59,7 +59,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
 
-  private timeInfoSubscription: Subscription;
+  private timeSubscription: Subscription;
 
   private packetNames: string[] = [];
 
@@ -97,12 +97,10 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
       this.filterForm.addControl(option.id, new FormControl(checked));
     }
 
-    yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
-      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
-        if (this.timeline) {
-          this.timeline.setWallclockTime(timeInfo.currentTime);
-        }
-      });
+    this.timeSubscription = yamcs.time$.subscribe(time => {
+      if (this.timeline && time) {
+        this.timeline.setWallclockTime(time);
+      }
     });
 
     const bodyRef = new ElementRef(document.body);
@@ -127,7 +125,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // Fetch archive packets to ensure we can always show bands
     // even if there's no data for the visible range
-    this.yamcs.getInstanceClient()!.getPacketNames().then(packetNames => {
+    this.yamcs.yamcsClient.getPacketNames(this.instance.name).then(packetNames => {
       this.packetNames = packetNames;
 
       // Initialize only after a timeout, because otherwise
@@ -221,7 +219,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['completeness']) {
-        completenessPromise = this.yamcs.getInstanceClient()!.getCompletenessIndex({
+        completenessPromise = this.yamcs.yamcsClient.getCompletenessIndex(this.instance.name, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -230,7 +228,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['packets']) {
-        tmPromise = this.yamcs.getInstanceClient()!.getPacketIndex({
+        tmPromise = this.yamcs.yamcsClient.getPacketIndex(this.instance.name, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -239,7 +237,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['parameters']) {
-        parameterPromise = this.yamcs.getInstanceClient()!.getParameterIndex({
+        parameterPromise = this.yamcs.yamcsClient.getParameterIndex(this.instance.name, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -248,7 +246,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let commandPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['commands']) {
-        commandPromise = this.yamcs.getInstanceClient()!.getCommandIndex({
+        commandPromise = this.yamcs.yamcsClient.getCommandIndex(this.instance.name, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -256,7 +254,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
       }
 
       Promise.all([
-        this.yamcs.getInstanceClient()!.getTags({
+        this.yamcs.yamcsClient.getTags(this.instance.name, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
         }),
@@ -575,8 +573,8 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     if (this.darkModeSubscription) {
       this.darkModeSubscription.unsubscribe();
     }
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
+    if (this.timeSubscription) {
+      this.timeSubscription.unsubscribe();
     }
   }
 }

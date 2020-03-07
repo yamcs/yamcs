@@ -2,7 +2,7 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, first, map } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { WebSocketServerMessage } from './types/internal';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse } from './types/monitoring';
 import { AlarmSubscriptionRequest, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, CommandSubscriptionRequest, CommandSubscriptionResponse, ConnectionInfo, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse, StreamData, StreamEvent, StreamEventSubscriptionResponse, StreamSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
@@ -13,7 +13,7 @@ const MESSAGE_TYPE_DATA = 4;
 
 export class WebSocketClient {
 
-  readonly connected$ = new BehaviorSubject<boolean>(false);
+  private connected$ = new BehaviorSubject<boolean>(false);
 
   private webSocket: WebSocketSubject<{}>;
 
@@ -110,32 +110,6 @@ export class WebSocketClient {
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
           resolve();
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
-  async getTimeUpdates() {
-    const requestId = this.emit({ time: 'subscribe' });
-
-    return new Promise<TimeSubscriptionResponse>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = msg[3].data as TimeSubscriptionResponse;
-          response.timeInfo$ = this.webSocketConnection$.pipe(
-            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'TIME_INFO'),
-            map(msg => msg[3].data as TimeInfo),
-          );
-          resolve(response);
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           reject(msg[3].et);
         } else {

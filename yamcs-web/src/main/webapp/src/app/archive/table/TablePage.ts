@@ -17,7 +17,7 @@ export class TablePage {
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name);
-    this.table$ = yamcs.getInstanceClient()!.getTable(name);
+    this.table$ = yamcs.yamcsClient.getTable(this.instance.name, name);
     this.instance = yamcs.getInstance();
   }
 }

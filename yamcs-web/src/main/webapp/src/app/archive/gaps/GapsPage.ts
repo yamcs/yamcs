@@ -35,7 +35,7 @@ export class GapsPage {
     private messageService: MessageService,
   ) {
     title.setTitle('Gaps');
-    yamcs.getInstanceClient()!.getGaps().then(page => {
+    yamcs.yamcsClient.getGaps(yamcs.getInstance().name).then(page => {
       this.dataSource.data = page.gaps || [];
     });
   }
@@ -74,7 +74,7 @@ export class GapsPage {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.yamcs.getInstanceClient()!.requestPlayback(result.link, {
+        this.yamcs.yamcsClient.requestPlayback(this.yamcs.getInstance().name, result.link, {
           ranges: result.ranges,
         }).then(() => this.messageService.showInfo('Playback requested')).catch(err => this.messageService.showError(err));
       }
@@ -82,7 +82,7 @@ export class GapsPage {
   }
 
   refreshView() {
-    this.yamcs.getInstanceClient()!.getGaps().then(page => {
+    this.yamcs.yamcsClient.getGaps(this.yamcs.getInstance().name).then(page => {
       this.selection.clear();
       this.dataSource.data = page.gaps || [];
     });

@@ -53,7 +53,7 @@ export class UploadFileDialog {
   }
 
   startTransfer() {
-    this.yamcs.getInstanceClient()!.createCfdpTransfer({
+    this.yamcs.yamcsClient.createCfdpTransfer(this.instance.name, {
       direction: 'UPLOAD',
       bucket: this.selectedBucket$.value!.name,
       objectName: this.localForm.value['object'],

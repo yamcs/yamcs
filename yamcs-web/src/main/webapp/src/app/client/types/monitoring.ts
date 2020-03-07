@@ -57,10 +57,6 @@ export interface Event {
   severity: EventSeverity;
 }
 
-export interface TimeInfo {
-  currentTime: string;
-}
-
 export interface ParameterData {
   parameter: ParameterValue[];
   subscriptionId: number;
@@ -115,18 +111,6 @@ export interface ListAlarmsResponse {
 
 export interface AlarmSubscriptionResponse {
   alarm$: Observable<Alarm>;
-}
-
-export interface TimeSubscriptionResponse {
-  /**
-   * Current Mission Time
-   */
-  timeInfo: TimeInfo;
-
-  /**
-   * Observable for monitoring Mission Time updates
-   */
-  timeInfo$: Observable<TimeInfo>;
 }
 
 export interface ManagementSubscriptionRequest {

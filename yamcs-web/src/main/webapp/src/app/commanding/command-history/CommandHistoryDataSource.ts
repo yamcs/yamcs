@@ -58,7 +58,7 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
   }
 
   private loadPage(options: GetCommandHistoryOptions) {
-    return this.yamcs.getInstanceClient()!.getCommandHistoryEntries(options).then(page => {
+    return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.getInstance().name, options).then(page => {
       this.continuationToken = page.continuationToken;
       return page.entry || [];
     });

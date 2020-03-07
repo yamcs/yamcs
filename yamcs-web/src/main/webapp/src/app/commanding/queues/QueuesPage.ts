@@ -25,7 +25,7 @@ export class QueuesPage implements OnDestroy {
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
-    instanceClient.getCommandQueues(processor.name).then(cqueues => {
+    yamcs.yamcsClient.getCommandQueues(processor.instance, processor.name).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
       }

@@ -51,7 +51,7 @@ export class ParameterPage implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.instance.name, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (qualifiedName !== parameter.qualifiedName) {
@@ -135,8 +135,8 @@ export class ParameterPage implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe((value: Value) => {
       if (value) {
-        this.yamcs.getInstanceClient()!
-          .setParameterValue('realtime', parameter.qualifiedName, value)
+        this.yamcs.yamcsClient
+          .setParameterValue(this.instance.name, 'realtime', parameter.qualifiedName, value)
           .catch(err => this.messageService.showError(err));
       }
     });

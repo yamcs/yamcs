@@ -52,12 +52,12 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     title.setTitle(`Send a command: ${qualifiedName}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
+      this.yamcs.yamcsClient.getCommand(this.instance.name, qualifiedName),
     ];
 
     const templateId = route.snapshot.queryParamMap.get('template');
     if (templateId) {
-      const promise = this.yamcs.getInstanceClient()!.getCommandHistoryEntry(templateId);
+      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.instance.name, templateId);
       promises.push(promise);
     }
 
@@ -105,7 +105,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
     const processor = this.yamcs.getProcessor();
     const qname = this.command$.value!.qualifiedName;
-    this.yamcs.getInstanceClient()!.issueCommand(processor.name, qname, {
+    this.yamcs.yamcsClient.issueCommand(processor.instance, processor.name, qname, {
       assignment: assignments,
       comment,
     }).then(response => {

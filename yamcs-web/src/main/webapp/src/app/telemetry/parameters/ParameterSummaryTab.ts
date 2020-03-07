@@ -28,7 +28,7 @@ export class ParameterSummaryTab {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.instance.name, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (this.parameterValueSubscription) {

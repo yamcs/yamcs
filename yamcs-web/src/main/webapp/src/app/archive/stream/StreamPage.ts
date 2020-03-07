@@ -4,9 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Instance, Stream } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
-
-
 @Component({
   templateUrl: './StreamPage.html',
   styleUrls: ['./StreamPage.css'],
@@ -20,7 +17,7 @@ export class StreamPage {
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name);
-    this.stream$ = yamcs.getInstanceClient()!.getStream(name);
     this.instance = yamcs.getInstance();
+    this.stream$ = yamcs.yamcsClient.getStream(this.instance.name, name);
   }
 }

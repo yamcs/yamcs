@@ -46,7 +46,7 @@ export class ShelveAlarmDialog {
         options.shelveDuration = duration;
       }
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

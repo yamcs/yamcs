@@ -155,7 +155,7 @@ export class AlarmsPage implements OnDestroy {
         state: 'unshelved',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
     }
   }
 
@@ -166,7 +166,7 @@ export class AlarmsPage implements OnDestroy {
         state: 'cleared',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
     }
   }
 

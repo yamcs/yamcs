@@ -31,7 +31,7 @@ export class CommandReportPage implements OnDestroy {
       ignorePastCommands: false,
     }).then(response => {
 
-      yamcs.getInstanceClient()!.getCommandHistoryEntry(id).then(entry => {
+      yamcs.yamcsClient.getCommandHistoryEntry(this.instance.name, id).then(entry => {
         this.mergeEntry(entry);
         this.commandSubscription = response.command$.pipe(
           filter(wsEntry => printCommandId(wsEntry.commandId) === id),

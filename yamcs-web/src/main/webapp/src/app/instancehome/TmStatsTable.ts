@@ -28,7 +28,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  private statsByName: { [key: string]: PacketStats } = {};
+  private statsByName: { [key: string]: PacketStats; } = {};
   dataSource = new MatTableDataSource<PacketStats>();
 
   instance: Instance;
@@ -51,7 +51,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     if (this.tmstats$ && !this.tmstatsSubscription) {
-      this.yamcs.getInstanceClient()!.getPacketNames().then(packetNames => {
+      this.yamcs.yamcsClient.getPacketNames(this.instance.name).then(packetNames => {
         for (const packetName of (packetNames || [])) {
           this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
         }

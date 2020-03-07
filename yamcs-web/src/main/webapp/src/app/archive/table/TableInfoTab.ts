@@ -20,7 +20,7 @@ export class TableInfoTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService, private dialog: MatDialog) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.table$ = yamcs.getInstanceClient()!.getTable(name);
+    this.table$ = yamcs.yamcsClient.getTable(yamcs.getInstance().name, name);
   }
 
   showEnum(column: string) {

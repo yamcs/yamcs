@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/c
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, Processor, TimeSubscription } from '../../client';
+import { ConnectionInfo, Processor } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
@@ -22,14 +22,13 @@ export class InstanceToolbar implements OnDestroy {
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: Subscription;
 
-  time$ = new BehaviorSubject<string | null>(null);
+  time$: Observable<string | null>;
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
   showDetailPane$: Observable<boolean>;
 
   private connectedSubscription: Subscription;
-  private timeSubscription: TimeSubscription;
 
   constructor(
     private dialog: MatDialog,
@@ -45,11 +44,7 @@ export class InstanceToolbar implements OnDestroy {
     });
 
     this.connected$ = this.yamcs.yamcsClient.connected$;
-
-    this.timeSubscription = this.yamcs.yamcsClient.createTimeSubscription({
-      instance: this.yamcs.getInstance().name,
-      processor: 'realtime', // TODO
-    }, time => this.time$.next(time.value));
+    this.time$ = this.yamcs.time$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
       if (!connected) {
@@ -87,17 +82,17 @@ export class InstanceToolbar implements OnDestroy {
 
   pauseReplay() {
     const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { state: 'paused' });
+    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { state: 'paused' });
   }
 
   resumeReplay() {
     const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { state: 'running' });
+    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { state: 'running' });
   }
 
   changeSpeed(speed: string) {
     const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { speed });
+    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { speed });
   }
 
   showDetailPane(enabled: boolean) {
@@ -105,8 +100,6 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.timeSubscription.cancel();
-
     if (this.processorSubscription) {
       this.processorSubscription.unsubscribe();
     }

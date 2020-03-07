@@ -191,9 +191,8 @@ export class PacketsPage {
       dlOptions.name = this.filter;
     }
 
-    const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadEntries('realtime', options).then(packets => {
-      const downloadURL = instanceClient.getPacketsDownloadURL(dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.getInstance().name, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

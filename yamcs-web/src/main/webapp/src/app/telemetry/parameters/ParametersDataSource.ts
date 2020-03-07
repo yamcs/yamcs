@@ -46,7 +46,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       });
     }
 
-    this.yamcs.getInstanceClient()!.getParameters(options).then(page => {
+    this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
@@ -98,8 +98,8 @@ export class ParametersDataSource extends DataSource<ListItem> {
     }
   }
 
-  private processDelivery(delivery: ParameterValue[], idMapping: { [key: number]: NamedObjectId }) {
-    const byName: { [key: string]: ParameterValue } = {};
+  private processDelivery(delivery: ParameterValue[], idMapping: { [key: number]: NamedObjectId; }) {
+    const byName: { [key: string]: ParameterValue; } = {};
     for (const pval of delivery) {
       const id = idMapping[pval.numericId];
       byName[id.name] = pval;

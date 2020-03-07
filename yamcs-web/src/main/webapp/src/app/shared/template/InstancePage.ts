@@ -85,7 +85,7 @@ export class InstancePage implements OnInit, OnDestroy {
       debounceTime(300),
       switchMap(val => {
         if (val) {
-          return this.yamcs.getInstanceClient()!.getParameters({ q: val, limit: 25 });
+          return this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, { q: val, limit: 25 });
         } else {
           return of({ parameters: [] });
         }

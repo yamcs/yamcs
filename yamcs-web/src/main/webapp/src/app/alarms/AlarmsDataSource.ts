@@ -17,7 +17,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   alarmSubscription: Subscription;
 
-  private alarmsByName: { [key: string]: Alarm } = {};
+  private alarmsByName: { [key: string]: Alarm; } = {};
 
   private filter: string | null = null;
 
@@ -50,7 +50,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loadAlarms(processorName: string) {
     this.loading$.next(true);
-    this.yamcs.getInstanceClient()!.getActiveAlarms(processorName)
+    this.yamcs.yamcsClient.getActiveAlarms(this.yamcs.getInstance().name, processorName)
       .then(alarms => {
         this.loading$.next(false);
         for (const alarm of alarms) {

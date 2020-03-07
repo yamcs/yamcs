@@ -84,7 +84,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.getInstanceClient()!.getLinks().then(links => {
+    this.yamcs.yamcsClient.getLinks(this.instance.name).then(links => {
       for (const link of links) {
         const linkItem = { link, hasChildren: false, expanded: false };
         this.itemsByName[link.name] = linkItem;
@@ -130,15 +130,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.getInstanceClient()!.enableLink(name);
+    this.yamcs.yamcsClient.enableLink(this.instance.name, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getInstanceClient()!.disableLink(name);
+    this.yamcs.yamcsClient.disableLink(this.instance.name, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.getInstanceClient()!.editLink(name, {
+    this.yamcs.yamcsClient.editLink(this.instance.name, name, {
       resetCounters: true,
     });
   }

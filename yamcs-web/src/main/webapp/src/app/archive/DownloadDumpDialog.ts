@@ -12,7 +12,6 @@ import { subtractDuration } from '../shared/utils';
 })
 export class DownloadDumpDialog {
 
-
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
   form: FormGroup;
@@ -30,7 +29,7 @@ export class DownloadDumpDialog {
 
     this.form.valueChanges.subscribe(value => {
       if (this.form.valid) {
-        const url = yamcs.getInstanceClient()!.getPacketsDownloadURL({
+        const url = yamcs.yamcsClient.getPacketsDownloadURL(yamcs.getInstance().name, {
           start: utils.toISOString(value.start),
           stop: utils.toISOString(value.stop),
           format: 'raw',

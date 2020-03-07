@@ -26,7 +26,7 @@ export class ContainerPage {
   }
 
   changeContainer(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getContainer(qualifiedName).then(container => {
+    this.yamcs.yamcsClient.getContainer(this.instance.name, qualifiedName).then(container => {
       this.container$.next(container);
       this.title.setTitle(container.name);
     });

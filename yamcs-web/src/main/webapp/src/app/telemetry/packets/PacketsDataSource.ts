@@ -57,7 +57,7 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
   }
 
   private loadPage(options: GetPacketsOptions) {
-    return this.yamcs.getInstanceClient()!.getPackets(options).then(page => {
+    return this.yamcs.yamcsClient.getPackets(this.yamcs.getInstance().name, options).then(page => {
       this.continuationToken = page.continuationToken;
       return page.packet || [];
     });

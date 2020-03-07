@@ -3,9 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Stream } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
-
-
-
 @Component({
   templateUrl: './StreamColumnsTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +16,7 @@ export class StreamColumnsTab {
     if (parent) {
       const name = parent.paramMap.get('name');
       if (name != null) {
-        this.stream$ = yamcs.getInstanceClient()!.getStream(name);
+        this.stream$ = yamcs.yamcsClient.getStream(yamcs.getInstance().name, name);
       }
     }
   }

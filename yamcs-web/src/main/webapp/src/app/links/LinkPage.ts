@@ -50,11 +50,11 @@ export class LinkPage implements OnDestroy {
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
 
-    this.yamcs.getInstanceClient()!.getLink(name).then(link => {
+    this.yamcs.yamcsClient.getLink(this.instance.name, name).then(link => {
       this.link$.next(link);
       this.title.setTitle(name);
       if (link.type.indexOf('Cop1Tc') !== -1) {
-        this.yamcs.getInstanceClient()!.getCop1Config(name).then(cop1Config => {
+        this.yamcs.yamcsClient.getCop1Config(this.instance.name, name).then(cop1Config => {
           this.cop1Config$.next(cop1Config);
         });
 
@@ -73,15 +73,15 @@ export class LinkPage implements OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.getInstanceClient()!.enableLink(name);
+    this.yamcs.yamcsClient.enableLink(this.instance.name, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getInstanceClient()!.disableLink(name);
+    this.yamcs.yamcsClient.disableLink(this.instance.name, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.getInstanceClient()!.editLink(name, {
+    this.yamcs.yamcsClient.editLink(this.instance.name, name, {
       resetCounters: true,
     });
   }

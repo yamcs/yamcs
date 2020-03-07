@@ -34,7 +34,7 @@ export class ParameterChartTab implements OnDestroy {
     this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new DyDataSource(yamcs, synchronizer);
-    this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
+    this.parameter$ = yamcs.yamcsClient.getParameter(yamcs.getInstance().name, qualifiedName);
     this.parameter$.then(parameter => {
       // Override qualified name for possible array or aggregate offsets
       parameter.qualifiedName = qualifiedName;
@@ -85,7 +85,7 @@ export class ParameterChartTab implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.yamcs.getInstanceClient()!.getParameter(result.qualifiedName).then(parameter => {
+        this.yamcs.yamcsClient.getParameter(this.yamcs.getInstance().name, result.qualifiedName).then(parameter => {
           const parameterConfig = new ParameterSeries();
           parameterConfig.parameter = parameter.qualifiedName;
           parameterConfig.color = result.color;

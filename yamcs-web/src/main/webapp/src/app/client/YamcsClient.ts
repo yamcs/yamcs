@@ -1,14 +1,15 @@
 import { Observable } from 'rxjs';
+import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, CreateTransferRequest, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, GetSpaceSystemsOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage, Transfer, TransfersPage } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
-import { Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
-import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
+import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
+import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
-import { CreateProcessorRequest } from './types/monitoring';
-import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { Alarm, CommandHistoryEntry, CommandHistoryPage, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditAlarmOptions, EditReplayProcessorRequest, ExportXtceOptions, GetAlarmsOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetEventsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
+import { AuthInfo, CommandQueue, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, EditGroupRequest, EditLinkOptions, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, Link, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, Processor, Record, RoleInfo, Service, ServiceAccount, Stream, SystemInfo, Table, TokenResponse, UserInfo } from './types/system';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { WebSocketClient2 } from './WebSocketClient2';
 
@@ -230,26 +231,27 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async getServices(): Promise<Service[]> {
-    const response = await this.doFetch(`${this.apiUrl}/services/_global`);
+  async getServices(instance: string): Promise<Service[]> {
+    const url = `${this.apiUrl}/services/${instance}`;
+    const response = await this.doFetch(url);
     const wrapper = await response.json() as ServicesWrapper;
     return wrapper.services || [];
   }
 
-  async getService(name: string): Promise<Service> {
-    const url = `${this.apiUrl}/services/_global/${name}`;
+  async getService(instance: string, name: string): Promise<Service> {
+    const url = `${this.apiUrl}/services/${instance}/${name}`;
     const response = await this.doFetch(url);
     return await response.json() as Service;
   }
 
-  async startService(name: string) {
-    return this.doFetch(`${this.apiUrl}/services/_global/${name}:start`, {
+  async startService(instance: string, name: string) {
+    return this.doFetch(`${this.apiUrl}/services/${instance}/${name}:start`, {
       method: 'POST',
     });
   }
 
-  async stopService(name: string) {
-    return this.doFetch(`${this.apiUrl}/services/_global/${name}:stop`, {
+  async stopService(instance: string, name: string) {
+    return this.doFetch(`${this.apiUrl}/services/${instance}/${name}:stop`, {
       method: 'POST',
     });
   }
@@ -429,6 +431,437 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return await response.json() as Instance;
+  }
+
+  async getPackets(instance: string, options: GetPacketsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/packets`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as ListPacketsResponse;
+  }
+
+  async getEvents(instance: string, options: GetEventsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/events`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as EventsWrapper;
+    return wrapper.event || [];
+  }
+
+  /**
+   * Retrieves the distinct sources for the currently archived events.
+   */
+  async getEventSources(instance: string) {
+    const url = `${this.apiUrl}/archive/${instance}/events/sources`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as SourcesWrapper;
+    return wrapper.source || [];
+  }
+
+  getEventsDownloadURL(instance: string, options: DownloadEventsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}:exportEvents`;
+    return url + this.queryString(options);
+  }
+
+  async createEvent(instance: string, options: CreateEventRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/archive/${instance}/events`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Event;
+  }
+
+  async editReplayProcessor(instance: string, processor: string, options: EditReplayProcessorRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}`;
+    return await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteReplayProcessor(instance: string, processor: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processor}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
+  async getMissionDatabase(instance: string) {
+    const url = `${this.apiUrl}/mdb/${instance}`;
+    const response = await this.doFetch(url);
+    return await response.json() as MissionDatabase;
+  }
+
+  async getLinks(instance: string): Promise<Link[]> {
+    const url = `${this.apiUrl}/links/${instance}`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as LinksWrapper;
+    return wrapper.links || [];
+  }
+
+  async getLink(instance: string, link: string): Promise<Link> {
+    const url = `${this.apiUrl}/links/${instance}/${link}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Link;
+  }
+
+  async enableLink(instance: string, name: string) {
+    return this.editLink(instance, name, { state: 'enabled' });
+  }
+
+  async disableLink(instance: string, name: string) {
+    return this.editLink(instance, name, { state: 'disabled' });
+  }
+
+  async editLink(instance: string, name: string, options: EditLinkOptions) {
+    const body = JSON.stringify(options);
+    return this.doFetch(`${this.apiUrl}/links/${instance}/${name}`, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async getProcessors(instance: string) {
+    const url = `${this.apiUrl}/processors/${instance}`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ProcessorsWrapper;
+    return wrapper.processor || [];
+  }
+
+  async getProcessor(instance: string, name: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Processor;
+  }
+
+  async issueCommand(instance: string, processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/processors/${instance}/${processorName}/commands${qualifiedName}`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as IssueCommandResponse;
+  }
+
+  async getCommandHistoryEntry(instance: string, id: string): Promise<CommandHistoryEntry> {
+    const url = `${this.apiUrl}/archive/${instance}/commands/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as CommandHistoryEntry;
+  }
+
+  async getCommandHistoryEntries(instance: string, options: GetCommandHistoryOptions = {}): Promise<CommandHistoryPage> {
+    const url = `${this.apiUrl}/archive/${instance}/commands`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as CommandHistoryPage;
+  }
+
+  async getCommandHistoryEntriesForParameter(instance: string, qualifiedName: string, options: GetCommandHistoryOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/commands${qualifiedName}`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as CommandHistoryPage;
+  }
+
+  async getCommandQueues(instance: string, processorName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as CommandQueuesWrapper;
+    return wrapper.queues || [];
+  }
+
+  async getCommandQueue(instance: string, processorName: string, queueName: string) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as CommandQueue;
+  }
+
+  async editCommandQueue(instance: string, processorName: string, queueName: string, options: EditCommandQueueOptions) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+    return await response.json() as CommandQueue;
+  }
+
+  async editCommandQueueEntry(instance: string, processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/queues/${queueName}/entries/${uuid}`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async getActiveAlarms(instance: string, processorName: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/alarms`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as AlarmsWrapper;
+    return wrapper.alarms || [];
+  }
+
+  async getAlarms(instance: string, options: GetAlarmsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/alarms`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as AlarmsWrapper;
+    return wrapper.alarms || [];
+  }
+
+  async getAlarmsForParameter(instance: string, qualifiedName: string, options: GetAlarmsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/alarms${qualifiedName}`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as AlarmsWrapper;
+    return await wrapper.alarms || [];
+  }
+
+  async editAlarm(instance: string, processor: string, alarm: string, sequenceNumber: number, options: EditAlarmOptions) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/processors/${instance}/${processor}/alarms${alarm}/${sequenceNumber}`;
+    return await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async getStreams(instance: string) {
+    const url = `${this.apiUrl}/archive/${instance}/streams`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as StreamsWrapper;
+    return await wrapper.streams || [];
+  }
+
+  async getStream(instance: string, name: string) {
+    const url = `${this.apiUrl}/archive/${instance}/streams/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Stream;
+  }
+
+  async getTables(instance: string) {
+    const url = `${this.apiUrl}/archive/${instance}/tables`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as TablesWrapper;
+    return wrapper.tables || [];
+  }
+
+  async getTable(instance: string, name: string) {
+    const url = `${this.apiUrl}/archive/${instance}/tables/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Table;
+  }
+
+  async getTableData(instance: string, name: string): Promise<Record[]> {
+    const url = `${this.apiUrl}/archive/${instance}/tables/${name}/data`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as RecordsWrapper;
+    return wrapper.record || [];
+  }
+
+  async getPacketNames(instance: string) {
+    const url = `${this.apiUrl}/archive/${instance}/packet-names`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as PacketNameWrapper;
+    return wrapper.name || [];
+  }
+
+  async getPacketIndex(instance: string, options: GetPacketIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.apiUrl}/archive/${instance}/packet-index`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getParameterIndex(instance: string, options: GetParameterIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.apiUrl}/archive/${instance}/parameter-index`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getCommandIndex(instance: string, options: GetCommandIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.apiUrl}/archive/${instance}/command-index`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getEventIndex(instance: string, options: GetEventIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.apiUrl}/archive/${instance}/event-index`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  async getCompletenessIndex(instance: string, options: GetCompletenessIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.apiUrl}/archive/${instance}/completeness-index`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  getPacketsDownloadURL(instance: string, options: DownloadPacketsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}:exportPackets`;
+    return url + this.queryString(options);
+  }
+
+  getXtceDownloadURL(instance: string, options: ExportXtceOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/space-systems${options.spaceSystem}:exportXTCE`;
+    return url + this.queryString(options);
+  }
+
+  async getRootSpaceSystems(instance: string, ) {
+    const url = `${this.apiUrl}/mdb/${instance}`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as SpaceSystemsWrapper;
+    return wrapper.spaceSystems || [];
+  }
+
+  async getSpaceSystems(instance: string, options: GetSpaceSystemsOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/space-systems`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as SpaceSystemsPage;
+  }
+
+  async getSpaceSystem(instance: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/space-systems${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as SpaceSystem;
+  }
+
+  async getParameters(instance: string, options: GetParametersOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/parameters`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as ParametersPage;
+  }
+
+  async getParameter(instance: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/parameters${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Parameter;
+  }
+
+  async getParameterById(instance: string, id: NamedObjectId) {
+    let url = `${this.apiUrl}/mdb/${instance}/parameters`;
+    if (id.namespace) {
+      url += '/' + encodeURIComponent(id.namespace);
+      url += '/' + encodeURIComponent(id.name);
+      const response = await this.doFetch(url);
+      return await response.json() as Parameter;
+    } else {
+      return this.getParameter(instance, id.name);
+    }
+  }
+
+  async getParameterValues(instance: string, qualifiedName: string, options: GetParameterValuesOptions = {}): Promise<ParameterValue[]> {
+    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as ParameterData;
+    return wrapper.parameter || [];
+  }
+
+  getParameterValuesDownloadURL(instance: string, options: DownloadParameterValuesOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
+    return url + this.queryString(options);
+  }
+
+  async setParameterValue(instance: string, processorName: string, qualifiedName: string, value: Value) {
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/parameters${qualifiedName}`;
+    return this.doFetch(url, {
+      body: JSON.stringify(value),
+      method: 'PUT',
+    });
+  }
+
+  async getParameterSamples(instance: string, qualifiedName: string, options: GetParameterSamplesOptions = {}): Promise<Sample[]> {
+    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}/samples`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as SamplesWrapper;
+    return wrapper.sample || [];
+  }
+
+  async getParameterRanges(instance: string, qualifiedName: string, options: GetParameterRangesOptions = {}): Promise<Range[]> {
+    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}/ranges`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as RangesWrapper;
+    return wrapper.range || [];
+  }
+
+  async getCommands(instance: string, options: GetCommandsOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/commands`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as CommandsPage;
+  }
+
+  async getCommand(instance: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/commands${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Command;
+  }
+
+  async getContainers(instance: string, options: GetContainersOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/containers`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as ContainersPage;
+  }
+
+  async getContainer(instance: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/containers${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Container;
+  }
+
+  async getTags(instance: string, options: GetTagsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}/tags`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as TagsPage;
+  }
+
+  async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {
+    const url = `${this.apiUrl}/mdb/${instance}/algorithms`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as AlgorithmsPage;
+  }
+
+  async getAlgorithm(instance: string, qualifiedName: string) {
+    const url = `${this.apiUrl}/mdb/${instance}/algorithms${qualifiedName}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Algorithm;
+  }
+
+  async getCfdpTransfers(instance: string, ) {
+    const url = `${this.apiUrl}/cfdp/${instance}/transfers`;
+    const response = await this.doFetch(url);
+    return await response.json() as TransfersPage;
+  }
+
+  async createCfdpTransfer(instance: string, options: CreateTransferRequest) {
+    const url = `${this.apiUrl}/cfdp/${instance}/transfers`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Transfer;
+  }
+
+  async getGaps(instance: string, ) {
+    const url = `${this.apiUrl}/dass/gaps/${instance}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ListGapsResponse;
+  }
+
+  async requestPlayback(instance: string, link: string, options: RequestPlaybackRequest) {
+    const url = `${this.apiUrl}/dass/links/${instance}/${link}:requestPlayback`;
+    const body = JSON.stringify(options);
+    return await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+  }
+
+  async getCop1Config(instance: string, link: string) {
+    const url = `${this.apiUrl}/cop1/${instance}/${link}/config`;
+    const response = await this.doFetch(url);
+    return await response.json() as Cop1Config;
   }
 
   async doFetch(url: string, init?: RequestInit) {

@@ -41,7 +41,7 @@ export class DyDataSource {
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
 
-  private idMapping: { [key: number]: NamedObjectId };
+  private idMapping: { [key: number]: NamedObjectId; };
 
   constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
     this.syncSubscription = synchronizer.sync(() => {
@@ -100,16 +100,15 @@ export class DyDataSource {
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
-    const instanceClient = this.yamcs.getInstanceClient()!;
     const promises: Promise<any>[] = [];
     for (const parameter of this.parameters$.value) {
       promises.push(
-        instanceClient.getParameterSamples(parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.getInstance().name, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
         }),
-        instanceClient.getAlarmsForParameter(parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.getInstance().name, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
         })

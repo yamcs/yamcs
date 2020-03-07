@@ -46,7 +46,7 @@ export class SelectParameterDialog implements OnInit {
     const excludedParameters = this.data.exclude || [];
     this.filteredOptions = this.parameter.valueChanges.pipe(
       debounceTime(300),
-      switchMap(val => this.yamcs.getInstanceClient()!.getParameters({
+      switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, {
         q: val,
         limit: this.limit,
       })),

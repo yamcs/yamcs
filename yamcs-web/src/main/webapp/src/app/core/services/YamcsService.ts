@@ -1,11 +1,10 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
 
 /**
  * Singleton service for facilitating working with a websocket connection
- * to a specific instance.
  */
 @Injectable({
   providedIn: 'root',
@@ -17,8 +16,8 @@ export class YamcsService {
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
 
-  private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
-  private timeInfoSubscription: Subscription;
+  readonly time$ = new BehaviorSubject<string | null>(null);
+  private timeSubscription: TimeSubscription;
 
   constructor(@Inject(APP_BASE_HREF) baseHref: string) {
     this.yamcsClient = new YamcsClient(baseHref);
@@ -40,24 +39,17 @@ export class YamcsService {
       this.unselectInstance();
       this.yamcsClient.getInstance(instanceId).then(instance => {
         this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
+        const processor = (instance.processors ? instance.processors[0] : undefined);
 
-        Promise.all([
-          this.selectedInstance.getTimeUpdates(),
-        ]).then(responses => {
-          this.connectionInfo$.next({
-            instance: instance,
-            processor: (instance.processors ? instance.processors[0] : undefined),
-          });
+        this.connectionInfo$.next({ instance, processor });
 
-          // Listen to time updates, so that we can easily provide actual mission time to components
-          const timeResponse = responses[0];
-          this.timeInfo$.next(timeResponse.timeInfo);
-          this.timeInfoSubscription = timeResponse.timeInfo$.subscribe(timeInfo => {
-            this.timeInfo$.next(timeInfo);
-          });
+        // Listen to time updates, so that we can easily provide actual mission time to components
+        this.timeSubscription = this.yamcsClient.createTimeSubscription({
+          instance: instance.name,
+          processor: processor?.name,
+        }, time => {
+          this.time$.next(time.value);
           resolve(instance);
-        }).catch(err => {
-          reject(err);
         });
       }).catch(err => {
         reject(err);
@@ -67,9 +59,9 @@ export class YamcsService {
 
   unselectInstance() {
     this.connectionInfo$.next(null);
-    this.timeInfo$.next(null);
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
+    this.time$.next(null);
+    if (this.timeSubscription) {
+      this.timeSubscription.cancel();
     }
     if (this.selectedInstance) {
       this.selectedInstance.closeConnection();
@@ -106,6 +98,6 @@ export class YamcsService {
    * Returns latest mission time for the currently active instance (if any).
    */
   getMissionTime() {
-    return new Date(Date.parse(this.timeInfo$.getValue()!.currentTime));
+    return new Date(Date.parse(this.time$.getValue()!));
   }
 }

@@ -59,8 +59,7 @@ export class CommandSelector implements ControlValueAccessor, OnChanges {
       options.system = system;
     }
 
-    const client = this.yamcs.yamcsClient.createInstanceClient(this.instance);
-    client.getCommands(options).then(page => {
+    this.yamcs.yamcsClient.getCommands(this.instance, options).then(page => {
       this.changeSystem(page);
       this.currentSystem$.next(system);
     });

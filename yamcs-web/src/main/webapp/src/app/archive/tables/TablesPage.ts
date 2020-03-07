@@ -24,10 +24,10 @@ export class TablesPage implements AfterViewInit {
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Tables');
-    yamcs.getInstanceClient()!.getTables().then(tables => {
+    this.instance = yamcs.getInstance();
+    yamcs.yamcsClient.getTables(this.instance.name).then(tables => {
       this.dataSource.data = tables;
     });
-    this.instance = yamcs.getInstance();
   }
 
   ngAfterViewInit() {

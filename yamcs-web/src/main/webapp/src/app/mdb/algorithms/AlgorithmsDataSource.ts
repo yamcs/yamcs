@@ -19,7 +19,7 @@ export class AlgorithmsDataSource extends DataSource<Algorithm> {
 
   loadAlgorithms(options: GetAlgorithmsOptions) {
     this.loading$.next(true);
-    this.yamcs.getInstanceClient()!.getAlgorithms(options).then(page => {
+    this.yamcs.yamcsClient.getAlgorithms(this.yamcs.getInstance().name, options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       this.algorithms$.next(page.algorithms || []);
