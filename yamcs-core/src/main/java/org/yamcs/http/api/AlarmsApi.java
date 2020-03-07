@@ -7,6 +7,13 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.yamcs.Processor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmSequenceException;
@@ -24,21 +31,13 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.AbstractAlarmsApi;
 import org.yamcs.protobuf.AcknowledgeInfo;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.ClearInfo;
-import org.yamcs.protobuf.EditAlarmRequest;
 import org.yamcs.protobuf.EventAlarmData;
-import org.yamcs.protobuf.ListAlarmsRequest;
-import org.yamcs.protobuf.ListAlarmsResponse;
-import org.yamcs.protobuf.ListParameterAlarmsRequest;
-import org.yamcs.protobuf.ListParameterAlarmsResponse;
-import org.yamcs.protobuf.ListProcessorAlarmsRequest;
-import org.yamcs.protobuf.ListProcessorAlarmsResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
@@ -46,6 +45,16 @@ import org.yamcs.protobuf.ShelveInfo;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
+import org.yamcs.protobuf.alarms.EditAlarmRequest;
+import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
+import org.yamcs.protobuf.alarms.ListAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -60,8 +69,10 @@ import com.google.protobuf.Timestamp;
 
 public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
-    static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
-    static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
+    private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
+    private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
+    private static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
 
     static {
         PARAM_ALARM_SEVERITY[MonitoringResult.WATCH_VALUE] = AlarmSeverity.WATCH;
@@ -252,6 +263,61 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
         }
+    }
+
+    @Override
+    public void subscribeGlobalStatus(Context ctx, SubscribeGlobalStatusRequest request,
+            Observer<GlobalAlarmStatus> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+
+        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        if (processor.hasAlarmServer()) {
+            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+        }
+        if (processor.getEventAlarmServer() != null) {
+            alarmServers.add(processor.getEventAlarmServer());
+        }
+
+        AtomicReference<GlobalAlarmStatus> oldStatusRef = new AtomicReference<>();
+        ScheduledFuture<?> future = timer.scheduleAtFixedRate(() -> {
+            int unacknowledgedCount = 0;
+            boolean unacknowledgedActive = false;
+            int acknowledgedCount = 0;
+            boolean acknowledgedActive = false;
+            int shelvedCount = 0;
+            boolean shelvedActive = false;
+
+            for (AlarmServer<?, ?> alarmServer : alarmServers) {
+                for (ActiveAlarm<?> alarm : alarmServer.getActiveAlarms().values()) {
+                    if (alarm.isShelved()) {
+                        shelvedCount++;
+                        shelvedActive |= !alarm.isProcessOK();
+                    } else if (alarm.isAcknowledged()) {
+                        acknowledgedCount++;
+                        acknowledgedActive |= !alarm.isProcessOK();
+                    } else {
+                        unacknowledgedCount++;
+                        unacknowledgedActive |= !alarm.isProcessOK();
+                    }
+                }
+            }
+
+            GlobalAlarmStatus status = GlobalAlarmStatus.newBuilder()
+                    .setUnacknowledgedCount(unacknowledgedCount)
+                    .setUnacknowledgedActive(unacknowledgedActive)
+                    .setAcknowledgedCount(acknowledgedCount)
+                    .setAcknowledgedActive(acknowledgedActive)
+                    .setShelvedCount(shelvedCount)
+                    .setShelvedActive(shelvedActive)
+                    .build();
+
+            GlobalAlarmStatus oldStatus = oldStatusRef.get();
+            if (!status.equals(oldStatus)) {
+                observer.next(status);
+                oldStatusRef.set(status);
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
     }
 
     /**

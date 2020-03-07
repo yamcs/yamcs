@@ -2,7 +2,7 @@ syntax="proto2";
 
 package yamcs.protobuf.alarms;
 
-option java_package = "org.yamcs.protobuf";
+option java_package = "org.yamcs.protobuf.alarms";
 option java_outer_classname = "AlarmsServiceProto";
 option java_multiple_files = true;
 
@@ -41,6 +41,13 @@ service AlarmsApi {
     option (yamcs.api.route) = {
       patch: "/api/processors/{instance}/{processor}/alarms/{name*}/{seqnum}"
       body: "*"
+    };
+  }
+  
+  // Receive alarm status updates
+  rpc SubscribeGlobalStatus(SubscribeGlobalStatusRequest) returns (stream GlobalAlarmStatus) {
+    option (yamcs.api.websocket) = {
+      topic: "global-alarm-status"
     };
   }
 }
@@ -92,4 +99,18 @@ message EditAlarmRequest {
   //shelve time in milliseconds (if the state = shelved)
   //can be left out which means it is shelved indefinitely
   optional uint64 shelveDuration = 7;
+}
+
+message SubscribeGlobalStatusRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message GlobalAlarmStatus {  
+  optional int32 unacknowledgedCount = 1;
+  optional bool unacknowledgedActive = 2;
+  optional int32 acknowledgedCount = 3;
+  optional bool acknowledgedActive = 4;
+  optional int32 shelvedCount = 5;
+  optional bool shelvedActive = 6;
 }

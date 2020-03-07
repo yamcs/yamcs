@@ -14,8 +14,9 @@ import "google/protobuf/timestamp.proto";
 //this service contains methods for setting/getting the configuration and performing various operations
 //in addition a websocket subscription is available that will allow receiving periodically the status
 service Cop1Api {
-	//used in case state = UNITIALIZED to initialize COP1
-	rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {
+
+  //used in case state = UNITIALIZED to initialize COP1
+  rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/cop1/{instance}/{link}:initialize"
       body: "*"

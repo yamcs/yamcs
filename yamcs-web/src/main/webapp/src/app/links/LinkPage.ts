@@ -63,7 +63,6 @@ export class LinkPage implements OnDestroy {
           link: name,
         }, status => {
           this.cop1Status$.next(status);
-          console.log('have', status);
         });
       }
     });

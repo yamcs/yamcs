@@ -14,11 +14,8 @@ start (string)
 stop (string)
     Filter the upper bound of the parameter's generation time. Specify a date string in ISO 8601 format.
 
-parameters (array of string)
+parameters (array of strings)
     The parameters to add to the export.
-
-order (string)
-    The order of the returned results. Can be either ``asc`` or ``desc``. Default: ``asc``.
 
 extra (array of strings)
     Extra columns added to the CSV output:

@@ -3,6 +3,7 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
+import { GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
 import { ClientConnectionsWrapper, GroupsWrapper, InstancesWrapper, InstanceTemplatesWrapper, RocksDbDatabasesWrapper, RolesWrapper, ServicesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, ListInstancesOptions } from './types/management';
@@ -376,6 +377,11 @@ export default class YamcsClient implements HttpHandler {
   createCop1Subscription(options: SubscribeCop1Request, observer: (cop1Status: Cop1Status) => void): Cop1Subscription {
     this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('cop1', options, observer);
+  }
+
+  createGlobalAlarmStatusSubscription(options: SubscribeGlobalAlarmStatusRequest, observer: (status: GlobalAlarmStatus) => void): GlobalAlarmStatusSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('global-alarm-status', options, observer);
   }
 
   async getSystemInfo() {
