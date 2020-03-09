@@ -59,21 +59,14 @@ services:
 
 dataLinks:
   - name: tm_realtime
-    enabledAtStartup: true
+    enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
     args:
       stream: tm_realtime
       host: localhost
       port: 10015
       # Give the embedded simulator some time to boot up
-      initialDelay: 2000
-      packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
-      packetPreprocessorArgs:
-        timeEncoding:
-           type: CUC
-           epoch: UNIX
-        timestampOffset: 2 #where to read the 8 bytes timestamp offset from
-        seqCountOffset: 10 #where to read the 4 bytes sequence count from
+      initialDelay: 2000      
   - name: tm2_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
@@ -160,7 +153,7 @@ dataLinks:
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 
   - name: UDP_FRAME_IN
-    enabledAtStartup: false
+    enabledAtStartup: true
     class: org.yamcs.tctm.ccsds.UdpTmFrameLink
     args:
        port: 10017 #UDP port to listen to
