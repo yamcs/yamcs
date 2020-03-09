@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetParametersOptions, NamedObjectId, Parameter, ParameterValue } from '../../client';
+import { GetParametersOptions, NamedObjectId, Parameter, ParameterSubscription, ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -17,8 +17,8 @@ export class ParametersDataSource extends DataSource<ListItem> {
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
 
-  private dataSubscription: Subscription;
-  private dataSubscriptionId: number;
+  private dataSubscription?: ParameterSubscription;
+  private idMapping: { [key: number]: NamedObjectId; } = {};
   private latestValues = new Map<string, ParameterValue>();
 
   private syncSubscription: Subscription;
@@ -37,13 +37,9 @@ export class ParametersDataSource extends DataSource<ListItem> {
   async loadParameters(options: GetParametersOptions) {
     this.loading$.next(true);
 
-    // Unsubscribe parameters from a previous query
-    const ids = this.items$.value.filter(item => !item.spaceSystem).map(item => ({ name: item.name }));
-    if (ids.length) {
-      await this.yamcs.getInstanceClient()!.unsubscribeParameterValueUpdates({
-        subscriptionId: this.dataSubscriptionId,
-        id: ids,
-      });
+    if (this.dataSubscription) {
+      this.dataSubscription.cancel();
+      this.dataSubscription = undefined;
     }
 
     this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, options).then(page => {
@@ -61,7 +57,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
         });
       }
       this.items$.next(items);
-      this.createOrModifySubscription(page.parameters || []);
+      this.startSubscription(page.parameters || []);
     });
   }
 
@@ -75,38 +71,36 @@ export class ParametersDataSource extends DataSource<ListItem> {
     this.items$.next([...items]);
   }
 
-  private createOrModifySubscription(parameters: Parameter[]) {
+  private startSubscription(parameters: Parameter[]) {
     const ids = parameters.map(p => ({ name: p.qualifiedName }));
     if (ids.length) {
-      this.yamcs.getInstanceClient()!.getParameterValueUpdates({
-        subscriptionId: this.dataSubscriptionId || -1,
+      this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+        instance: this.yamcs.getInstance().name,
+        processor: this.yamcs.getProcessor().name,
         id: ids,
         abortOnInvalid: false,
         sendFromCache: true,
         updateOnExpiration: true,
-        useNumericIds: true,
-      }).then(res => {
-        this.dataSubscriptionId = res.subscriptionId;
-        if (this.dataSubscription) {
-          this.dataSubscription.unsubscribe();
+        action: 'REPLACE',
+      }, data => {
+        if (data.mapping) {
+          this.idMapping = data.mapping;
+          this.latestValues.clear();
         }
-        this.latestValues.clear();
-        this.dataSubscription = res.parameterValues$.subscribe(pvals => {
-          this.processDelivery(pvals, res.mapping);
-        });
+        this.processDelivery(data.values || []);
       });
     }
   }
 
-  private processDelivery(delivery: ParameterValue[], idMapping: { [key: number]: NamedObjectId; }) {
+  private processDelivery(delivery: ParameterValue[]) {
     const byName: { [key: string]: ParameterValue; } = {};
     for (const pval of delivery) {
-      const id = idMapping[pval.numericId];
+      const id = this.idMapping[pval.numericId];
       byName[id.name] = pval;
     }
 
     for (const pval of delivery) {
-      const id = idMapping[pval.numericId];
+      const id = this.idMapping[pval.numericId];
       this.latestValues.set(id.name, pval);
     }
   }
@@ -116,16 +110,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       this.syncSubscription.unsubscribe();
     }
     if (this.dataSubscription) {
-      this.dataSubscription.unsubscribe();
-    }
-
-    const ids = this.items$.value.filter(item => !item.spaceSystem).map(item => ({ name: item.name }));
-    const instanceClient = this.yamcs.getInstanceClient();
-    if (ids.length && instanceClient) {
-      instanceClient.unsubscribeParameterValueUpdates({
-        subscriptionId: this.dataSubscriptionId,
-        id: ids,
-      });
+      this.dataSubscription.cancel();
     }
 
     this.items$.complete();

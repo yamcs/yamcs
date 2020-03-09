@@ -1,4 +1,6 @@
 import { WebSocketCall } from '../WebSocketCall';
+import { NamedObjectId } from './mdb';
+import { ParameterValue } from './monitoring';
 
 export interface SubscribeTMStatisticsRequest {
   instance: string;
@@ -22,4 +24,22 @@ export interface TmStatistics {
   subscribedParameterCount: number;
 }
 
+export interface SubscribeParametersRequest {
+  instance: string;
+  processor: string;
+  id: NamedObjectId[];
+  abortOnInvalid: boolean;
+  updateOnExpiration: boolean;
+  sendFromCache: boolean;
+  action: 'REPLACE' | 'ADD' | 'REMOVE';
+}
+
+export interface SubscribeParametersData {
+  mapping: { [key: number]: NamedObjectId; };
+  invalid: NamedObjectId[];
+  values: ParameterValue[];
+}
+
 export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
+
+export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;

@@ -68,6 +68,8 @@ import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.SubscribeParametersData;
+import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -270,8 +272,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
-    public void setParameterValue(Context ctx, SetParameterValueRequest request,
-            Observer<Empty> observer) {
+    public void setParameterValue(Context ctx, SetParameterValueRequest request, Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
@@ -294,6 +295,14 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             throw new BadRequestException(e.getMessage());
         }
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public Observer<SubscribeParametersRequest> subscribeParameters(Context ctx,
+            Observer<SubscribeParametersData> observer) {
+        SubscribeParameterObserver clientObserver = new SubscribeParameterObserver(ctx.user, observer);
+        observer.setCancelHandler(() -> clientObserver.complete());
+        return clientObserver;
     }
 
     @Override

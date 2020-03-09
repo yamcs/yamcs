@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } 
 import { Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
-import { NamedObjectId, ParameterValue, StorageClient, Value } from '../../client';
+import { NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, Value } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -26,7 +26,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   private display: Display;
 
-  private parameterSubscription: Subscription;
+  private parameterSubscription: ParameterSubscription;
+  private idMapping: { [key: number]: NamedObjectId; } = {};
 
   private pvsByName = new Map<string, PV>();
   private subscriptionDirty = false;
@@ -46,7 +47,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       this.subscriptionDirty = false;
 
       if (this.parameterSubscription) {
-        this.parameterSubscription.unsubscribe();
+        this.parameterSubscription.cancel();
       }
 
       const ids: NamedObjectId[] = [];
@@ -55,21 +56,26 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       }
 
       if (ids.length) {
-        this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+        this.parameterSubscription = this.yamcs.yamcsClient!.createParameterSubscription({
+          instance: this.yamcs.getInstance().name,
+          processor: this.yamcs.getInstance().name,
           id: ids,
           abortOnInvalid: false,
           sendFromCache: true,
           updateOnExpiration: true,
-          useNumericIds: true,
-        }).then(res => {
-          this.parameterSubscription = res.parameterValues$.subscribe(pvals => {
+          action: 'REPLACE',
+        }, data => {
+          if (data.mapping) {
+            this.idMapping = data.mapping;
+          }
+          if (data.values && data.values.length) {
             const samples = new Map<string, Sample>();
-            for (const pval of pvals) {
-              pval.id = res.mapping[pval.numericId];
+            for (const pval of data.values) {
+              pval.id = this.idMapping[pval.numericId];
               samples.set(pval.id.name, this.toSample(pval));
             }
             this.display.setValues(samples);
-          });
+          }
         });
       }
     }
@@ -210,7 +216,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       this.syncSubscription.unsubscribe();
     }
     if (this.parameterSubscription) {
-      this.parameterSubscription.unsubscribe();
+      this.parameterSubscription.cancel();
     }
   }
 }

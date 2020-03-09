@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, Parameter, ParameterValue, Value } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { Instance, Parameter, ParameterSubscription, ParameterValue, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -26,7 +26,7 @@ export class ParameterPage implements OnDestroy {
   offset$ = new BehaviorSubject<string | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
-  parameterValueSubscription: Subscription;
+  parameterValueSubscription: ParameterSubscription;
 
   constructor(
     route: ActivatedRoute,
@@ -64,21 +64,20 @@ export class ParameterPage implements OnDestroy {
     });
 
     if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.unsubscribe();
+      this.parameterValueSubscription.cancel();
     }
 
-    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+    this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+      instance: this.instance.name,
+      processor: this.yamcs.getProcessor().name,
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,
-      subscriptionId: -1,
       updateOnExpiration: true,
-      useNumericIds: true,
-    }).then(res => {
-      this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
-        this.parameterValue$.next(pvals[0]);
-        this.updateTitle();
-      });
+      action: 'REPLACE',
+    }, data => {
+      this.parameterValue$.next(data.values[0]);
+      this.updateTitle();
     });
   }
 
@@ -144,7 +143,7 @@ export class ParameterPage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.unsubscribe();
+      this.parameterValueSubscription.cancel();
     }
   }
 }

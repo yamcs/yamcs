@@ -1,4 +1,3 @@
-import { Observable } from 'rxjs';
 import { AlarmRange, ArgumentAssignment, NamedObjectId } from './mdb';
 
 export interface Value {
@@ -62,28 +61,6 @@ export interface ParameterValue {
   alarmRange: AlarmRange[];
   rangeCondition?: 'LOW' | 'HIGH';
   expireMillis: number;
-}
-
-export interface ParameterSubscriptionRequest {
-  id: NamedObjectId[];
-  abortOnInvalid?: boolean;
-  updateOnExpiration?: boolean;
-  sendFromCache?: boolean;
-  subscriptionId?: number;
-  useNumericIds?: boolean;
-}
-
-export interface ParameterSubscriptionResponse {
-  subscriptionId: number;
-  subscribed: SubscribedParameter[];
-  invalid: NamedObjectId[];
-  mapping: { [key: number]: NamedObjectId; };
-  parameterValues$: Observable<ParameterValue[]>;
-}
-
-export interface SubscribedParameter {
-  id: NamedObjectId;
-  numericId: number;
 }
 
 export interface Sample {
