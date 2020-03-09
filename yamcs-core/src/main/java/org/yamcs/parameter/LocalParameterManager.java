@@ -46,12 +46,12 @@ public class LocalParameterManager extends AbstractService implements SoftwarePa
 
     Set<Parameter> subscribedParams = new HashSet<>();
     private static final Logger log = LoggerFactory.getLogger(LocalParameterManager.class);
-    final String yamcsInstance;
+    String yamcsInstance;
     Processor proc;
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
 
-    public LocalParameterManager(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
     }
 

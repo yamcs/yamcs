@@ -60,7 +60,9 @@ public class AlgorithmManagerPyTest {
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
 
         config.put("libraries", jslib);
-        AlgorithmManager am = new AlgorithmManager(instance, YConfiguration.wrap(config));
+        
+        AlgorithmManager am = new AlgorithmManager();
+        am.init("refmdb", YConfiguration.wrap(config));
 
         processor = ProcessorFactory.create(instance, "AlgorithmManagerPyTest", tmGenerator, am);
         prm = processor.getParameterRequestManager();

@@ -16,8 +16,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.common.util.concurrent.AbstractService;
-
 /**
  * Receives packets from yamcs streams and sends them to the Processor/TmProcessor for extraction of parameters.
  * 
@@ -26,7 +24,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class StreamTmPacketProvider extends AbstractService implements TmPacketProvider {
+public class StreamTmPacketProvider extends AbstractYamcsService implements TmPacketProvider {
     Stream stream;
     TmProcessor tmProcessor;
     volatile boolean disabled = false;
@@ -36,7 +34,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     String yamcsInstance;
     YConfiguration config;
 
-    public StreamTmPacketProvider(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
 
         if (!config.containsKey("streams")) {

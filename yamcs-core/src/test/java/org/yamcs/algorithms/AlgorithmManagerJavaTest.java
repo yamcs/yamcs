@@ -62,7 +62,8 @@ public class AlgorithmManagerJavaTest {
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
 
         config.put("libraries", jslib);
-        AlgorithmManager am = new AlgorithmManager(instance, YConfiguration.wrap(config));
+        AlgorithmManager am = new AlgorithmManager();
+        am.init("refmdb", YConfiguration.wrap(config));
 
         c = ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", tmGenerator, am);
         prm = c.getParameterRequestManager();

@@ -687,6 +687,7 @@ public class YamcsServer {
             try {
                 service = YObjectLoader.loadObject(serviceClass);
             } catch (ConfigurationException e) {
+                LOG.warn("The service {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method", serviceClass);
                 // Ignore for now. Fallback to constructor initialization.
             }
         }

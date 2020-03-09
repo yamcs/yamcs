@@ -56,8 +56,9 @@ public class AlgorithmWithContextTest {
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
 
-        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator,
-                new AlgorithmManager("refmdb", YConfiguration.wrap(config)));
+        AlgorithmManager am = new AlgorithmManager();
+        am.init("refmdb", YConfiguration.wrap(config));
+        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, am);
         prm = c.getParameterRequestManager();
     }
 

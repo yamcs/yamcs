@@ -36,7 +36,8 @@ public class XtceAlgorithmTest {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);
         XtceDbFactory.reset();
-        AlgorithmManager am = new AlgorithmManager(instance);
+        AlgorithmManager am = new AlgorithmManager();
+        am.init(instance, YConfiguration.emptyConfig());
         c = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);
         prm = c.getParameterRequestManager();
         db = c.getXtceDb();

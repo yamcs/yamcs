@@ -75,10 +75,10 @@ public class ReplayService extends AbstractService
     private ParameterRequestManager parameterRequestManager;
     TmProcessor tmProcessor;
     volatile long dataCount = 0;
-    final XtceDb xtceDb;
+    XtceDb xtceDb;
     volatile long replayTime;
 
-    private final String yamcsInstance;
+    private String yamcsInstance;
     YarchReplay yarchReplay;
     Processor processor;
     // the originalReplayRequest contains possibly only parameters.
@@ -92,9 +92,7 @@ public class ReplayService extends AbstractService
     // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
     List<String> excludeParameterGroups = null;
 
-    public ReplayService(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, YConfiguration.emptyConfig());
-    }
+    
 
     /**
      *
@@ -103,7 +101,7 @@ public class ReplayService extends AbstractService
      *            - the argument passed in the processor.yaml
      * @throws ConfigurationException
      */
-    public ReplayService(String instance, YConfiguration args) throws ConfigurationException {
+    public void init(String instance, YConfiguration args) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
         securityStore = YamcsServer.getServer().getSecurityStore();

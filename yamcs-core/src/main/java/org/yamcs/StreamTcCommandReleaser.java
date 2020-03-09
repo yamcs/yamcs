@@ -17,12 +17,12 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class StreamTcCommandReleaser extends AbstractService implements CommandReleaser {
+public class StreamTcCommandReleaser extends AbstractYamcsService implements CommandReleaser {
     Stream stream;
     String streamName;
     String yamcsInstance;
     
-    public StreamTcCommandReleaser(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         if (!config.containsKey("stream")) {
             throw new ConfigurationException("Please specify the stream in the config (args)");

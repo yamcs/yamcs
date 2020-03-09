@@ -40,16 +40,13 @@ import com.google.common.util.concurrent.AbstractService;
 public class StreamParameterProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     List<Stream> streams = new ArrayList<>();
     ParameterListener paraListener;
-    final XtceDb xtceDb;
+    XtceDb xtceDb;
     private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
 
     ParameterTypeProcessor ptypeProcessor;
 
-    public StreamParameterProvider(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, YConfiguration.emptyConfig());
-    }
 
-    public StreamParameterProvider(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 

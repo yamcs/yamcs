@@ -16,6 +16,7 @@ import javax.script.ScriptEngineManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -42,7 +43,6 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Manages the provision of requested parameters that require the execution of one or more XTCE algorithms.
@@ -60,7 +60,7 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  * javascript will be automatically registered as well as python if available.
  */
-public class AlgorithmManager extends AbstractService
+public class AlgorithmManager extends AbstractYamcsService
         implements ParameterProvider, DVParameterConsumer, ProcessorService {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmManager.class);
     static final String KEY_ALGO_NAME = "algoName";
@@ -93,15 +93,11 @@ public class AlgorithmManager extends AbstractService
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
 
-    final YConfiguration config;
+    YConfiguration config;
 
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
-    }
-
-    public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     /**
@@ -118,7 +114,7 @@ public class AlgorithmManager extends AbstractService
         }
     }
 
-    public AlgorithmManager(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
     }
