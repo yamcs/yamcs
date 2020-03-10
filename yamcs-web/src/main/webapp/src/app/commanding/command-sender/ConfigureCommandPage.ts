@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Command, CommandHistoryEntry, ConnectionInfo, Instance } from '../../client';
+import { Command, CommandHistoryEntry, ConnectionInfo } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -23,7 +23,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild('another', { static: false })
   anotherChild: ElementRef;
 
-  instance: Instance;
+  instance: string;
   config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
@@ -52,12 +52,12 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     title.setTitle(`Send a command: ${qualifiedName}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.yamcsClient.getCommand(this.instance.name, qualifiedName),
+      this.yamcs.yamcsClient.getCommand(this.instance, qualifiedName),
     ];
 
     const templateId = route.snapshot.queryParamMap.get('template');
     if (templateId) {
-      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.instance.name, templateId);
+      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.instance, templateId);
       promises.push(promise);
     }
 
@@ -111,7 +111,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     }).then(response => {
       this.router.navigate(['/commanding/report', response.id], {
         queryParams: {
-          instance: this.instance.name,
+          instance: this.instance,
         }
       });
     }).catch(err => {

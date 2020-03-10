@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Container, Instance } from '../../client';
+import { Container } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -11,7 +11,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ContainerPage {
 
-  instance: Instance;
+  instance: string;
   container$ = new BehaviorSubject<Container | null>(null);
 
   constructor(route: ActivatedRoute, private yamcs: YamcsService, private title: Title) {
@@ -26,7 +26,7 @@ export class ContainerPage {
   }
 
   changeContainer(qualifiedName: string) {
-    this.yamcs.yamcsClient.getContainer(this.instance.name, qualifiedName).then(container => {
+    this.yamcs.yamcsClient.getContainer(this.instance, qualifiedName).then(container => {
       this.container$.next(container);
       this.title.setTitle(container.name);
     });

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { Instance, Parameter, ParameterValue, Value } from '../../client';
 import { BehaviorSubject } from 'rxjs';
+import { Parameter, ParameterValue, Value } from '../../client';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -11,7 +11,7 @@ import { BehaviorSubject } from 'rxjs';
 export class ParameterDetail implements OnChanges {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   parameter: Parameter;

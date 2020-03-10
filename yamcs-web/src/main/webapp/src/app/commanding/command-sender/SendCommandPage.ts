@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
-import { ConnectionInfo, GetCommandsOptions, Instance } from '../../client';
+import { ConnectionInfo, GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandsDataSource } from '../../mdb/commands/CommandsDataSource';
 
@@ -15,7 +15,7 @@ export class SendCommandPage implements AfterViewInit {
 
   connectionInfo$: Observable<ConnectionInfo | null>;
 
-  instance: Instance;
+  instance: string;
   pageSize = 100;
 
   @ViewChild(MatPaginator)

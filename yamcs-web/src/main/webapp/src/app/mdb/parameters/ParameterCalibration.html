@@ -1,4 +1,5 @@
-<table yaDataTable *ngIf="parameter.type?.dataEncoding?.defaultCalibrator || parameter.type?.dataEncoding?.contextCalibrator; else noCalibrator">
+<table yaDataTable
+       *ngIf="parameter.type?.dataEncoding?.defaultCalibrator || parameter.type?.dataEncoding?.contextCalibrator; else noCalibrator">
   <tr>
     <th width="200">Calibrator</th>
     <th width="100">Type</th>
@@ -25,7 +26,7 @@
       <td>
         <ng-container *ngFor="let comparison of contextCalibrator.comparison">
           <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{instance: instance.name}">{{ comparison.parameter.qualifiedName }}</a>
+             [queryParams]="{instance: instance}">{{ comparison.parameter.qualifiedName }}</a>
           {{ comparison.operator | operator }}
           {{ comparison.value }}
         </ng-container>

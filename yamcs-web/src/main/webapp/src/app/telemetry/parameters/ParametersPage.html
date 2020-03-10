@@ -9,7 +9,7 @@
       <app-breadcrumb-trail>
         <ng-container *ngIf="breadcrumb.length">
           <app-breadcrumb link="/telemetry/parameters"
-                          [queryParams]="{instance: instance.name}"
+                          [queryParams]="{instance: instance}"
                           icon="account_tree"></app-breadcrumb>
           <app-breadcrumb *ngFor="let item of breadcrumb"
                           [link]="item.route"
@@ -35,14 +35,14 @@
           <ng-container *ngIf="item.spaceSystem">
             <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
             <a [routerLink]="['/telemetry/parameters']"
-               [queryParams]="{instance: instance.name, system: item.name}">
+               [queryParams]="{instance: instance, system: item.name}">
               {{ item.name | filename }}/
             </a>
           </ng-container>
           <ng-container *ngIf="!item.spaceSystem">
             <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
             <a [routerLink]="['/telemetry/parameters', item.parameter.qualifiedName]"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance}">
               <ng-container *ngIf="!system">{{ item.parameter.qualifiedName }}</ng-container>
               <ng-container *ngIf="system">{{ item.parameter.qualifiedName | slice:(system!.length + 1) }}
               </ng-container>
@@ -94,7 +94,7 @@
   </div>
   <ng-template #empty>
     <div class="panel-content">
-      The Mission Database for <i>{{ instance.name }}</i> does not define any parameters.
+      The Mission Database for <i>{{ instance }}</i> does not define any parameters.
     </div>
   </ng-template>
 </app-instance-page>

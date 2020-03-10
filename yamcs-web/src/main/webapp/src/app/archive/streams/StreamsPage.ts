@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { Instance, StreamEvent, StreamStatisticsSubscription } from '../../client';
+import { StreamEvent, StreamStatisticsSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export interface StreamItem {
@@ -19,7 +19,7 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  instance: Instance;
+  instance: string;
 
   displayedColumns = ['name', 'dataCount'];
 
@@ -41,7 +41,7 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
     this.dataSource.sort = this.sort;
 
     this.streamStatisticsSubscription = this.yamcs.yamcsClient.createStreamStatisticsSubscription({
-      instance: this.instance.name,
+      instance: this.instance,
     }, evt => {
       this.processStreamEvent(evt);
     });

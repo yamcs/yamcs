@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Processor } from './processing';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -101,14 +101,9 @@ export interface TemplateVariable {
 }
 
 export interface ConnectionInfo {
-  instance: Instance;
+  instance: string;
   processor?: Processor;
   clearance?: string;
-}
-
-export interface ConnectionInfoSubscriptionResponse {
-  connectionInfo: ConnectionInfo;
-  connectionInfo$: Observable<ConnectionInfo>;
 }
 
 export interface ClientConnectionInfo {
@@ -242,46 +237,6 @@ export interface Service {
   name: string;
   state: ServiceState;
   className: string;
-}
-
-export interface Processor {
-  instance: string;
-  name: string;
-  type: string;
-  creator: string;
-  hasAlarms: boolean;
-  hasCommanding: boolean;
-  state: ServiceState;
-  persistent: boolean;
-  time: string;
-  replay: boolean;
-  replayRequest?: ReplayRequest;
-  services: Service[];
-}
-
-export interface ReplayRequest {
-  utcStart: string;
-  utcStop: string;
-  speed: ReplaySpeed;
-}
-
-export interface ReplaySpeed {
-  type: 'AFAP' | 'FIXED_DELAY' | 'REALTIME';
-  param: number;
-}
-
-export interface AlarmSubscriptionRequest {
-  detail?: boolean;
-}
-
-export interface ProcessorSubscriptionRequest {
-  allProcessors?: boolean;
-  allInstances?: boolean;
-}
-
-export interface ProcessorSubscriptionResponse {
-  processor: Processor;
-  processor$: Observable<Processor>;
 }
 
 export interface Bucket {

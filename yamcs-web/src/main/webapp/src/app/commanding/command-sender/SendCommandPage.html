@@ -28,7 +28,7 @@
             <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
             <td mat-cell *cdkCellDef="let command">
               <a [routerLink]="['/commanding/send', command.qualifiedName]"
-                 [queryParams]="{instance: instance.name}">
+                 [queryParams]="{instance: instance}">
                 {{ command.qualifiedName }}
               </a>
             </td>

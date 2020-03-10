@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Instance } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -10,14 +9,14 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class AlgorithmPage {
 
-  instance: Instance;
+  instance: string;
   algorithm$: Promise<Algorithm>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.instance.name, qualifiedName);
+    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.instance, qualifiedName);
     this.algorithm$.then(algorithm => {
       title.setTitle(algorithm.name);
     });

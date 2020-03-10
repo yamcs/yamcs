@@ -2,7 +2,7 @@
   <h6>Parameter</h6>
   <div class="block">
     <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
-       [queryParams]="{instance: instance.name}"
+       [queryParams]="{instance: instance}"
        class="ya-link">
       {{ alarm.id.namespace }}/{{ alarm.id.name }}
     </a>

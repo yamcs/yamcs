@@ -13,7 +13,7 @@
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
       <button mat-button (click)="openInstanceDialog()">
-        <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
+        <span class="selected-instance">{{ connectionInfo.instance }}</span>
         <mat-icon>arrow_drop_down</mat-icon>
       </button>
     </ng-container>

@@ -1,6 +1,7 @@
 import { WebSocketCall } from '../WebSocketCall';
 import { NamedObjectId } from './mdb';
 import { ParameterValue } from './monitoring';
+import { Service, ServiceState } from './system';
 
 export interface SubscribeTMStatisticsRequest {
   instance: string;
@@ -40,6 +41,39 @@ export interface SubscribeParametersData {
   values: ParameterValue[];
 }
 
+export interface SubscribeProcessorsRequest {
+  instance?: string;
+  processor?: string;
+}
+
+export interface Processor {
+  instance: string;
+  name: string;
+  type: string;
+  creator: string;
+  hasAlarms: boolean;
+  hasCommanding: boolean;
+  state: ServiceState;
+  persistent: boolean;
+  time: string;
+  replay: boolean;
+  replayRequest?: ReplayRequest;
+  services: Service[];
+}
+
+export interface ReplayRequest {
+  utcStart: string;
+  utcStop: string;
+  speed: ReplaySpeed;
+}
+
+export interface ReplaySpeed {
+  type: 'AFAP' | 'FIXED_DELAY' | 'REALTIME';
+  param: number;
+}
+
 export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
 
 export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;
+
+export type ProcessorSubscription = WebSocketCall<SubscribeProcessorsRequest, Processor>;

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetParametersOptions, Instance } from '../../client';
+import { GetParametersOptions } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ParametersDataSource } from './ParametersDataSource';
@@ -16,7 +16,7 @@ import { ParametersDataSource } from './ParametersDataSource';
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {
 
-  instance: Instance;
+  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -122,7 +122,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
         breadcrumb.push({
           name: part,
           route: '/telemetry/parameters',
-          queryParams: { system: path, instance: this.instance.name },
+          queryParams: { system: path, instance: this.instance },
         });
       }
     }

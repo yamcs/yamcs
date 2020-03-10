@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { EventsPage } from './EventsPage';
@@ -9,7 +9,7 @@ import { EventsPage } from './EventsPage';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, InstanceExistsGuard],
+    canActivate: [AuthGuard, AttachContextGuard],
     canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',
     component: InstancePage,
@@ -25,8 +25,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class EventsRoutingModule { }
 

@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { InstanceHomePage } from './InstanceHomePage';
 
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, InstanceExistsGuard],
+    canActivate: [AuthGuard, AttachContextGuard],
     canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
     component: InstancePage,
@@ -23,8 +23,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class InstanceHomeRoutingModule { }
 

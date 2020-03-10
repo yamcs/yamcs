@@ -45,7 +45,7 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
    * be used for the next page (start/stop are inclusive).
    */
   private loadPage(options: GetAlarmsOptions) {
-    return this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.getInstance().name, this.qualifiedName, options).then(alarms => {
+    return this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.getInstance(), this.qualifiedName, options).then(alarms => {
       if (alarms.length > this.pageSize) {
         this.offscreenRecord = alarms.splice(alarms.length - 1, 1)[0];
       } else {

@@ -14,7 +14,7 @@
               <a mat-button
                  color="primary"
                  routerLink="/telemetry/packets"
-                 [queryParams]="{instance: instance.name}">VIEW PACKETS &gt;</a>
+                 [queryParams]="{instance: instance}">VIEW PACKETS &gt;</a>
             </div>
           </mat-card>
         </div>
@@ -33,7 +33,7 @@
                       <td [ngSwitch]="alarm.type">
                         <ng-container *ngSwitchCase="'PARAMETER'">
                           <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
-                             [queryParams]="{instance: instance.name}">
+                             [queryParams]="{instance: instance}">
                             {{ alarm.id.namespace }}/{{ alarm.id.name }}
                           </a>
                         </ng-container>
@@ -53,7 +53,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance.name, view: 'unacknowledged'}">
+                   [queryParams]="{instance: instance, view: 'unacknowledged'}">
                   <strong>{{ (alarmsDataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
                 </a><br>
               </dd>
@@ -61,7 +61,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance.name, view: 'acknowledged'}">
+                   [queryParams]="{instance: instance, view: 'acknowledged'}">
                   <strong>{{ (alarmsDataSource.acknowledgedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
@@ -69,7 +69,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance.name, view: 'shelved'}">
+                   [queryParams]="{instance: instance, view: 'shelved'}">
                   <strong>{{ (alarmsDataSource.shelvedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
@@ -78,7 +78,7 @@
               <a mat-button
                  color="primary"
                  routerLink="/alarms"
-                 [queryParams]="{instance: instance.name}">VIEW ALARMS &gt;</a>
+                 [queryParams]="{instance: instance}">VIEW ALARMS &gt;</a>
             </div>
           </mat-card>
         </div>

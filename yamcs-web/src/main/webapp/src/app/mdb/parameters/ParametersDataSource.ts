@@ -19,7 +19,7 @@ export class ParametersDataSource extends DataSource<Parameter> {
 
   loadParameters(options: GetParametersOptions) {
     this.loading$.next(true);
-    this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, options).then(page => {
+    this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance(), options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       this.parameters$.next(page.parameters || []);

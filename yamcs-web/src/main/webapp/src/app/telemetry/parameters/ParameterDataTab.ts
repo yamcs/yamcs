@@ -116,7 +116,7 @@ export class ParameterDataTab {
     }
 
     this.dataSource.loadParameterValues(options).then(pvals => {
-      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.getInstance().name, dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.getInstance(), dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

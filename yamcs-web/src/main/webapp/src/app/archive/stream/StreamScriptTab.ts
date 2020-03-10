@@ -19,7 +19,7 @@ export class StreamScriptTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.stream$ = yamcs.yamcsClient.getStream(yamcs.getInstance().name, name);
+    this.stream$ = yamcs.yamcsClient.getStream(yamcs.getInstance(), name);
   }
 
   formatSQL(sql: string) {

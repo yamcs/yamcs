@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Alarm, EditAlarmOptions, Instance } from '../client';
+import { Alarm, EditAlarmOptions } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
@@ -26,7 +26,7 @@ export class AlarmsPage implements OnDestroy {
     view: new FormControl('standard'),
   });
 
-  instance: Instance;
+  instance: string;
 
   // Alarm to show in detail pane (only on single selection)
   detailAlarm$ = new BehaviorSubject<Alarm | null>(null);

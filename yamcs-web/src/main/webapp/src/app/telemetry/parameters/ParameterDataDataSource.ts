@@ -45,7 +45,7 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
    * be used for the next page (start/stop are inclusive).
    */
   private loadPage(options: GetParameterValuesOptions) {
-    return this.yamcs.yamcsClient.getParameterValues(this.yamcs.getInstance().name, this.qualifiedName, options).then(pvals => {
+    return this.yamcs.yamcsClient.getParameterValues(this.yamcs.getInstance(), this.qualifiedName, options).then(pvals => {
       if (pvals.length > this.pageSize) {
         this.offscreenRecord = pvals.splice(pvals.length - 1, 1)[0];
       } else {

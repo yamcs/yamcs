@@ -19,7 +19,7 @@ export class ContainersDataSource extends DataSource<Container> {
 
   loadContainers(options: GetContainersOptions) {
     this.loading$.next(true);
-    this.yamcs.yamcsClient.getContainers(this.yamcs.getInstance()!.name, options).then(page => {
+    this.yamcs.yamcsClient.getContainers(this.yamcs.getInstance(), options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       this.containers$.next(page.containers || []);

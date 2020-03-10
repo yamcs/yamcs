@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Container, Instance } from '../../client';
+import { Container } from '../../client';
 
 @Component({
   selector: 'app-container-detail',
@@ -9,7 +9,7 @@ import { Container, Instance } from '../../client';
 export class ContainerDetail {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   container: Container;

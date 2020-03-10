@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Instance, Parameter, ParameterSubscription, ParameterValue, Value } from '../../client';
+import { Parameter, ParameterSubscription, ParameterValue, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -20,7 +20,7 @@ import { SetParameterDialog } from './SetParameterDialog';
 })
 export class ParameterPage implements OnDestroy {
 
-  instance: Instance;
+  instance: string;
   config: WebsiteConfig;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
@@ -51,7 +51,7 @@ export class ParameterPage implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance.name, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (qualifiedName !== parameter.qualifiedName) {
@@ -68,7 +68,7 @@ export class ParameterPage implements OnDestroy {
     }
 
     this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.instance.name,
+      instance: this.instance,
       processor: this.yamcs.getProcessor().name,
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
@@ -135,7 +135,7 @@ export class ParameterPage implements OnDestroy {
     dialogRef.afterClosed().subscribe((value: Value) => {
       if (value) {
         this.yamcs.yamcsClient
-          .setParameterValue(this.instance.name, 'realtime', parameter.qualifiedName, value)
+          .setParameterValue(this.instance, 'realtime', parameter.qualifiedName, value)
           .catch(err => this.messageService.showError(err));
       }
     });

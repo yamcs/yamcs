@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CommandSubscription, Instance, StorageClient } from '../../client';
+import { CommandSubscription, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { printCommandId } from '../../shared/utils';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -19,7 +19,7 @@ import { CommandArgument, StackEntry } from './StackEntry';
 })
 export class StackFilePage implements OnDestroy {
 
-  instance: Instance;
+  instance: string;
   private storageClient: StorageClient;
 
   objectName: string;
@@ -61,7 +61,7 @@ export class StackFilePage implements OnDestroy {
     this.loadFile(initialObject);
 
     this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-      instance: this.instance.name,
+      instance: this.instance,
       processor: yamcs.getProcessor().name,
       ignorePastCommands: true,
     }, entry => {
@@ -194,7 +194,7 @@ export class StackFilePage implements OnDestroy {
     }
 
     const processor = this.yamcs.getProcessor().name;
-    this.yamcs.yamcsClient.issueCommand(this.instance.name, processor, entry.name, {
+    this.yamcs.yamcsClient.issueCommand(this.instance, processor, entry.name, {
       assignment: entry.arguments,
     }).then(response => {
       entry.executionNumber = ++this.executionCounter;

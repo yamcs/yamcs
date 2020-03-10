@@ -20,7 +20,7 @@
     <a mat-tab-link
        routerLink="./ongoing-transfers"
        routerLinkActive #rla="routerLinkActive"
-       [queryParams]="{instance: instance.name}"
+       [queryParams]="{instance: instance}"
        [active]="rla.isActive">
       ONGOING
       <ng-container *ngIf="ongoingCount$ | async as count">({{ count }})</ng-container>
@@ -29,7 +29,7 @@
     <a mat-tab-link
        routerLink="./failed-transfers"
        routerLinkActive #rlb="routerLinkActive"
-       [queryParams]="{instance: instance.name}"
+       [queryParams]="{instance: instance}"
        [active]="rlb.isActive">
       FAILED
       <ng-container *ngIf="failedCount$ | async as count">({{ count }})</ng-container>
@@ -38,7 +38,7 @@
     <a mat-tab-link
        routerLink="./successful-transfers"
        routerLinkActive #rlc="routerLinkActive"
-       [queryParams]="{instance: instance.name}"
+       [queryParams]="{instance: instance}"
        [active]="rlc.isActive">
       SUCCESSFUL
       <ng-container *ngIf="successfulCount$ | async as count">({{ count }})</ng-container>

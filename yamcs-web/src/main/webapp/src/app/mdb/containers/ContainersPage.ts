@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetContainersOptions, Instance } from '../../client';
+import { GetContainersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ContainersDataSource } from './ContainersDataSource';
@@ -14,7 +14,7 @@ import { ContainersDataSource } from './ContainersDataSource';
 })
 export class ContainersPage implements AfterViewInit {
 
-  instance: Instance;
+  instance: string;
   shortName = false;
   pageSize = 100;
 

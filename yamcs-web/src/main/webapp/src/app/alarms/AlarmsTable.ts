@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, Instance } from '../client';
+import { Alarm } from '../client';
 import { AlarmsDataSource } from './AlarmsDataSource';
 
 @Component({
@@ -22,7 +22,7 @@ export class AlarmsTable {
   ];
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   dataSource: AlarmsDataSource;

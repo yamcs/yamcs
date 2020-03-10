@@ -5,7 +5,7 @@ import 'brace/mode/python';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
-import { Algorithm, Instance } from '../../client';
+import { Algorithm } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({
@@ -20,7 +20,7 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
   textContainer: ElementRef;
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   algorithm: Algorithm;

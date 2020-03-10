@@ -36,7 +36,7 @@
           <br>
           <button class="ya-button"
                   [routerLink]="['/commanding/send', selectedRecord?.commandName]"
-                  [queryParams]="{instance: instance.name, template: (selectedRecord?.commandId | commandId)}">
+                  [queryParams]="{instance: instance, template: (selectedRecord?.commandId | commandId)}">
             Resend
           </button>
         </ng-container>

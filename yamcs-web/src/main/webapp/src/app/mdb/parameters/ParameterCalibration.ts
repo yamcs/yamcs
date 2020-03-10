@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Instance, Parameter } from '../../client';
+import { Parameter } from '../../client';
 
 @Component({
   selector: 'app-parameter-calibration',
@@ -9,7 +9,7 @@ import { Instance, Parameter } from '../../client';
 export class ParameterCalibration {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   parameter: Parameter;

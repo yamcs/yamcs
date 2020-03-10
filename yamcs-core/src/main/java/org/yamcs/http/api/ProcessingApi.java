@@ -70,6 +70,7 @@ import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
+import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -303,6 +304,48 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         SubscribeParameterObserver clientObserver = new SubscribeParameterObserver(ctx.user, observer);
         observer.setCancelHandler(() -> clientObserver.complete());
         return clientObserver;
+    }
+
+    @Override
+    public void subscribeProcessors(Context ctx, SubscribeProcessorsRequest request, Observer<ProcessorInfo> observer) {
+        String instance = null;
+        String processor = null;
+        if (request.hasInstance()) {
+            instance = ManagementApi.verifyInstance(request.getInstance());
+            if (request.hasProcessor()) {
+                processor = verifyProcessor(request.getInstance(), request.getProcessor()).getName();
+            }
+        }
+
+        String fInstance = instance;
+        String fProcessor = processor;
+        ManagementListener listener = new ManagementListener() {
+            @Override
+            public void processorAdded(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            @Override
+            public void processorStateChanged(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            @Override
+            public void processorClosed(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            void maybeEmit(ProcessorInfo info) {
+                if (fInstance == null || fInstance.equals(info.getInstance())) {
+                    if (fProcessor == null || fProcessor.equals(info.getName())) {
+                        observer.next(info);
+                    }
+                }
+            }
+        };
+
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeManagementListener(listener));
+        ManagementService.getInstance().addManagementListener(listener);
     }
 
     @Override

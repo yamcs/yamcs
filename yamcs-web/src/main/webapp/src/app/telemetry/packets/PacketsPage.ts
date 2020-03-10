@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { DownloadPacketsOptions, GetPacketsOptions, Instance, Packet } from '../../client';
+import { DownloadPacketsOptions, GetPacketsOptions, Packet } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
@@ -33,7 +33,7 @@ export class PacketsPage {
 
   filterControl = new FormControl();
 
-  instance: Instance;
+  instance: string;
 
   @ViewChild('intervalSelect')
   intervalSelect: Select;
@@ -192,7 +192,7 @@ export class PacketsPage {
     }
 
     this.dataSource.loadEntries('realtime', options).then(packets => {
-      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.getInstance().name, dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.getInstance(), dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

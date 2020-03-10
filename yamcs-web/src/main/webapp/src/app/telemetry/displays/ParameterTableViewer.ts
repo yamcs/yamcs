@@ -2,7 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { Instance, NamedObjectId, ParameterSubscription, StorageClient } from '../../client';
+import { NamedObjectId, ParameterSubscription, StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';
@@ -22,7 +22,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   selection = new SelectionModel<string>(true, []);
 
-  instance: Instance;
+  instance: string;
   private storageClient: StorageClient;
 
   public model$ = new BehaviorSubject<ParameterTable | null>(null);
@@ -70,7 +70,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     if (ids.length) {
       if (this.dataSubscription) {
         this.dataSubscription.sendMessage({
-          instance: this.instance.name,
+          instance: this.instance,
           processor: this.yamcs.getProcessor().name,
           id: ids,
           abortOnInvalid: false,
@@ -80,7 +80,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
         });
       } else {
         this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-          instance: this.instance.name,
+          instance: this.instance,
           processor: this.yamcs.getProcessor().name,
           id: ids,
           abortOnInvalid: false,

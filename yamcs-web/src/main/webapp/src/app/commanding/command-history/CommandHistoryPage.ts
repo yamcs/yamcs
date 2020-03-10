@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { GetCommandHistoryOptions, Instance } from '../../client';
+import { GetCommandHistoryOptions } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PrintService } from '../../core/services/PrintService';
@@ -31,7 +31,7 @@ const defaultInterval = 'PT1H';
 })
 export class CommandHistoryPage {
 
-  instance: Instance;
+  instance: string;
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 

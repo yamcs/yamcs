@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Instance, Parameter } from '../../client';
+import { Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 
@@ -13,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ParameterPage {
 
-  instance: Instance;
+  instance: string;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   constructor(
@@ -32,7 +32,7 @@ export class ParameterPage {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance.name, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
       this.title.setTitle(parameter.name);
     });

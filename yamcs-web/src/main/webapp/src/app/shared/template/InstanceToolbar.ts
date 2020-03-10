@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/c
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, Processor } from '../../client';
+import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
@@ -20,7 +20,7 @@ export class InstanceToolbar implements OnDestroy {
   hasDetailPane = false;
 
   processor$ = new BehaviorSubject<Processor | null>(null);
-  processorSubscription: Subscription;
+  processorSubscription: ProcessorSubscription;
 
   time$: Observable<string | null>;
 
@@ -36,11 +36,12 @@ export class InstanceToolbar implements OnDestroy {
     private snackBar: MatSnackBar,
     private preferenceStore: PreferenceStore,
   ) {
-    this.yamcs.getInstanceClient()!.getProcessorUpdates().then(response => {
-      this.processor$.next(response.processor);
-      this.processorSubscription = response.processor$.subscribe(processor => {
-        this.processor$.next(processor);
-      });
+    this.processor$.next(yamcs.getProcessor());
+    this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
+      instance: yamcs.getInstance(),
+      processor: yamcs.getProcessor().name,
+    }, processor => {
+      this.processor$.next(processor);
     });
 
     this.connected$ = this.yamcs.yamcsClient.connected$;
@@ -101,7 +102,7 @@ export class InstanceToolbar implements OnDestroy {
 
   ngOnDestroy() {
     if (this.processorSubscription) {
-      this.processorSubscription.unsubscribe();
+      this.processorSubscription.cancel();
     }
     if (this.connectedSubscription) {
       this.connectedSubscription.unsubscribe();

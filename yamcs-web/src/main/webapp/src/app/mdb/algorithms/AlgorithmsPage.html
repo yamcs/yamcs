@@ -22,7 +22,7 @@
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let algorithm">
             <a [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance}">
               {{ shortName ? algorithm.name : algorithm.qualifiedName }}
             </a>
           </td>
@@ -55,7 +55,7 @@
   </div>
   <ng-template #empty>
     <div class="panel-content">
-      The Mission Database for <i>{{ instance.name }}</i> does not define any algorithms.
+      The Mission Database for <i>{{ instance }}</i> does not define any algorithms.
     </div>
   </ng-template>
 </app-instance-page>

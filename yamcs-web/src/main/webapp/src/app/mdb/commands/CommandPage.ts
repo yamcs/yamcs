@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Command, Instance } from '../../client';
+import { Command } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -11,7 +11,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CommandPage {
 
-  instance: Instance;
+  instance: string;
   command$ = new BehaviorSubject<Command | null>(null);
 
   constructor(
@@ -30,7 +30,7 @@ export class CommandPage {
   }
 
   changeCommand(qualifiedName: string) {
-    this.yamcs.yamcsClient.getCommand(this.instance.name, qualifiedName).then(command => {
+    this.yamcs.yamcsClient.getCommand(this.instance, qualifiedName).then(command => {
       this.command$.next(command);
       this.title.setTitle(command.name);
     });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Instance, Parameter, ParameterSubscription, ParameterValue } from '../../client';
+import { Parameter, ParameterSubscription, ParameterValue } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -10,7 +10,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ParameterSummaryTab implements OnDestroy {
 
-  instance: Instance;
+  instance: string;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
@@ -28,14 +28,14 @@ export class ParameterSummaryTab implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance.name, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (this.parameterValueSubscription) {
         this.parameterValueSubscription.cancel();
       }
       this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.instance.name,
+        instance: this.instance,
         processor: this.yamcs.getProcessor().name,
         id: [{ name: qualifiedName }],
         abortOnInvalid: false,

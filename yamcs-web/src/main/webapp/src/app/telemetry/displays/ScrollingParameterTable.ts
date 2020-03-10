@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { Instance, ParameterValue } from '../../client';
 import { Subscription } from 'rxjs';
+import { ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
@@ -16,7 +16,7 @@ import { ParameterTable } from './ParameterTableModel';
 export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   model: ParameterTable = {
@@ -97,7 +97,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
     this.changeDetector.detectChanges();
   }
 
-  private findAnyMatchingParameterValue(sample: {[key: string]: ParameterValue}) {
+  private findAnyMatchingParameterValue(sample: { [key: string]: ParameterValue; }) {
     for (const name in sample) {
       if (sample.hasOwnProperty(name)) {
         if (this.model.parameters.indexOf(name) !== -1) {
@@ -126,5 +126,5 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
 export interface ScrollRecord {
   generationTimeUTC: string;
-  pvals: { [key: string]: ParameterValue };
+  pvals: { [key: string]: ParameterValue; };
 }

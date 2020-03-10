@@ -7,7 +7,7 @@
                        [highlight]="true"
                        [selectable]="true"
                        routerLink="/alarms"
-                       [queryParams]="{instance: instance.name}">
+                       [queryParams]="{instance: instance}">
       {{ status.unacknowledgedCount }} Unacked
     </app-slanted-label>
     <app-slanted-label *ngIf="!status.unacknowledgedCount && status.acknowledgedCount"
@@ -17,7 +17,7 @@
                        [highlight]="false"
                        [selectable]="true"
                        routerLink="/alarms"
-                       [queryParams]="{instance: instance.name}">
+                       [queryParams]="{instance: instance}">
       {{ status.acknowledgedCount }} Acked
     </app-slanted-label>
   </ng-container>

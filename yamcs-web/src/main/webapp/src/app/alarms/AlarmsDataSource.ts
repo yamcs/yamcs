@@ -50,7 +50,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loadAlarms(processorName: string) {
     this.loading$.next(true);
-    this.yamcs.yamcsClient.getActiveAlarms(this.yamcs.getInstance().name, processorName)
+    this.yamcs.yamcsClient.getActiveAlarms(this.yamcs.getInstance(), processorName)
       .then(alarms => {
         this.loading$.next(false);
         for (const alarm of alarms) {
@@ -60,7 +60,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
       });
 
     this.alarmSubscription = this.yamcs.yamcsClient.createAlarmSubscription({
-      instance: this.yamcs.getInstance().name,
+      instance: this.yamcs.getInstance(),
       processor: processorName,
     }, alarm => {
       this.processAlarm(alarm);

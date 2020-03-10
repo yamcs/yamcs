@@ -29,7 +29,7 @@
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let command">
             <a [routerLink]="['/mdb/commands', command.qualifiedName]"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance}">
               {{ shortName ? command.name : command.qualifiedName }}
             </a>
           </td>
@@ -61,7 +61,7 @@
   </div>
   <ng-template #empty>
     <div class="panel-content">
-      The Mission Database for <i>{{ instance.name }}</i> does not define any commands.
+      The Mission Database for <i>{{ instance }}</i> does not define any commands.
     </div>
   </ng-template>
 </app-instance-page>

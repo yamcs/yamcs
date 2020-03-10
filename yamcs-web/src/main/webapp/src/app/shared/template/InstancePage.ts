@@ -4,7 +4,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { Instance, Parameter } from '../../client';
+import { Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -18,7 +18,7 @@ import { User } from '../../shared/User';
 })
 export class InstancePage implements OnInit, OnDestroy {
 
-  instance$ = new BehaviorSubject<Instance | null>(null);
+  instance$ = new BehaviorSubject<string | null>(null);
 
   searchControl = new FormControl(null);
   filteredOptions: Observable<Parameter[]>;
@@ -85,7 +85,7 @@ export class InstancePage implements OnInit, OnDestroy {
       debounceTime(300),
       switchMap(val => {
         if (val) {
-          return this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, { q: val, limit: 25 });
+          return this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance(), { q: val, limit: 25 });
         } else {
           return of({ parameters: [] });
         }
@@ -98,7 +98,7 @@ export class InstancePage implements OnInit, OnDestroy {
     const instance = this.yamcs.getInstance();
     this.searchControl.setValue('');
     this.router.navigate(['/telemetry/parameters/', event.option.value], {
-      queryParams: { instance: instance.name, }
+      queryParams: { instance: instance, }
     });
   }
 

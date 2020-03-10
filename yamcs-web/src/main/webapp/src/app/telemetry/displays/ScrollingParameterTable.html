@@ -1,8 +1,8 @@
 <table mat-table
-        *ngIf="dataSource.data.length"
-        [dataSource]="dataSource"
-        class="ya-data-table"
-        [class.paused]="paused">
+       *ngIf="dataSource.data.length"
+       [dataSource]="dataSource"
+       class="ya-data-table"
+       [class.paused]="paused">
 
   <ng-container cdkColumnDef="generationTimeUTC">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
@@ -12,7 +12,7 @@
   <ng-container *ngFor="let parameter of model.parameters; let i = index" [cdkColumnDef]="parameter">
     <th mat-header-cell *cdkHeaderCellDef>
       <a [routerLink]="['/mdb/parameters', parameter]"
-          [queryParams]="{instance: instance.name}">
+         [queryParams]="{instance: instance}">
         {{ parameter }}
       </a>
       <mat-menu #colMenu="matMenu" overlapTrigger="false" class="ya-menu">

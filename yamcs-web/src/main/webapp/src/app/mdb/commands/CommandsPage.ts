@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetCommandsOptions, Instance } from '../../client';
+import { GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { CommandsDataSource } from './CommandsDataSource';
@@ -14,7 +14,7 @@ import { CommandsDataSource } from './CommandsDataSource';
 })
 export class CommandsPage implements AfterViewInit {
 
-  instance: Instance;
+  instance: string;
   shortName = false;
   pageSize = 100;
 

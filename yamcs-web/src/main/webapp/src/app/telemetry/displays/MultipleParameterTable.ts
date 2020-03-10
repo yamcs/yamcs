@@ -2,7 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
-import { Instance, ParameterValue } from '../../client';
+import { ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
@@ -16,7 +16,7 @@ import { ParameterTable } from './ParameterTableModel';
 export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   model: ParameterTable = {

@@ -1,78 +1,90 @@
-import { Observable } from 'rxjs';
-import { filter, first, map } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { WebSocketServerMessage } from './types/internal';
-import { Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse } from './types/system';
+import { WebSocketCall } from './WebSocketCall';
 
-const PROTOCOL_VERSION = 1;
-const MESSAGE_TYPE_REQUEST = 1;
-const MESSAGE_TYPE_REPLY = 2;
-const MESSAGE_TYPE_EXCEPTION = 3;
-const MESSAGE_TYPE_DATA = 4;
+export type ClientMessage = {
+  type: string;
+  options: any;
+  id?: number;
+  call?: number;
+};
+
+export type ServerMessage = {
+  type: string;
+  call: number;
+  seq: number;
+  data: any;
+};
 
 export class WebSocketClient {
 
-  private webSocket: WebSocketSubject<{}>;
+  readonly connected$ = new BehaviorSubject<boolean>(false);
 
-  private webSocketConnection$: Observable<{}>;
+  private webSocket$: WebSocketSubject<{}>; // Unsubscribing from this closes the connection
+  private calls: Array<WebSocketCall<any, any>> = [];
 
   private requestSequence = 0;
 
-  constructor(baseHref: string, instance?: string) {
+  constructor(apiUrl: string) {
     const currentLocation = window.location;
     let url = 'ws://';
     if (currentLocation.protocol === 'https:') {
       url = 'wss://';
     }
-    url += `${currentLocation.host}${baseHref}_websocket`;
-    if (instance) {
-      url += `/${instance}`;
-    }
+    url += `${currentLocation.host}${apiUrl}/websocket`;
 
-    this.webSocket = webSocket({
+    this.webSocket$ = webSocket({
       url,
       protocol: 'json',
+      closeObserver: {
+        next: () => this.connected$.next(false)
+      },
+      openObserver: {
+        next: () => this.connected$.next(true)
+      }
     });
-    this.webSocketConnection$ = this.webSocket.pipe();
+    //this.webSocketConnection$ = this.webSocket.pipe(
+    // retryWhen(errors => {
+    //  console.log('Cannot connect to Yamcs');
+    //  return errors.pipe(delay(1000));
+    //}),
+    //);
+
+    this.webSocket$.pipe(
+      tap((msg: ServerMessage) => {
+        this.calls.forEach(call => call.consume(msg));
+      })
+    ).subscribe();
   }
 
-  async getProcessorUpdates(options?: ProcessorSubscriptionRequest) {
-    const requestId = this.emit({ processor: 'subscribe', data: options });
+  createSubscription<O, D>(type: string, options: O, observer: (data: D) => void) {
+    const id = ++this.requestSequence;
+    const call = new WebSocketCall(this, id, type, observer);
+    this.calls.push(call);
+    this.sendMessage({ type, id, options });
+    return call;
+  }
 
-    return new Promise<ProcessorSubscriptionResponse>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA;
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = msg[3].data as ProcessorSubscriptionResponse;
-          response.processor$ = this.webSocketConnection$.pipe(
-            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-            filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSOR_INFO'),
-            map(msg => msg[3].data as Processor),
-          );
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
+  sendMessage(clientMessage: ClientMessage) {
+    this.webSocket$.next(clientMessage);
+  }
+
+  cancelCall(call: WebSocketCall<any, any>) {
+    const idx = this.calls.indexOf(call);
+    if (idx !== -1) {
+      this.calls.splice(idx, 1);
+    }
+    if (call.id !== undefined && this.connected$.value) {
+      this.sendMessage({
+        type: 'cancel',
+        options: { call: call.id },
       });
-    });
+    }
   }
 
   close() {
-    this.webSocket.unsubscribe();
-  }
-
-  private emit(payload: { [key: string]: any, data?: {}; }) {
-    this.webSocket.next([
-      PROTOCOL_VERSION,
-      MESSAGE_TYPE_REQUEST,
-      ++this.requestSequence,
-      payload,
-    ]);
-    return this.requestSequence;
+    this.calls.length = 0;
+    this.webSocket$.unsubscribe();
   }
 }

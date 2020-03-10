@@ -1,99 +1,99 @@
 <app-instance-page>
-    <app-instance-toolbar>
-        <a mat-icon-button
-           [routerLink]="folderLink"
-           [queryParams]="{instance: instance.name}"
-           color="primary">
-            <mat-icon>arrow_back</mat-icon>
-        </a> {{ filename | basename }}
-        &nbsp;&nbsp;&nbsp;
-        <button mat-button color="primary" matTooltip="Save stack"
-                (click)="saveStack()"
-                [disabled]="!(dirty$ | async)">
-            <mat-icon>save</mat-icon>
-            SAVE
-        </button>
-        <button mat-button color="primary" matTooltip="Add a command below"
-                (click)="addCommand()">
-            <mat-icon>add</mat-icon>
-            ADD COMMAND
-        </button>
-        <button mat-button color="primary" matTooltip="Run selected entry"
-                [disabled]="!(selectedEntry$ | async)"
-                (click)="runSelection()">
-            <mat-icon>play_arrow</mat-icon>
-            RUN COMMAND
-        </button>
-        <mat-menu #moreMenu="matMenu" overlapTrigger="false">
-            <button mat-menu-item (click)="clearSelectedOutputs()"
-                    [disabled]="!((selectedEntry$ | async)?.record)">
-                Clear output of selected command
-            </button>
-            <button mat-menu-item (click)="clearOutputs()"
-                    [disabled]="!(hasOutputs$ | async)">
-                Clear all outputs
-            </button>
-            <mat-divider></mat-divider>
-            <button mat-menu-item (click)="deleteSelectedCommands()"
-                    [disabled]="!(selectedEntry$ | async)">
-                Delete selected command
-            </button>
-        </mat-menu>
-        <button mat-icon-button color="primary" [matMenuTriggerFor]="moreMenu">
-            <mat-icon>more_vert</mat-icon>
-        </button>
-    </app-instance-toolbar>
+  <app-instance-toolbar>
+    <a mat-icon-button
+       [routerLink]="folderLink"
+       [queryParams]="{instance: instance}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ filename | basename }}
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button color="primary" matTooltip="Save stack"
+            (click)="saveStack()"
+            [disabled]="!(dirty$ | async)">
+      <mat-icon>save</mat-icon>
+      SAVE
+    </button>
+    <button mat-button color="primary" matTooltip="Add a command below"
+            (click)="addCommand()">
+      <mat-icon>add</mat-icon>
+      ADD COMMAND
+    </button>
+    <button mat-button color="primary" matTooltip="Run selected entry"
+            [disabled]="!(selectedEntry$ | async)"
+            (click)="runSelection()">
+      <mat-icon>play_arrow</mat-icon>
+      RUN COMMAND
+    </button>
+    <mat-menu #moreMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item (click)="clearSelectedOutputs()"
+              [disabled]="!((selectedEntry$ | async)?.record)">
+        Clear output of selected command
+      </button>
+      <button mat-menu-item (click)="clearOutputs()"
+              [disabled]="!(hasOutputs$ | async)">
+        Clear all outputs
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="deleteSelectedCommands()"
+              [disabled]="!(selectedEntry$ | async)">
+        Delete selected command
+      </button>
+    </mat-menu>
+    <button mat-icon-button color="primary" [matMenuTriggerFor]="moreMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </app-instance-toolbar>
 
-    <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
-        <div id="drag-boundary">
-            <div cdkDrag cdkDragBoundary="#drag-boundary"
-                 class="entry"
-                 *ngFor="let entry of entries$ | async"
-                 [class.selected]="entry === (selectedEntry$ | async)">
+  <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
+    <div id="drag-boundary">
+      <div cdkDrag cdkDragBoundary="#drag-boundary"
+           class="entry"
+           *ngFor="let entry of entries$ | async"
+           [class.selected]="entry === (selectedEntry$ | async)">
 
-                <div class="in">
-                    <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
-                        <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
-                            [{{ entry.executionNumber }}]:
-                        </ng-container>
-                        <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
-                            [ ]:
-                        </ng-container>
-                    </div>
-                    <div class="body">
-                        {{ entry.name }}
-                        <table class="args">
-                            <tr *ngFor="let arg of entry.arguments">
-                                <td class="key" width="1">
-                                    {{ arg.name }}
-                                </td>
-                                <td class="value">{{ arg.value }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
-                    <div class="seq" (click)="selectEntry(entry)"></div>
-                    <div class="body" [class.err]="entry.err">
-                        <ng-container *ngIf="entry.err">
-                            {{ entry.err }}
-                        </ng-container>
-                        <ng-container *ngIf="!entry.err">
-                            <app-yamcs-acknowledgments-table [command]="entry.record"
-                                                             [inline]="true">
-                            </app-yamcs-acknowledgments-table>
-
-                            <ng-container *ngIf="entry.record?.extra.length">
-                                <div class="block">
-                                    <app-extra-acknowledgments-table [command]="entry.record"
-                                                                     [inline]="true">
-                                    </app-extra-acknowledgments-table>
-                                </div>
-                            </ng-container>
-                        </ng-container>
-                    </div>
-                </div>
-            </div>
+        <div class="in">
+          <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
+            <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+              [{{ entry.executionNumber }}]:
+            </ng-container>
+            <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
+              [ ]:
+            </ng-container>
+          </div>
+          <div class="body">
+            {{ entry.name }}
+            <table class="args">
+              <tr *ngFor="let arg of entry.arguments">
+                <td class="key" width="1">
+                  {{ arg.name }}
+                </td>
+                <td class="value">{{ arg.value }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
+        <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+          <div class="seq" (click)="selectEntry(entry)"></div>
+          <div class="body" [class.err]="entry.err">
+            <ng-container *ngIf="entry.err">
+              {{ entry.err }}
+            </ng-container>
+            <ng-container *ngIf="!entry.err">
+              <app-yamcs-acknowledgments-table [command]="entry.record"
+                                               [inline]="true">
+              </app-yamcs-acknowledgments-table>
+
+              <ng-container *ngIf="entry.record?.extra.length">
+                <div class="block">
+                  <app-extra-acknowledgments-table [command]="entry.record"
+                                                   [inline]="true">
+                  </app-extra-acknowledgments-table>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </app-instance-page>

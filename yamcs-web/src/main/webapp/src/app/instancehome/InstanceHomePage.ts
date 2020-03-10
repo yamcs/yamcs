@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmsDataSource } from '../alarms/AlarmsDataSource';
-import { GeneralInfo, Instance, MissionDatabase, TmStatistics, TMStatisticsSubscription } from '../client';
+import { GeneralInfo, MissionDatabase, TmStatistics, TMStatisticsSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -15,7 +15,7 @@ import { User } from '../shared/User';
 })
 export class InstanceHomePage implements OnDestroy {
 
-  instance: Instance;
+  instance: string;
 
   private user: User;
   config: WebsiteConfig;
@@ -39,9 +39,9 @@ export class InstanceHomePage implements OnDestroy {
     const processor = yamcs.getProcessor();
     this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
-    title.setTitle(this.instance.name);
+    title.setTitle(this.instance);
     this.tmstatsSubscription = yamcs.yamcsClient.createTMStatisticsSubscription({
-      instance: this.instance.name,
+      instance: this.instance,
       processor: processor.name,
     }, stats => this.tmstats$.next(stats.tmstats || []));
 

@@ -5,7 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, LinkEvent, LinkSubscription } from '../client';
+import { LinkEvent, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
@@ -18,7 +18,7 @@ import { LinkItem } from './LinkItem';
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
 
-  instance: Instance;
+  instance: string;
 
   filterControl = new FormControl();
 
@@ -84,7 +84,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.yamcsClient.getLinks(this.instance.name).then(links => {
+    this.yamcs.yamcsClient.getLinks(this.instance).then(links => {
       for (const link of links) {
         const linkItem = { link, hasChildren: false, expanded: false };
         this.itemsByName[link.name] = linkItem;
@@ -100,7 +100,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       this.updateDataSource();
 
       this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
-        instance: this.instance.name,
+        instance: this.instance,
       }, evt => {
         this.processLinkEvent(evt);
       });
@@ -130,15 +130,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.instance.name, name);
+    this.yamcs.yamcsClient.enableLink(this.instance, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.instance.name, name);
+    this.yamcs.yamcsClient.disableLink(this.instance, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.instance.name, name, {
+    this.yamcs.yamcsClient.editLink(this.instance, name, {
       resetCounters: true,
     });
   }

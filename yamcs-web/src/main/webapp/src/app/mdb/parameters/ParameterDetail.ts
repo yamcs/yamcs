@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { EnumValue, Instance, Parameter } from '../../client';
+import { EnumValue, Parameter } from '../../client';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -10,7 +10,7 @@ import { EnumValue, Instance, Parameter } from '../../client';
 export class ParameterDetail {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   parameter: Parameter;

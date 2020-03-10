@@ -25,7 +25,7 @@ export class CfdpService {
   }
 
   public refresh() {
-    this.yamcs.yamcsClient.getCfdpTransfers(this.yamcs.getInstance().name).then(page => {
+    this.yamcs.yamcsClient.getCfdpTransfers(this.yamcs.getInstance()).then(page => {
       const items: TransferItem[] = [];
       for (const transfer of (page.transfer || [])) {
         items.push({

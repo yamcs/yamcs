@@ -34,7 +34,7 @@ export class SelectInstanceDialog implements AfterViewInit {
     this.instances$.then(instances => {
       this.changeDetector.detectChanges();
       this.selectionList.options.forEach(option => {
-        if (option.value === instance.name) {
+        if (option.value === instance) {
           option.selected = true;
         }
       });
@@ -52,7 +52,7 @@ export class SelectInstanceDialog implements AfterViewInit {
     const selectedOption = this.selectionList.selectedOptions.selected[0];
     const newInstance = selectedOption.value;
     this.dialogRef.close();
-    if (instance.name !== newInstance) {
+    if (instance !== newInstance) {
       this.router.navigateByUrl(`/telemetry/displays/browse?instance=${newInstance}`);
     }
   }

@@ -3,7 +3,6 @@ import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, Creat
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
-import { InstanceClient } from './InstanceClient';
 import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
@@ -11,12 +10,12 @@ import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, Ge
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExportXtceOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
-import { ParameterSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
+import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
-import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, Processor, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
-import { WebSocketClient2 } from './WebSocketClient2';
+import { WebSocketClient } from './WebSocketClient';
 
 
 export default class YamcsClient implements HttpHandler {
@@ -30,16 +29,12 @@ export default class YamcsClient implements HttpHandler {
   private interceptor: HttpInterceptor;
 
   public connected$: Observable<boolean>;
-  private webSocketClient?: WebSocketClient2;
+  private webSocketClient?: WebSocketClient;
 
   constructor(readonly baseHref = '/') {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
     this.staticUrl = `${this.baseHref}static`;
-  }
-
-  createInstanceClient(instance: string) {
-    return new InstanceClient(instance, this);
   }
 
   createInstancesSubscription(observer: (instance: Instance) => void): InstancesSubscription {
@@ -391,6 +386,11 @@ export default class YamcsClient implements HttpHandler {
   createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
     this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('time', options, observer);
+  }
+
+  createProcessorSubscription(options: SubscribeProcessorsRequest, observer: (processor: Processor) => void): ProcessorSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('processors', options, observer);
   }
 
   createCop1Subscription(options: SubscribeCop1Request, observer: (cop1Status: Cop1Status) => void): Cop1Subscription {
@@ -965,7 +965,7 @@ export default class YamcsClient implements HttpHandler {
 
   prepareWebSocketClient() {
     if (!this.webSocketClient) {
-      this.webSocketClient = new WebSocketClient2(this.apiUrl);
+      this.webSocketClient = new WebSocketClient(this.apiUrl);
       this.connected$ = this.webSocketClient.connected$;
     }
   }

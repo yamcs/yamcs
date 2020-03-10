@@ -57,8 +57,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
       if (ids.length) {
         this.parameterSubscription = this.yamcs.yamcsClient!.createParameterSubscription({
-          instance: this.yamcs.getInstance().name,
-          processor: this.yamcs.getInstance().name,
+          instance: this.yamcs.getInstance(),
+          processor: this.yamcs.getInstance(),
           id: ids,
           abortOnInvalid: false,
           sendFromCache: true,
@@ -144,7 +144,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
    * Don't call before ngAfterViewInit()
    */
   public init(objectName: string) {
-    const instance = this.yamcs.getInstance().name;
+    const instance = this.yamcs.getInstance();
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
 

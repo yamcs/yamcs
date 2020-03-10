@@ -13,7 +13,7 @@
     <td mat-cell *matCellDef="let tmstats">
       <a *ngIf="config.features.tmArchive"
          routerLink="/telemetry/packets"
-         [queryParams]="{instance: instance.name, filter: tmstats.packetName}">
+         [queryParams]="{instance: instance, filter: tmstats.packetName}">
         {{ tmstats.packetName }}
       </a>
       <ng-container *ngIf="!config.features.tmArchive">{{ tmstats.packetName }}</ng-container>

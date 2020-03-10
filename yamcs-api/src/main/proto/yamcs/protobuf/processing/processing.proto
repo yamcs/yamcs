@@ -125,6 +125,13 @@ service ProcessingApi {
       topic: "parameters"
     };
   }
+  
+  // Receive processor updates
+  rpc SubscribeProcessors(SubscribeProcessorsRequest) returns (stream yamcsManagement.ProcessorInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "processors"
+    };
+  }
 }
 
 message ListProcessorTypesResponse {
@@ -140,6 +147,11 @@ message ListProcessorsResponse {
 }
 
 message SubscribeTMStatisticsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message SubscribeProcessorsRequest {
   optional string instance = 1;
   optional string processor = 2;
 }

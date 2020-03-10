@@ -121,7 +121,7 @@ export class EventsPage {
       }
     }
 
-    yamcs.yamcsClient.getEventSources(yamcs.getInstance().name).then(sources => {
+    yamcs.yamcsClient.getEventSources(yamcs.getInstance()).then(sources => {
       for (const source of sources) {
         this.sourceOptions$.next([
           ...this.sourceOptions$.value,
@@ -283,7 +283,7 @@ export class EventsPage {
 
     const client = this.yamcs.yamcsClient;
     this.dataSource.loadEvents(options).then(events => {
-      const downloadURL = client.getEventsDownloadURL(this.yamcs.getInstance().name, dlOptions);
+      const downloadURL = client.getEventsDownloadURL(this.yamcs.getInstance(), dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

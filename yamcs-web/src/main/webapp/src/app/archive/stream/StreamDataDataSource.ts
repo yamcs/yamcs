@@ -39,7 +39,7 @@ export class StreamDataDataSource extends DataSource<AnimatableStreamData> {
   startStreaming() {
     this.streaming$.next(true);
     this.streamSubscription = this.yamcs.yamcsClient.createStreamSubscription({
-      instance: this.yamcs.getInstance().name,
+      instance: this.yamcs.getInstance(),
       stream: this.stream,
     }, streamData => {
       if (!this.loading$.getValue()) {

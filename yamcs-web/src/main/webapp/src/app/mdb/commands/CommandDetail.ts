@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Argument, Command, Instance } from '../../client';
+import { Argument, Command } from '../../client';
 import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 
 @Component({
@@ -12,7 +12,7 @@ import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 export class CommandDetail {
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   command: Command;

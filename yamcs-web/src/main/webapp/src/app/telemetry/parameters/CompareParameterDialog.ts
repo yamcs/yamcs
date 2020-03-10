@@ -35,7 +35,7 @@ export class CompareParameterDialog implements OnInit {
     const excludedParameters = this.data.exclude as Parameter[];
     this.filteredOptions = this.parameter.valueChanges.pipe(
       debounceTime(300),
-      switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, {
+      switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance(), {
         q: val,
         limit: 10,
       })),

@@ -28,12 +28,12 @@
 
     <mat-nav-list dense>
       <app-sidebar-nav-item routerLink="/instance"
-                            [queryParams]="{instance: instance.name}">
+                            [queryParams]="{instance: instance}">
         <mat-icon class="item-icon">home</mat-icon>
         Home
       </app-sidebar-nav-item>
       <app-sidebar-nav-item routerLink="/links"
-                            [queryParams]="{instance: instance.name}"
+                            [queryParams]="{instance: instance}"
                             *ngIf="showLinksItem()">
         <mat-icon class="item-icon">swap_horiz</mat-icon>
         Links
@@ -45,19 +45,19 @@
                              (toggle)="toggleTelemetryGroup()">
         <app-sidebar-nav-item *ngIf="showPacketsItem()"
                               routerLink="/telemetry/packets"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Packets
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showParametersItem()"
                               routerLink="/telemetry/parameters"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Parameters
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showDisplaysItem()"
                               routerLink="/telemetry/displays"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Displays
         </app-sidebar-nav-item>
@@ -65,14 +65,14 @@
 
       <app-sidebar-nav-item *ngIf="showEventsItem()"
                             routerLink="/events"
-                            [queryParams]="{instance: instance.name}">
+                            [queryParams]="{instance: instance}">
         <mat-icon class="item-icon">event_note</mat-icon>
         Events
       </app-sidebar-nav-item>
 
       <app-sidebar-nav-item *ngIf="showAlarmsItem()"
                             routerLink="/alarms"
-                            [queryParams]="{instance: instance.name}">
+                            [queryParams]="{instance: instance}">
         <mat-icon class="item-icon">notification_important</mat-icon>
         Alarms
       </app-sidebar-nav-item>
@@ -84,31 +84,31 @@
                              (toggle)="toggleCommandingGroup()">
         <app-sidebar-nav-item *ngIf="showSendACommand()"
                               routerLink="/commanding/send"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Send a command
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showRunAStack()"
                               routerLink="/commanding/stacks"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Command Stacks
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandHistory()"
                               routerLink="/commanding/history"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Command History
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandQueuesItem()"
                               routerLink="/commanding/queues"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Queues
         </app-sidebar-nav-item>
         <app-sidebar-nav-item *ngIf="showCommandClearancesItem()"
                               routerLink="/commanding/clearances"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Clearances
         </app-sidebar-nav-item>
@@ -116,7 +116,7 @@
 
       <app-sidebar-nav-item *ngIf="config.features.cfdp"
                             routerLink="/cfdp"
-                            [queryParams]="{instance: instance.name}">
+                            [queryParams]="{instance: instance}">
         <mat-icon class="item-icon">file_copy</mat-icon>
         CFDP File Transfer
       </app-sidebar-nav-item>
@@ -126,26 +126,32 @@
                                [active]="mdbActive"
                                [expanded]="mdbExpanded"
                                (toggle)="toggleMdbGroup()">
+          <app-sidebar-nav-item routerLink="/mdb"
+                                [queryParams]="{instance: instance}"
+                                [exact]="true"
+                                [subitem]="true">
+            Overview
+          </app-sidebar-nav-item>
           <app-sidebar-nav-item routerLink="/mdb/parameters"
-                                [queryParams]="{instance: instance.name}"
+                                [queryParams]="{instance: instance}"
                                 [subitem]="true">
             Parameters
           </app-sidebar-nav-item>
 
           <app-sidebar-nav-item routerLink="/mdb/containers"
-                                [queryParams]="{instance: instance.name}"
+                                [queryParams]="{instance: instance}"
                                 [subitem]="true">
             Containers
           </app-sidebar-nav-item>
 
           <app-sidebar-nav-item routerLink="/mdb/commands"
-                                [queryParams]="{instance: instance.name}"
+                                [queryParams]="{instance: instance}"
                                 [subitem]="true">
             Commands
           </app-sidebar-nav-item>
 
           <app-sidebar-nav-item routerLink="/mdb/algorithms"
-                                [queryParams]="{instance: instance.name}"
+                                [queryParams]="{instance: instance}"
                                 [subitem]="true">
             Algorithms
           </app-sidebar-nav-item>
@@ -160,28 +166,28 @@
 
         <app-sidebar-nav-item *ngIf="showArchiveOverview()"
                               routerLink="/archive/overview"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Overview
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="config.features.dass && showGapsItem()"
                               routerLink="/archive/gaps"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Gaps
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="showTablesItem()"
                               routerLink="/archive/tables"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Tables
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="showStreamsItem()"
                               routerLink="/archive/streams"
-                              [queryParams]="{instance: instance.name}"
+                              [queryParams]="{instance: instance}"
                               [subitem]="true">
           Streams
         </app-sidebar-nav-item>

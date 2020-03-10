@@ -1,24 +1,24 @@
 <div class="command-selector mat-typography">
-    <form [formGroup]="selectCommandForm" class="ya-form">
-        <h2>Select command</h2>
-        <div class="command-table-wrapper">
-            <app-command-selector formControlName="command" [instance]="instance.name"></app-command-selector>
-        </div>
-    </form>
+  <form [formGroup]="selectCommandForm" class="ya-form">
+    <h2>Select command</h2>
+    <div class="command-table-wrapper">
+      <app-command-selector formControlName="command" [instance]="instance"></app-command-selector>
+    </div>
+  </form>
 </div>
 
 <div class="command-detail mat-typography">
-    <h2 style="margin-top: 16px;">Specify details</h2>
-    <app-command-form #commandForm [command]="selectedCommand$ | async"></app-command-form>
+  <h2 style="margin-top: 16px;">Specify details</h2>
+  <app-command-form #commandForm [command]="selectedCommand$ | async"></app-command-form>
 </div>
 
 <div class="footer mat-typography">
-    <mat-toolbar>
-        <mat-toolbar-row>
-            <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
-            <button class="ya-button primary"
-                    (click)="addToStack()"
-                    [disabled]="!commandForm.form.valid">ADD TO STACK</button>
-        </mat-toolbar-row>
-    </mat-toolbar>
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
+      <button class="ya-button primary"
+              (click)="addToStack()"
+              [disabled]="!commandForm.form.valid">ADD TO STACK</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
 </div>

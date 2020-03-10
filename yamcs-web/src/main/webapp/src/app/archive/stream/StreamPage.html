@@ -1,32 +1,32 @@
 <app-instance-page *ngIf="stream$ | async as stream">
   <app-instance-toolbar [hasDetailPane]="rlb.isActive">
-    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Streams / {{ stream.name }}
   </app-instance-toolbar>
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
-      routerLink="./columns"
-      routerLinkActive #rla="routerLinkActive"
-      [queryParams]="{instance: instance.name}"
-      [active]="rla.isActive">
+       routerLink="./columns"
+       routerLinkActive #rla="routerLinkActive"
+       [queryParams]="{instance: instance}"
+       [active]="rla.isActive">
       Columns
     </a>
 
     <a mat-tab-link
-      routerLink="./data"
-      routerLinkActive #rlb="routerLinkActive"
-      [queryParams]="{instance: instance.name}"
-      [active]="rlb.isActive">
+       routerLink="./data"
+       routerLinkActive #rlb="routerLinkActive"
+       [queryParams]="{instance: instance}"
+       [active]="rlb.isActive">
       Data
     </a>
 
     <a mat-tab-link
-      routerLink="./script"
-      routerLinkActive #rlc="routerLinkActive"
-      [queryParams]="{instance: instance.name}"
-      [active]="rlc.isActive">
+       routerLink="./script"
+       routerLinkActive #rlc="routerLinkActive"
+       [queryParams]="{instance: instance}"
+       [active]="rlc.isActive">
       Script
     </a>
   </nav>

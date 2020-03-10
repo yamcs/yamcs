@@ -1,19 +1,19 @@
 <table mat-table
-        *ngIf="dataSource.data.length"
-        [dataSource]="dataSource"
-        class="ya-data-table"
-        [class.paused]="paused">
+       *ngIf="dataSource.data.length"
+       [dataSource]="dataSource"
+       class="ya-data-table"
+       [class.paused]="paused">
 
   <ng-container cdkColumnDef="select">
     <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
       <input type="checkbox" (change)="$event ? masterToggle() : null"
-                    [checked]="selection.hasValue() && isAllSelected()">
+             [checked]="selection.hasValue() && isAllSelected()">
     </th>
     <td mat-cell *cdkCellDef="let row">
       <input type="checkbox"
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row.name) : null"
-              [checked]="selection.isSelected(row.name)">
+             (click)="$event.stopPropagation()"
+             (change)="$event ? selection.toggle(row.name) : null"
+             [checked]="selection.isSelected(row.name)">
     </td>
   </ng-container>
 
@@ -21,7 +21,7 @@
     <th mat-header-cell *cdkHeaderCellDef>Name</th>
     <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
       <a [routerLink]="['/mdb/parameters', row.name]"
-          [queryParams]="{instance: instance.name}">
+         [queryParams]="{instance: instance}">
         {{ row.name }}
       </a>
     </td>
@@ -54,12 +54,14 @@
 
   <ng-container cdkColumnDef="receptionTimeUTC">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.acquisitionTimeUTC | datetime) || '-' }}</td>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
+      {{ (row.pval?.acquisitionTimeUTC | datetime) || '-' }}</td>
   </ng-container>
 
   <ng-container cdkColumnDef="generationTimeUTC">
     <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTimeUTC | datetime) || '-' }}</td>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTimeUTC | datetime) || '-' }}
+    </td>
   </ng-container>
 
   <ng-container cdkColumnDef="acquisitionStatus">

@@ -230,7 +230,7 @@ export class AuthService {
     this.clearCookie('access_token');
     this.clearCookie('refresh_token');
 
-    this.yamcsService.unselectInstance(); // TODO needed here?
+    this.yamcsService.clearContext(); // TODO needed here?
     this.user$.next(null);
 
     if (navigateToLoginPage) {

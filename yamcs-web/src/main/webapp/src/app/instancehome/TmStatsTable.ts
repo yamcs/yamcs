@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, Vi
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Observable, Subscription } from 'rxjs';
-import { Instance, TmStatistics } from '../client';
+import { TmStatistics } from '../client';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
 
@@ -31,7 +31,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   private statsByName: { [key: string]: PacketStats; } = {};
   dataSource = new MatTableDataSource<PacketStats>();
 
-  instance: Instance;
+  instance: string;
 
   config: WebsiteConfig;
 
@@ -51,7 +51,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     if (this.tmstats$ && !this.tmstatsSubscription) {
-      this.yamcs.yamcsClient.getPacketNames(this.instance.name).then(packetNames => {
+      this.yamcs.yamcsClient.getPacketNames(this.instance).then(packetNames => {
         for (const packetName of (packetNames || [])) {
           this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
         }

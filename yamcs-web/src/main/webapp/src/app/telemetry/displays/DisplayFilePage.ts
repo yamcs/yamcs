@@ -7,7 +7,6 @@ import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Instance } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
@@ -26,7 +25,7 @@ import { ViewerHost } from './ViewerHost';
 })
 export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
-  instance: Instance;
+  instance: string;
 
   @ViewChild(ViewerControlsHost)
   private controlsHost: ViewerControlsHost;

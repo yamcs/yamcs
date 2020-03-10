@@ -42,7 +42,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       this.dataSubscription = undefined;
     }
 
-    this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance().name, options).then(page => {
+    this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance(), options).then(page => {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
@@ -75,7 +75,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
     const ids = parameters.map(p => ({ name: p.qualifiedName }));
     if (ids.length) {
       this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.yamcs.getInstance().name,
+        instance: this.yamcs.getInstance(),
         processor: this.yamcs.getProcessor().name,
         id: ids,
         abortOnInvalid: false,

@@ -31,7 +31,7 @@
   <dt>Base command</dt>
   <dd *ngIf="command.baseCommand">
     <a [routerLink]="['/mdb/commands/', command.baseCommand?.qualifiedName]"
-       [queryParams]="{instance: instance.name}"
+       [queryParams]="{instance: instance}"
        class="ya-link">
       {{ command.baseCommand?.qualifiedName }}
     </a>
@@ -112,7 +112,7 @@
         <td>
           <ng-container *ngFor="let comparison of constraint.comparison">
             <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ comparison.parameter.qualifiedName }}</a>
+               [queryParams]="{instance: instance}">{{ comparison.parameter.qualifiedName }}</a>
             {{ comparison.operator | operator }}
             {{ comparison.value }}
           </ng-container>
@@ -149,11 +149,11 @@
         <td>
           <ng-container *ngIf="verifier.algorithm">
             <a [routerLink]="['/mdb/algorithms/', verifier.algorithm?.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ verifier.algorithm?.qualifiedName }}</a>
+               [queryParams]="{instance: instance}">{{ verifier.algorithm?.qualifiedName }}</a>
           </ng-container>
           <ng-container *ngIf="verifier.container">
             <a [routerLink]="['/mdb/containers/', verifier.container?.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ verifier.container?.qualifiedName }}</a>
+               [queryParams]="{instance: instance}">{{ verifier.container?.qualifiedName }}</a>
           </ng-container>
         </td>
         <td>

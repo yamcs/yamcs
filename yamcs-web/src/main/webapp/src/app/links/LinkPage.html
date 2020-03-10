@@ -1,6 +1,6 @@
 <app-instance-page *ngIf="link$ | async as link">
   <app-instance-toolbar>
-    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Links / {{ link.name }}
     &nbsp;&nbsp;&nbsp;

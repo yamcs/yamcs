@@ -1,7 +1,6 @@
 export { HttpError } from './HttpError';
 export { HttpHandler } from './HttpHandler';
 export { HttpInterceptor } from './HttpInterceptor';
-export { InstanceClient } from './InstanceClient';
 export { StorageClient } from './StorageClient';
 export * from './types/alarms';
 export * from './types/cfdp';

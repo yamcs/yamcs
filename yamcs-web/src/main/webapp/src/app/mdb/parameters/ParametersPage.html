@@ -27,7 +27,7 @@
           <th mat-header-cell *matHeaderCellDef style="width: 400px">Name</th>
           <td mat-cell *matCellDef="let parameter">
             <a [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-               [queryParams]="{instance: instance.name}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
+               [queryParams]="{instance: instance}">{{ shortName ? parameter.name : parameter.qualifiedName }}</a>
             <ng-container *ngIf="parameter.type?.engType === 'aggregate'">
               <button mat-stroked-button class="expandable"
                       (click)="parameter.expanded = !parameter.expanded">
@@ -76,7 +76,7 @@
   </div>
   <ng-template #empty>
     <div class="panel-content">
-      The Mission Database for <i>{{ instance.name }}</i> does not define any parameters.
+      The Mission Database for <i>{{ instance }}</i> does not define any parameters.
     </div>
   </ng-template>
 </app-instance-page>

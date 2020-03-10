@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, Instance } from '../client';
+import { Alarm } from '../client';
 
 @Component({
   selector: 'app-alarm-detail',
@@ -13,7 +13,7 @@ export class AlarmDetail {
   alarm: Alarm;
 
   @Input()
-  instance: Instance;
+  instance: string;
 
   @Input()
   mayControl = false;

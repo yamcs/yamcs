@@ -3,7 +3,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParametersOptions, Instance } from '../../client';
+import { GetParametersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
@@ -21,7 +21,7 @@ export class ParametersPage implements AfterViewInit {
     source: new FormControl('ANY'),
   });
 
-  instance: Instance;
+  instance: string;
   shortName = false;
   pageSize = 100;
 

@@ -29,7 +29,7 @@ export class DownloadDumpDialog {
 
     this.form.valueChanges.subscribe(value => {
       if (this.form.valid) {
-        const url = yamcs.yamcsClient.getPacketsDownloadURL(yamcs.getInstance().name, {
+        const url = yamcs.yamcsClient.getPacketsDownloadURL(yamcs.getInstance(), {
           start: utils.toISOString(value.start),
           stop: utils.toISOString(value.stop),
           format: 'raw',

@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
+import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { AdminPage } from './AdminPage';
 import { BucketPage } from './buckets/BucketPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
@@ -32,7 +32,7 @@ import { ServicesPage } from './services/ServicesPage';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, UnselectInstanceGuard, SuperuserGuard],
+    canActivate: [AuthGuard, ClearContextGuard, SuperuserGuard],
     canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',
     component: AdminPage,
@@ -83,8 +83,6 @@ const routes: Routes = [
       },
       {
         path: 'rocksdb',
-        canActivate: [AuthGuard, SuperuserGuard, UnselectInstanceGuard],
-        canActivateChild: [AuthGuard],
         runGuardsAndResolvers: 'always',
         children: [
           {
@@ -112,73 +110,61 @@ const routes: Routes = [
         path: 'iam/service-accounts',
         pathMatch: 'full',
         component: ServiceAccountsPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/service-accounts/create',
         pathMatch: 'full',
         component: CreateServiceAccountPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/users',
         pathMatch: 'full',
         component: UsersPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/users/create',
         pathMatch: 'full',
         component: CreateUserPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/users/:username',
         pathMatch: 'full',
         component: UserPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/users/:username/edit',
         pathMatch: 'full',
         component: EditUserPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/groups',
         pathMatch: 'full',
         component: GroupsPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/groups/create',
         pathMatch: 'full',
         component: CreateGroupPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/groups/:name',
         pathMatch: 'full',
         component: GroupPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/groups/:name/edit',
         pathMatch: 'full',
         component: EditGroupPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/roles',
         pathMatch: 'full',
         component: RolesPage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'iam/roles/:name',
         pathMatch: 'full',
         component: RolePage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
       }
     ]
   }

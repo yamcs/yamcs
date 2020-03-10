@@ -42,11 +42,11 @@
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
         <app-breadcrumb-trail *ngIf="breadcrumb.length">
           <app-breadcrumb link="/commanding/stacks/browse"
-                          [queryParams]="{instance: instance.name}"
+                          [queryParams]="{instance: instance}"
                           icon="account_tree"></app-breadcrumb>
           <app-breadcrumb *ngFor="let item of breadcrumb"
                           [link]="item.route"
-                          [queryParams]="{instance: instance.name}"
+                          [queryParams]="{instance: instance}"
                           [label]="item.name"></app-breadcrumb>
         </app-breadcrumb-trail>
       </ng-container>
@@ -78,14 +78,14 @@
             <ng-container *ngIf="item.folder">
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
               <a [routerLink]="'/commanding/stacks/browse/' + item.name"
-                 [queryParams]="{instance: instance.name}"
+                 [queryParams]="{instance: instance}"
                  (click)="$event.stopPropagation()">
                 {{ item.name | filename }}
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
               <a [routerLink]="'/commanding/stacks/files/' + item.name"
-                 [queryParams]="{instance: instance.name}"
+                 [queryParams]="{instance: instance}"
                  (click)="$event.stopPropagation()">
                 {{ item.name | filename | basename }}
               </a>

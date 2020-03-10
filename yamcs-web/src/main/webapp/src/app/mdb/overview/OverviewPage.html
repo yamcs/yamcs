@@ -1,0 +1,30 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Mission Database
+  </app-instance-toolbar>
+
+  <div class="panel-content">
+    <dl class="dl-horizontal no-lead" *ngIf="mdb$ | async as mdb">
+      <dt>Parameters:</dt>
+      <dd>
+        <a class="ya-link" routerLink="/mdb/parameters"
+           [queryParams]="{instance: instance}">{{ mdb.parameterCount }}</a>
+      </dd>
+      <dt>Containers:</dt>
+      <dd>
+        <a class="ya-link" routerLink="/mdb/containers"
+           [queryParams]="{instance: instance}">{{ mdb.containerCount }}</a>
+      </dd>
+      <dt>Commands:</dt>
+      <dd>
+        <a class="ya-link" routerLink="/mdb/commands"
+           [queryParams]="{instance: instance}">{{ mdb.commandCount }}</a>
+      </dd>
+      <dt>Algorithms:</dt>
+      <dd>
+        <a class="ya-link" routerLink="/mdb/algorithms"
+           [queryParams]="{instance: instance}">{{ mdb.algorithmCount }}</a>
+      </dd>
+    </dl>
+  </div>
+</app-instance-page>

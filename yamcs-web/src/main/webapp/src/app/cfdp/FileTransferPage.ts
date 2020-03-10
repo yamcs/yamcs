@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { CfdpService } from './CfdpService';
 import { UploadFileDialog } from './UploadFileDialog';
@@ -14,7 +13,7 @@ import { UploadFileDialog } from './UploadFileDialog';
 })
 export class FileTransferPage implements OnDestroy {
 
-  instance: Instance;
+  instance: string;
 
   ongoingCount$ = new BehaviorSubject<number>(0);
   failedCount$ = new BehaviorSubject<number>(0);
