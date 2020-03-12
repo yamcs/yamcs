@@ -16,6 +16,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 
@@ -62,11 +63,18 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
             if (req.hasIgnorePastCommands()) {
                 ignorePastCommands = req.getIgnorePastCommands();
             }
-          
+
             if (req.getCommandIdCount() > 0) {
                 subscribeAll = false;
                 ignorePastCommands = false;
                 client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+
+                for (CommandId commandId : req.getCommandIdList()) {
+                    if (!client.getUser().hasObjectPrivilege(
+                            ObjectPrivilegeType.CommandHistory, commandId.getCommandName())) {
+                        throw new WebSocketException(ctx.getRequestId(), "Unauthorized");
+                    }
+                }
                 for (CommandId commandId : req.getCommandIdList()) {
                     if (!subscribedCommands.contains(commandId)) {
                         try {
@@ -85,7 +93,6 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
                         }
                     }
                 }
-               
             }
         }
 
@@ -141,25 +148,31 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public void addedCommand(PreparedCommand pc) {
-        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
-                .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
-                .addAllAttr(pc.getAttributes())
-                .build();
-        client.sendData(ProtoDataType.CMD_HISTORY, entry);
+        if (client.getUser().hasObjectPrivilege(
+                ObjectPrivilegeType.CommandHistory, pc.getCommandId().getCommandName())) {
+            CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
+                    .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
+                    .addAllAttr(pc.getAttributes())
+                    .build();
+            client.sendData(ProtoDataType.CMD_HISTORY, entry);
+        }
     }
 
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
-                .setName(key)
-                .setValue(ValueUtility.toGbp(value))
-                .build();
-        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
-                .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
-                .setCommandId(cmdId)
-                .addAttr(cha)
-                .build();
-        client.sendData(ProtoDataType.CMD_HISTORY, entry);
+        if (client.getUser().hasObjectPrivilege(
+                ObjectPrivilegeType.CommandHistory, cmdId.getCommandName())) {
+            CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                    .setName(key)
+                    .setValue(ValueUtility.toGbp(value))
+                    .build();
+            CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                    .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                    .setCommandId(cmdId)
+                    .addAttr(cha)
+                    .build();
+            client.sendData(ProtoDataType.CMD_HISTORY, entry);
+        }
     }
 
     @Override

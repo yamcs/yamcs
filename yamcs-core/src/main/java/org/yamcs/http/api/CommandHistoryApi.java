@@ -88,10 +88,14 @@ public class CommandHistoryApi extends AbstractCommandHistoryApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                if (++count <= limit) {
-                    CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
-                    responseb.addEntry(che);
-                    last = che;
+                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory,
+                        entry.getCommandId().getCommandName())) {
+                    count++;
+                    if (count <= limit) {
+                        responseb.addEntry(entry);
+                        last = entry;
+                    }
                 }
             }
 
@@ -143,6 +147,9 @@ public class CommandHistoryApi extends AbstractCommandHistoryApi<Context> {
                 } else if (commands.size() > 1) {
                     observer.completeExceptionally(new InternalServerErrorException("Too many results"));
                 } else {
+                    CommandHistoryEntry entry = commands.get(0);
+                    ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory,
+                            entry.getCommandId().getCommandName());
                     observer.complete(commands.get(0));
                 }
             }
@@ -153,6 +160,7 @@ public class CommandHistoryApi extends AbstractCommandHistoryApi<Context> {
     public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
+        // Quick-check in case the user is specific
         ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
@@ -172,7 +180,10 @@ public class CommandHistoryApi extends AbstractCommandHistoryApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
-                observer.next(entry);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory,
+                        entry.getCommandId().getCommandName())) {
+                    observer.next(entry);
+                }
             }
 
             @Override
