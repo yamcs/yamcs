@@ -10,35 +10,6 @@ import org.yamcs.YamcsServer;
 
 public class TsePlugin implements Plugin {
 
-    private String version;
-
-    public TsePlugin() {
-        Package pkg = getClass().getPackage();
-        if (pkg != null) {
-            version = pkg.getImplementationVersion();
-        }
-    }
-
-    @Override
-    public String getName() {
-        return "yamcs-tse";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Interface with Test Support Equipment";
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
-
-    @Override
-    public String getVendor() {
-        return "Space Applications Services";
-    }
-
     @Override
     public void onLoad() throws PluginException {
         YamcsServer yamcs = YamcsServer.getServer();

@@ -27,12 +27,8 @@ import com.google.common.io.CharStreams;
 public class WebPlugin implements Plugin {
 
     private Log log = new Log(getClass());
-    private String version;
 
     public WebPlugin() {
-        Package pkg = getClass().getPackage();
-        version = (pkg != null) ? pkg.getImplementationVersion() : null;
-
         Spec spec = new Spec();
         spec.addOption("tag", OptionType.STRING);
         spec.addOption("displayPath", OptionType.STRING);
@@ -63,26 +59,6 @@ public class WebPlugin implements Plugin {
         spec.addOption("events", OptionType.MAP).withSpec(eventsSpec);
 
         YamcsServer.getServer().addConfigurationSection("yamcs-web", spec);
-    }
-
-    @Override
-    public String getName() {
-        return "yamcs-web";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Web interface for managing and monitoring Yamcs";
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
-
-    @Override
-    public String getVendor() {
-        return "Space Applications Services";
     }
 
     @Override
@@ -138,7 +114,7 @@ public class WebPlugin implements Plugin {
                 throw new PluginException("Could not deploy website", e);
             }
         }
-        if(Files.exists(staticRoot)) {
+        if (Files.exists(staticRoot)) {
             log.debug("Serving yamcs-web from {}", staticRoot);
         } else {
             log.warn("Static root for yamcs yamcs-web not found at '{}'", staticRoot);

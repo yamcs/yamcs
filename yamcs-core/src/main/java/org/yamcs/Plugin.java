@@ -1,26 +1,15 @@
 package org.yamcs;
 
+/*
+ * DEPRECATION INFORMATION:
+ * 
+ * If you're looking where getName(), getDescription(), getVersion() and getVendor() went:
+ * They're gone.
+ * 
+ * Upgrade yamcs-maven-plugin to v1.2.x and add an execution with the 'detect' goal:
+ * https://yamcs.org/docs/yamcs-maven-plugin/examples/plugin/
+ */
 public interface Plugin {
-
-    /**
-     * Short name of this plugin.
-     */
-    public String getName();
-
-    /**
-     * Description of this plugin.
-     */
-    public String getDescription();
-
-    /**
-     * Version of this plugin.
-     */
-    public String getVersion();
-
-    /**
-     * Maintainer of this plugin.
-     */
-    public String getVendor();
 
     /**
      * Callback executed when the plugin is loaded.

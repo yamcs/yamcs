@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.Plugin;
+import org.yamcs.PluginManager;
+import org.yamcs.PluginMetadata;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -50,22 +52,27 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
         responseb.setRevision(YamcsVersion.REVISION);
         responseb.setServerId(YamcsServer.getServer().getServerId());
 
-        List<Plugin> plugins = new ArrayList<>(YamcsServer.getServer().getPlugins());
-        plugins.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+        PluginManager pluginManager = YamcsServer.getServer().getPluginManager();
+        List<Plugin> plugins = new ArrayList<>(pluginManager.getPlugins());
+        List<PluginInfo> pluginInfos = new ArrayList<>();
         for (Plugin plugin : plugins) {
+            PluginMetadata meta = pluginManager.getMetadata(plugin.getClass());
             PluginInfo.Builder pluginb = PluginInfo.newBuilder()
-                    .setName(plugin.getName());
-            if (plugin.getVersion() != null) {
-                pluginb.setVersion(plugin.getVersion());
+                    .setName(meta.getName());
+            if (meta.getVersion() != null) {
+                pluginb.setVersion(meta.getVersion());
             }
-            if (plugin.getVendor() != null) {
-                pluginb.setVendor(plugin.getVendor());
+            if (meta.getOrganization() != null) {
+                pluginb.setVendor(meta.getOrganization());
             }
-            if (plugin.getDescription() != null) {
-                pluginb.setDescription(plugin.getDescription());
+            if (meta.getDescription() != null) {
+                pluginb.setDescription(meta.getDescription());
             }
-            responseb.addPlugins(pluginb);
+            pluginInfos.add(pluginb.build());
         }
+
+        pluginInfos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+        responseb.addAllPlugins(pluginInfos);
 
         // Property to be interpreted at client's leisure.
         // Concept of defaultInstance could be moved into YamcsServer

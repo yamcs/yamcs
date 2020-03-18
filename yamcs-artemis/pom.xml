@@ -8,7 +8,9 @@
 
   <artifactId>yamcs-artemis</artifactId>
   <name>Yamcs :: Artemis</name>
-  <description>Yamcs Artemis senders/receivers</description>
+  <description>
+    Send or receive Yamcs stream tuples over Artemis
+  </description>
 
   <properties>
     <javaModuleName>org.yamcs.artemis</javaModuleName>
@@ -26,4 +28,20 @@
       <artifactId>artemis-server</artifactId>
     </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>detect</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
