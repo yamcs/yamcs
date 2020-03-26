@@ -17,6 +17,7 @@ import org.yamcs.xtce.Parameter;
 public class ListPacket {
     private static final String HEX_CHARS = "0123456789abcdef";
 
+    private int id;
     private String name;
     private long fileOffset;
     byte[] buf;
@@ -28,7 +29,7 @@ public class ListPacket {
     // could be more than what is shown)
     private ParameterValueList columnParameters;
 
-    ListPacket(byte[] b, int length) {
+    public ListPacket(byte[] b, int length) {
         buf = b.clone();
         this.length = length;
     }
@@ -37,6 +38,14 @@ public class ListPacket {
         this(buf, length);
         this.fileOffset = fileOffset;
         this.incomplete = true;
+    }
+
+    public void setIdentifier(int id) {
+        this.id = id;
+    }
+
+    public int getIdentifier() {
+        return id;
     }
 
     public void setName(String opsname) {
@@ -56,7 +65,7 @@ public class ListPacket {
                 byte[] data = new byte[length];
                 long n = fileOffset + buf.length;
                 if (reader.skip(n) != n) {
-                    throw new IOException("packet outside the file!? (cannot skip to offset "+n+")");
+                    throw new IOException("packet outside the file!? (cannot skip to offset " + n + ")");
                 }
 
                 int remaining = length - buf.length;
@@ -67,8 +76,9 @@ public class ListPacket {
                 System.arraycopy(buf, 0, data, 0, buf.length);
                 buf = data;
             } finally {
-                if (reader != null)
+                if (reader != null) {
                     reader.close();
+                }
             }
             incomplete = false;
         }
@@ -80,21 +90,24 @@ public class ListPacket {
 
             for (int i = 0; i < buf.length;) {
                 // build one row of hexdump: offset, hex bytes, ascii bytes
-                StringBuilder asciiBuf = new StringBuilder();
-                StringBuilder hexBuf = new StringBuilder();
-                hexBuf.append(HEX_CHARS.charAt(i >> 12));
-                hexBuf.append(HEX_CHARS.charAt((i >> 8) & 0x0f));
-                hexBuf.append(HEX_CHARS.charAt((i >> 4) & 0x0f));
-                hexBuf.append(HEX_CHARS.charAt(i & 0x0f));
-                hexBuf.append(' ');
+                StringBuilder offsetBuf = new StringBuilder();
+                offsetBuf.append(HEX_CHARS.charAt(i >> 12));
+                offsetBuf.append(HEX_CHARS.charAt((i >> 8) & 0x0f));
+                offsetBuf.append(HEX_CHARS.charAt((i >> 4) & 0x0f));
+                offsetBuf.append(HEX_CHARS.charAt(i & 0x0f));
+                offsetBuf.append(' ');
+                hexDoc.insertString(hexDoc.getLength(), offsetBuf.toString(), hexDoc.getStyle("offset"));
 
+                StringBuilder hexBuf = new StringBuilder();
+                StringBuilder asciiBuf = new StringBuilder();
                 for (int j = 0; j < 16; ++j, ++i) {
                     if (i < buf.length) {
                         byte b = buf[i];
                         hexBuf.append(HEX_CHARS.charAt((b >> 4) & 0x0f));
                         hexBuf.append(HEX_CHARS.charAt(b & 0x0f));
-                        if ((j & 1) == 1)
+                        if ((j & 1) == 1) {
                             hexBuf.append(' ');
+                        }
                         char c = (b < 32) || (b > 126) ? '.' : (char) b;
                         asciiBuf.append(c);
                     } else {
@@ -130,6 +143,18 @@ public class ListPacket {
 
     public ParameterValue getParameterColumn(Parameter p) {
         return columnParameters.getLastInserted(p);
+    }
+
+    /**
+     * Returns the first parameter within the packet that matches a short name
+     */
+    public Parameter getParameterForShortName(String name) {
+        for (ParameterValue pval : columnParameters) {
+            if (pval.getParameter().getName().equals(name)) {
+                return pval.getParameter();
+            }
+        }
+        return null;
     }
 
     public String getName() {

@@ -1,0 +1,144 @@
+options
+{
+    STATIC=false;
+    IGNORE_CASE=true;
+}
+
+PARSER_BEGIN( FilterParser )
+package org.yamcs.ui.packetviewer.filter;
+
+import org.yamcs.ui.packetviewer.filter.ast.*;
+import java.util.*;
+
+
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+public class FilterParser {
+
+    Set references = new HashSet();
+}
+PARSER_END( FilterParser )
+
+TOKEN : {
+  <#_ESCAPED_CHAR:    "\\" ~[] >  // every character that follows a backslash is considered as an escaped character
+| <#_WHITESPACE:      ( " " | "\t" | "\n" | "\r" ) >
+| <#_QUOTED_CHAR:     ( ~[ "\"", "\\" ] | <_ESCAPED_CHAR> ) >
+}
+
+<DEFAULT, IN_EXPRESSION> SKIP : {
+  < <_WHITESPACE>>
+}
+
+<DEFAULT> TOKEN :
+{
+  <AND:          ("AND" | "&&")>
+| <OR:           ("OR" | "||")>
+| <NOT:          ("NOT" | "!")>
+| <LPAREN:       "(">
+| <RPAREN:       ")">
+| <REF:          ([ "A"-"Z", "a"-"z", "0"-"9", "/", "_", "-", "[", "]", "." ])+ > : IN_EXPRESSION
+}
+
+<IN_EXPRESSION> TOKEN :
+{
+  <EQ: ("EQ" | "==")>
+| <NE: ("NE" | "!=")>
+| <LT: ("LT" | "<")>
+| <LE: ("LE" | "<=")>
+| <GT: ("GT" | ">")>
+| <GE: ("GE" | ">=")>
+| <CONTAINS: "CONTAINS">
+| <MATCHES: ("MATCHES" | "~")>
+}
+
+<IN_EXPRESSION> TOKEN : {
+  <STRING:       (["A"-"Z", "a"-"z", "0"-"9", ":", "_"])+ > : DEFAULT
+| <QUOTED:       "\"" (<_QUOTED_CHAR>)* "\""> : DEFAULT
+}
+
+OrExpression compileExpression(): { OrExpression result; }
+{
+  result = expr() <EOF> { return result; }
+}
+
+OrExpression expr(): {
+  OrExpression or;
+}
+{
+  or = or() { return or; }
+}
+
+OrExpression or(): {
+  AndExpression clause;
+  List clauses = new ArrayList();
+}
+{
+  clause = and() { clauses.add(clause); }
+  ( LOOKAHEAD(2) <OR> clause = and() { clauses.add(clause); } )*
+  {
+    return new OrExpression(clauses);
+  }
+}
+
+AndExpression and(): {
+  UnaryExpression clause;
+  List clauses = new ArrayList();
+}
+{
+  clause = unary() { clauses.add(clause); }
+  ( LOOKAHEAD(2) <AND> clause=unary() { clauses.add(clause); } )*
+  {
+    return new AndExpression(clauses);
+  }
+}
+
+UnaryExpression unary(): {
+  Comparison comparison;
+  OrExpression expr;
+}
+{
+  <NOT> <LPAREN> expr = expr() <RPAREN> { return new UnaryExpression(expr, true); }
+| <LPAREN> expr = expr() <RPAREN> { return new UnaryExpression(expr, false); }
+| comparison = comparison() { return new UnaryExpression(comparison, false); }
+}
+
+Comparison comparison() :
+{
+  String ref;
+  Operator op = null;
+  String comparand = null;
+}
+{
+  ref = reference() (op = op() comparand = literal())? {
+    return new Comparison(ref, op, comparand);
+  }
+}
+
+String reference(): {}
+{
+  <REF> {
+    references.add(token.image);
+    return token.image;
+  }
+}
+
+String literal(): {}
+{
+  <STRING> { return token.image; }
+| <QUOTED>
+  {
+    String s = token.image;
+    return s.substring(1, s.length() - 1).replace("\\\"","\"").replace("\\\\","\\");
+  }
+}
+
+Operator op(): {}
+{
+  <EQ> { return Operator.EQUAL_TO; }
+| <NE> { return Operator.NOT_EQUAL_TO; }
+| <GT> { return Operator.GREATER_THAN; }
+| <LT> { return Operator.LESS_THAN; }
+| <GE> { return Operator.GREATER_THAN_OR_EQUAL_TO; }
+| <LE> { return Operator.LESS_THAN_OR_EQUAL_TO; }
+| <CONTAINS> { return Operator.CONTAINS; }
+| <MATCHES>  { return Operator.MATCHES; }
+}

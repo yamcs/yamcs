@@ -12,13 +12,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -28,9 +27,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.ui.packetviewer.PacketViewer.Range;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
@@ -40,7 +39,6 @@ public class ParametersTable extends JTable implements ListSelectionListener {
 
     private static final long serialVersionUID = 1L;
     private static final Color GRAYISH_COLOR = new Color(235, 235, 235);
-    private static final String ADD_PARAMETER_TO_LEFT = "Apply as Left Column";
 
     private List<Integer> rowsWithSearchResults = new ArrayList<>();
 
@@ -233,13 +231,12 @@ public class ParametersTable extends JTable implements ListSelectionListener {
         return (stats != null) ? stats : null;
     }
 
-    @SuppressWarnings("rawtypes")
     private void updateMatchingRows(String searchTerm) {
         if (!searchTerm.equals(lastSearchTerm)) {
             rowsWithSearchResults.clear();
-            Vector rowData = ((DefaultTableModel) getModel()).getDataVector();
-            for (int i = 0; i < rowData.size(); i++) {
-                String opsName = ((Parameter) ((Vector) rowData.get(i)).get(0)).getName();
+            for (int i = 0; i < parametersTableModel.pvList.size(); i++) {
+                ParameterValue pval = parametersTableModel.pvList.get(i);
+                String opsName = pval.getParameter().getName();
                 if (opsName.toLowerCase().contains(searchTerm)) {
                     rowsWithSearchResults.add(i);
                 }
@@ -360,7 +357,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
                 int row = rowAtPoint(e.getPoint());
                 if (row != -1) {
                     setRowSelectionInterval(row, row);
-                    rightClickMenu.selectedParameter = (Parameter) getModel().getValueAt(row, 0);
+                    rightClickMenu.selectedParameter = parametersTableModel.getParameterValue(row);
                     rightClickMenu.show(e.getComponent(), e.getX(), e.getY());
                 }
             }
@@ -382,17 +379,39 @@ public class ParametersTable extends JTable implements ListSelectionListener {
 
     @SuppressWarnings("serial")
     private class RightClickMenu extends JPopupMenu {
-        Parameter selectedParameter;
+        ParameterValue selectedParameter;
 
         public RightClickMenu() {
-
-            Action a = new AbstractAction(ADD_PARAMETER_TO_LEFT) {
+            add(new AbstractAction("Apply as Left Column") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    packetViewer.addParameterToTheLeftTable(selectedParameter);
+                    packetViewer.addParameterToTheLeftTable(selectedParameter.getParameter());
                 }
-            };
-            add(a);
+            });
+
+            JMenu applyFilterMenu = new JMenu("Apply as Filter");
+            applyFilterMenu.add(new AbstractAction("Selected") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String expression = String.format("%s == %s",
+                            selectedParameter.getParameter().getName(),
+                            selectedParameter.getEngValue());
+                    packetViewer.filterField.setSelectedItem(expression);
+                }
+            });
+            applyFilterMenu.add(new AbstractAction("Not Selected") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Use !(x == x) instead of !=, because the latter would only
+                    // filter on only packets that include this parameter.
+                    String expression = String.format("!(%s == %s)",
+                            selectedParameter.getParameter().getName(),
+                            selectedParameter.getEngValue());
+                    packetViewer.filterField.setSelectedItem(expression);
+                }
+            });
+
+            add(applyFilterMenu);
         }
     }
 }

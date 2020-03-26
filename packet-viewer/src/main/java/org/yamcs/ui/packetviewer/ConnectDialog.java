@@ -239,8 +239,16 @@ public class ConnectDialog extends JDialog implements ActionListener {
             // lab.setHorizontalAlignment(SwingConstants.RIGHT);
             c.gridy = ceast.gridy;
             inputPanel.add(jrb, c);
+            String[] dbconfigs;
             try {
-                String[] dbconfigs = getLocalDbConfigs();
+                dbconfigs = getLocalDbConfigs();
+            } catch (ConfigurationException e) {
+                JOptionPane.showMessageDialog(parent, "Cannot load local MDB configurations: " + e.getMessage(),
+                        "Cannot load local MDB configs", JOptionPane.ERROR_MESSAGE);
+                dbconfigs = new String[0];
+            }
+
+            if (dbconfigs.length > 0) {
                 localMdbConfigCombo = new JComboBox<>(dbconfigs);
                 localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
                 localMdbConfigCombo.setEditable(false);
@@ -252,18 +260,14 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 if (useServerMdb) {
                     localMdbConfigCombo.setEnabled(false);
                 }
-            } catch (ConfigurationException e) {
-                JOptionPane.showMessageDialog(this, "Cannot load local MDB configurations: " + e.getMessage(),
-                        "Cannot load local MDB configs", JOptionPane.ERROR_MESSAGE);
-                String[] dbconfigs = new String[] { "unavailable" };
-                localMdbConfigCombo = new JComboBox<>(dbconfigs);
+            } else {
+                localMdbConfigCombo = new JComboBox<>(new String[] { "unavailable" });
                 localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
                 localMdbConfigCombo.setEnabled(false);
                 localMdbConfigCombo.setSelectedItem("unavailable");
                 inputPanel.add(localMdbConfigCombo, cwest);
                 jrb.setSelected(false);
                 jrb.setEnabled(false);
-
             }
         }
 
@@ -304,8 +308,12 @@ public class ConnectDialog extends JDialog implements ActionListener {
     }
 
     private String[] getLocalDbConfigs() throws ConfigurationException {
-        YConfiguration conf = YConfiguration.getConfiguration("mdb");
-        return conf.getKeys().toArray(new String[0]);
+        if (YConfiguration.isDefined("mdb")) {
+            YConfiguration conf = YConfiguration.getConfiguration("mdb");
+            return conf.getKeys().toArray(new String[0]);
+        } else {
+            return new String[0];
+        }
     }
 
     @Override
@@ -377,10 +385,10 @@ public class ConnectDialog extends JDialog implements ActionListener {
                     }
                 }
             } catch (NumberFormatException x) {
-                JOptionPane.showMessageDialog(this, "please enter a valid port number", x.getMessage(),
+                JOptionPane.showMessageDialog(this, "Enter a valid port number", x.getMessage(),
                         JOptionPane.WARNING_MESSAGE);
             } catch (Exception e1) {
-                JOptionPane.showMessageDialog(this, "Cannot retrieve the archive instances: " + e1.getMessage(),
+                JOptionPane.showMessageDialog(this, "Cannot retrieve instances: " + e1.getMessage(),
                         e1.getMessage(), JOptionPane.WARNING_MESSAGE);
             }
         } else if ("use-server-mdb".equals(cmd)) {

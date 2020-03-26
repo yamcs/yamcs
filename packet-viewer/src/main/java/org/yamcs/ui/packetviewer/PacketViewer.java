@@ -1,6 +1,8 @@
 package org.yamcs.ui.packetviewer;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Toolkit;
@@ -20,20 +22,21 @@ import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.prefs.Preferences;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -46,6 +49,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -53,6 +57,9 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.SplitPaneUI;
@@ -66,6 +73,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.jdesktop.swingx.prompt.PromptSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -89,6 +97,9 @@ import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketInputStream;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.packetviewer.filter.PacketFilter;
+import org.yamcs.ui.packetviewer.filter.ParseException;
+import org.yamcs.ui.packetviewer.filter.TokenMgrError;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
@@ -104,52 +115,59 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class PacketViewer extends JFrame implements ActionListener,
         TreeSelectionListener, ParameterListener, ConnectionListener, WebSocketClientCallback {
+
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(PacketViewer.class);
-    static PacketViewer theApp;
-    static int maxLines = -1;
+    public static final Color ERROR_FAINT_BG = new Color(255, 221, 221);
+    public static final Color ERROR_FAINT_FG = new Color(255, 0, 0);
+    public static final Border ERROR_BORDER = BorderFactory.createLineBorder(new Color(205, 87, 40));
+    private static PacketViewer theApp;
+    private static int maxLines = -1;
     XtceDb xtcedb;
 
-    File lastFile;
-    JSplitPane hexSplit;
-    JTextPane hexText;
-    StyledDocument hexDoc;
-    Style fixedStyle, highlightedStyle;
-    JMenu fileMenu;
-    List<JMenuItem> miRecentFiles;
-    JMenuItem miAutoScroll, miAutoSelect;
-    JTextArea logText;
-    JScrollPane logScrollpane;
-    PacketsTable packetsTable;
-    ParametersTable parametersTable;
-    JTree structureTree;
-    DefaultMutableTreeNode structureRoot;
-    DefaultTreeModel structureModel;
-    JSplitPane mainsplit;
-    FindParameterBar findBar;
-    ListPacket currentPacket;
-    OpenFileDialog openFileDialog;
-    final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
-    YamcsClient client;
-    ConnectDialog connectDialog;
-    GoToPacketDialog goToPacketDialog;
+    private File lastFile;
+    private JSplitPane hexSplit;
+    private JTextPane hexText;
+    private StyledDocument hexDoc;
+    private Style fixedStyle;
+    private Style highlightedStyle;
+    private Style offsetStyle;
+    private JMenu fileMenu;
+    private List<JMenuItem> miRecentFiles;
+    JMenuItem miAutoScroll;
+    JMenuItem miAutoSelect;
+    JComboBox<String> filterField;
+    private JTextArea logText;
+    private JScrollPane logScrollpane;
+    private PacketsTable packetsTable;
+    private ParametersTable parametersTable;
+    private JTree structureTree;
+    private DefaultMutableTreeNode structureRoot;
+    private DefaultTreeModel structureModel;
+    private JSplitPane mainsplit;
+    private FindParameterBar findBar;
+    private ListPacket currentPacket;
+    private OpenFileDialog openFileDialog;
+    private YamcsClient client;
+    private ConnectDialog connectDialog;
     Preferences uiPrefs;
 
     // used for decoding full packets
-    XtceTmProcessor tmProcessor;
+    private XtceTmProcessor tmProcessor;
 
     String streamName;
     private String defaultNamespace;
-    PacketPreprocessor packetPreprocessor;
+    private PacketPreprocessor packetPreprocessor;
 
-    Object packetInputStreamArgs;
+    private Object packetInputStreamArgs;
     private String packetInputStreamClassName;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
 
+    @SuppressWarnings("serial")
     public PacketViewer(int maxLines) throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setPreferredSize(new Dimension(1440, 1080));
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
@@ -227,6 +245,8 @@ public class PacketViewer extends JFrame implements ActionListener,
         highlightedStyle = hexDoc.addStyle("highlighted", fixedStyle);
         StyleConstants.setBackground(highlightedStyle, parametersTable.getSelectionBackground());
         StyleConstants.setForeground(highlightedStyle, parametersTable.getSelectionForeground());
+        offsetStyle = hexDoc.addStyle("offset", fixedStyle);
+        StyleConstants.setForeground(offsetStyle, Color.GRAY);
         hexText.setEditable(false);
 
         JScrollPane hexScrollpane = new JScrollPane(hexText);
@@ -251,11 +271,99 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         installMenubar();
 
+        JPanel filterBar = new JPanel();
+        filterBar.setLayout(new BorderLayout());
+
+        filterField = new JComboBox<>();
+        filterField.setEditable(true);
+        filterBar.add(filterField, BorderLayout.CENTER);
+
+        JPanel eastPanel = new JPanel();
+        eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.X_AXIS));
+        eastPanel.setAlignmentY(CENTER_ALIGNMENT);
+        JButton clearButton = new JButton();
+        clearButton.setAction(new AbstractAction("Clear") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filterField.setSelectedIndex(-1);
+            }
+        });
+        eastPanel.add(clearButton);
+        filterBar.add(eastPanel, BorderLayout.EAST);
+
+        JTextField filterEditor = (JTextField) filterField.getEditor().getEditorComponent();
+
+        filterEditor.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                String selectedItem = filterEditor.getText();
+
+                if (selectedItem != null && !selectedItem.isEmpty() && xtcedb != null) {
+                    clearButton.setEnabled(true);
+                    try {
+                        new PacketFilter(selectedItem, xtcedb);
+                        JTextField dummy = new JTextField();
+                        filterEditor.setBackground(dummy.getBackground());
+                        filterEditor.setForeground(dummy.getForeground());
+                    } catch (ParseException | TokenMgrError e1) {
+                        filterEditor.setBackground(ERROR_FAINT_BG);
+                        filterEditor.setForeground(ERROR_FAINT_FG);
+                    }
+                } else {
+                    clearButton.setEnabled(false);
+                    JTextField dummy = new JTextField();
+                    filterEditor.setBackground(dummy.getBackground());
+                    filterEditor.setForeground(dummy.getForeground());
+                }
+
+            }
+        });
+
+        for (String item : getFilterHistory()) {
+            filterField.addItem(item);
+        }
+        filterField.setSelectedIndex(-1);
+
+        filterField.addActionListener(e -> {
+            try {
+                String selectedItem = (String) filterField.getSelectedItem();
+                if (selectedItem != null && !selectedItem.trim().isEmpty()) {
+                    PacketFilter filter = new PacketFilter(selectedItem, xtcedb);
+                    packetsTable.configureRowFilter(filter);
+                    updateFilterHistory(selectedItem);
+                    filterField.removeAllItems();
+                    for (String item : getFilterHistory()) {
+                        filterField.addItem(item);
+                    }
+                } else {
+                    packetsTable.configureRowFilter(null);
+                }
+            } catch (ParseException | TokenMgrError e1) {
+                packetsTable.configureRowFilter(null);
+            }
+        });
+        PromptSupport.setPrompt("Display Filter (e.g. my-parameter == 123)", filterEditor);
+
+        getContentPane().add(filterBar, BorderLayout.NORTH);
         getContentPane().add(logsplit, BorderLayout.CENTER);
 
         clearWindow();
         updateTitle();
         pack();
+        setLocationRelativeTo(null); // Center on primary monitor
+
+        packetsTable.requestFocusInWindow(); // Take focus away from search box
         setVisible(true);
     }
 
@@ -652,10 +760,13 @@ public class PacketViewer extends JFrame implements ActionListener,
         final int linesize = 5 + 5 * 8 + 16 + 1;
         int n, tmp, textoffset, binHighStart, binHighStop, ascHighStart, ascHighStop;
 
-        hexDoc.setCharacterAttributes(0, hexDoc.getLength(), fixedStyle, true); // reset styles throughout the document
+        // reset styles throughout the document
+        hexDoc.setCharacterAttributes(0, hexDoc.getLength(), fixedStyle, true);
+        for (int i = 0; i < hexDoc.getLength(); i += linesize) {
+            hexDoc.setCharacterAttributes(i, 4, offsetStyle, true);
+        }
 
         // apply style for highlighted parts
-
         for (Range bitRange : highlightBits) {
             if (bitRange == null) {
                 continue;
@@ -940,6 +1051,39 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         // Also update JMenu accordingly
         updateMenuWithRecentFiles();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getFilterHistory() {
+        List<String> history = null;
+        Object obj = PrefsObject.getObject(uiPrefs, "FilterHistory");
+        if (obj instanceof ArrayList) {
+            history = (ArrayList<String>) obj;
+        }
+        return (history != null) ? history : new ArrayList<>();
+    }
+
+    private void updateFilterHistory(String filter) {
+        if (filter == null || filter.trim().isEmpty()) {
+            return;
+        }
+
+        List<String> history = getFilterHistory();
+        boolean exists = false;
+        for (int i = 0; i < history.size(); i++) {
+            String entry = history.get(i);
+            if (entry.equals(filter)) {
+                history.add(0, history.remove(i));
+                exists = true;
+            }
+        }
+        if (!exists) {
+            history.add(0, filter);
+        }
+        if (history.size() > 10) {
+            history = new ArrayList<>(history.subList(0, 10));
+        }
+        PrefsObject.putObject(uiPrefs, "FilterHistory", history);
     }
 
     private void removeBorders(JSplitPane splitPane) {
