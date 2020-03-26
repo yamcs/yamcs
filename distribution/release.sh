@@ -1,26 +1,7 @@
 #!/bin/bash
 set -e
 
-# This script generates releases in two steps:
-# 1. Compile a fresh clone of the development tree
-# 2. Emit artifacts in various formats.
-#
-# By design (2) does not require any sort of compilation.
-
-builddeb=0
 GPG_KEY=yamcs@spaceapplications.com
-
-for arg in "$@"; do
-    case "$arg" in
-    --with-deb)
-        builddeb=1
-        ;;
-    *)
-        echo "Usage: $0 [--with-deb]"
-        exit 1;
-        ;;
-    esac
-done
 
 cd `dirname $0`/..
 yamcshome=`pwd`
@@ -78,9 +59,6 @@ mvn package -P yamcs-release -DskipTests
 rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
 
-debtopdir="$yamcshome/distribution/target/debbuild"
-mkdir -p $debtopdir
-
 # Build Yamcs RPM
 cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/distribution/target
 
@@ -117,33 +95,6 @@ if [ $snapshot -eq 0 ]; then
     rpmsign --key-id $GPG_KEY --addsign distribution/target/*.rpm
 fi
 
-# Yamcs Debian package (experimental)
-if [ $builddeb -eq 1 ]; then
-    debbuilddir=$debtopdir/yamcs
-    
-    mkdir -p $debbuilddir/opt/yamcs
-    tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$debbuilddir/opt/yamcs"
-    
-    mkdir -p "$debbuilddir/etc/init.d"
-    cp -a distribution/sysvinit/* "$debbuilddir/etc/init.d"
-    # Remark that on debian systems /lib/systemd/system is used instead of /usr/lib/systemd/system
-    mkdir -p "$debbuilddir/lib/systemd/system"
-    cp -a distribution/sysvinit/* "$debbuilddir/lib/systemd/system"
-    
-    mkdir $debbuilddir/DEBIAN
-    cp distribution/debian/yamcs/* $debbuilddir/DEBIAN
-    installedsize=`du -sk $debbuilddir | awk '{print $1;}'`
-    cat distribution/debian/yamcs/control | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" | sed -e "s/@@INSTALLEDSIZE@@/$installedsize/" > "$debbuilddir/DEBIAN/control"
-    
-    fakeroot dpkg-deb --build $debbuilddir
-    # dpkg-deb always writes the deb file in '..' of the builddir
-    mv $debtopdir/*.deb "$yamcshome/distribution/target/yamcs_$version"-"$release"_amd64.deb
-
-    if [ $snapshot -eq 0 ]; then
-        debsigs --sign=origin --default-key $GPG_KEY distribution/target/*.deb
-    fi
-fi
-
 echo
 echo 'All done. Generated assets:'
 ls -lh `find distribution/target -maxdepth 1 -type f`
@@ -162,7 +113,7 @@ else
     fi
 fi
 
-rm -rf $clonedir $rpmtopdir $debtopdir
+rm -rf $clonedir $rpmtopdir
 
 # Upgrade version in pom.xml files
 # For example: 1.2.3 --> 1.2.4-SNAPSHOT
