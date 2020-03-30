@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.http;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,6 @@ public final class MediaType {
     static final Map<String, MediaType> knownTypes = new HashMap<>();
     public static final MediaType OCTET_STREAM = new MediaType("application/octet-stream");
     public static final MediaType CSV = new MediaType("text/csv");
-    public static final MediaType HTML = new MediaType("text/html");
     public static final MediaType JSON = new MediaType("application/json");
     public static final MediaType PROTOBUF = new MediaType("application/protobuf");
     public static final MediaType PLAIN_TEXT = new MediaType("plain/text");

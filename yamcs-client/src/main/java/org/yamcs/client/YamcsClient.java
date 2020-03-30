@@ -10,11 +10,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.Observer;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
@@ -34,7 +34,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 public class YamcsClient {
 
     private static final int MAX_FRAME_PAYLOAD_LENGTH = 10 * 1024 * 1024;
-    private static final Logger log = LoggerFactory.getLogger(YamcsClient.class);
+    private static final Logger log = Logger.getLogger(YamcsClient.class.getName());
 
     private final String host;
     private final int port;
@@ -111,13 +111,13 @@ public class YamcsClient {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw new UnauthorizedException();
         } catch (ClientException e) {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw e;
         }
         String accessToken = restClient.httpClient.getCredentials().getAccessToken();
@@ -135,7 +135,7 @@ public class YamcsClient {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             throw e;
         }
         String accessToken = restClient.httpClient.getCredentials().getAccessToken();
@@ -158,19 +158,19 @@ public class YamcsClient {
                         cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
                         cl.connectionFailed(host + ":" + port, (UnauthorizedException) cause);
                     }
-                    log.warn("Connection to " + host + ":" + port + " failed", cause);
+                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
                     throw (UnauthorizedException) cause; // Jump out
                 } else {
                     for (ConnectionListener cl : connectionListeners) {
                         cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
                     }
-                    log.warn("Connection to " + host + ":" + port + " failed", cause);
+                    log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
                 }
             } catch (TimeoutException e) {
                 for (ConnectionListener cl : connectionListeners) {
                     cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
                 }
-                log.warn("Connection to " + host + ":" + port + " failed", e);
+                log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 for (ConnectionListener cl : connectionListeners) {
@@ -194,7 +194,7 @@ public class YamcsClient {
                 cl.log(connectionAttempts + " connection attempts failed, giving up.");
                 cl.connectionFailed(host + ":" + port, e);
             }
-            log.warn(connectionAttempts + " connection attempts failed, giving up.");
+            log.log(Level.WARNING, connectionAttempts + " connection attempts failed, giving up.");
             throw e;
         } else {
             throw new ClientException("Server is not available");
@@ -248,7 +248,7 @@ public class YamcsClient {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + e.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", e);
+            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", e);
             connectionDone = null;
             throw new ClientException("Cannot connect WebSocket client", e);
         } catch (ExecutionException e) {
@@ -256,7 +256,7 @@ public class YamcsClient {
             for (ConnectionListener cl : connectionListeners) {
                 cl.log("Connection to " + host + ":" + port + " failed: " + cause.getMessage());
             }
-            log.warn("Connection to " + host + ":" + port + " failed", cause);
+            log.log(Level.WARNING, "Connection to " + host + ":" + port + " failed", cause);
             connectionDone = null;
             if (cause instanceof WebSocketHandshakeException && cause.getMessage().contains("401")) {
                 throw new UnauthorizedException();
@@ -434,7 +434,7 @@ public class YamcsClient {
     }
 
     public void close() {
-        if(closed) {
+        if (closed) {
             return;
         }
         closed = true;
@@ -456,7 +456,7 @@ public class YamcsClient {
                 connectionListeners.forEach(l -> {
                     l.log(msg);
                 });
-                log.warn(msg);
+                log.warning(msg);
             }
             connected = false;
             connectionInfo = null;

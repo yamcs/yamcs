@@ -3,9 +3,9 @@ package org.yamcs.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.client.WebSocketClient.RequestResponsePair;
 import org.yamcs.protobuf.WebSocketServerMessage;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
@@ -31,7 +31,7 @@ import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
+    private static final Logger log = Logger.getLogger(WebSocketClientHandler.class.getName());
 
     private final WebSocketClientHandshaker handshaker;
     private final WebSocketClient client;
@@ -96,7 +96,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof BinaryWebSocketFrame) {
             BinaryWebSocketFrame binaryFrame = (BinaryWebSocketFrame) frame;
-            log.trace("WebSocket Client received message of size {} ", binaryFrame.content().readableBytes());
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("WebSocket Client received message of size " + binaryFrame.content().readableBytes());
+            }
             processFrame(binaryFrame);
         } else if (frame instanceof PingWebSocketFrame) {
             frame.content().retain();
@@ -107,7 +109,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             log.info("WebSocket Client received closing");
             ch.close();
         } else {
-            log.error("Received unsupported web socket frame " + frame);
+            log.severe("Received unsupported web socket frame " + frame);
             System.out.println(((TextWebSocketFrame) frame).text());
         }
     }
@@ -141,7 +143,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         int reqId = reply.getSequenceNumber();
         RequestResponsePair pair = client.removeUpstreamRequest(reqId);
         if (pair == null) {
-            log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
+            log.warning(
+                    "Received an exception for a request I did not send (or was already finished) seqNum: " + reqId);
             return;
         }
         if (pair.responseHandler != null) {
@@ -153,11 +156,12 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         int reqId = exceptionData.getSequenceNumber();
         RequestResponsePair pair = client.getRequestResponsePair(reqId);
         if (pair == null) {
-            log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
+            log.warning(
+                    "Received an exception for a request I did not send (or was already finished) seqNum: " + reqId);
             return;
         }
 
-        log.warn("Got exception message " + exceptionData.getMessage());
+        log.warning("Got exception message " + exceptionData.getMessage());
         if (pair.responseHandler != null) {
             pair.responseHandler.onException(exceptionData);
         }
@@ -165,7 +169,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("WebSocket exception. Closing channel", cause);
+        log.log(Level.SEVERE, "WebSocket exception. Closing channel", cause);
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);
         }

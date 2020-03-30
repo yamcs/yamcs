@@ -18,10 +18,10 @@ import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.api.MediaType;
 import org.yamcs.client.BulkRestDataSender;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
+import org.yamcs.client.HttpClient;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.AlarmData;
@@ -308,7 +308,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     public void testIndexWithRestClient() throws Exception {
         generatePkt13AndPps("2015-02-01T10:00:00", 3600);
 
-        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        restClient.setAcceptMediaType(HttpClient.MT_PROTOBUF);
 
         long start = TimeEncoding.parse("2015-02-01T00:00:00");
         long stop = TimeEncoding.parse("2015-02-01T11:00:00");

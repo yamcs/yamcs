@@ -17,7 +17,6 @@ import java.util.logging.LogManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YConfigurationResolver;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
@@ -634,11 +633,11 @@ public class YConfiguration {
     }
 
     public byte[] getBinary(String key, byte[] defaultValue) {
-        if(root.containsKey(key)) {
+        if (root.containsKey(key)) {
             return getBinary(root, key);
         } else {
             return defaultValue;
-                
+
         }
     }
 
@@ -648,17 +647,18 @@ public class YConfiguration {
         if (o instanceof byte[]) {
             return (byte[]) o;
         } else if (o instanceof String) {
-            String s =  (String)o;
+            String s = (String) o;
             try {
                 return StringConverter.hexStringToArray((String) o);
             } catch (IllegalArgumentException e) {
-                throw new ConfigurationException("'"+s+"' is not an hexadecimal string");
+                throw new ConfigurationException("'" + s + "' is not an hexadecimal string");
             }
         } else {
             throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
                     + getUnqualfiedClassName(o) + " and not binary or hexadecimal string");
         }
     }
+
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
      *
@@ -775,13 +775,14 @@ public class YConfiguration {
         return getEnum(root, key, enumClass);
     }
 
-    public <T extends Enum<T>> T  getEnum(String key, Class<T> enumClass, T defaultValue) {
-        if(root.containsKey(key)) {
+    public <T extends Enum<T>> T getEnum(String key, Class<T> enumClass, T defaultValue) {
+        if (root.containsKey(key)) {
             return getEnum(root, key, enumClass);
         } else {
             return defaultValue;
         }
     }
+
     /**
      * Returns a value of an enumeration that matches ignoring case the string obtained from the config with the given
      * key. Throws an Configurationexception if the key does not exist in config or if it does not map to a valid

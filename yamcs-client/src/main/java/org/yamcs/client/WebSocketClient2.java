@@ -11,12 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.Observer;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
@@ -62,7 +61,7 @@ import io.netty.util.concurrent.Future;
  */
 public class WebSocketClient2 {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketClient2.class);
+    private static final Logger log = Logger.getLogger(WebSocketClient2.class.getName());
 
     private String host;
     private int port;
@@ -297,7 +296,7 @@ public class WebSocketClient2 {
             confirmedCalls.put(message.getCall(), call);
             call.assignCallId(message.getCall());
         } else {
-            log.warn("Received a reply for an unknown call: {}", reply);
+            log.warning("Received a reply for an unknown call: " + reply);
         }
     }
 
@@ -306,7 +305,7 @@ public class WebSocketClient2 {
         if (call != null) {
             call.serverObserver.unpackNext(message.getData());
         } else {
-            log.warn("Received a message for an unknown call: {}", message);
+            log.warning("Received a message for an unknown call: " + message);
         }
     }
 

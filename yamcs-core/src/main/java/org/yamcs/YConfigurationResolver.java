@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs;
 
 import java.io.InputStream;
 

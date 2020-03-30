@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.events.EventProducer;
@@ -23,6 +22,7 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.MediaType;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractEventsApi;

@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.yamcs.xtce.xml;
 
 import java.io.File;
@@ -34,7 +31,6 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
@@ -3237,7 +3233,7 @@ public class XtceStaxReader {
         try {
             d = DatatypeFactory.newInstance().newDuration(v);
         } catch (DatatypeConfigurationException e) {
-            throw new ConfigurationException(e);
+            throw new Error(e);
         }
         return d.getTimeInMillis(new Date());
     }

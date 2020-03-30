@@ -9,8 +9,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
-import org.yamcs.ConfigurationException;
-
 public class YamcsConnectionProperties {
 
     public static enum Protocol {
@@ -78,7 +76,7 @@ public class YamcsConnectionProperties {
         try {
             return new URI((tls ? "https" : "http") + "://" + host + ":" + port + "/api/" + relativePath);
         } catch (URISyntaxException e) {
-            throw new ConfigurationException("Invalid URL", e);
+            throw new IllegalArgumentException("Invalid URL", e);
         }
     }
 
@@ -90,7 +88,7 @@ public class YamcsConnectionProperties {
         try {
             return new URI(urlString);
         } catch (URISyntaxException e) {
-            throw new ConfigurationException("Invalid URL", e);
+            throw new IllegalArgumentException("Invalid URL", e);
         }
     }
 

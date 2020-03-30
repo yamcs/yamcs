@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ExceptionUtil;

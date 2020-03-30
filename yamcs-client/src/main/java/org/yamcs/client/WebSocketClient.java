@@ -10,13 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
@@ -52,7 +50,7 @@ import io.netty.util.concurrent.Future;
  */
 public class WebSocketClient {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
+    private static final Logger log = Logger.getLogger(WebSocketClient.class.getName());
     private static final String SUBPROTOCOL_JSON = "json";
     private static final String SUBPROTOCOL_PROTOBUF = "protobuf";
 
@@ -159,7 +157,7 @@ public class WebSocketClient {
         }
         String subprotocol = SUBPROTOCOL_JSON;
         if (useProtobuf) {
-            header.add(HttpHeaderNames.ACCEPT, MediaType.PROTOBUF);
+            header.add(HttpHeaderNames.ACCEPT, "application/protobuf");
             subprotocol = SUBPROTOCOL_PROTOBUF;
         }
         URI uri = yprops.webSocketURI();
@@ -241,7 +239,7 @@ public class WebSocketClient {
     private void doSendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
         int id = idSequence.incrementAndGet();
         requestResponsePairBySeqId.put(id, new RequestResponsePair(request, responseHandler));
-        log.debug("Sending request {}", request);
+        log.fine("Sending request " + request);
         nettyChannel.writeAndFlush(request.toWebSocketFrame(id));
     }
 

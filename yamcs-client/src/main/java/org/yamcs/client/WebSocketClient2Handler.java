@@ -3,9 +3,9 @@ package org.yamcs.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.ServerMessage;
 
 import io.netty.buffer.ByteBufInputStream;
@@ -26,7 +26,7 @@ import io.netty.util.CharsetUtil;
 
 public class WebSocketClient2Handler extends SimpleChannelInboundHandler<Object> {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketClient2Handler.class);
+    private static final Logger log = Logger.getLogger(WebSocketClient2Handler.class.getName());
 
     private final WebSocketClientHandshaker handshaker;
     private final WebSocketClient2 client;
@@ -85,7 +85,9 @@ public class WebSocketClient2Handler extends SimpleChannelInboundHandler<Object>
         WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof BinaryWebSocketFrame) {
             BinaryWebSocketFrame binaryFrame = (BinaryWebSocketFrame) frame;
-            log.trace("WebSocket Client received message of size {} ", binaryFrame.content().readableBytes());
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("WebSocket Client received message of size " + binaryFrame.content().readableBytes());
+            }
             handleFrame(binaryFrame);
         } else if (frame instanceof PingWebSocketFrame) {
             frame.content().retain();
@@ -96,7 +98,7 @@ public class WebSocketClient2Handler extends SimpleChannelInboundHandler<Object>
             log.info("WebSocket Client received closing");
             ch.close();
         } else {
-            log.error("Received unsupported web socket frame " + frame);
+            log.severe("Received unsupported web socket frame " + frame);
             System.out.println(((TextWebSocketFrame) frame).text());
         }
     }
@@ -116,7 +118,7 @@ public class WebSocketClient2Handler extends SimpleChannelInboundHandler<Object>
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("WebSocket exception. Closing channel", cause);
+        log.log(Level.SEVERE, "WebSocket exception. Closing channel", cause);
         if (!handshakeFuture.isDone()) {
             handshakeFuture.setFailure(cause);
         }
