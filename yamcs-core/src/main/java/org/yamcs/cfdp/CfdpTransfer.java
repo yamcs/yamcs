@@ -4,8 +4,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.events.EventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
@@ -27,14 +27,12 @@ public abstract class CfdpTransfer {
     final int id;
 
     public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, long initiatorEntity,
-            Stream cfdpOut,
-            EventProducer eventProducer) {
+            Stream cfdpOut, EventProducer eventProducer) {
         this(yamcsInstance, executor, new CfdpTransactionId(initiatorEntity), cfdpOut, eventProducer);
     }
 
     public CfdpTransfer(String yamcsInstance, ScheduledThreadPoolExecutor executor, CfdpTransactionId cfdpTransactionId,
-            Stream cfdpOut,
-            EventProducer eventProducer) {
+            Stream cfdpOut, EventProducer eventProducer) {
         this.cfdpTransactionId = cfdpTransactionId;
         this.cfdpOut = cfdpOut;
         this.state = TransferState.RUNNING;

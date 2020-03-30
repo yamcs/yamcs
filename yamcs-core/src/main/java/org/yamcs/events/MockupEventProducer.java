@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.events;
 
 import java.util.Queue;
 

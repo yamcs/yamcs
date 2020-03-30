@@ -17,11 +17,11 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
@@ -113,22 +113,22 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     public CfdpTransfer getCfdpTransfer(long id) {
-       Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c-> c.getId()==id).findAny();
-        if(r.isPresent()) {
+        Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny();
+        if (r.isPresent()) {
             return r.get();
         } else {
-            return completedTransfers.stream().filter(c-> c.getId()==id).findAny().orElse(null);
+            return completedTransfers.stream().filter(c -> c.getId() == id).findAny().orElse(null);
         }
     }
 
     public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
-        if(all) {
-           List<CfdpTransfer> r =  new ArrayList<CfdpTransfer>();
-           r.addAll(pendingTransfers.values());
-           r.addAll(completedTransfers);
-           return r;
+        if (all) {
+            List<CfdpTransfer> r = new ArrayList<>();
+            r.addAll(pendingTransfers.values());
+            r.addAll(completedTransfers);
+            return r;
         } else {
-            return pendingTransfers.values(); 
+            return pendingTransfers.values();
         }
     }
 
@@ -214,7 +214,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
                             + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut, incomingBucket, eventProducer);
+            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut,
+                    incomingBucket, eventProducer);
             transfer.setMonitor(this);
             return transfer;
         } else {

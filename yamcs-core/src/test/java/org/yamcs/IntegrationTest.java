@@ -25,7 +25,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.HttpClient;
-import org.yamcs.client.RestEventProducer;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.http.HttpServer;
@@ -41,6 +40,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandOptions;
+import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.EditAlarmRequest;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.IssueCommandRequest;
@@ -870,7 +870,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(v, pv.getEngValue());
     }
 
-
     @Test
     public void testSendCommandNoTransmissionConstraint() throws Exception {
         // first subscribe to command history
@@ -891,7 +890,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
 
-
     /*-@Test
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -907,7 +905,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("this is a critical command, pay attention", significance.getSignificance().getReasonForWarning());
     
     }*/
-
 
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
@@ -998,8 +995,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
 
-   
-
     @Test
     public void testUpdateCommandHistory() throws Exception {
 
@@ -1052,8 +1047,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
      * 
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
-
-    
 
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
         checkPvals(2, pvals, packetProvider);
@@ -1157,16 +1150,17 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("events", "subscribe");
         wsClient.sendRequest(wsr).get();
 
-        RestEventProducer rep = new RestEventProducer(yamcsClient);
-        Event e1 = Event.newBuilder().setSource("IntegrationTest").setSeqNumber(1)
-                .setReceptionTime(TimeEncoding.getWallclockTime()).setGenerationTime(TimeEncoding.getWallclockTime())
-                .setMessage("event1").build();
-        rep.sendEvent(e1);
+        long now = TimeEncoding.getWallclockTime();
+        CreateEventRequest request = CreateEventRequest.newBuilder()
+                .setTime(TimeEncoding.toString(now))
+                .setMessage("event1")
+                .build();
+        restClient.doRequest("/archive/" + yamcsInstance + "/events", HttpMethod.POST, request);
 
         Event e2 = wsListener.eventList.poll(2, TimeUnit.SECONDS);
         assertNotNull(e2);
-        assertEquals(e1.getGenerationTime(), e2.getGenerationTime());
-        assertEquals(e1.getMessage(), e2.getMessage());
+        assertEquals(now, TimeEncoding.parse(e2.getGenerationTimeUTC()));
+        assertEquals("event1", e2.getMessage());
     }
 
     @Test
@@ -1178,22 +1172,22 @@ public class IntegrationTest extends AbstractIntegrationTest {
         Thread.sleep(2000);
         wsListener.alarmDataList.clear();
 
-        RestEventProducer rep = new RestEventProducer(yamcsClient);
-        Event e1 = Event.newBuilder().setSource("IntegrationTest").setType("Event-Alarm-Test")
-                .setSeverity(EventSeverity.WARNING).setSeqNumber(1)
-                .setGenerationTime(TimeEncoding.getWallclockTime())
-                .setMessage("event1").build();
-        rep.sendEvent(e1);
-
-        Event e2 = Event.newBuilder(e1).setCreatedBy("admin").build();
+        CreateEventRequest request = CreateEventRequest.newBuilder()
+                .setSeverity("warning")
+                .setSource("IntegrationTest")
+                .setType("Event-Alarm-Test")
+                .setMessage("event1")
+                .build();
+        restClient.doRequest("/archive/" + yamcsInstance + "/events", HttpMethod.POST, request);
 
         AlarmData a1 = wsListener.alarmDataList.poll(2, TimeUnit.SECONDS);
-
         assertNotNull(a1);
         EventAlarmData ea1 = a1.getEventDetail();
 
-        Event e3 = Event.newBuilder(ea1.getTriggerEvent()).clearReceptionTime().build();
-        assertTrue(e2.equals(e3));
+        assertEquals(EventSeverity.WARNING, ea1.getTriggerEvent().getSeverity());
+        assertEquals("IntegrationTest", ea1.getTriggerEvent().getSource());
+        assertEquals("Event-Alarm-Test", ea1.getTriggerEvent().getType());
+        assertEquals("event1", ea1.getTriggerEvent().getMessage());
 
         EditAlarmRequest ear = EditAlarmRequest.newBuilder().setState("shelved")
                 .setComment("I will deal with this later")

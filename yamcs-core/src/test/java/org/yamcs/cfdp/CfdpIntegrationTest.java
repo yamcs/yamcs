@@ -20,11 +20,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.client.RestClient;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.TransferDirection;
@@ -67,7 +67,7 @@ public class CfdpIntegrationTest {
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         incomingBucket = yarch.createBucket("cfdp-bucket-in");
         outgoingBucket = yarch.createBucket("cfdp-bucket-out");
-       // LoggingUtils.enableLogging();
+        // LoggingUtils.enableLogging();
     }
 
     @Before
@@ -80,58 +80,61 @@ public class CfdpIntegrationTest {
     public void after() throws InterruptedException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream cfdpOut = ydb.getStream("cfdp_out");
-        cfdpOut.getSubscribers().forEach(s->cfdpOut.removeSubscriber(s));
+        cfdpOut.getSubscribers().forEach(s -> cfdpOut.removeSubscriber(s));
     }
-    
+
     @Test
     public void testClass1() throws Exception {
         byte[] data = createObject("randomfile1", 1000);
-        uploadAndCheck("randomfile1", data, false,  Collections.emptyList(),  TransferState.COMPLETED, TransferState.COMPLETED);
+        uploadAndCheck("randomfile1", data, false, Collections.emptyList(), TransferState.COMPLETED,
+                TransferState.COMPLETED);
     }
 
     @Test
     public void testClass2() throws Exception {
         byte[] data = createObject("randomfile2", 1000);
-        uploadAndCheck("randomfile2", data, true, Collections.emptyList(), TransferState.COMPLETED, TransferState.COMPLETED);
+        uploadAndCheck("randomfile2", data, true, Collections.emptyList(), TransferState.COMPLETED,
+                TransferState.COMPLETED);
     }
 
     @Test
     public void testClass1WithPacketLoss() throws Exception {
         byte[] data = createObject("randomfile3", 1000);
-        //this will lose the first data packet
-        uploadAndCheck("randomfile3", data, false, Arrays.asList(2),  TransferState.COMPLETED, TransferState.FAILED);
+        // this will lose the first data packet
+        uploadAndCheck("randomfile3", data, false, Arrays.asList(2), TransferState.COMPLETED, TransferState.FAILED);
     }
-    
+
     @Test
     public void testClass1WithPacketLoss2() throws Exception {
         byte[] data = createObject("randomfile4", 1000);
-        //this will lose the first data packet and the EOF
-        uploadAndCheck("randomfile4", data, false, Arrays.asList(2, 5),  TransferState.COMPLETED, TransferState.FAILED);
+        // this will lose the first data packet and the EOF
+        uploadAndCheck("randomfile4", data, false, Arrays.asList(2, 5), TransferState.COMPLETED, TransferState.FAILED);
     }
-    
+
     @Test
     public void testClass2WithPacketLoss() throws Exception {
         byte[] data = createObject("randomfile5", 1000);
-        //this will lose the first data packet
-        uploadAndCheck("randomfile5", data, true, Arrays.asList(2),  TransferState.COMPLETED, TransferState.COMPLETED);
+        // this will lose the first data packet
+        uploadAndCheck("randomfile5", data, true, Arrays.asList(2), TransferState.COMPLETED, TransferState.COMPLETED);
     }
-    
+
     @Test
     public void testClass2WithPacketLoss2() throws Exception {
         byte[] data = createObject("randomfile5", 1000);
-        //this will lose the first data packet and the first EOF
-        uploadAndCheck("randomfile5", data, true, Arrays.asList(2, 5),  TransferState.COMPLETED, TransferState.COMPLETED);
+        // this will lose the first data packet and the first EOF
+        uploadAndCheck("randomfile5", data, true, Arrays.asList(2, 5), TransferState.COMPLETED,
+                TransferState.COMPLETED);
     }
-    
+
     @Test
     public void testClass2WithPacketLoss3() throws Exception {
         byte[] data = createObject("randomfile6", 1000);
-        //this will lose the first data packet and all the EOF
-        uploadAndCheck("randomfile6", data, true, Arrays.asList(2, 5, 6),  TransferState.FAILED, TransferState.FAILED);
+        // this will lose the first data packet and all the EOF
+        uploadAndCheck("randomfile6", data, true, Arrays.asList(2, 5, 6), TransferState.FAILED, TransferState.FAILED);
     }
-    
-    
-    private void uploadAndCheck(String objName, byte[] data,  boolean reliable, List<Integer> dropPackets, TransferState expectedSenderState, TransferState expectedReceiverState) throws Exception {
+
+    private void uploadAndCheck(String objName, byte[] data, boolean reliable, List<Integer> dropPackets,
+            TransferState expectedSenderState, TransferState expectedReceiverState) throws Exception {
         MyFileReceiver rec = new MyFileReceiver(dropPackets);
 
         CreateTransferRequest ctr = CreateTransferRequest.newBuilder().setBucket(outgoingBucket.getName())
@@ -152,22 +155,22 @@ public class CfdpIntegrationTest {
             responseFuture = restClient.doRequest("/cfdp/" + yamcsInstance + "/transfers/" + tinf.getId(),
                     HttpMethod.GET);
             tinfo1 = TransferInfo.parseFrom(responseFuture.get());
-            if(isFinished(tinfo1.getState()) && isFinished(rec.trsf.getTransferState())) {
+            if (isFinished(tinfo1.getState()) && isFinished(rec.trsf.getTransferState())) {
                 break;
             }
         }
         assertNotNull(tinfo1);
         assertEquals(expectedSenderState, tinfo1.getState());
         assertEquals(expectedReceiverState, rec.trsf.getTransferState());
-         
-        if(expectedReceiverState == TransferState.COMPLETED) {
+
+        if (expectedReceiverState == TransferState.COMPLETED) {
             byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
             assertArrayEquals(data, recdata);
         }
     }
 
     private boolean isFinished(TransferState state) {
-        return state==TransferState.COMPLETED || state==TransferState.FAILED;
+        return state == TransferState.COMPLETED || state == TransferState.FAILED;
     }
 
     // create an object in a bucket
@@ -178,7 +181,7 @@ public class CfdpIntegrationTest {
 
         return data;
     }
-    
+
     private YConfiguration getConfig() {
         Map<String, Object> m = new HashMap<>();
         m.put("inactivityTimeout", 1000);
@@ -192,13 +195,13 @@ public class CfdpIntegrationTest {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
         int tcount = 0;
         final List<Integer> dropPackets;
-        
+
         MyFileReceiver(List<Integer> dropPackets) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream cfdpIn = ydb.getStream("cfdp_in");
             Stream cfdpOut = ydb.getStream("cfdp_out");
             this.dropPackets = dropPackets;
-            
+
             cfdpOut.addSubscriber(new StreamSubscriber() {
                 @Override
                 public void streamClosed(Stream stream) {
@@ -208,15 +211,16 @@ public class CfdpIntegrationTest {
                 public void onTuple(Stream stream, Tuple tuple) {
                     tcount++;
                     CfdpPacket packet = CfdpPacket.fromTuple(tuple);
-                    //System.out.println("packet"+tcount+": "+packet);
-                    if(dropPackets.contains(tcount)) {
-                       // System.out.println("dropping packet"+tcount);
+                    // System.out.println("packet"+tcount+": "+packet);
+                    if (dropPackets.contains(tcount)) {
+                        // System.out.println("dropping packet"+tcount);
                         return;
                     }
-                    
+
                     if (trsf == null) {
                         MetadataPacket mdp = (MetadataPacket) packet;
-                        trsf = new CfdpIncomingTransfer("test", executor, getConfig(), (MetadataPacket) mdp, cfdpIn, incomingBucket,
+                        trsf = new CfdpIncomingTransfer("test", executor, getConfig(), (MetadataPacket) mdp, cfdpIn,
+                                incomingBucket,
                                 null);
                     } else {
                         trsf.processPacket(packet);

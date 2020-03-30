@@ -24,7 +24,7 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducer;
+import org.yamcs.events.EventProducer;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -114,6 +114,7 @@ public class AlgorithmManager extends AbstractYamcsService
         }
     }
 
+    @Override
     public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
         this.config = config;

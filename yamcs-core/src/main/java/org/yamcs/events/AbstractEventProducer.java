@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.events;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.EventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 

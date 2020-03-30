@@ -3,8 +3,8 @@ package org.yamcs.tctm;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
@@ -39,9 +39,9 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-       
+
         configureTimeDecoder(config);
-        
+
     }
 
     void configureTimeDecoder(YConfiguration config) {

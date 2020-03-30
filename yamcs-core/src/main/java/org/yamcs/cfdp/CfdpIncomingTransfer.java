@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -30,6 +29,7 @@ import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.events.EventProducer;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
@@ -120,7 +120,7 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
                     if (missingSegments.isEmpty()) {
                         changeState(TransferState.COMPLETED);
                     } else {
-                        failureReason = "EOF received but missing "+missingSegments.size()+" segments";
+                        failureReason = "EOF received but missing " + missingSegments.size() + " segments";
                         changeState(TransferState.FAILED);
                     }
                     saveFileInBucket(missingSegments);
@@ -158,14 +158,14 @@ public class CfdpIncomingTransfer extends CfdpTransfer {
     }
 
     private void onInactivityTimerExpiration() {
-        failureReason="inactivity timeout";
+        failureReason = "inactivity timeout";
         changeState(TransferState.FAILED);
     }
 
     private void saveFileInBucket(List<SegmentRequest> missingSegments) {
         try {
             Map<String, String> metadata = null;
-            if(!missingSegments.isEmpty()) {
+            if (!missingSegments.isEmpty()) {
                 metadata = new HashMap<>();
                 metadata.put("missingSegments", missingSegments.toString());
             }

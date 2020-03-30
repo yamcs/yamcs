@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.events;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,8 +7,6 @@ import java.util.Queue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.api.AbstractEventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 
