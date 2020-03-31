@@ -7,10 +7,10 @@ import static org.junit.Assert.assertSame;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.UnauthorizedException;
+import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsInstance;
 
 public class RestClientTest extends AbstractIntegrationTest {

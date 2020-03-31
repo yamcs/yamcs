@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.client;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,10 +11,6 @@ import java.util.Properties;
 
 public class YamcsConnectionProperties {
 
-    public static enum Protocol {
-        http, artemis;
-    }
-
     public static enum AuthType {
         STANDARD,
         KERBEROS;
@@ -26,7 +22,6 @@ public class YamcsConnectionProperties {
     private String username;
     private char[] password;
 
-    private Protocol protocol;
     private boolean tls;
     private AuthType authType = AuthType.STANDARD;
 
@@ -144,14 +139,9 @@ public class YamcsConnectionProperties {
         this.authType = authType;
     }
 
-    public void setProtocol(Protocol protocol) {
-        this.protocol = protocol;
-    }
-
     public YamcsConnectionProperties copy() {
         YamcsConnectionProperties ycp1 = new YamcsConnectionProperties(this.host, this.port, this.instance);
         ycp1.tls = this.tls;
-        ycp1.protocol = this.protocol;
         ycp1.username = this.username;
         ycp1.password = this.password;
         ycp1.authType = this.authType;
@@ -194,7 +184,7 @@ public class YamcsConnectionProperties {
     }
 
     /**
-     * uri is protocol://[[username]:[password]@][host[:port]]/[instance]
+     * uri is http[s]://[[username]:[password]@][host[:port]]/[instance]
      * 
      * @param uri
      * @return an object containing the connection properties
@@ -202,18 +192,14 @@ public class YamcsConnectionProperties {
      */
     public static YamcsConnectionProperties parse(String uri) throws URISyntaxException {
         YamcsConnectionProperties ycd = new YamcsConnectionProperties();
+        ycd.port = 8090; // Default
+
         URI u = new URI(uri);
-        if ("yamcs".equalsIgnoreCase(u.getScheme()) || "artemis".equalsIgnoreCase(u.getScheme())) {
-            ycd.protocol = Protocol.artemis;
-            ycd.port = 5445; // default port, might be overwritten below if the port is part of the URI
-        } else if ("http".equalsIgnoreCase(u.getScheme()) || "https".equalsIgnoreCase(u.getScheme())) {
-            ycd.protocol = Protocol.http;
-            ycd.port = 8090; // default port, might be overwritten below if the port is part of the URI
-        } else {
-            throw new URISyntaxException(uri, "only http, https or yamcs/artemis  scheme allowed");
+        if (!"http".equalsIgnoreCase(u.getScheme()) && !"https".equalsIgnoreCase(u.getScheme())) {
+            throw new URISyntaxException(uri, "URL must be of http or https scheme");
         }
 
-        if ("https".equals(u.getScheme()) || "yamcss".equals(u.getScheme())) {
+        if ("https".equals(u.getScheme())) {
             ycd.tls = true;
         }
         if (u.getPort() != -1) {
@@ -243,17 +229,9 @@ public class YamcsConnectionProperties {
         return ycd;
     }
 
-    public Protocol getProtocol() {
-        return protocol;
-    }
-
     public String getUrl() {
         StringBuilder sb = new StringBuilder();
-        if (tls) {
-            sb.append(protocol + "s://");
-        } else {
-            sb.append(protocol + "://");
-        }
+        sb.append(tls ? "https://" : "http://");
         if (host != null) {
             sb.append(host);
             if (port != -1) {

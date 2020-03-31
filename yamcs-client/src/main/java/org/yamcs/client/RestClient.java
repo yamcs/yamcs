@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 
@@ -45,11 +43,6 @@ public class RestClient {
      * Creates a rest client that communications using protobuf
      */
     public RestClient(YamcsConnectionProperties yprops) {
-        Protocol p = yprops.getProtocol();
-        if (p != null && p != Protocol.http) {
-            throw new IllegalArgumentException(
-                    "Unsupported protocol " + p + "; The only supported protocol is " + Protocol.http);
-        }
         this.yprops = yprops;
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);

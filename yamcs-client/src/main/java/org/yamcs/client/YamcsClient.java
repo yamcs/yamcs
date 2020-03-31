@@ -16,8 +16,6 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
 
 import org.yamcs.api.Observer;
-import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.client.SpnegoUtils.SpnegoException;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.SubscribeTimeRequest;
@@ -77,7 +75,6 @@ public class YamcsClient {
         YamcsConnectionProperties yprops = new YamcsConnectionProperties();
         yprops.setHost(host);
         yprops.setPort(port);
-        yprops.setProtocol(Protocol.http);
         yprops.setTls(tls);
         restClient = new RestClient(yprops);
         restClient.setAutoclose(false);
@@ -218,7 +215,6 @@ public class YamcsClient {
         YamcsConnectionProperties yprops = new YamcsConnectionProperties();
         yprops.setHost(host);
         yprops.setPort(port);
-        yprops.setProtocol(Protocol.http);
         yprops.setTls(tls);
 
         if (initialInstance != null) {

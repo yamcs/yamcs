@@ -14,7 +14,6 @@ import org.apache.activemq.artemis.api.core.client.SessionFailureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstances;
 
@@ -37,7 +36,7 @@ public class YamcsConnector implements SessionFailureListener {
     CopyOnWriteArrayList<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
     volatile boolean connected, connecting;
     protected YamcsSession yamcsSession;
-    protected YamcsConnectionProperties connectionParams;
+    protected ArtemisConnectionProperties connectionParams;
     static Logger log = LoggerFactory.getLogger(YamcsConnector.class);
     private boolean retry = true;
     private boolean reconnecting = false;
@@ -94,7 +93,7 @@ public class YamcsConnector implements SessionFailureListener {
         return null;
     }
 
-    public Future<String> connect(YamcsConnectionProperties cp) {
+    public Future<String> connect(ArtemisConnectionProperties cp) {
         this.connectionParams = cp;
         return doConnect();
     }
@@ -228,7 +227,7 @@ public class YamcsConnector implements SessionFailureListener {
         return yamcsSession;
     }
 
-    public YamcsConnectionProperties getConnectionParams() {
+    public ArtemisConnectionProperties getConnectionParams() {
         return connectionParams;
     }
 

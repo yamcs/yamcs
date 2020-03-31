@@ -15,7 +15,6 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
