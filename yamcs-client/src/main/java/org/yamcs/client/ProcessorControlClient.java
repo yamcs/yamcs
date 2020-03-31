@@ -1,6 +1,5 @@
 package org.yamcs.client;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -16,11 +15,9 @@ import org.yamcs.protobuf.ServiceState;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -49,7 +46,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     public CompletableFuture<byte[]> createProcessor(String instance, String name, String type,
-            ReplayRequest spec, boolean persistent, int[] clients) throws ClientException {
+            String spec, boolean persistent, int[] clients) throws ClientException {
         CreateProcessorRequest.Builder cprb = CreateProcessorRequest.newBuilder()
                 .setInstance(instance)
                 .setName(name)
@@ -60,12 +57,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         }
 
         if (spec != null) {
-            try {
-                String json = JsonFormat.printer().print(spec);
-                cprb.setConfig(json);
-            } catch (IOException e) {
-                throw new ClientException("Error encoding the request to json", e);
-            }
+            cprb.setConfig(spec);
         }
 
         RestClient restClient = client.getRestClient();
