@@ -1,7 +1,6 @@
 package org.yamcs.ui.packetviewer;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -13,24 +12,21 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.border.Border;
 
 import org.yamcs.ui.packetviewer.ParametersTable.SearchStats;
 
 public class FindParameterBar extends JPanel {
     private static final long serialVersionUID = 1L;
-    private static final ImageIcon ICON_DOWN = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/down.png"));
+    private static final ImageIcon ICON_DOWN = new ImageIcon(
+            PacketViewer.class.getResource("/org/yamcs/images/down.png"));
     private static final ImageIcon ICON_UP = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/up.png"));
-    private static final ImageIcon ICON_CLOSE = new ImageIcon(PacketViewer.class.getResource("/org/yamcs/images/close.png"));
-
-    private static final Color INVALID_COLOR = new Color(255, 150, 150);
-    private static final Border INVALID_BORDER = BorderFactory.createLineBorder(new Color(205, 87, 40));
+    private static final ImageIcon ICON_CLOSE = new ImageIcon(
+            PacketViewer.class.getResource("/org/yamcs/images/close.png"));
 
     public static final String OPEN_ACTION = "open-find-bar";
     public static final String CLOSE_ACTION = "close-find-bar";
@@ -45,14 +41,11 @@ public class FindParameterBar extends JPanel {
         searchField = new JTextField(25);
         ImageIconButton downButton = new ImageIconButton(ICON_DOWN);
 
-        ActionListener searchListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    SearchStats stats = parametersTable.nextSearchResult(searchTerm.toLowerCase());
-                    processStats(stats);
-                }
+        ActionListener searchListener = e -> {
+            String searchTerm = searchField.getText();
+            if (searchTerm != null && !searchTerm.trim().equals("")) {
+                SearchStats stats = parametersTable.nextSearchResult(searchTerm.toLowerCase());
+                processStats(stats);
             }
         };
 
@@ -60,14 +53,11 @@ public class FindParameterBar extends JPanel {
         downButton.addActionListener(searchListener);
 
         ImageIconButton upButton = new ImageIconButton(ICON_UP);
-        upButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText();
-                if (searchTerm != null && !searchTerm.trim().equals("")) {
-                    SearchStats stats = parametersTable.previousSearchResult(searchTerm.toLowerCase());
-                    processStats(stats);
-                }
+        upButton.addActionListener(e -> {
+            String searchTerm = searchField.getText();
+            if (searchTerm != null && !searchTerm.trim().equals("")) {
+                SearchStats stats = parametersTable.previousSearchResult(searchTerm.toLowerCase());
+                processStats(stats);
             }
         });
 
@@ -83,13 +73,10 @@ public class FindParameterBar extends JPanel {
         statsLabel.setFont(statsLabel.getFont().deriveFont(~Font.BOLD));
 
         ImageIconButton closeFindBarButton = new ImageIconButton(ICON_CLOSE);
-        closeFindBarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                parametersTable.clearSearchResults();
-                parametersTable.requestFocusInWindow();
-            }
+        closeFindBarButton.addActionListener(e -> {
+            setVisible(false);
+            parametersTable.clearSearchResults();
+            parametersTable.requestFocusInWindow();
         });
 
         // GridBag, just for the vertical alignment..
@@ -116,6 +103,7 @@ public class FindParameterBar extends JPanel {
         searchField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), CLOSE_ACTION);
         searchField.getActionMap().put(CLOSE_ACTION, new AbstractAction() {
             private static final long serialVersionUID = 1L;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
@@ -129,6 +117,7 @@ public class FindParameterBar extends JPanel {
         // Open the find bar
         Action openAction = new AbstractAction("Find Parameter...") {
             private static final long serialVersionUID = 1L;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(true);
@@ -137,7 +126,8 @@ public class FindParameterBar extends JPanel {
             }
         };
         openAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
-        openAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        openAction.putValue(Action.ACCELERATOR_KEY,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         getActionMap().put(OPEN_ACTION, openAction);
     }
 
@@ -147,8 +137,9 @@ public class FindParameterBar extends JPanel {
             statsLabel.setText(String.format("%s of %s", stats.selectedMatch, stats.totalMatching));
         } else {
             statsLabel.setText("Parameter not found");
-            searchField.setBackground(INVALID_COLOR);
-            searchField.setBorder(INVALID_BORDER);
+            searchField.setBackground(PacketViewer.ERROR_FAINT_BG);
+            searchField.setForeground(PacketViewer.ERROR_FAINT_FG);
+            searchField.setBorder(PacketViewer.ERROR_BORDER);
         }
     }
 
@@ -156,9 +147,10 @@ public class FindParameterBar extends JPanel {
      * Reverts the search field and the label to its defaults
      */
     private void revertToDefaults() {
-        if (searchField.getBackground().equals(INVALID_COLOR)) {
+        if (searchField.getBackground().equals(PacketViewer.ERROR_FAINT_BG)) {
             JTextField dummy = new JTextField();
             searchField.setBackground(dummy.getBackground());
+            searchField.setForeground(dummy.getForeground());
             searchField.setBorder(dummy.getBorder());
         }
         statsLabel.setText("");

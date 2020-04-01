@@ -64,7 +64,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         log = new Log(getClass(), name);
     }
 
-    void init(YConfiguration config) {
+    public static Spec getSpec() {
         Spec serviceSpec = new Spec();
         serviceSpec.addOption("class", OptionType.STRING).withRequired(true);
         serviceSpec.addOption("args", OptionType.ANY);
@@ -84,13 +84,19 @@ public class YamcsServerInstance extends YamcsInstanceService {
          */
         // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("mdb", OptionType.ANY);
+        spec.addOption("mdbSpec", OptionType.STRING);
+        spec.mutuallyExclusive("mdb", "mdbSpec");
 
         spec.addOption("timeService", OptionType.ANY);
         spec.addOption("tmIndexer", OptionType.ANY);
         spec.addOption("eventDecoders", OptionType.ANY);
 
+        return spec;
+    }
+
+    void init(YConfiguration config) {
         try {
-            this.config = spec.validate(config);
+            this.config = getSpec().validate(config);
         } catch (ValidationException e) {
             // Don't care about stacktrace inside spec
             throw new UncheckedExecutionException(new ValidationException(
@@ -298,7 +304,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                                       // (the failure might be due to the load of the XtceDb)
                     mdb.setName(xtcedb.getRootSpaceSystem().getName());
                     Header h = xtcedb.getRootSpaceSystem().getHeader();
-                    if ((h != null) && (h.getVersion() != null)) {
+                    if (h != null && h.getVersion() != null) {
                         mdb.setVersion(h.getVersion());
                     }
                 }
@@ -348,7 +354,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     public synchronized List<Processor> getProcessors() {
-        return new ArrayList<Processor>(processors.values());
+        return new ArrayList<>(processors.values());
     }
 
     public synchronized Processor getProcessor(String processorName) {

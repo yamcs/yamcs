@@ -6,7 +6,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,11 +35,10 @@ import io.netty.handler.codec.http.HttpMethod;
 public class CmdIntegrationTest extends AbstractIntegrationTest {
 
     @Before
-    public void subscribeCmdHistory() {
+    public void subscribeCmdHistory() throws InterruptedException, ExecutionException, TimeoutException {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
     }
-
 
     @Test
     public void testSendCommandNoTransmissionConstraint() throws Exception {
@@ -55,8 +56,7 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals(5, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
     }
-    
-    
+
     @Test
     public void testSendCommandFailedTransmissionConstraint() throws Exception {
 
@@ -74,7 +74,7 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        
+
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "NOK");
@@ -87,7 +87,6 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
                 "Transmission constraints check failed");
     }
 
-    
     @Test
     public void testSendCommandDisableTransmissionConstraint() throws Exception {
         CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstraints(true).build();
@@ -105,12 +104,12 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals("IntegrationTest", cmdid.getOrigin());
 
         checkNextCmdHistoryAttr(CommandHistoryPublisher.Queue_KEY, "default");
-        
+
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeQueued_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
     }
-    
+
     @Test
     public void testSendCommandSucceedTransmissionConstraint() throws Exception {
         IssueCommandRequest cmdreq = getCommand(6, "p1", "2");
@@ -243,7 +242,7 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
         checkNextCmdHistoryAttrStatusTime("Verifier_Execution", "DISABLED");
-        
+
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "PENDING");
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.AcknowledgeReleased_KEY, "OK");
         checkNextCmdHistoryAttrStatusTime("Verifier_Complete", "OK");
@@ -315,10 +314,6 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         assertEquals(id, cmdhist.getCommandId().getSequenceNumber());
     }
 
-    
-    
-    
-    
     public static class MyTcDataLink extends AbstractTcDataLink {
         static short seqNum = 5000;
 

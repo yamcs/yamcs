@@ -9,6 +9,9 @@
   <artifactId>yamcs-web</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs :: Web Interface</name>
+  <description>
+    Web interface for managing and monitoring Yamcs
+  </description>
 
   <properties>
     <webdir>${basedir}/src/main/webapp/dist</webdir>
@@ -37,6 +40,19 @@
         <directory>${basedir}/target/webapp</directory>
       </resource>
     </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>detect</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
   
   <profiles>

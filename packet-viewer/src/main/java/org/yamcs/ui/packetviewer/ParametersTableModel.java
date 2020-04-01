@@ -38,6 +38,10 @@ public class ParametersTableModel extends AbstractTableModel {
         return COLUMNS[columnIndex];
     }
 
+    public ParameterValue getParameterValue(int rowIndex) {
+        return pvList.get(rowIndex);
+    }
+
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         ParameterValue pv = pvList.get(rowIndex);

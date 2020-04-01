@@ -95,7 +95,6 @@ public class XtceDbFactory {
      * @return a newly created XTCE database object.
      * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
     public static synchronized XtceDb createInstance(List<YConfiguration> treeConfig, boolean attemptToLoadSerialized,
             boolean saveSerialized) throws ConfigurationException, DatabaseLoadException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
@@ -483,7 +482,6 @@ public class XtceDbFactory {
         return new ResolvedReference(l.get(0));
     }
 
-    @SuppressWarnings({ "unchecked" })
     private static LoaderTree getLoaderTree(YConfiguration c)
             throws ConfigurationException, DatabaseLoadException {
         String type = c.getString("type");
@@ -622,10 +620,16 @@ public class XtceDbFactory {
         XtceDb db = instance2Db.get(yamcsInstance);
         if (db == null) {
             YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
-            if (instanceConfig.isList("mdb")) {
+            if (instanceConfig.containsKey("mdbSpec")) {
+                db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdbSpec"));
+                instance2Db.put(yamcsInstance, db);
+            } else if (instanceConfig.isList("mdb")) {
                 db = createInstance(instanceConfig.getConfigList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);
             } else {
+                log.warn(String.format(
+                        "DEPRECATION: [yamcs.%s.yaml] Use 'mdbSpec' instead of 'mdb' if the value refers to an entry in mdb.yaml",
+                        yamcsInstance));
                 db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdb"));
                 instance2Db.put(yamcsInstance, db);
             }

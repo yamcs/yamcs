@@ -22,6 +22,10 @@ yamcsadmin
     .. option:: --etc-dir DIR
 
         Override default Yamcs configuration directory.
+    
+    .. option:: --data-dir DIR
+
+        Override default Yamcs data directory.
 
     .. option:: -h, --help
 
@@ -37,7 +41,9 @@ yamcsadmin
     :doc:`backup <yamcsadmin_backup>`
         Perform and restore backups
     :doc:`confcheck <yamcsadmin_confcheck>`
-        Check the configuration files of Yamcs
+        Check Yamcs configuration
+    :doc:`mdb <yamcsadmin_mdb>`
+        Provides MDB information
     :doc:`parchive <yamcsadmin_parchive>`
         Parameter Archive operations
     :doc:`password-hash <yamcsadmin_password-hash>`
@@ -46,8 +52,6 @@ yamcsadmin
         Provides low-level RocksDB data operations
     :doc:`users <yamcsadmin_users>`
         User operations
-    :doc:`xtcedb <yamcsadmin_xtcedb>`
-        Provides information about the XTCE database
 
 
 .. toctree::
@@ -55,8 +59,8 @@ yamcsadmin
 
     backup <yamcsadmin_backup>
     confcheck <yamcsadmin_confcheck>
+    mdb <yamcsadmin_mdb>
     parchive <yamcsadmin_parchive>
     password-hash <yamcsadmin_password-hash>
     rocksdb <yamcsadmin_rocksdb>
     users <yamcsadmin_users>
-    xtcedb <yamcsadmin_xtcedb>

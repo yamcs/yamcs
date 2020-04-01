@@ -23,6 +23,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -36,9 +37,8 @@ import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.TmPacket;
-import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.ui.packetviewer.filter.PacketFilter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
@@ -70,6 +70,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
 
     private PacketsTableModel tableModel;
     private TableRowSorter<PacketsTableModel> rowSorter;
+    private PacketFilter packetFilter;
 
     private PacketViewer packetViewer;
     private JPopupMenu popup;
@@ -152,6 +153,25 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         }
     }
 
+    public void configureRowFilter(PacketFilter packetFilter) {
+        this.packetFilter = packetFilter;
+        RowFilter<PacketsTableModel, Object> rf = null;
+        if (packetFilter != null) {
+            rf = new RowFilter<PacketsTableModel, Object>() {
+                @Override
+                public boolean include(Entry<? extends PacketsTableModel, ? extends Object> entry) {
+                    ListPacket packet = (ListPacket) entry.getValue(2);
+                    return packetFilter.matches(packet);
+                }
+            };
+            for (Parameter parameter : packetFilter.getParameters()) {
+                System.out.println("Provide .. " + parameter.getQualifiedName());
+                tmExtractor.startProviding(parameter);
+            }
+        }
+        rowSorter.setRowFilter(rf);
+    }
+
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
@@ -159,7 +179,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
             component.setBackground(LIGHT_GRAY);
         } else if (!isCellSelected(row, column)) {
             row = convertRowIndexToModel(row);
-            int packetNr = (Integer) getModel().getValueAt(row, 0);
+            int packetNr = (Integer) tableModel.getValueAt(row, 0);
             if (markedPacketNrs.contains(packetNr)) {
                 component.setBackground(Color.YELLOW);
             } else {
@@ -539,13 +559,13 @@ public class PacketsTable extends JTable implements ListSelectionListener {
                 }
             }
 
-            if (packetViewer.miAutoScroll.isSelected()) {
-                int rowNum = convertRowIndexToModel(tableModel.getRowCount() - 1);
+            if (packetViewer.miAutoScroll.isSelected() && getRowCount() > 0) {
+                int rowNum = convertRowIndexToModel(getRowCount() - 1);
                 Rectangle rect = getCellRect(rowNum, 0, true);
                 scrollRectToVisible(rect);
             }
-            if (packetViewer.miAutoSelect.isSelected()) {
-                int rowNum = convertRowIndexToModel(tableModel.getRowCount() - 1);
+            if (packetViewer.miAutoSelect.isSelected() && getRowCount() > 0) {
+                int rowNum = getRowCount() - 1;
                 getSelectionModel().setSelectionInterval(rowNum, rowNum);
             }
         });
@@ -600,11 +620,16 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         for (String pn : columnParaNames) {
             Parameter p = packetViewer.xtcedb.getParameter(pn);
             if (p == null) {
-                log("Cannot find a parameter with name " + pn + " in XtceDB, ignoring");
+                // log("Cannot find a parameter with name " + pn + " in XtceDB, ignoring");
             } else {
                 tableModel.addParameterColumn(p);
                 configureRowSorting();
                 tmExtractor.startProviding(p);
+            }
+        }
+        if (packetFilter != null) {
+            for (Parameter parameter : packetFilter.getParameters()) {
+                tmExtractor.startProviding(parameter);
             }
         }
 

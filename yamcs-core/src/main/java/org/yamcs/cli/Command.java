@@ -1,5 +1,7 @@
 package org.yamcs.cli;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.yamcs.Plugin;
+import org.yamcs.PluginManager;
+import org.yamcs.PluginMetadata;
 import org.yamcs.YamcsVersion;
 
 import com.beust.jcommander.JCommander;
@@ -91,8 +95,15 @@ public abstract class Command {
         // Special case. Global --version flag prints version info and quits
         if (this instanceof YamcsAdminCli && ((YamcsAdminCli) this).version) {
             console.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
-            for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-                console.println(plugin.getName() + " " + plugin.getVersion());
+            PluginManager pluginManager;
+            try {
+                pluginManager = new PluginManager();
+                for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+                    PluginMetadata meta = pluginManager.getMetadata(plugin.getClass());
+                    console.println(meta.getName() + " " + meta.getVersion());
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
             System.exit(0);
         }

@@ -8,7 +8,9 @@
 
   <artifactId>yamcs-tse</artifactId>
   <name>Yamcs :: TSE</name>
-  <description>Yamcs for Test Support Equipment</description>
+  <description>
+    Interface with Test Support Equipment
+  </description>
 
   <properties>
     <javaModuleName>org.yamcs.tse</javaModuleName>
@@ -27,6 +29,17 @@
           <execution>
             <goals>
               <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>detect</goal>
             </goals>
           </execution>
         </executions>

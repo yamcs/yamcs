@@ -30,6 +30,7 @@ cp -r simulation/src/main/yamcs/etc %{buildroot}/%{prefix}
 cp -r simulation/src/main/yamcs/etc-rpm/* %{buildroot}/%{prefix}/etc
 
 mkdir -p %{buildroot}/%{prefix}/displays
+mkdir -p %{buildroot}/%{prefix}/stacks
 mkdir -p %{buildroot}/storage/yamcs-data
 mkdir -p %{buildroot}/storage/yamcs-incoming
 
@@ -47,5 +48,6 @@ rm %{buildroot}/%{prefix}/lib/*-sources.jar
 %config %{prefix}/etc/*
 
 %dir %attr(700,yamcs,yamcs) %{prefix}/displays
+%dir %attr(700,yamcs,yamcs) %{prefix}/stacks
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-data
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-incoming

@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,11 +87,10 @@ public class YamcsServer {
 
     private static final Pattern INSTANCE_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml(.offline)?");
     private static final YamcsServer YAMCS = new YamcsServer();
- 
-    //used to schedule various tasks throughout the yamcs server (to avoid each service creating its own)
+
+    // used to schedule various tasks throughout the yamcs server (to avoid each service creating its own)
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
- 
-    
+
     /**
      * During shutdown, allow services this number of seconds for stopping
      */
@@ -137,11 +135,11 @@ public class YamcsServer {
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
-    Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
     Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
     List<ReadyListener> readyListeners = new ArrayList<>();
 
     private SecurityStore securityStore;
+    private PluginManager pluginManager;
 
     private String serverId;
     private byte[] secretKey;
@@ -296,11 +294,6 @@ public class YamcsServer {
         return config;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Plugin> T getPlugin(Class<T> clazz) {
-        return (T) plugins.get(clazz);
-    }
-
     private int getOnlineInstanceCount() {
         return (int) instances.values().stream().filter(ysi -> ysi.state() != InstanceState.OFFLINE).count();
     }
@@ -445,8 +438,8 @@ public class YamcsServer {
         return ysi;
     }
 
-    public Collection<Plugin> getPlugins() {
-        return plugins.values();
+    public PluginManager getPluginManager() {
+        return pluginManager;
     }
 
     /**
@@ -687,7 +680,9 @@ public class YamcsServer {
             try {
                 service = YObjectLoader.loadObject(serviceClass);
             } catch (ConfigurationException e) {
-                LOG.warn("The service {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method", serviceClass);
+                LOG.warn(
+                        "The service {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
+                        serviceClass);
                 // Ignore for now. Fallback to constructor initialization.
             }
         }
@@ -872,12 +867,14 @@ public class YamcsServer {
                 System.exit(0);
             } else if (YAMCS.version) {
                 System.out.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
+                PluginManager pluginManager = new PluginManager();
                 for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-                    System.out.println(plugin.getName() + " " + plugin.getVersion());
+                    PluginMetadata meta = pluginManager.getMetadata(plugin.getClass());
+                    System.out.println(meta.getName() + " " + meta.getVersion());
                 }
                 System.exit(0);
             }
-        } catch (ParameterException e) {
+        } catch (ParameterException | IOException e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
@@ -1001,7 +998,8 @@ public class YamcsServer {
     }
 
     public void prepareStart() throws ValidationException, IOException {
-        discoverPlugins();
+        pluginManager = new PluginManager();
+        pluginManager.discoverPlugins();
 
         // Load the UTC-TAI.history file.
         // Give priority to a file in etc folder.
@@ -1061,7 +1059,7 @@ public class YamcsServer {
             }
         });
 
-        loadPlugins();
+        pluginManager.loadPlugins();
         startServices();
 
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
@@ -1070,24 +1068,6 @@ public class YamcsServer {
             LOG.error(msg);
             globalCrashHandler.handleCrash("UncaughtException", msg);
         });
-    }
-
-    private void discoverPlugins() {
-        List<String> disabledPlugins;
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        if (yconf.containsKey("disabledPlugins")) {
-            disabledPlugins = yconf.getList("disabledPlugins");
-        } else {
-            disabledPlugins = Collections.emptyList();
-        }
-
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
-            if (disabledPlugins.contains(plugin.getName())) {
-                LOG.debug("Ignoring plugin {} (disabled by user config)", plugin.getName());
-            } else {
-                plugins.put(plugin.getClass(), plugin);
-            }
-        }
     }
 
     private void discoverTemplates() throws IOException {
@@ -1220,18 +1200,6 @@ public class YamcsServer {
                     config.getSubMap("crashHandler", "args"));
         } else {
             return YObjectLoader.loadObject(config.getSubString("crashHandler", "class"));
-        }
-    }
-
-    private void loadPlugins() throws PluginException {
-        for (Plugin plugin : plugins.values()) {
-            LOG.debug("Loading plugin {} {}", plugin.getName(), plugin.getVersion());
-            try {
-                plugin.onLoad();
-            } catch (PluginException e) {
-                LOG.error("Could not load plugin {} {}", plugin.getName(), plugin.getVersion());
-                throw e;
-            }
         }
     }
 
