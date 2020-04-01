@@ -64,7 +64,7 @@ public class TagApi extends AbstractTagApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
-        long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
+        long tagTime = request.getTagTime();
         int tagId = request.getTagId();
 
         ArchiveTag tag = verifyTag(tagDb, tagTime, tagId);
@@ -111,7 +111,7 @@ public class TagApi extends AbstractTagApi<Context> {
     public void updateTag(Context ctx, EditTagRequest request, Observer<ArchiveTag> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
-        long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
+        long tagTime = request.getTagTime();
         int tagId = request.getTagId();
         ArchiveTag tag = verifyTag(tagDb, tagTime, tagId);
 
@@ -159,7 +159,7 @@ public class TagApi extends AbstractTagApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         TagDb tagDb = getTagDb(instance);
 
-        long tagTime = TimeEncoding.fromProtobufTimestamp(request.getTagTime());
+        long tagTime = request.getTagTime();
         int tagId = request.getTagId();
         ArchiveTag tag = verifyTag(tagDb, tagTime, tagId);
         ArchiveTag deletedTag;

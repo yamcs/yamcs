@@ -31,6 +31,7 @@ service TagApi {
   rpc CreateTag(CreateTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tags"
+      body: "*"
     };
   }
   
@@ -38,6 +39,12 @@ service TagApi {
   rpc UpdateTag(EditTagRequest) returns (ArchiveTag) {
     option (yamcs.api.route) = {
       patch: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+      body: "*"
+      additional_bindings: {
+        // Temporary, until Yamcs Studio stops using this
+        put: "/api/archive/{instance}/tags/{tagTime}/{tagId}"
+        body: "*"
+      }
     };
   }
   
@@ -61,7 +68,7 @@ message ListTagsResponse {
 
 message GetTagRequest {
   optional string instance = 1;
-  optional google.protobuf.Timestamp tagTime = 2;
+  optional int64 tagTime = 2;
   optional int32 tagId = 3;
 }
 
@@ -76,7 +83,7 @@ message CreateTagRequest {
 
 message EditTagRequest {
   optional string instance = 1;
-  optional google.protobuf.Timestamp tagTime = 2;
+  optional int64 tagTime = 2;
   optional int32 tagId = 3;
   optional string name = 4;
   optional string start = 5;
@@ -87,6 +94,6 @@ message EditTagRequest {
 
 message DeleteTagRequest {
   optional string instance = 1;
-  optional google.protobuf.Timestamp tagTime = 2;
+  optional int64 tagTime = 2;
   optional int32 tagId = 3;
 }
