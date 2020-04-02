@@ -8,7 +8,7 @@ List all buckets for the given Yamcs instance::
 ``_global`` can be used as instance name to list the buckets at the global level.
 
 .. rubric:: Response
-.. code-block:: proto
+.. code-block:: json
 
     {
       "buckets": [{
