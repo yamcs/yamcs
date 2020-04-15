@@ -3442,8 +3442,11 @@ public class XtceStaxReader {
         String paramRef = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
         String inputName = readAttribute("inputName", xmlEvent.asStartElement(), null);
+        int instance = readIntAttribute("instance", xmlEvent.asStartElement(), 0);
+        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", xmlEvent.asStartElement(), true);
 
-        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
+        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
+        instanceRef.setInstance(instance);
 
         NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
             instanceRef.setParameter((Parameter) nd);
@@ -3606,6 +3609,8 @@ public class XtceStaxReader {
     private XMLEventReader initEventReader(String filename) throws FileNotFoundException, XMLStreamException {
         InputStream in = new FileInputStream(new File(filename));
         XMLInputFactory factory = XMLInputFactory.newInstance();
+        // Merge multiple character data blocks into a single event (e.g. algorithm text)
+        factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
         return factory.createXMLEventReader(in);
     }
 
