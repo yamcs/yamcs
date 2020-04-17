@@ -60,9 +60,6 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         tmSocket.close();
         notifyStopped();
     }
-    
-
-   
 
     @Override
     public void run() {
@@ -91,8 +88,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
                 packet.put(datagram.getData(), datagram.getOffset(), datagram.getLength());
                 break;
             } catch (IOException e) {
-                if (!isRunning() || isDisabled()) {// the shutdown or disable will close the socket and that will generate an exception
-                                   // which we ignore here
+                if (!isRunning() || isDisabled()) {// the shutdown or disable will close the socket and that will
+                                                   // generate an exception
+                    // which we ignore here
                     return null;
                 }
                 log.warn("exception thrown when reading from the UDP socket at port {}", port, e);
@@ -125,12 +123,15 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
      */
     @Override
     public void doDisable() {
-        tmSocket.close();
+        if (tmSocket != null) {
+            tmSocket.close();
+        }
     }
 
     /**
      * Sets the disabled to false such that getNextPacket does not ignore the received datagrams
-     * @throws SocketException 
+     * 
+     * @throws SocketException
      */
     @Override
     public void doEnable() throws SocketException {
