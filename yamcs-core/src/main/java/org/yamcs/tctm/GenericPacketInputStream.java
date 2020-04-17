@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
@@ -43,6 +44,9 @@ public class GenericPacketInputStream implements PacketInputStream {
     private final int lengthAdjustment;
     private final int initialBytesToStrip;
     DataInputStream dataInputStream;
+    static Log log = new Log(GenericPacketInputStream.class);
+    
+    long streamOffset = 0;
 
     public GenericPacketInputStream(InputStream inputStream, Map<String, Object> args) {
         this.dataInputStream = new DataInputStream(inputStream);
@@ -60,6 +64,8 @@ public class GenericPacketInputStream implements PacketInputStream {
 
     @Override
     public byte[] readPacket() throws IOException, PacketTooLongException {
+        log.trace("Reading packet length of size {} at offset {}", lengthFieldEndOffset, streamOffset);
+        
         byte[] b = new byte[lengthFieldEndOffset];
         dataInputStream.readFully(b);
         int length;
@@ -79,31 +85,38 @@ public class GenericPacketInputStream implements PacketInputStream {
         default:
             throw new IllegalStateException();
         }
-        length+=lengthAdjustment;
+        length += lengthAdjustment;
+        log.trace("packet length after adjustment: {}", length);
         
-        if(length>maxPacketLength) {
-            throw new PacketTooLongException(maxPacketLength, length);
+        
+        if (length > maxPacketLength) {
+            throw new IOException("Error reading packet at offset "+streamOffset, new PacketTooLongException(maxPacketLength, length));
         }
-        byte[] packet = new byte[length-initialBytesToStrip];
+        streamOffset+=lengthFieldEndOffset;
+        byte[] packet = new byte[length - initialBytesToStrip];
         int offset;
-        if(initialBytesToStrip<=lengthFieldEndOffset) { 
-            offset = lengthFieldEndOffset-initialBytesToStrip;
+        if (initialBytesToStrip <= lengthFieldEndOffset) {
+            offset = lengthFieldEndOffset - initialBytesToStrip;
             System.arraycopy(b, initialBytesToStrip, packet, 0, offset);
         } else {
             offset = 0;
-            skipFully(dataInputStream, initialBytesToStrip-lengthFieldEndOffset);
+            int skip = initialBytesToStrip - lengthFieldEndOffset;
+            skipFully(dataInputStream, skip);
+            streamOffset+=skip;
         }
-        dataInputStream.readFully(packet, offset, packet.length-offset);
-        
+        dataInputStream.readFully(packet, offset, packet.length - offset);
+        streamOffset+=(packet.length - offset);
+
         return packet;
     }
 
-    
     static void skipFully(InputStream in, int n) throws IOException {
         while (n > 0) {
             long skipped = in.skip(n);
-            if (skipped == 0) throw new EOFException("Tried to skip " + n + " but reached EOF");
+            if (skipped == 0)
+                throw new EOFException("Tried to skip " + n + " but reached EOF");
             n -= skipped;
+            
         }
     }
 }
