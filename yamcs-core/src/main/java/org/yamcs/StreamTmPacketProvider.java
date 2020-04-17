@@ -36,10 +36,6 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
 
     public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-
-        if (!config.containsKey("streams")) {
-            throw new ConfigurationException("Cannot find key 'streams' in StreamTmPacketProvider");
-        }
         this.config = config;
     }
 
@@ -62,8 +58,10 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
         Set<String> streams = new HashSet<>();
-        streams.addAll(config.getList("streams"));
-
+        if(config.containsKey("streams")) {
+            streams.addAll(config.getList("streams"));
+        }
+        
         for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.tm)) {
             if(procName.equals(sce.getProcessor())) {
                 streams.add(sce.getName());

@@ -88,7 +88,7 @@ public class StreamConfig {
                                 throw new ConfigurationException("Unknown sequence container: " + containerName);
                             }
                         }
-                        if (streamConf.containsKey("rootContainer")) {
+                        if (streamConf.containsKey("processor")) {
                             processor = (String) streamConf.get("processor");
                         }
                     }
@@ -194,7 +194,7 @@ public class StreamConfig {
          * 
          * @return
          */
-        public Object getProcessor() {
+        public String getProcessor() {
             return processor;
         }
     }

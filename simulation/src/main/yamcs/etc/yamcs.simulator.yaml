@@ -216,8 +216,10 @@ mdb:
 streamConfig:
   tm:
     - name: "tm_realtime"
+      processor: "realtime"
     - name: "tm2_realtime"
       rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
     - name: "tm_dump"
   invalidTm: "invalid_tm_stream"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]

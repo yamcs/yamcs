@@ -9,8 +9,6 @@
 realtime:
   services:
     - class: org.yamcs.StreamTmPacketProvider
-      args:
-        streams: ["tm_realtime", "tm2_realtime"]
     - class: org.yamcs.StreamTcCommandReleaser
       args:
         stream: "tc_realtime"
