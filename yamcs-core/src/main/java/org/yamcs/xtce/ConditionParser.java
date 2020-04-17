@@ -208,6 +208,7 @@ public class ConditionParser {
     }
 
     public Comparison toComparison(String comparisonString) throws ParseException {
+        comparisonString = comparisonString.trim();
         Matcher m = Pattern.compile("(.*?)(==|=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if (!m.matches()) {
             throw new ParseException("Cannot parse condition '" + comparisonString + "'", 0);
