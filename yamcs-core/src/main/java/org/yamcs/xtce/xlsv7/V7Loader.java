@@ -150,7 +150,9 @@ public class V7Loader extends V7LoaderBase {
     protected Map<String, String> timeCalibScales = new HashMap<>();
     protected Map<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
 
-    protected Map<String, DataTypeRecord> dataTypes = new HashMap<>();
+    protected Map<String, DataTypeRecord> dataTypesDefs = new HashMap<>();
+    protected Map<DataTypeRecord, ParameterType> parameterDataTypes = new HashMap<>();
+    protected Map<DataTypeRecord, ArgumentType> argumentDataTypes = new HashMap<>();
 
     protected Map<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected Map<String, Parameter> parameters = new HashMap<>();
@@ -468,7 +470,7 @@ public class V7Loader extends V7LoaderBase {
             DataTypeRecord dtr = new DataTypeRecord();
             dtr.row = i;
             dtr.name = getContent(cells, CN_DTYPE_NAME);
-            if (dataTypes.containsKey(dtr.name)) {
+            if (dataTypesDefs.containsKey(dtr.name)) {
                 throw new SpreadsheetLoadException(ctx, "There is already a type with the name '" + dtr.name + "'");
             }
             validateNameType(dtr.name);
@@ -482,11 +484,17 @@ public class V7Loader extends V7LoaderBase {
             dtr.initialValue = getContent(cells, CN_DTYPE_INITVALUE, null);
             dtr.description = getContent(cells, CN_DTYPE_INITVALUE, null);
 
-            dataTypes.put(dtr.name, dtr);
+            dataTypesDefs.put(dtr.name, dtr);
         }
     }
 
     protected DataType createDataType(SpaceSystem spaceSystem, DataTypeRecord dtr, boolean param) {
+
+        DataType dtype = param ? parameterDataTypes.get(dtr) : argumentDataTypes.get(dtr);
+        
+        if (dtype != null) {
+            return dtype;
+        }
 
         String name = dtr.name;
         String engtype = dtr.engType;
@@ -495,7 +503,7 @@ public class V7Loader extends V7LoaderBase {
         String calib = dtr.calibration;
         String units = dtr.engUnit;
 
-        DataType dtype = createParamOrArgType(spaceSystem, name, engtype, param);
+        dtype = createParamOrArgType(spaceSystem, name, engtype, param);
 
         if (units != null && dtype instanceof BaseDataType) {
             UnitType unitType = new UnitType(units);
@@ -585,6 +593,13 @@ public class V7Loader extends V7LoaderBase {
         }
         dtype.setShortDescription(dtr.description);
 
+        if(param) {
+            spaceSystem.addParameterType((ParameterType) dtype);
+            parameterDataTypes.put(dtr, (ParameterType) dtype);
+        } else {
+            spaceSystem.addArgumentType((ArgumentType) dtype);
+            argumentDataTypes.put(dtr, (ArgumentType) dtype);
+        }
         return dtype;
     }
 
@@ -677,7 +692,7 @@ public class V7Loader extends V7LoaderBase {
         List<AggrMember> l = parseAggregateExpr(engtype);
         for (AggrMember m : l) {
             validateNameType(m.name);
-            DataTypeRecord dtr = dataTypes.get(m.dataType);
+            DataTypeRecord dtr = dataTypesDefs.get(m.dataType);
             if (dtr == null) {
                 throw new SpreadsheetLoadException(ctx,
                         "Aggregate " + name + " makes reference to unknown type '" + m.dataType);
@@ -699,7 +714,7 @@ public class V7Loader extends V7LoaderBase {
         if (!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot match array '" + engtype + "'");
         }
-        DataTypeRecord dtr = dataTypes.get(m.group(1));
+        DataTypeRecord dtr = dataTypesDefs.get(m.group(1));
         if (dtr == null) {
             throw new SpreadsheetLoadException(ctx,
                     "Array " + name + " makes reference to unknown type '" + m.group(1));
@@ -731,7 +746,7 @@ public class V7Loader extends V7LoaderBase {
             String name = getContent(cells, CN_PARAM_NAME);
             validateNameType(name);
             String dtype = getContent(cells, CN_PARAM_DTYPE);
-            DataTypeRecord dtr = dataTypes.get(dtype);
+            DataTypeRecord dtr = dataTypesDefs.get(dtype);
             if (dtr == null) {
                 throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
             }
@@ -1526,7 +1541,7 @@ public class V7Loader extends V7LoaderBase {
             pos = new Position(pos.pos, false);
         }
 
-        DataTypeRecord dtr = dataTypes.get(dtype);
+        DataTypeRecord dtr = dataTypesDefs.get(dtype);
         if (dtr == null) {
             throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
         }
