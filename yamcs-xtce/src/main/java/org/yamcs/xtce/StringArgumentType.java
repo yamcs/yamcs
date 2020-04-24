@@ -6,7 +6,14 @@ public class StringArgumentType extends StringDataType implements ArgumentType {
     public StringArgumentType(String name) {
         super(name);
     }
-
+    /**
+     * Creates a shallow copy of the parameter type, giving it a new name. 
+     */
+    public StringArgumentType(StringArgumentType t) {
+        super(t);
+    }
+    
+    
     @Override
     public String getTypeAsString() {
         return "string";
@@ -24,4 +31,8 @@ public class StringArgumentType extends StringDataType implements ArgumentType {
     	return sb.toString();
     }
 
+    @Override
+    public StringArgumentType copy() {
+        return new StringArgumentType(this);
+    }
 }

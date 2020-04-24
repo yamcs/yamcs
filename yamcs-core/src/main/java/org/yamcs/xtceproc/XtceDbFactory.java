@@ -30,6 +30,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DatabaseLoadException;
@@ -557,6 +558,10 @@ public class XtceDbFactory {
 
         for (Algorithm a : ss.getAlgorithms()) {
             a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());
+        }
+
+        for (CommandContainer cc : ss.getCommandContainers()) {
+            cc.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + cc.getName());
         }
 
         for (NonStandardData<?> nonStandardData : ss.getNonStandardData()) {

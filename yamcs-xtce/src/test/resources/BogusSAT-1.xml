@@ -1195,7 +1195,7 @@ limitations under the License.
 						<xtce:ArgumentList>
 							<xtce:Argument name="BINARY_FV" argumentTypeRef="FV_Binary_Type" shortDescription="fixed string"/>
 						</xtce:ArgumentList>
-						<xtce:CommandContainer name="Set_Mission_Phase_Container">
+						<xtce:CommandContainer name="Cmd1_Container">
 							<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSCommandPacket"/>
 							<xtce:EntryList>
 								<xtce:ArgumentRefEntry argumentRef="STRING_FV"/>
@@ -1468,7 +1468,7 @@ limitations under the License.
 					     -->
 						</xtce:ArgumentList>
 						
-						<xtce:CommandContainer name="Payload_1_Control_Container">
+						<xtce:CommandContainer name="Adjust_Payload_1_Config_Container">
 							<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSCommandPacket"/>
 							<xtce:EntryList>
 							<!--  aggregates not supported by Yamcs

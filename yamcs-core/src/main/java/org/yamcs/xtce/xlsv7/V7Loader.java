@@ -483,7 +483,8 @@ public class V7Loader extends V7LoaderBase {
 
             dtr.initialValue = getContent(cells, CN_DTYPE_INITVALUE, null);
             dtr.description = getContent(cells, CN_DTYPE_INITVALUE, null);
-
+            dtr.spaceSystem = spaceSystem;
+            
             dataTypesDefs.put(dtr.name, dtr);
         }
     }
@@ -594,10 +595,10 @@ public class V7Loader extends V7LoaderBase {
         dtype.setShortDescription(dtr.description);
 
         if(param) {
-            spaceSystem.addParameterType((ParameterType) dtype);
+            dtr.spaceSystem.addParameterType((ParameterType) dtype);
             parameterDataTypes.put(dtr, (ParameterType) dtype);
         } else {
-            spaceSystem.addArgumentType((ArgumentType) dtype);
+            dtr.spaceSystem.addArgumentType((ArgumentType) dtype);
             argumentDataTypes.put(dtr, (ArgumentType) dtype);
         }
         return dtype;
@@ -811,7 +812,7 @@ public class V7Loader extends V7LoaderBase {
             try {
                 double offset = Double.parseDouble(a[0]);
                 double scale = Double.parseDouble(a[1]);
-                ptype.setScaling(true, offset, scale);
+                ptype.setScaling(offset, scale);
 
             } catch (NumberFormatException e) {
                 throw new SpreadsheetLoadException(ctx1,
@@ -1266,7 +1267,7 @@ public class V7Loader extends V7LoaderBase {
         Matcher arrayMatcher = ARRAY_PATTERN.matcher(paraname);
         Matcher refMatcher = REF_PATTERN.matcher(paraname);
         if (arrayMatcher.matches()) {
-            se = makeArrayEntry(arrayMatcher.group(1), arrayMatcher.group(2));
+            se = makeArrayEntry(pos, location, arrayMatcher.group(1), arrayMatcher.group(2));
             size = -1;
         } else if (refMatcher.matches()) {
             String refParamName = refMatcher.group(1);
@@ -1308,9 +1309,9 @@ public class V7Loader extends V7LoaderBase {
         return absoluteoffset;
     }
 
-    private ArrayParameterEntry makeArrayEntry(String arrayparam, String arraystr) {
+    private ArrayParameterEntry makeArrayEntry(int pos, ReferenceLocationType location, String arrayparam, String arraystr) {
         // array parameter
-        ArrayParameterEntry se = new ArrayParameterEntry();
+        
         Parameter param = parameters.get(arrayparam);
         if (param == null) {
             throw new SpreadsheetLoadException(ctx, "The array parameter '" + arrayparam
@@ -1320,7 +1321,7 @@ public class V7Loader extends V7LoaderBase {
             throw new SpreadsheetLoadException(ctx, "The parameter '" + arrayparam
                     + "' is not an array parameter but " + param.getParameterType().getClass().getTypeName());
         }
-        se.setParameter(param);
+        ArrayParameterEntry se = new ArrayParameterEntry(pos, location, param);
 
         ArrayParameterType aptype = (ArrayParameterType) param.getParameterType();
         Matcher m1 = Pattern.compile("\\[([\\d\\w]+)\\]").matcher(arraystr);
@@ -1550,6 +1551,12 @@ public class V7Loader extends V7LoaderBase {
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
         }
+        if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {
+            //TODO since version 4.10.9: the method createDataType does not duplicate the types anymore
+            // however the range is part of the type so we have to duplicate it here.
+            // we should move the ranges in the DataType sheet to make it consistent
+            atype = atype.copy();
+        }
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
 
@@ -1571,6 +1578,7 @@ public class V7Loader extends V7LoaderBase {
                         maxInclusive = Long.decode(getContent(cells, CN_CMD_RANGEHIGH));
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
+                    
                     ((IntegerArgumentType) atype).setValidRange(range);
                 } else {
                     long minInclusive = 0;
@@ -1583,7 +1591,6 @@ public class V7Loader extends V7LoaderBase {
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
                     ((IntegerArgumentType) atype).setValidRange(range);
-
                 }
             } else if (atype instanceof FloatArgumentType) {
                 double minInclusive = Double.NEGATIVE_INFINITY;

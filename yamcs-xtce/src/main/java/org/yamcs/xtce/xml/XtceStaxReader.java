@@ -840,8 +840,10 @@ public class XtceStaxReader {
             needsScaling = true;
             scale = parseDouble(scales);
         }
-        ptype.setScaling(needsScaling, offset, scale);
-
+        if(needsScaling) {
+            ptype.setScaling(offset, scale);
+        }
+        
         DataEncoding dataEncoding = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1151,14 +1153,19 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         StringDataEncoding stringDataEncoding = new StringDataEncoding();
-        ;
-
+        String encoding = readAttribute("encoding", xmlEvent.asStartElement(), null);
+        if (encoding != null) {
+            stringDataEncoding.setEncoding(encoding);
+        }
+        
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 readStringSizeInBits(spaceSystem, stringDataEncoding);
             } else if (isEndElementWithName(XTCE_STRING_DATA_ENCODING)) {
+                if(stringDataEncoding.getSizeType() == null) {
+                    throw new XMLStreamException(XTCE_SIZE_IN_BITS+ " not specified for the StringDataEncoding", xmlEvent.getLocation());
+                }
                 return stringDataEncoding;
             }
         }
@@ -1497,7 +1504,7 @@ public class XtceStaxReader {
                     throw new XMLStreamException("Invalid context calibrator, no context specified");
                 }
                 if (calibrator == null) {
-                    throw new XMLStreamException("Invalid context calibrator, no calibrator specified");
+                    throw new XMLStreamException("Invalid context calibrator, no calibrator specified", xmlEvent.getLocation());
                 }
                 return new ContextCalibrator(context, calibrator);
             }
@@ -2248,13 +2255,18 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         String refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
-
-        ArrayParameterEntry parameterEntry = new ArrayParameterEntry();
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
+        ArrayParameterEntry parameterEntry = new ArrayParameterEntry(0, locationType);
 
         final ArrayParameterEntry finalpe = parameterEntry;
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
-            finalpe.setParameter((Parameter) nd);
-            return true;
+            Parameter p = (Parameter) nd;
+            if(p.getParameterType()!=null) {
+                finalpe.setParameter((Parameter) nd);
+                return true;
+            } else {
+                return false;
+            }
         });
 
         spaceSystem.addUnresolvedReference(nr);
@@ -2304,10 +2316,17 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         IntegerValue endingIndex = null;
+        IntegerValue startingIndex = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_STARTING_INDEX)) {
-                skipXtceSection(XTCE_STARTING_INDEX); // Assume always '0'
+                startingIndex = readIntegerValue(spaceSystem);
+                if (!(startingIndex instanceof FixedIntegerValue)
+                        || ((FixedIntegerValue) startingIndex).getValue() != 0) {
+                    throw new XMLStreamException(
+                            "Dimension indexes must be specified with FixedValue starting from 0 (partial array entries not supported)",
+                            xmlEvent.getLocation());
+                }
             } else if (isStartElementWithName(XTCE_ENDING_INDEX)) {
                 endingIndex = readIntegerValue(spaceSystem);
             } else if (isEndElementWithName(XTCE_DIMENSION)) {

@@ -24,12 +24,7 @@ public class BooleanDataType extends BaseDataType {
         super(name);
     }
 
-    @Override
-    public String toString(){ 
-        return "BooleanData encoding: " + encoding;
-    }
-
-
+   
     /**
      * Returns {@link Boolean#parseBoolean(String)}
     */
@@ -69,4 +64,10 @@ public class BooleanDataType extends BaseDataType {
     public String getTypeAsString() {
         return "boolean";
     }
+    
+    @Override
+    public String toString(){ 
+        return "BooleanData encoding: " + encoding;
+    }
+
 }

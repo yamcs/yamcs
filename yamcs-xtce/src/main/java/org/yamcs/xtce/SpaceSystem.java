@@ -14,7 +14,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
  * SpaceSystem is a collection of SpaceSystem(s) including space assets, ground assets,
- * multi-satellite systems and sub-systems.  A SpaceSystem is the root element for the set of data
+ * multi-satellite systems and sub-systems. A SpaceSystem is the root element for the set of data
  * necessary to monitor and command an arbitrary space device - this includes the binary decomposition the
  * data streams going into and out of a device.
  *
@@ -39,10 +39,9 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
     private HashMap<String, ArgumentType> argumentTypes = new HashMap<>();
-    
+
     transient List<NameReference> unresolvedReferences = new ArrayList<>();
     SpaceSystem parent;
-
 
     public SpaceSystem(String name) {
         super(name);
@@ -55,44 +54,46 @@ public class SpaceSystem extends NameDescription {
     /**
      * Register the container
      *
-     * @param container  Container to be registered
+     * @param container
+     *            Container to be registered
      */
     public void addSequenceContainer(SequenceContainer container) {
-        if(containers.containsKey(container.getName()))
-            throw new IllegalArgumentException("there is already a container with name "+container.getName());
+        if (containers.containsKey(container.getName()))
+            throw new IllegalArgumentException("there is already a container with name " + container.getName());
         containers.put(container.getName(), container);
     }
 
-    public void addParameter(Parameter parameter) throws IllegalArgumentException{
-        if(parameters.containsKey(parameter.getName()))
-            throw new IllegalArgumentException("there is already a parameter with name "+parameter.getName()+" in space system "+(qualifiedName==null?name:qualifiedName));
+    public void addParameter(Parameter parameter) throws IllegalArgumentException {
+        if (parameters.containsKey(parameter.getName()))
+            throw new IllegalArgumentException("there is already a parameter with name " + parameter.getName()
+                    + " in space system " + (qualifiedName == null ? name : qualifiedName));
         parameters.put(parameter.getName(), parameter);
     }
 
     public void addParameterType(ParameterType parameterType) {
-        String ptn=((NameDescription)parameterType).getName();
-        if(parameterTypes.containsKey(ptn))
-            throw new IllegalArgumentException("there is already a parameter type with name '"+ptn+"'");
+        String ptn = ((NameDescription) parameterType).getName();
+        if (parameterTypes.containsKey(ptn))
+            throw new IllegalArgumentException("there is already a parameter type with name '" + ptn + "'");
         parameterTypes.put(ptn, parameterType);
 
     }
 
     public void addArgumentType(ArgumentType argumentType) {
-        String atn = ((NameDescription)argumentType).getName();
-        if(argumentTypes.containsKey(atn))
-            throw new IllegalArgumentException("there is already a argument type with name '"+atn+"'");
+        String atn = ((NameDescription) argumentType).getName();
+        if (argumentTypes.containsKey(atn))
+            throw new IllegalArgumentException("there is already a argument type with name '" + atn + "'");
         argumentTypes.put(atn, argumentType);
     }
 
     public void addAlgorithm(Algorithm algorithm) {
-        if(algorithms.containsKey(algorithm.getName()))
-            throw new IllegalArgumentException("there is already an algorithm with name "+algorithm.getName());
+        if (algorithms.containsKey(algorithm.getName()))
+            throw new IllegalArgumentException("there is already an algorithm with name " + algorithm.getName());
         algorithms.put(algorithm.getName(), algorithm);
     }
 
     public void addMetaCommand(MetaCommand command) {
-        if(commands.containsKey(command.getName()))
-            throw new IllegalArgumentException("there is already a command with name "+command.getName());
+        if (commands.containsKey(command.getName()))
+            throw new IllegalArgumentException("there is already a command with name " + command.getName());
         commands.put(command.getName(), command);
     }
 
@@ -103,7 +104,7 @@ public class SpaceSystem extends NameDescription {
     public ParameterType getParameterType(String typeName) {
         return parameterTypes.get(typeName);
     }
-    
+
     public ArgumentType getArgumentType(String typeName) {
         return argumentTypes.get(typeName);
     }
@@ -111,9 +112,13 @@ public class SpaceSystem extends NameDescription {
     public SequenceContainer getSequenceContainer(String refName) {
         return containers.get(refName);
     }
+
     public void addCommandContainer(CommandContainer cmdContainer) {
+        if (cmdContainers.containsKey(cmdContainer.getName()))
+            throw new IllegalArgumentException("there is already a command container with name " + cmdContainer.getName());
         cmdContainers.put(cmdContainer.getName(), cmdContainer);
     }
+
     public CommandContainer getCommandContainer(String name) {
         return cmdContainers.get(name);
     }
@@ -127,17 +132,17 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void addSpaceSystem(SpaceSystem ss) throws IllegalArgumentException {
-        if(subsystems.containsKey(ss.getName()))
-            throw new IllegalArgumentException("there is already a subsystem with name "+ss.getName());
+        if (subsystems.containsKey(ss.getName()))
+            throw new IllegalArgumentException("there is already a subsystem with name " + ss.getName());
         subsystems.put(ss.getName(), ss);
         ss.setParent(this);
     }
 
     public void addUnresolvedReference(NameReference nr) {
-        //try to resolve it immediately
+        // try to resolve it immediately
         boolean resolved = false;
         NameDescription nd = null;
-        switch(nr.getType()) {
+        switch (nr.getType()) {
         case PARAMETER:
             nd = getParameter(nr.getReference());
             break;
@@ -156,16 +161,20 @@ public class SpaceSystem extends NameDescription {
         default:
             break;
         }
-        if(nd!=null) {
+        if (nd != null) {
             resolved = nr.resolved(nd);
         }
-        if(!resolved) {
+        if (!resolved) {
             unresolvedReferences.add(nr);
         }
     }
 
     public Collection<SequenceContainer> getSequenceContainers() {
         return containers.values();
+    }
+
+    public Collection<CommandContainer> getCommandContainers() {
+        return cmdContainers.values();
     }
 
     public int getSequenceContainerCount(boolean recurse) {
@@ -191,7 +200,8 @@ public class SpaceSystem extends NameDescription {
      * of its sub space systems
      */
     public Collection<Parameter> getParameters(boolean recurse) {
-        if (!recurse) return getParameters();
+        if (!recurse)
+            return getParameters();
         List<Parameter> res = new ArrayList<>();
         res.addAll(parameters.values());
         for (SpaceSystem sub : getSubSystems()) {
@@ -213,6 +223,10 @@ public class SpaceSystem extends NameDescription {
 
     public Collection<ParameterType> getParameterTypes() {
         return parameterTypes.values();
+    }
+
+    public Collection<ArgumentType> getArgumentTypes() {
+        return argumentTypes.values();
     }
 
     public Collection<SpaceSystem> getSubSystems() {
@@ -237,11 +251,13 @@ public class SpaceSystem extends NameDescription {
     public Collection<MetaCommand> getMetaCommands() {
         return commands.values();
     }
+
     /**
-     * remove parameter from SpaceSystem - only used during loading or from XtceDb 
-     *  XtceDb has several maps pointing to these parameters.
+     * remove parameter from SpaceSystem - only used during loading or from XtceDb
+     * XtceDb has several maps pointing to these parameters.
      * 
-     * @param p parameter to remove
+     * @param p
+     *            parameter to remove
      */
     public void removeParameter(Parameter p) {
         parameters.remove(p.getName());
@@ -263,7 +279,7 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void setParent(SpaceSystem parent) {
-        this.parent=parent;
+        this.parent = parent;
     }
 
     public SpaceSystem getParent() {
@@ -279,7 +295,7 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void setRootSequenceContainer(SequenceContainer sc) {
-        this.rootSequenceContainer=sc;
+        this.rootSequenceContainer = sc;
     }
 
     public Header getHeader() {
@@ -295,14 +311,14 @@ public class SpaceSystem extends NameDescription {
      * Only one object is allowed for each classname.
      */
     public void addNonStandardData(NonStandardData data) {
-        if(nonStandardDatas.containsKey(data.getClass()))
-            throw new IllegalArgumentException("there is already non-standard data of type "+data.getClass());
+        if (nonStandardDatas.containsKey(data.getClass()))
+            throw new IllegalArgumentException("there is already non-standard data of type " + data.getClass());
         nonStandardDatas.put(data.getClass(), data);
     }
 
     @SuppressWarnings("unchecked")
     public <T extends NonStandardData> T getNonStandardDataOfType(Class<T> clazz) {
-        if(nonStandardDatas.containsKey(clazz))
+        if (nonStandardDatas.containsKey(clazz))
             return (T) nonStandardDatas.get(clazz);
         else
             return null;
@@ -314,7 +330,7 @@ public class SpaceSystem extends NameDescription {
 
     @Override
     public String toString() {
-        return "SpaceSystem["+getName()+"]";
+        return "SpaceSystem[" + getName() + "]";
     }
 
     /**
@@ -323,6 +339,7 @@ public class SpaceSystem extends NameDescription {
      * Returns a list with all matches.
      * 
      * This is an expensive operation as it iterates over all parameters
+     * 
      * @param alias
      * @return a list of parameters matching the alias. If no alias matches the list will be empty.
      */
@@ -333,21 +350,21 @@ public class SpaceSystem extends NameDescription {
     public List<SequenceContainer> getSequenceContainerByAlias(String alias) {
         return getObjectByAlias(alias, containers.values());
     }
-    
+
     public List<MetaCommand> getMetaCommandByAlias(String alias) {
         return getObjectByAlias(alias, commands.values());
     }
-    
+
     private static <T extends NameDescription> List<T> getObjectByAlias(String alias, Collection<T> ndObjects) {
-        List<T> l = new ArrayList<>(1); 
-        for(T nd:ndObjects) {
-            
+        List<T> l = new ArrayList<>(1);
+        for (T nd : ndObjects) {
+
             XtceAliasSet aliasSet = nd.getAliasSet();
-            if(aliasSet==null) {
+            if (aliasSet == null) {
                 continue;
             }
-            for(Map.Entry<String, String> m: nd.getAliasSet().getAliases().entrySet()) {
-                if(m.getValue().equals(alias)) {
+            for (Map.Entry<String, String> m : nd.getAliasSet().getAliases().entrySet()) {
+                if (m.getValue().equals(alias)) {
                     l.add(nd);
                 }
             }
@@ -355,5 +372,4 @@ public class SpaceSystem extends NameDescription {
         return l;
     }
 
-   
 }

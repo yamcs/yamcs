@@ -10,12 +10,15 @@ import java.util.List;
  *
  */
 public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
+    private static final long serialVersionUID = 2L;
     
     public ArrayArgumentType(String name, int numberOfDimensions) {
         super(name, numberOfDimensions);
     }
 
-    private static final long serialVersionUID = 1L;
+    public ArrayArgumentType(ArrayArgumentType t) {
+        super(t);
+    }
 
     @Override
     public String getTypeAsString() {
@@ -29,6 +32,12 @@ public class ArrayArgumentType extends ArrayDataType implements ArgumentType {
     @Override
     public List<UnitType> getUnitSet() {
         return null;
+    }
+    
+    
+    @Override
+    public ArrayArgumentType copy() {
+        return new ArrayArgumentType(this);
     }
 
 }

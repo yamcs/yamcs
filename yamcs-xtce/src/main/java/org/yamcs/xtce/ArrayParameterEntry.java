@@ -11,14 +11,21 @@ import java.util.List;
  * @author nm
  *
  */
-public class ArrayParameterEntry extends SequenceEntry {
-    private static final long serialVersionUID = 1L;
+public class ArrayParameterEntry extends ParameterEntry {
+    private static final long serialVersionUID = 2L;
+    
+    public ArrayParameterEntry(int locationInContainerInBits, ReferenceLocationType location) {
+        super(locationInContainerInBits, location);
+    }
+    
+    public ArrayParameterEntry(int locationInContainerInBits, ReferenceLocationType location, Parameter parameter) {
+        super(locationInContainerInBits, location, parameter);
+    }
+  
 
     private Parameter parameter;
     List<IntegerValue> dim;
 
-    public ArrayParameterEntry() {
-    }
 
     public void setParameter(Parameter parameter) {
         if (!(parameter.getParameterType() instanceof ArrayParameterType)) {

@@ -2329,7 +2329,7 @@ limitations under the License.
 						<xtce:ArgumentList>
 							<xtce:Argument name="CFGITEM" argumentTypeRef="Config_Item_Type"/>
 						</xtce:ArgumentList>
-						<xtce:CommandContainer name="Payload_1_Control_Container">
+						<xtce:CommandContainer name="Adjust_Payload_1_Config_Container">
 							<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSTelecommand"/>
 							<xtce:EntryList>
 								<xtce:ArgumentRefEntry argumentRef="CFGITEM"/>

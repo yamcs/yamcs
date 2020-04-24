@@ -37,12 +37,12 @@ public class SequenceEntryProcessor {
     }
 
     public void extract(SequenceEntry se) {
-        if (se instanceof ParameterEntry) {
+        if (se instanceof ArrayParameterEntry) {
+            extractArrayParameterEntry((ArrayParameterEntry) se);
+        } else if (se instanceof ParameterEntry) {
             extractParameterEntry((ParameterEntry) se);
         } else if (se instanceof ContainerEntry) {
             extractContainerEntry((ContainerEntry) se);
-        } else if (se instanceof ArrayParameterEntry) {
-            extractArrayParameterEntry((ArrayParameterEntry) se);
         } else if (se instanceof IndirectParameterRefEntry) {
             extractIndirectParameterRefEntry((IndirectParameterRefEntry) se);
         } else {

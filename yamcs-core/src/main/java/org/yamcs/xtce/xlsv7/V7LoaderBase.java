@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.yamcs.xtce.BaseSpreadsheetLoader;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpreadsheetLoadContext;
 import org.yamcs.xtce.SpreadsheetLoadException;
 
@@ -437,6 +438,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
         String calibration;
         String initialValue;
         String description;
+        SpaceSystem spaceSystem;
     }
 
 }

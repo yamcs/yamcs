@@ -17,7 +17,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  *
  */
 public class NamedDescriptionIndex<T extends NameDescription> implements Serializable, Iterable<T> {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
 
     private LinkedHashMap<String, LinkedHashMap<String, T>> aliasIndex = new LinkedHashMap<String, LinkedHashMap<String, T>>();
     private LinkedHashMap<String, T> index = new LinkedHashMap<String, T>();
@@ -30,6 +30,9 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
                 m.put(aliases.getAlias(ns).toUpperCase(), o);
             }
         }
+        //add an "alias" for (fq_space_system_name, name) 
+        LinkedHashMap<String, T> m = aliasIndex.computeIfAbsent(o.getSubsystemName(), k -> new LinkedHashMap<String, T>());
+        m.put(o.getName().toUpperCase(), o);
 
         if (o.getQualifiedName() != null) {
             index.put(o.getQualifiedName(), o);

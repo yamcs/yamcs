@@ -3,10 +3,9 @@ package org.yamcs.xtce;
 public abstract class BaseTimeDataType extends BaseDataType {
     private static final long serialVersionUID = 2L;
 
-    //these are defined in XTCE DataEncoding and are applicable only for time data types so we moved them here
     boolean needsScaling;
-    double scale;
-    double offset;
+    double scale = 1.0;
+    double offset = 0.0;
     
     BaseTimeDataType(String name){
 	super(name);
@@ -32,12 +31,11 @@ public abstract class BaseTimeDataType extends BaseDataType {
     /**
      * Scale and offset are used in a y = m*x + b type relationship (m is the scale and b is the offset) 
      * to make adjustments to the encoded value so that it matches the time units.
-     * @param needsScaling
      * @param offset
      * @param scale
      */
-    public void setScaling(boolean needsScaling, double offset, double scale) {
-        this.needsScaling = needsScaling;
+    public void setScaling(double offset, double scale) {
+        this.needsScaling = true;
         this.offset = offset;
         this.scale = scale;
     }

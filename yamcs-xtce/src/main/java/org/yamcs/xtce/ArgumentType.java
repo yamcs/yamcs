@@ -26,4 +26,12 @@ public interface ArgumentType extends DataType {
      * @return the name of the type
      */
     String getName();
+    /**
+     * Create a shallow copy of the data type
+     *  - the object itself (and the primitive fields) are new 
+     *    but the other fields reference to the same object like the original 
+     *  
+     * @return
+     */
+    ArgumentType copy();
 }

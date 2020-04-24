@@ -637,7 +637,7 @@ public class V6Loader extends V6LoaderBase {
             try {
                 double offset = Double.parseDouble(a[0]);
                 double scale = Double.parseDouble(a[1]);
-                ptype.setScaling(true, offset, scale);
+                ptype.setScaling(offset, scale);
 
             } catch (NumberFormatException e) {
                 throw new SpreadsheetLoadException(ctx1,

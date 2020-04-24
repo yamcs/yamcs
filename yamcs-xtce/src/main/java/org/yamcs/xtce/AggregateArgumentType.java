@@ -3,15 +3,14 @@ package org.yamcs.xtce;
 import java.util.List;
 
 public class AggregateArgumentType extends AggregateDataType implements ArgumentType {
+    private static final long serialVersionUID = 2L;
+    
     public AggregateArgumentType(String name) {
         super(name);
     }
 
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public String getTypeAsString() {
-        return null;
+    public AggregateArgumentType(AggregateArgumentType t) {
+        super(t);
     }
 
 
@@ -20,10 +19,9 @@ public class AggregateArgumentType extends AggregateDataType implements Argument
         return null;
     }
 
-
     @Override
-    public void setInitialValue(String initialValue) {
-        // TODO Auto-generated method stub
-        
+    public AggregateArgumentType copy() {
+        return new AggregateArgumentType(this);
     }
+
 }

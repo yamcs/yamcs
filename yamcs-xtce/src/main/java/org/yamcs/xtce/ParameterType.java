@@ -55,7 +55,6 @@ public interface ParameterType extends DataType {
      * @return
      */
     DataEncoding getEncoding();
-        
     /**
      * Create a shallow copy of the parameter type
      *  - the object itself (and the primitive fields) are new 

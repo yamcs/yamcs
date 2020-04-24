@@ -7,6 +7,15 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
     public BooleanArgumentType(String name){
         super(name);
     }
+    
+    /**
+     * Creates a shallow copy of the parameter type
+     * 
+     */
+    public BooleanArgumentType(BooleanArgumentType t) {
+        super(t);
+    }
+    
 
     @Override
     public String getTypeAsString() {
@@ -22,5 +31,10 @@ public class BooleanArgumentType extends BooleanDataType implements ArgumentType
         sb.append(", encoding: ").append(encoding);
 
         return sb.toString();
+    }
+    
+    @Override
+    public BooleanArgumentType copy() {
+        return new BooleanArgumentType(this);
     }
 }

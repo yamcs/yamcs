@@ -7,6 +7,13 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
     public IntegerArgumentType(String name){
         super(name);
     }
+    
+    /**
+     * Creates a shallow copy of the parameter type, giving it a new name.
+     */
+    public IntegerArgumentType(IntegerArgumentType t) {
+        super(t);
+    }
 
     @Override
     public String getTypeAsString() {
@@ -26,5 +33,11 @@ public class IntegerArgumentType extends IntegerDataType implements ArgumentType
         sb.append(", encoding: ").append(encoding);
 
         return sb.toString();
+    }
+    
+
+    @Override
+    public IntegerArgumentType copy() {
+        return new IntegerArgumentType(this);
     }
 }

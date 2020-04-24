@@ -12,7 +12,12 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
     public FloatArgumentType(String name){
         super(name);
     }
-
+    /**
+     * Creates a shallow copy.
+     */
+    public FloatArgumentType(FloatArgumentType t) {
+        super(t);
+    }
 
     public String getTypeAsString() {
         return "float";
@@ -21,5 +26,10 @@ public class FloatArgumentType extends FloatDataType implements ArgumentType {
     @Override
     public String toString() {
         return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding;
+    }
+    
+    @Override
+    public FloatArgumentType copy() {
+        return new FloatArgumentType(this);
     }
 }

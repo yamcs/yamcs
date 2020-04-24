@@ -31,7 +31,7 @@ public class NameDescription implements Serializable {
     /**
      * Set of aliases
      */
-    protected XtceAliasSet xtceAliasSet = null;
+    protected XtceAliasSet xtceAliasSet = XtceAliasSet.NO_ALIAS;
 
     /**
      * Escape hatch for storing any type of information
@@ -54,6 +54,7 @@ public class NameDescription implements Serializable {
         this.shortDescription = t.shortDescription;
         this.name = t.name;
         this.qualifiedName = t.qualifiedName;
+        this.xtceAliasSet = t.xtceAliasSet;
     }
 
     public void setName(String newName) {
@@ -81,8 +82,8 @@ public class NameDescription implements Serializable {
             throw new IllegalArgumentException("qualified name '" + qname + "' +must end with '" + name + "'");
         }
         this.qualifiedName = qname;
-        String ssName = getSubsystemName(qname);
-        addAlias(ssName, name);
+     //   String ssName = getSubsystemName(qname);
+      //  addAlias(ssName, name);
     }
 
     public AncillaryData getAncillaryData(String name) {
@@ -153,7 +154,7 @@ public class NameDescription implements Serializable {
      * @param newAliases
      */
     public void addAliases(XtceAliasSet newAliases) {
-        if (xtceAliasSet == null) {
+        if (xtceAliasSet == XtceAliasSet.NO_ALIAS) {
             xtceAliasSet = new XtceAliasSet();
         }
         for (Map.Entry<String, String> e : newAliases.getAliases().entrySet()) {
@@ -162,7 +163,7 @@ public class NameDescription implements Serializable {
     }
 
     public void addAlias(String namespace, String alias) {
-        if (xtceAliasSet == null) {
+        if (xtceAliasSet == XtceAliasSet.NO_ALIAS) {
             xtceAliasSet = new XtceAliasSet();
         }
         xtceAliasSet.addAlias(namespace, alias);
@@ -174,11 +175,9 @@ public class NameDescription implements Serializable {
      * @return OPS Name alias if defined, otherwise name in the default namespace
      */
     public String getOpsName() {
-        if (xtceAliasSet != null) {
-            String alias = xtceAliasSet.getAlias("MDB:OPS Name");
-            if (alias != null) {
-                return alias;
-            }
+        String alias = xtceAliasSet.getAlias("MDB:OPS Name");
+        if (alias != null) {
+            return alias;
         }
         return name;
     }

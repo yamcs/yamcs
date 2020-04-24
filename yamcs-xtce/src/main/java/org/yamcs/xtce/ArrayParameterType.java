@@ -6,10 +6,10 @@ import java.util.List;
  * Describe an array parameter type. The size and number of dimensions are described here. See
  * {@link ArrayParameterEntry}, NameReferenceType and ArrayDataType.
  * <p>
- * Note: XTCE 1.1 defines only the number of dimensions (integer) as part of the ArrayDataType and leave the dimensions
- * list to be defined as part of the {@link ArrayParameterEntry}
+ * Note: XTCE 1.1 defines only the number of dimensions (integer) as part of the ArrayDataType and leaves the dimension
+ * list (containing the size of each dimension) to be defined as part of the {@link ArrayParameterEntry}
  * <p>
- * In XTCE 1.2 the dimensions list is also defined in this class and can be optionally omitted from the
+ * In XTCE 1.2 the dimension list is also defined in this class and can be optionally omitted from the
  * {@link ArrayParameterEntry}.
  * <p>
  * We support both behaviours.
@@ -84,5 +84,10 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
      */
     public List<IntegerValue> getSize() {
         return dim;
+    }
+    
+    @Override
+    public String toString() {
+        return "ArrayParameterType name:"+name+" numberOfDimensions:"+getNumberOfDimensions();
     }
 }

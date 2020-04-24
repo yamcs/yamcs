@@ -89,6 +89,9 @@ public class Comparison implements MatchCriteria {
         ParameterType ptype = instanceRef.getParameter().getParameterType();
         
         if(ptype instanceof AggregateParameterType) {
+            if(instanceRef.getMemberPath() == null) {
+                throw new IllegalArgumentException("Reference to an aggregate parameter type "+ptype.getName()+" without speciyfing the path");
+            }
             ParameterType ptype1  = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
             if(ptype1 == null) {
                 throw new IllegalArgumentException("reference "+PathElement.pathToString(instanceRef.getMemberPath())
@@ -168,6 +171,9 @@ public class Comparison implements MatchCriteria {
 
     public Parameter getParameter() {
         return instanceRef.getParameter();
+    }
+    ParameterInstanceRef getParameterInstanceRef() {
+        return instanceRef;
     }
 
     public Object getValue() {

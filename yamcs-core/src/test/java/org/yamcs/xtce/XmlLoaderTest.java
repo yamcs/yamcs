@@ -112,7 +112,7 @@ public class XmlLoaderTest {
         MetaCommand mc = payload1.getMetaCommand("Adjust_Payload_1_Config");
         assertNotNull(mc);
         CommandContainer cc = mc.getCommandContainer();
-        assertEquals("Payload_1_Control_Container", cc.getName());
+        assertEquals("Adjust_Payload_1_Config_Container", cc.getName());
         Container basec = cc.getBaseContainer();
         assertEquals("CCSDSPUSCommandPacket", basec.getName());
         

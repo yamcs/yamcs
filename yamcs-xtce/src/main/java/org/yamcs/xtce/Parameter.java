@@ -4,9 +4,9 @@ package org.yamcs.xtce;
  * A Parameter is a description of something that can have a value; it is not the value itself.
  */
 public class Parameter extends NameDescription {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
     ParameterType parameterType;
-    DataSource dataSource;
+    DataSource dataSource = DataSource.TELEMETERED;
     
     private Object initialValue;
     

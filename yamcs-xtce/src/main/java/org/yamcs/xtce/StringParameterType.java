@@ -19,14 +19,15 @@ public class StringParameterType extends StringDataType implements ParameterType
     public boolean hasAlarm() {
         return false;
     }
-
-    @Override
-    public String toString() {
-        return "StringParameterType name:"+name+" encoding:"+encoding;
-    }
+   
 
     @Override
     public ParameterType copy() {
         return new StringParameterType(this);
+    }
+    
+    @Override
+    public String toString() {
+        return "StringParameterType name:"+name+" encoding:"+encoding;
     }
 }
