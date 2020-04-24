@@ -165,10 +165,15 @@ public class LinkManager {
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
+            
             if (stream != null) {
-                TcStreamSubscriber tcs = tcStreamSubscribers.computeIfAbsent(stream, s->new TcStreamSubscriber(true));
+                TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
+                if(tcs == null) {
+                    tcs = new TcStreamSubscriber(true);
+                    tcStreamSubscribers.put(stream, tcs);
+                    stream.addSubscriber(tcs);
+                }
                 tcs.addLink(tcLink);
-                stream.addSubscriber(tcs);
             }
             tcLink.setCommandHistoryPublisher(cmdHistPublisher);
         }
@@ -456,7 +461,7 @@ public class LinkManager {
             if (!sent && failIfNoLinkAvailable) {
                 CommandId commandId = pc.getCommandId();
                 String reason = "no link available";
-                log.info("Failing command {}: {}", pc.getCommandId(), reason);
+                log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
                 long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
                 cmdHistPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
                         currentTime, AckStatus.NOK, reason);
