@@ -1,25 +1,21 @@
 <dl class="dl-horizontal no-lead no-trail">
-  <ng-container *ngFor="let alias of parameter.alias">
-    <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-      <dt>Parameter</dt>
-      <dd>{{ alias.name }}</dd>
+  <dt>Parameter</dt>
+  <dd>{{ parameter.qualifiedName | shortName }}</dd>
 
-      <dt>Space System</dt>
-      <dd>
-        <a routerLink="/mdb/parameters"
-           [queryParams]="{instance: instance.name, filter: alias.namespace}"
-           class="ya-link">
-          {{ alias.namespace }}
-        </a>
-      </dd>
+  <dt>Space System</dt>
+  <dd>
+    <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/mdb/parameters"
+         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
     </ng-container>
-  </ng-container>
+  </dd>
 
   <ng-container *ngFor="let alias of parameter.alias">
-    <ng-container *ngIf="!parameter.qualifiedName.startsWith(alias.namespace)">
-      <dt>{{ alias.namespace }}</dt>
-      <dd>{{ alias.name }}</dd>
-    </ng-container>
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
   </ng-container>
 
   <dt>Description</dt>

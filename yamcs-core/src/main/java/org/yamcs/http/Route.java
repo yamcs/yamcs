@@ -1,11 +1,13 @@
 package org.yamcs.http;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -25,12 +27,17 @@ public class Route implements Comparable<Route> {
     private final String body;
     private final RpcDescriptor descriptor;
 
-    private AtomicLong requestCount = new AtomicLong();
-    private AtomicLong errorCount = new AtomicLong();
+    private Counter requestCounter;
+    private Counter errorCounter;
 
-    Route(Api<Context> api, HttpRoute httpOptions, RpcDescriptor descriptor) {
+    Route(Api<Context> api, HttpRoute httpOptions, RpcDescriptor descriptor, MetricRegistry metricRegistry) {
         this.api = api;
         this.descriptor = descriptor;
+
+        requestCounter = metricRegistry.counter(String.format(
+                "yamcs.api.requests.total.%s.%s", descriptor.getService(), descriptor.getMethod()));
+        errorCounter = metricRegistry.counter(String.format(
+                "yamcs.api.errors.total.%s.%s", descriptor.getService(), descriptor.getMethod()));
 
         offloaded = httpOptions.getOffloaded();
         deprecated = httpOptions.getDeprecated();
@@ -134,19 +141,27 @@ public class Route implements Comparable<Route> {
     }
 
     public long getRequestCount() {
-        return requestCount.get();
+        return requestCounter.getCount();
     }
 
     public void incrementRequestCount() {
-        requestCount.incrementAndGet();
+        requestCounter.inc();
+    }
+
+    public Counter getRequestCounter() {
+        return requestCounter;
     }
 
     public long getErrorCount() {
-        return errorCount.get();
+        return errorCounter.getCount();
     }
 
     public void incrementErrorCount() {
-        errorCount.incrementAndGet();
+        errorCounter.inc();
+    }
+
+    public Counter getErrorCounter() {
+        return errorCounter;
     }
 
     @Override

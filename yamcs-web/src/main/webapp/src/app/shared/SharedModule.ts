@@ -72,6 +72,7 @@ import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { ReversePipe } from './pipes/ReversePipe';
 import { ShortNamePipe } from './pipes/ShortNamePipe';
+import { SpaceSystemPipe } from './pipes/SpaceSystemPipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
@@ -226,6 +227,7 @@ const pipes = [
   PrintJsonPipe,
   ReversePipe,
   ShortNamePipe,
+  SpaceSystemPipe,
   SuperuserPipe,
   UnitsPipe,
   ValuePipe,

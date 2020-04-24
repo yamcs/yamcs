@@ -1,25 +1,21 @@
 <dl class="dl-horizontal no-lead">
-  <ng-container *ngFor="let alias of algorithm.alias">
-    <ng-container *ngIf="algorithm.qualifiedName.startsWith(alias.namespace)">
-      <dt>Algorithm</dt>
-      <dd>{{ alias.name }}</dd>
+  <dt>Algorithm</dt>
+  <dd>{{ algorithm.qualifiedName | shortName }}</dd>
 
-      <dt>Space System</dt>
-      <dd>
-        <a routerLink="/mdb/algorithms"
-           [queryParams]="{instance: instance.name, filter: alias.namespace}"
-           class="ya-link">
-          {{ alias.namespace }}
-        </a>
-      </dd>
+  <dt>Space System</dt>
+  <dd>
+    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/mdb/algorithms"
+         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
     </ng-container>
-  </ng-container>
+  </dd>
 
   <ng-container *ngFor="let alias of algorithm.alias">
-    <ng-container *ngIf="!algorithm.qualifiedName.startsWith(alias.namespace)">
-      <dt>{{ alias.namespace }}</dt>
-      <dd>{{ alias.name }}</dd>
-    </ng-container>
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
   </ng-container>
 
   <dt>Short Description</dt>
