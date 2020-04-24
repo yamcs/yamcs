@@ -273,7 +273,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
                 l.add(pc);
                 dataLength += pcLength;
-                if (!vmp.blocking) {
+                if (!vmp.multiplePacketsPerFrame) {
                     break;
                 }
             } else { // command doesn't fit into frame

@@ -9,12 +9,20 @@ import org.yamcs.utils.ByteArrayUtils;
 /**
  * CFS TC packets:
  * <ul>
- * <li>CCSDS primary header - 6 bytes</li>
+ * <li>CCSDS primary header - 6 bytes. Should be set according to  CCSDS 133.0-B.</li>
  * <li>function code - 1 byte</li>
  * <li>checksum - 1 byte</li>
  * </ul>
+ * The checksum is an XOR of all bytes from the packet with the initial checksum set to 0.
+ * <p>
+ * Note that prior to 
+ * <a href="https://github.com/nasa/cFE/pull/586/commits/ff3aa947bbd146747707f2ae13acfe3a30eb9e0a"> this patch</a>
+ * the cFS would expect the checksum and the function code swapped on little endian systems. 
  * 
- * This class sets the CCSDS packet length and the checksum.
+ * <p>
+ * This class sets the CCSDS sequence count and packet length in the primary CCSDS header and the checksum in the secondary CCSDS header.
+ * <p>
+ * The other parts of the header/packet are expected to be set by the command composition according to the Mission Database.
  * 
  * @author nm
  *
@@ -22,7 +30,7 @@ import org.yamcs.utils.ByteArrayUtils;
 public class CfsCommandPostprocessor implements CommandPostprocessor {
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
     protected CommandHistoryPublisher commandHistoryPublisher;
-    final static int CHECKSUM_OFFSET = 6;
+    final static int CHECKSUM_OFFSET = 7;
     final String yamcsInstance;
 
     public CfsCommandPostprocessor(String yamcsInstance) {

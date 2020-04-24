@@ -30,6 +30,7 @@ import org.yamcs.utils.TimeEncoding;
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
  * 
+ * 
  * @author nm
  *
  */

@@ -59,15 +59,20 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
 
     @Override
     public TcTransferFrame getFrame() {
+       
         if (commandQueue.isEmpty()) {
             return null;
         }
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
+     
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
         PreparedCommand pc;
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = pc.getBinary().length;
+            System.out.println("in getFrame: commandQueue size: "+commandQueue.size()+" vmp.maxFrameLength: "+vmp.maxFrameLength+" dataLength: "+dataLength+" framingLength: "+framingLength+" pcLength:"+pcLength);
+            
+            
             if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
                 pc = commandQueue.poll();
                 if (pc == null) {
@@ -75,7 +80,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
                 }
                 l.add(pc);
                 dataLength += pcLength;
-                if (!vmp.blocking) {
+                if (!vmp.multiplePacketsPerFrame) {
                     break;
                 }
             } else { // command doesn't fit into frame

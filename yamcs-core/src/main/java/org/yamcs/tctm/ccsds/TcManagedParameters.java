@@ -98,7 +98,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         ServiceType service;
         boolean useCop1;
         int maxFrameLength = -1;
-        public boolean blocking;
+        public boolean multiplePacketsPerFrame;
         public boolean bdAbsolutePriority;
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
@@ -118,6 +118,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
             this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
             this.useCop1 = config.getBoolean("useCop1", false);
             this.linkName = config.getString("linkName", null);
+            this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
         }
 
         public TcVcManagedParameters(int vcId, ServiceType service) {

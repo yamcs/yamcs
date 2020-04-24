@@ -21,8 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Base implementation for a TC data link that initialises a post processor and provides a queueing and rate limiting
- * function.
+ * Base implementation for a TC data link that initialises a post processor and implements basic methods.
  * 
  * 
  * @author nm

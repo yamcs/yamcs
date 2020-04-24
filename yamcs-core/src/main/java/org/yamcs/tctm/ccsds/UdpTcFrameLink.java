@@ -6,6 +6,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -15,8 +17,16 @@ import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
 import org.yamcs.tctm.ccsds.TcTransferFrame;
 import org.yamcs.utils.StringConverter;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
+ * <p>
+ * This class implements rate limiting.
+ * args:
+ * <ul>
+ * <li>frameMaxRate: maximum number of command frames to send per second.</li>
+ * </ul>
  * 
  * @author nm
  *
@@ -28,7 +38,8 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     DatagramSocket socket;
     InetAddress address;
     Thread thread;
-
+    RateLimiter rateLimiter;
+    
     public UdpTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
         super(yamcsInstance, name, config);
         host = config.getString("host");
@@ -39,12 +50,18 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
         } catch (UnknownHostException e) {
             throw new ConfigurationException("Cannot resolve host '" + host + "'", e);
         }
+        if (config.containsKey("frameMaxRate")) {
+            rateLimiter = RateLimiter.create(config.getDouble("frameMaxRate"), 1, TimeUnit.SECONDS);
+        }
     }
 
 
     @Override
     public void run() {
         while (isRunningAndEnabled()) {
+            if (rateLimiter != null) {
+                rateLimiter.acquire();
+            }
             TcTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();

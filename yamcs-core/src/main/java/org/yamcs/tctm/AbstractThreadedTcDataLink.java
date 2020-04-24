@@ -14,15 +14,26 @@ import com.google.common.util.concurrent.RateLimiter;
 /**
  * Abstract link that starts a thread when it's enabled and stops it when it's disabled.
  * <p>
- * The {@link #startUp()} and {@link #shutDown()} methods are called at startup/enable and shutdown/disable times on the working thread.
+ * The {@link #startUp()} and {@link #shutDown()} methods are called at startup/enable and shutdown/disable times on the
+ * working thread.
+ * 
+ * <p>
+ * This class provides queueing and rate limiting function.
+ * <p>
+ * args:
+ * <ul>
+ * <li>tcQueueSize: maximum size of the queue. If the queue is full, the commands will be rejected. If the argument is
+ * not specified, the queue will be unlimited in size.</li>
+ * <li>tcMaxRate: maximum number of commands to send per second.</li>
+ * </ul>
  * 
  */
 public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink implements Runnable {
     Thread thread;
     RateLimiter rateLimiter;
     protected BlockingQueue<PreparedCommand> commandQueue;
-    
-    //the initial delay applies only if the link is enabled at startup
+
+    // the initial delay applies only if the link is enabled at startup
     long initialDelay;
 
     public AbstractThreadedTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
@@ -126,18 +137,16 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
                 throw new RuntimeException(e);
             }
         }
-        
+
         try {
             shutDown();
         } catch (Exception e) {
             log.error("Failed to shutDown", e);
-            //TODO we should effectively fail the service here but we cannot because we already notified started
+            // TODO we should effectively fail the service here but we cannot because we already notified started
             // so we disable it instead
             disable();
         }
     }
-
-    
 
     @Override
     protected void doEnable() {
@@ -147,7 +156,7 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
 
     @Override
     protected void doDisable() {
-        if(thread!=null) {
+        if (thread != null) {
             thread.interrupt();
         }
     }
@@ -160,21 +169,23 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     }
 
     /**
-     * Called 
+     * Called
+     * 
      * @param pc
      * @throws IOException
      */
     protected abstract void uplinkCommand(PreparedCommand pc) throws IOException;
 
-
     /**
      * Called at start up (if the link is enabled) or when the link is enabled
+     * 
      * @throws Exception
      */
     protected abstract void startUp() throws Exception;
 
     /**
      * Called at shutdown (if the link is enabled) or when the link is disabled
+     * 
      * @throws Exception
      */
     protected abstract void shutDown() throws Exception;
