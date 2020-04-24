@@ -1,25 +1,21 @@
 <dl class="dl-horizontal no-lead">
-  <ng-container *ngFor="let alias of command.alias">
-    <ng-container *ngIf="command.qualifiedName.startsWith(alias.namespace)">
-      <dt>Command</dt>
-      <dd>{{ alias.name }}</dd>
+  <dt>Command</dt>
+  <dd>{{ command.qualifiedName | shortName }}</dd>
 
-      <dt>Space system</dt>
-      <dd>
-        <a routerLink="/mdb/commands"
-            [queryParams]="{instance: instance.name, filter: alias.namespace}"
-            class="ya-link">
-          {{ alias.namespace }}
-        </a>
-      </dd>
+  <dt>Space System</dt>
+  <dd>
+    <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/mdb/commands"
+         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
     </ng-container>
-  </ng-container>
+  </dd>
 
   <ng-container *ngFor="let alias of command.alias">
-    <ng-container *ngIf="!command.qualifiedName.startsWith(alias.namespace)">
-      <dt>{{ alias.namespace }}</dt>
-      <dd>{{ alias.name }}</dd>
-    </ng-container>
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
   </ng-container>
 
   <dt>Short description</dt>
@@ -78,7 +74,8 @@
         <td>{{ argument.description || '-' }}</td>
         <td>
           <ng-container *ngIf="argument.type?.engType === 'enumeration'">
-            <span (click)="showEnum(argument)" matTooltip="Show enum states" class="enum">{{ argument.type?.engType }}</span>
+            <span (click)="showEnum(argument)" matTooltip="Show enum states"
+                  class="enum">{{ argument.type?.engType }}</span>
           </ng-container>
           <ng-container *ngIf="argument.type?.engType !== 'enumeration'">
             {{ argument.type?.engType || '-' }}

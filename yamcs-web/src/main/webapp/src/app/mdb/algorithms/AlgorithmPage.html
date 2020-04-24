@@ -1,13 +1,11 @@
 <app-instance-page *ngIf="algorithm$ | async as algorithm">
   <app-instance-toolbar>
-    <ng-container *ngFor="let alias of algorithm.alias">
-      <ng-container *ngIf="algorithm.qualifiedName.startsWith(alias.namespace)">
-        <a routerLink="/mdb/algorithms"
-            [queryParams]="{instance: instance.name, filter: alias.namespace}"
-            class="ya-link ya-header-link">
-          {{ alias.namespace }}
-        </a>/{{ alias.name }}
-      </ng-container>
+    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/mdb/algorithms"
+         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         class="ya-link ya-header-link">
+        {{ spaceSystemName }}
+      </a>/{{ algorithm.qualifiedName | shortName }}
     </ng-container>
   </app-instance-toolbar>
 
