@@ -61,6 +61,7 @@ import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -113,6 +114,8 @@ public class HttpServer extends AbstractYamcsService {
     private List<Api<Context>> apis = new ArrayList<>();
     private List<Route> routes = new ArrayList<>();
     private List<Topic> topics = new ArrayList<>();
+
+    private MetricRegistry metricRegistry = new MetricRegistry();
 
     private int port;
     private int tlsPort;
@@ -284,9 +287,9 @@ public class HttpServer extends AbstractYamcsService {
                     topics.add(new Topic(api, topic, descriptor));
                 }
             } else {
-                routes.add(new Route(api, descriptor.getHttpRoute(), descriptor));
+                routes.add(new Route(api, descriptor.getHttpRoute(), descriptor, metricRegistry));
                 for (HttpRoute route : descriptor.getAdditionalHttpRoutes()) {
-                    routes.add(new Route(api, route, descriptor));
+                    routes.add(new Route(api, route, descriptor, metricRegistry));
                 }
             }
         }
@@ -444,6 +447,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public CorsConfig getCorsConfig() {
         return corsConfig;
+    }
+
+    public MetricRegistry getMetricRegistry() {
+        return metricRegistry;
     }
 
     void trackClientChannel(Channel channel) {
