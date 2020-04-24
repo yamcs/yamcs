@@ -57,14 +57,17 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
-
-        pwt.setGenerationTime(getTime(packet));
+        if(useLocalGenerationTime) {
+            pwt.setGenerationTime(timeService.getMissionTime());
+        } else {
+            pwt.setGenerationTime(getTimeFromPacket(packet));
+        }
         pwt.setSequenceCount(apidseqcount);
         
         return pwt;
     }
 
-    static long getTime(byte[] packet) {
+    static long getTimeFromPacket(byte[] packet) {
         long sec = ByteArrayUtils.decodeIntLE(packet, 6) & 0xFFFFFFFFL;
         int subsecs = ByteArrayUtils.decodeShortLE(packet, 10);
 
