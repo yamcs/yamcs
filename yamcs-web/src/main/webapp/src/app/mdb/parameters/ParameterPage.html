@@ -1,13 +1,11 @@
 <app-instance-page *ngIf="parameter$ | async as parameter">
   <app-instance-toolbar>
-    <ng-container *ngFor="let alias of parameter.alias">
-      <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-        <a routerLink="/mdb/parameters"
-            [queryParams]="{instance: instance.name, filter: alias.namespace}"
-            class="ya-link ya-header-link">
-          {{ alias.namespace }}
-        </a>/{{ alias.name }}
-      </ng-container>
+    <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/mdb/parameters"
+         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         class="ya-link ya-header-link">
+        {{ spaceSystemName }}
+      </a>/{{ parameter.qualifiedName | shortName }}
     </ng-container>
   </app-instance-toolbar>
 

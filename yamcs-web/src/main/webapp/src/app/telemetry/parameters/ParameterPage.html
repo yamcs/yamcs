@@ -1,13 +1,11 @@
 <app-instance-page *ngIf="parameter$ | async as parameter">
   <app-instance-toolbar>
-    <ng-container *ngFor="let alias of parameter.alias">
-      <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-        <a routerLink="/telemetry/parameters"
-           [queryParams]="{instance: instance.name, system: alias.namespace}"
-           class="ya-link ya-header-link">
-          {{ alias.namespace }}
-        </a>/{{ alias.name }}{{ offset$ | async}}
-      </ng-container>
+    <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/telemetry/parameters"
+         [queryParams]="{instance: instance.name, system: spaceSystemName}"
+         class="ya-link ya-header-link">
+        {{ spaceSystemName }}
+      </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
     </ng-container>
     &nbsp;&nbsp;&nbsp;
     <button *ngIf="isWritable() && maySetParameter()"
