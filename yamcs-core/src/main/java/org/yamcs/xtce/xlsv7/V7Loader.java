@@ -151,9 +151,14 @@ public class V7Loader extends V7LoaderBase {
     protected Map<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
 
     protected Map<String, DataTypeRecord> dataTypesDefs = new HashMap<>();
-    protected Map<DataTypeRecord, ParameterType> parameterDataTypes = new HashMap<>();
-    protected Map<DataTypeRecord, ArgumentType> argumentDataTypes = new HashMap<>();
-
+  /*
+   * SHARED_DATA_TYPES_TODO: the way the spreadsheet is structured, the data types do not contain Alarms or command argument validity ranges as in XTCE
+   * 
+   *  that's why attempting to share the types has failed
+   *  
+   *  protected Map<DataTypeRecord, ParameterType> parameterDataTypes = new HashMap<>();
+   *  protected Map<DataTypeRecord, ArgumentType> argumentDataTypes = new HashMap<>();
+   */
     protected Map<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected Map<String, Parameter> parameters = new HashMap<>();
     protected Set<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
@@ -490,13 +495,15 @@ public class V7Loader extends V7LoaderBase {
     }
 
     protected DataType createDataType(SpaceSystem spaceSystem, DataTypeRecord dtr, boolean param) {
-
+/* see SHARED_DATA_TYPES_TODO
         DataType dtype = param ? parameterDataTypes.get(dtr) : argumentDataTypes.get(dtr);
         
         if (dtype != null) {
             return dtype;
         }
-
+*/
+        
+        DataType dtype ;
         String name = dtr.name;
         String engtype = dtr.engType;
         String rawtype = dtr.rawType;
@@ -594,13 +601,14 @@ public class V7Loader extends V7LoaderBase {
         }
         dtype.setShortDescription(dtr.description);
 
+        /* see SHARED_DATA_TYPES_TODO above
         if(param) {
             dtr.spaceSystem.addParameterType((ParameterType) dtype);
             parameterDataTypes.put(dtr, (ParameterType) dtype);
         } else {
             dtr.spaceSystem.addArgumentType((ArgumentType) dtype);
             argumentDataTypes.put(dtr, (ArgumentType) dtype);
-        }
+        }*/
         return dtype;
     }
 
@@ -1546,17 +1554,13 @@ public class V7Loader extends V7LoaderBase {
         if (dtr == null) {
             throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
         }
+        //see SHARED_DATA_TYPES_TODO above
         ArgumentType atype = (ArgumentType) createDataType(spaceSystem, dtr, false);
 
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
         }
-        if (hasColumn(cells, CN_CMD_RANGELOW) || hasColumn(cells, CN_CMD_RANGEHIGH)) {
-            //TODO since version 4.10.9: the method createDataType does not duplicate the types anymore
-            // however the range is part of the type so we have to duplicate it here.
-            // we should move the ranges in the DataType sheet to make it consistent
-            atype = atype.copy();
-        }
+        
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
 
