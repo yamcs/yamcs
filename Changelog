@@ -1,3 +1,10 @@
+Version 4.10.9 released 24-Apr-2020
+- reorganized the links by removing the DataLinkInitializer and creating a LinkManager 
+  that has more functionality, like for example being able to negatively acknowledge commands
+  if all the TC links are disabled.
+- add a filter box to Packet Viewer (thanks to QinetiQ Space)
+- minor other tweaks and fixes
+
 Version 4.10.8 released 28-Feb-2020
 - Fixed a shutdown issue with RealtimeArchiveFiller (#377)
 - Link activity is now protected by the ``ReadLinks`` privilege
