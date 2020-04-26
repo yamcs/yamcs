@@ -55,6 +55,7 @@
     <artemisVersion>1.5.4</artemisVersion>
     <nettyVersion>4.1.45.Final</nettyVersion>
     <protobufVersion>3.7.1</protobufVersion>
+    <rocksdbVersion>5.7.3</rocksdbVersion>
     <slf4jVersion>1.7.1</slf4jVersion>
     <sonar.exclusions>
       **/me/lemire/integercompression/**,**/org/yamcs/protobuf/**,**/org/yamcs/yarch/streamsql/**
@@ -174,7 +175,7 @@
       <dependency>
         <groupId>org.rocksdb</groupId>
         <artifactId>rocksdbjni</artifactId>
-        <version>5.7.3</version>
+        <version>${rocksdbVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>

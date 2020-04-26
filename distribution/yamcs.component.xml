@@ -1,11 +1,12 @@
-<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>yamcs</id>
+<component xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
 
-  <formats>
-    <format>tar.gz</format>
-  </formats>
+  <!--
+    This component description specifies the architecture-independent parts of a Yamcs distribution.
+    (without a specific rocksdbjni library).
+
+    We do this because size matters.
+  -->
 
   <dependencySets>
     <dependencySet>
@@ -21,6 +22,10 @@
         <include>org.yamcs:yamcs-web</include>
         <include>org.yamcs:yamcs-xtce</include>
       </includes>
+      <excludes>
+        <!-- Exclude big generic rocksdbjni dependency. -->
+        <exclude>org.rocksdb:*</exclude>
+      </excludes>
     </dependencySet>
   </dependencySets>
 
@@ -64,4 +69,4 @@
       </excludes>
     </fileSet>
   </fileSets>
-</assembly>
+</component>
