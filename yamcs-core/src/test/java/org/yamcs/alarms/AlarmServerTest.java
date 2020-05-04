@@ -2,6 +2,7 @@ package org.yamcs.alarms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -141,13 +142,15 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
 
-        alarmServer.shelve(aa, "busy operator", "looking at it later", 500);
+        ActiveAlarm<ParameterValue> aa1 = alarmServer.shelve(aa, "busy operator", "looking at it later", 500);
+        assertNotNull(aa1);
+        
         assertEquals(1, l.shelved.size());
         assertEquals(aa, l.shelved.remove());
         
-        ActiveAlarm<ParameterValue> aa1 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
+        ActiveAlarm<ParameterValue> aa2 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
 
-        assertEquals(aa, aa1);
+        assertEquals(aa, aa2);
         assertFalse(aa.isShelved());
     }
 
