@@ -53,7 +53,7 @@ Operator op;
       break;
     case QUOTED_STRING:
       jj_consume_token(QUOTED_STRING);
-                     String s = token.image; System.out.println("bubu1:" +token.image); {if (true) return s.substring(1, s.length() - 1).replace("\u005c\u005c\u005c"","\u005c"").replace("\u005c\u005c\u005c\u005c","\u005c\u005c");}
+                     String s = token.image; {if (true) return s.substring(1, s.length() - 1).replace("\u005c\u005c\u005c"","\u005c"").replace("\u005c\u005c\u005c\u005c","\u005c\u005c");}
       break;
     default:
       jj_la1[0] = jj_gen;
