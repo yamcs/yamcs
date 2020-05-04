@@ -172,7 +172,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         outQueue = new ArrayBlockingQueue<>(OUT_QUEUE_SIZE);
         clcwStreamName = vmp.config.getString("clcwStream");
         this.initialClcwWait = 1000 * vmp.config.getInt("initialClcwWait", -1);
-        this.t1Initial =  1000 * vmp.config.getInt("t1", 3);
+        this.t1Initial =  1000 * vmp.config.getInt("cop1T1", 3);
+        this.txLimit = vmp.config.getInt("cop1TxLimit", 3);
     }
 
     public void addMonitor(Cop1Monitor monitor) {

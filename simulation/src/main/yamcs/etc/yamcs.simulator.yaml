@@ -163,7 +163,7 @@ dataLinks:
        frameLength: 512
        frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
        insertZoneLength: 0
-       errorCorrection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+       errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
        clcwStream: "clcw" #published the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1 
        virtualChannels:
           - vcId: 0

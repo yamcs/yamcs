@@ -2,11 +2,13 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.TcTmException;
-import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.UslpManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.UslpManagedParameters.UslpVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.tctm.ccsds.error.ProximityCrc32;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
@@ -17,15 +19,15 @@ import org.yamcs.utils.ByteArrayUtils;
  */
 public class UslpFrameDecoder implements TransferFrameDecoder {
     UslpManagedParameters uslpParams;
-    CrcCciitCalculator crc;
+    ErrorDetectionWordCalculator crc;
     static Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
 
     public UslpFrameDecoder(UslpManagedParameters uslpParams) {
         this.uslpParams = uslpParams;
-        if (uslpParams.errorCorrection == FrameErrorCorrection.CRC16) {
+        if (uslpParams.errorCorrection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
-        } else if (uslpParams.errorCorrection == FrameErrorCorrection.CRC32) {
-            // TODO crc =
+        } else if (uslpParams.errorCorrection == FrameErrorDetection.CRC32) {
+            crc = new ProximityCrc32();
         }
     }
 
@@ -33,20 +35,25 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
     public DownlinkTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
         log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
+        int version = data[0] >>4;
+        if(version != 12) {
+            throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
+        }
+        
         if (uslpParams.frameLength != -1 && length != uslpParams.frameLength) {
             throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
         }
 
         int dataEnd = offset + length;
 
-        if (uslpParams.errorCorrection == FrameErrorCorrection.CRC16) {
+        if (uslpParams.errorCorrection == FrameErrorDetection.CRC16) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
             int c2 = ByteArrayUtils.decodeShort(data, dataEnd);
             if (c1 != c2) {
                 throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
             }
-        } else if (uslpParams.errorCorrection == FrameErrorCorrection.CRC32) {
+        } else if (uslpParams.errorCorrection == FrameErrorDetection.CRC32) {
             dataEnd -= 4;
             int c1 = crc.compute(data, offset, dataEnd - offset);
             int c2 = ByteArrayUtils.decodeInt(data, dataEnd);

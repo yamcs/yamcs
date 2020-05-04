@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.ByteArrayUtils;

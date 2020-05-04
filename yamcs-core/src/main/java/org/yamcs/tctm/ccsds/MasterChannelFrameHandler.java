@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.logging.Log;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 
@@ -24,16 +25,19 @@ public class MasterChannelFrameHandler {
     DownlinkManagedParameters params;
     ClcwStreamHelper clcwHelper;
     String yamcsInstance;
-
+    Log log;
     /**
      * Constructs based on the configuration
      * 
      * @param config
      */
     public MasterChannelFrameHandler(String yamcsInstance, String linkName, YConfiguration config) {
+        log = new Log(getClass(), yamcsInstance);
+        log.setContext(linkName);
+        
         frameType = config.getEnum("frameType", CcsdsFrameType.class);
         String clcwStreamName = config.getString("clcwStream", null);
-        if(clcwStreamName!=null) {
+        if (clcwStreamName != null) {
             clcwHelper = new ClcwStreamHelper(yamcsInstance, clcwStreamName);
         }
         switch (frameType) {
@@ -60,16 +64,22 @@ public class MasterChannelFrameHandler {
 
     public void handleFrame(long ertime, byte[] data, int offset, int length) throws TcTmException {
         DownlinkTransferFrame frame = frameDecoder.decode(data, offset, length);
-        frame.setEearthRceptionTime(ertime);
-        frameCount++;
-        if (frame.containsOnlyIdleData()) {
-            idleFrameCount++;
+        if (frame.getSpacecraftId() != params.spacecraftId) {
+            log.warn("Ignoring frame with unexpected spacraftId {} (expected {})", frame.getSpacecraftId(), params.spacecraftId);
             return;
         }
+        frame.setEearthRceptionTime(ertime);
+        frameCount++;
+        
         if (frame.hasOcf() && clcwHelper != null) {
             clcwHelper.sendClcw(frame.getOcf());
         }
 
+        if (frame.containsOnlyIdleData()) {
+            idleFrameCount++;
+            return;
+        }
+        
         int vcid = frame.getVirtualChannelId();
         VcDownlinkHandler vch = handlers.get(vcid);
         if (vch == null) {

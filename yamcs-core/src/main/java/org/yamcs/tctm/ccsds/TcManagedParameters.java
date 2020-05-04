@@ -19,18 +19,13 @@ public class TcManagedParameters extends UplinkManagedParameters {
     public enum PriorityScheme {
         FIFO, ABSOLUTE, POLLING_VECTOR
     };
-
-    PriorityScheme vcMultiplexingScheme;
-
-    // make a frame out of multiple packets
-    boolean blocking;
+    PriorityScheme priorityScheme;
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
     public TcManagedParameters(YConfiguration config) {
         super(config);
         maxFrameLength = config.getInt("maxFrameLength");
-        blocking = config.getBoolean("blocking", true);
 
         if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + maxFrameLength);
@@ -40,6 +35,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         if (errorCorrection == FrameErrorCorrection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for TC frames");
         }
+        priorityScheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
@@ -86,8 +82,6 @@ public class TcManagedParameters extends UplinkManagedParameters {
                 }
                 l.add(vcph);
                 break;
-            case VCA_SDU:
-                throw new UnsupportedOperationException("VCA_SDU not supported (TODO)");
             }
         }
         return l;
@@ -103,7 +97,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
 
-        public TcVcManagedParameters(YConfiguration config, TcManagedParameters tmp) {
+        public TcVcManagedParameters(YConfiguration config, TcManagedParameters mcParams) {
             super(config);
 
             if (vcId < 0 || vcId > 7) {
@@ -111,10 +105,14 @@ public class TcManagedParameters extends UplinkManagedParameters {
             }
             service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
 
-            maxFrameLength = config.getInt("maxFrameLength", tmp.maxFrameLength);
-            if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
+            maxFrameLength = config.getInt("maxFrameLength", mcParams.maxFrameLength);
+            if (maxFrameLength < 8) {
                 throw new ConfigurationException("Invalid frame length " + maxFrameLength);
             }
+            if (maxFrameLength > mcParams.maxFrameLength) {
+                throw new ConfigurationException("Invalid frame length " + maxFrameLength+" has to be at most equal to the master channel max length "+mcParams.maxFrameLength);
+            }
+            
             this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
             this.useCop1 = config.getBoolean("useCop1", false);
             this.linkName = config.getString("linkName", null);

@@ -8,40 +8,41 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
 public class UslpManagedParameters extends DownlinkManagedParameters {
-   
-    enum COPType {COP_1, COP_P, NONE};
-    
+
+    enum COPType {
+        COP_1, COP_P, NONE
+    };
+
     enum ServiceType {
         /** Multiplexing Protocol Data Unit */
         PACKET,
         /** IDLE frames are those with vcId = 63 */
         IDLE
     };
-    int frameLength; //frame length if fixed or -1 if not fixed
+
+    int frameLength; // frame length if fixed or -1 if not fixed
     int maxFrameLength;
     int minFrameLength;
-    
-    int insertZoneLength; //0 means not present
+
+    int insertZoneLength; // 0 means not present
     boolean generateOidFrame;
-    
-    int fshLength; //0 means not present
-    boolean ocfPresent;
+
+    int fshLength; // 0 means not present
     Map<Integer, UslpVcManagedParameters> vcParams = new HashMap<>();
-    
-    
-    public UslpManagedParameters (YConfiguration config) {
+
+    public UslpManagedParameters(YConfiguration config) {
         super(config);
-        errorCorrection = config.getEnum("errorCorrection", FrameErrorCorrection.class);
-        
-        frameLength = config.getInt("frameLength",-1);
-        if(frameLength<0) {
+        errorCorrection = config.getEnum("errorDetection", FrameErrorDetection.class);
+
+        frameLength = config.getInt("frameLength", -1);
+        if (frameLength < 0) {
             maxFrameLength = config.getInt("maxFrameLength", 65535);
             minFrameLength = config.getInt("minFrameLength", 6);
         } else {
             maxFrameLength = frameLength;
             minFrameLength = frameLength;
         }
-        
+
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
             UslpVcManagedParameters ump = new UslpVcManagedParameters(yc);
@@ -50,22 +51,23 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
             }
             vcParams.put(ump.vcId, ump);
         }
-        
+
+        insertZoneLength = config.getInt("insertZoneLength", 0);
+        if (insertZoneLength < 0 || insertZoneLength > minFrameLength - 6) {
+            throw new ConfigurationException("Invalid insert zone length " + insertZoneLength);
+        }
     }
-    
+
     static class UslpVcManagedParameters extends VcDownlinkManagedParameters {
-    
+
         ServiceType service;
-      
-                
+
         COPType copInEffect;
-        boolean fixedLength; //or variable length
+        boolean fixedLength; // or variable length
         int vcCountLengthForSeqControlQos;
         int vcCountLengthForExpeditedQos;
         int truncatedTransferFrameLength;
-        
-        boolean ocfAllowed; //only if fixedLength = true
-        
+
         public UslpVcManagedParameters(YConfiguration config) {
             super(config);
             service = config.getEnum("service", ServiceType.class);
@@ -73,23 +75,24 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
                 parsePacketConfig();
             }
         }
-        
+
     }
+
     static class MapManagedParameters {
         int mapId;
         int maxPacketLength;
     }
-   
-    
-    
+
     @Override
     public int getMaxFrameLength() {
         return maxFrameLength;
     }
+
     @Override
     public int getMinFrameLength() {
         return minFrameLength;
     }
+
     @Override
     public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName) {
         Map<Integer, VcDownlinkHandler> m = new HashMap<>();

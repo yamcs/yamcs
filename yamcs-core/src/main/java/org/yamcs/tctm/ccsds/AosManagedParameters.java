@@ -34,11 +34,11 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
         }
-        errorCorrection = config.getEnum("errorCorrection", FrameErrorCorrection.class);
-        if(errorCorrection == FrameErrorCorrection.CRC32) {
+        errorCorrection = config.getEnum("errorDetection", FrameErrorDetection.class);
+        if(errorCorrection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for AOS");
         }
-        insertZoneLength = config.getInt("insertZoneLength");
+        insertZoneLength = config.getInt("insertZoneLength", 0);
 
         if (insertZoneLength < 0 || insertZoneLength > frameLength - 6) {
             throw new ConfigurationException("Invalid insert zone length " + insertZoneLength);

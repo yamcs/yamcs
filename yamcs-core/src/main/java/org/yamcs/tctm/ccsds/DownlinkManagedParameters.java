@@ -11,13 +11,13 @@ import org.yamcs.YConfiguration;
  *
  */
 public abstract class DownlinkManagedParameters {
-    public enum FrameErrorCorrection {NONE, CRC16, CRC32};
+    public enum FrameErrorDetection {NONE, CRC16, CRC32};
     
     
 
     protected String physicalChannelName;
     protected int spacecraftId;
-    protected FrameErrorCorrection errorCorrection;
+    protected FrameErrorDetection errorCorrection;
     
     public DownlinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");

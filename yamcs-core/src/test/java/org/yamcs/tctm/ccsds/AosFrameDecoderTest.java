@@ -56,7 +56,7 @@ public class AosFrameDecoderTest {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 3);
         m.put("frameLength", 128);
-        m.put("errorCorrection", "CRC16");
+        m.put("errorDetection", "CRC16");
         m.put("insertZoneLength", 0);
         m.put("frameHeaderErrorControlPresent", false);
 

@@ -1,4 +1,4 @@
-package org.yamcs.tctm;
+package org.yamcs.tctm.ccsds.error;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 
-public class CrcCciitCalculatorTest {
+public class ProximityCrcTest {
     @Test
     public void test1() {
         CrcCciitCalculator c = new CrcCciitCalculator(YConfiguration.emptyConfig());

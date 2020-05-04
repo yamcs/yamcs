@@ -15,8 +15,7 @@ public abstract class UplinkManagedParameters {
     public enum FrameErrorCorrection {NONE, CRC16, CRC32};
    
     public enum ServiceType {
-        PACKET,
-        VCA_SDU
+        PACKET
     };
     
     

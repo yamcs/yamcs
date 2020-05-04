@@ -49,7 +49,7 @@ public class TmFrameDecoderTest {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 35);
         m.put("frameLength", 1115);
-        m.put("errorCorrection", "CRC16");
+        m.put("errorDetection", "CRC16");
 
         List<Map<String, Object>> vclist = new ArrayList<>();
         m.put("virtualChannels", vclist);

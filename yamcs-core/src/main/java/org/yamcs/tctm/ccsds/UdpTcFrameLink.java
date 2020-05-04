@@ -6,13 +6,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
-import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 
 import org.yamcs.tctm.ccsds.TcTransferFrame;
 import org.yamcs.utils.StringConverter;
@@ -32,7 +31,7 @@ import com.google.common.util.concurrent.RateLimiter;
  *
  */
 public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
-    FrameErrorCorrection errorCorrection;
+    FrameErrorDetection errorCorrection;
     String host;
     int port;
     DatagramSocket socket;

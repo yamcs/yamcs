@@ -70,9 +70,6 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         PreparedCommand pc;
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = pc.getBinary().length;
-            System.out.println("in getFrame: commandQueue size: "+commandQueue.size()+" vmp.maxFrameLength: "+vmp.maxFrameLength+" dataLength: "+dataLength+" framingLength: "+framingLength+" pcLength:"+pcLength);
-            
-            
             if (framingLength + dataLength + pcLength < vmp.maxFrameLength) {
                 pc = commandQueue.poll();
                 if (pc == null) {

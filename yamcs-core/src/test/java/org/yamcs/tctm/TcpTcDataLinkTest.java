@@ -116,6 +116,7 @@ public class TcpTcDataLinkTest {
         config.put("tcQueueSize", ncommands);
         config.put("tcHost", "localhost");
         config.put("tcPort", mtc.port);
+        config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);

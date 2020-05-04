@@ -3,7 +3,7 @@ package org.yamcs.tctm.ccsds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.TcTmException;
-import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.TmManagedParameters.TmVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -22,7 +22,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
     public TmFrameDecoder(TmManagedParameters tmParams) {
         this.tmParams = tmParams;
-        if (tmParams.errorCorrection == FrameErrorCorrection.CRC16) {
+        if (tmParams.errorCorrection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
     }
@@ -33,6 +33,11 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
         }
 
+        int version = data[0] >>6;
+        if(version != 0) {
+            throw new TcTmException("Bad frame version number " + version + "; expected 0 (TM)");
+        }
+        
         if (length != tmParams.frameLength) {
             throw new TcTmException("Bad frame length " + length + "; expected " + tmParams.frameLength);
         }

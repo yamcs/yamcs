@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
-import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorCorrection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr.DecoderResult;
@@ -25,7 +25,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
     public AosFrameDecoder(AosManagedParameters aosParams) {
         this.aosParams = aosParams;
-        if (aosParams.errorCorrection == FrameErrorCorrection.CRC16) {
+        if (aosParams.errorCorrection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
     }
@@ -34,6 +34,11 @@ public class AosFrameDecoder implements TransferFrameDecoder {
     public AosTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
         log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
+        int version = data[0] >>6;
+        if(version != 1) {
+            throw new TcTmException("Bad frame version number " + version + "; expected 1 (AOS)");
+        }
+        
         if (length != aosParams.frameLength) {
             throw new TcTmException("Bad frame length " + length + "; expected " + aosParams.frameLength);
         }

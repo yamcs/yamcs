@@ -48,11 +48,11 @@ public abstract class AbstractTcFrameLink extends AbstractLink
     protected CltuGenerator cltuGenerator;
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
-
-    public AbstractTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
-        super(yamcsInstance, name, config);
+    
+    public AbstractTcFrameLink(String yamcsInstance, String linkName, YConfiguration config) {
+        super(yamcsInstance, linkName, config);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
-
+        
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {
             if ("BCH".equals(cltuEncoding)) {
@@ -74,7 +74,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink
             }
         }
 
-        multiplexer = new MasterChannelFrameMultiplexer(yamcsInstance, name, config);
+        multiplexer = new MasterChannelFrameMultiplexer(yamcsInstance, linkName, config);
         subLinks = new ArrayList<>();
         for (VcUplinkHandler vch : multiplexer.getVcHandlers()) {
             if (vch instanceof Link) {

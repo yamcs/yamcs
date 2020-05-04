@@ -1,28 +1,29 @@
 package org.yamcs.tctm.ccsds.error;
 
-public class Crc16Calculator {
-    final int polynomial;
-    short r[] = new short[256];
+public class Crc32Calculator {
+    final long polynomial;
+    int r[] = new int[256];
 
-    public Crc16Calculator(int polynomial) {
+    public Crc32Calculator(int polynomial) {
         this.polynomial = polynomial;
         init();
     }
 
     void init() {
-        int remainder;
+        long remainder;
         for (int dividend = 0; dividend < 256; dividend++) {
-            remainder = dividend << 8;
+            remainder = dividend << 24;
 
             for (int j = 0; j < 8; j++) {
-                if ((remainder & 0x8000) == 0) {
+                if ((remainder & 0x80000000L) == 0) {
                     remainder = (remainder << 1);
                 } else {
                     remainder = (remainder << 1) ^ polynomial;
                 }
+                
             }
-
-            r[dividend] = (short) remainder;
+            
+            r[dividend] = (int) remainder;
         }
     }
 
@@ -30,11 +31,11 @@ public class Crc16Calculator {
         int crc = initialValue;
 
         for (int i = offset; i < offset + length; i++) {
-            int idx = (data[i] ^ (crc >> 8)) & 0xff;
+            int idx = (data[i] ^ (crc >> 24)) & 0xff;
             crc = r[idx] ^ (crc << 8);
         }
 
-        return crc & 0xFFFF;
+        return crc;
 
     }
 }

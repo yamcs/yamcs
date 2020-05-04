@@ -10,11 +10,9 @@ import org.yamcs.YConfiguration;
 public class TmManagedParameters extends DownlinkManagedParameters {
     int frameLength;
     int fshLength; //0 means not present
-    boolean ocfPresent;
     
     enum ServiceType {
-        PACKET,
-        VCA_SDU
+        PACKET
     };
     
     Map<Integer, TmVcManagedParameters> vcParams = new HashMap<>();
@@ -28,8 +26,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
             throw new ConfigurationException("Invalid frame length " + frameLength);
         }
         
-        errorCorrection = config.getEnum("errorCorrection", FrameErrorCorrection.class);
-        if(errorCorrection == FrameErrorCorrection.CRC32) {
+        errorCorrection = config.getEnum("errorDetection", FrameErrorDetection.class);
+        if(errorCorrection == FrameErrorDetection.CRC32) {
             throw new ConfigurationException("CRC32 not supported for TM frames");
         }
 
@@ -63,8 +61,6 @@ public class TmManagedParameters extends DownlinkManagedParameters {
                 VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance, linkName+".vc"+vmp.vcId, vmp);
                 m.put(vmp.vcId, vcph);
                 break;
-            case VCA_SDU:
-                throw new UnsupportedOperationException("VCA_SDU not supported (TODO)");
             }
         }
         return m;
@@ -82,7 +78,6 @@ public class TmManagedParameters extends DownlinkManagedParameters {
                 throw new ConfigurationException("Invalid vcId: " + vcId+". Allowed values are from 0 to 7.");
             }
             service = config.getEnum("service", ServiceType.class);
-            
             if(service==ServiceType.PACKET) {
                 parsePacketConfig();
             }

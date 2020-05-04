@@ -25,9 +25,6 @@ import org.yamcs.utils.TimeEncoding;
  *
  */
 public class MasterChannelFrameMultiplexer {
-    // Map<Integer, VirtualChannelUplinkHandler> handlers;
-    PriorityScheme scheme;
-
     Semaphore dataAvailableSemaphore = new Semaphore(0);
     volatile boolean quitting = false;
     TcManagedParameters tcManagedParameters;
@@ -40,15 +37,15 @@ public class MasterChannelFrameMultiplexer {
     public MasterChannelFrameMultiplexer(String yamcsInstance, String linkName, YConfiguration config) {
         tcManagedParameters = new TcManagedParameters(config);
         handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
-        scheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
+       
         for(VcUplinkHandler h: handlers) {
             h.setDataAvailableSemaphore(dataAvailableSemaphore);
         }
-        if (scheme == PriorityScheme.ABSOLUTE) {
+        if (tcManagedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
             Collections.sort(handlers, (h1, h2) -> {
                 return Integer.compare(h2.getParameters().getPriority(), h1.getParameters().getPriority());
             });
-        } else if (scheme == PriorityScheme.POLLING_VECTOR) {
+        } else if (tcManagedParameters.priorityScheme == PriorityScheme.POLLING_VECTOR) {
             pollingVector = new int[handlers.size()];
             for (int i = 0; i < pollingVector.length; i++) {
                 VcUplinkManagedParameters hp = handlers.get(i).getParameters();
@@ -69,9 +66,9 @@ public class MasterChannelFrameMultiplexer {
     public TcTransferFrame getFrame() {
         while (!quitting) {
             TcTransferFrame tf = null;
-            if (scheme == PriorityScheme.ABSOLUTE) {
+            if (tcManagedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
                 tf = getFrameAbsolutePriority();
-            } else if (scheme == PriorityScheme.FIFO) {
+            } else if (tcManagedParameters.priorityScheme == PriorityScheme.FIFO) {
                 tf = getFrameFifo();
             } else {
                 tf = getFramePollingVector();
