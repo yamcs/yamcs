@@ -178,7 +178,8 @@ public class AlarmServer<S, T> extends AbstractService {
      * @param alarm
      * @param username
      * @param message
-     * @param shelveDuration
+     * @param shelveDuration shelve duration in milliseconds
+     * 
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> shelve(ActiveAlarm<T> alarm, String username, String message,
