@@ -462,32 +462,33 @@ public class YamcsServer {
      * 
      * @param name
      *            the name of the new instance
-     * @param config
-     *            the configuration for this instance (equivalent of yamcs.instance.yaml)
+
      * @param metadata
      *            the metadata associated to this instance (labels or other attributes)
-     * 
+     * @param offline
+     *            if true, the instance will be created offline and it does not need a config
+     *  @param config
+     *            the configuration for this instance (equivalent of yamcs.instance.yaml)
      * @return the newly created instance
      */
-    public synchronized YamcsServerInstance addInstance(String name, YConfiguration config, InstanceMetadata metadata) {
+    public synchronized YamcsServerInstance addInstance(String name, InstanceMetadata metadata, boolean offline, YConfiguration config) {
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
-        LOG.info("Loading online instance '{}'", name);
+        LOG.info("Loading {} instance '{}'", offline?"offline":"online", name);
         YamcsServerInstance ysi = new YamcsServerInstance(name, metadata);
-        instances.put(name, ysi);
-        ysi.init(config);
-        ManagementService.getInstance().registerYamcsInstance(ysi);
-        return ysi;
-    }
 
-    public synchronized YamcsServerInstance addOfflineInstance(String name, InstanceMetadata metadata) {
-        if (instances.containsKey(name)) {
-            throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
-        }
-        LOG.debug("Loading offline instance '{}'", name);
-        YamcsServerInstance ysi = new YamcsServerInstance(name, metadata);
+        ysi.addStateListener(new InstanceStateListener() {
+            public void failed(Throwable failure) {
+                LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
+            }
+        });
+        
         instances.put(name, ysi);
+        if(!offline) {
+            ysi.init(config);
+        }
+        
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
@@ -554,7 +555,7 @@ public class YamcsServer {
             instanceConfig = new YConfiguration(subSystem, fis, confPath);
         }
 
-        return addInstance(name, instanceConfig, metadata);
+        return addInstance(name, metadata, false, instanceConfig);
     }
 
     private String deriveServerId() {
@@ -1157,7 +1158,7 @@ public class YamcsServer {
                     throw new ConfigurationException("Duplicate instance specified: '" + name + "'");
                 }
                 YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + name);
-                addInstance(name, instanceConfig, new InstanceMetadata());
+                addInstance(name, new InstanceMetadata(), false, instanceConfig);
                 instanceCount++;
             }
         }
@@ -1180,7 +1181,7 @@ public class YamcsServer {
                     }
                     YConfiguration instanceConfig = loadInstanceConfig(instanceName);
                     InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
-                    addInstance(instanceName, instanceConfig, instanceMetadata);
+                    addInstance(instanceName, instanceMetadata, false, instanceConfig);
                 } else {
                     if (instances.size() > maxNumInstances) {
                         LOG.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
@@ -1188,7 +1189,7 @@ public class YamcsServer {
                         continue;
                     }
                     InstanceMetadata instanceMetadata = loadInstanceMetadata(instanceName);
-                    addOfflineInstance(instanceName, instanceMetadata);
+                    addInstance(instanceName, instanceMetadata, true, null);
                 }
             }
         }
