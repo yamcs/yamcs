@@ -90,7 +90,9 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("timeService", OptionType.ANY);
         spec.addOption("tmIndexer", OptionType.ANY);
         spec.addOption("eventDecoders", OptionType.ANY);
-
+        
+        //"anchors" is used to allow yaml anchors (reuse of blocks)
+        spec.addOption("anchors", OptionType.ANY);
         return spec;
     }
 
@@ -102,7 +104,6 @@ public class YamcsServerInstance extends YamcsInstanceService {
             throw new UncheckedExecutionException(new ValidationException(
                     e.getContext(), e.getMessage()));
         }
-
         initAsync();
         try {
             awaitInitialized();
