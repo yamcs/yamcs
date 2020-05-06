@@ -60,6 +60,9 @@ public class ProtobufRegistry {
     }
 
     public void importDefinitions(InputStream in) throws IOException {
+        if(in == null) {
+            throw new NullPointerException("input stream cannot be null");
+        }
         FileDescriptorSet proto = FileDescriptorSet.parseFrom(in, extensionRegistry);
 
         // Index all messages by fully-qualified protobuf name
