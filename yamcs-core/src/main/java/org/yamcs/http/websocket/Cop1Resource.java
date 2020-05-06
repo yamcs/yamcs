@@ -2,7 +2,6 @@ package org.yamcs.http.websocket;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -15,7 +14,6 @@ import org.yamcs.ProcessorException;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.api.ManagementApi;
 import org.yamcs.management.LinkManager;
-import org.yamcs.management.LinkManager.LinkWithInfo;
 import org.yamcs.protobuf.Cop1Status;
 import org.yamcs.protobuf.Cop1SubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -154,18 +152,17 @@ public class Cop1Resource implements WebSocketResource {
         }
     }
 
-    private Cop1TcPacketHandler verifyCop1Link(int reqId, String instance, String name) throws WebSocketException {
+    private Cop1TcPacketHandler verifyCop1Link(int reqId, String instance, String linkName) throws WebSocketException {
         YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
         LinkManager lmgr = ysi.getLinkManager();
-        Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(name);
-        if (!o.isPresent()) {
-            throw new WebSocketException(reqId, "There is no link named '" + name + "' in instance " + instance);
+        Link link = lmgr.getLink(linkName);
+        if (link == null) {
+            throw new WebSocketException(reqId, "There is no link named '" + linkName + "' in instance " + instance);
         }
-        Link link = o.get().getLink();
         if (link instanceof Cop1TcPacketHandler) {
             return (Cop1TcPacketHandler) link;
         }
-        throw new WebSocketException(reqId, "Link '" + name + "' in instance " + instance + " does not support COP1");
+        throw new WebSocketException(reqId, "Link '" + linkName + "' in instance " + instance + " does not support COP1");
     }
 
     private Cop1SubscriptionRequest verifyRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)

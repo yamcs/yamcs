@@ -329,39 +329,27 @@ public class LinkManager {
 
     public void enableLink(String linkName) {
         log.debug("received enableLink for {}", linkName);
-        Optional<LinkWithInfo> o = getLinkWithInfo(linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.enable();
-        } else {
-            throw new IllegalArgumentException(
-                    "There is no link named '" + linkName + "' in instance " + yamcsInstance);
-        }
+        checkAndGetLink(linkName).enable();
     }
 
     public void disableLink(String linkName) {
         log.debug("received disableLink for {}", linkName);
-        Optional<LinkWithInfo> o = getLinkWithInfo(linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.disable();
-        } else {
-            throw new IllegalArgumentException(
-                    "There is no link named '" + linkName + "' in instance " + yamcsInstance);
-        }
+        checkAndGetLink(linkName).disable();
     }
 
     public void resetCounters(String linkName) {
-        Optional<LinkWithInfo> o = getLinkWithInfo(linkName);
-        if (o.isPresent()) {
-            LinkWithInfo lci = o.get();
-            lci.link.resetCounters();
-        } else {
+        log.debug("received resetCounters for {}", linkName);
+        checkAndGetLink(linkName).resetCounters();
+    }
+
+    private Link checkAndGetLink(String linkName) {
+        Link link = getLink(linkName);
+        if (link == null) {
             throw new IllegalArgumentException(
                     "There is no link named '" + linkName + "' in instance " + yamcsInstance);
         }
+        return link;
     }
-
     public boolean removeLinkListener(LinkListener l) {
         return linkListeners.remove(l);
     }
@@ -370,10 +358,10 @@ public class LinkManager {
         return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
     }
 
-    public LinkInfo getLinkInfo(String name) {
+    public LinkInfo getLinkInfo(String linkName) {
         Optional<LinkInfo> o = links.stream()
                 .map(lwi -> lwi.linkInfo)
-                .filter(li -> li.getName().equals(name))
+                .filter(li -> li.getName().equals(linkName))
                 .findFirst();
         if (o.isPresent()) {
             return o.get();
@@ -382,6 +370,16 @@ public class LinkManager {
         }
     }
 
+
+    /**
+     * Return the link by the given name or null if there is no such link.
+     * 
+     * @param linkName
+     * @return
+     */
+    public Link getLink(String linkName) {
+        return linksByName.get(linkName);
+    }
     /**
      * What to do with invalid packets.
      * DROP: do nothing
@@ -473,4 +471,5 @@ public class LinkManager {
         public void streamClosed(Stream s) {
         }
     }
+
 }
