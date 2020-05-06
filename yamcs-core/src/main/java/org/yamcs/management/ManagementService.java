@@ -409,6 +409,7 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterStream(String instance, String name) {
         tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
+        streams.removeIf(swi-> swi.instance.equals(instance) && swi.stream.getName().equals(name));
     }
 
     static class StreamWithInfo {
