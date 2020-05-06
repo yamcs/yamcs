@@ -33,7 +33,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
         }
 
-        int version = data[0] >>6;
+        int version = data[offset] >>6;
         if(version != 0) {
             throw new TcTmException("Bad frame version number " + version + "; expected 0 (TM)");
         }

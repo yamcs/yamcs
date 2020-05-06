@@ -34,7 +34,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
     public AosTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
         log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
-        int version = data[0] >>6;
+        int version = data[offset] >>6;
         if(version != 1) {
             throw new TcTmException("Bad frame version number " + version + "; expected 1 (AOS)");
         }
