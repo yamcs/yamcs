@@ -237,7 +237,8 @@ public class ProcessorsTest {
     public static class DummyTmProvider extends AbstractService implements TmPacketProvider {
         private TmProcessor tmProcessor;
 
-        public DummyTmProvider(String instance, YConfiguration config) {
+        @Override
+        public void init(String instance, YConfiguration config) {
         }
 
         @Override
