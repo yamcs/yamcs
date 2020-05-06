@@ -55,8 +55,6 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         }
     }
 
-  
-
     @Override
     public TcTransferFrame getFrame() {
        

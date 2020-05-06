@@ -3,8 +3,6 @@ package org.yamcs.tctm;
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.ACK_SENT_CNAME_PREFIX;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -12,9 +10,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
@@ -27,8 +22,7 @@ import org.yamcs.utils.YObjectLoader;
  * @author nm
  *
  */
-public abstract class AbstractTcDataLink extends AbstractLink
-        implements TcDataLink, SystemParametersProducer {
+public abstract class AbstractTcDataLink extends AbstractLink implements TcDataLink {
 
     protected CommandHistoryPublisher commandHistoryPublisher;
 
@@ -36,7 +30,6 @@ public abstract class AbstractTcDataLink extends AbstractLink
 
     protected String sv_linkStatus_id, sp_dataCount_id;
 
-    protected SystemParametersCollector sysParamCollector;
     TimeService timeService;
 
     protected CommandPostprocessor cmdPostProcessor;
@@ -96,11 +89,6 @@ public abstract class AbstractTcDataLink extends AbstractLink
         cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
     }
 
-    public String getLinkName() {
-        return linkName;
-    }
-
-
     @Override
     public long getDataInCount() {
         return 0;
@@ -109,36 +97,6 @@ public abstract class AbstractTcDataLink extends AbstractLink
     @Override
     public long getDataOutCount() {
         return dataCount;
-    }
-
-    protected void setupSysVariables() {
-        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if (sysParamCollector != null) {
-            sysParamCollector.registerProducer(this);
-            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
-            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
-
-        } else {
-            log.info("System variables collector not defined for instance {} ", yamcsInstance);
-        }
-    }
-
-    @Override
-    public List<ParameterValue> getSystemParameters() {
-        long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
-        return Arrays.asList(linkStatus, dataCount);
-    }
-
-    @Override
-    public YConfiguration getConfig() {
-        return config;
-    }
-
-    @Override
-    public String getName() {
-        return linkName;
     }
 
     @Override

@@ -184,7 +184,6 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
         if (params.isEmpty()) {
             return;
         }
-
         TupleDefinition tdef = StandardTupleDefinitions.PARAMETER.copy();
         List<Object> cols = new ArrayList<>(4 + params.size());
         cols.add(gentime);
@@ -192,6 +191,10 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
         cols.add(seqCount);
         cols.add(gentime);
         for (ParameterValue pv : params) {
+            if (pv == null) {
+                log.error("Null parameter value encountered, skipping");
+                continue;
+            }
             String name = pv.getParameterQualifiedNamed();
             int idx = tdef.getColumnIndex(name);
             if (idx != -1) {
@@ -252,6 +255,9 @@ public class SystemParametersCollector extends AbstractYamcsService implements R
      */
     public void registerProducer(SystemParametersProducer p) {
         log.debug("Registering system variables producer {}", p);
+        if(providers.contains(p)) {
+            throw new IllegalStateException("Producer already registered");
+        }
         providers.add(p);
     }
 

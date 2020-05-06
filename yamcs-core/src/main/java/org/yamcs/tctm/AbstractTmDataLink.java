@@ -1,8 +1,7 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -26,8 +25,7 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     protected PacketPreprocessor packetPreprocessor;
 
     final protected Log log;
-    protected SystemParametersCollector sysParamCollector;
-    private String spLinkStatus, spDataCount, spDataRate, spPacketRate;
+    private String spDataRate, spPacketRate;
     final protected TimeService timeService;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
@@ -73,28 +71,18 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
         }
     }
 
-    protected void setupSysVariables() {
-        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if (sysParamCollector != null) {
-            sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
-            spDataCount = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
-            spDataRate = sysParamCollector.getNamespace() + "/" + linkName + "/dataRate";
-            spPacketRate = sysParamCollector.getNamespace() + "/" + linkName + "/packetRate";
-        } else {
-            log.info("System variables collector not defined for instance {} ", yamcsInstance);
-        }
+    @Override
+    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
+        super.setupSystemParameters(sysParamCollector);
+        spDataRate = sysParamCollector.getNamespace() + "/" + linkName + "/dataRate";
+        spPacketRate = sysParamCollector.getNamespace() + "/" + linkName + "/packetRate";
     }
 
     @Override
-    public Collection<ParameterValue> getSystemParameters() {
-        long time = timeService.getMissionTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, packetCount);
-        ParameterValue dataRate = SystemParametersCollector.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate());
-        ParameterValue packetRate = SystemParametersCollector.getPV(spPacketRate, time,
-                packetRateMeter.getFiveSecondsRate());
-        return Arrays.asList(linkStatus, dataCount, dataRate, packetRate);
+    protected void collectSystemParameters(long time, List<ParameterValue> list) {
+        super.collectSystemParameters(time, list);
+        list.add(SystemParametersCollector.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate()));
+        list.add(SystemParametersCollector.getPV(spPacketRate, time, packetRateMeter.getFiveSecondsRate()));
     }
 
     @Override

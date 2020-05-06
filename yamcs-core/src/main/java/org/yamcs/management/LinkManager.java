@@ -27,8 +27,11 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.LinkInfo;
+import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ParameterDataLink;
@@ -76,13 +79,13 @@ public class LinkManager {
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
     final CommandHistoryPublisher cmdHistPublisher;
     Map<Stream, TcStreamSubscriber> tcStreamSubscribers = new HashMap<>();
-    
+
     public LinkManager(String instanceName) throws InitException {
         this.yamcsInstance = instanceName;
         log = new Log(getClass(), instanceName);
         ydb = YarchDatabase.getInstance(instanceName);
         cmdHistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
-        
+
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YConfiguration instanceConfig = instance.getConfig();
 
@@ -165,10 +168,10 @@ public class LinkManager {
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
-            
+
             if (stream != null) {
                 TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
-                if(tcs == null) {
+                if (tcs == null) {
                     tcs = new TcStreamSubscriber(true);
                     tcStreamSubscribers.put(stream, tcs);
                     stream.addSubscriber(tcs);
@@ -246,6 +249,17 @@ public class LinkManager {
     }
 
     public void startLinks() {
+        SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
+        
+        if (collector != null) {
+            linksByName.forEach((name, link) -> {
+                if(link instanceof SystemParametersProducer) {
+                    link.setupSystemParameters(collector);
+                    collector.registerProducer((SystemParametersProducer)link);
+                }
+            });
+        }
+
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
                 log.debug("Starting service link {}", name);
@@ -350,6 +364,7 @@ public class LinkManager {
         }
         return link;
     }
+
     public boolean removeLinkListener(LinkListener l) {
         return linkListeners.remove(l);
     }
@@ -370,7 +385,6 @@ public class LinkManager {
         }
     }
 
-
     /**
      * Return the link by the given name or null if there is no such link.
      * 
@@ -380,6 +394,7 @@ public class LinkManager {
     public Link getLink(String linkName) {
         return linksByName.get(linkName);
     }
+
     /**
      * What to do with invalid packets.
      * DROP: do nothing
@@ -434,7 +449,6 @@ public class LinkManager {
     class TcStreamSubscriber implements StreamSubscriber {
         final List<TcDataLink> tcLinks = new ArrayList<>();
         final boolean failIfNoLinkAvailable;
-        
 
         public TcStreamSubscriber(boolean failIfNoLinkAvailable) {
             this.failIfNoLinkAvailable = failIfNoLinkAvailable;
@@ -443,7 +457,7 @@ public class LinkManager {
         void addLink(TcDataLink tcLink) {
             tcLinks.add(tcLink);
         }
-        
+
         @Override
         public void onTuple(Stream s, Tuple tuple) {
             XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -463,7 +477,7 @@ public class LinkManager {
                 long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
                 cmdHistPublisher.publishAck(commandId, ACK_SENT_CNAME_PREFIX,
                         currentTime, AckStatus.NOK, reason);
-                cmdHistPublisher.commandFailed(commandId,  currentTime, reason);
+                cmdHistPublisher.commandFailed(commandId, currentTime, reason);
             }
         }
 

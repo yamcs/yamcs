@@ -1,12 +1,19 @@
 package org.yamcs.tctm;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersCollector;
+import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.time.TimeService;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -19,13 +26,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
  * @author nm
  *
  */
-public abstract class AbstractLink extends AbstractService implements Link {
+public abstract class AbstractLink extends AbstractService implements Link, SystemParametersProducer {
     protected final String yamcsInstance;
     protected final String linkName;
     protected final Log log;
     protected final EventProducer eventProducer;
     protected final YConfiguration config;
     protected final AtomicBoolean disabled = new AtomicBoolean(false);
+    private String sv_linkStatus_id, sp_dataOutCount_id, sp_dataInCount_id;
+    protected TimeService timeService;
 
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
@@ -40,6 +49,7 @@ public abstract class AbstractLink extends AbstractService implements Link {
         log = new Log(getClass(), instance);
         log.setContext(name);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, getClass().getSimpleName(), 10000);
+        this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     @Override
@@ -106,19 +116,60 @@ public abstract class AbstractLink extends AbstractService implements Link {
     public boolean isDisabled() {
         return disabled.get();
     }
-    
+
     public boolean isRunningAndEnabled() {
         State state = state();
-        return (state==State.RUNNING||state==State.STARTING) && !disabled.get();
+        return (state == State.RUNNING || state == State.STARTING) && !disabled.get();
     }
 
-    protected void doDisable() throws Exception {};
+    protected void doDisable() throws Exception {
+    };
 
-    protected void doEnable() throws Exception {};
-    
+    protected void doEnable() throws Exception {
+    };
+
     /**
-     * In case the link should be connected (i.e. is running and enabled) this method is called to return the actual connection status
+     * In case the link should be connected (i.e. is running and enabled) this method is called to return the actual
+     * connection status
      */
     protected abstract Status connectionStatus();
+
+    protected long getCurrentTime() {
+        return timeService.getMissionTime();
+    }
+
+    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
+        sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
+        sp_dataOutCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataOutCount";
+        sp_dataInCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataInCount";
+    }
+
+    @Override
+    public List<ParameterValue> getSystemParameters() {
+        long time = getCurrentTime();
+       
+        ArrayList<ParameterValue> list = new ArrayList<ParameterValue>();
+        try {
+            collectSystemParameters(time, list);
+        } catch (Exception e) {
+            log.error("Exception caught when collecting link system parameters", e);
+        }
+        return list;
+    }
+
+    /**
+     * adds system parameters link status and data in/out to the list.
+     * <p>
+     * The inheriting classes should call super.collectSystemParameters and then add their own parameters
+     * to the list
+     * 
+     * @param time
+     * @param list
+     */
+    protected void collectSystemParameters(long time, List<ParameterValue> list) {
+        list.add(SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name()));
+        list.add(SystemParametersCollector.getPV(sp_dataOutCount_id, time, getDataOutCount()));
+        list.add(SystemParametersCollector.getPV(sp_dataInCount_id, time, getDataInCount()));
+    }
 
 }

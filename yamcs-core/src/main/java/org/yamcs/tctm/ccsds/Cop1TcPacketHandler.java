@@ -172,7 +172,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         outQueue = new ArrayBlockingQueue<>(OUT_QUEUE_SIZE);
         clcwStreamName = vmp.config.getString("clcwStream");
         this.initialClcwWait = 1000 * vmp.config.getInt("initialClcwWait", -1);
-        this.t1Initial =  1000 * vmp.config.getInt("cop1T1", 3);
+        this.t1Initial = 1000 * vmp.config.getInt("cop1T1", 3);
         this.txLimit = vmp.config.getInt("cop1TxLimit", 3);
     }
 
@@ -1019,7 +1019,6 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     @Override
     protected void doStart() {
-        setupSysVariables();
         clcwHelper = new ClcwStreamHelper(yamcsInstance, clcwStreamName);
         clcwHelper.onClcw(clcw -> onCLCW(clcw));
         if (initialClcwWait > 0) {
@@ -1155,75 +1154,74 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    protected void setupSysVariables() {
-        super.setupSysVariables();
+    public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
+        super.setupSystemParameters(sysParamCollector);
 
-        if (sysParamCollector != null) {
-            sv_cop1Status_id = sysParamCollector.getNamespace() + "/" + linkName + "/cop1Status";
+        sv_cop1Status_id = sysParamCollector.getNamespace() + "/" + linkName + "/cop1Status";
 
-            addMonitor(new Cop1Monitor() {
-                int prevClcw = INVALID_CLCW;
+        addMonitor(new Cop1Monitor() {
+            int prevClcw = INVALID_CLCW;
 
-                @Override
-                public void suspended(int suspendState) {
+            @Override
+            public void suspended(int suspendState) {
+                updatePv();
+            }
+
+            @Override
+            public void stateChanged(int oldState, int newState) {
+                updatePv();
+            }
+
+            @Override
+            public void disabled() {
+                updatePv();
+            }
+
+            @Override
+            public void clcwReceived(int clcw) {
+                if (clcw != prevClcw) {
                     updatePv();
+                    prevClcw = clcw;
                 }
+            };
 
-                @Override
-                public void stateChanged(int oldState, int newState) {
-                    updatePv();
+            @Override
+            public void tcQueued() {
+                updatePv();
+            };
+
+            @Override
+            public void tcSent() {
+                updatePv();
+            };
+
+            void updatePv() {
+                AggregateValue tmp = new AggregateValue(cop1StatusMembers);
+                tmp.setMemberValue("cop1Active", ValueUtility.getBooleanValue(cop1Active));
+
+                if (suspendState > 0) {
+                    tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.SUSPENDED.name()));
+                } else {
+                    tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.forNumber(state).name()));
                 }
+                tmp.setMemberValue("waitQueueNumTC", ValueUtility.getUint32Value(waitQueue.size()));
+                tmp.setMemberValue("sentQueueNumFrames", ValueUtility.getUint32Value(sentQueueSize()));
+                tmp.setMemberValue("vS", ValueUtility.getUint32Value(vS));
+                tmp.setMemberValue("nnR", ValueUtility.getUint32Value(nnR));
 
-                @Override
-                public void disabled() {
-                    updatePv();
-                }
+                cop1Status = SystemParametersCollector.getPV(sv_cop1Status_id, getCurrentTime(), tmp);
+            }
 
-                @Override
-                public void clcwReceived(int clcw) {
-                    if (clcw != prevClcw) {
-                        updatePv();
-                        prevClcw = clcw;
-                    }
-                };
-
-                @Override
-                public void tcQueued() {
-                    updatePv();
-                };
-
-                @Override
-                public void tcSent() {
-                    updatePv();
-                };
-
-                void updatePv() {
-                    AggregateValue tmp = new AggregateValue(cop1StatusMembers);
-                    tmp.setMemberValue("cop1Active", ValueUtility.getBooleanValue(cop1Active));
-
-                    if (suspendState > 0) {
-                        tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.SUSPENDED.name()));
-                    } else {
-                        tmp.setMemberValue("state", ValueUtility.getStringValue(Cop1State.forNumber(state).name()));
-                    }
-                    tmp.setMemberValue("waitQueueNumTC", ValueUtility.getUint32Value(waitQueue.size()));
-                    tmp.setMemberValue("sentQueueNumFrames", ValueUtility.getUint32Value(sentQueueSize()));
-                    tmp.setMemberValue("vS", ValueUtility.getUint32Value(vS));
-                    tmp.setMemberValue("nnR", ValueUtility.getUint32Value(nnR));
-
-                    cop1Status = SystemParametersCollector.getPV(sv_cop1Status_id, getCurrentTime(), tmp);
-                }
-
-            });
-        }
+        });
     }
 
     @Override
-    public List<ParameterValue> getSystemParameters() {
-        long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
-        return Arrays.asList(linkStatus, dataCount, cop1Status);
+    protected void collectSystemParameters(long time, List<ParameterValue> list) {
+        super.collectSystemParameters(time, list);
+        if (cop1Status != null) {
+            list.add(cop1Status);
+            cop1Status = null;
+        }
     }
 
     @Override

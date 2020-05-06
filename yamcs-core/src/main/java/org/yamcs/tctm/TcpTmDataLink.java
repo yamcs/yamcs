@@ -66,7 +66,6 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     @Override
     public void doStart() {
-        setupSysVariables();
         if (!isDisabled()) {
             new Thread(this).start();
         }
@@ -75,9 +74,6 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     @Override
     public void doStop() {
-        if (sysParamCollector != null) {
-            sysParamCollector.unregisterProducer(this);
-        }
         if (tmSocket != null) {
             try {
                 tmSocket.close();

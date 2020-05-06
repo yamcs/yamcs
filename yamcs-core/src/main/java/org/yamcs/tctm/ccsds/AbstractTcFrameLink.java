@@ -1,18 +1,13 @@
 package org.yamcs.tctm.ccsds;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
@@ -24,7 +19,6 @@ import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -34,24 +28,19 @@ import org.yamcs.utils.TimeEncoding;
  * @author nm
  *
  */
-public abstract class AbstractTcFrameLink extends AbstractLink
-        implements AggregatedDataLink, TcDataLink, SystemParametersProducer {
+public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink{
     protected int frameCount;
     boolean sendCltu;
     protected MasterChannelFrameMultiplexer multiplexer;
     List<Link> subLinks;
 
     protected CommandHistoryPublisher commandHistoryPublisher;
-    protected TimeService timeService;
-    protected SystemParametersCollector sysParamCollector;
-    private String sv_linkStatus_id, sp_dataCount_id;
     protected CltuGenerator cltuGenerator;
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
     
     public AbstractTcFrameLink(String yamcsInstance, String linkName, YConfiguration config) {
         super(yamcsInstance, linkName, config);
-        this.timeService = YamcsServer.getTimeService(yamcsInstance);
         
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {
@@ -85,27 +74,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink
         }
     }
 
-    protected long getCurrentTime() {
-        return timeService.getMissionTime();
-    }
-
-    protected void setupSysVariables() {
-        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if (sysParamCollector != null) {
-            sysParamCollector.registerProducer(this);
-            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
-            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataCount";
-        }
-    }
-
-    @Override
-    public List<ParameterValue> getSystemParameters() {
-        long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
-        return Arrays.asList(linkStatus, dataCount);
-    }
-
+    
     @Override
     public long getDataInCount() {
         return 0;
