@@ -27,7 +27,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
 
     public TcPacketHandler(String yamcsInstance, String linkName, TcVcManagedParameters vmp)
             throws ConfigurationException {
-        super(yamcsInstance, linkName, vmp.config);
+        super.init(yamcsInstance, linkName, vmp.config);
         this.vmp = vmp;
         this.frameFactory = vmp.getFrameFactory();
 

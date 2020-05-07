@@ -29,14 +29,10 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     protected Selector selector;
     SelectionKey selectionKey;
 
-    public TcpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        super(yamcsInstance, name, config);
+    public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(yamcsInstance, name, config);
         configure(yamcsInstance, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
-    }
-
-    public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-        this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getConfig(spec));
     }
 
     private void configure(String yamcsInstance, YConfiguration config) {

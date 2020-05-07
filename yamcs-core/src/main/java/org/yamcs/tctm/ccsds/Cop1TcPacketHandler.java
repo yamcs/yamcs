@@ -163,7 +163,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
             TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
-        super(yamcsInstance, linkName, vmp.config);
+        super.init(yamcsInstance, linkName, vmp.config);
 
         this.frameFactory = vmp.getFrameFactory();
         this.executor = executor;

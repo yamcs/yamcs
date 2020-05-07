@@ -11,11 +11,11 @@ import org.yamcs.tctm.Link;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     protected List<Link> subLinks;
-    protected final MasterChannelFrameHandler frameHandler;
+    protected  MasterChannelFrameHandler frameHandler;
     protected volatile int frameCount;
 
-    public AbstractTmFrameLink(String instance, String name, YConfiguration config) throws ConfigurationException {
-        super(instance, name, config);
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(instance, name, config);
         frameHandler = new MasterChannelFrameHandler(yamcsInstance, name, config);
         subLinks = new ArrayList<>();
         for (VcDownlinkHandler vch : frameHandler.getVcHandlers()) {

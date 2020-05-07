@@ -26,8 +26,8 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
-    public TcpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
-        super(instance, name, config);
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(instance, name, config);
         if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
             host = config.getString("tmHost");
             port = config.getInt("tmPort");
@@ -42,10 +42,8 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
             this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
         }
         this.packetInputStreamArgs = config.get("packetInputStreamArgs");
-
-        initPreprocessor(instance, config);
     }
-
+    
     protected void openSocket() throws IOException {
         InetAddress address = InetAddress.getByName(host);
         tmSocket = new Socket();

@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,7 +13,6 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.Value;
 import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommand;
@@ -46,14 +44,11 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
 public class TseDataLink extends AbstractLink {
-
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
 
     // Parameter references are surrounded by backticks (to distinguish from
     // the angle brackets which are used for argument substitution)
     private static final Pattern PARAMETER_REFERENCE = Pattern.compile("`(.*?)`");
-
-    private final Log log;
 
     private volatile boolean disabled = false;
     private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
@@ -68,21 +63,13 @@ public class TseDataLink extends AbstractLink {
 
     private Channel channel;
 
-    private TimeService timeService;
     private CommandHistoryPublisher cmdhistPublisher;
 
-    public TseDataLink(String yamcsInstance, String name) {
-        this(yamcsInstance, name, YConfiguration.wrap(Collections.emptyMap()));
-    }
 
-    public TseDataLink(String yamcsInstance, String name, YConfiguration config) {
-        super(yamcsInstance, name, config);
+    public void init(String yamcsInstance, String name, YConfiguration config) {
+        super.init(yamcsInstance, name, config);
 
-        timeService = YamcsServer.getTimeService(yamcsInstance);
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
-
-        log = new Log(getClass(), yamcsInstance);
-        log.setContext(name);
 
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);

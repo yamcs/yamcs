@@ -24,14 +24,10 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
     protected int port;
     InetAddress address;
 
-    public UdpTcDataLink(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
-        super(yamcsInstance, name, config);
+    public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");
-    }
-
-    public UdpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-        this(yamcsInstance, name, YConfiguration.getConfiguration("udp").getConfig(spec));
     }
 
     @Override

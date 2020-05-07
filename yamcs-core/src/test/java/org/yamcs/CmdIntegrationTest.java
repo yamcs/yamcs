@@ -317,8 +317,8 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
     public static class MyTcDataLink extends AbstractTcDataLink {
         static short seqNum = 5000;
 
-        public MyTcDataLink(String yamcsInstance, String name, YConfiguration config) {
-            super(yamcsInstance, name, config);
+        public void init(String yamcsInstance, String name, YConfiguration config) {
+            super.init(yamcsInstance, name, config);
         }
 
         @Override

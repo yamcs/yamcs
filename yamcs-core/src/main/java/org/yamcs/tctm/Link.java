@@ -1,5 +1,6 @@
 package org.yamcs.tctm;
 
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -96,5 +97,27 @@ public interface Link {
      * also registered with the {@link SystemParametersCollector} to be called regularly after the start.
      */
     default void setupSystemParameters(SystemParametersCollector sysParamCollector) {
+    }
+    
+    /**
+     * Called at startup to initialize the link.
+     * <p>
+     * The config corresponds to the map that is under the link definition in yamcs.instance.yaml.
+     * 
+     * @param yamcsInstance
+     * @param linkName
+     * @param config  - the configuration
+     */
+    default void init(String yamcsInstance, String linkName, YConfiguration config) {
+    }
+    
+
+    /**
+     * Returns the valid configuration of the input args of this link.
+     * 
+     * @return the argument specification, or <tt>null</tt> if the args should not be validated.
+     */
+    public default Spec getSpec() {
+        return null;
     }
 }

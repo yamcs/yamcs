@@ -61,27 +61,25 @@ dataLinks:
   - name: tm_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
-    args:
-      stream: tm_realtime
-      host: localhost
-      port: 10015
-      # Give the embedded simulator some time to boot up
-      initialDelay: 2000      
+    stream: tm_realtime
+    host: localhost
+    port: 10015
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000      
   - name: tm2_realtime
     enabledAtStartup: false
     class: org.yamcs.tctm.TcpTmDataLink
-    args:
-      stream: tm2_realtime
-      host: localhost
-      port: 10016
-      # Give the embedded simulator some time to boot up
-      initialDelay: 2000
-      # the packet input stream is responsible for chunking the stream into packets (this is not required for UDP links where one datagram = one packet)
-      # for historical reasons the default packet input stream (used for the tm_realtime link above) is CcsdsPacketInputStream which chunks the packets based on 
-      # CCSDS Space Packet definition (i.e. the packet length is in the 5th and 6th bytes of the primary header)
-      # the GenericPacketInputStream can be used to read any kind of packet where the length is encoded in big endian somewhere at the beginning of the packet
-      packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
-      packetInputStreamArgs: 
+    stream: tm2_realtime
+    host: localhost
+    port: 10016
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
+    # the packet input stream is responsible for chunking the stream into packets (this is not required for UDP links where one datagram = one packet)
+    # for historical reasons the default packet input stream (used for the tm_realtime link above) is CcsdsPacketInputStream which chunks the packets based on 
+    # CCSDS Space Packet definition (i.e. the packet length is in the 5th and 6th bytes of the primary header)
+    # the GenericPacketInputStream can be used to read any kind of packet where the length is encoded in big endian somewhere at the beginning of the packet
+    packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+    packetInputStreamArgs: 
         maxPacketLength: 1000  #max size of the packet 
         lengthFieldOffset: 0   # where to read the length from 
         lengthFieldLength: 2   # the number of the bytes that contain the packet length
@@ -94,42 +92,39 @@ dataLinks:
       # for historical reasons the default packet preprocessor (used for the tm_realtime link above) is the IssPacketPreprocessor that reads packets 
       # according to the ISS (International Space Station) definition
       # The generic packet preprocessor reads a timestamp in number of milliseconds since 1970 as well as a 4 bytes sequence count 
-      packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-      packetPreprocessorArgs:
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
         timestampOffset: 2 #where to read the 8 bytes timestamp offset from
         seqCountOffset: 10 #where to read the 4 bytes sequence count from
         errorDetection: #last two bytes are used for the error detection
           type: "CRC-16-CCIIT" 
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
-    args:
-      stream: tm_dump
-      host: localhost
-      port: 10115
-      # Give the embedded simulator some time to boot up
-      initialDelay: 2000
+    stream: tm_dump
+    host: localhost
+    port: 10115
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
-    args:
-      stream: tc_sim2
-      host: localhost
-      port: 10025
-      # Give the embedded simulator smoe time to boot up
-      initialDelay: 2000
-      commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
-      commandPostprocessorArgs:
+    stream: tc_sim2
+    host: localhost
+    port: 10025
+    # Give the embedded simulator smoe time to boot up
+    initialDelay: 2000
+    commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+    commandPostprocessorArgs:
         errorDetection:
           type: 16-SUM
         enforceEvenNumberOfBytes: true
   - name: UDP_FRAME_OUT
     class: org.yamcs.tctm.ccsds.UdpTcFrameLink
-    args:
-       host: localhost #host and port where to send the frames to
-       port: 10018
-       spacecraftId: 0xAB
-       maxFrameLength: 1024
-       cltuEncoding: BCH
-       virtualChannels:
+    host: localhost #host and port where to send the frames to
+    port: 10018
+    spacecraftId: 0xAB
+    maxFrameLength: 1024
+    cltuEncoding: BCH
+    virtualChannels:
          - vcId: 0
            service: "PACKET" 
            commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
@@ -144,28 +139,26 @@ dataLinks:
 
   - name: TSE
     class: org.yamcs.tctm.TseDataLink
-    args:
-      host: localhost
-      port: 8135
-      # Give the embedded simulator some time to boot up
-      initialDelay: 2000
+    host: localhost
+    port: 8135
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
   # The link below receives AOS frames (CCSDS 732.0-B-3) on three virtual channels and
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 
   - name: UDP_FRAME_IN
     enabledAtStartup: true
     class: org.yamcs.tctm.ccsds.UdpTmFrameLink
-    args:
-       port: 10017 #UDP port to listen to
-       #one of AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
-       frameType: "AOS"
-       spacecraftId: 0xAB
-       frameLength: 512
-       frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
-       insertZoneLength: 0
-       errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
-       clcwStream: "clcw" #published the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1 
-       virtualChannels:
+    port: 10017 #UDP port to listen to
+    #one of AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
+    frameType: "AOS"
+    spacecraftId: 0xAB
+    frameLength: 512
+    frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
+    insertZoneLength: 0
+    errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+    clcwStream: "clcw" #published the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1 
+    virtualChannels:
           - vcId: 0
             ocfPresent: true
             service: "PACKET"  #supported services for AOS are M_PDU, B_PDU or VCA_SDU

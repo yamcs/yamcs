@@ -39,9 +39,8 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     private AggregatedDataLink parent = null;
     
    
-    public AbstractTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
-            throws ConfigurationException {
-        super(yamcsInstance, linkName, config);
+    public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
+        super.init(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
         
         initPostprocessor(yamcsInstance, config);

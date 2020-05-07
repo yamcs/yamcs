@@ -11,7 +11,6 @@ Instance Services
     artemis-parameter-publisher
     artemis-tm-publisher
     command-history-recorder
-    data-link-initialiser
     event-recorder
     index-server
     parameter-archive-service

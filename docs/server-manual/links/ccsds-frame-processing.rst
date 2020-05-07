@@ -131,7 +131,7 @@ packetPreprocessorClassName and packetPreprocessorArgs
   
 
 Telecommand Frame Processing
-------------------
+----------------------------
 
 Yamcs supports packing telecommand packets into TC Transfer Frames and in addition encapsulating the frames into Communications Link Transmission Unit (CLTU).
 

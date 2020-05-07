@@ -25,8 +25,8 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     private int port;
 
     final static int MAX_LENGTH = 1500;
-    final DatagramPacket datagram;
-    final int maxLength;
+    DatagramPacket datagram;
+    int maxLength;
 
     /**
      * Creates a new UDP TM Data Link
@@ -34,12 +34,11 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
      * @throws ConfigurationException
      *             if port is not defined in the configuration
      */
-    public UdpTmDataLink(String instance, String name, YConfiguration config) throws ConfigurationException {
-        super(instance, name, config);
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(instance, name, config);
         port = config.getInt("port");
         maxLength = config.getInt("maxLength", MAX_LENGTH);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
-        initPreprocessor(instance, config);
     }
 
     @Override

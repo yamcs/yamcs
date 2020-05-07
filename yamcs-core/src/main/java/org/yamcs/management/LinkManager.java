@@ -31,7 +31,6 @@ import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.LinkInfo;
-import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ParameterDataLink;
@@ -60,7 +59,7 @@ import com.google.gson.Gson;
  * Compared to the old DataLinkInitializer this one:
  * <ul>
  * <li>is the endpoint for the /links API calls</li>
- * <li>takes care for the commanding links to subcribe/unsubscribe them from the streams whenever they are
+ * <li>takes care for the commanding links to subscribe/unsubscribe them from the streams whenever they are
  * enabled/disabled</li>
  * <li>TODO: can set exclusive flags - i.e. only one link from a group can be enabled at a time</li>
  * </ul>
@@ -109,27 +108,22 @@ public class LinkManager {
     private void createDataLink(YConfiguration linkConfig) throws IOException {
         String className = linkConfig.getString("class");
         YConfiguration args = null;
-        args = linkConfig.getConfig("args");
+        String linkName = linkConfig.getString("name");
+        if (linkConfig.containsKey("args")) {
+            args = linkConfig.getConfig("args");
+            log.warn(
+                    "Depreciation warning: the 'args' parameter in the link {} configuration is deprecated; please move all properties one level up",
+                    linkName);
+            mergeConfig(linkConfig, args);
+        }
 
-        String name = linkConfig.getString("name");
-        if (linksByName.containsKey(name)) {
+        if (linksByName.containsKey(linkName)) {
             throw new ConfigurationException(
-                    "Instance " + yamcsInstance + ": there is already a link named '" + name + "'");
+                    "Instance " + yamcsInstance + ": there is already a link named '" + linkName + "'");
         }
 
-        // this is maintained for compatibility with DaSS which defines no stream name because the config is specified
-        // in a separate file
-        String linkLevelStreamName = null;
-        if (linkConfig.containsKey("stream")) {
-            log.warn("DEPRECATION ALERT: Define 'stream' under 'args'.");
-            linkLevelStreamName = linkConfig.getString("stream");
-        }
-        Link link;
-        if (args != null) {
-            link = YObjectLoader.loadObject(className, yamcsInstance, name, args);
-        } else {
-            link = YObjectLoader.loadObject(className, yamcsInstance, name);
-        }
+        Link link = loadLink(className, linkName, linkConfig);
+        link.init(yamcsInstance, linkName, linkConfig);
 
         boolean enabledAtStartup = linkConfig.getBoolean("enabledAtStartup", true);
 
@@ -137,19 +131,46 @@ public class LinkManager {
             link.disable();
         }
 
-        configureDataLink(link, args, linkLevelStreamName);
+        configureDataLink(link, linkConfig);
     }
 
-    void configureDataLink(Link link, YConfiguration linkArgs, String linkLevelStreamName) {
+    // once we don't want to be backwards compatible, we should replace this method by
+    // link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkConfig);
+    private Link loadLink(String linkClass, String linkName, YConfiguration linkConfig) throws IOException {
+        Link link = null;
+        try {
+            link = YObjectLoader.loadObject(linkClass);
+        } catch (ConfigurationException e) {
+            // TODO: set this to warn in the next version
+            log.info(
+                    "The link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
+                    linkClass);
+            // Ignore for now. Fallback to constructor initialization.
+        }
+
+        if (link == null) { // "Legacy" fallback
+            link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkName, linkConfig);
+        }
+        return link;
+    }
+
+    private void mergeConfig(YConfiguration linkConfig, YConfiguration args) {
+        for (String k : args.getKeys()) {
+            if (linkConfig.containsKey(k)) {
+                throw new ConfigurationException(linkConfig, "key '" + k
+                        + "' present both in link config and args; these two are merged together and this is not allowed");
+            }
+            linkConfig.getRoot().put(k, args.get(k));
+        }
+    }
+
+    void configureDataLink(Link link, YConfiguration linkArgs) {
         if (linkArgs == null) {
             linkArgs = YConfiguration.emptyConfig();
         }
 
         Stream stream = null;
-        String streamName = linkLevelStreamName;
-        if (linkArgs.containsKey("stream")) {
-            streamName = linkArgs.getString("stream");
-        }
+        String streamName = linkArgs.getString("stream", null);
         if (streamName != null) {
             stream = ydb.getStream(streamName);
             if (stream == null) {
@@ -189,7 +210,7 @@ public class LinkManager {
 
         if (link instanceof AggregatedDataLink) {
             for (Link l : ((AggregatedDataLink) link).getSubLinks()) {
-                configureDataLink(l, l.getConfig(), null);
+                configureDataLink(l, l.getConfig());
             }
         }
 
@@ -250,12 +271,12 @@ public class LinkManager {
 
     public void startLinks() {
         SystemParametersCollector collector = SystemParametersCollector.getInstance(yamcsInstance);
-        
+
         if (collector != null) {
             linksByName.forEach((name, link) -> {
-                if(link instanceof SystemParametersProducer) {
+                if (link instanceof SystemParametersProducer) {
                     link.setupSystemParameters(collector);
-                    collector.registerProducer((SystemParametersProducer)link);
+                    collector.registerProducer((SystemParametersProducer) link);
                 }
             });
         }

@@ -36,9 +36,8 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     // the initial delay applies only if the link is enabled at startup
     long initialDelay;
 
-    public AbstractThreadedTcDataLink(String yamcsInstance, String linkName, YConfiguration config)
-            throws ConfigurationException {
-        super(yamcsInstance, linkName, config);
+    public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
+        super.init(yamcsInstance, linkName, config);
         if (config.containsKey("tcQueueSize")) {
             commandQueue = new LinkedBlockingQueue<>(config.getInt("tcQueueSize"));
         } else {

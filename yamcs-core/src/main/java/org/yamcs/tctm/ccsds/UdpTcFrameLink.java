@@ -39,8 +39,8 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     Thread thread;
     RateLimiter rateLimiter;
     
-    public UdpTcFrameLink(String yamcsInstance, String name, YConfiguration config) {
-        super(yamcsInstance, name, config);
+    public void init(String yamcsInstance, String name, YConfiguration config) {
+        super.init(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");
        

@@ -39,8 +39,8 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
     
-    public AbstractTcFrameLink(String yamcsInstance, String linkName, YConfiguration config) {
-        super(yamcsInstance, linkName, config);
+    public void init(String yamcsInstance, String linkName, YConfiguration config) {
+        super.init(yamcsInstance, linkName, config);
         
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {

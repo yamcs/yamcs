@@ -27,12 +27,12 @@ import io.netty.channel.nio.NioEventLoopGroup;
  *
  */
 public abstract class AbstractLink extends AbstractService implements Link, SystemParametersProducer {
-    protected final String yamcsInstance;
-    protected final String linkName;
-    protected final Log log;
-    protected final EventProducer eventProducer;
-    protected final YConfiguration config;
-    protected final AtomicBoolean disabled = new AtomicBoolean(false);
+    protected String yamcsInstance;
+    protected String linkName;
+    protected Log log;
+    protected EventProducer eventProducer;
+    protected YConfiguration config;
+    protected AtomicBoolean disabled = new AtomicBoolean(false);
     private String sv_linkStatus_id, sp_dataOutCount_id, sp_dataInCount_id;
     protected TimeService timeService;
 
@@ -41,8 +41,8 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
      * different links but for now we stick to one.
      */
     static NioEventLoopGroup nelg = new NioEventLoopGroup();
-
-    public AbstractLink(String instance, String name, YConfiguration config) throws ConfigurationException {
+    
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = instance;
         this.linkName = name;
         this.config = config;

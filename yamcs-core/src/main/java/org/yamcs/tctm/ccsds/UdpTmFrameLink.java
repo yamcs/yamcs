@@ -24,7 +24,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     private DatagramSocket tmSocket;
     private int port;
 
-    final DatagramPacket datagram;
+    DatagramPacket datagram;
     String packetPreprocessorClassName;
     Object packetPreprocessorArgs;
     Thread thread;
@@ -35,8 +35,8 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
      * @throws ConfigurationException
      *             if port is not defined in the configuration
      */
-    public UdpTmFrameLink(String instance, String name, YConfiguration config) throws ConfigurationException {
-        super(instance, name, config);
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(instance, name, config);
         port = config.getInt("port");
         int maxLength = frameHandler.getMaxFrameSize();
         datagram = new DatagramPacket(new byte[maxLength], maxLength);

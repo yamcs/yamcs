@@ -118,7 +118,8 @@ public class TcpTcDataLinkTest {
         config.put("tcPort", mtc.port);
         config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
+        TcpTcDataLink dataLink = new TcpTcDataLink();
+        dataLink.init("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);
@@ -147,7 +148,8 @@ public class TcpTcDataLinkTest {
         config.put("tcHost", "localhost");
         config.put("tcPort", mtc.port);
 
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", YConfiguration.wrap(config));
+        TcpTcDataLink dataLink = new TcpTcDataLink();
+        dataLink.init("testinst", "test1", YConfiguration.wrap(config));
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
         dataLink.setCommandHistoryPublisher(mypub);

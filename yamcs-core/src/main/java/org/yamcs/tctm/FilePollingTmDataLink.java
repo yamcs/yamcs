@@ -10,21 +10,19 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Reads telemetry files from the directory yamcs.incomingDir/tm
  *
  */
 public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnable {
 
-    final Path incomingDir;
+    Path incomingDir;
     boolean deleteAfterImport = true;
     long delayBetweenPackets = -1;
     Thread thread;
 
-    public FilePollingTmDataLink(String yamcsInstance, String name, YConfiguration config) {
-        super(yamcsInstance, name, config);
+    public void init(String yamcsInstance, String name, YConfiguration config) {
+        super.init(yamcsInstance, name, config);
 
         if (config.containsKey("incomingDir")) {
             incomingDir = Paths.get(config.getString("incomingDir"));
@@ -34,22 +32,6 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         }
         deleteAfterImport = config.getBoolean("deleteAfterImport", true);
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
-        initPreprocessor(yamcsInstance, config);
-    }
-
-    public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
-        super(yamcsInstance, name, YConfiguration.wrap(ImmutableMap.of("incomingDir", incomingDir)));
-        this.incomingDir = Paths.get(incomingDir);
-        initPreprocessor(yamcsInstance, null);
-    }
-
-    /**
-     * used when no spec is specified, the incomingDir is based on the property with the same name from the yamcs.yaml
-     * 
-     * @param instance
-     */
-    public FilePollingTmDataLink(String instance, String name) {
-        this(instance, name, YamcsServer.getServer().getIncomingDirectory().resolve(instance).resolve("tm").toString());
     }
 
     @Override
