@@ -1,5 +1,6 @@
 package org.yamcs.management;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,19 +54,19 @@ public class ManagementService implements ProcessorListener {
     Map<Integer, ConnectedClient> clients = Collections.synchronizedMap(new HashMap<Integer, ConnectedClient>());
     private AtomicInteger clientIdGenerator = new AtomicInteger();
 
-  
-    List<StreamWithInfo> streams = new CopyOnWriteArrayList<>();
+    //streams is accessed only from the timer thread
+    List<StreamWithInfo> streams = new ArrayList<>();
+    
+    
     List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
     List<Processor> processors = new CopyOnWriteArrayList<>();
-
-    
 
     // Processors & Clients. Should maybe split up
     Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
 
-   
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
+    ScheduledThreadPoolExecutor timer;
 
     static public ManagementService getInstance() {
         return managementService;
@@ -74,7 +75,7 @@ public class ManagementService implements ProcessorListener {
     private InstanceStateListener instanceListener;
 
     private ManagementService() {
-        ScheduledThreadPoolExecutor timer = YamcsServer.getServer().getThreadPoolExecutor();
+        this.timer = YamcsServer.getServer().getThreadPoolExecutor();
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkStreamUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -201,8 +202,8 @@ public class ManagementService implements ProcessorListener {
 
     public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(cr.getInstance());
-        if(ysi==null) {
-            throw new YamcsException("Unexisting yamcs instance " + cr.getInstance()+" specified");
+        if (ysi == null) {
+            throw new YamcsException("Unexisting yamcs instance " + cr.getInstance() + " specified");
         }
         Processor processor = ysi.getProcessor(cr.getName());
         if (processor == null) {
@@ -261,7 +262,6 @@ public class ManagementService implements ProcessorListener {
         return null;
     }
 
-
     /**
      * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
      * has no extra effects. Either you listen, or you don't.
@@ -291,7 +291,6 @@ public class ManagementService implements ProcessorListener {
         qmanagers.forEach(m -> m.removeListener(l));
         return removed;
     }
-
 
     public Set<ConnectedClient> getClients() {
         synchronized (clients) {
@@ -395,11 +394,14 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void registerStream(String instance, Stream stream) {
-        StreamInfo.Builder streamb = StreamInfo.newBuilder()
-                .setName(stream.getName())
-                .setDataCount(stream.getDataCount());
-        StreamInfo streamInfo = streamb.build();
-        streams.add(new StreamWithInfo(instance, stream, streamInfo));
+        timer.execute(() -> {
+            StreamInfo.Builder streamb = StreamInfo.newBuilder()
+                    .setName(stream.getName())
+                    .setDataCount(stream.getDataCount());
+            StreamInfo streamInfo = streamb.build();
+            streams.add(new StreamWithInfo(instance, stream, streamInfo));
+        });
+
         tableStreamListeners.forEach(l -> l.streamRegistered(instance, stream));
     }
 
@@ -409,7 +411,9 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterStream(String instance, String name) {
         tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
-        streams.removeIf(swi-> swi.instance.equals(instance) && swi.stream.getName().equals(name));
+        timer.execute(() -> {
+            streams.removeIf(swi -> swi.instance.equals(instance) && swi.stream.getName().equals(name));
+        });
     }
 
     static class StreamWithInfo {
