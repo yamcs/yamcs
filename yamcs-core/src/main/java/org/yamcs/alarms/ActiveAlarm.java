@@ -283,4 +283,18 @@ public class ActiveAlarm<T> {
     public String getUsernameThatCleared() {
         return usernameThatCleared;
     }
+
+    @Override
+    public String toString() {
+        return "ActiveAlarm [autoAcknowledge=" + autoAcknowledge + ", latching=" + latching + ", id=" + id
+                + ", processOK=" + processOK + ", triggered=" + triggered + ", acknowledged=" + acknowledged
+                + ", acknowledgeTime=" + acknowledgeTime + ", clearTime=" + clearTime + ", triggerValue=" + triggerValue
+                + ", mostSevereValue=" + mostSevereValue + ", currentValue=" + currentValue + ", acknowledgeMessage="
+                + acknowledgeMessage + ", clearMessage=" + clearMessage + ", violations=" + violations + ", valueCount="
+                + valueCount + ", usernameThatAcknowledged=" + usernameThatAcknowledged + ", usernameThatCleared="
+                + usernameThatCleared + ", shelved=" + shelved + ", usernameThatShelved=" + usernameThatShelved
+                + ", shelveTime=" + shelveTime + ", shelveMessage=" + shelveMessage + ", shelveDuration="
+                + shelveDuration + "]";
+    }
+    
 }

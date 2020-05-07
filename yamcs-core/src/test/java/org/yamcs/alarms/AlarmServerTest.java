@@ -27,8 +27,7 @@ public class AlarmServerTest {
     Parameter p2 = new Parameter("p2");
     AlarmServer<Parameter, ParameterValue> alarmServer;
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    
-    
+
     @BeforeClass
     static public void setupBeforeClass() {
         EventProducerFactory.setMockup(true);
@@ -41,7 +40,7 @@ public class AlarmServerTest {
 
         return pv;
     }
-    
+
     @Before
     public void before() {
         alarmServer = new AlarmServer<>("toto", timer);
@@ -115,10 +114,9 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.triggerValue);
 
         assertEquals(1, l.rtn.size());
-        
+
         long ackTime = 123L;
         alarmServer.acknowledge(aa, "test2", ackTime, "bla");
-
 
         aa = l.cleared.remove();
         assertEquals(pv1_1, aa.currentValue);
@@ -129,7 +127,6 @@ public class AlarmServerTest {
         assertEquals("bla", aa.getAckMessage());
     }
 
-    
     @Test
     public void testShelve() throws InterruptedException {
         MyListener l = new MyListener();
@@ -141,15 +138,20 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
-
+        
+        long shelvetime = TimeEncoding.getWallclockTime();
+        
         ActiveAlarm<ParameterValue> aa1 = alarmServer.shelve(aa, "busy operator", "looking at it later", 500);
         assertNotNull(aa1);
-        
+
         assertEquals(1, l.shelved.size());
         assertEquals(aa, l.shelved.remove());
-        
-        ActiveAlarm<ParameterValue> aa2 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
 
+        ActiveAlarm<ParameterValue> aa2 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
+        if (aa2 == null) { //this code is in order to try to understand the spurious test failure - aa2 is null sometimes
+            System.out.println("shelvetime:"+shelvetime+" wallclocktime: "+TimeEncoding.getWallclockTime());
+            System.out.println("Active alarms: "+alarmServer.getActiveAlarms());
+        }
         assertEquals(aa, aa2);
         assertFalse(aa.isShelved());
     }
@@ -177,7 +179,7 @@ public class AlarmServerTest {
 
     @Test
     public void testGetActiveAlarmWithNoAlarm() throws AlarmSequenceException {
-       
+
         MyListener l = new MyListener();
         alarmServer.addAlarmListener(l);
 
