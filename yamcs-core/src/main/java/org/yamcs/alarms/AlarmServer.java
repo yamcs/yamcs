@@ -203,7 +203,7 @@ public class AlarmServer<S, T> extends AbstractService {
                 if (exp == -1) {
                     continue;
                 }
-                if (exp < t) {
+                if (exp <= t) {
                     aa.unshelve();
                     alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, aa));
                 }
