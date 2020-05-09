@@ -12,19 +12,18 @@ export class AlarmLabel implements OnDestroy {
 
   private connectionInfoSubscription: Subscription;
 
-  instance$ = new BehaviorSubject<string | null>(null);
+  context$ = new BehaviorSubject<string | null>(null);
   status$ = new BehaviorSubject<GlobalAlarmStatus | null>(null);
 
   private statusSubscription: GlobalAlarmStatusSubscription;
 
-  constructor(yamcs: YamcsService) {
+  constructor(readonly yamcs: YamcsService) {
     this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
       if (connectionInfo && connectionInfo.instance) {
         /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
           this.clearAlarmSubscription();
         }*/
-        this.instance$.next(connectionInfo.instance);
-
+        let context = connectionInfo.instance;
         if (connectionInfo.processor) {
           const options = {
             instance: connectionInfo.instance,
@@ -33,10 +32,12 @@ export class AlarmLabel implements OnDestroy {
           this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
             this.status$.next(status);
           });
+          context += ';' + connectionInfo.processor;
         }
+        this.context$.next(context);
       } else {
         this.clearAlarmSubscription();
-        this.instance$.next(null);
+        this.context$.next(null);
       }
     });
   }

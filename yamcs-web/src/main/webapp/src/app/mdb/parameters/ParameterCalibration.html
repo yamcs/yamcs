@@ -26,7 +26,7 @@
       <td>
         <ng-container *ngFor="let comparison of contextCalibrator.comparison">
           <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{instance: instance}">{{ comparison.parameter.qualifiedName }}</a>
+             [queryParams]="{c: yamcs.context}">{{ comparison.parameter.qualifiedName }}</a>
           {{ comparison.operator | operator }}
           {{ comparison.value }}
         </ng-container>

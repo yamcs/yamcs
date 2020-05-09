@@ -14,7 +14,6 @@ import { ContainersDataSource } from './ContainersDataSource';
 })
 export class ContainersPage implements AfterViewInit {
 
-  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -38,13 +37,12 @@ export class ContainersPage implements AfterViewInit {
   ];
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Containers');
-    this.instance = yamcs.getInstance();
     this.dataSource = new ContainersDataSource(yamcs);
   }
 

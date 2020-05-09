@@ -10,7 +10,7 @@ const routes: Routes = [
     path: '',
     canActivate: [AuthGuard, AttachContextGuard],
     canActivateChild: [AuthGuard],
-    runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
+    runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [
       {

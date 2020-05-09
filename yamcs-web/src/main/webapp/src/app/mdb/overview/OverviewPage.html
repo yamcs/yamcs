@@ -8,22 +8,22 @@
       <dt>Parameters:</dt>
       <dd>
         <a class="ya-link" routerLink="/mdb/parameters"
-           [queryParams]="{instance: instance}">{{ mdb.parameterCount }}</a>
+           [queryParams]="{c: yamcs.context}">{{ mdb.parameterCount }}</a>
       </dd>
       <dt>Containers:</dt>
       <dd>
         <a class="ya-link" routerLink="/mdb/containers"
-           [queryParams]="{instance: instance}">{{ mdb.containerCount }}</a>
+           [queryParams]="{c: yamcs.context}">{{ mdb.containerCount }}</a>
       </dd>
       <dt>Commands:</dt>
       <dd>
         <a class="ya-link" routerLink="/mdb/commands"
-           [queryParams]="{instance: instance}">{{ mdb.commandCount }}</a>
+           [queryParams]="{c: yamcs.context}">{{ mdb.commandCount }}</a>
       </dd>
       <dt>Algorithms:</dt>
       <dd>
         <a class="ya-link" routerLink="/mdb/algorithms"
-           [queryParams]="{instance: instance}">{{ mdb.algorithmCount }}</a>
+           [queryParams]="{c: yamcs.context}">{{ mdb.algorithmCount }}</a>
       </dd>
     </dl>
   </div>

@@ -23,16 +23,14 @@ export class AddCommandDialog {
   commandForm: CommandForm;
 
   selectCommandForm: FormGroup;
-  instance: string;
 
   selectedCommand$ = new BehaviorSubject<Command | null>(null);
 
   constructor(
     private dialogRef: MatDialogRef<AddCommandDialog>,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     formBuilder: FormBuilder,
   ) {
-    this.instance = yamcs.getInstance();
     this.selectCommandForm = formBuilder.group({
       command: ['', Validators.required],
     });

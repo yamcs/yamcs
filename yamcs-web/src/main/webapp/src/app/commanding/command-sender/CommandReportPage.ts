@@ -13,24 +13,20 @@ import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 })
 export class CommandReportPage implements OnDestroy {
 
-  instance: string;
-
   private commandSubscription: CommandSubscription;
   command$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   constructor(
     route: ActivatedRoute,
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
   ) {
     const id = route.snapshot.paramMap.get('commandId')!;
 
-    this.instance = yamcs.getInstance();
-
-    yamcs.yamcsClient.getCommandHistoryEntry(this.instance, id).then(entry => {
+    yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, id).then(entry => {
       this.mergeEntry(entry);
       this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-        instance: this.instance,
-        processor: yamcs.getProcessor().name,
+        instance: yamcs.instance!,
+        processor: yamcs.processor!,
         ignorePastCommands: false,
       }, wsEntry => {
         if (printCommandId(wsEntry.commandId) === id) {

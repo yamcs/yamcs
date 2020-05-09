@@ -73,7 +73,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
    */
   private loadPage(options: GetEventsOptions) {
     this.options = options;
-    return this.yamcs.yamcsClient.getEvents(this.yamcs.getInstance(), options).then(events => {
+    return this.yamcs.yamcsClient.getEvents(this.yamcs.instance!, options).then(events => {
       if (events.length > this.pageSize) {
         events.splice(events.length - 1, 1);
         this.offscreenRecord = events[events.length - 1];
@@ -106,7 +106,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   startStreaming() {
     this.streaming$.next(true);
     this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
-      instance: this.yamcs.getInstance(),
+      instance: this.yamcs.instance!,
     }, event => {
       if (!this.loading$.getValue() && this.matchesFilter(event)) {
         (event as AnimatableEvent).animate = true;

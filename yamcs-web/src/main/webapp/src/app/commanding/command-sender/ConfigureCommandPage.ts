@@ -23,7 +23,6 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild('another', { static: false })
   anotherChild: ElementRef;
 
-  instance: string;
   config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
@@ -39,12 +38,11 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     private router: Router,
     title: Title,
     private messageService: MessageService,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private location: Location,
     configService: ConfigService,
     authService: AuthService,
   ) {
-    this.instance = yamcs.getInstance();
     this.config = configService.getConfig();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
@@ -52,12 +50,12 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     title.setTitle(`Send a command: ${qualifiedName}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.yamcsClient.getCommand(this.instance, qualifiedName),
+      this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, qualifiedName),
     ];
 
     const templateId = route.snapshot.queryParamMap.get('template');
     if (templateId) {
-      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.instance, templateId);
+      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, templateId);
       promises.push(promise);
     }
 
@@ -103,15 +101,14 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     const assignments = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
 
-    const processor = this.yamcs.getProcessor();
     const qname = this.command$.value!.qualifiedName;
-    this.yamcs.yamcsClient.issueCommand(processor.instance, processor.name, qname, {
+    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       assignment: assignments,
       comment,
     }).then(response => {
       this.router.navigate(['/commanding/report', response.id], {
         queryParams: {
-          instance: this.instance,
+          c: this.yamcs.context,
         }
       });
     }).catch(err => {

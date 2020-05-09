@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmsDataSource } from '../alarms/AlarmsDataSource';
-import { GeneralInfo, MissionDatabase, TmStatistics, TMStatisticsSubscription } from '../client';
+import { TmStatistics, TMStatisticsSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -15,8 +15,6 @@ import { User } from '../shared/User';
 })
 export class InstanceHomePage implements OnDestroy {
 
-  instance: string;
-
   private user: User;
   config: WebsiteConfig;
 
@@ -25,38 +23,23 @@ export class InstanceHomePage implements OnDestroy {
 
   alarmsDataSource: AlarmsDataSource;
 
-  info$: Promise<GeneralInfo>;
-  mdb$: Promise<MissionDatabase>;
-
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     title: Title,
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
 
-    const processor = yamcs.getProcessor();
-    this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
-    title.setTitle(this.instance);
+    title.setTitle(this.yamcs.instance!);
     this.tmstatsSubscription = yamcs.yamcsClient.createTMStatisticsSubscription({
-      instance: this.instance,
-      processor: processor.name,
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
     }, stats => this.tmstats$.next(stats.tmstats || []));
 
     this.alarmsDataSource = new AlarmsDataSource(yamcs);
-    this.alarmsDataSource.loadAlarms('realtime');
-
-    if (this.showMDB()) {
-      this.mdb$ = yamcs.yamcsClient.getMissionDatabase();
-    }
-
-    this.info$ = yamcs.yamcsClient.getGeneralInfo();
-  }
-
-  showMDB() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
+    this.alarmsDataSource.loadAlarms();
   }
 
   showAlarms() {

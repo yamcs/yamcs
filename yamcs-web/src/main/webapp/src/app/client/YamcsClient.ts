@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, CreateTransferRequest, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, GetSpaceSystemsOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage, Transfer, TransfersPage } from '.';
+import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, CreateTransferRequest, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage, Transfer, TransfersPage } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
@@ -9,7 +9,7 @@ import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from '
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExportXtceOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
 import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { AuthInfo, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GroupInfo, Instance, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListTopicsResponse, RoleInfo, Service, ServiceAccount, SystemInfo, TokenResponse, UserInfo } from './types/system';
@@ -758,21 +758,16 @@ export default class YamcsClient implements HttpHandler {
     return url + this.queryString(options);
   }
 
-  getXtceDownloadURL(instance: string, options: ExportXtceOptions = {}) {
-    const url = `${this.apiUrl}/mdb/${instance}/space-systems${options.spaceSystem}:exportXTCE`;
-    return url + this.queryString(options);
-  }
-
   async getRootSpaceSystems(instance: string, ) {
     const url = `${this.apiUrl}/mdb/${instance}`;
     const response = await this.doFetch(url);
     const wrapper = await response.json() as SpaceSystemsWrapper;
-    return wrapper.spaceSystems || [];
+    return wrapper.spaceSystem || [];
   }
 
-  async getSpaceSystems(instance: string, options: GetSpaceSystemsOptions = {}) {
+  async getSpaceSystems(instance: string) {
     const url = `${this.apiUrl}/mdb/${instance}/space-systems`;
-    const response = await this.doFetch(url + this.queryString(options));
+    const response = await this.doFetch(url);
     return await response.json() as SpaceSystemsPage;
   }
 

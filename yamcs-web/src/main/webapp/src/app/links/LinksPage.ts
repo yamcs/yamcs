@@ -18,8 +18,6 @@ import { LinkItem } from './LinkItem';
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
 
-  instance: string;
-
   filterControl = new FormControl();
 
   // Link to show detail pane (only on single selection)
@@ -44,7 +42,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   private itemsByName: { [key: string]: LinkItem; } = {};
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     title: Title,
     private changeDetection: ChangeDetectorRef,
@@ -52,7 +50,6 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private router: Router,
   ) {
     title.setTitle('Links');
-    this.instance = yamcs.getInstance();
 
     this.dataSource.filterPredicate = (item, filter) => {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
@@ -84,7 +81,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.yamcsClient.getLinks(this.instance).then(links => {
+    this.yamcs.yamcsClient.getLinks(this.yamcs.instance!).then(links => {
       for (const link of links) {
         const linkItem = { link, hasChildren: false, expanded: false };
         this.itemsByName[link.name] = linkItem;
@@ -100,7 +97,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       this.updateDataSource();
 
       this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
-        instance: this.instance,
+        instance: this.yamcs.instance!,
       }, evt => {
         this.processLinkEvent(evt);
       });
@@ -130,15 +127,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.instance, name);
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.instance, name);
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.instance, name, {
+    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
       resetCounters: true,
     });
   }

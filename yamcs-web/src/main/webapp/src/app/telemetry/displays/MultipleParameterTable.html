@@ -21,7 +21,7 @@
     <th mat-header-cell *cdkHeaderCellDef>Name</th>
     <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
       <a [routerLink]="['/mdb/parameters', row.name]"
-         [queryParams]="{instance: instance}">
+         [queryParams]="{c: yamcs.context}">
         {{ row.name }}
       </a>
     </td>

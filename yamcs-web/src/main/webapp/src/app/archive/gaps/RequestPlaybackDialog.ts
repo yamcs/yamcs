@@ -28,7 +28,7 @@ export class RequestPlaybackDialog {
   ) {
     this.gaps = this.data.gaps;
 
-    this.yamcs.yamcsClient.getLinks(yamcs.getInstance()).then(links => {
+    this.yamcs.yamcsClient.getLinks(yamcs.instance!).then(links => {
       const linkOptions = [];
       for (const link of links) {
         if (link.type.indexOf('DassPlaybackPacketProvider') !== -1) {

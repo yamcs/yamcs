@@ -1,6 +1,6 @@
 <app-instance-page *ngIf="stream$ | async as stream">
   <app-instance-toolbar [hasDetailPane]="rlb.isActive">
-    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance}" color="primary">
+    <a mat-icon-button routerLink=".." [queryParams]="{c: yamcs.context}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Streams / {{ stream.name }}
   </app-instance-toolbar>
@@ -9,7 +9,7 @@
     <a mat-tab-link
        routerLink="./columns"
        routerLinkActive #rla="routerLinkActive"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        [active]="rla.isActive">
       Columns
     </a>
@@ -17,7 +17,7 @@
     <a mat-tab-link
        routerLink="./data"
        routerLinkActive #rlb="routerLinkActive"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        [active]="rlb.isActive">
       Data
     </a>
@@ -25,7 +25,7 @@
     <a mat-tab-link
        routerLink="./script"
        routerLinkActive #rlc="routerLinkActive"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        [active]="rlc.isActive">
       Script
     </a>

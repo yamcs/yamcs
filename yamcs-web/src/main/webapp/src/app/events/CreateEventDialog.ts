@@ -26,7 +26,7 @@ export class CreateEventDialog {
   }
 
   save() {
-    this.yamcs.yamcsClient.createEvent(this.yamcs.getInstance(), {
+    this.yamcs.yamcsClient.createEvent(this.yamcs.instance!, {
       message: this.form.value['message'],
       severity: this.form.value['severity'],
       time: utils.toISOString(this.form.value['time']),

@@ -16,16 +16,13 @@ export class TablesPage implements AfterViewInit {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  instance: string;
-
   displayedColumns = ['name'];
 
   dataSource = new MatTableDataSource<Table>();
 
-  constructor(yamcs: YamcsService, title: Title) {
+  constructor(readonly yamcs: YamcsService, title: Title) {
     title.setTitle('Tables');
-    this.instance = yamcs.getInstance();
-    yamcs.yamcsClient.getTables(this.instance).then(tables => {
+    yamcs.yamcsClient.getTables(this.yamcs.instance!).then(tables => {
       this.dataSource.data = tables;
     });
   }

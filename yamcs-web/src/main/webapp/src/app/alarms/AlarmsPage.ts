@@ -26,8 +26,6 @@ export class AlarmsPage implements OnDestroy {
     view: new FormControl('standard'),
   });
 
-  instance: string;
-
   // Alarm to show in detail pane (only on single selection)
   detailAlarm$ = new BehaviorSubject<Alarm | null>(null);
 
@@ -51,7 +49,7 @@ export class AlarmsPage implements OnDestroy {
   private filter: string;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private router: Router,
     title: Title,
@@ -59,7 +57,6 @@ export class AlarmsPage implements OnDestroy {
     private authService: AuthService,
   ) {
     title.setTitle('Alarms');
-    this.instance = this.yamcs.getInstance();
     this.selectionSubscription = this.selection.changed.subscribe(() => {
       const selected = this.selection.selected;
       if (selected.length === 1) {
@@ -70,7 +67,7 @@ export class AlarmsPage implements OnDestroy {
     });
 
     this.dataSource = new AlarmsDataSource(this.yamcs);
-    this.dataSource.loadAlarms('realtime');
+    this.dataSource.loadAlarms();
 
     this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
       // Update detail pane
@@ -150,23 +147,21 @@ export class AlarmsPage implements OnDestroy {
 
   unshelveAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'unshelved',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
   }
 
   clearAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'cleared',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
   }
 

@@ -25,8 +25,6 @@ import { ViewerHost } from './ViewerHost';
 })
 export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
-  instance: string;
-
   @ViewChild(ViewerControlsHost)
   private controlsHost: ViewerControlsHost;
 
@@ -48,15 +46,13 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   private syncSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     router: Router,
     private componentFactoryResolver: ComponentFactoryResolver,
     private title: Title,
     private synchronizer: Synchronizer,
   ) {
-    this.instance = yamcs.getInstance();
-
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
     this.routerSubscription = router.events.pipe(

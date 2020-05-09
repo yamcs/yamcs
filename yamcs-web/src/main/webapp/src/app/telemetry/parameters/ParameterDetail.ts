@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Parameter, ParameterValue, Value } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -11,9 +12,6 @@ import { Parameter, ParameterValue, Value } from '../../client';
 export class ParameterDetail implements OnChanges {
 
   @Input()
-  instance: string;
-
-  @Input()
   parameter: Parameter;
 
   @Input()
@@ -21,6 +19,9 @@ export class ParameterDetail implements OnChanges {
 
   showRaw$ = new BehaviorSubject<boolean>(false);
   value$ = new BehaviorSubject<Value | null>(null);
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 
   ngOnChanges() {
     if (this.pval) {

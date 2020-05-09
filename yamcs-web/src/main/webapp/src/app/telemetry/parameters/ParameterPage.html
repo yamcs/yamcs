@@ -2,7 +2,7 @@
   <app-instance-toolbar>
     <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/telemetry/parameters"
-         [queryParams]="{instance: instance.name, system: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
@@ -18,7 +18,7 @@
     <a mat-button
        color="primary"
        [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-       [queryParams]="{instance: instance}">
+       [queryParams]="{c: yamcs.context}">
       <mat-icon>style</mat-icon>
       VIEW IN MDB
     </a>
@@ -29,14 +29,14 @@
        routerLink="summary"
        routerLinkActive #rla="routerLinkActive"
        [active]="rla.isActive"
-       [queryParams]="{instance: instance}">
+       [queryParams]="{c: yamcs.context}">
       Summary
     </a>
     <a mat-tab-link
        routerLink="chart"
        routerLinkActive #rlb="routerLinkActive"
        [active]="rlb.isActive"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        *ngIf="config.features.tmArchive">
       Chart
     </a>
@@ -44,14 +44,14 @@
        routerLink="alarms"
        routerLinkActive #rlc="routerLinkActive"
        [active]="rlc.isActive"
-       [queryParams]="{instance: instance}">
+       [queryParams]="{c: yamcs.context}">
       Alarm History
     </a>
     <a mat-tab-link
        routerLink="data"
        routerLinkActive #rld="routerLinkActive"
        [active]="rld.isActive"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        *ngIf="config.features.tmArchive">
       Historical Data
     </a>

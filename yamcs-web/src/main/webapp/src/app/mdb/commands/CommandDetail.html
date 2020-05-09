@@ -6,7 +6,7 @@
   <dd>
     <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/commands"
-         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -31,7 +31,7 @@
   <dt>Base command</dt>
   <dd *ngIf="command.baseCommand">
     <a [routerLink]="['/mdb/commands/', command.baseCommand?.qualifiedName]"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        class="ya-link">
       {{ command.baseCommand?.qualifiedName }}
     </a>
@@ -112,7 +112,7 @@
         <td>
           <ng-container *ngFor="let comparison of constraint.comparison">
             <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-               [queryParams]="{instance: instance}">{{ comparison.parameter.qualifiedName }}</a>
+               [queryParams]="{c: yamcs.context}">{{ comparison.parameter.qualifiedName }}</a>
             {{ comparison.operator | operator }}
             {{ comparison.value }}
           </ng-container>
@@ -149,11 +149,11 @@
         <td>
           <ng-container *ngIf="verifier.algorithm">
             <a [routerLink]="['/mdb/algorithms/', verifier.algorithm?.qualifiedName]"
-               [queryParams]="{instance: instance}">{{ verifier.algorithm?.qualifiedName }}</a>
+               [queryParams]="{c: yamcs.context}">{{ verifier.algorithm?.qualifiedName }}</a>
           </ng-container>
           <ng-container *ngIf="verifier.container">
             <a [routerLink]="['/mdb/containers/', verifier.container?.qualifiedName]"
-               [queryParams]="{instance: instance}">{{ verifier.container?.qualifiedName }}</a>
+               [queryParams]="{c: yamcs.context}">{{ verifier.container?.qualifiedName }}</a>
           </ng-container>
         </td>
         <td>

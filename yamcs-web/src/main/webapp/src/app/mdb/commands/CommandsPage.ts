@@ -14,7 +14,6 @@ import { CommandsDataSource } from './CommandsDataSource';
 })
 export class CommandsPage implements AfterViewInit {
 
-  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -36,13 +35,12 @@ export class CommandsPage implements AfterViewInit {
   ];
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Commands');
-    this.instance = yamcs.getInstance();
     this.dataSource = new CommandsDataSource(yamcs);
   }
 

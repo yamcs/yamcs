@@ -12,7 +12,6 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class LinkPage implements OnDestroy {
 
-  instance: string;
   link$ = new BehaviorSubject<Link | null>(null);
   cop1Config$ = new BehaviorSubject<Cop1Config | null>(null);
   cop1Status$ = new BehaviorSubject<Cop1Status | null>(null);
@@ -23,17 +22,16 @@ export class LinkPage implements OnDestroy {
   constructor(
     private title: Title,
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
   ) {
-    this.instance = yamcs.getInstance()!;
     route.paramMap.subscribe(params => {
       const linkName = params.get('link')!;
       this.changeLink(linkName);
     });
 
     this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
-      instance: this.instance,
+      instance: this.yamcs.instance!,
     }, evt => {
       const link = this.link$.value;
       if (link && link.name === evt.linkInfo.name) {
@@ -50,11 +48,11 @@ export class LinkPage implements OnDestroy {
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
 
-    this.yamcs.yamcsClient.getLink(this.instance, name).then(link => {
+    this.yamcs.yamcsClient.getLink(this.yamcs.instance!, name).then(link => {
       this.link$.next(link);
       this.title.setTitle(name);
       if (link.type.indexOf('Cop1Tc') !== -1) {
-        this.yamcs.yamcsClient.getCop1Config(this.instance, name).then(cop1Config => {
+        this.yamcs.yamcsClient.getCop1Config(this.yamcs.instance!, name).then(cop1Config => {
           this.cop1Config$.next(cop1Config);
         });
 
@@ -73,15 +71,15 @@ export class LinkPage implements OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.instance, name);
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.instance, name);
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.instance, name, {
+    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
       resetCounters: true,
     });
   }

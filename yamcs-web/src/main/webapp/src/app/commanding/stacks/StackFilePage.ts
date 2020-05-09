@@ -19,7 +19,6 @@ import { CommandArgument, StackEntry } from './StackEntry';
 })
 export class StackFilePage implements OnDestroy {
 
-  instance: string;
   private storageClient: StorageClient;
 
   objectName: string;
@@ -50,19 +49,18 @@ export class StackFilePage implements OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
   ) {
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
 
     this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-      instance: this.instance,
-      processor: yamcs.getProcessor().name,
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
       ignorePastCommands: true,
     }, entry => {
       const id = printCommandId(entry.commandId);
@@ -193,8 +191,7 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    const processor = this.yamcs.getProcessor().name;
-    this.yamcs.yamcsClient.issueCommand(this.instance, processor, entry.name, {
+    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
       assignment: entry.arguments,
     }).then(response => {
       entry.executionNumber = ++this.executionCounter;

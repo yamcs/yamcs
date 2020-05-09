@@ -14,7 +14,7 @@
               <a mat-button
                  color="primary"
                  routerLink="/telemetry/packets"
-                 [queryParams]="{instance: instance}">VIEW PACKETS &gt;</a>
+                 [queryParams]="{c: yamcs.context}">VIEW PACKETS &gt;</a>
             </div>
           </mat-card>
         </div>
@@ -33,7 +33,7 @@
                       <td [ngSwitch]="alarm.type">
                         <ng-container *ngSwitchCase="'PARAMETER'">
                           <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
-                             [queryParams]="{instance: instance}">
+                             [queryParams]="{c: yamcs.context}">
                             {{ alarm.id.namespace }}/{{ alarm.id.name }}
                           </a>
                         </ng-container>
@@ -53,7 +53,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance, view: 'unacknowledged'}">
+                   [queryParams]="{c: yamcs.context, view: 'unacknowledged'}">
                   <strong>{{ (alarmsDataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
                 </a><br>
               </dd>
@@ -61,7 +61,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance, view: 'acknowledged'}">
+                   [queryParams]="{c: yamcs.context, view: 'acknowledged'}">
                   <strong>{{ (alarmsDataSource.acknowledgedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
@@ -69,7 +69,7 @@
               <dd>
                 <a routerLink="/alarms"
                    class="ya-link"
-                   [queryParams]="{instance: instance, view: 'shelved'}">
+                   [queryParams]="{c: yamcs.context, view: 'shelved'}">
                   <strong>{{ (alarmsDataSource.shelvedAlarms$ | async)?.length }}</strong>
                 </a>
               </dd>
@@ -78,74 +78,10 @@
               <a mat-button
                  color="primary"
                  routerLink="/alarms"
-                 [queryParams]="{instance: instance}">VIEW ALARMS &gt;</a>
+                 [queryParams]="{c: yamcs.context}">VIEW ALARMS &gt;</a>
             </div>
           </mat-card>
         </div>
-        <!--div class="card" *ngIf="info$ | async as info">
-          <mat-card>
-            <mat-card-subtitle>Server Info</mat-card-subtitle>
-            <mat-list dense>
-              <mat-list-item>
-                <h3 matLine>Yamcs version</h3>
-                <p matLine>
-                  {{ info.yamcsVersion }}, build {{ info.revision.substring(0, 8) }}
-                </p>
-              </mat-list-item>
-
-              <mat-list-item>
-                <h3 matLine>Server ID</h3>
-                <p matLine>
-                  {{ info.serverId }}
-                </p>
-              </mat-list-item>
-
-              <mat-list-item *ngIf="info.plugins">
-                <h3 matLine>Plugins</h3>
-              </mat-list-item>
-
-              <table *ngIf="info.plugins" yaDataTable style="margin-left: 16px">
-                <tr>
-                  <th>Name</th>
-                  <th>Version</th>
-                </tr>
-                <tr *ngFor="let plugin of info.plugins">
-                  <td>{{ plugin.name }}</td>
-                  <td>{{ plugin.version || '-' }}</td>
-                </tr>
-              </table>
-            </mat-list>
-          </mat-card>
-        </div-->
-        <ng-container *ngIf="showMDB()">
-          <div class="card" *ngIf="mdb$ | async as mdb">
-            <mat-card>
-              <mat-card-subtitle>MDB</mat-card-subtitle>
-              <dl class="dl-horizontal">
-                <dt>Parameters:</dt>
-                <dd>
-                  <a class="ya-link" routerLink="/mdb/parameters"
-                     [queryParams]="{instance: instance.name}">{{ mdb.parameterCount }}</a>
-                </dd>
-                <dt>Containers:</dt>
-                <dd>
-                  <a class="ya-link" routerLink="/mdb/containers"
-                     [queryParams]="{instance: instance.name}">{{ mdb.containerCount }}</a>
-                </dd>
-                <dt>Commands:</dt>
-                <dd>
-                  <a class="ya-link" routerLink="/mdb/commands"
-                     [queryParams]="{instance: instance.name}">{{ mdb.commandCount }}</a>
-                </dd>
-                <dt>Algorithms:</dt>
-                <dd>
-                  <a class="ya-link" routerLink="/mdb/algorithms"
-                     [queryParams]="{instance: instance.name}">{{ mdb.algorithmCount }}</a>
-                </dd>
-              </dl>
-            </mat-card>
-          </div>
-        </ng-container>
       </div>
     </div>
   </div>

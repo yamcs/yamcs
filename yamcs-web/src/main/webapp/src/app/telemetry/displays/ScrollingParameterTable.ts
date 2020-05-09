@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
+import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 
@@ -14,9 +15,6 @@ import { ParameterTable } from './ParameterTableModel';
   // changeDetection: ChangeDetectionStrategy.OnPush, // FIXME
 })
 export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
-
-  @Input()
-  instance: string;
 
   @Input()
   model: ParameterTable = {
@@ -57,7 +55,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
     'generationTimeUTC',
   ];
 
-  constructor(private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
+  constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
     this.syncSubscription = synchronizer.syncFast(() => {
       if (!this.paused) {
         this.refreshTable();

@@ -13,16 +13,13 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ParameterPage {
 
-  instance: string;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   constructor(
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private title: Title,
   ) {
-    this.instance = yamcs.getInstance();
-
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
     route.paramMap.subscribe(params => {
@@ -32,7 +29,7 @@ export class ParameterPage {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
       this.title.setTitle(parameter.name);
     });

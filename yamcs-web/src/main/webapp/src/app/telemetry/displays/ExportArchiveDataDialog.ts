@@ -51,7 +51,7 @@ export class ExportArchiveDataDialog implements OnDestroy {
 
   private updateURL() {
     if (this.form.valid) {
-      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.getInstance(), {
+      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, {
         start: utils.toISOString(this.form.value['start']),
         stop: utils.toISOString(this.form.value['stop']),
         parameters: this.data.parameterIds,

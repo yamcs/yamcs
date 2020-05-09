@@ -15,7 +15,6 @@ export class SendCommandPage implements AfterViewInit {
 
   connectionInfo$: Observable<ConnectionInfo | null>;
 
-  instance: string;
   pageSize = 100;
 
   @ViewChild(MatPaginator)
@@ -32,11 +31,10 @@ export class SendCommandPage implements AfterViewInit {
 
   constructor(
     title: Title,
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
   ) {
     title.setTitle('Send a command');
     this.connectionInfo$ = yamcs.connectionInfo$;
-    this.instance = yamcs.getInstance();
     this.dataSource = new CommandsDataSource(yamcs);
   }
 

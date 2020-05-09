@@ -9,14 +9,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class AlgorithmPage {
 
-  instance: string;
   algorithm$: Promise<Algorithm>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
-    this.instance = yamcs.getInstance();
-
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.instance, qualifiedName);
+    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, qualifiedName);
     this.algorithm$.then(algorithm => {
       title.setTitle(algorithm.name);
     });

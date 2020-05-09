@@ -14,13 +14,13 @@
       <br>
       <button class="ya-button"
               routerLink="/commanding/send"
-              [queryParams]="{instance: instance}">
+              [queryParams]="{c: yamcs.context}">
         Send another command
       </button>
       &nbsp;&nbsp;
       <button class="ya-button"
               [routerLink]="['/commanding/send', command.commandName]"
-              [queryParams]="{instance: instance, template: (command.commandId | commandId)}">
+              [queryParams]="{c: yamcs.context, template: (command.commandId | commandId)}">
         Resend this command
       </button>
     </ng-container>

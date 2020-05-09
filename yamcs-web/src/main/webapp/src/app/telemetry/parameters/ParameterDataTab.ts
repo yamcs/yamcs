@@ -44,7 +44,7 @@ export class ParameterDataTab {
   dataSource: ParameterDataDataSource;
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
@@ -116,7 +116,7 @@ export class ParameterDataTab {
     }
 
     this.dataSource.loadParameterValues(options).then(pvals => {
-      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.getInstance(), dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

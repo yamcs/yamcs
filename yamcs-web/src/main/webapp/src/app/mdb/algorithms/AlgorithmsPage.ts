@@ -14,7 +14,6 @@ import { AlgorithmsDataSource } from './AlgorithmsDataSource';
 })
 export class AlgorithmsPage implements AfterViewInit {
 
-  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -36,13 +35,12 @@ export class AlgorithmsPage implements AfterViewInit {
   ];
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Algorithms');
-    this.instance = yamcs.getInstance();
     this.dataSource = new AlgorithmsDataSource(yamcs);
   }
 

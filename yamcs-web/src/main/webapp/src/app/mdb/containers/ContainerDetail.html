@@ -6,7 +6,7 @@
   <dd>
     <ng-container *ngIf="(container.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/containers"
-         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -38,7 +38,7 @@
   <dd>
     <a *ngIf="container.baseContainer"
        [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
-       [queryParams]="{instance: instance}"
+       [queryParams]="{c: yamcs.context}"
        class="ya-link">
       {{ container.baseContainer?.qualifiedName || '-' }}
     </a>
@@ -49,7 +49,7 @@
   <dd *ngIf="container.restrictionCriteria">
     <ng-container *ngFor="let criteria of container.restrictionCriteria">
       <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
-         [queryParams]="{instance: instance}"
+         [queryParams]="{c: yamcs.context}"
          class="ya-link">
         {{ criteria.parameter.qualifiedName }}</a>
       {{ criteria.operator | operator }}
@@ -77,7 +77,7 @@
           <td>Parameter</td>
           <td>
             <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
-               [queryParams]="{instance: instance}">
+               [queryParams]="{c: yamcs.context}">
               {{ entry.parameter!.qualifiedName }}
             </a>
           </td>

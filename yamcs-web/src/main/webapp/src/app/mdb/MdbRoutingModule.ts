@@ -10,6 +10,7 @@ import { CommandPage } from './commands/CommandPage';
 import { CommandsPage } from './commands/CommandsPage';
 import { ContainerPage } from './containers/ContainerPage';
 import { ContainersPage } from './containers/ContainersPage';
+import { OverviewPage } from './overview/OverviewPage';
 import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
 
@@ -22,7 +23,7 @@ const routes = [{
   children: [{
     path: '',
     pathMatch: 'full',
-    redirectTo: 'parameters',
+    component: OverviewPage,
   }, {
     path: 'algorithms',
     pathMatch: 'full',
@@ -55,12 +56,13 @@ const routes = [{
 }];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class MdbRoutingModule { }
 
 export const routingComponents = [
+  OverviewPage,
   AlgorithmsPage,
   AlgorithmPage,
   CommandsPage,

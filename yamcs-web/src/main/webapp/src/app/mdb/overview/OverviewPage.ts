@@ -11,14 +11,11 @@ export class OverviewPage {
 
   mdb$: Promise<MissionDatabase>;
 
-  instance: string;
-
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
   ) {
     title.setTitle('Mission Database');
-    this.instance = yamcs.getInstance();
-    this.mdb$ = yamcs.yamcsClient.getMissionDatabase(this.instance);
+    this.mdb$ = yamcs.yamcsClient.getMissionDatabase(yamcs.instance!);
   }
 }

@@ -7,6 +7,7 @@ import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
 import { Algorithm } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-algorithm-detail',
@@ -20,9 +21,6 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
   textContainer: ElementRef;
 
   @Input()
-  instance: string;
-
-  @Input()
   algorithm: Algorithm;
 
   @Input()
@@ -32,7 +30,7 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
 
   private darkModeSubscription: Subscription;
 
-  constructor(private preferenceStore: PreferenceStore) {
+  constructor(readonly yamcs: YamcsService, private preferenceStore: PreferenceStore) {
   }
 
   ngAfterViewInit() {

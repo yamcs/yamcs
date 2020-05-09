@@ -2,7 +2,7 @@
   <app-instance-toolbar>
     <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/commands"
-         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ command.qualifiedName | shortName }}
@@ -10,8 +10,7 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-command-detail [instance]="instance"
-                        [command]="command">
+    <app-command-detail [command]="command">
     </app-command-detail>
   </div>
 </app-instance-page>

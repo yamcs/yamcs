@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Alarm } from '../client';
+import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   selector: 'app-alarm-detail',
@@ -11,9 +12,6 @@ export class AlarmDetail {
 
   @Input()
   alarm: Alarm;
-
-  @Input()
-  instance: string;
 
   @Input()
   mayControl = false;
@@ -29,4 +27,7 @@ export class AlarmDetail {
 
   @Output()
   clearAlarm = new EventEmitter<Alarm>();
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 }

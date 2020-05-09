@@ -96,7 +96,7 @@ export class EventsPage {
   private filter: string;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
     configService: ConfigService,
@@ -121,7 +121,7 @@ export class EventsPage {
       }
     }
 
-    yamcs.yamcsClient.getEventSources(yamcs.getInstance()).then(sources => {
+    yamcs.yamcsClient.getEventSources(yamcs.instance!).then(sources => {
       for (const source of sources) {
         this.sourceOptions$.next([
           ...this.sourceOptions$.value,
@@ -283,7 +283,7 @@ export class EventsPage {
 
     const client = this.yamcs.yamcsClient;
     this.dataSource.loadEvents(options).then(events => {
-      const downloadURL = client.getEventsDownloadURL(this.yamcs.getInstance(), dlOptions);
+      const downloadURL = client.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

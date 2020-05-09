@@ -16,7 +16,8 @@
     <ng-container *ngIf="connected$ | async; else noConnection">
       <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
         <button mat-button class="toolbar-text" *ngIf="time$ | async as time"
-                [matMenuTriggerFor]="processorMenu">
+                [matMenuTriggerFor]="processorMenu"
+                (menuOpened)="switchProcessorMenuOpened()">
           <mat-icon *ngIf="!processor.replay" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'RUNNING'" class="success icon16">check_circle</mat-icon>
           <mat-icon *ngIf="processor.replayState === 'PAUSED'" class="down icon16">lens</mat-icon>
@@ -44,13 +45,17 @@
         <button mat-menu-item *ngIf="processor.replayState === 'PAUSED'" (click)="resumeReplay()">
           Resume
         </button>
-        <button mat-menu-item [matMenuTriggerFor]="replaySpeed">
+        <button mat-menu-item [matMenuTriggerFor]="replaySpeedMenu">
           Replay speed
         </button>
       </ng-container>
+      <mat-divider></mat-divider>
+      <button mat-menu-item [matMenuTriggerFor]="switchProcessorMenu">
+        Processor
+      </button>
     </mat-menu>
 
-    <mat-menu #replaySpeed="matMenu" class="ya-menu">
+    <mat-menu #replaySpeedMenu="matMenu" class="ya-menu">
       <button mat-menu-item (click)="changeSpeed('1x')">
         <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 1">check</mat-icon> 1x (original speed)
       </button>
@@ -65,6 +70,14 @@
       </button>
       <button mat-menu-item (click)="changeSpeed('16x')">
         <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 16">check</mat-icon> 16x
+      </button>
+    </mat-menu>
+
+    <mat-menu #switchProcessorMenu="matMenu" class="ya-menu">
+      <button mat-menu-item *ngFor="let otherProcessor of allProcessors$ | async"
+              (click)="switchProcessor(otherProcessor)">
+        <mat-icon [class.hide]="processor.name !== otherProcessor.name">check</mat-icon>
+        {{ otherProcessor.name }}
       </button>
     </mat-menu>
   </mat-toolbar-row>

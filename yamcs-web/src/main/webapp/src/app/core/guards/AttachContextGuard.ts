@@ -13,9 +13,13 @@ export class AttachContextGuard implements CanActivate {
   ) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    const instanceId = route.queryParams['instance'];
-    const processorId = route.queryParams['processor'];
-    console.log('got processeor', instanceId, processorId);
+    let instanceId: string = route.queryParams['c'];
+    let processorId: string | undefined;
+    if (instanceId.indexOf('__') !== -1) {
+      const parts = instanceId.split('__');
+      instanceId = parts[0];
+      processorId = parts[1];
+    }
 
     return new Promise<boolean>((resolve, reject) => {
       this.yamcsService.setContext(instanceId, processorId)

@@ -10,14 +10,12 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ParameterSummaryTab implements OnDestroy {
 
-  instance: string;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
   parameterValueSubscription: ParameterSubscription;
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
-    this.instance = yamcs.getInstance();
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -28,15 +26,15 @@ export class ParameterSummaryTab implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (this.parameterValueSubscription) {
         this.parameterValueSubscription.cancel();
       }
       this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.instance,
-        processor: this.yamcs.getProcessor().name,
+        instance: this.yamcs.instance!,
+        processor: this.yamcs.processor!,
         id: [{ name: qualifiedName }],
         abortOnInvalid: false,
         sendFromCache: true,

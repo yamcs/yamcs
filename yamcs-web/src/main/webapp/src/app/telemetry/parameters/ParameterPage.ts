@@ -20,7 +20,6 @@ import { SetParameterDialog } from './SetParameterDialog';
 })
 export class ParameterPage implements OnDestroy {
 
-  instance: string;
   config: WebsiteConfig;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
@@ -30,7 +29,7 @@ export class ParameterPage implements OnDestroy {
 
   constructor(
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
     private dialog: MatDialog,
@@ -40,7 +39,6 @@ export class ParameterPage implements OnDestroy {
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
-    this.instance = yamcs.getInstance();
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -51,7 +49,7 @@ export class ParameterPage implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.instance, qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (qualifiedName !== parameter.qualifiedName) {
@@ -68,8 +66,8 @@ export class ParameterPage implements OnDestroy {
     }
 
     this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.instance,
-      processor: this.yamcs.getProcessor().name,
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,
@@ -135,7 +133,7 @@ export class ParameterPage implements OnDestroy {
     dialogRef.afterClosed().subscribe((value: Value) => {
       if (value) {
         this.yamcs.yamcsClient
-          .setParameterValue(this.instance, 'realtime', parameter.qualifiedName, value)
+          .setParameterValue(this.yamcs.instance!, this.yamcs.processor!, parameter.qualifiedName, value)
           .catch(err => this.messageService.showError(err));
       }
     });

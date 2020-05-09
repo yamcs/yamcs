@@ -57,8 +57,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
       if (ids.length) {
         this.parameterSubscription = this.yamcs.yamcsClient!.createParameterSubscription({
-          instance: this.yamcs.getInstance(),
-          processor: this.yamcs.getInstance(),
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
           id: ids,
           abortOnInvalid: false,
           sendFromCache: true,
@@ -144,7 +144,6 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
    * Don't call before ngAfterViewInit()
    */
   public init(objectName: string) {
-    const instance = this.yamcs.getInstance();
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
 
@@ -154,19 +153,19 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     }
 
     this.display.addScriptLibrary('Yamcs', new YamcsScriptLibrary(
-      this.yamcs, this.messageService, instance));
+      this.yamcs, this.messageService));
 
     this.display.addEventListener('opendisplay', evt => {
-      this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?instance=${instance}`);
+      this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
     });
 
     this.display.addEventListener('closedisplay', evt => {
-      this.router.navigateByUrl(`/telemetry/displays/browse?instance=${instance}`);
+      this.router.navigateByUrl(`/telemetry/displays/browse?c=${this.yamcs.context}`);
     });
 
     this.display.addEventListener('openpv', evt => {
       const encoded = encodeURIComponent(evt.pvName);
-      this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?instance=${instance}`);
+      this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
     });
 
     this.display.addProvider(this);

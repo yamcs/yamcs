@@ -21,11 +21,10 @@ export class QueuesPage implements OnDestroy {
   private cqueueByName: { [key: string]: CommandQueue; } = {};
 
   constructor(yamcs: YamcsService, title: Title) {
-    const processor = yamcs.getProcessor();
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
-    yamcs.yamcsClient.getCommandQueues(yamcs.getInstance(), processor.name).then(cqueues => {
+    yamcs.yamcsClient.getCommandQueues(yamcs.instance!, yamcs.processor!).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
       }
@@ -33,8 +32,8 @@ export class QueuesPage implements OnDestroy {
     });
 
     this.queueSubscription = yamcs.yamcsClient.createQueueStatisticsSubscription({
-      instance: yamcs.getInstance(),
-      processor: processor.name,
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
     }, queue => {
       const existingQueue = this.cqueueByName[queue.name];
       if (existingQueue) {
@@ -46,8 +45,8 @@ export class QueuesPage implements OnDestroy {
     });
 
     this.queueEventSubscription = yamcs.yamcsClient.createQueueEventsSubscription({
-      instance: yamcs.getInstance(),
-      processor: processor.name,
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
     }, queueEvent => {
       const queue = this.cqueueByName[queueEvent.data.queueName];
       if (queue) {

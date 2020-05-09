@@ -31,8 +31,6 @@ const defaultInterval = 'PT1H';
 })
 export class CommandHistoryPage {
 
-  instance: string;
-
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   @ViewChild('intervalSelect')
@@ -84,7 +82,7 @@ export class CommandHistoryPage {
   config: WebsiteConfig;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
     private router: Router,
@@ -97,7 +95,6 @@ export class CommandHistoryPage {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
     title.setTitle('Command History');
-    this.instance = yamcs.getInstance();
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 
@@ -199,7 +196,7 @@ export class CommandHistoryPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    this.dataSource.loadEntries('realtime', options);
+    this.dataSource.loadEntries(options);
   }
 
   loadMoreData() {

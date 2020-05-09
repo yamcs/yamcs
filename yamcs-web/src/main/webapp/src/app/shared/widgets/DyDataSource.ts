@@ -102,12 +102,12 @@ export class DyDataSource {
     const promises: Promise<any>[] = [];
     for (const parameter of this.parameters$.value) {
       promises.push(
-        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.getInstance(), parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
         }),
-        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.getInstance(), parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
         })
@@ -142,8 +142,8 @@ export class DyDataSource {
   private connectRealtime() {
     const ids = this.parameters$.value.map(parameter => ({ name: parameter.qualifiedName }));
     this.realtimeSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.yamcs.getInstance(),
-      processor: this.yamcs.getProcessor().name,
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: ids,
       sendFromCache: false,
       updateOnExpiration: true,
@@ -164,8 +164,8 @@ export class DyDataSource {
 
   addToRealtimeSubscription(ids: NamedObjectId[]) {
     this.realtimeSubscription.sendMessage({
-      instance: this.yamcs.getInstance(),
-      processor: this.yamcs.getProcessor().name,
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: ids,
       sendFromCache: false,
       updateOnExpiration: true,

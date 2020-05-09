@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { ClearContextGuard } from './core/guards/ClearContextGuard';
+import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
 import { ForbiddenPage } from './core/pages/ForbiddenPage';
@@ -38,6 +39,12 @@ const routes: Routes = [
       {
         path: 'create-instance/:template',
         component: CreateInstancePage2,
+        canActivate: [AuthGuard, ClearContextGuard],
+        data: { 'hasSidebar': false }
+      },
+      {
+        path: 'context-switch/:context/:current',
+        component: ContextSwitchPage,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
       },
@@ -130,7 +137,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      onSameUrlNavigation: 'reload',  // See MonitorPage.ts for documentation
+      onSameUrlNavigation: 'reload',
       preloadingStrategy: CustomPreloadingStrategy,
     }),
   ],

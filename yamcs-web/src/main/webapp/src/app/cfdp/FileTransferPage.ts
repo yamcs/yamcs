@@ -13,8 +13,6 @@ import { UploadFileDialog } from './UploadFileDialog';
 })
 export class FileTransferPage implements OnDestroy {
 
-  instance: string;
-
   ongoingCount$ = new BehaviorSubject<number>(0);
   failedCount$ = new BehaviorSubject<number>(0);
   successfulCount$ = new BehaviorSubject<number>(0);
@@ -22,13 +20,12 @@ export class FileTransferPage implements OnDestroy {
   private cfdpSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
     private cfdpService: CfdpService,
   ) {
     title.setTitle('CFDP File Transfer');
-    this.instance = yamcs.getInstance();
     this.cfdpSubscription = cfdpService.transfers$.subscribe(transfers => {
       let ongoingCount = 0;
       let failedCount = 0;

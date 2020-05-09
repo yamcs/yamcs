@@ -11,13 +11,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class StreamPage {
 
-  instance: string;
   stream$: Promise<Stream>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name);
-    this.instance = yamcs.getInstance();
-    this.stream$ = yamcs.yamcsClient.getStream(this.instance, name);
+    this.stream$ = yamcs.yamcsClient.getStream(yamcs.instance!, name);
   }
 }

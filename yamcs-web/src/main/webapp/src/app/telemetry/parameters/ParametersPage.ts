@@ -16,7 +16,6 @@ import { ParametersDataSource } from './ParametersDataSource';
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {
 
-  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -42,14 +41,13 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   private queryParamMapSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
     synchronizer: Synchronizer,
   ) {
     title.setTitle('Parameters');
-    this.instance = yamcs.getInstance();
     this.dataSource = new ParametersDataSource(yamcs, synchronizer);
   }
 
@@ -122,7 +120,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
         breadcrumb.push({
           name: part,
           route: '/telemetry/parameters',
-          queryParams: { system: path, instance: this.instance },
+          queryParams: { system: path, c: this.yamcs.context },
         });
       }
     }

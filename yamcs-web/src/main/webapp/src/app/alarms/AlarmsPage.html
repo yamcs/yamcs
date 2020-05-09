@@ -72,7 +72,6 @@
       </app-detail-toolbar>
       <div style="padding: 0 16px">
         <app-alarm-detail [alarm]="detailAlarm"
-                          [instance]="instance"
                           [mayControl]="mayControlAlarms()"
                           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                           (shelveAlarm)="shelveAlarms([$event])"
@@ -98,8 +97,7 @@
           <app-select [options]="viewOptions" formControlName="view"></app-select>
         </div>
       </form>
-      <app-alarms-table [instance]="instance"
-                        [dataSource]="dataSource"
+      <app-alarms-table [dataSource]="dataSource"
                         [selection]="selection"
                         [view]="view$ | async"
                         [mayControl]="mayControlAlarms()"

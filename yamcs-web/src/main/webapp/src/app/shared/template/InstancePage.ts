@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
@@ -17,8 +17,6 @@ import { User } from '../../shared/User';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstancePage implements OnInit, OnDestroy {
-
-  instance$ = new BehaviorSubject<string | null>(null);
 
   searchControl = new FormControl(null);
   filteredOptions: Observable<Parameter[]>;
@@ -40,11 +38,10 @@ export class InstancePage implements OnInit, OnDestroy {
   private routerSubscription: Subscription;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
     preferenceStore: PreferenceStore,
-    route: ActivatedRoute,
     private router: Router,
   ) {
     this.config = configService.getConfig();
@@ -74,10 +71,6 @@ export class InstancePage implements OnInit, OnDestroy {
         this.telemetryExpanded = true;
       }
     });
-
-    route.queryParams.subscribe(() => {
-      this.instance$.next(yamcs.getInstance());
-    });
   }
 
   ngOnInit() {
@@ -85,7 +78,7 @@ export class InstancePage implements OnInit, OnDestroy {
       debounceTime(300),
       switchMap(val => {
         if (val) {
-          return this.yamcs.yamcsClient.getParameters(this.yamcs.getInstance(), { q: val, limit: 25 });
+          return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, { q: val, limit: 25 });
         } else {
           return of({ parameters: [] });
         }
@@ -95,10 +88,9 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
-    const instance = this.yamcs.getInstance();
     this.searchControl.setValue('');
     this.router.navigate(['/telemetry/parameters/', event.option.value], {
-      queryParams: { instance: instance, }
+      queryParams: { c: this.yamcs.context }
     });
   }
 

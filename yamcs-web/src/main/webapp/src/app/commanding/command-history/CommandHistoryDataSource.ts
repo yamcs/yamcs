@@ -40,7 +40,7 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
     return this.records$;
   }
 
-  loadEntries(processorName: string, options: GetCommandHistoryOptions) {
+  loadEntries(options: GetCommandHistoryOptions) {
     this.loading$.next(true);
     return this.loadPage({
       ...options,
@@ -58,7 +58,7 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
   }
 
   private loadPage(options: GetCommandHistoryOptions) {
-    return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.getInstance(), options).then(page => {
+    return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.instance!, options).then(page => {
       this.continuationToken = page.continuationToken;
       return page.entry || [];
     });

@@ -22,7 +22,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   selection = new SelectionModel<string>(true, []);
 
-  instance: string;
   private storageClient: StorageClient;
 
   public model$ = new BehaviorSubject<ParameterTable | null>(null);
@@ -46,7 +45,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.instance = this.yamcs.getInstance();
     this.storageClient.getObject('_global', 'displays', objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
@@ -70,8 +68,8 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     if (ids.length) {
       if (this.dataSubscription) {
         this.dataSubscription.sendMessage({
-          instance: this.instance,
-          processor: this.yamcs.getProcessor().name,
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
           id: ids,
           abortOnInvalid: false,
           sendFromCache: true,
@@ -80,8 +78,8 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
         });
       } else {
         this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-          instance: this.instance,
-          processor: this.yamcs.getProcessor().name,
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
           id: ids,
           abortOnInvalid: false,
           sendFromCache: true,

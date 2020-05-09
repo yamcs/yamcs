@@ -21,7 +21,6 @@ export class ParametersPage implements AfterViewInit {
     source: new FormControl('ANY'),
   });
 
-  instance: string;
   shortName = false;
   pageSize = 100;
 
@@ -74,13 +73,12 @@ export class ParametersPage implements AfterViewInit {
   private filter: string;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Parameters');
-    this.instance = yamcs.getInstance();
     this.dataSource = new ParametersDataSource(yamcs);
   }
 

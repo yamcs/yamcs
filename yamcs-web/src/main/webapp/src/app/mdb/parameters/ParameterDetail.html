@@ -6,7 +6,7 @@
   <dd>
     <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/parameters"
-         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -43,7 +43,7 @@
       <td>Algorithm</td>
       <td>
         <a [routerLink]="['/mdb/algorithms/', algorithm.qualifiedName]"
-           [queryParams]="{instance: instance}">
+           [queryParams]="{c: yamcs.context}">
           {{ algorithm.qualifiedName }}
         </a>
       </td>
@@ -52,7 +52,7 @@
       <td>Container</td>
       <td>
         <a [routerLink]="['/mdb/containers/', container.qualifiedName]"
-           [queryParams]="{instance: instance}">
+           [queryParams]="{c: yamcs.context}">
           {{ container.qualifiedName }}
         </a>
       </td>
@@ -92,7 +92,7 @@
   </div>
 
   <h4>Calibration</h4>
-  <app-parameter-calibration [instance]="instance" [parameter]="parameter"></app-parameter-calibration>
+  <app-parameter-calibration [parameter]="parameter"></app-parameter-calibration>
   <p>&nbsp;</p>
 </ng-container>
 
@@ -171,7 +171,7 @@
       <dt>Offset from</dt>
       <dd>
         <a [routerLink]="['/mdb/parameters/', parameter.type?.absoluteTimeInfo.offsetFrom.qualifiedName]"
-           [queryParams]="{instance: instance}"
+           [queryParams]="{c: yamcs.context}"
            class="ya-link">
           {{ parameter.type?.absoluteTimeInfo.offsetFrom.qualifiedName }}
         </a>

@@ -33,8 +33,6 @@ export class PacketsPage {
 
   filterControl = new FormControl();
 
-  instance: string;
-
   @ViewChild('intervalSelect')
   intervalSelect: Select;
 
@@ -70,13 +68,12 @@ export class PacketsPage {
   private filter: string;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
     synchronizer: Synchronizer,
   ) {
-    this.instance = yamcs.getInstance();
     title.setTitle('Packets');
 
     this.dataSource = new PacketsDataSource(this.yamcs, synchronizer);
@@ -192,7 +189,7 @@ export class PacketsPage {
     }
 
     this.dataSource.loadEntries('realtime', options).then(packets => {
-      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.getInstance(), dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

@@ -101,7 +101,7 @@
       <td mat-cell *cdkCellDef="let row">
         <a *ngIf="row.state !== 'OFFLINE'"
            routerLink="/instance"
-           [queryParams]="{instance: row.name, processor: (row.processors ? row.processors[0].name : null)}"
+           [queryParams]="{c: (row.processors ? (row.name + '__' + row.processors[0].name) : row.name)}"
            (click)="$event.stopPropagation()">
           {{ row.name }}
         </a>

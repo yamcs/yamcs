@@ -31,8 +31,6 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   private statsByName: { [key: string]: PacketStats; } = {};
   dataSource = new MatTableDataSource<PacketStats>();
 
-  instance: string;
-
   config: WebsiteConfig;
 
   displayedColumns = [
@@ -43,15 +41,14 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
     'dataRate',
   ];
 
-  constructor(private yamcs: YamcsService, configService: ConfigService) {
-    this.instance = yamcs.getInstance();
+  constructor(readonly yamcs: YamcsService, configService: ConfigService) {
     this.config = configService.getConfig();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     if (this.tmstats$ && !this.tmstatsSubscription) {
-      this.yamcs.yamcsClient.getPacketNames(this.instance).then(packetNames => {
+      this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(packetNames => {
         for (const packetName of (packetNames || [])) {
           this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
         }

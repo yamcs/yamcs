@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Argument, Command } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 
 @Component({
@@ -12,12 +13,9 @@ import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 export class CommandDetail {
 
   @Input()
-  instance: string;
-
-  @Input()
   command: Command;
 
-  constructor(private dialog: MatDialog) {
+  constructor(readonly yamcs: YamcsService, private dialog: MatDialog) {
   }
 
   showEnum(argument: Argument) {

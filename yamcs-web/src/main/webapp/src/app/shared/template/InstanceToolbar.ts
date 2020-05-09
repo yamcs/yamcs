@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -28,18 +29,22 @@ export class InstanceToolbar implements OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;
   showDetailPane$: Observable<boolean>;
 
+  // For use in lazy dynamic population of Switch Processor menu.
+  allProcessors$ = new BehaviorSubject<Processor[]>([]);
+
   private connectedSubscription: Subscription;
 
   constructor(
     private dialog: MatDialog,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
     private preferenceStore: PreferenceStore,
+    private router: Router,
   ) {
     this.processor$.next(yamcs.getProcessor());
     this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
-      instance: yamcs.getInstance(),
-      processor: yamcs.getProcessor().name,
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
     }, processor => {
       this.processor$.next(processor);
     });
@@ -67,7 +72,8 @@ export class InstanceToolbar implements OnDestroy {
           horizontalPosition: 'end',
         });
         this.yamcs.yamcsClient.createProcessor(result).then(() => {
-          this.snackBar.open(`Joined replay ${result.name}`, undefined, {
+          this.yamcs.switchContext(this.yamcs.instance!, result.name);
+          this.snackBar.open(`Joining replay ${result.name}`, undefined, {
             duration: 3000,
             horizontalPosition: 'end',
           });
@@ -82,22 +88,30 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   pauseReplay() {
-    const processor = this.processor$.value!;
-    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { state: 'paused' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'paused' });
   }
 
   resumeReplay() {
-    const processor = this.processor$.value!;
-    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { state: 'running' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'running' });
   }
 
   changeSpeed(speed: string) {
-    const processor = this.processor$.value!;
-    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, { speed });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { speed });
   }
 
   showDetailPane(enabled: boolean) {
     this.preferenceStore.setShowDetailPane(enabled);
+  }
+
+  switchProcessorMenuOpened() {
+    this.allProcessors$.next([]);
+    this.yamcs.yamcsClient.getInstance(this.yamcs.instance!).then(instance => {
+      this.allProcessors$.next(instance.processors || []);
+    });
+  }
+
+  switchProcessor(processor: Processor) {
+    this.yamcs.switchContext(this.yamcs.instance!, processor.name);
   }
 
   ngOnDestroy() {

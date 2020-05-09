@@ -11,13 +11,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class TablePage {
 
-  instance: string;
   table$: Promise<Table>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name);
-    this.table$ = yamcs.yamcsClient.getTable(this.instance, name);
-    this.instance = yamcs.getInstance();
+    this.table$ = yamcs.yamcsClient.getTable(yamcs.instance!, name);
   }
 }

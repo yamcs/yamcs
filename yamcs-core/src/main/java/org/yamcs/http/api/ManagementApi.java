@@ -708,7 +708,9 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             }
         }
 
-        for (Processor processor : ysi.getProcessors()) {
+        List<Processor> processors = new ArrayList<>(ysi.getProcessors());
+        Collections.sort(processors, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        for (Processor processor : processors) {
             instanceb.addProcessors(ProcessingApi.toProcessorInfo(processor, false));
         }
 

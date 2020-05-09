@@ -10,18 +10,15 @@ export class YamcsScriptLibrary {
   constructor(
     private yamcs: YamcsService,
     private messageService: MessageService,
-    private instance: string,
   ) { }
 
   issueCommand(qname: string, args: { [key: string]: any; }) {
-    const processor = this.yamcs.getProcessor();
-
     const assignments: ArgumentAssignment[] = [];
     for (const name in args) {
       assignments.push({ name, value: args[name] });
     }
 
-    this.yamcs.yamcsClient.issueCommand(processor.instance, processor.name, qname, {
+    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       assignment: assignments,
     }).catch(err => this.messageService.showError(err));
   }

@@ -35,7 +35,6 @@ export class ShelveAlarmDialog {
     }
 
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'shelved',
       };
@@ -46,7 +45,7 @@ export class ShelveAlarmDialog {
         options.shelveDuration = duration;
       }
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(processor.instance, processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

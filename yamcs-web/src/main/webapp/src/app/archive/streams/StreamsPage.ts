@@ -19,8 +19,6 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  instance: string;
-
   displayedColumns = ['name', 'dataCount'];
 
   dataSource = new MatTableDataSource<StreamItem>();
@@ -29,19 +27,18 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
 
   private itemsByName: { [key: string]: StreamItem; } = {};
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(readonly yamcs: YamcsService, title: Title) {
     title.setTitle('Streams');
     /*yamcs.getInstanceClient()!.getStreams().then(streams => {
       this.dataSource.data = streams;
     });*/
-    this.instance = yamcs.getInstance();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
 
     this.streamStatisticsSubscription = this.yamcs.yamcsClient.createStreamStatisticsSubscription({
-      instance: this.instance,
+      instance: this.yamcs.instance!,
     }, evt => {
       this.processStreamEvent(evt);
     });
