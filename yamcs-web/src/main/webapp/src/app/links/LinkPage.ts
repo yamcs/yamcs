@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Cop1Config, Cop1Status, Cop1Subscription, Link, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
@@ -24,6 +25,7 @@ export class LinkPage implements OnDestroy {
     route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private authService: AuthService,
+    private messageService: MessageService,
   ) {
     route.paramMap.subscribe(params => {
       const linkName = params.get('link')!;
@@ -66,20 +68,27 @@ export class LinkPage implements OnDestroy {
     });
   }
 
+  resumeCop1(link: string) {
+    this.yamcs.yamcsClient.resumeCop1(this.yamcs.instance!, link).catch(err => {
+      console.log('oopsie', err);
+      this.messageService.showError(err);
+    });
+  }
+
   mayControlLinks() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlLinks');
   }
 
-  enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
+  enableLink(link: string) {
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link);
   }
 
-  disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
+  disableLink(link: string) {
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link);
   }
 
-  resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
+  resetCounters(link: string) {
+    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, link, {
       resetCounters: true,
     });
   }

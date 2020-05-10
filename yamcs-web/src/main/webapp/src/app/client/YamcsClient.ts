@@ -914,6 +914,12 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Cop1Config;
   }
 
+  async resumeCop1(instance: string, link: string) {
+    const url = `${this.apiUrl}/cop1/${instance}/${link}:resume`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return await response.json() as Cop1Config;
+  }
+
   async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
       if (!init) {

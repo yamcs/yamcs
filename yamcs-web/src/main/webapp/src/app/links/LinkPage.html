@@ -49,8 +49,10 @@
         </div>
         <h4>
           COP1
-          <div style="float: right">
-            <app-text-action icon="redo">RESUME</app-text-action>
+          <div style="float: right" *ngIf="mayControlLinks()">
+            <app-text-action icon="redo" (click)="resumeCop1(link.name)" [disabled]="status.state !== 'SUSPENDED'">
+              RESUME
+            </app-text-action>
           </div>
         </h4>
         <dl class="dl-horizontal">
