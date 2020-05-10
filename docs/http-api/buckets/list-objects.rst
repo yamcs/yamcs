@@ -22,7 +22,7 @@ The ``delimiter`` allows the list to work in a directory mode despite the object
 
 
 .. rubric:: Response
-.. code-block:: proto
+.. code-block:: json
 
     {
       "prefixes": [ "a/"],
