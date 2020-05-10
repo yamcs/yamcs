@@ -12,21 +12,25 @@ import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CancelRequest;
 import org.yamcs.cfdp.CfdpOutgoingTransfer;
 import org.yamcs.cfdp.CfdpService;
-import org.yamcs.cfdp.CfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.cfdp.CfdpTransfer;
 import org.yamcs.cfdp.PauseRequest;
 import org.yamcs.cfdp.ResumeRequest;
+import org.yamcs.cfdp.TransferMonitor;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractCfdpApi;
+import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
-import org.yamcs.protobuf.EditTransferRequest;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
+import org.yamcs.protobuf.PauseTransferRequest;
+import org.yamcs.protobuf.ResumeTransferRequest;
+import org.yamcs.protobuf.SubscribeTransfersRequest;
 import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
@@ -49,16 +53,12 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
 
-        List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers(true));
-        Collections.sort(transfers, (c1, c2) -> {
-            return Long.compare(
-                    c1.getStartTime(),
-                    c2.getStartTime());
-        });
+        List<CfdpTransfer> transfers = new ArrayList<>(cfdpService.getCfdpTransfers());
+        Collections.sort(transfers, (a, b) -> Long.compare(a.getStartTime(), b.getStartTime()));
 
         ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
-        for (CfdpTransfer transaction : transfers) {
-            responseb.addTransfer(toTransferInfo(transaction));
+        for (CfdpTransfer transfer : transfers) {
+            responseb.addTransfers(toTransferInfo(transfer));
         }
         observer.complete(responseb.build());
     }
@@ -138,35 +138,57 @@ public class CfdpApi extends AbstractCfdpApi<Context> {
     }
 
     @Override
-    public void updateTransfer(Context ctx, EditTransferRequest request, Observer<Empty> observer) {
+    public void pauseTransfer(Context ctx, PauseTransferRequest request, Observer<Empty> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         CfdpService cfdpService = verifyCfdpService(instance);
         CfdpTransfer transaction = verifyTransaction(instance, request.getId());
-        if (request.hasOperation()) {
-            switch (request.getOperation()) {
-            case "pause":
-                if (transaction.pausable()) {
-                    cfdpService.processRequest(new PauseRequest(transaction));
-                } else {
-                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be paused");
-                }
-                break;
-            case "cancel":
-                if (transaction.cancellable()) {
-                    cfdpService.processRequest(new CancelRequest(transaction));
-                } else {
-                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be cancelled");
-                }
-                break;
-            case "resume":
-                if (transaction.pausable()) {
-                    cfdpService.processRequest(new ResumeRequest(transaction));
-                } else {
-                    throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be resumed");
-                }
-            }
+        if (transaction.pausable()) {
+            cfdpService.processRequest(new PauseRequest(transaction));
+        } else {
+            throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be paused");
         }
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void cancelTransfer(Context ctx, CancelTransferRequest request, Observer<Empty> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        CfdpService cfdpService = verifyCfdpService(instance);
+        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        if (transaction.cancellable()) {
+            cfdpService.processRequest(new CancelRequest(transaction));
+        } else {
+            throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be cancelled");
+        }
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void resumeTransfer(Context ctx, ResumeTransferRequest request, Observer<Empty> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        CfdpService cfdpService = verifyCfdpService(instance);
+        CfdpTransfer transaction = verifyTransaction(instance, request.getId());
+        if (transaction.pausable()) {
+            cfdpService.processRequest(new ResumeRequest(transaction));
+        } else {
+            throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be resumed");
+        }
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void subscribeTransfers(Context ctx, SubscribeTransfersRequest request, Observer<TransferInfo> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        CfdpService cfdpService = verifyCfdpService(instance);
+        TransferMonitor listener = transfer -> {
+            observer.next(toTransferInfo(transfer));
+        };
+        observer.setCancelHandler(() -> cfdpService.removeTransferListener(listener));
+
+        for (CfdpTransfer transfer : cfdpService.getCfdpTransfers()) {
+            observer.next(toTransferInfo(transfer));
+        }
+        cfdpService.addTransferListener(listener);
     }
 
     private CfdpTransfer verifyTransaction(String instance, long id) throws NotFoundException {

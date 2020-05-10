@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Subscription } from 'rxjs';
-import { Transfer } from '../client';
-import { CfdpService } from './CfdpService';
+import { TransferSubscription } from '../client';
+import { YamcsService } from '../core/services/YamcsService';
+import { TransferItem } from './TransferItem';
 
 @Component({
   templateUrl: './SuccessfulTransfersTab.html',
@@ -10,22 +10,33 @@ import { CfdpService } from './CfdpService';
 })
 export class SuccessfulTransfersTab implements OnDestroy {
 
-  dataSource = new MatTableDataSource<Transfer>();
+  dataSource = new MatTableDataSource<TransferItem>();
 
-  private cfdpSubscription: Subscription;
+  private transfersById = new Map<number, TransferItem>();
+  private transferSubscription: TransferSubscription;
 
-  constructor(cfdpService: CfdpService) {
-    cfdpService.refresh();
-    this.cfdpSubscription = cfdpService.transfers$.subscribe(transfers => {
-      this.dataSource.data = transfers.filter(
-        t => t.state === 'COMPLETED'
-      );
+  constructor(yamcs: YamcsService) {
+    const storageClient = yamcs.createStorageClient();
+    this.transferSubscription = yamcs.yamcsClient.createTransferSubscription({ instance: yamcs.instance! }, transfer => {
+      switch (transfer.state) {
+        case 'COMPLETED':
+          this.transfersById.set(transfer.id, {
+            ...transfer,
+            objectUrl: storageClient.getObjectURL(
+              '_global', transfer.bucket, transfer.objectName),
+          });
+          break;
+      }
+
+      const values = [...this.transfersById.values()];
+      values.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      this.dataSource.data = values;
     });
   }
 
   ngOnDestroy() {
-    if (this.cfdpSubscription) {
-      this.cfdpSubscription.unsubscribe();
+    if (this.transferSubscription) {
+      this.transferSubscription.cancel();
     }
   }
 }

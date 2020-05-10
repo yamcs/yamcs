@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -55,6 +56,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     long destinationId;
 
     EventProducer eventProducer;
+
+    private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
 
     @Override
     public Spec getSpec() {
@@ -121,22 +124,11 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
-    public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
-        if (all) {
-            List<CfdpTransfer> r = new ArrayList<>();
-            r.addAll(pendingTransfers.values());
-            r.addAll(completedTransfers);
-            return r;
-        } else {
-            return pendingTransfers.values();
-        }
-    }
-
-    public Collection<CfdpTransfer> getCfdpTransfers(List<Long> transferIds) {
-        List<CfdpTransactionId> transactionIds = transferIds.stream()
-                .map(x -> new CfdpTransactionId(mySourceId, x)).collect(Collectors.toList());
-        return this.pendingTransfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
-                .collect(Collectors.toList());
+    public Collection<CfdpTransfer> getCfdpTransfers() {
+        List<CfdpTransfer> r = new ArrayList<>();
+        r.addAll(pendingTransfers.values());
+        r.addAll(completedTransfers);
+        return r;
     }
 
     public CfdpTransfer processRequest(CfdpRequest request) {
@@ -226,6 +218,14 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
         }
     }
 
+    public void addTransferListener(TransferMonitor listener) {
+        transferListeners.add(listener);
+    }
+
+    public void removeTransferListener(TransferMonitor listener) {
+        transferListeners.remove(listener);
+    }
+
     @Override
     protected void doStart() {
         notifyStarted();
@@ -251,9 +251,12 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     @Override
     public void stateChanged(CfdpTransfer cfdpTransfer) {
+        // Notify downstream listeners
+        transferListeners.forEach(l -> l.stateChanged(cfdpTransfer));
+
         if (cfdpTransfer.getTransferState() == TransferState.COMPLETED
                 || cfdpTransfer.getTransferState() == TransferState.FAILED) {
-            pendingTransfers.remove(cfdpTransfer.getId());
+            pendingTransfers.remove(cfdpTransfer.getTransactionId());
             completedTransfers.add(cfdpTransfer);
         }
     }

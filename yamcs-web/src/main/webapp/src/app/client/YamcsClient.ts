@@ -1,14 +1,15 @@
 import { Observable } from 'rxjs';
-import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, CreateTransferRequest, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage, Transfer, TransfersPage } from '.';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
+import { CreateTransferRequest, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/cfdp';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
+import { AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, GetTagsOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, Range, RequestPlaybackRequest, Sample, TagsPage, Value } from './types/monitoring';
 import { ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, EditCommandQueueEntryOptions, EditCommandQueueOptions, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -416,6 +417,11 @@ export default class YamcsClient implements HttpHandler {
   createLinkSubscription(options: SubscribeLinksRequest, observer: (linkEvent: LinkEvent) => void): LinkSubscription {
     this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('links', options, observer);
+  }
+
+  createTransferSubscription(options: SubscribeTransfersRequest, observer: (transfer: Transfer) => void): TransferSubscription {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.createSubscription('cfdp-transfers', options, observer);
   }
 
   createParameterSubscription(options: SubscribeParametersRequest, observer: (data: SubscribeParametersData) => void): ParameterSubscription {
@@ -877,7 +883,7 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Algorithm;
   }
 
-  async getCfdpTransfers(instance: string, ) {
+  async getCfdpTransfers(instance: string) {
     const url = `${this.apiUrl}/cfdp/${instance}/transfers`;
     const response = await this.doFetch(url);
     return await response.json() as TransfersPage;
@@ -891,6 +897,21 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return await response.json() as Transfer;
+  }
+
+  async pauseCfdpTransfer(instance: string, id: number) {
+    const url = `${this.apiUrl}/cfdp/${instance}/transfers/${id}:pause`;
+    return this.doFetch(url, { method: 'POST' });
+  }
+
+  async resumeCfdpTransfer(instance: string, id: number) {
+    const url = `${this.apiUrl}/cfdp/${instance}/transfers/${id}:resume`;
+    return this.doFetch(url, { method: 'POST' });
+  }
+
+  async cancelCfdpTransfer(instance: string, id: number) {
+    const url = `${this.apiUrl}/cfdp/${instance}/transfers/${id}:cancel`;
+    return this.doFetch(url, { method: 'POST' });
   }
 
   async getGaps(instance: string, ) {
