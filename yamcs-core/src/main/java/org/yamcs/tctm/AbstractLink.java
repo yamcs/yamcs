@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
@@ -41,7 +41,8 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
      * different links but for now we stick to one.
      */
     static NioEventLoopGroup nelg = new NioEventLoopGroup();
-    
+
+    @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         this.yamcsInstance = instance;
         this.linkName = name;
@@ -138,6 +139,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
         return timeService.getMissionTime();
     }
 
+    @Override
     public void setupSystemParameters(SystemParametersCollector sysParamCollector) {
         sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + linkName + "/linkStatus";
         sp_dataOutCount_id = sysParamCollector.getNamespace() + "/" + linkName + "/dataOutCount";
@@ -147,8 +149,8 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     @Override
     public List<ParameterValue> getSystemParameters() {
         long time = getCurrentTime();
-       
-        ArrayList<ParameterValue> list = new ArrayList<ParameterValue>();
+
+        ArrayList<ParameterValue> list = new ArrayList<>();
         try {
             collectSystemParameters(time, list);
         } catch (Exception e) {
@@ -160,8 +162,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     /**
      * adds system parameters link status and data in/out to the list.
      * <p>
-     * The inheriting classes should call super.collectSystemParameters and then add their own parameters
-     * to the list
+     * The inheriting classes should call super.collectSystemParameters and then add their own parameters to the list
      * 
      * @param time
      * @param list

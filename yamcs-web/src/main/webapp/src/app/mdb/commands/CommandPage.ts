@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Command, Instance } from '../../client';
+import { Command } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -11,16 +11,13 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CommandPage {
 
-  instance: Instance;
   command$ = new BehaviorSubject<Command | null>(null);
 
   constructor(
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private title: Title,
   ) {
-    this.instance = yamcs.getInstance();
-
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
     route.paramMap.subscribe(params => {
@@ -30,7 +27,7 @@ export class CommandPage {
   }
 
   changeCommand(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getCommand(qualifiedName).then(command => {
+    this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, qualifiedName).then(command => {
       this.command$.next(command);
       this.title.setTitle(command.name);
     });

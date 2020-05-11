@@ -1,4 +1,7 @@
+import { WebSocketCall } from '../WebSocketCall';
+
 export interface Transfer {
+  id: number;
   transactionId: number;
   startTime: string;
   state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED';
@@ -24,10 +27,12 @@ export interface CreateTransferRequest {
   uploadOptions?: UploadOptions;
 }
 
-export interface EditTransferRequest {
-  operation: string;
+export interface TransfersPage {
+  transfers: Transfer[];
 }
 
-export interface TransfersPage {
-  transfer: Transfer[];
+export interface SubscribeTransfersRequest {
+  instance: string;
 }
+
+export type TransferSubscription = WebSocketCall<SubscribeTransfersRequest, Transfer>;

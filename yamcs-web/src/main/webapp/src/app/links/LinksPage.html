@@ -75,7 +75,7 @@
                                [parentLink]="row.parentLink"></app-link-status>
             </div>
             <a [routerLink]="['/links', row.link.name]"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{c: yamcs.context}">
               {{ row.link.name }}</a>
             <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"

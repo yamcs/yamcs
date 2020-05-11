@@ -18,14 +18,17 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
   </dependencies>
 </project>

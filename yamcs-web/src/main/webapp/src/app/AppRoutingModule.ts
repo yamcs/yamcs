@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/AuthGuard';
-import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
+import { ClearContextGuard } from './core/guards/ClearContextGuard';
+import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
 import { ForbiddenPage } from './core/pages/ForbiddenPage';
@@ -25,26 +26,32 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: HomePage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
+        canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: 'create-instance',
         pathMatch: 'full',
         component: CreateInstancePage1,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
+        canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: 'create-instance/:template',
         component: CreateInstancePage2,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
+        canActivate: [AuthGuard, ClearContextGuard],
+        data: { 'hasSidebar': false }
+      },
+      {
+        path: 'context-switch/:context/:current',
+        component: ContextSwitchPage,
+        canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: 'profile',
         component: ProfilePage,
-        canActivate: [AuthGuard, UnselectInstanceGuard],
+        canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
@@ -102,25 +109,25 @@ const routes: Routes = [
       {
         path: 'login',
         component: LoginPage,
-        canActivate: [UnselectInstanceGuard],
+        canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: 'down',
         component: ServerUnavailablePage,
-        canActivate: [UnselectInstanceGuard],
+        canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: '403',
         component: ForbiddenPage,
-        canActivate: [UnselectInstanceGuard],
+        canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
       },
       {
         path: '**',
         component: NotFoundPage,
-        canActivate: [UnselectInstanceGuard],
+        canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
       },
     ]
@@ -130,7 +137,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      onSameUrlNavigation: 'reload',  // See MonitorPage.ts for documentation
+      onSameUrlNavigation: 'reload',
       preloadingStrategy: CustomPreloadingStrategy,
     }),
   ],

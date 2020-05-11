@@ -18,13 +18,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.BulkRestDataReceiver;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.WebSocketClient;
 import org.yamcs.client.WebSocketClientCallback;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.ClientInfo;
@@ -226,7 +226,7 @@ public abstract class AbstractIntegrationTest {
     protected <T extends Message> byte[] doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
         return restClient.doRequest("/processors/IntegrationTest/realtime" + path, method, msg).get();
     }
-    
+
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);

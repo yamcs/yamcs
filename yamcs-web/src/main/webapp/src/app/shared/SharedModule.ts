@@ -34,15 +34,15 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
+import { ClearContextGuard } from '../core/guards/ClearContextGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
-import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { Breadcrumb } from './breadcrumb/Breadcrumb';
 import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
 import { HelpDialog } from './dialogs/HelpDialog';
@@ -235,14 +235,14 @@ const pipes = [
 
 const guards = [
   AuthGuard,
-  InstanceExistsGuard,
+  ClearContextGuard,
+  AttachContextGuard,
   MayControlCommandQueueGuard,
   MayControlServicesGuard,
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   MayReadTablesGuard,
   SuperuserGuard,
-  UnselectInstanceGuard,
 ];
 
 @NgModule({

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Container, Instance } from '../../client';
+import { Container } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -11,11 +11,9 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class ContainerPage {
 
-  instance: Instance;
   container$ = new BehaviorSubject<Container | null>(null);
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService, private title: Title) {
-    this.instance = yamcs.getInstance();
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private title: Title) {
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -26,7 +24,7 @@ export class ContainerPage {
   }
 
   changeContainer(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getContainer(qualifiedName).then(container => {
+    this.yamcs.yamcsClient.getContainer(this.yamcs.instance!, qualifiedName).then(container => {
       this.container$.next(container);
       this.title.setTitle(container.name);
     });

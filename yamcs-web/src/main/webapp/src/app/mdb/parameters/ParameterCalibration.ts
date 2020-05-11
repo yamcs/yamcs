@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Instance, Parameter } from '../../client';
+import { Parameter } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-parameter-calibration',
@@ -9,8 +10,8 @@ import { Instance, Parameter } from '../../client';
 export class ParameterCalibration {
 
   @Input()
-  instance: Instance;
-
-  @Input()
   parameter: Parameter;
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 }

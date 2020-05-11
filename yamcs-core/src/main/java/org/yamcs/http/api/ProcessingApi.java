@@ -35,6 +35,7 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
+import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -66,6 +67,11 @@ import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SetParameterValueRequest;
+import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.SubscribeParametersData;
+import org.yamcs.protobuf.SubscribeParametersRequest;
+import org.yamcs.protobuf.SubscribeProcessorsRequest;
+import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -267,8 +273,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
-    public void setParameterValue(Context ctx, SetParameterValueRequest request,
-            Observer<Empty> observer) {
+    public void setParameterValue(Context ctx, SetParameterValueRequest request, Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
 
@@ -291,6 +296,56 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             throw new BadRequestException(e.getMessage());
         }
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public Observer<SubscribeParametersRequest> subscribeParameters(Context ctx,
+            Observer<SubscribeParametersData> observer) {
+        SubscribeParameterObserver clientObserver = new SubscribeParameterObserver(ctx.user, observer);
+        observer.setCancelHandler(() -> clientObserver.complete());
+        return clientObserver;
+    }
+
+    @Override
+    public void subscribeProcessors(Context ctx, SubscribeProcessorsRequest request, Observer<ProcessorInfo> observer) {
+        String instance = null;
+        String processor = null;
+        if (request.hasInstance()) {
+            instance = ManagementApi.verifyInstance(request.getInstance());
+            if (request.hasProcessor()) {
+                processor = verifyProcessor(request.getInstance(), request.getProcessor()).getName();
+            }
+        }
+
+        String fInstance = instance;
+        String fProcessor = processor;
+        ManagementListener listener = new ManagementListener() {
+            @Override
+            public void processorAdded(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            @Override
+            public void processorStateChanged(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            @Override
+            public void processorClosed(ProcessorInfo info) {
+                maybeEmit(info);
+            }
+
+            void maybeEmit(ProcessorInfo info) {
+                if (fInstance == null || fInstance.equals(info.getInstance())) {
+                    if (fProcessor == null || fProcessor.equals(info.getName())) {
+                        observer.next(info);
+                    }
+                }
+            }
+        };
+
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeManagementListener(listener));
+        ManagementService.getInstance().addManagementListener(listener);
     }
 
     @Override
@@ -549,6 +604,23 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         observer.complete(Empty.getDefaultInstance());
     }
 
+    @Override
+    public void subscribeTMStatistics(Context ctx, SubscribeTMStatisticsRequest request,
+            Observer<Statistics> observer) {
+        Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
+
+        ManagementListener listener = new ManagementListener() {
+            @Override
+            public void statisticsUpdated(Processor statsProcessor, Statistics stats) {
+                if (statsProcessor.equals(processor)) {
+                    observer.next(stats);
+                }
+            }
+        };
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeManagementListener(listener));
+        ManagementService.getInstance().addManagementListener(listener);
+    }
+
     private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
             boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
@@ -662,7 +734,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         String name = processor.getName();
 
         for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
-            b.addService(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
+            b.addServices(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
         }
         return b.build();
     }

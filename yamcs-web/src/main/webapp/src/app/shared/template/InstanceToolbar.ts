@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, Processor, TimeInfo } from '../../client';
+import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
@@ -20,38 +21,36 @@ export class InstanceToolbar implements OnDestroy {
   hasDetailPane = false;
 
   processor$ = new BehaviorSubject<Processor | null>(null);
-  processorSubscription: Subscription;
+  processorSubscription: ProcessorSubscription;
 
-  timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
-  timeInfoSubscription: Subscription;
+  time$: Observable<string | null>;
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
   showDetailPane$: Observable<boolean>;
 
-  connectedSubscription: Subscription;
+  // For use in lazy dynamic population of Switch Processor menu.
+  allProcessors$ = new BehaviorSubject<Processor[]>([]);
+
+  private connectedSubscription: Subscription;
 
   constructor(
     private dialog: MatDialog,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
     private preferenceStore: PreferenceStore,
+    private router: Router,
   ) {
-    this.yamcs.getInstanceClient()!.getProcessorUpdates().then(response => {
-      this.processor$.next(response.processor);
-      this.processorSubscription = response.processor$.subscribe(processor => {
-        this.processor$.next(processor);
-      });
+    this.processor$.next(yamcs.getProcessor());
+    this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
+    }, processor => {
+      this.processor$.next(processor);
     });
 
-    this.yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
-      this.timeInfo$.next(response.timeInfo);
-      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
-        this.timeInfo$.next(timeInfo);
-      });
-    });
-
-    this.connected$ = this.yamcs.getInstanceClient()!.connected$;
+    this.connected$ = this.yamcs.yamcsClient.connected$;
+    this.time$ = this.yamcs.time$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
       if (!connected) {
@@ -73,7 +72,8 @@ export class InstanceToolbar implements OnDestroy {
           horizontalPosition: 'end',
         });
         this.yamcs.yamcsClient.createProcessor(result).then(() => {
-          this.snackBar.open(`Joined replay ${result.name}`, undefined, {
+          this.yamcs.switchContext(this.yamcs.instance!, result.name);
+          this.snackBar.open(`Joining replay ${result.name}`, undefined, {
             duration: 3000,
             horizontalPosition: 'end',
           });
@@ -88,30 +88,35 @@ export class InstanceToolbar implements OnDestroy {
   }
 
   pauseReplay() {
-    const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { state: 'paused' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'paused' });
   }
 
   resumeReplay() {
-    const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { state: 'running' });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { state: 'running' });
   }
 
   changeSpeed(speed: string) {
-    const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.editReplayProcessor(processor.name, { speed });
+    this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, { speed });
   }
 
   showDetailPane(enabled: boolean) {
     this.preferenceStore.setShowDetailPane(enabled);
   }
 
+  switchProcessorMenuOpened() {
+    this.allProcessors$.next([]);
+    this.yamcs.yamcsClient.getInstance(this.yamcs.instance!).then(instance => {
+      this.allProcessors$.next(instance.processors || []);
+    });
+  }
+
+  switchProcessor(processor: Processor) {
+    this.yamcs.switchContext(this.yamcs.instance!, processor.name);
+  }
+
   ngOnDestroy() {
     if (this.processorSubscription) {
-      this.processorSubscription.unsubscribe();
-    }
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
+      this.processorSubscription.cancel();
     }
     if (this.connectedSubscription) {
       this.connectedSubscription.unsubscribe();

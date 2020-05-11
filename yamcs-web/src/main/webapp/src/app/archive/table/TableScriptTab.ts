@@ -5,8 +5,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../utils';
 
 
-
-
 @Component({
   templateUrl: './TableScriptTab.html',
   styleUrls: [
@@ -22,7 +20,7 @@ export class TableScriptTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.table$ = yamcs.getInstanceClient()!.getTable(name);
+    this.table$ = yamcs.yamcsClient.getTable(yamcs.instance!, name);
   }
 
   formatSQL(sql: string) {

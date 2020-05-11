@@ -1,6 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, Instance } from '../client';
+import { Alarm } from '../client';
+import { YamcsService } from '../core/services/YamcsService';
 import { AlarmsDataSource } from './AlarmsDataSource';
 
 @Component({
@@ -20,9 +21,6 @@ export class AlarmsTable {
     'live_value',
     'actions',
   ];
-
-  @Input()
-  instance: Instance;
 
   @Input()
   dataSource: AlarmsDataSource;
@@ -47,6 +45,9 @@ export class AlarmsTable {
 
   // Used in table trackBy to prevent continuous row recreation
   tableTrackerFn = (index: number, alarm: Alarm) => alarm.id.name;
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 
   toggleOne(row: Alarm) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {

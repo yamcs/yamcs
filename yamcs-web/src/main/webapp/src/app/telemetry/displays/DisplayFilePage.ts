@@ -7,7 +7,6 @@ import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Instance } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
@@ -25,8 +24,6 @@ import { ViewerHost } from './ViewerHost';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayFilePage implements AfterViewInit, OnDestroy {
-
-  instance: Instance;
 
   @ViewChild(ViewerControlsHost)
   private controlsHost: ViewerControlsHost;
@@ -49,15 +46,13 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   private syncSubscription: Subscription;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     router: Router,
     private componentFactoryResolver: ComponentFactoryResolver,
     private title: Title,
     private synchronizer: Synchronizer,
   ) {
-    this.instance = yamcs.getInstance();
-
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
     this.routerSubscription = router.events.pipe(

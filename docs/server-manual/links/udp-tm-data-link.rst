@@ -23,7 +23,7 @@ maxLength (integer)
     The maximum length of the packets received. If a larger datagram is received, the data will be truncated. Default: 1500 bytes
 
 packetPreprocessorClassName (string)
-    Class name of a :javadoc:`~org.yamcs.tctm.PacketPreprocessor` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor>` which applies ISS conventions.
+    Class name of a :javadoc:`~org.yamcs.tctm.PacketPreprocessor` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor` which applies ISS conventions.
 
 packetPreprocessorArgs (map)
     Optional args of arbitrary complexity to pass to the PacketPreprocessor. Each PacketPreprocessor may support different options.

@@ -9,6 +9,7 @@ Yamcs HTTP API
     general/index
     alarms/index
     buckets/index
+    cfdp/index
     clients/index
     commanding/index
     events/index

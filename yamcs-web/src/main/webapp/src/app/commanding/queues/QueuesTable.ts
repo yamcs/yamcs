@@ -64,7 +64,7 @@ export class QueuesTable implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
+    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
       state: 'enabled',
     });
   }
@@ -81,13 +81,13 @@ export class QueuesTable implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
+    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
       state: 'disabled',
     });
   }
 
   blockQueue(queue: CommandQueue) {
-    this.yamcs.getInstanceClient()!.editCommandQueue(queue.processorName, queue.name, {
+    this.yamcs.yamcsClient.editCommandQueue(queue.instance, queue.processorName, queue.name, {
       state: 'blocked',
     });
   }

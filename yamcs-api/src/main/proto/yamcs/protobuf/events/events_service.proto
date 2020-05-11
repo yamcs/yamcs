@@ -51,6 +51,13 @@ service EventsApi {
       get: "/api/archive/{instance}:exportEvents"
     };
   }
+
+  // Receive event updates
+  rpc SubscribeEvents(SubscribeEventsRequest) returns (stream Event) {
+    option (yamcs.api.websocket) = {
+      topic: "events"
+    };
+  }
 }
 
 message ListEventsRequest {
@@ -69,6 +76,10 @@ message ListEventsRequest {
 message ListEventsResponse {
   repeated Event event = 1;
   optional string continuationToken = 2;
+}
+
+message SubscribeEventsRequest {
+  optional string instance = 1;
 }
 
 message CreateEventRequest {

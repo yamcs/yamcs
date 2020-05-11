@@ -32,7 +32,7 @@ export class CreateInstancePage2 {
     const templateId = route.snapshot.paramMap.get('template')!;
     yamcs.yamcsClient.getInstanceTemplate(templateId).then(template => {
       this.template$.next(template);
-      for (const variable of template.variable || []) {
+      for (const variable of template.variables || []) {
         if (variable.required) {
           this.form.addControl(variable.name, new FormControl('', [Validators.required]));
         } else {
@@ -44,8 +44,8 @@ export class CreateInstancePage2 {
 
   onConfirm() {
     const template = this.template$.value!;
-    const templateArgs: { [key: string]: string } = {};
-    for (const variable of template.variable || []) {
+    const templateArgs: { [key: string]: string; } = {};
+    for (const variable of template.variables || []) {
       if (this.form.get(variable.name)!.value) {
         templateArgs[variable.name] = this.form.get(variable.name)!.value;
       }

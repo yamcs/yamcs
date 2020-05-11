@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { IndexGroup, Instance } from '../client';
+import { IndexGroup } from '../client';
 import { PreferenceStore } from '../core/services/PreferenceStore';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
@@ -49,8 +49,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
   filterForm: FormGroup;
 
-  instance: Instance;
-
   timeline: Timeline;
 
   rangeSelection$ = new BehaviorSubject<Range | null>(null);
@@ -59,13 +57,13 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
 
-  private timeInfoSubscription: Subscription;
+  private timeSubscription: Subscription;
 
   private packetNames: string[] = [];
 
   constructor(
     title: Title,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
@@ -75,7 +73,6 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
   ) {
     title.setTitle('Archive Overview');
-    this.instance = yamcs.getInstance();
 
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
       if (this.timeline) {
@@ -97,12 +94,10 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
       this.filterForm.addControl(option.id, new FormControl(checked));
     }
 
-    yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
-      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
-        if (this.timeline) {
-          this.timeline.setWallclockTime(timeInfo.currentTime);
-        }
-      });
+    this.timeSubscription = yamcs.time$.subscribe(time => {
+      if (this.timeline && time) {
+        this.timeline.setWallclockTime(time);
+      }
     });
 
     const bodyRef = new ElementRef(document.body);
@@ -127,7 +122,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // Fetch archive packets to ensure we can always show bands
     // even if there's no data for the visible range
-    this.yamcs.getInstanceClient()!.getPacketNames().then(packetNames => {
+    this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(packetNames => {
       this.packetNames = packetNames;
 
       // Initialize only after a timeout, because otherwise
@@ -140,13 +135,13 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
   initializeTimeline() {
     const queryParams = this.route.snapshot.queryParamMap;
-    const c = queryParams.get('c');
+    const t = queryParams.get('t');
     let z;
     if (queryParams.has('z')) {
       z = Number(queryParams.get('z'));
     }
     const opts: TimelineOptions = {
-      initialDate: c || this.yamcs.getMissionTime().toISOString(),
+      initialDate: t || this.yamcs.getMissionTime().toISOString(),
       zoom: z || 12,
       pannable: 'X_ONLY',
       wallclock: false,
@@ -170,7 +165,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
         relativeTo: this.route,
         queryParamsHandling: 'merge',
         queryParams: {
-          c: this.timeline.visibleCenter.toISOString(),
+          t: this.timeline.visibleCenter.toISOString(),
           z: this.timeline.getZoom(),
           ...legendParams,
         },
@@ -218,10 +213,9 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     });
 
     this.timeline.on('loadRange', evt => {
-
       let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['completeness']) {
-        completenessPromise = this.yamcs.getInstanceClient()!.getCompletenessIndex({
+        completenessPromise = this.yamcs.yamcsClient.getCompletenessIndex(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -230,7 +224,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['packets']) {
-        tmPromise = this.yamcs.getInstanceClient()!.getPacketIndex({
+        tmPromise = this.yamcs.yamcsClient.getPacketIndex(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -239,7 +233,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['parameters']) {
-        parameterPromise = this.yamcs.getInstanceClient()!.getParameterIndex({
+        parameterPromise = this.yamcs.yamcsClient.getParameterIndex(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -248,7 +242,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
 
       let commandPromise: Promise<IndexGroup[]> = Promise.resolve([]);
       if (this.filterForm.value['commands']) {
-        commandPromise = this.yamcs.getInstanceClient()!.getCommandIndex({
+        commandPromise = this.yamcs.yamcsClient.getCommandIndex(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
           limit: 1000,
@@ -256,7 +250,7 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
       }
 
       Promise.all([
-        this.yamcs.getInstanceClient()!.getTags({
+        this.yamcs.yamcsClient.getTags(this.yamcs.instance!, {
           start: evt.loadStart.toISOString(),
           stop: evt.loadStop.toISOString(),
         }),
@@ -539,7 +533,8 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
             horizontalPosition: 'end',
           });
           this.yamcs.yamcsClient.createProcessor(result).then(() => {
-            this.snackBar.open(`Joined replay ${result.name}`, undefined, {
+            this.yamcs.switchContext(this.yamcs.instance!, result.name);
+            this.snackBar.open(`Joining replay ${result.name}`, undefined, {
               duration: 3000,
               horizontalPosition: 'end',
             });
@@ -575,8 +570,8 @@ export class ArchiveOverviewPage implements AfterViewInit, OnDestroy {
     if (this.darkModeSubscription) {
       this.darkModeSubscription.unsubscribe();
     }
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
+    if (this.timeSubscription) {
+      this.timeSubscription.unsubscribe();
     }
   }
 }

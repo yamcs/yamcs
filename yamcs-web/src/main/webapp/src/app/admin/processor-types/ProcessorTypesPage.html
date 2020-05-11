@@ -1,0 +1,18 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Processor types
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <table mat-table [dataSource]="dataSource" class="ya-data-table">
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef style="width: 350px">Name</th>
+        <td mat-cell *matCellDef="let row">{{ row }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</app-admin-page>

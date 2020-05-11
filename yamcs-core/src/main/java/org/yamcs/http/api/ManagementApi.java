@@ -37,7 +37,10 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
+import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
+import org.yamcs.management.ManagementListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractManagementApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.EditLinkRequest;
@@ -46,6 +49,7 @@ import org.yamcs.protobuf.GetInstanceTemplateRequest;
 import org.yamcs.protobuf.GetLinkRequest;
 import org.yamcs.protobuf.GetServiceRequest;
 import org.yamcs.protobuf.InstanceTemplate;
+import org.yamcs.protobuf.LinkEvent;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstanceTemplatesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
@@ -62,6 +66,7 @@ import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
+import org.yamcs.protobuf.SubscribeLinksRequest;
 import org.yamcs.protobuf.SystemInfo;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -172,8 +177,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     @Override
-    public void listInstances(Context ctx, ListInstancesRequest request,
-            Observer<ListInstancesResponse> observer) {
+    public void listInstances(Context ctx, ListInstancesRequest request, Observer<ListInstancesResponse> observer) {
         Predicate<YamcsServerInstance> filter = getFilter(request.getFilterList());
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsServerInstance instance : YamcsServer.getInstances()) {
@@ -183,6 +187,19 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             }
         }
         observer.complete(instancesb.build());
+    }
+
+    @Override
+    public void subscribeInstances(Context ctx, Empty request, Observer<YamcsInstance> observer) {
+        ManagementListener listener = new ManagementListener() {
+            @Override
+            public void instanceStateChanged(YamcsServerInstance ysi) {
+                observer.next(ysi.getInstanceInfo());
+            }
+        };
+
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeManagementListener(listener));
+        ManagementService.getInstance().addManagementListener(listener);
     }
 
     @Override
@@ -468,6 +485,53 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     @Override
+    public void subscribeLinks(Context ctx, SubscribeLinksRequest request, Observer<LinkEvent> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
+        String instance = verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = verifyInstanceObj(instance);
+
+        LinkManager linkManager = ysi.getLinkManager();
+        for (LinkInfo linkInfo : linkManager.getLinkInfo()) {
+            if (instance.equals(linkInfo.getInstance())) {
+                observer.next(LinkEvent.newBuilder()
+                        .setType(LinkEvent.Type.REGISTERED)
+                        .setLinkInfo(linkInfo)
+                        .build());
+            }
+        }
+
+        LinkListener listener = new LinkListener() {
+            @Override
+            public void linkRegistered(LinkInfo linkInfo) {
+                if (instance.equals(linkInfo.getInstance())) {
+                    observer.next(LinkEvent.newBuilder()
+                            .setType(LinkEvent.Type.REGISTERED)
+                            .setLinkInfo(linkInfo)
+                            .build());
+                }
+            }
+
+            @Override
+            public void linkUnregistered(LinkInfo linkInfo) {
+                // TODO Currently not handled correctly by ManagementService
+            }
+
+            @Override
+            public void linkChanged(LinkInfo linkInfo) {
+                if (instance.equals(linkInfo.getInstance())) {
+                    observer.next(LinkEvent.newBuilder()
+                            .setType(LinkEvent.Type.UPDATED)
+                            .setLinkInfo(linkInfo)
+                            .build());
+                }
+            }
+        };
+
+        observer.setCancelHandler(() -> linkManager.removeLinkListener(listener));
+        linkManager.addLinkListener(listener);
+    }
+
+    @Override
     public void getLink(Context ctx, GetLinkRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
 
@@ -644,8 +708,10 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             }
         }
 
-        for (Processor processor : ysi.getProcessors()) {
-            instanceb.addProcessor(ProcessingApi.toProcessorInfo(processor, false));
+        List<Processor> processors = new ArrayList<>(ysi.getProcessors());
+        Collections.sort(processors, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        for (Processor processor : processors) {
+            instanceb.addProcessors(ProcessingApi.toProcessorInfo(processor, false));
         }
 
         TimeService timeService = ysi.getTimeService();

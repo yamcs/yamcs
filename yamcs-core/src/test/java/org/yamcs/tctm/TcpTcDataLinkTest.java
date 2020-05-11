@@ -22,9 +22,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.TimeEncoding;
 

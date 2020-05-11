@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Queue;
 
 import org.junit.Test;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 

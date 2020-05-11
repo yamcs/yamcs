@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { GetCommandHistoryOptions, Instance } from '../../client';
+import { GetCommandHistoryOptions } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PrintService } from '../../core/services/PrintService';
@@ -30,8 +30,6 @@ const defaultInterval = 'PT1H';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandHistoryPage {
-
-  instance: Instance;
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
@@ -84,7 +82,7 @@ export class CommandHistoryPage {
   config: WebsiteConfig;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
     private router: Router,
@@ -97,7 +95,6 @@ export class CommandHistoryPage {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
     title.setTitle('Command History');
-    this.instance = yamcs.getInstance();
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 
@@ -199,7 +196,7 @@ export class CommandHistoryPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    this.dataSource.loadEntries('realtime', options);
+    this.dataSource.loadEntries(options);
   }
 
   loadMoreData() {

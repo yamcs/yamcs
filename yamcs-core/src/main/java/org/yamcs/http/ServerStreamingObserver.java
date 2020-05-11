@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.NotThreadSafe;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 

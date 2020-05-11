@@ -50,10 +50,10 @@ export class StartReplayDialog {
     }
 
     this.dialogRef.close({
-      instance: this.yamcs.getInstance().name,
+      instance: this.yamcs.instance!,
       name: this.form.value.name,
       type: 'Archive', // TODO make configurable?
-      clientId: [this.yamcs.getClientId()],
+      persistent: true,
       config: JSON.stringify(replayConfig),
     });
   }

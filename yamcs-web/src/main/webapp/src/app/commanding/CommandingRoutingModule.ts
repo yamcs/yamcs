@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { ClearancesEnabledGuard } from './clearances/ClearancesEnabledGuard';
@@ -20,7 +20,7 @@ import { StacksPage } from './stacks/StacksPage';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, InstanceExistsGuard],
+    canActivate: [AuthGuard, AttachContextGuard],
     canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',
     component: InstancePage,

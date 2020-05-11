@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.MediaType;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.http.websocket.WebSocketFrameHandler;
 import org.yamcs.logging.Log;

@@ -6,8 +6,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.PacketPreprocessor;
@@ -45,7 +45,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         this.vmp = vmp;
         this.name = name;
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        
+
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         log = new Log(this.getClass(), yamcsInstance);
         log.setContext(name);
@@ -83,7 +83,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
             idleFrameCount++;
             return;
         }
-        
+
         if (log.isTraceEnabled()) {
             log.trace("Processing frame VC {}, SEQ {}, FHP {}, DS {}, DE {}", frame.getVirtualChannelId(),
                     frame.getVcFrameSeq(),
@@ -133,7 +133,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         numPackets++;
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthRceptionTime(ertime);
-        
+
         pwt = packetPreprocessor.process(pwt);
         if (pwt != null) {
             tmSink.processPacket(pwt);

@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ExceptionUtil;
@@ -111,17 +110,18 @@ public class CallObserver implements Observer<Message> {
     private <T extends Message> ChannelFuture sendMessageResponse(T responseMsg) {
         HttpRequest req = ctx.nettyRequest;
 
-        ByteBuf body = ctx.nettyContext.alloc().buffer();
         MediaType contentType = ctx.deriveTargetContentType();
         if (contentType != MediaType.JSON) {
             ctx.reportStatusCode(OK.code());
             return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, req, OK, responseMsg);
         } else {
+            ByteBuf body = ctx.nettyContext.alloc().buffer();
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
                 contentType = MediaType.JSON;
                 String str = ctx.printJson(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
             } catch (IOException e) {
+                body.release();
                 HttpResponseStatus status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
                 ctx.reportStatusCode(status.code());
                 return HttpRequestHandler.sendPlainTextError(ctx.nettyContext, req, status, e.toString());
@@ -135,6 +135,11 @@ public class CallObserver implements Observer<Message> {
     }
 
     static ChannelFuture sendError(RouteContext ctx, HttpException t) {
+        if (t instanceof InternalServerErrorException) {
+            log.error("Internal server error while handling call", t);
+        } else if (log.isDebugEnabled()) {
+            log.debug("User error while handling call", t);
+        }
         ExceptionMessage msg = t.toMessage();
         ctx.reportStatusCode(t.getStatus().code());
         return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, t.getStatus(), msg);

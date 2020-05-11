@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '../../client';
 import { BehaviorSubject } from 'rxjs';
+import { DownloadParameterValuesOptions, GetParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
 import * as utils from '../../shared/utils';
@@ -44,7 +44,7 @@ export class ParameterDataTab {
   dataSource: ParameterDataDataSource;
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
@@ -115,9 +115,8 @@ export class ParameterDataTab {
       dlOptions.stop = this.validStop.toISOString();
     }
 
-    const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadParameterValues(options).then(pvals => {
-      const downloadURL = instanceClient.getParameterValuesDownloadURL(dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

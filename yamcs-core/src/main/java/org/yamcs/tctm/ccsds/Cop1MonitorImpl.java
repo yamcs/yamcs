@@ -1,7 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 
 /**
  * Sends events and websocket messages for FOP1 state changes and alerts
@@ -36,7 +36,8 @@ public class Cop1MonitorImpl implements Cop1Monitor {
 
     @Override
     public void stateChanged(int oldState, int newState) {
-        eventProducer.sendInfo("STATE_CHANGE", "state changed from "+FOP1_STATE[oldState]+" to "+FOP1_STATE[newState]);
+        eventProducer.sendInfo("STATE_CHANGE",
+                "state changed from " + FOP1_STATE[oldState] + " to " + FOP1_STATE[newState]);
     }
 
     @Override

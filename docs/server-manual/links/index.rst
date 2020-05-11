@@ -7,7 +7,7 @@ Data Links can report on their status and can also be controlled by an operator 
 
 Note that any Yamcs Service can connect to external sources and inject data in the streams. Data links however, can report on their status using a predefined interface and can also be controlled to connect or disconnect from their data source.
 
-
+Data links are defined in ``etc/yamcs.(instance).yaml``. Example:
 
 .. code-block:: yaml
 
@@ -23,13 +23,13 @@ Note that any Yamcs Service can connect to external sources and inject data in t
 General configuration options.
 
 name (string)
-    **Required.** The name that will be assigned to the link. Each link needs a unique name; the name can be seen in the user inteface and can be used for API calls.
+    **Required.** The name that will be assigned to the link. Each link needs a unique name; the name can be seen in the user interface and can be used for API calls.
 
 class (string)
     **Required.** The name of the class that is implementing the link. The class has to implement the :javadoc:`org.yamcs.tctm.Link` interface.
 
 enabledAtStartup (boolean)
-    If set to false, the link will be disabled at startup. By default it is true. The link can be enabled/disaled at any time via an API call.
+    If set to false, the link will be disabled at startup. By default it is true. The link can be enabled/disabled at any time via an API call.
     
 stream (string)
     The name of the stream where the data is taken from or injected into.
@@ -41,13 +41,13 @@ invalidPackets (string)
     
     ``PROCESS`` means they are put on the normal stream (configured with the ``stream`` parameter), same like the valid packets.
     
-    ``DIVERT`` means the are put on another stream specified in the parameter below.
+    ``DIVERT`` means they are put on another stream specified by the option ``invalidPacketsStream``.
 
 invalidPacketsStream (string)
-    If the ``invalidPackets`` parameter above is set to ``DIVERT``, this paramete configures the stream where the packets are sent.
+    If ``invalidPackets`` is set to ``DIVERT``, this configures the stream where the packets are sent.
     
 
-All the other options are link specific and they are documented for each link separately in the following sections.
+Other options are link-specific and documented in their respective sections.
           
 .. toctree::
     :maxdepth: 1

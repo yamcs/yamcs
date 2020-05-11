@@ -6,21 +6,31 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.yamcs.Processor;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
+import org.yamcs.cmdhistory.CommandHistoryConsumer;
+import org.yamcs.cmdhistory.CommandHistoryFilter;
+import org.yamcs.cmdhistory.CommandHistoryRequestManager;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.AbstractCommandHistoryApi;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.ListCommandsRequest;
 import org.yamcs.protobuf.ListCommandsResponse;
 import org.yamcs.protobuf.StreamCommandsRequest;
+import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.security.ObjectPrivilegeType;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -154,6 +164,51 @@ public class CommandHistoryApi extends AbstractCommandHistoryApi<Context> {
                 }
             }
         });
+    }
+
+    @Override
+    public void subscribeCommands(Context ctx, SubscribeCommandsRequest request,
+            Observer<CommandHistoryEntry> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
+        if (!processor.hasCommanding() || processor.getCommandHistoryManager() == null) {
+            return; // No Error, just send no data
+        }
+
+        CommandHistoryRequestManager requestManager = processor.getCommandHistoryManager();
+        boolean ignorePastCommands = true;
+        if (request.hasIgnorePastCommands()) {
+            ignorePastCommands = request.getIgnorePastCommands();
+        }
+
+        long since = ignorePastCommands ? processor.getCurrentTime() : 0;
+        CommandHistoryConsumer listener = new CommandHistoryConsumer() {
+
+            @Override
+            public void addedCommand(PreparedCommand pc) {
+                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
+                        .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
+                        .addAllAttr(pc.getAttributes())
+                        .build();
+                observer.next(entry);
+            }
+
+            @Override
+            public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
+                CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                        .setName(key)
+                        .setValue(ValueUtility.toGbp(value))
+                        .build();
+                CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                        .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                        .setCommandId(cmdId)
+                        .addAttr(cha)
+                        .build();
+                observer.next(entry);
+            }
+        };
+        CommandHistoryFilter subscription = requestManager.subscribeCommandHistory(null, since, listener);
+        observer.setCancelHandler(() -> requestManager.unsubscribeCommandHistory(subscription.subscriptionId));
     }
 
     @Override

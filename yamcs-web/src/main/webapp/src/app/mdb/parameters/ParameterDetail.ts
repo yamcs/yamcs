@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { EnumValue, Instance, Parameter } from '../../client';
+import { EnumValue, Parameter } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -10,10 +11,10 @@ import { EnumValue, Instance, Parameter } from '../../client';
 export class ParameterDetail {
 
   @Input()
-  instance: Instance;
-
-  @Input()
   parameter: Parameter;
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 
   getDefaultAlarmLevel(parameter: Parameter, enumValue: EnumValue) {
     if (parameter.type && parameter.type.defaultAlarm) {

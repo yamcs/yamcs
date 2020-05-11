@@ -14,15 +14,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.EventRecorder;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.MediaType;
 import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractEventsApi;
@@ -33,6 +33,7 @@ import org.yamcs.protobuf.ListEventSourcesResponse;
 import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.StreamEventsRequest;
+import org.yamcs.protobuf.SubscribeEventsRequest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.security.SystemPrivilege;
@@ -252,6 +253,35 @@ public class EventsApi extends AbstractEventsApi<Context> {
             responseb.addAllSource(unsortedSources);
         }
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void subscribeEvents(Context ctx, SubscribeEventsRequest request, Observer<Event> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        Stream stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        if (stream == null) {
+            return; // No error, just don't send data
+        }
+
+        StreamSubscriber listener = new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                Event event = (Event) tuple.getColumn("body");
+                event = Event.newBuilder(event)
+                        .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
+                        .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
+                        .build();
+                observer.next(event);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+            }
+        };
+        observer.setCancelHandler(() -> stream.removeSubscriber(listener));
+        stream.addSubscriber(listener);
     }
 
     @Override

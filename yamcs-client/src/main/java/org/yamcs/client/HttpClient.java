@@ -21,7 +21,6 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.yamcs.api.ExceptionMessage;
-import org.yamcs.api.MediaType;
 import org.yamcs.client.ClientException.ExceptionData;
 
 import com.google.gson.Gson;
@@ -69,8 +68,11 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
 
-    MediaType sendMediaType = MediaType.PROTOBUF;
-    MediaType acceptMediaType = MediaType.PROTOBUF;
+    public static final String MT_JSON = "application/json";
+    public static final String MT_PROTOBUF = "application/protobuf";
+
+    String sendMediaType = MT_PROTOBUF;
+    String acceptMediaType = MT_PROTOBUF;
     EventLoopGroup group;
     private List<Cookie> cookies;
     private SslContext sslCtx;
@@ -277,13 +279,13 @@ public class HttpClient {
         byte[] data = getByteArray(fullResp.content());
         String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (MediaType.JSON.is(contentType)) {
+        if (contentType != null && MT_JSON.equals(contentType)) {
             Map<String, Object> obj = jsonToMap(new String(data));
             String type = (String) obj.get("type");
             String message = (String) obj.get("msg");
             ExceptionData excData = new ExceptionData(type, message, null);
             return new ClientException(excData);
-        } else if (MediaType.PROTOBUF.is(contentType)) {
+        } else if (contentType != null && MT_PROTOBUF.equals(contentType)) {
             ExceptionMessage msg = ExceptionMessage.parseFrom(data);
             ExceptionData excData = new ExceptionData(msg.getType(), msg.getMsg(), msg.getDetail());
             return new ClientException(excData);
@@ -484,19 +486,19 @@ public class HttpClient {
         return Collections.unmodifiableList(cookies);
     }
 
-    public MediaType getSendMediaType() {
+    public String getSendMediaType() {
         return sendMediaType;
     }
 
-    public void setSendMediaType(MediaType sendMediaType) {
+    public void setSendMediaType(String sendMediaType) {
         this.sendMediaType = sendMediaType;
     }
 
-    public MediaType getAcceptMediaType() {
+    public String getAcceptMediaType() {
         return acceptMediaType;
     }
 
-    public void setAcceptMediaType(MediaType acceptMediaType) {
+    public void setAcceptMediaType(String acceptMediaType) {
         this.acceptMediaType = acceptMediaType;
     }
 

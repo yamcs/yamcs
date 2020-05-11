@@ -4,6 +4,7 @@ package yamcs.protobuf.table;
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 option java_package = "org.yamcs.protobuf";
 
@@ -25,10 +26,24 @@ service TableApi {
     };
   }
   
+  // Receive updates on stream stats
+  rpc SubscribeStreamStatistics(SubscribeStreamStatisticsRequest) returns (stream yamcsManagement.StreamEvent) {
+    option (yamcs.api.websocket) = {
+      topic: "stream-stats"
+    };
+  }
+  
   // Get a stream
   rpc GetStream(GetStreamRequest) returns (StreamInfo) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/streams/{name}"
+    };
+  }
+  
+  // Receive stream updates
+  rpc SubscribeStream(SubscribeStreamRequest) returns (stream StreamData) {
+    option (yamcs.api.websocket) = {
+      topic: "stream"
     };
   }
   
@@ -152,6 +167,11 @@ message GetStreamRequest {
   optional string name = 2;
 }
 
+message SubscribeStreamRequest {
+  optional string instance = 1;
+  optional string stream = 2;
+}
+
 message ColumnData {
   optional string name = 1;
   optional Value value = 2;
@@ -160,6 +180,10 @@ message ColumnData {
 message StreamData {
   optional string stream = 1;
   repeated ColumnData column = 2;
+}
+
+message SubscribeStreamStatisticsRequest {
+  optional string instance = 1;
 }
 
 message TableData {

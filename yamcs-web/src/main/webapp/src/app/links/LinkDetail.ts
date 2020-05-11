@@ -21,10 +21,10 @@ export class LinkDetail {
   }
 
   enableLink() {
-    this.yamcs.getInstanceClient()!.enableLink(this.link.name);
+    this.yamcs.yamcsClient.enableLink(this.link.instance, this.link.name);
   }
 
   disableLink() {
-    this.yamcs.getInstanceClient()!.disableLink(this.link.name);
+    this.yamcs.yamcsClient.disableLink(this.link.instance, this.link.name);
   }
 }

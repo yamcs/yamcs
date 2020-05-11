@@ -39,7 +39,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         evaluator = getEvaluator(algorithm);
     }
 
-
     @Override
     public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
         ParameterValue pv = new ParameterValue(outParam);
@@ -47,10 +46,10 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         pv.setGenerationTime(genTime);
         double value = evaluator.evaluate(input);
         Value engValue = ParameterTypeUtils.getEngValue(outParam.getParameterType(), Double.valueOf(value));
-        if(engValue==null) {
+        if (engValue == null) {
             execCtx.getProcessorData().getEventProducer()
-            .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
-                    + "'"+value+"' into "+outParam.getParameterType());
+                    .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
+                            + "'" + value + "' into " + outParam.getParameterType());
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
         } else {
             pv.setEngineeringValue(engValue);
@@ -73,17 +72,19 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
             log.warn("Received null value for input parameter {}", inputParameter);
         }
     }
-    
+
     private MathOperationEvaluator getEvaluator(MathAlgorithm algo) {
         StringBuilder sb = new StringBuilder();
         String className = "MathOperationEvaluator" + algo.hashCode();
         sb.append("package org.yamcs.algorithms.maeval;\n")
-        .append("public class ").append(className).append(" implements org.yamcs.algorithms.MathOperationEvaluator {\n")
-        .append("   public double evaluate(double[] input) {\n")
-        .append("       return ")
-        .append(MathOperationCalibratorFactory.getJavaExpression(algo.getOperation(), algo.getInputList())).append(";\n")
-        .append("   }\n")
-        .append("}\n");
+                .append("public class ").append(className)
+                .append(" implements org.yamcs.algorithms.MathOperationEvaluator {\n")
+                .append("   public double evaluate(double[] input) {\n")
+                .append("       return ")
+                .append(MathOperationCalibratorFactory.getJavaExpression(algo.getOperation(), algo.getInputList()))
+                .append(";\n")
+                .append("   }\n")
+                .append("}\n");
         String expr = sb.toString();
         log.debug("Compiling math operation converted to java:\n {}", expr);
         try {
@@ -101,7 +102,8 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 Location l1 = new Location(null, (short) (l.getLineNumber() - 3), (short) (l.getColumnNumber() - 7));
                 msg = l1.toString() + ": " + msg.substring(l.toString().length() + 1);
             }
-            throw new IllegalArgumentException("Cannot compile math operation converted to java'" + expr + "': " + msg, e);
+            throw new IllegalArgumentException("Cannot compile math operation converted to java'" + expr + "': " + msg,
+                    e);
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot compile math operation converted to java '" + expr + "'", e);
         }

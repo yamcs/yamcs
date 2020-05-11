@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
-import static org.yamcs.cfdp.CfdpService.*;
+import static org.yamcs.cfdp.CfdpService.ETYPE_EOF_LIMIT_REACHED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_FINISHED;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducer;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -31,6 +31,7 @@ import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.cfdp.pdu.TLV;
+import org.yamcs.events.EventProducer;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
@@ -40,7 +41,16 @@ import org.yamcs.yarch.Stream;
 public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     private enum SenderTransferState {
-        START, METADATA_SENT, SENDING_DATA, RESENDING, SENDING_FINISHED, EOF_SENT, EOF_ACK_RECEIVED, FINISHED, CANCELING, CANCELED
+        START,
+        METADATA_SENT,
+        SENDING_DATA,
+        RESENDING,
+        SENDING_FINISHED,
+        EOF_SENT,
+        EOF_ACK_RECEIVED,
+        FINISHED,
+        CANCELING,
+        CANCELED
     }
 
     @SuppressWarnings("unused")
@@ -330,7 +340,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
     }
 
     public void start() {
-        scheduledFuture = executor.scheduleAtFixedRate(()->run(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
+        scheduledFuture = executor.scheduleAtFixedRate(() -> run(), 0, sleepBetweenPdus, TimeUnit.MILLISECONDS);
     }
 
     public long getTransferredBytes() {
@@ -363,11 +373,11 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 break;
             case Finished:
                 finishedPacket = (FinishedPacket) packet;
-              
+
                 // depending on the conditioncode, the transfer was a success or a failure
                 if (finishedPacket.getConditionCode() != ConditionCode.NoError) {
                     sendPacket(getAckPacket());
-                    
+
                     changeState(TransferState.FAILED);
                     currentState = SenderTransferState.FINISHED;
                     long duration = (System.currentTimeMillis() - startTime) / 1000;
@@ -378,18 +388,19 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
                 } else {
                     if (currentState == SenderTransferState.EOF_ACK_RECEIVED
                             || currentState == SenderTransferState.RESENDING) {
-                        
+
                         sendPacket(getAckPacket());
                         changeState(TransferState.COMPLETED);
                         currentState = SenderTransferState.FINISHED;
-                        
+
                         long duration = (System.currentTimeMillis() - startTime) / 1000;
                         eventProducer.sendInfo(ETYPE_TRANSFER_FINISHED,
                                 "CFDP upload finished successfully in " + duration + " seconds: "
                                         + request.getObjectName() + " -> "
                                         + request.getTargetPath());
                     } else {
-                        log.warn("Transaction {} received bogus finish packet in state {}: {}", cfdpTransactionId, currentState,
+                        log.warn("Transaction {} received bogus finish packet in state {}: {}", cfdpTransactionId,
+                                currentState,
                                 finishedPacket);
                     }
                 }
@@ -425,7 +436,7 @@ public class CfdpOutgoingTransfer extends CfdpTransfer {
 
     @Override
     public String getFailuredReason() {
-        if(state==TransferState.FAILED && finishedPacket!=null) {
+        if (state == TransferState.FAILED && finishedPacket != null) {
             return finishedPacket.getConditionCode().toString();
         } else {
             return null;

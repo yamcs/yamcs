@@ -21,7 +21,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestroy {
 
   @Input()
-  instance: string;
+  instance = '_global';
 
   @Input()
   bucket: Bucket;

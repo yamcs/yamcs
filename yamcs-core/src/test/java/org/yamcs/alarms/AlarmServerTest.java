@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.utils.TimeEncoding;
@@ -138,9 +138,9 @@ public class AlarmServerTest {
         assertEquals(pv1_0, aa.currentValue);
         assertEquals(pv1_0, aa.mostSevereValue);
         assertEquals(pv1_0, aa.triggerValue);
-        
+
         long shelvetime = TimeEncoding.getWallclockTime();
-        
+
         ActiveAlarm<ParameterValue> aa1 = alarmServer.shelve(aa, "busy operator", "looking at it later", 500);
         assertNotNull(aa1);
 
@@ -148,9 +148,10 @@ public class AlarmServerTest {
         assertEquals(aa, l.shelved.remove());
 
         ActiveAlarm<ParameterValue> aa2 = l.unshelved.poll(2000, TimeUnit.MILLISECONDS);
-        if (aa2 == null) { //this code is in order to try to understand the spurious test failure - aa2 is null sometimes
-            System.out.println("shelvetime:"+shelvetime+" wallclocktime: "+TimeEncoding.getWallclockTime());
-            System.out.println("Active alarms: "+alarmServer.getActiveAlarms());
+        if (aa2 == null) { // this code is in order to try to understand the spurious test failure - aa2 is null
+                           // sometimes
+            System.out.println("shelvetime:" + shelvetime + " wallclocktime: " + TimeEncoding.getWallclockTime());
+            System.out.println("Active alarms: " + alarmServer.getActiveAlarms());
         }
         assertEquals(aa, aa2);
         assertFalse(aa.isShelved());

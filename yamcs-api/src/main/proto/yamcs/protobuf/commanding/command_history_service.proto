@@ -34,6 +34,13 @@ service CommandHistoryApi {
       body: "*"
     };
   }
+  
+  // Receive updates on issued commands
+  rpc SubscribeCommands(SubscribeCommandsRequest) returns (stream CommandHistoryEntry) {
+    option (yamcs.api.websocket) = {
+      topic: "commands"
+    };
+  }
 }
 
 message ListCommandsRequest {
@@ -62,4 +69,10 @@ message StreamCommandsRequest {
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated string name = 4;
+}
+
+message SubscribeCommandsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+  optional bool ignorePastCommands = 3;
 }

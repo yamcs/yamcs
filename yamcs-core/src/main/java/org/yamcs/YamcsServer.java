@@ -1096,7 +1096,7 @@ public class YamcsServer {
                                 if (varDef.containsKey("description")) {
                                     varb.setDescription(YConfiguration.getString(varDef, "description"));
                                 }
-                                templateb.addVariable(varb);
+                                templateb.addVariables(varb);
                             }
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);

@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -17,11 +18,11 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
@@ -55,6 +56,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     long destinationId;
 
     EventProducer eventProducer;
+
+    private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
 
     @Override
     public Spec getSpec() {
@@ -113,30 +116,19 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
     }
 
     public CfdpTransfer getCfdpTransfer(long id) {
-       Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c-> c.getId()==id).findAny();
-        if(r.isPresent()) {
+        Optional<CfdpTransfer> r = pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny();
+        if (r.isPresent()) {
             return r.get();
         } else {
-            return completedTransfers.stream().filter(c-> c.getId()==id).findAny().orElse(null);
+            return completedTransfers.stream().filter(c -> c.getId() == id).findAny().orElse(null);
         }
     }
 
-    public Collection<CfdpTransfer> getCfdpTransfers(boolean all) {
-        if(all) {
-           List<CfdpTransfer> r =  new ArrayList<CfdpTransfer>();
-           r.addAll(pendingTransfers.values());
-           r.addAll(completedTransfers);
-           return r;
-        } else {
-            return pendingTransfers.values(); 
-        }
-    }
-
-    public Collection<CfdpTransfer> getCfdpTransfers(List<Long> transferIds) {
-        List<CfdpTransactionId> transactionIds = transferIds.stream()
-                .map(x -> new CfdpTransactionId(mySourceId, x)).collect(Collectors.toList());
-        return this.pendingTransfers.values().stream().filter(transfer -> transactionIds.contains(transfer.getId()))
-                .collect(Collectors.toList());
+    public Collection<CfdpTransfer> getCfdpTransfers() {
+        List<CfdpTransfer> r = new ArrayList<>();
+        r.addAll(pendingTransfers.values());
+        r.addAll(completedTransfers);
+        return r;
     }
 
     public CfdpTransfer processRequest(CfdpRequest request) {
@@ -214,7 +206,8 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new CFDP downlink (" + mpkt.getHeader().getTransactionId() + ")"
                             + mpkt.getSourceFilename() + " -> " + mpkt.getDestinationFilename());
-            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut, incomingBucket, eventProducer);
+            CfdpTransfer transfer = new CfdpIncomingTransfer(yamcsInstance, executor, config, mpkt, cfdpOut,
+                    incomingBucket, eventProducer);
             transfer.setMonitor(this);
             return transfer;
         } else {
@@ -223,6 +216,14 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
             return null;
             // throw new IllegalArgumentException("Rogue CFDP packet received");
         }
+    }
+
+    public void addTransferListener(TransferMonitor listener) {
+        transferListeners.add(listener);
+    }
+
+    public void removeTransferListener(TransferMonitor listener) {
+        transferListeners.remove(listener);
     }
 
     @Override
@@ -250,9 +251,12 @@ public class CfdpService extends AbstractYamcsService implements StreamSubscribe
 
     @Override
     public void stateChanged(CfdpTransfer cfdpTransfer) {
+        // Notify downstream listeners
+        transferListeners.forEach(l -> l.stateChanged(cfdpTransfer));
+
         if (cfdpTransfer.getTransferState() == TransferState.COMPLETED
                 || cfdpTransfer.getTransferState() == TransferState.FAILED) {
-            pendingTransfers.remove(cfdpTransfer.getId());
+            pendingTransfers.remove(cfdpTransfer.getTransactionId());
             completedTransfers.add(cfdpTransfer);
         }
     }

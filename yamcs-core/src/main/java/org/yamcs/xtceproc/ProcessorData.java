@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
-import org.yamcs.api.QuietEventProducer;
+import org.yamcs.events.EventProducer;
+import org.yamcs.events.EventProducerFactory;
+import org.yamcs.events.QuietEventProducer;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -66,7 +66,7 @@ public class ProcessorData {
     String yamcsInstance;
 
     private ProcessorConfig processorConfig;
-    
+
     public ProcessorData(Processor proc, ProcessorConfig config) {
         this(proc.getInstance(), proc.getName(), proc.getXtceDb(), config);
 
@@ -89,7 +89,7 @@ public class ProcessorData {
         this.yamcsInstance = instance;
         this.xtcedb = xtcedb;
         this.processorConfig = config;
-        
+
         if ((instance != null) && config.generateEvents()) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
         } else {// instance can be null when running in test or as a library - in this case we don't generate events
@@ -355,7 +355,7 @@ public class ProcessorData {
         EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
         ptype.setContextAlarmList(contextAlarmList);
     }
-    
+
     public String getYamcsInstance() {
         return yamcsInstance;
     }

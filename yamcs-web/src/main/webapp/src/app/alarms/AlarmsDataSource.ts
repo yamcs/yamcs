@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/table';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Alarm, AlarmSeverity } from '../client';
+import { Alarm, AlarmSeverity, AlarmSubscription } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
 export class AlarmsDataSource extends DataSource<Alarm> {
@@ -15,9 +15,9 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loading$ = new BehaviorSubject<boolean>(false);
 
-  alarmSubscription: Subscription;
+  private alarmSubscription: AlarmSubscription;
 
-  private alarmsByName: { [key: string]: Alarm } = {};
+  private alarmsByName: { [key: string]: Alarm; } = {};
 
   private filter: string | null = null;
 
@@ -48,9 +48,9 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     this.filter = filter || null;
   }
 
-  loadAlarms(processorName: string) {
+  loadAlarms() {
     this.loading$.next(true);
-    this.yamcs.getInstanceClient()!.getActiveAlarms(processorName)
+    this.yamcs.yamcsClient.getActiveAlarms(this.yamcs.instance!, this.yamcs.processor!)
       .then(alarms => {
         this.loading$.next(false);
         for (const alarm of alarms) {
@@ -59,11 +59,12 @@ export class AlarmsDataSource extends DataSource<Alarm> {
         this.updateSubject();
       });
 
-    this.yamcs.getInstanceClient()!.getAlarmUpdates().then(response => {
-      this.alarmSubscription = response.alarm$.subscribe(alarm => {
-        this.processAlarm(alarm);
-        this.updateSubject();
-      });
+    this.alarmSubscription = this.yamcs.yamcsClient.createAlarmSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
+    }, alarm => {
+      this.processAlarm(alarm);
+      this.updateSubject();
     });
   }
 
@@ -114,7 +115,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     this.filteredAlarms$.complete();
     this.loading$.complete();
     if (this.alarmSubscription) {
-      this.alarmSubscription.unsubscribe();
+      this.alarmSubscription.cancel();
     }
   }
 

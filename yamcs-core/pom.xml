@@ -35,12 +35,20 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java-util</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.javacsv</groupId>
+      <artifactId>javacsv</artifactId>
     </dependency>
     <dependency>
       <groupId>net.sourceforge.jexcelapi</groupId>

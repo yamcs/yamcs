@@ -68,39 +68,21 @@ export class ServicesPage {
   startService(name: string) {
     if (confirm(`Are you sure you want to start ${name} ?`)) {
       const instance = this.filterForm.get('instance')!.value;
-      let promise;
-      if (instance === '_global') {
-        promise = this.yamcs.yamcsClient.startService(name);
-      } else {
-        promise = this.yamcs.yamcsClient.createInstanceClient(instance).startService(name);
-      }
-      promise.then(() => this.refresh());
+      this.yamcs.yamcsClient.startService(instance, name).then(() => this.refresh());
     }
   }
 
   stopService(name: string) {
     if (confirm(`Are you sure you want to stop ${name} ?`)) {
       const instance = this.filterForm.get('instance')!.value;
-      let promise;
-      if (instance === '_global') {
-        promise = this.yamcs.yamcsClient.stopService(name);
-      } else {
-        promise = this.yamcs.yamcsClient.createInstanceClient(instance).stopService(name);
-      }
-      promise.then(() => this.refresh());
+      this.yamcs.yamcsClient.stopService(instance, name).then(() => this.refresh());
     }
   }
 
   refresh() {
     this.updateURL();
     const instance = this.filterForm.get('instance')!.value;
-    let promise;
-    if (instance === '_global') {
-      promise = this.yamcs.yamcsClient.getServices();
-    } else {
-      promise = this.yamcs.yamcsClient.createInstanceClient(instance).getServices();
-    }
-    promise.then(services => {
+    this.yamcs.yamcsClient.getServices(instance).then(services => {
       this.dataSource.data = services;
     });
   }

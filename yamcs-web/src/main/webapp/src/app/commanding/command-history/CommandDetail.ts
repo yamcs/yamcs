@@ -1,6 +1,4 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Instance } from '../../client';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 @Component({
@@ -16,10 +14,4 @@ export class CommandDetail {
 
   @Input()
   showIcons = true;
-
-  instance: Instance;
-
-  constructor(yamcs: YamcsService) {
-    this.instance = yamcs.getInstance();
-  }
 }

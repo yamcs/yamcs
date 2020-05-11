@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 
-import org.yamcs.api.MediaType;
 import org.yamcs.security.User;
 
 import com.google.protobuf.Descriptors.MethodDescriptor;

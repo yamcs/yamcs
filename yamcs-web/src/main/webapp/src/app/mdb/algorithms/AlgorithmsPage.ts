@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetAlgorithmsOptions, Instance } from '../../client';
+import { GetAlgorithmsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { AlgorithmsDataSource } from './AlgorithmsDataSource';
@@ -14,7 +14,6 @@ import { AlgorithmsDataSource } from './AlgorithmsDataSource';
 })
 export class AlgorithmsPage implements AfterViewInit {
 
-  instance: Instance;
   shortName = false;
   pageSize = 100;
 
@@ -36,13 +35,12 @@ export class AlgorithmsPage implements AfterViewInit {
   ];
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Algorithms');
-    this.instance = yamcs.getInstance();
     this.dataSource = new AlgorithmsDataSource(yamcs);
   }
 

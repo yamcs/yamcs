@@ -21,9 +21,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class CommandSelector implements ControlValueAccessor, OnChanges {
 
   @Input()
-  instance: string;
-
-  @Input()
   path: string;
 
   displayedColumns = ['name', 'description', 'significance'];
@@ -35,7 +32,7 @@ export class CommandSelector implements ControlValueAccessor, OnChanges {
   private onChange = (_: Command | null) => { };
   private onTouched = () => { };
 
-  constructor(private yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+  constructor(readonly yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
     this.selectedCommand$.subscribe(item => {
       if (item && item.command) {
         return this.onChange(item.command);
@@ -46,7 +43,7 @@ export class CommandSelector implements ControlValueAccessor, OnChanges {
   }
 
   ngOnChanges() {
-    if (this.instance) {
+    if (this.yamcs.instance) {
       this.loadCurrentSystem('/');
     }
   }
@@ -59,8 +56,7 @@ export class CommandSelector implements ControlValueAccessor, OnChanges {
       options.system = system;
     }
 
-    const client = this.yamcs.yamcsClient.createInstanceClient(this.instance);
-    client.getCommands(options).then(page => {
+    this.yamcs.yamcsClient.getCommands(this.yamcs.instance!, options).then(page => {
       this.changeSystem(page);
       this.currentSystem$.next(system);
     });

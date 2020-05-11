@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.YConfiguration.ConfigurationNotFoundException;
-import org.yamcs.api.YConfigurationResolver;
 
 /**
  * A file-based configuration resolver.

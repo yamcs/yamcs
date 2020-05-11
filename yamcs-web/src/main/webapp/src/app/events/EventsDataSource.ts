@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Event, GetEventsOptions } from '../client';
+import { Event, EventSubscription, GetEventsOptions } from '../client';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { EventBuffer } from './EventBuffer';
@@ -22,7 +22,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   public loading$ = new BehaviorSubject<boolean>(false);
   public streaming$ = new BehaviorSubject<boolean>(false);
 
-  private realtimeSubscription: Subscription;
+  private realtimeSubscription: EventSubscription;
   private syncSubscription: Subscription;
 
   constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
@@ -73,7 +73,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
    */
   private loadPage(options: GetEventsOptions) {
     this.options = options;
-    return this.yamcs.getInstanceClient()!.getEvents(options).then(events => {
+    return this.yamcs.yamcsClient.getEvents(this.yamcs.instance!, options).then(events => {
       if (events.length > this.pageSize) {
         events.splice(events.length - 1, 1);
         this.offscreenRecord = events[events.length - 1];
@@ -104,14 +104,14 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   }
 
   startStreaming() {
-    this.yamcs.getInstanceClient()!.getEventUpdates().then(response => {
-      this.streaming$.next(true);
-      this.realtimeSubscription = response.event$.subscribe(event => {
-        if (!this.loading$.getValue() && this.matchesFilter(event)) {
-          (event as AnimatableEvent).animate = true;
-          this.eventBuffer.addRealtimeEvent(event);
-        }
-      });
+    this.streaming$.next(true);
+    this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
+      instance: this.yamcs.instance!,
+    }, event => {
+      if (!this.loading$.getValue() && this.matchesFilter(event)) {
+        (event as AnimatableEvent).animate = true;
+        this.eventBuffer.addRealtimeEvent(event);
+      }
     });
   }
 
@@ -163,13 +163,9 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
 
   stopStreaming() {
     if (this.realtimeSubscription) {
-      this.realtimeSubscription.unsubscribe();
+      this.realtimeSubscription.cancel();
     }
     this.streaming$.next(false);
-    const instanceClient = this.yamcs.getInstanceClient();
-    if (instanceClient) {
-      instanceClient.unsubscribeEventUpdates();
-    }
   }
 
   disconnect() {

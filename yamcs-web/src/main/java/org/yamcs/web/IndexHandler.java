@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.MediaType;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
@@ -79,7 +78,7 @@ public class IndexHandler extends Handler {
         body.writeCharSequence(html, StandardCharsets.UTF_8);
 
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, MediaType.HTML);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
         response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
 
         // Recommend clients to not cache this file. We hash all of our

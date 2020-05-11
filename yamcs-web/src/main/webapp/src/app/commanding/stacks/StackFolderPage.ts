@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Instance, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
+import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
@@ -24,8 +24,6 @@ export class StackFolderPage implements OnDestroy {
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
-  instance: Instance;
-
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
 
@@ -38,14 +36,13 @@ export class StackFolderPage implements OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
   ) {
     title.setTitle('Stacks');
-    this.instance = yamcs.getInstance();
     this.storageClient = yamcs.createStorageClient();
 
     this.loadCurrentFolder();
@@ -119,7 +116,7 @@ export class StackFolderPage implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.router.navigateByUrl(`/commanding/stacks/files/${result}?instance=${this.instance.name}`);
+        this.router.navigateByUrl(`/commanding/stacks/files/${result}?c=${this.yamcs.context}`);
       }
     });
   }

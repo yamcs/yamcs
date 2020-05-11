@@ -41,7 +41,7 @@ export class ParameterAlarmsTab {
 
   dataSource: ParameterAlarmsDataSource;
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterAlarmsDataSource(yamcs, this.qualifiedName);
 

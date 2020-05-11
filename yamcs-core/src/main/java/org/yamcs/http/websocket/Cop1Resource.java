@@ -29,14 +29,13 @@ public class Cop1Resource implements WebSocketResource {
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     private ConnectedWebSocketClient client;
-    private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
+    private static final Logger log = LoggerFactory.getLogger(Cop1Resource.class);
 
     private Map<String, MyCop1Monitor> subscribed = new HashMap<>();
     private ScheduledFuture<?> future = null;
 
     public Cop1Resource(ConnectedWebSocketClient client) {
         this.client = client;
-
     }
 
     @Override
@@ -169,7 +168,7 @@ public class Cop1Resource implements WebSocketResource {
             throws WebSocketException {
         if (ctx.getData() == null) {
             throw new WebSocketException(ctx.getRequestId(),
-                    "Request must containa a body specifying the instance and linkName");
+                    "Request must contain a body specifying the instance and linkName");
         }
 
         Cop1SubscriptionRequest req = decoder.decodeMessageData(ctx, Cop1SubscriptionRequest.newBuilder()).build();

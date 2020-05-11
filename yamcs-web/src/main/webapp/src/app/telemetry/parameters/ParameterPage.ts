@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, Parameter, ParameterValue, Value } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { Parameter, ParameterSubscription, ParameterValue, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -20,17 +20,16 @@ import { SetParameterDialog } from './SetParameterDialog';
 })
 export class ParameterPage implements OnDestroy {
 
-  instance: Instance;
   config: WebsiteConfig;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
-  parameterValueSubscription: Subscription;
+  parameterValueSubscription: ParameterSubscription;
 
   constructor(
     route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
     private dialog: MatDialog,
@@ -40,7 +39,6 @@ export class ParameterPage implements OnDestroy {
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
-    this.instance = yamcs.getInstance();
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -51,7 +49,7 @@ export class ParameterPage implements OnDestroy {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (qualifiedName !== parameter.qualifiedName) {
@@ -64,21 +62,20 @@ export class ParameterPage implements OnDestroy {
     });
 
     if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.unsubscribe();
+      this.parameterValueSubscription.cancel();
     }
 
-    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+    this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,
-      subscriptionId: -1,
       updateOnExpiration: true,
-      useNumericIds: true,
-    }).then(res => {
-      this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
-        this.parameterValue$.next(pvals[0]);
-        this.updateTitle();
-      });
+      action: 'REPLACE',
+    }, data => {
+      this.parameterValue$.next(data.values[0]);
+      this.updateTitle();
     });
   }
 
@@ -135,8 +132,8 @@ export class ParameterPage implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe((value: Value) => {
       if (value) {
-        this.yamcs.getInstanceClient()!
-          .setParameterValue('realtime', parameter.qualifiedName, value)
+        this.yamcs.yamcsClient
+          .setParameterValue(this.yamcs.instance!, this.yamcs.processor!, parameter.qualifiedName, value)
           .catch(err => this.messageService.showError(err));
       }
     });
@@ -144,7 +141,7 @@ export class ParameterPage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.unsubscribe();
+      this.parameterValueSubscription.cancel();
     }
   }
 }

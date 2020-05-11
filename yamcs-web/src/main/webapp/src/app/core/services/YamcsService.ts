@@ -1,11 +1,11 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '../../client';
+import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
 
 /**
  * Singleton service for facilitating working with a websocket connection
- * to a specific instance.
  */
 @Injectable({
   providedIn: 'root',
@@ -13,55 +13,61 @@ import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, Tim
 export class YamcsService {
 
   readonly yamcsClient: YamcsClient;
-  private selectedInstance: InstanceClient | null;
 
   readonly connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
-  private connectionInfoSubscription: Subscription;
 
-  private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
-  private timeInfoSubscription: Subscription;
+  readonly time$ = new BehaviorSubject<string | null>(null);
+  private timeSubscription: TimeSubscription;
 
-  constructor(@Inject(APP_BASE_HREF) baseHref: string) {
+  constructor(@Inject(APP_BASE_HREF) baseHref: string, private router: Router) {
     this.yamcsClient = new YamcsClient(baseHref);
+    this.yamcsClient.prepareWebSocketClient();
   }
 
-  /**
-   * Prepares a (new) instance.
-   */
-  selectInstance(instanceId: string) {
-    this.yamcsClient.closeConnection();
-    return new Promise<Instance>((resolve, reject) => {
+  setContext(instanceId: string, processorId?: string) {
+    if (processorId) {
+      return this.setProcessorContext(instanceId, processorId);
+    } else {
+      return this.setInstanceContext(instanceId);
+    }
+  }
+
+  async switchContext(instance: string, processor?: string) {
+    let newContext = instance;
+    if (processor) {
+      newContext += '__' + processor;
+    } else {
+      // Try to find a 'default' processor for this instance (conventionally the first defined processor).
+      const instanceDetail = await this.yamcsClient.getInstance(instance);
+      if (instanceDetail.processors && instanceDetail.processors.length) {
+        newContext += '__' + instanceDetail.processors[0].name;
+      }
+    }
+
+    this.router.navigate(['/context-switch', newContext, this.router.url], {
+      skipLocationChange: true,
+    });
+  }
+
+  private setInstanceContext(instanceId: string) {
+    return new Promise<void>((resolve, reject) => {
       const currentConnectionInfo = this.connectionInfo$.value;
       if (currentConnectionInfo) {
-        if (currentConnectionInfo.instance.name === instanceId) {
-          resolve(currentConnectionInfo.instance);
+        if (currentConnectionInfo.instance === instanceId) {
+          resolve();
           return;
         }
       }
-      this.unselectInstance();
+      this.clearContext();
       this.yamcsClient.getInstance(instanceId).then(instance => {
-        this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
+        this.connectionInfo$.next({ instance: instance.name });
 
-        Promise.all([
-          this.selectedInstance.getConnectionInfoUpdates(),
-          this.selectedInstance.getTimeUpdates(),
-        ]).then(responses => {
-          // Listen to server-controlled connection state (e.g. active instance, processor, clientId)
-          const connectionInfoResponse = responses[0];
-          this.connectionInfo$.next(connectionInfoResponse.connectionInfo);
-          this.connectionInfoSubscription = connectionInfoResponse.connectionInfo$.subscribe(connectionInfo => {
-            this.connectionInfo$.next(connectionInfo);
-          });
-
-          // Listen to time updates, so that we can easily provide actual mission time to components
-          const timeResponse = responses[1];
-          this.timeInfo$.next(timeResponse.timeInfo);
-          this.timeInfoSubscription = timeResponse.timeInfo$.subscribe(timeInfo => {
-            this.timeInfo$.next(timeInfo);
-          });
-          resolve(instance);
-        }).catch(err => {
-          reject(err);
+        // Listen to time updates, so that we can easily provide actual mission time to components
+        this.timeSubscription = this.yamcsClient.createTimeSubscription({
+          instance: instance.name,
+        }, time => {
+          this.time$.next(time.value);
+          resolve();
         });
       }).catch(err => {
         reject(err);
@@ -69,48 +75,72 @@ export class YamcsService {
     });
   }
 
-  unselectInstance() {
-    this.connectionInfo$.next(null);
-    this.timeInfo$.next(null);
-    if (this.connectionInfoSubscription) {
-      this.connectionInfoSubscription.unsubscribe();
-    }
-    if (this.timeInfoSubscription) {
-      this.timeInfoSubscription.unsubscribe();
-    }
-    if (this.selectedInstance) {
-      this.selectedInstance.closeConnection();
-      this.selectedInstance = null;
+  private setProcessorContext(instanceId: string, processorId: string) {
+    return new Promise<void>((resolve, reject) => {
+      const currentConnectionInfo = this.connectionInfo$.value;
+      if (currentConnectionInfo) {
+        if (currentConnectionInfo.instance === instanceId && currentConnectionInfo.processor?.name === processorId) {
+          resolve();
+          return;
+        }
+      }
+      this.clearContext();
+      this.yamcsClient.getProcessor(instanceId, processorId).then(processor => {
+        this.connectionInfo$.next({ processor, instance: processor.instance });
+
+        // Listen to time updates, so that we can easily provide actual mission time to components
+        this.timeSubscription = this.yamcsClient.createTimeSubscription({
+          instance: instanceId,
+          processor: processorId,
+        }, time => {
+          this.time$.next(time.value);
+          resolve();
+        });
+      }).catch(err => {
+        reject(err);
+      });
+    });
+  }
+
+  /**
+  * Returns the currently active context (if any).
+  * This is the combination of an instance with a processor.
+  */
+  get context() {
+    const value = this.connectionInfo$.getValue();
+    if (value) {
+      const processor = value.processor?.name;
+      return processor ? `${value.instance}__${processor}` : value.instance;
     }
   }
 
   /**
    * Returns the currently active instance (if any).
    */
-  getInstance() {
-    return this.connectionInfo$.getValue()!.instance;
+  get instance() {
+    return this.connectionInfo$.getValue()?.instance;
   }
 
   /**
-   * Returns the server-assigned client-id for the currently
-   * active WebSocket connection.
+   * Returns the currently active processor (if any).
    */
-  getClientId() {
-    return this.connectionInfo$.getValue()!.clientId;
+  get processor() {
+    return this.connectionInfo$.getValue()?.processor?.name;
+  }
+
+  clearContext() {
+    this.connectionInfo$.next(null);
+    this.time$.next(null);
+    if (this.timeSubscription) {
+      this.timeSubscription.cancel();
+    }
   }
 
   /**
    * Returns the currently active processor (if any).
    */
   getProcessor(): Processor {
-    return this.connectionInfo$.getValue()!.processor;
-  }
-
-  /**
-   * Returns the InstanceClient for the currently active instance (if any).
-   */
-  getInstanceClient() {
-    return this.selectedInstance;
+    return this.connectionInfo$.getValue()!.processor!;
   }
 
   createStorageClient() {
@@ -121,6 +151,6 @@ export class YamcsService {
    * Returns latest mission time for the currently active instance (if any).
    */
   getMissionTime() {
-    return new Date(Date.parse(this.timeInfo$.getValue()!.currentTime));
+    return new Date(Date.parse(this.time$.getValue()!));
   }
 }
