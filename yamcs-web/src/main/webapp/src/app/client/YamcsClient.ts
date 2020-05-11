@@ -5,7 +5,7 @@ import { HttpInterceptor } from './HttpInterceptor';
 import { Alarm, AlarmSubscription, EditAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CreateTransferRequest, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/cfdp';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
-import { Cop1Config, Cop1Status, Cop1Subscription, SubscribeCop1Request } from './types/cop1';
+import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
 import { AlarmsWrapper, ClientConnectionsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, EditLinkOptions, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
@@ -935,10 +935,21 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Cop1Config;
   }
 
+  async initiateCop1(instance: string, link: string, options: InitiateCop1Request) {
+    const url = `${this.apiUrl}/cop1/${instance}/${link}:initialize`;
+    const body = JSON.stringify(options);
+    return this.doFetch(url, { body, method: 'POST' });
+  }
+
+  async disableCop1(instance: string, link: string, options: DisableCop1Request = {}) {
+    const url = `${this.apiUrl}/cop1/${instance}/${link}:disable`;
+    const body = JSON.stringify(options);
+    return this.doFetch(url, { body, method: 'POST' });
+  }
+
   async resumeCop1(instance: string, link: string) {
     const url = `${this.apiUrl}/cop1/${instance}/${link}:resume`;
-    const response = await this.doFetch(url, { method: 'POST' });
-    return await response.json() as Cop1Config;
+    return await this.doFetch(url, { method: 'POST' });
   }
 
   async doFetch(url: string, init?: RequestInit) {

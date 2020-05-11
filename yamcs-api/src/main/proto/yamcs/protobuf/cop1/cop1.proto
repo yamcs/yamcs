@@ -40,10 +40,10 @@ service Cop1Api {
     };
   }
     
-  rpc SetConfig(SetConfigRequest) returns (google.protobuf.Empty) {
+  rpc UpdateConfig(UpdateConfigRequest) returns (Cop1Config) {
     option (yamcs.api.route) = {
       patch: "/api/cop1/{instance}/{link}/config"
-      body: "*"
+      body: "cop1Config"
     };
   }
   
@@ -89,7 +89,7 @@ message InitializeRequest {
   optional uint32 vR = 5;
 }
 
-message SetConfigRequest {
+message UpdateConfigRequest {
   optional string instance = 1;
   optional string link = 2;
   optional Cop1Config cop1Config = 3;
@@ -115,7 +115,7 @@ message DisableRequest {
   optional string instance = 1;
   optional string link = 2;
   	
-  //if set to true, all transmitted  frames while COP1 is disabled, will have the bypass flag set
+  // If true, all transmitted frames while COP1 is disabled, have the bypass flag set
   optional bool setBypassAll = 3;
 }
 
@@ -174,7 +174,7 @@ message Cop1Status {
 }
 
 enum TimeoutType {
-  UNITIALIZE = 0;
+  UNINITIALIZE = 0;
   SUSPEND = 1;
 }
 
@@ -184,10 +184,10 @@ message Cop1Config {
   //if true, the BD frames are sent immediately, without going to the waiting queue
   optional bool bdAbsolutePriority = 3;
   
-  //maximum size of the sent queue (i.e. how many unackonwledged frames can be in the queue before timing out)
+  //maximum size of the sent queue (i.e. how many unacknowledged frames can be in the queue before timing out)
   optional uint32 windowWidth = 4;
   
-  //what should happen on timeout go to SUSPEND or go to UNITIALIZED
+  //what should happen on timeout: go to SUSPEND or go to UNINITIALIZED
   optional TimeoutType timeoutType = 5;
   
   //how many times the frames are transmitted before timing out

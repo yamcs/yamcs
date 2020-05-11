@@ -135,6 +135,11 @@ public class CallObserver implements Observer<Message> {
     }
 
     static ChannelFuture sendError(RouteContext ctx, HttpException t) {
+        if (t instanceof InternalServerErrorException) {
+            log.error("Internal server error while handling call", t);
+        } else if (log.isDebugEnabled()) {
+            log.debug("User error while handling call", t);
+        }
         ExceptionMessage msg = t.toMessage();
         ctx.reportStatusCode(t.getStatus().code());
         return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, t.getStatus(), msg);

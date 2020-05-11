@@ -10,7 +10,6 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
 import org.yamcs.management.LinkManager.LinkWithInfo;
@@ -22,12 +21,11 @@ import org.yamcs.protobuf.GetConfigRequest;
 import org.yamcs.protobuf.GetStatusRequest;
 import org.yamcs.protobuf.InitializeRequest;
 import org.yamcs.protobuf.ResumeRequest;
-import org.yamcs.protobuf.SetConfigRequest;
 import org.yamcs.protobuf.SubscribeStatusRequest;
+import org.yamcs.protobuf.UpdateConfigRequest;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ccsds.Cop1Monitor;
 import org.yamcs.tctm.ccsds.Cop1TcPacketHandler;
-import org.yamcs.utils.ExceptionUtil;
 
 import com.google.protobuf.Empty;
 
@@ -68,13 +66,26 @@ public class Cop1Api extends AbstractCop1Api<Context> {
         default:
             throw new IllegalStateException("Unknown request type " + request.getType());
         }
-        sendEmptyResponse(observer, cf);
+
+        cf.whenComplete((v, error) -> {
+            if (error == null) {
+                observer.complete(Empty.getDefaultInstance());
+            } else {
+                observer.completeExceptionally(error);
+            }
+        });
     }
 
     @Override
     public void resume(Context ctx, ResumeRequest request, Observer<Empty> observer) {
         Cop1TcPacketHandler cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
-        sendEmptyResponse(observer, cop1Link.resume());
+        cop1Link.resume().whenComplete((v, error) -> {
+            if (error == null) {
+                observer.complete(Empty.getDefaultInstance());
+            } else {
+                observer.completeExceptionally(error);
+            }
+        });
     }
 
     @Override
@@ -86,12 +97,21 @@ public class Cop1Api extends AbstractCop1Api<Context> {
     }
 
     @Override
-    public void setConfig(Context ctx, SetConfigRequest request, Observer<Empty> observer) {
-        Cop1TcPacketHandler cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
-        if (!request.hasCop1Config()) {
-            throw new BadRequestException("Cop1Config not specified");
-        }
-        sendEmptyResponse(observer, cop1Link.setConfig(request.getCop1Config()));
+    public void updateConfig(Context ctx, UpdateConfigRequest request, Observer<Cop1Config> observer) {
+        Cop1TcPacketHandler link = verifyCop1Link(request.getInstance(), request.getLink());
+        link.setConfig(request.getCop1Config()).whenComplete((v, err) -> {
+            if (err == null) {
+                link.getCop1Config().whenComplete((config, err2) -> {
+                    if (err2 == null) {
+                        observer.complete(config);
+                    } else {
+                        observer.completeExceptionally(err);
+                    }
+                });
+            } else {
+                observer.completeExceptionally(err);
+            }
+        });
     }
 
     @Override
@@ -102,8 +122,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
             if (error == null) {
                 observer.complete(v);
             } else {
-                Throwable t = ExceptionUtil.unwind(error);
-                observer.completeExceptionally(new InternalServerErrorException(t));
+                observer.completeExceptionally(error);
             }
         });
     }
@@ -116,8 +135,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
             if (error == null) {
                 observer.complete(v);
             } else {
-                Throwable t = ExceptionUtil.unwind(error);
-                observer.completeExceptionally(new InternalServerErrorException(t));
+                observer.completeExceptionally(error);
             }
         });
     }
@@ -153,17 +171,6 @@ public class Cop1Api extends AbstractCop1Api<Context> {
         throw new BadRequestException(String.format(
                 "Link '%s' for instance '%s' does not support COP1",
                 linkName, instance));
-    }
-
-    private void sendEmptyResponse(Observer<Empty> observer, CompletableFuture<Void> cf) {
-        cf.whenComplete((v, error) -> {
-            if (error == null) {
-                observer.complete(Empty.getDefaultInstance());
-            } else {
-                Throwable t = ExceptionUtil.unwind(error);
-                observer.completeExceptionally(new InternalServerErrorException(t));
-            }
-        });
     }
 
     private static class MyCop1Monitor implements Cop1Monitor {

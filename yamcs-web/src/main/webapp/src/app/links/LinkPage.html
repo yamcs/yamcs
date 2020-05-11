@@ -48,20 +48,60 @@
           <mat-divider></mat-divider>
         </div>
         <h4>
-          COP1
+          COP-1
           <div style="float: right" *ngIf="mayControlLinks()">
-            <app-text-action icon="redo" (click)="resumeCop1(link.name)" [disabled]="status.state !== 'SUSPENDED'">
-              RESUME
+            <app-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)" *ngIf="!status.cop1Active">
+              INITIATE AD
+            </app-text-action>
+            <app-text-action icon="redo" (click)="resumeCop1(link.name)" *ngIf="status.state === 'SUSPENDED'">
+              RESUME AD
+            </app-text-action>
+            <app-text-action icon="not_interested" (click)="disableCop1(link.name)" *ngIf="status.cop1Active">
+              TERMINATE AD
             </app-text-action>
           </div>
         </h4>
         <dl class="dl-horizontal">
-          <dt>TX state</dt>
-          <dd>{{ status.state }}</dd>
-          <dt>V(S)</dt>
-          <dd>{{ status.vS | nvl: '-' }}</dd>
+          <dt>
+            Service
+            <app-help>
+              <p>
+                COP-1 provides two service modes that determine how reliably frames are transmitted:
+              </p>
+              <table class="ya-data-table">
+                <tr>
+                  <td width="1" style="white-space: nowrap;">
+                    AD (Sequence-controlled)
+                  </td>
+                  <td>Sends Type-AD and Type-BC Transfer Frames.</td>
+                </tr>
+                <tr>
+                  <td width="1" style="white-space: nowrap;">
+                    BD (Expedited)
+                  </td>
+                  <td>Sends Type-BD Transfer Frames. There are no retransmissions.</td>
+                </tr>
+              </table>
+            </app-help>
+          </dt>
+          <dd>
+            <ng-container *ngIf="status.cop1Active">AD (Sequence-controlled service)</ng-container>
+            <ng-container *ngIf="!status.cop1Active">BD (Expedited service)</ng-container>
+          </dd>
+        </dl>
+        <dl class="dl-horizontal">
           <dt>Wait queue</dt>
           <dd>{{ status.waitQueueNumTC || 0 }} TCs</dd>
+          <dt>Enqueue TCs with bypass</dt>
+          <dd>
+            {{ !config.bdAbsolutePriority | nvl:'-' }}
+          </dd>
+        </dl>
+        <dl class="dl-horizontal">
+          <dt>TX state</dt>
+          <dd>{{ status.state || '-' }}</dd>
+          <dt>V(S)</dt>
+          <dd>{{ status.vS | nvl: '-' }}</dd>
           <dt>Sent queue</dt>
           <dd>{{ status.sentQueueNumTC || 0 }} frames (limit: {{ config.windowWidth }})</dd>
           <dt>Out queue</dt>
@@ -73,10 +113,6 @@
           </dd>
         </dl>
         <dl class="dl-horizontal">
-          <dt>BD frames skip wait queue</dt>
-          <dd>
-            {{ config.bdAbsolutePriority || '-' }}
-          </dd>
           <dt>On TX timeout</dt>
           <dd>{{ config.timeoutType || '-' }}</dd>
           <dt>Retransmission delay</dt>

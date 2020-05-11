@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Cop1Config, Cop1Status, Cop1Subscription, Link, LinkSubscription } from '../client';
+import { Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
+import { InitiateCop1Dialog } from './InitiateCop1Dialog';
 
 @Component({
   templateUrl: './LinkPage.html',
@@ -26,6 +28,7 @@ export class LinkPage implements OnDestroy {
     readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
+    private dialog: MatDialog,
   ) {
     route.paramMap.subscribe(params => {
       const linkName = params.get('link')!;
@@ -68,9 +71,29 @@ export class LinkPage implements OnDestroy {
     });
   }
 
+  openInitiateCop1Dialog(link: string) {
+    const dialogRef = this.dialog.open(InitiateCop1Dialog, { width: '400px' });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.initiateCop1(link, result);
+      }
+    });
+  }
+
+  private initiateCop1(link: string, options: InitiateCop1Request) {
+    this.yamcs.yamcsClient.initiateCop1(this.yamcs.instance!, link, options).catch(err => {
+      this.messageService.showError(err);
+    });
+  }
+
+  disableCop1(link: string) {
+    this.yamcs.yamcsClient.disableCop1(this.yamcs.instance!, link).catch(err => {
+      this.messageService.showError(err);
+    });
+  }
+
   resumeCop1(link: string) {
     this.yamcs.yamcsClient.resumeCop1(this.yamcs.instance!, link).catch(err => {
-      console.log('oopsie', err);
       this.messageService.showError(err);
     });
   }

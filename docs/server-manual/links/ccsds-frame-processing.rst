@@ -3,14 +3,14 @@ CCSDS Frame Processing
 
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
- * TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
- * AOS AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
- * TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
- * Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
- * TC Synchronization and Channel Coding `CCSDS 231.0-B-3 <https://public.ccsds.org/Pubs/231x0b3.pdf>`_
- * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
- * Space Packet Protocol `CCSDS 133.0-B-1 <https://public.ccsds.org/Pubs/133x0b1c2.pdf>`_
- * Encapsulation Service `CCSDS 133.1-B-2 <https://public.ccsds.org/Pubs/133x1b2c2.pdf>`_
+* TM Space Data Link Protocol `CCSDS 132.0-B-2 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
+* AOS AOS Space Data Link Protocol `CCSDS 732.0-B-3 <https://public.ccsds.org/Pubs/132x0b2.pdf>`_
+* TC Space Data Link Protocol `CCSDS 232.0-B-3 <https://public.ccsds.org/Pubs/232x0b3.pdf>`_
+* Unified Space Data Link Protocol `CCSDS 732.1-B-1  <https://public.ccsds.org/Pubs/732x1b1.pdf>`_
+* TC Synchronization and Channel Coding `CCSDS 231.0-B-3 <https://public.ccsds.org/Pubs/231x0b3.pdf>`_
+* Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
+* Space Packet Protocol `CCSDS 133.0-B-1 <https://public.ccsds.org/Pubs/133x0b1c2.pdf>`_
+* Encapsulation Service `CCSDS 133.1-B-2 <https://public.ccsds.org/Pubs/133x1b2c2.pdf>`_
 
 These specifications are dealing with multiplexing and to a certain extent encoding data for transmission on a space link.
 
@@ -21,9 +21,10 @@ Telemetry Frame Processing
 --------------------------
 
 The CCSDS specifies how to transport data into three types of frames:
- * AOS
- * TM
- * USLP
+
+* AOS
+* TM
+* USLP
 
 In Yamcs we support to a certain extent all three of them. The main support is around the "packet service" - that is describing how the telemetry packets are extracted from the frames. The implementation is however generic enough (hopefully) such that it is possible to add additional functionality for processing non-packet data (e.g. sending video to external application).
 
@@ -38,40 +39,40 @@ An example of a UDP TM frame link specification is below:
 .. code-block:: yaml
 
     - name: UDP_FRAME_IN
-        class: org.yamcs.tctm.ccsds.UdpTmFrameLink
-        args:
-            port: 10017
-            frameType: "AOS"
-            spacecraftId: 0xAB
-            frameLength: 512
-            frameHeaderErrorControlPresent: true
-            insertZoneLength: 0
-            errorDetection: CRC16
-            clcwStream: clcw
-            virtualChannels:
-                - vcId: 0
-                  ocfPresent: true
-                  service: "PACKET"
-                  maxPacketLength: 2048
-                  packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
-                  packetPreprocessorArgs:
-                       ....
-                  stream: "tm_realtime"
-                - vcId: 1
-                  ocfPresent: true
-                  service: "PACKET"
-                  maxPacketLength: 2048
-                  stripEncapsulationHeader: true
-                  packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-                  packetPreprocessorArgs:
-                       ....        
-                  stream: "tm2_realtime"
-                - vcId: 2
-                  ocfPresent: true
-                  service: "PACKET" 
-                  maxPacketLength: 2048
-                  packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
-                  stream: "tm_dump"
+      class: org.yamcs.tctm.ccsds.UdpTmFrameLink
+      args:
+        port: 10017
+        frameType: "AOS"
+        spacecraftId: 0xAB
+        frameLength: 512
+        frameHeaderErrorControlPresent: true
+        insertZoneLength: 0
+        errorDetection: CRC16
+        clcwStream: clcw
+        virtualChannels:
+          - vcId: 0
+            ocfPresent: true
+            service: "PACKET"
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            packetPreprocessorArgs:
+              [...]
+            stream: "tm_realtime"
+          - vcId: 1
+            ocfPresent: true
+            service: "PACKET"
+            maxPacketLength: 2048
+            stripEncapsulationHeader: true
+            packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+            packetPreprocessorArgs:
+              [...]
+            stream: "tm2_realtime"
+          - vcId: 2
+            ocfPresent: true
+            service: "PACKET" 
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            stream: "tm_dump"
 
 The following general options are supported:
 
@@ -142,31 +143,31 @@ An example of a UDP TC frame link specification is below:
 .. code-block:: yaml
 
     - name: UDP_FRAME_OUT
-        class: org.yamcs.tctm.ccsds.UdpTcFrameLink
-        args:
-            host: localhost
-            port: 10018
-            spacecraftId: 0xAB
-            maxFrameLength: 1024
-            cltuEncoding: BCH
-            priorityScheme: FIFO
-            randomizeCltu: false
-            virtualChannels:
-                - vcId: 0
-                  service: "PACKET" 
-                  priority: 1
-                  commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
-                  commandPostprocessorArgs:
-                        ...
-                  stream: "tc_sim" 
-                  useCop1: true 
-                  clcwStream: "clcw" 
-                  initialClcwWait: 3600
-                  cop1T1: 3
-                  cop1TxLimit: 3
-                  bdAbsolutePriority: false
-           
-           
+      class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+      args:
+        host: localhost
+        port: 10018
+        spacecraftId: 0xAB
+        maxFrameLength: 1024
+        cltuEncoding: BCH
+        priorityScheme: FIFO
+        randomizeCltu: false
+        virtualChannels:
+          - vcId: 0
+            service: "PACKET" 
+            priority: 1
+            commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+            commandPostprocessorArgs:
+              [...]
+            stream: "tc_sim"
+            useCop1: true
+            clcwStream: "clcw"
+            initialClcwWait: 3600
+            cop1T1: 3
+            cop1TxLimit: 3
+            bdAbsolutePriority: false
+
+
 The following general options are supported:
 
 spacecraftId (integer)
@@ -208,25 +209,25 @@ stream (string)
      **Required.** The stream on which the commands are received.
      
 multiplePacketsPerFrame (boolean)
-    If set to true (default), Yamcs will send multiple command packets in one frame if possible (i.e. if the accumulated size fits within the maximum frame size and the commands are available when a frame has to be sent).
+    If set to true (default), Yamcs sends multiple command packets in one frame if possible (i.e. if the accumulated size fits within the maximum frame size and the commands are available when a frame has to be sent).
 
 useCop1 (boolean)
-    If set to true, the COP1 protocol will be used for acknowledgemnts of the TC frames.
+    If set to true, the COP-1 protocol is used for acknowledgment of TC frames.
 
 clcwStream (string)
-    If COP1 is enabled, this parameter configures the stream where the Command Link Control Words (CLCW) is read from.
+    If COP-1 is enabled, this parameter configures the stream where the Command Link Control Words (CLCW) is read from.
 
 initialClcwWait (integer)
-    If COP1 is enabled, this specifies how many seconds to wait for the first CLCW.
+    If COP-1 is enabled, this specifies how many seconds to wait for the first CLCW.
 
 cop1T1 (integer)
-    If COP1 is enabled, this specifies the value in seconds for the timeout associated to command acknowledgemnts. If the command frame is not acknowledged within that time, it will be retransmitted. The default value is 3 seconds.
+    If COP-1 is enabled, this specifies the value in seconds for the timeout associated to command acknowledgments. If the command frame is not acknowledged within that time, it will be retransmitted. The default value is 3 seconds.
 
 cop1TxLimit (integer)
-    If COP1 is enabled, this specifies the number of retransmissions for each un-acknolwedged frame before suspending operations.
+    If COP-1 is enabled, this specifies the number of retransmissions for each un-acknolwedged frame before suspending operations.
            
 bdAbsolutePriority (false)
-    If COP1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP1 state is active, if the COP1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
+    If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchnoziation has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
            
 Priority Schemes
@@ -243,15 +244,16 @@ The multiplexing of command frames from the different Virtual Channels is done a
 For example if there are two VCs VC1 with priority 2 and VC2 with priority 4, the polling vector will look like: [VC1, VC1, VC2, VC2, VC2, VC2]. This means that if both VCs have a high number of frames to be sent, the multiplexer will send 2 frames from VC1 followed by 4 from VC2 and then again. If however VC2 has only one frame to be sent, it will lose its other three slots for that cycle and the multiplexer will go back to sending two frames from VC1.
 
 
-COP1 Support
-************
+COP-1 Support
+*************
 
 
-COP1 is the protocol specified in  `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_ for ensuring complete and correct transmission of TC frames. The protocol is using a sliding window principle based on the frame counter assigned by Yamcs to each uplinked frame.
+COP-1 is the protocol specified in  `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_ for ensuring complete and correct transmission of TC frames. The protocol is using a sliding window principle based on the frame counter assigned by Yamcs to each uplinked frame.
 
-The mechanism through which the on-board system reports the reception of commands is called Command Link Control Word (CLCW). This is a 4 byte word which is sent regularely by the on-board system to ground and contains the value of the latest received command counter and a few status bits. In Yamcs, we expect the CLCW to be made available on a stream (configured with the ``clcwStream`` parameter). The TM frame decoding can place the content of the OCF onto this stream. If the CLCW is sent as part of a regular TM packet, a StreamSQL statement like the following can be used:
+The mechanism through which the on-board system reports the reception of commands is called Command Link Control Word (CLCW). This is a 4 byte word which is sent regularly by the on-board system to ground and contains the value of the latest received command counter and a few status bits. In Yamcs, we expect the CLCW to be made available on a stream (configured with the ``clcwStream`` parameter). The TM frame decoding can place the content of the OCF onto this stream. If the CLCW is sent as part of a regular TM packet, a StreamSQL statement like the following can be used:
 
-.. code-block::sql
+.. code-block:: sql
+
    create stream clcw (clcw int)
    insert into clcw select extract_int(packet, 12) as clcw from tm_realtime where extract_short(packet, 0) = 2080
 
@@ -259,24 +261,22 @@ The first statement creates the stream, and the second inserts 4 bytes extracted
 
 If the ``initialClcwWait`` parameter is positive, at the link startup, Yamcs waits for that number of seconds for a CLCW to be received; once it is received, Yamcs will set the value of the ground counter (called ``vS`` in the spec) to the on-board counter value (called ``nR`` in the spec) received in the CLCW. That will ensure that the next command frame sent by Yamcs will contain the counter value expected by the on-board system.
 
-If the ``initialClcwWait`` parameter is not positive (the value will be ignored) or if no CLCW has been received within the specified time, the synchnoziation has to be initiated manually via the user interface. This can be done either waiting again for a new CLCW, setting manually a value for ``vS`` (this requires the operator to know somehow what value the on-board system is expecting) or sending a command to the on-board system to force the on-board counter to the same value like the ground.
+If the ``initialClcwWait`` parameter is not positive (the value will be ignored) or if no CLCW has been received within the specified time, the synchronization has to be initiated manually via the user interface. This can be done either waiting again for a new CLCW, setting manually a value for ``vS`` (this requires the operator to know somehow what value the on-board system is expecting) or sending a command to the on-board system to force the on-board counter to the same value like the ground.
 
 If the ground and on-board systems are not synchronized and a command is received, there are two possible outcomes:
 
-   * if the initialization process has been started (manually or at the link startup with the ``initialClcwWait`` parameter), the command will be put in a wait queue to be sent once the Synchronization took place.
-   * if the initialization process has not been started or has failed, the command will be rejected straing away with the NACK on the Sent acknowledgemnt.
- 
-**AD, BD and BC frames**
+* if the initialization process has been started (manually or at the link startup with the ``initialClcwWait`` parameter), the command will be put in a wait queue to be sent once the Synchronization took place.
+* if the initialization process has not been started or has failed, the command will be rejected straight away with the NACK on the Sent acknowledgment.
+
+
+.. rubric:: AD, BD and BC frames
 
 The CCSDS Standard distinguishes between three types of TC frames (the type is encoded in some bits in the frame primary header):
 
-    * AD frames contain normal telecommands and they are subjected to COP1 transmission verification.
-    * BD frames contain normal telecommands but they are not subjected to COP1 transmission verification.
-    * BC frames contain control commands generated by the ground COP1 state machine and they are used to control the on-board state machine.
+* AD frames contain normal telecommands and they are subjected to COP-1 transmission verification.
+* BD frames contain normal telecommands but they are not subjected to COP-1 transmission verification.
+* BC frames contain control commands generated by the ground COP-1 state machine and they are used to control the on-board state machine.
 
-To send BD frames with Yamcs, you can use an attribute on the command called ``cop1Bypass``. If the link finds this attribute set to true, it will send the command in a BD frame, bypassing the COP1 verification. The BC frames are sent only by the COP1 state machine and it is not possible to send them from the user.
+To send BD frames with Yamcs, you can use an attribute on the command called ``cop1Bypass``. If the link finds this attribute set to true, it will send the command in a BD frame, bypassing the COP-1 verification. The BC frames are sent only by the COP-1 state machine and it is not possible to send them from the user.
 
-The user interface allows also to deactivate the COP1 and the user can opt for sending all the commands as AD frames or BD frames regardless of the cop1Bypass attribute.
-
-
-
+The user interface allows also to deactivate the COP-1 and the user can opt for sending all the commands as AD frames or BD frames regardless of the cop1Bypass attribute.
