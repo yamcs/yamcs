@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Input, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
@@ -18,7 +18,7 @@ import { YamcsService } from '../../core/services/YamcsService';
     }
   ]
 })
-export class CommandSelector implements ControlValueAccessor, OnChanges {
+export class CommandSelector implements ControlValueAccessor {
 
   @Input()
   path: string;
@@ -40,12 +40,8 @@ export class CommandSelector implements ControlValueAccessor, OnChanges {
         return this.onChange(null);
       }
     });
-  }
 
-  ngOnChanges() {
-    if (this.yamcs.instance) {
-      this.loadCurrentSystem('/');
-    }
+    this.loadCurrentSystem('/');
   }
 
   private loadCurrentSystem(system: string) {
