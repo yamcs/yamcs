@@ -48,5 +48,7 @@ Packet pre-processing
  
  Regardless of which method is used, it is important that the pre-processor does not generate packets with wrong timestamps - these might be difficult to locate and remove from the archive later. In order to not lose the packets, the pre-processor can set a flag ``invalid`` on a packet and the Data Link can be configured to store the invalid packets into a different archive table, using the reception time as a key. A custom made script can be made to retrieve those packets and fix their timestamps (or simply inspect their content).
  
+ Starting with yamcs-4.11 there is a status bitfield in the telemetry packet table which allows the packet-preprocessor to flag packets that are timetamped with local time instead of spacecraft generation time.
+ 
  
  

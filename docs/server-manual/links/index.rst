@@ -26,7 +26,7 @@ name (string)
     **Required.** The name that will be assigned to the link. Each link needs a unique name; the name can be seen in the user interface and can be used for API calls.
 
 class (string)
-    **Required.** The name of the class that is implementing the link. The class has to implement the :javadoc:`org.yamcs.tctm.Link` interface.
+    **Required.** The name of the class that is implementing the link. The class has to implement the :javadoc:`~org.yamcs.tctm.Link` interface.
 
 enabledAtStartup (boolean)
     If set to false, the link will be disabled at startup. By default it is true. The link can be enabled/disabled at any time via an API call.
