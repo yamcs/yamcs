@@ -14,16 +14,13 @@ services:
 dataLinks:
   - name: tm_realtime
     class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    args:
-      stream: tm_realtime
+    stream: tm_realtime
   - name: pp_realtime
     class: org.yamcs.AbstractIntegrationTest$ParameterProvider
-    args:
-      stream: pp_realtime
+    stream: pp_realtime
   - name: tc_realtime
     class: org.yamcs.CmdIntegrationTest$MyTcDataLink
-    args:
-      stream: tc_realtime
+    stream: tc_realtime
 
 mdb:
   - type: "sheet"

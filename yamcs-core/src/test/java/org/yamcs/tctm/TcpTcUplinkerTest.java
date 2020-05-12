@@ -23,6 +23,7 @@ public class TcpTcUplinkerTest {
         config.put("host", "localhost");
         config.put("port", 10025);
         TcpTcDataLink tcuplink = new TcpTcDataLink();
+        config.put("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
         tcuplink.init("testinst", "name0", YConfiguration.wrap(config));
         IssCommandPostprocessor icpp = (IssCommandPostprocessor) tcuplink.cmdPostProcessor;
         assertEquals(-1, icpp.getMiniminimumTcPacketLength());
@@ -36,6 +37,7 @@ public class TcpTcUplinkerTest {
 
         Map<String, Object> postProcessorArgs = new HashMap<>();
         postProcessorArgs.put("minimumTcPacketLength", 48);
+        config.put("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
         config.put("commandPostprocessorArgs", postProcessorArgs);
 
         TcpTcDataLink tcuplink = new TcpTcDataLink();

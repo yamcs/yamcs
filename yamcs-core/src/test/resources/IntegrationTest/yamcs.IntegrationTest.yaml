@@ -15,23 +15,19 @@ services:
 dataLinks:
   - name: tm_realtime
     class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    args:
-      num: 0
-      stream: tm_realtime
+    num: 0
+    stream: tm_realtime
   - name: tm2_realtime
     class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    args:
-      num: 1
-      stream: tm2_realtime
+    num: 1
+    stream: tm2_realtime
             
   - name: pp_realtime
     class: org.yamcs.AbstractIntegrationTest$ParameterProvider
-    args:
-      stream: pp_realtime
+    stream: pp_realtime
   - name: tc_realtime
     class: org.yamcs.CmdIntegrationTest$MyTcDataLink
-    args:
-      stream: tc_realtime
+    stream: tc_realtime
 
 mdb:
   - type: "sheet"

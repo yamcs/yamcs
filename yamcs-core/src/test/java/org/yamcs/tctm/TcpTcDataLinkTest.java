@@ -147,6 +147,7 @@ public class TcpTcDataLinkTest {
         Map<String, Object> config = new HashMap<>();
         config.put("tcHost", "localhost");
         config.put("tcPort", mtc.port);
+        config.put("commandPostprocessorClassName", GenericCommandPostprocessor.class.getName());
 
         TcpTcDataLink dataLink = new TcpTcDataLink();
         dataLink.init("testinst", "test1", YConfiguration.wrap(config));
