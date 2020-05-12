@@ -14,6 +14,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.time.TimeService;
@@ -56,7 +57,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     private long totalNumPackets;
 
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null });
+            new Object[] { null, null, null, null, null });
 
     XtceDb xtceDb;
 
@@ -244,6 +245,11 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
         @Override
         public void onTuple(Stream istream, Tuple t) {
+            int status = (Integer) t.getColumn(3);
+            if ((status & TmPacket.STATUS_MASK_DO_NOT_ARCHIVE) != 0) {
+                log.trace("Dropping tm tuple {} because the no archive flag is set", t);
+                return;
+            }
             try {
                 if (async) {
                     tmQueue.put(t);
@@ -286,7 +292,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
          */
         protected void saveTuple(Tuple t) {
             long gentime = (Long) t.getColumn(0);
-            byte[] packet = (byte[]) t.getColumn(3);
+            byte[] packet = (byte[]) t.getColumn(4);
             totalNumPackets++;
 
             tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), rootSequenceContainer);

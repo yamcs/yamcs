@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
@@ -30,7 +31,14 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     protected TimeDecoder timeDecoder = null;
 
-    // if true, do not extract time from packets
+    //
+    /**
+     * If true, do not extract time from packets but use the local generation time.
+     * <p>
+     * It is a good idea to set the {@link TmPacket#setLocalGenTime()} flag to indicate it.
+     * <p>
+     * The flag has to be set by the pre-processor!
+     */
     protected boolean useLocalGenerationTime;
     final protected Log log;
 

@@ -49,21 +49,22 @@ public class CfsPacketPreprocessor extends AbstractPacketPreprocessor {
         AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
         int oldseq = ai.getAndSet(seq);
 
-        if (log.isTraceEnabled()) {
-            log.trace("processing packet apid: {}, seqCount:{}, length: {}", apid, seq, packet.length);
-        }
+        
 
         if (checkForSequenceDiscontinuity && ((seq - oldseq) & 0x3FFF) != 1) {
             eventProducer.sendWarning("SEQ_COUNT_JUMP",
                     "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
         }
         if(useLocalGenerationTime) {
+            pwt.setLocalGenTime();
             pwt.setGenerationTime(timeService.getMissionTime());
         } else {
             pwt.setGenerationTime(getTimeFromPacket(packet));
         }
         pwt.setSequenceCount(apidseqcount);
-        
+        if (log.isTraceEnabled()) {
+            log.trace("processing packet apid: {}, seqCount:{}, length: {}, genTime: {}", apid, seq, packet.length, TimeEncoding.toString(pwt.getGenerationTime()));
+        }
         return pwt;
     }
 

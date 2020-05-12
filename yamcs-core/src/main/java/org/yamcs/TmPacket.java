@@ -1,23 +1,46 @@
 package org.yamcs;
 
+import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.utils.TimeEncoding;
 
 /**
  * Packet with acquisition time, generation time and sequence count.
+ * 
  * <p>
  * It is assumed that (generation time, sequence count) uniquely identifies the packet
+ * 
+ * <p>
+ * Starting with yamcs 4.11 there is a 32 bitfield status that can be set on the packets by the pre-processor. The bits
+ * currently defined:
+ * <ul>
+ * <li>bit 0 (msb) - always 0</li>
+ * <li>bits 1-15 - user defined (pre-processor specific)</li>
+ * <li>bits 16-28 - reserved for future Yamcs use</li>
+ * <li>bit 29 - DO_NOT_ARCHIVE - the {@link XtceTmRecorder} will not archive the packets that have this bit set.</li>
+ * <li>bit 30 - LOCAL_GEN_TIME - when the pre-processor cannot find the generation time, it can use the local time
+ * instead and set this bit</li>
+ * <li>bit 31(lsb) - INVALID - used for example when the packet fails crc or checksum verification</li>
+ * </ul>
+ * 
+ * <p>
+ * For the invalid packets there is an option at the link level to redirect them on a different stream. Using
+ * StreamSQL any other packet can be redirected as well.
  * 
  * @author nm
  *
  */
 public class TmPacket {
+    final public static int STATUS_MASK_INVALID = 1 << 0;
+    final public static int STATUS_MASK_LOCAL_GEN_TIME = 1 << 2;
+    final public static int STATUS_MASK_DO_NOT_ARCHIVE = 1 << 3;
+
     private long rectime = TimeEncoding.INVALID_INSTANT; // Yamcs reception time
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
     private long ertime = TimeEncoding.INVALID_INSTANT; // earth reception time
 
     private int seqCount;
     private byte[] pkt;
-    boolean invalid = false;
+    private int status;
 
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
@@ -76,12 +99,18 @@ public class TmPacket {
         return pkt;
     }
 
-    public void setInvalid(boolean corrupted) {
-        this.invalid = corrupted;
+    public void setInvalid() {
+        status |= STATUS_MASK_INVALID;
+    }
+
+    public void setInvalid(boolean invalid) {
+        if (invalid) {
+            status = invalid ? status | STATUS_MASK_INVALID : status & ~STATUS_MASK_INVALID;
+        }
     }
 
     public boolean isInvalid() {
-        return invalid;
+        return (status & STATUS_MASK_INVALID) > 0;
     }
 
     /**
@@ -101,6 +130,35 @@ public class TmPacket {
 
     public void setEarthRceptionTime(long ertime) {
         this.ertime = ertime;
+    }
+
+    /**
+     * Set the flag that this packet generation time is in fact local time.
+     */
+    public void setLocalGenTime() {
+        status |= STATUS_MASK_LOCAL_GEN_TIME;
+    }
+
+    /**
+     * Sets the flag that this packet will not be archived.
+     */
+    public void setDoNotArchive() {
+        status |= STATUS_MASK_DO_NOT_ARCHIVE;
+    }
+
+    /**
+     * The 32bit flag.
+     * <p>
+     * Be aware that this will change also the values set by the setInvalid
+     * 
+     * @return
+     */
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
 }

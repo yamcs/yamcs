@@ -116,6 +116,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         long gentime;
 
         if (useLocalGenerationTime) {
+            tmPacket.setLocalGenTime();
             gentime = rectime;
         } else {
             try {
@@ -146,6 +147,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
         boolean corrupted = false;
         long gentime;
         if (useLocalGenerationTime) {
+            tmPacket.setLocalGenTime();
             gentime = rectime;
         } else {
             try {

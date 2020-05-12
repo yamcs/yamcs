@@ -235,12 +235,12 @@ public class LinkManager {
         Tuple t = null;
         if (ertime == TimeEncoding.INVALID_INSTANT) {
             t = new Tuple(StandardTupleDefinitions.TM,
-                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                            pwrt.getPacket() });
+                    new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(), 
+                            pwrt.getStatus(), pwrt.getPacket() });
         } else {
             t = new Tuple(StandardTupleDefinitions.TM_WITH_ERT,
                     new Object[] { pwrt.getGenerationTime(), pwrt.getSeqCount(), pwrt.getReceptionTime(),
-                            pwrt.getPacket(), ertime });
+                            pwrt.getStatus(), pwrt.getPacket(), ertime });
         }
         stream.emitTuple(t);
 
