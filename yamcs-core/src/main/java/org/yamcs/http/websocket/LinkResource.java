@@ -7,15 +7,18 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.api.ManagementApi;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
+import org.yamcs.management.ManagementListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.LinkEvent;
 import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.LinkSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.protobuf.YamcsInstance.InstanceState;
 
 /**
  * Provides realtime data-link subscription via web.
  */
-public class LinkResource implements WebSocketResource, LinkListener {
+public class LinkResource implements WebSocketResource, LinkListener, ManagementListener {
 
     private ConnectedWebSocketClient client;
 
@@ -43,6 +46,7 @@ public class LinkResource implements WebSocketResource, LinkListener {
             YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
             subscribe(ysi);
         } else {
+            ManagementService.getInstance().addManagementListener(this);
             for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
                 subscribe(ysi);
             }
@@ -81,6 +85,7 @@ public class LinkResource implements WebSocketResource, LinkListener {
     }
 
     private void unsubscribeAll() {
+        ManagementService.getInstance().removeManagementListener(this);
         if (instance != null) {
             unsubscribe(ManagementApi.verifyInstanceObj(instance));
         } else {
@@ -112,6 +117,13 @@ public class LinkResource implements WebSocketResource, LinkListener {
     public void linkChanged(LinkInfo linkInfo) {
         if (instance == null || instance.equals(linkInfo.getInstance())) {
             sendLinkInfo(LinkEvent.Type.UPDATED, linkInfo);
+        }
+    }
+
+    @Override
+    public void instanceStateChanged(YamcsServerInstance ysi) {
+        if (instance == null && ysi.state() == InstanceState.RUNNING) {
+            subscribe(ysi);
         }
     }
 
