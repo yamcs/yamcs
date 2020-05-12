@@ -18,7 +18,10 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
+import org.yamcs.management.ManagementService;
+import org.yamcs.management.TableStreamListener;
 import org.yamcs.protobuf.AbstractTableApi;
+import org.yamcs.protobuf.StreamEvent;
 import org.yamcs.protobuf.Table.ColumnData;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.EnumValue;
@@ -36,7 +39,10 @@ import org.yamcs.protobuf.Table.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.Row.Cell;
+import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.Table.StreamInfo;
+import org.yamcs.protobuf.Table.SubscribeStreamRequest;
+import org.yamcs.protobuf.Table.SubscribeStreamStatisticsRequest;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.TableInfo;
@@ -91,6 +97,57 @@ public class TableApi extends AbstractTableApi<Context> {
     }
 
     @Override
+    public void subscribeStreamStatistics(Context ctx, SubscribeStreamStatisticsRequest request,
+            Observer<StreamEvent> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        for (Stream stream : ydb.getStreams()) {
+            observer.next(StreamEvent.newBuilder()
+                    .setType(StreamEvent.Type.CREATED)
+                    .setName(stream.getName())
+                    .setDataCount(stream.getDataCount())
+                    .build());
+        }
+
+        TableStreamListener listener = new TableStreamListener() {
+            @Override
+            public void streamRegistered(String streamInstance, Stream stream) {
+                if (streamInstance.equals(instance)) {
+                    observer.next(StreamEvent.newBuilder()
+                            .setType(StreamEvent.Type.CREATED)
+                            .setName(stream.getName())
+                            .setDataCount(stream.getDataCount())
+                            .build());
+                }
+            }
+
+            @Override
+            public void streamUpdated(String streamInstance, StreamInfo stream) {
+                if (streamInstance.equals(instance)) {
+                    observer.next(StreamEvent.newBuilder()
+                            .setType(StreamEvent.Type.UPDATED)
+                            .setName(stream.getName())
+                            .setDataCount(stream.getDataCount())
+                            .build());
+                }
+            }
+
+            @Override
+            public void streamUnregistered(String streamInstance, String name) {
+                if (streamInstance.equals(instance)) {
+                    observer.next(StreamEvent.newBuilder()
+                            .setType(StreamEvent.Type.DELETED)
+                            .setName(name)
+                            .build());
+                }
+            }
+        };
+        observer.setCancelHandler(() -> ManagementService.getInstance().removeTableStreamListener(listener));
+        ManagementService.getInstance().addTableStreamListener(listener);
+    }
+
+    @Override
     public void getStream(Context ctx, GetStreamRequest request, Observer<StreamInfo> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -98,6 +155,31 @@ public class TableApi extends AbstractTableApi<Context> {
 
         StreamInfo response = toStreamInfo(stream);
         observer.complete(response);
+    }
+
+    @Override
+    public void subscribeStream(Context ctx, SubscribeStreamRequest request, Observer<StreamData> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        Stream stream = verifyStream(ctx, ydb, request.getStream());
+
+        StreamSubscriber listener = new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                observer.next(StreamData.newBuilder()
+                        .setStream(stream.getName())
+                        .addAllColumn(TableApi.toColumnDataList(tuple))
+                        .build());
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                observer.complete();
+            }
+        };
+        observer.setCancelHandler(() -> stream.removeSubscriber(listener));
+        stream.addSubscriber(listener);
+
     }
 
     @Override

@@ -1,5 +1,5 @@
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Alarm, NamedObjectId, ParameterValue, Sample } from '../../client';
+import { Alarm, NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
@@ -34,14 +34,13 @@ export class DyDataSource {
   private lastLoadPromise: Promise<any> | null;
 
   // Realtime
-  private subscriptionId: number;
-  private realtimeSubscription: Subscription;
+  private realtimeSubscription: ParameterSubscription;
   private syncSubscription: Subscription;
   // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
 
-  private idMapping: { [key: number]: NamedObjectId };
+  private idMapping: { [key: number]: NamedObjectId; };
 
   constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
     this.syncSubscription = synchronizer.sync(() => {
@@ -67,7 +66,7 @@ export class DyDataSource {
       ...parameter,
     ]);
 
-    if (this.subscriptionId) {
+    if (this.realtimeSubscription) {
       const ids = parameter.map(p => ({ name: p.qualifiedName }));
       this.addToRealtimeSubscription(ids);
     } else {
@@ -100,16 +99,15 @@ export class DyDataSource {
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
-    const instanceClient = this.yamcs.getInstanceClient()!;
     const promises: Promise<any>[] = [];
     for (const parameter of this.parameters$.value) {
       promises.push(
-        instanceClient.getParameterSamples(parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
         }),
-        instanceClient.getAlarmsForParameter(parameter.qualifiedName, {
+        this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
         })
@@ -143,35 +141,36 @@ export class DyDataSource {
 
   private connectRealtime() {
     const ids = this.parameters$.value.map(parameter => ({ name: parameter.qualifiedName }));
-    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+    this.realtimeSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: ids,
       sendFromCache: false,
-      subscriptionId: -1,
       updateOnExpiration: true,
       abortOnInvalid: true,
-      useNumericIds: true,
-    }).then(response => {
-      this.subscriptionId = response.subscriptionId;
-      this.idMapping = response.mapping;
-      this.realtimeSubscription = response.parameterValues$.subscribe(pvals => {
-        this.processRealtimeDelivery(pvals);
-      });
+      action: 'REPLACE',
+    }, data => {
+      if (data.mapping) {
+        this.idMapping = {
+          ...this.idMapping,
+          ...data.mapping,
+        };
+      }
+      if (data.values && data.values.length) {
+        this.processRealtimeDelivery(data.values);
+      }
     });
   }
 
   addToRealtimeSubscription(ids: NamedObjectId[]) {
-    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+    this.realtimeSubscription.sendMessage({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       id: ids,
       sendFromCache: false,
-      subscriptionId: this.subscriptionId,
       updateOnExpiration: true,
       abortOnInvalid: true,
-      useNumericIds: true,
-    }).then(response => {
-      this.idMapping = {
-        ...this.idMapping,
-        ...response.mapping,
-      };
+      action: 'ADD',
     });
   }
 
@@ -211,7 +210,7 @@ export class DyDataSource {
     this.data$.complete();
     this.loading$.complete();
     if (this.realtimeSubscription) {
-      this.realtimeSubscription.unsubscribe();
+      this.realtimeSubscription.cancel();
     }
     if (this.syncSubscription) {
       this.syncSubscription.unsubscribe();

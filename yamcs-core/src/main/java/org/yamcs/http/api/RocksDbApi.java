@@ -7,12 +7,12 @@ import java.util.concurrent.CompletableFuture;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.api.HttpBody;
-import org.yamcs.api.MediaType;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.MediaType;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractRocksDbApi;
 import org.yamcs.protobuf.BackupDatabaseRequest;

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { AlgorithmPage } from './algorithms/AlgorithmPage';
@@ -10,19 +10,20 @@ import { CommandPage } from './commands/CommandPage';
 import { CommandsPage } from './commands/CommandsPage';
 import { ContainerPage } from './containers/ContainerPage';
 import { ContainersPage } from './containers/ContainersPage';
+import { OverviewPage } from './overview/OverviewPage';
 import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
 
 
 const routes = [{
   path: '',
-  canActivate: [AuthGuard, InstanceExistsGuard, MayGetMissionDatabaseGuard],
+  canActivate: [AuthGuard, AttachContextGuard, MayGetMissionDatabaseGuard],
   canActivateChild: [AuthGuard, MayGetMissionDatabaseGuard],
   component: InstancePage,
   children: [{
     path: '',
     pathMatch: 'full',
-    redirectTo: 'parameters',
+    component: OverviewPage,
   }, {
     path: 'algorithms',
     pathMatch: 'full',
@@ -55,12 +56,13 @@ const routes = [{
 }];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ],
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
 export class MdbRoutingModule { }
 
 export const routingComponents = [
+  OverviewPage,
   AlgorithmsPage,
   AlgorithmPage,
   CommandsPage,

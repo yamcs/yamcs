@@ -1,11 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Instance, Stream } from '../../client';
+import { Stream } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-
-
-
 
 @Component({
   templateUrl: './StreamPage.html',
@@ -14,13 +11,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class StreamPage {
 
-  instance: Instance;
   stream$: Promise<Stream>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name);
-    this.stream$ = yamcs.getInstanceClient()!.getStream(name);
-    this.instance = yamcs.getInstance();
+    this.stream$ = yamcs.yamcsClient.getStream(yamcs.instance!, name);
   }
 }

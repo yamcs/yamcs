@@ -10,7 +10,7 @@ Packager: Yamcs Team <yamcs@spaceapplications.com>
 License: Affero GPL v3
 URL: https://yamcs.org
 Prefix: /opt/yamcs
-BuildArch: noarch
+BuildArch: x86_64
 
 Requires: socat
 

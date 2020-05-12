@@ -21,9 +21,9 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
@@ -112,7 +112,7 @@ public class LinkManager {
         if (linkConfig.containsKey("args")) {
             args = linkConfig.getConfig("args");
             log.warn(
-                    "Depreciation warning: the 'args' parameter in the link {} configuration is deprecated; please move all properties one level up",
+                    "Deprecation warning: the 'args' parameter in the link {} configuration is deprecated; please move all properties one level up",
                     linkName);
             mergeConfig(linkConfig, args);
         }
@@ -143,7 +143,7 @@ public class LinkManager {
         } catch (ConfigurationException e) {
             // TODO: set this to warn in the next version
             log.info(
-                    "The link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
+                    "Link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
                     linkClass);
             // Ignore for now. Fallback to constructor initialization.
         }
@@ -418,13 +418,23 @@ public class LinkManager {
 
     /**
      * What to do with invalid packets.
-     * DROP: do nothing
-     * PROCESS: send them on the normal tm stream
-     * DIVERT: send them on a different stream
      */
     static class InvalidPacketAction {
         enum Action {
-            DROP, PROCESS, DIVERT
+            /**
+             * Do nothing
+             */
+            DROP,
+
+            /**
+             * Send packets on the normal TM stream
+             */
+            PROCESS,
+
+            /**
+             * Send packets on an alternate stream
+             */
+            DIVERT
         };
 
         Stream divertStream;

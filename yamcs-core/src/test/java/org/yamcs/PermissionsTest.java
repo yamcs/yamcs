@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.RestClient;
 import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.WebSocketRequest;
+import org.yamcs.client.YamcsConnectionProperties;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueRequest;
@@ -38,10 +38,10 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
     @BeforeClass
     public static void silenceWarnings() {
-        //to avoid getting warnings in the test console for invalid permissions
+        // to avoid getting warnings in the test console for invalid permissions
         Logger.getLogger("org.yamcs").setLevel(Level.SEVERE);
     }
-    
+
     @Test
     public void testAuthenticationWebServices() throws Exception {
         try {

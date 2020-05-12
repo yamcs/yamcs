@@ -28,7 +28,6 @@ export class AcknowledgeAlarmDialog {
     const comment = this.formGroup.get('comment')!.value;
 
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'acknowledged',
       };
@@ -36,7 +35,7 @@ export class AcknowledgeAlarmDialog {
         options.comment = comment;
       }
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

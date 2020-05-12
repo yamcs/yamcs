@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance } from '../client';
+import { BehaviorSubject } from 'rxjs';
+import { Transfer, TransferSubscription } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
-import { CfdpService } from './CfdpService';
 import { UploadFileDialog } from './UploadFileDialog';
 
 @Component({
@@ -14,43 +13,43 @@ import { UploadFileDialog } from './UploadFileDialog';
 })
 export class FileTransferPage implements OnDestroy {
 
-  instance: Instance;
+  private ongoingTransfersById = new Map<number, Transfer>();
+  private failedTransfersById = new Map<number, Transfer>();
+  private successfulTransfersById = new Map<number, Transfer>();
 
   ongoingCount$ = new BehaviorSubject<number>(0);
   failedCount$ = new BehaviorSubject<number>(0);
   successfulCount$ = new BehaviorSubject<number>(0);
 
-  private cfdpSubscription: Subscription;
+  private transferSubscription: TransferSubscription;
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private dialog: MatDialog,
-    private cfdpService: CfdpService,
   ) {
     title.setTitle('CFDP File Transfer');
-    this.instance = yamcs.getInstance();
-    this.cfdpSubscription = cfdpService.transfers$.subscribe(transfers => {
-      let ongoingCount = 0;
-      let failedCount = 0;
-      let successfulCount = 0;
-      for (const transfer of transfers) {
-        if (transfer.state === 'RUNNING' || transfer.state === 'PAUSED') {
-          ongoingCount++;
-        } else if (transfer.state === 'FAILED') {
-          failedCount++;
-        } else if (transfer.state === 'COMPLETED') {
-          successfulCount++;
-        }
-      }
-      this.ongoingCount$.next(ongoingCount);
-      this.failedCount$.next(failedCount);
-      this.successfulCount$.next(successfulCount);
-    });
-  }
 
-  public refresh() {
-    this.cfdpService.refresh();
+    this.transferSubscription = yamcs.yamcsClient.createTransferSubscription({ instance: yamcs.instance! }, transfer => {
+      switch (transfer.state) {
+        case 'RUNNING':
+        case 'PAUSED':
+          this.ongoingTransfersById.set(transfer.id, transfer);
+          break;
+        case 'FAILED':
+          this.ongoingTransfersById.delete(transfer.id);
+          this.failedTransfersById.set(transfer.id, transfer);
+          break;
+        case 'COMPLETED':
+          this.ongoingTransfersById.delete(transfer.id);
+          this.successfulTransfersById.set(transfer.id, transfer);
+          break;
+      }
+
+      this.ongoingCount$.next(this.ongoingTransfersById.size);
+      this.failedCount$.next(this.failedTransfersById.size);
+      this.successfulCount$.next(this.successfulTransfersById.size);
+    });
   }
 
   uploadFile() {
@@ -65,8 +64,8 @@ export class FileTransferPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.cfdpSubscription) {
-      this.cfdpSubscription.unsubscribe();
+    if (this.transferSubscription) {
+      this.transferSubscription.cancel();
     }
   }
 }

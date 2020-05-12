@@ -101,9 +101,9 @@ public class WebSocketObserver implements Observer<Message> {
     void cancelCall(String reason) {
         if (!cancelled) {
             if (reason != null) {
-                log.info("Cancelling call ({})", reason);
+                log.info("Cancelling {} call ({})", ctx.getTopic().getName(), reason);
             } else {
-                log.info("Cancelling call");
+                log.info("Cancelling {} call", ctx.getTopic().getName());
             }
             cancelled = true;
             if (cancelHandler != null) {

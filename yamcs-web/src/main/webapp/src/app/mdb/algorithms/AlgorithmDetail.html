@@ -6,7 +6,7 @@
   <dd>
     <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/algorithms"
-         [queryParams]="{instance: instance.name, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -60,7 +60,7 @@
         <td>{{ inputParameter.inputName }}</td>
         <td>
           <a [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
-             [queryParams]="{instance: instance.name}">
+             [queryParams]="{c: yamcs.context}">
             {{ inputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -91,7 +91,7 @@
         <td>{{ outputParameter.outputName }}</td>
         <td>
           <a [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
-             [queryParams]="{instance: instance.name}">
+             [queryParams]="{c: yamcs.context}">
             {{ outputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -115,7 +115,7 @@
         <td>OnParameterUpdate</td>
         <td>
           <a [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
-             [queryParams]="{instance: instance.name}">
+             [queryParams]="{c: yamcs.context}">
             {{ trigger.qualifiedName }}
           </a>
         </td>

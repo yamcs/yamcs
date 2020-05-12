@@ -8,7 +8,7 @@ import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 
 public class TcpTcUplinkerTest {
 
@@ -16,7 +16,7 @@ public class TcpTcUplinkerTest {
     public static void beforeClass() {
         EventProducerFactory.setMockup(false);
     }
-    
+
     @Test
     public void testConfig1() {
         Map<String, Object> config = new HashMap<>();

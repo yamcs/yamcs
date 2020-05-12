@@ -1,21 +1,15 @@
-<app-slanted-label *ngIf="tag"
-                   color="white">
-  {{ tag }}
-</app-slanted-label>
-
-<!-- Commented out for now, we dont always have a live connection ongoing -->
-<!--app-slanted-label *ngIf="tag && !connected"
+<app-slanted-label *ngIf="tag && !connected"
                    color="#ff4100"
                    icon="power_off">
   {{ tag }}
 </app-slanted-label>
 
 <app-slanted-label *ngIf="tag && connected"
-                   color="lime">
+                   color="white">
   {{ tag }}
 </app-slanted-label>
 
 <app-slanted-label *ngIf="!tag && !connected"
                    color="#ff4100"
                    icon="power_off">
-</app-slanted-label-->
+</app-slanted-label>

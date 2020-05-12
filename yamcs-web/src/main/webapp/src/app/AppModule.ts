@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './AppRoutingModule';
 import { AppComponent } from './core/pages/AppComponent';
+import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
 import { CreateInstanceWizardStep } from './core/pages/CreateInstanceWizardStep';
@@ -19,6 +20,7 @@ import { SharedModule } from './shared/SharedModule';
 
 const appComponents = [
   AppComponent,
+  ContextSwitchPage,
   CreateInstancePage1,
   CreateInstancePage2,
   CreateInstanceWizardStep,

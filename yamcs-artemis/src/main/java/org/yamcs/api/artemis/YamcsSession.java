@@ -13,13 +13,12 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.yamcs.api.YamcsConnectionProperties;
 
 public class YamcsSession {
     boolean invm = true;
     ClientSessionFactory sessionFactory;
     public ClientSession session;
-    private YamcsConnectionProperties ycd;
+    private ArtemisConnectionProperties ycd;
     ServerLocator locator;
     boolean preAcknowledge = true;
 
@@ -134,7 +133,7 @@ public class YamcsSession {
 
         public Builder setConnectionParams(String host, int port, String username, char[] password) {
             result.invm = false;
-            result.ycd = new YamcsConnectionProperties();
+            result.ycd = new ArtemisConnectionProperties();
             result.ycd.setHost(host);
             result.ycd.setPort(port);
             result.ycd.setCredentials(username, password);
@@ -142,12 +141,12 @@ public class YamcsSession {
         }
 
         public Builder setConnectionParams(String url) throws URISyntaxException {
-            result.ycd = YamcsConnectionProperties.parse(url);
+            result.ycd = ArtemisConnectionProperties.parse(url);
             result.invm = (result.ycd.getHost() == null);
             return this;
         }
 
-        public Builder setConnectionParams(YamcsConnectionProperties ycd) {
+        public Builder setConnectionParams(ArtemisConnectionProperties ycd) {
             result.invm = (ycd.getHost() == null);
             result.ycd = ycd;
             return this;

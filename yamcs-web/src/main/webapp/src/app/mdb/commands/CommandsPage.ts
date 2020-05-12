@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetCommandsOptions, Instance } from '../../client';
+import { GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { CommandsDataSource } from './CommandsDataSource';
@@ -14,7 +14,6 @@ import { CommandsDataSource } from './CommandsDataSource';
 })
 export class CommandsPage implements AfterViewInit {
 
-  instance: Instance;
   shortName = false;
   pageSize = 100;
 
@@ -36,13 +35,12 @@ export class CommandsPage implements AfterViewInit {
   ];
 
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
   ) {
     title.setTitle('Commands');
-    this.instance = yamcs.getInstance();
     this.dataSource = new CommandsDataSource(yamcs);
   }
 

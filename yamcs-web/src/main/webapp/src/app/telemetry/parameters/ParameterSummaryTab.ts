@@ -1,23 +1,21 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, Parameter, ParameterValue } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { Parameter, ParameterSubscription, ParameterValue } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ParameterSummaryTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterSummaryTab {
+export class ParameterSummaryTab implements OnDestroy {
 
-  instance: Instance;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
-  parameterValueSubscription: Subscription;
+  parameterValueSubscription: ParameterSubscription;
 
-  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
-    this.instance = yamcs.getInstance();
+  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
 
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
@@ -28,24 +26,29 @@ export class ParameterSummaryTab {
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
       if (this.parameterValueSubscription) {
-        this.parameterValueSubscription.unsubscribe();
+        this.parameterValueSubscription.cancel();
       }
-      this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+      this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+        instance: this.yamcs.instance!,
+        processor: this.yamcs.processor!,
         id: [{ name: qualifiedName }],
         abortOnInvalid: false,
         sendFromCache: true,
-        subscriptionId: -1,
         updateOnExpiration: true,
-        useNumericIds: true,
-      }).then(res => {
-        this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
-          this.parameterValue$.next(pvals[0]);
-        });
+        action: 'REPLACE',
+      }, data => {
+        this.parameterValue$.next(data.values[0]);
       });
     });
+  }
+
+  ngOnDestroy() {
+    if (this.parameterValueSubscription) {
+      this.parameterValueSubscription.cancel();
+    }
   }
 }

@@ -7,8 +7,18 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.yamcs.Processor;
 import org.yamcs.alarms.ActiveAlarm;
+import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.EventAlarmServer;
@@ -24,21 +34,13 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.AbstractAlarmsApi;
 import org.yamcs.protobuf.AcknowledgeInfo;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.ClearInfo;
-import org.yamcs.protobuf.EditAlarmRequest;
 import org.yamcs.protobuf.EventAlarmData;
-import org.yamcs.protobuf.ListAlarmsRequest;
-import org.yamcs.protobuf.ListAlarmsResponse;
-import org.yamcs.protobuf.ListParameterAlarmsRequest;
-import org.yamcs.protobuf.ListParameterAlarmsResponse;
-import org.yamcs.protobuf.ListProcessorAlarmsRequest;
-import org.yamcs.protobuf.ListProcessorAlarmsResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
@@ -46,6 +48,17 @@ import org.yamcs.protobuf.ShelveInfo;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
+import org.yamcs.protobuf.alarms.EditAlarmRequest;
+import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
+import org.yamcs.protobuf.alarms.ListAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
+import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
+import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -60,8 +73,11 @@ import com.google.protobuf.Timestamp;
 
 public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
-    static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
-    static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
+    private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
+    private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
+    private static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
+    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
 
     static {
         PARAM_ALARM_SEVERITY[MonitoringResult.WATCH_VALUE] = AlarmSeverity.WATCH;
@@ -76,6 +92,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         EVENT_ALARM_SEVERITY[EventSeverity.CRITICAL_VALUE] = AlarmSeverity.CRITICAL;
         EVENT_ALARM_SEVERITY[EventSeverity.SEVERE_VALUE] = AlarmSeverity.SEVERE;
         EVENT_ALARM_SEVERITY[EventSeverity.ERROR_VALUE] = AlarmSeverity.CRITICAL;
+
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.ACKNOWLEDGED,
+                AlarmNotificationType.ACKNOWLEDGED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.CLEARED, AlarmNotificationType.CLEARED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RESET, AlarmNotificationType.RESET);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.RTN, AlarmNotificationType.RTN);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
     }
 
     @Override
@@ -191,6 +216,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void editAlarm(Context ctx, EditAlarmRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
 
@@ -252,6 +278,110 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         } catch (IllegalStateException e) {
             throw new BadRequestException(e.getMessage());
         }
+    }
+
+    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void subscribeAlarms(Context ctx, SubscribeAlarmsRequest request, Observer<AlarmData> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+
+        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        if (processor.hasAlarmServer()) {
+            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+        }
+        if (processor.getEventAlarmServer() != null) {
+            alarmServers.add(processor.getEventAlarmServer());
+        }
+
+        boolean sendDetail = true;
+
+        AlarmListener listener = new AlarmListener() {
+
+            @Override
+            public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm activeAlarm) {
+                AlarmNotificationType type = protoNotificationType.get(notificationType);
+                AlarmData alarmData = toAlarmData(type, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+
+            @Override
+            public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+
+            @Override
+            public void notifyValueUpdate(ActiveAlarm activeAlarm) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+        };
+
+        observer.setCancelHandler(() -> {
+            alarmServers.forEach(alarmServer -> alarmServer.removeAlarmListener(listener));
+        });
+        for (AlarmServer<?, ?> alarmServer : alarmServers) {
+            for (ActiveAlarm<?> activeAlarm : alarmServer.getActiveAlarms().values()) {
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, sendDetail);
+                observer.next(alarmData);
+            }
+            alarmServer.addAlarmListener(listener);
+        }
+    }
+
+    @Override
+    public void subscribeGlobalStatus(Context ctx, SubscribeGlobalStatusRequest request,
+            Observer<GlobalAlarmStatus> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+
+        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        if (processor.hasAlarmServer()) {
+            alarmServers.add(processor.getParameterRequestManager().getAlarmServer());
+        }
+        if (processor.getEventAlarmServer() != null) {
+            alarmServers.add(processor.getEventAlarmServer());
+        }
+
+        AtomicReference<GlobalAlarmStatus> oldStatusRef = new AtomicReference<>();
+        ScheduledFuture<?> future = timer.scheduleAtFixedRate(() -> {
+            int unacknowledgedCount = 0;
+            boolean unacknowledgedActive = false;
+            int acknowledgedCount = 0;
+            boolean acknowledgedActive = false;
+            int shelvedCount = 0;
+            boolean shelvedActive = false;
+
+            for (AlarmServer<?, ?> alarmServer : alarmServers) {
+                for (ActiveAlarm<?> alarm : alarmServer.getActiveAlarms().values()) {
+                    if (alarm.isShelved()) {
+                        shelvedCount++;
+                        shelvedActive |= !alarm.isProcessOK();
+                    } else if (alarm.isAcknowledged()) {
+                        acknowledgedCount++;
+                        acknowledgedActive |= !alarm.isProcessOK();
+                    } else {
+                        unacknowledgedCount++;
+                        unacknowledgedActive |= !alarm.isProcessOK();
+                    }
+                }
+            }
+
+            GlobalAlarmStatus status = GlobalAlarmStatus.newBuilder()
+                    .setUnacknowledgedCount(unacknowledgedCount)
+                    .setUnacknowledgedActive(unacknowledgedActive)
+                    .setAcknowledgedCount(acknowledgedCount)
+                    .setAcknowledgedActive(acknowledgedActive)
+                    .setShelvedCount(shelvedCount)
+                    .setShelvedActive(shelvedActive)
+                    .build();
+
+            GlobalAlarmStatus oldStatus = oldStatusRef.get();
+            if (!status.equals(oldStatus)) {
+                observer.next(status);
+                oldStatusRef.set(status);
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
     }
 
     /**

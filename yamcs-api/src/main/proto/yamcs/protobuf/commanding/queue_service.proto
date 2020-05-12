@@ -35,6 +35,20 @@ service QueueApi {
     };
   }
   
+  // Receive updates on queue stats
+  rpc SubscribeQueueStatistics(SubscribeQueueStatisticsRequest) returns (stream CommandQueueInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "queue-stats"
+    };
+  }
+  
+  // Receive updates on queue events
+  rpc SubscribeQueueEvents(SubscribeQueueEventsRequest) returns (stream CommandQueueEvent) {
+    option (yamcs.api.websocket) = {
+      topic: "queue-events"
+    };
+  }
+  
   // List command queue entries
   rpc ListQueueEntries(ListQueueEntriesRequest) returns (ListQueueEntriesResponse) {
     option (yamcs.api.route) = {
@@ -58,6 +72,16 @@ message ListQueuesRequest {
 
 message ListQueuesResponse {
   repeated CommandQueueInfo queues = 1;
+}
+
+message SubscribeQueueStatisticsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message SubscribeQueueEventsRequest {
+  optional string instance = 1;
+  optional string processor = 2;
 }
 
 message GetQueueRequest {

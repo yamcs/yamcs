@@ -3,7 +3,7 @@ Stop Service
 
 Stop a global service::
 
-    POST /api/services/_global/{name}:start
+    POST /api/services/_global/{name}:stop
 
 Stop a service for a specific Yamcs instance::
 

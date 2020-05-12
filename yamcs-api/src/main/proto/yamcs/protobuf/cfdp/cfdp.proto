@@ -35,11 +35,31 @@ service CfdpApi {
     };
   }
   
-  // Update a transfer
-  rpc UpdateTransfer(EditTransferRequest) returns (google.protobuf.Empty) {
+  // Pause a transfer
+  rpc PauseTransfer(PauseTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      patch: "/api/cfdp/{instance}/transfers/{id}"
-      body: "*"
+      post: "/api/cfdp/{instance}/transfers/{id}:pause"
+    };
+  }
+
+  // Cancel a transfer
+  rpc CancelTransfer(CancelTransferRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/cfdp/{instance}/transfers/{id}:cancel"
+    };
+  }
+  
+  // Resume a transfer
+  rpc ResumeTransfer(ResumeTransferRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/cfdp/{instance}/transfers/{id}:resume"
+    };
+  }
+  
+  // Receive transfer updates
+  rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "cfdp-transfers"
     };
   }
 }
@@ -54,11 +74,6 @@ enum TransferState {
   PAUSED = 2;
   FAILED = 3;
   COMPLETED = 4;
-}
-
-message RemoteFile {
-  required string filepath = 1;
-  required bool isDirectory = 2;
 }
 
 message TransactionId {
@@ -113,10 +128,19 @@ message CreateTransferRequest {
   optional UploadOptions uploadOptions = 7;
 }
 
-message EditTransferRequest {
+message PauseTransferRequest {
   optional string instance = 1;
   optional int64 id = 2;
-  optional string operation = 3;
+}
+
+message CancelTransferRequest {
+  optional string instance = 1;
+  optional int64 id = 2;
+}
+
+message ResumeTransferRequest {
+  optional string instance = 1;
+  optional int64 id = 2;
 }
 
 message ListTransfersRequest {
@@ -128,13 +152,10 @@ message GetTransferRequest {
   optional int64 id = 2;
 }
 
-//message sent as the response to the transfer listing
 message ListTransfersResponse {
-  repeated TransferInfo transfer = 1;
+  repeated TransferInfo transfers = 1;
 }
 
-//message sent as the reponse to the list call
-message ListRemoteFilesResponse {
-  required string remotePath = 1;
-  repeated RemoteFile filepaths = 2;
+message SubscribeTransfersRequest {
+  optional string instance = 1;
 }

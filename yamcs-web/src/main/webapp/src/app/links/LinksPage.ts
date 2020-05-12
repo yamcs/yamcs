@@ -5,7 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, LinkEvent } from '../client';
+import { LinkEvent, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ColumnInfo } from '../shared/template/ColumnChooser';
@@ -17,8 +17,6 @@ import { LinkItem } from './LinkItem';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
-
-  instance: Instance;
 
   filterControl = new FormControl();
 
@@ -39,12 +37,12 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   selection = new SelectionModel<LinkItem>(true, []);
 
   private selectionSubscription: Subscription;
-  private linkSubscription: Subscription;
+  private linkSubscription: LinkSubscription;
 
   private itemsByName: { [key: string]: LinkItem; } = {};
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     title: Title,
     private changeDetection: ChangeDetectorRef,
@@ -52,7 +50,6 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private router: Router,
   ) {
     title.setTitle('Links');
-    this.instance = yamcs.getInstance();
 
     this.dataSource.filterPredicate = (item, filter) => {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
@@ -84,7 +81,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.getInstanceClient()!.getLinks().then(links => {
+    this.yamcs.yamcsClient.getLinks(this.yamcs.instance!).then(links => {
       for (const link of links) {
         const linkItem = { link, hasChildren: false, expanded: false };
         this.itemsByName[link.name] = linkItem;
@@ -99,10 +96,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
       this.updateDataSource();
 
-      this.yamcs.getInstanceClient()!.getLinkUpdates().then(response => {
-        this.linkSubscription = response.linkEvent$.subscribe(evt => {
-          this.processLinkEvent(evt);
-        });
+      this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
+        instance: this.yamcs.instance!,
+      }, evt => {
+        this.processLinkEvent(evt);
       });
     });
   }
@@ -130,15 +127,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   enableLink(name: string) {
-    this.yamcs.getInstanceClient()!.enableLink(name);
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getInstanceClient()!.disableLink(name);
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
   }
 
   resetCounters(name: string) {
-    this.yamcs.getInstanceClient()!.editLink(name, {
+    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
       resetCounters: true,
     });
   }
@@ -269,11 +266,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
       this.selectionSubscription.unsubscribe();
     }
     if (this.linkSubscription) {
-      this.linkSubscription.unsubscribe();
-    }
-    const instanceClient = this.yamcs.getInstanceClient();
-    if (instanceClient) {
-      instanceClient.unsubscribeLinkUpdates();
+      this.linkSubscription.cancel();
     }
   }
 }

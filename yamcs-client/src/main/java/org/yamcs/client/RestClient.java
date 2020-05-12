@@ -10,10 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.api.MediaType;
-import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 
@@ -47,16 +43,11 @@ public class RestClient {
      * Creates a rest client that communications using protobuf
      */
     public RestClient(YamcsConnectionProperties yprops) {
-        Protocol p = yprops.getProtocol();
-        if (p != null && p != Protocol.http) {
-            throw new ConfigurationException(
-                    "Unsupported protocol " + p + "; The only supported protocol is " + Protocol.http);
-        }
         this.yprops = yprops;
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
-        httpClient.setAcceptMediaType(MediaType.PROTOBUF);
-        httpClient.setSendMediaType(MediaType.PROTOBUF);
+        httpClient.setAcceptMediaType(HttpClient.MT_PROTOBUF);
+        httpClient.setSendMediaType(HttpClient.MT_PROTOBUF);
     }
 
     public synchronized void login(String username, char[] password) throws ClientException {
@@ -321,11 +312,11 @@ public class RestClient {
         return v;
     }
 
-    public void setSendMediaType(MediaType sendMediaType) {
+    public void setSendMediaType(String sendMediaType) {
         httpClient.setSendMediaType(sendMediaType);
     }
 
-    public void setAcceptMediaType(MediaType acceptMediaType) {
+    public void setAcceptMediaType(String acceptMediaType) {
         httpClient.setAcceptMediaType(acceptMediaType);
     }
 

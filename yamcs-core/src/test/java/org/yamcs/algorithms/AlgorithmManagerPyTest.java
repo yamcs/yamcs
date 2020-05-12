@@ -19,7 +19,7 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducerFactory;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -60,7 +60,7 @@ public class AlgorithmManagerPyTest {
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
 
         config.put("libraries", jslib);
-        
+
         AlgorithmManager am = new AlgorithmManager();
         am.init("refmdb", YConfiguration.wrap(config));
 

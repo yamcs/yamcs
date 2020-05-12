@@ -1,6 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +20,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.events.EventProducerFactory;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.tctm.TcpTcDataLinkTest;
@@ -640,7 +642,7 @@ public class Cop1TcPacketHandlerTest {
 
         public CompletableFuture<Void> transmitBC(TcTransferFrame frame) {
             bcList.add(frame);
-            bcFuture = new CompletableFuture<Void>();
+            bcFuture = new CompletableFuture<>();
             bcSema.release();
             if (autoAckBC) {
                 bcFuture.complete(null);
@@ -650,7 +652,7 @@ public class Cop1TcPacketHandlerTest {
 
         public CompletableFuture<Void> transmitAD(TcTransferFrame frame) {
             adList.add(frame);
-            adFuture = new CompletableFuture<Void>();
+            adFuture = new CompletableFuture<>();
             adSema.release();
             if (autoAckAD) {
                 adFuture.complete(null);
@@ -660,7 +662,7 @@ public class Cop1TcPacketHandlerTest {
 
         public CompletableFuture<Void> transmitBD(TcTransferFrame frame) {
             bdList.add(frame);
-            bdFuture = new CompletableFuture<Void>();
+            bdFuture = new CompletableFuture<>();
             bdSema.release();
             if (autoAckBD) {
                 bdFuture.complete(null);
@@ -696,18 +698,21 @@ public class Cop1TcPacketHandlerTest {
         Semaphore alertSema = new Semaphore(0);
         Semaphore suspendSema = new Semaphore(0);
 
+        @Override
         public void suspended(int suspendedState) {
             this.suspended = true;
             this.suspendedState = suspendedState;
             suspendSema.release();
         }
 
+        @Override
         public void alert(AlertType alert) {
             alerts.add(alert);
             alertSema.release();
             // System.out.println("MONITOR: alert: " + alert);
         }
 
+        @Override
         public void stateChanged(int oldState, int newState) {
             // System.out.println("MONITOR: Sate changed, new state: " + newState);
             this.state = newState;
@@ -731,7 +736,7 @@ public class Cop1TcPacketHandlerTest {
     }
 
     private List<TcTransferFrame> getFrames(int n, long maxTime) throws InterruptedException {
-        List<TcTransferFrame> l = new ArrayList<TcTransferFrame>();
+        List<TcTransferFrame> l = new ArrayList<>();
         int i = 0;
         long t0 = System.currentTimeMillis();
         while (i < n) {

@@ -19,8 +19,8 @@ export class TableDataTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.table$ = yamcs.getInstanceClient()!.getTable(name);
-    this.records$ = yamcs.getInstanceClient()!.getTableData(name);
+    this.table$ = yamcs.yamcsClient.getTable(yamcs.instance!, name);
+    this.records$ = yamcs.yamcsClient.getTableData(yamcs.instance!, name);
   }
 
   selectRecord(record: Record) {

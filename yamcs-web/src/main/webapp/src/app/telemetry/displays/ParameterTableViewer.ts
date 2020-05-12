@@ -1,8 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { Instance, StorageClient } from '../../client';
+import { BehaviorSubject } from 'rxjs';
+import { NamedObjectId, ParameterSubscription, StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';
@@ -22,7 +22,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   selection = new SelectionModel<string>(true, []);
 
-  instance: Instance;
   private storageClient: StorageClient;
 
   public model$ = new BehaviorSubject<ParameterTable | null>(null);
@@ -32,8 +31,8 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   public hasUnsavedChanges$ = new BehaviorSubject<boolean>(false);
   showActions$ = new BehaviorSubject<boolean>(false);
 
-  private dataSubscription: Subscription;
-  private dataSubscriptionId: number;
+  private dataSubscription: ParameterSubscription;
+  private idMapping: { [key: number]: NamedObjectId; };
 
   constructor(
     private yamcs: YamcsService,
@@ -46,7 +45,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.instance = this.yamcs.getInstance();
     this.storageClient.getObject('_global', 'displays', objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
@@ -68,22 +66,33 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   private createOrModifySubscription() {
     const ids = this.model$.value!.parameters.map(name => ({ name }));
     if (ids.length) {
-      this.yamcs.getInstanceClient()!.getParameterValueUpdates({
-        subscriptionId: this.dataSubscriptionId || -1,
-        id: ids,
-        abortOnInvalid: false,
-        sendFromCache: true,
-        updateOnExpiration: true,
-        useNumericIds: true,
-      }).then(res => {
-        this.dataSubscriptionId = res.subscriptionId;
-        if (this.dataSubscription) {
-          this.dataSubscription.unsubscribe();
-        }
-        this.dataSubscription = res.parameterValues$.subscribe(pvals => {
-          this.buffer.push(pvals, res.mapping);
+      if (this.dataSubscription) {
+        this.dataSubscription.sendMessage({
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: ids,
+          abortOnInvalid: false,
+          sendFromCache: true,
+          updateOnExpiration: true,
+          action: 'REPLACE',
         });
-      });
+      } else {
+        this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: ids,
+          abortOnInvalid: false,
+          sendFromCache: true,
+          updateOnExpiration: true,
+          action: 'REPLACE',
+        }, data => {
+          if (data.mapping) {
+            this.idMapping = data.mapping;
+          }
+          const pvals = data.values || [];
+          this.buffer.push(pvals, this.idMapping);
+        });
+      }
     }
   }
 
@@ -216,7 +225,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   ngOnDestroy() {
     if (this.dataSubscription) {
-      this.dataSubscription.unsubscribe();
+      this.dataSubscription.cancel();
     }
   }
 }

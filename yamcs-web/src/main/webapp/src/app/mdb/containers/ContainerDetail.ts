@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Container, Instance } from '../../client';
+import { Container } from '../../client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-container-detail',
@@ -9,8 +10,8 @@ import { Container, Instance } from '../../client';
 export class ContainerDetail {
 
   @Input()
-  instance: Instance;
-
-  @Input()
   container: Container;
+
+  constructor(readonly yamcs: YamcsService) {
+  }
 }

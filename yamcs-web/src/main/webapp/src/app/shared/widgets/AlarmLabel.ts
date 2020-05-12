@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Alarm, Instance, InstanceClient } from '../../client';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -13,90 +12,41 @@ export class AlarmLabel implements OnDestroy {
 
   private connectionInfoSubscription: Subscription;
 
-  instance$ = new BehaviorSubject<Instance | null>(null);
-  alarms$ = new BehaviorSubject<Alarm[]>([]);
+  context$ = new BehaviorSubject<string | null>(null);
+  status$ = new BehaviorSubject<GlobalAlarmStatus | null>(null);
 
-  acknowledgedAlarms$: Observable<Alarm[]>;
-  unacknowledgedAlarms$: Observable<Alarm[]>;
-  hasActiveUnacknowledged$: Observable<boolean>;
-  hasActiveAcknowledged$: Observable<boolean>;
+  private statusSubscription: GlobalAlarmStatusSubscription;
 
-  private alarmsByName: { [key: string]: Alarm } = {};
-
-  private instanceClient: InstanceClient;
-  private alarmSubscription: Subscription;
-
-  constructor(private yamcs: YamcsService) {
+  constructor(readonly yamcs: YamcsService) {
     this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
       if (connectionInfo && connectionInfo.instance) {
-        if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance.name) {
+        /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
           this.clearAlarmSubscription();
+        }*/
+        let context = connectionInfo.instance;
+        if (connectionInfo.processor) {
+          const options = {
+            instance: connectionInfo.instance,
+            processor: connectionInfo.processor.name,
+          };
+          this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
+            this.status$.next(status);
+          });
+          context += ';' + connectionInfo.processor;
         }
-        this.instance$.next(connectionInfo.instance);
-        this.setupAlarmSubscription();
+        this.context$.next(context);
       } else {
         this.clearAlarmSubscription();
-        this.instance$.next(null);
+        this.context$.next(null);
       }
-    });
-    this.acknowledgedAlarms$ = this.alarms$.pipe(
-      map(alarms => {
-        return alarms.filter(alarm => !alarm.shelveInfo && alarm.acknowledged);
-      }),
-    );
-    this.unacknowledgedAlarms$ = this.alarms$.pipe(
-      map(alarms => {
-        return alarms.filter(alarm => !alarm.shelveInfo && !alarm.acknowledged);
-      }),
-    );
-    this.hasActiveAcknowledged$ = this.acknowledgedAlarms$.pipe(
-      map(alarms => {
-        for (const alarm of alarms) {
-          if (!alarm.processOK) {
-            return true;
-          }
-        }
-        return false;
-      })
-    );
-    this.hasActiveUnacknowledged$ = this.unacknowledgedAlarms$.pipe(
-      map(alarms => {
-        for (const alarm of alarms) {
-          if (!alarm.processOK) {
-            return true;
-          }
-        }
-        return false;
-      })
-    );
-  }
-
-  private setupAlarmSubscription() {
-    this.instanceClient = this.yamcs.getInstanceClient()!;
-    this.instanceClient.getAlarmUpdates().then(response => {
-      this.alarmSubscription = response.alarm$.subscribe(alarm => {
-        this.processAlarm(alarm);
-        const alarms = Object.values(this.alarmsByName);
-        this.alarms$.next([...alarms]);
-      });
     });
   }
 
   private clearAlarmSubscription() {
-    if (this.alarmSubscription) {
-      this.alarmSubscription.unsubscribe();
+    if (this.statusSubscription) {
+      this.statusSubscription.cancel();
     }
-    this.alarms$.next([]);
-  }
-
-  private processAlarm(alarm: Alarm) {
-    const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-    const normal = alarm.processOK && !alarm.triggered && alarm.acknowledged;
-    if (normal || alarm.shelveInfo) {
-      delete this.alarmsByName[alarmId];
-    } else {
-      this.alarmsByName[alarmId] = alarm;
-    }
+    this.status$.next(null);
   }
 
   ngOnDestroy() {

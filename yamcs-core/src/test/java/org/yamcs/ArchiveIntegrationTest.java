@@ -18,10 +18,10 @@ import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.api.MediaType;
 import org.yamcs.client.BulkRestDataSender;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
+import org.yamcs.client.HttpClient;
 import org.yamcs.client.WebSocketRequest;
 import org.yamcs.events.StreamEventProducer;
 import org.yamcs.protobuf.AlarmData;
@@ -32,7 +32,6 @@ import org.yamcs.protobuf.ConnectionInfo;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditClientRequest;
 import org.yamcs.protobuf.IndexResponse;
-import org.yamcs.protobuf.ListAlarmsResponse;
 import org.yamcs.protobuf.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -46,6 +45,7 @@ import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.alarms.ListAlarmsResponse;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 import org.yamcs.yarch.ColumnSerializer;
@@ -308,7 +308,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     public void testIndexWithRestClient() throws Exception {
         generatePkt13AndPps("2015-02-01T10:00:00", 3600);
 
-        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        restClient.setAcceptMediaType(HttpClient.MT_PROTOBUF);
 
         long start = TimeEncoding.parse("2015-02-01T00:00:00");
         long stop = TimeEncoding.parse("2015-02-01T11:00:00");

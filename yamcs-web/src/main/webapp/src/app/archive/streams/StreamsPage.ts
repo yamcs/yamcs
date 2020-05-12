@@ -2,8 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { Subscription } from 'rxjs';
-import { Instance, StreamEvent } from '../../client';
+import { StreamEvent, StreamStatisticsSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export interface StreamItem {
@@ -20,31 +19,28 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  instance: Instance;
-
   displayedColumns = ['name', 'dataCount'];
 
   dataSource = new MatTableDataSource<StreamItem>();
 
-  private streamEventSubscription: Subscription;
+  private streamStatisticsSubscription: StreamStatisticsSubscription;
 
-  private itemsByName: { [key: string]: StreamItem } = {};
+  private itemsByName: { [key: string]: StreamItem; } = {};
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(readonly yamcs: YamcsService, title: Title) {
     title.setTitle('Streams');
     /*yamcs.getInstanceClient()!.getStreams().then(streams => {
       this.dataSource.data = streams;
     });*/
-    this.instance = yamcs.getInstance();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
 
-    this.yamcs.getInstanceClient()!.getStreamEventUpdates().then(response => {
-      this.streamEventSubscription = response.streamEvent$.subscribe(evt => {
-        this.processStreamEvent(evt);
-      });
+    this.streamStatisticsSubscription = this.yamcs.yamcsClient.createStreamStatisticsSubscription({
+      instance: this.yamcs.instance!,
+    }, evt => {
+      this.processStreamEvent(evt);
     });
   }
 
@@ -82,12 +78,8 @@ export class StreamsPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.streamEventSubscription) {
-      this.streamEventSubscription.unsubscribe();
-    }
-    const client = this.yamcs.getInstanceClient();
-    if (client) {
-      client.unsubscribeStreamEventUpdates();
+    if (this.streamStatisticsSubscription) {
+      this.streamStatisticsSubscription.cancel();
     }
   }
 }

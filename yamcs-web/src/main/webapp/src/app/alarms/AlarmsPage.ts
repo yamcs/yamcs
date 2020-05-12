@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Alarm, EditAlarmOptions, Instance } from '../client';
+import { Alarm, EditAlarmOptions } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
@@ -25,8 +25,6 @@ export class AlarmsPage implements OnDestroy {
     filter: new FormControl(),
     view: new FormControl('standard'),
   });
-
-  instance: Instance;
 
   // Alarm to show in detail pane (only on single selection)
   detailAlarm$ = new BehaviorSubject<Alarm | null>(null);
@@ -51,7 +49,7 @@ export class AlarmsPage implements OnDestroy {
   private filter: string;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private router: Router,
     title: Title,
@@ -59,7 +57,6 @@ export class AlarmsPage implements OnDestroy {
     private authService: AuthService,
   ) {
     title.setTitle('Alarms');
-    this.instance = this.yamcs.getInstance();
     this.selectionSubscription = this.selection.changed.subscribe(() => {
       const selected = this.selection.selected;
       if (selected.length === 1) {
@@ -70,7 +67,7 @@ export class AlarmsPage implements OnDestroy {
     });
 
     this.dataSource = new AlarmsDataSource(this.yamcs);
-    this.dataSource.loadAlarms('realtime');
+    this.dataSource.loadAlarms();
 
     this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
       // Update detail pane
@@ -150,23 +147,21 @@ export class AlarmsPage implements OnDestroy {
 
   unshelveAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'unshelved',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
   }
 
   clearAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const processor = this.yamcs.getProcessor();
       const options: EditAlarmOptions = {
         state: 'cleared',
       };
       const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.getInstanceClient()!.editAlarm(processor.name, alarmId, alarm.seqNum, options);
+      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
     }
   }
 

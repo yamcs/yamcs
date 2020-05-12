@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Command, CommandHistoryEntry, ConnectionInfo, Instance } from '../../client';
+import { Command, CommandHistoryEntry, ConnectionInfo } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -23,7 +23,6 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild('another', { static: false })
   anotherChild: ElementRef;
 
-  instance: Instance;
   config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
@@ -39,12 +38,11 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     private router: Router,
     title: Title,
     private messageService: MessageService,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private location: Location,
     configService: ConfigService,
     authService: AuthService,
   ) {
-    this.instance = yamcs.getInstance();
     this.config = configService.getConfig();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
@@ -52,12 +50,12 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     title.setTitle(`Send a command: ${qualifiedName}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.getInstanceClient()!.getCommand(qualifiedName),
+      this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, qualifiedName),
     ];
 
     const templateId = route.snapshot.queryParamMap.get('template');
     if (templateId) {
-      const promise = this.yamcs.getInstanceClient()!.getCommandHistoryEntry(templateId);
+      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, templateId);
       promises.push(promise);
     }
 
@@ -103,15 +101,14 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     const assignments = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
 
-    const processor = this.yamcs.getProcessor();
     const qname = this.command$.value!.qualifiedName;
-    this.yamcs.getInstanceClient()!.issueCommand(processor.name, qname, {
+    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       assignment: assignments,
       comment,
     }).then(response => {
       this.router.navigate(['/commanding/report', response.id], {
         queryParams: {
-          instance: this.instance.name,
+          c: this.yamcs.context,
         }
       });
     }).catch(err => {

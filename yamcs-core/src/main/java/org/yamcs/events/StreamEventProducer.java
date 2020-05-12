@@ -2,7 +2,6 @@ package org.yamcs.events;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.time.TimeService;

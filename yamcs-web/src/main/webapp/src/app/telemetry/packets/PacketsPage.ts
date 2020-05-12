@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { rowAnimation } from '../../animations';
-import { DownloadPacketsOptions, GetPacketsOptions, Instance, Packet } from '../../client';
+import { DownloadPacketsOptions, GetPacketsOptions, Packet } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
@@ -32,8 +32,6 @@ export class PacketsPage {
   ];
 
   filterControl = new FormControl();
-
-  instance: Instance;
 
   @ViewChild('intervalSelect')
   intervalSelect: Select;
@@ -70,13 +68,12 @@ export class PacketsPage {
   private filter: string;
 
   constructor(
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
     synchronizer: Synchronizer,
   ) {
-    this.instance = yamcs.getInstance();
     title.setTitle('Packets');
 
     this.dataSource = new PacketsDataSource(this.yamcs, synchronizer);
@@ -191,9 +188,8 @@ export class PacketsPage {
       dlOptions.name = this.filter;
     }
 
-    const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadEntries('realtime', options).then(packets => {
-      const downloadURL = instanceClient.getPacketsDownloadURL(dlOptions);
+      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(downloadURL);
     });
   }

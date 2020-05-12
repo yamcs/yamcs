@@ -19,6 +19,7 @@ import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
+import org.yamcs.http.Topic;
 import org.yamcs.protobuf.AbstractGeneralApi;
 import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
@@ -27,7 +28,9 @@ import org.yamcs.protobuf.GetGeneralInfoResponse;
 import org.yamcs.protobuf.GetGeneralInfoResponse.PluginInfo;
 import org.yamcs.protobuf.ListClientConnectionsResponse;
 import org.yamcs.protobuf.ListRoutesResponse;
+import org.yamcs.protobuf.ListTopicsResponse;
 import org.yamcs.protobuf.RouteInfo;
+import org.yamcs.protobuf.TopicInfo;
 
 import com.google.protobuf.Empty;
 
@@ -125,6 +128,37 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
 
         ListRoutesResponse.Builder responseb = ListRoutesResponse.newBuilder();
         responseb.addAllRoutes(result);
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void listTopics(Context ctx, Empty request, Observer<ListTopicsResponse> observer) {
+        List<TopicInfo> result = new ArrayList<>();
+        for (Topic topic : httpServer.getTopics()) {
+            TopicInfo.Builder topicb = TopicInfo.newBuilder()
+                    .setTopic(topic.getName());
+            RpcDescriptor descriptor = topic.getDescriptor();
+            if (descriptor != null) {
+                topicb.setService(descriptor.getService());
+                topicb.setMethod(descriptor.getMethod());
+                topicb.setInputType(descriptor.getInputType().getName());
+                topicb.setOutputType(descriptor.getOutputType().getName());
+                if (descriptor.getDescription() != null) {
+                    topicb.setDescription(descriptor.getDescription());
+                }
+                if (topic.isDeprecated()) {
+                    topicb.setDeprecated(true);
+                }
+            }
+            result.add(topicb.build());
+        }
+
+        Collections.sort(result, (r1, r2) -> {
+            return r1.getTopic().compareToIgnoreCase(r2.getTopic());
+        });
+
+        ListTopicsResponse.Builder responseb = ListTopicsResponse.newBuilder();
+        responseb.addAllTopics(result);
         observer.complete(responseb.build());
     }
 

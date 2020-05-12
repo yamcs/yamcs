@@ -33,7 +33,6 @@
       <ng-container *ngIf="selectedBucket$ | async as bucket">
         <app-object-selector #selector
                              formControlName="object"
-                             instance="_global"
                              [bucket]="bucket"
                              (prefixChange)="updateBreadcrumb($event)"></app-object-selector>
       </ng-container>

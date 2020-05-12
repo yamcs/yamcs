@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 import { AlarmsDataSource } from '../alarms/AlarmsDataSource';
-import { GeneralInfo, Instance, MissionDatabase, TmStatistics } from '../client';
+import { TmStatistics, TMStatisticsSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -16,52 +15,31 @@ import { User } from '../shared/User';
 })
 export class InstanceHomePage implements OnDestroy {
 
-  instance: Instance;
-
   private user: User;
   config: WebsiteConfig;
 
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
-  tmstatsSubscription: Subscription;
+  tmstatsSubscription: TMStatisticsSubscription;
 
   alarmsDataSource: AlarmsDataSource;
 
-  info$: Promise<GeneralInfo>;
-  mdb$: Promise<MissionDatabase>;
-
   constructor(
-    yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private authService: AuthService,
     title: Title,
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
 
-    const processor = yamcs.getProcessor();
-    this.instance = yamcs.getInstance();
     this.user = authService.getUser()!;
-    title.setTitle(this.instance.name);
-    yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
-      response.statistics$.pipe(
-        filter(stats => stats.processor === processor.name),
-        map(stats => stats.tmstats || []),
-      ).subscribe(tmstats => {
-        this.tmstats$.next(tmstats);
-      });
-    });
+    title.setTitle(this.yamcs.instance!);
+    this.tmstatsSubscription = yamcs.yamcsClient.createTMStatisticsSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
+    }, stats => this.tmstats$.next(stats.tmstats || []));
 
     this.alarmsDataSource = new AlarmsDataSource(yamcs);
-    this.alarmsDataSource.loadAlarms('realtime');
-
-    if (this.showMDB()) {
-      this.mdb$ = yamcs.getInstanceClient()!.getMissionDatabase();
-    }
-
-    this.info$ = yamcs.yamcsClient.getGeneralInfo();
-  }
-
-  showMDB() {
-    return this.user.hasSystemPrivilege('GetMissionDatabase');
+    this.alarmsDataSource.loadAlarms();
   }
 
   showAlarms() {
@@ -74,7 +52,7 @@ export class InstanceHomePage implements OnDestroy {
 
   ngOnDestroy() {
     if (this.tmstatsSubscription) {
-      this.tmstatsSubscription.unsubscribe();
+      this.tmstatsSubscription.cancel();
     }
     if (this.alarmsDataSource) {
       this.alarmsDataSource.disconnect();

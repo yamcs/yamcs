@@ -65,7 +65,7 @@ cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/distribution/target
 rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
 
 mkdir -p "$rpmbuilddir/opt/yamcs"
-tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
+tar -xzf distribution/target/yamcs-$pomversion-linux64.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
 
 mkdir -p "$rpmbuilddir/etc/init.d"
 cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
