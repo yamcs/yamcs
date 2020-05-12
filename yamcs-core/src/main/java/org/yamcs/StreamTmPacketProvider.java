@@ -34,7 +34,8 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
     String yamcsInstance;
     YConfiguration config;
 
-    public void init(String yamcsInstance, YConfiguration config) throws ConfigurationException {
+    public void init(String yamcsInstance, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, config);
         this.yamcsInstance = yamcsInstance;
         this.config = config;
     }
@@ -58,12 +59,12 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
         Set<String> streams = new HashSet<>();
-        if(config.containsKey("streams")) {
+        if (config.containsKey("streams")) {
             streams.addAll(config.getList("streams"));
         }
-        
+
         for (StreamConfigEntry sce : streamConfig.getEntries(StandardStreamType.tm)) {
-            if(procName.equals(sce.getProcessor())) {
+            if (procName.equals(sce.getProcessor())) {
                 streams.add(sce.getName());
             }
         }
@@ -71,21 +72,29 @@ public class StreamTmPacketProvider extends AbstractYamcsService implements TmPa
         for (String streamName : streams) {
             StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
             SequenceContainer rootContainer;
-            
-            if (sce!=null && sce.getRootContainer() != null) {
-                rootContainer = sce.getRootContainer();
-            } else {
+            rootContainer = sce.getRootContainer();
+            if (rootContainer == null) {
                 rootContainer = xtcedb.getRootSequenceContainer();
-                if (rootContainer == null) {
-                    throw new ConfigurationException("XtceDb does not have a root sequence container");
-                }
             }
+            if (rootContainer == null) {
+                throw new ConfigurationException(
+                        "XtceDb does not have a root sequence container and none was defined under streamConfig -> tm");
+            }
+
+            log.debug("Processing packets from stream {} starting with root container {}", streamName,
+                    rootContainer.getQualifiedName());
             Stream s = ydb.getStream(streamName);
             if (s == null) {
                 throw new ConfigurationException("Cannot find stream '" + streamName + "'");
             }
             StreamReader reader = new StreamReader(s, rootContainer);
             readers.add(reader);
+        }
+        if (readers.isEmpty()) {
+            throw new ConfigurationException(
+                    "Processor " + procName
+                            + " found no tm_stream to process data from. Please configure the processor: under streamConfig->tm;"
+                            + " If tm processing has to be excluded from this processor, please configure the entry in processors.yaml appropiately");
         }
     }
 
