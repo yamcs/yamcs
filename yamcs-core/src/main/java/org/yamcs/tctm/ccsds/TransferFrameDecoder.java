@@ -7,16 +7,24 @@ public interface TransferFrameDecoder {
         /**
          * CCSDS 732.0-B-3 
          */
-        AOS,
+        AOS(1),
         /**
          * CCSDS 132.0-B-2 
          */
-        TM, 
+        TM(0), 
         /**
          * CCSDS 732.1-B-1 
          */
-        USLP}; 
+        USLP(12); 
     
+        private final int version;
+        CcsdsFrameType(int version) {
+            this.version = version;
+        }
+        public int getVersion() {
+            return version;
+        }
+    }
     /**
      * Parse frame data
      * @param data - byte array representing the data

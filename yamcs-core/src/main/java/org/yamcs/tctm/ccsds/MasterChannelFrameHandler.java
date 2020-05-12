@@ -99,4 +99,12 @@ public class MasterChannelFrameHandler {
     public Collection<VcDownlinkHandler> getVcHandlers() {
         return handlers.values();
     }
+    
+    public int getSpacecraftId() {
+        return params.spacecraftId;
+    }
+    public CcsdsFrameType getFrameType() {
+        return frameType;
+    }
+    
 }
