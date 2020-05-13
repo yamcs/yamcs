@@ -5,6 +5,7 @@ import { AuthInfo, OpenIDConnectInfo } from '../../client';
 import * as utils from '../../shared/utils';
 import { AuthService } from '../services/AuthService';
 import { ConfigService } from '../services/ConfigService';
+import { YamcsService } from '../services/YamcsService';
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -14,6 +15,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   constructor(
     @Inject(APP_BASE_HREF) private baseHref: string,
     private authService: AuthService,
+    private yamcs: YamcsService,
     private router: Router,
     configService: ConfigService,
   ) {
@@ -23,6 +25,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
     try {
       await this.authService.loginAutomatically();
+      this.yamcs.yamcsClient.prepareWebSocketClient();
       return true;
     } catch (err) {
       if (err.name === 'NetworkError' || err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
