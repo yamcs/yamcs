@@ -18,9 +18,8 @@ import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpUtils;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
-import org.yamcs.protobuf.AuthFlow;
-import org.yamcs.protobuf.AuthFlow.Type;
 import org.yamcs.protobuf.AuthInfo;
+import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
 import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.AuthModule;
@@ -28,6 +27,7 @@ import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
+import org.yamcs.security.OpenIDAuthModule;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
@@ -60,8 +60,6 @@ public class AuthHandler extends Handler {
 
     private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
-    private static SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-
     private TokenStore tokenStore;
     private String contextPath;
 
@@ -80,7 +78,7 @@ public class AuthHandler extends Handler {
             handleTokenRequest(ctx, req);
             return;
         } else if (path.equals("/auth/spnego")) {
-            SpnegoAuthModule spnegoAuthModule = securityStore.getAuthModule(SpnegoAuthModule.class);
+            SpnegoAuthModule spnegoAuthModule = getSecurityStore().getAuthModule(SpnegoAuthModule.class);
             if (spnegoAuthModule != null) {
                 spnegoAuthModule.handle(ctx, req);
                 return;
@@ -106,13 +104,23 @@ public class AuthHandler extends Handler {
 
     public static AuthInfo createAuthInfo() {
         AuthInfo.Builder infob = AuthInfo.newBuilder();
-        infob.setRequireAuthentication(!securityStore.getGuestUser().isActive());
-        for (AuthModule authModule : securityStore.getAuthModules()) {
+        infob.setRequireAuthentication(!getSecurityStore().getGuestUser().isActive());
+        for (AuthModule authModule : getSecurityStore().getAuthModules()) {
             if (authModule instanceof SpnegoAuthModule) {
-                infob.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
+                infob.setSpnego(true);
+            }
+            if (authModule instanceof OpenIDAuthModule) {
+                OpenIDConnectInfo.Builder openidb = OpenIDConnectInfo.newBuilder();
+                String clientId = ((OpenIDAuthModule) authModule).getClientId();
+                openidb.setClientId(clientId);
+                String authorizationEndpoint = ((OpenIDAuthModule) authModule).getAuthorizationEndpoint();
+                openidb.setAuthorizationEndpoint(authorizationEndpoint);
+                String scope = ((OpenIDAuthModule) authModule).getScope();
+                openidb.setScope(scope);
+
+                infob.setOpenid(openidb.build());
             }
         }
-        infob.addFlow(AuthFlow.newBuilder().setType(Type.PASSWORD));
         return infob.build();
     }
 
@@ -171,7 +179,7 @@ public class AuthHandler extends Handler {
         String password = getStringFromForm(formDecoder, "password");
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
-            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
             String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
             sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
@@ -197,7 +205,7 @@ public class AuthHandler extends Handler {
         // endpoint.
         String authcode = getStringFromForm(formDecoder, "code");
         try {
-            AuthenticationInfo authenticationInfo = securityStore.login(new ThirdPartyAuthorizationCode(authcode))
+            AuthenticationInfo authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode))
                     .get();
             String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
             sendNewAccessToken(ctx, req, authenticationInfo, refreshToken);
@@ -269,7 +277,7 @@ public class AuthHandler extends Handler {
         token.setBecome(getStringFromForm(formDecoder, "become"));
 
         try {
-            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
             sendNewAccessToken(ctx, req, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -288,7 +296,7 @@ public class AuthHandler extends Handler {
     private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req,
             AuthenticationInfo authenticationInfo, String refreshToken) {
         try {
-            User user = securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+            User user = getSecurityStore().getDirectory().getUser(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
             tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response);
@@ -327,5 +335,9 @@ public class AuthHandler extends Handler {
         }
 
         return null;
+    }
+
+    public static SecurityStore getSecurityStore() {
+        return YamcsServer.getServer().getSecurityStore();
     }
 }

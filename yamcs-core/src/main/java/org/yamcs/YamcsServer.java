@@ -1137,6 +1137,11 @@ public class YamcsServer {
         Files.createDirectories(globalDir);
         Files.createDirectories(instanceDefDir);
 
+        if (config.containsKey("services")) {
+            List<YConfiguration> services = config.getServiceConfigList("services");
+            globalServiceList = createServices(null, services, LOG);
+        }
+
         try {
             securityStore = new SecurityStore();
         } catch (InitException e) {
@@ -1144,11 +1149,6 @@ public class YamcsServer {
                 throw (ValidationException) e.getCause();
             }
             throw new ConfigurationException(e);
-        }
-
-        if (config.containsKey("services")) {
-            List<YConfiguration> services = config.getServiceConfigList("services");
-            globalServiceList = createServices(null, services, LOG);
         }
 
         // Load user-configured instances. These are the ones that are explictly mentioned in yamcs.yaml

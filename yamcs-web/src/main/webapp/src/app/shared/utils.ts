@@ -306,3 +306,21 @@ export function toDate(obj: any): Date {
     throw new Error(`Cannot convert '${obj}' to Date`);
   }
 }
+
+export function toBase64URL(data: string) {
+  return window.btoa(data)
+    .replace(/\//g, '_')
+    .replace(/\+/g, '-')
+    .replace(/=/g, '');
+}
+
+export function fromBase64URL(base64Url: string) {
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  return window.atob(base64);
+}
+
+export function generateUnsignedJWT(claims: { [key: string]: any; }) {
+  const joseHeader = toBase64URL('{"alg":"none"}');
+  const payload = toBase64URL(JSON.stringify(claims));
+  return `${joseHeader}.${payload}.`;
+}

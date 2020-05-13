@@ -42,6 +42,7 @@ import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard'
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { OpenIDCallbackGuard } from '../core/guards/OpenIDCallbackGuard';
 import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { Breadcrumb } from './breadcrumb/Breadcrumb';
 import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
@@ -242,6 +243,7 @@ const guards = [
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   MayReadTablesGuard,
+  OpenIDCallbackGuard,
   SuperuserGuard,
 ];
 

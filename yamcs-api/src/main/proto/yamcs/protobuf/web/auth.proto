@@ -8,20 +8,28 @@ option java_multiple_files = true;
 
 import "yamcs/protobuf/iam/iam.proto";
 
-message AuthFlow {
-  enum Type {
-    PASSWORD = 1; // Login to Yamcs via standard username/password form
-    REDIRECT = 2; // Instruct client to login via an external URL (not yet implemented)
-    SPNEGO = 3; // Login to Yamcs via HTTP Negotiate (/auth/spnego endpoint)
-  }
-  optional Type type = 1;
-  //optional String uri = 2; //in case of POST is just a relative path to yamcs web
-  //optional string state; //the client has to send this to the POST link and then back to Yamcs
+message AuthInfo {
+
+  optional bool requireAuthentication = 1;
+
+  // If true, the server is supportive of SPNEGO negotiation
+  optional bool spnego = 2;
+  
+  // OpenID Connect information. If used, the server expects
+  // web applications to generate an OAuth2 code directly against
+  // the upstream OpenID Connect server.
+  optional OpenIDConnectInfo openid = 3;
 }
 
-message AuthInfo {
-  optional bool requireAuthentication = 1;
-  repeated AuthFlow flow = 2;
+message OpenIDConnectInfo {
+  // The value provided when registering Yamcs against an OpenID server
+  optional string clientId = 1;
+
+  // Endpoint for for authentication or consent
+  optional string authorizationEndpoint = 2;
+
+  // Scope for authorization requests (value to be interpreted by client-side web application) 
+  optional string scope = 3;
 }
 
 // Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework

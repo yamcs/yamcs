@@ -2,11 +2,14 @@ import { Processor } from './processing';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
-  flow: AuthFlow[];
+  spnego: boolean;
+  openid?: OpenIDConnectInfo;
 }
 
-export interface AuthFlow {
-  type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
+export interface OpenIDConnectInfo {
+  clientId: string;
+  authorizationEndpoint: string;
+  scope: string;
 }
 
 export interface TokenResponse {
