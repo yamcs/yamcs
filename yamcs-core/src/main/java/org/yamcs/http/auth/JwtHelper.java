@@ -9,8 +9,6 @@ import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.yamcs.security.User;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -24,11 +22,20 @@ public class JwtHelper {
             .encodeToString("{\"alg\":\"HS256\"}".getBytes());
 
     /**
-     * Generates an unsigned JSON Web Token.
+     * Generates an unsigned JSON Web Token using default claims iss, sub, iat and exp
      */
-    public static String generateUnsignedToken(User user, int ttl) {
+    public static String generateUnsignedToken(String issuer, String subject, int ttl) {
+        JsonObject claims = generateDefaultClaims(issuer, subject, ttl);
+        return generateUnsignedToken(claims);
+    }
+
+    /**
+     * Generates an unsigned JSON Web Token using fully custom claims.
+     */
+    public static String generateUnsignedToken(JsonObject claims) {
         String joseHeader = NO_ALG_HEADER;
-        String payload = generatePayload(user, ttl);
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(claims.toString().getBytes(StandardCharsets.UTF_8));
         return joseHeader + "." + payload + ".";
     }
 
@@ -36,30 +43,39 @@ public class JwtHelper {
      * Generates a signed JSON Web Token appended with a signature which can be used to validate the JWT by whoever
      * knows the specified secret.
      */
-    public static String generateHS256Token(User user, byte[] secret, int ttl)
+    public static String generateHS256Token(String issuer, String subject, byte[] secret, int ttl)
+            throws InvalidKeyException, NoSuchAlgorithmException {
+        JsonObject claims = generateDefaultClaims(issuer, subject, ttl);
+        return generateHS256Token(claims, secret);
+    }
+
+    /**
+     * Generates a signed JSON Web Token appended with a signature which can be used to validate the JWT by whoever
+     * knows the specified secret.
+     */
+    public static String generateHS256Token(JsonObject claims, byte[] secret)
             throws InvalidKeyException, NoSuchAlgorithmException {
         String joseHeader = HS256_HEADER;
-        String payload = generatePayload(user, ttl);
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(claims.toString().getBytes(StandardCharsets.UTF_8));
         String unsignedToken = joseHeader + "." + payload; // Without trailing period
 
         String signature = hmacSha256(secret, unsignedToken);
         return joseHeader + "." + payload + "." + signature;
     }
 
-    private static String generatePayload(User user, int ttl) {
+    private static JsonObject generateDefaultClaims(String issuer, String subject, int ttl) {
         JsonObject claims = new JsonObject();
 
         // Standard JWT props (aka Registered Claims)
-        claims.addProperty("iss", "Yamcs"); // Issuer of the JWT token
-        claims.addProperty("sub", user.getName()); // Subject
+        claims.addProperty("iss", issuer); // Issuer of the JWT token
+        claims.addProperty("sub", subject); // Subject
         long now = System.currentTimeMillis() / 1000;
         claims.addProperty("iat", now); // Issued at (Time at issuer)
         if (ttl >= 0) {
             claims.addProperty("exp", now + ttl); // Expires at (Time at issuer)
         }
-
-        return Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(claims.toString().getBytes(StandardCharsets.UTF_8));
+        return claims;
     }
 
     private static String hmacSha256(byte[] secret, String data) throws NoSuchAlgorithmException, InvalidKeyException {

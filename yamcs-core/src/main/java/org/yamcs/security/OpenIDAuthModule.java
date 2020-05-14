@@ -132,8 +132,9 @@ public class OpenIDAuthModule implements AuthModule {
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
 
                 String idToken = response.get("id_token").getAsString();
+                String accessToken = response.get("access_token").getAsString();
                 JsonObject claims = JwtHelper.decodeUnverified(idToken);
-                return createAuthenticationInfo(idToken, claims);
+                return createAuthenticationInfo(idToken, accessToken, claims);
             } else {
                 Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
@@ -144,10 +145,10 @@ public class OpenIDAuthModule implements AuthModule {
         }
     }
 
-    private OpenIDAuthenticationInfo createAuthenticationInfo(String idToken, JsonObject claims) {
+    private OpenIDAuthenticationInfo createAuthenticationInfo(String idToken, String accessToken, JsonObject claims) {
         String username = findAttribute(claims, nameAttributes);
 
-        OpenIDAuthenticationInfo authInfo = new OpenIDAuthenticationInfo(this, idToken, username);
+        OpenIDAuthenticationInfo authInfo = new OpenIDAuthenticationInfo(this, idToken, accessToken, username);
         authInfo.setEmail(findAttribute(claims, emailAttributes));
         authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
 
@@ -210,13 +211,15 @@ public class OpenIDAuthModule implements AuthModule {
         }
     }
 
-    private static class OpenIDAuthenticationInfo extends AuthenticationInfo {
-        @SuppressWarnings("unused")
-        String idToken;
+    protected static class OpenIDAuthenticationInfo extends AuthenticationInfo {
+        // Make available for extensions that maybe want to add roles.
+        public String idToken;
+        public String accessToken;
 
-        OpenIDAuthenticationInfo(AuthModule authenticator, String idToken, String username) {
+        OpenIDAuthenticationInfo(AuthModule authenticator, String idToken, String accessToken, String username) {
             super(authenticator, username);
             this.idToken = idToken;
+            this.accessToken = accessToken;
         }
     }
 }

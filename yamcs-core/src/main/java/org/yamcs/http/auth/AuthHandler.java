@@ -313,7 +313,7 @@ public class AuthHandler extends Handler {
     private TokenResponse generateTokenResponse(User user, String refreshToken)
             throws InvalidKeyException, NoSuchAlgorithmException {
         int ttl = 500; // in seconds
-        String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getServer().getSecretKey(), ttl);
+        String jwt = JwtHelper.generateHS256Token("Yamcs", user.getName(), YamcsServer.getServer().getSecretKey(), ttl);
 
         TokenResponse.Builder responseb = TokenResponse.newBuilder();
         responseb.setTokenType("bearer");
