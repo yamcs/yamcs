@@ -302,6 +302,8 @@ public class RdbStorageEngine implements StorageEngine {
         for (Tablespace t : tablespaces.values()) {
             t.close();
         }
+        tablespaces.clear();
         partitionManagers.clear();
+        bucketDbs.clear();
     }
 }

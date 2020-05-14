@@ -60,6 +60,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.RDBFactory;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yaml.snakeyaml.Yaml;
 
 import com.beust.jcommander.JCommander;
@@ -268,7 +269,7 @@ public class YamcsServer {
             }
         }
         // Shutdown database when we're sure no services are using it.
-        RDBFactory.shutdownAll();
+        RdbStorageEngine.getInstance().shutdown();
     }
 
     public static boolean hasInstance(String instance) {
