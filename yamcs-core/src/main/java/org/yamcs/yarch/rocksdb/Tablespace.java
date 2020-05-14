@@ -199,7 +199,7 @@ public class Tablespace {
         return tr;
     }
 
-    TablespaceRecord updateRecord(String yamcsInstance, WriteBatch writeBatch, TablespaceRecord.Builder trb) {
+    TablespaceRecord updateRecord(String yamcsInstance, WriteBatch writeBatch, TablespaceRecord.Builder trb) throws IOException {
         if (!trb.hasType()) {
             throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
         }
@@ -212,7 +212,11 @@ public class Tablespace {
 
         TablespaceRecord tr = trb.build();
         log.debug("Adding new metadata record {}", tr);
-        writeBatch.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+        try {
+            writeBatch.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+        } catch (RocksDBException e) {
+           throw new IOException(e);
+        }
         return tr;
     }
 
