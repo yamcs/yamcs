@@ -1,32 +1,45 @@
 Event Updates
 =============
 
-The `events` resource type within the WebSocket API allows subscribing to event updates.
+Subscribe to event updates on a :doc:`../websocket` connection using the topic ``events``. This will make your WebSocket connection receive instance-wide events.
 
 
-.. rubric:: Subscribe
+.. rubric:: Request Schema (protobuf)
+.. code-block:: proto
 
-Within the WebSocket request envelope use these values:
+    message SubscribeEventsRequest {
+      optional string instance = 1;
+    }
 
-* request-type `events`
-* request `subscribe`
 
-This will make your web socket connection receive updates of the type `ProtoDataType.EVENT`.
+.. rubric:: Response Schema (protobuf)
+.. code-block:: proto
 
-Here's example output in JSON (with Protobuf, there's an applicable getter in the `WebSocketSubscriptionData`).
-
-.. code-block:: json
-
-    [1,2,3]
-    [1,4,0,{"dt":"EVENT","data":{"source":"CustomAlgorithm","generationTime":1440823760490,"receptionTime":1440823760490,"seqNumber":325,"type":"bla","message":"uhuh0.4890178832134868","severity":0}}]
-    [1,4,1,{"dt":"EVENT","data":{"source":"CustomAlgorithm","generationTime":1440823765491,"receptionTime":1440823765491,"seqNumber":326,"type":"bla","message":"uhuh0.29612159559494056","severity":0}}]
-    [1,4,2,{"dt":"EVENT","data":{"source":"CustomAlgorithm","generationTime":1440823770490,"receptionTime":1440823770490,"seqNumber":327,"type":"bla","message":"uhuh0.7098682009567915","severity":0}}]
-
-.. rubric:: Unsubscribe
-
-Within the WebSocket request envelope use these values:
-
-* request-type `events`
-* request `unsubscribe`
-
-This will stop your WebSocket connection from getting further event updates.
+    message Event {
+      enum EventSeverity {
+        INFO = 0;
+        WARNING = 1;
+        ERROR = 2;
+        //the levels below are compatible with XTCE
+        // we left the 4 out since it could be used 
+        // for warning if we ever decide to get rid of the old ones
+        WATCH = 3;
+        DISTRESS = 5;
+        CRITICAL = 6;
+        SEVERE = 7;
+      }
+      required string source = 1;
+      required int64 generationTime = 2;
+      optional int64 receptionTime = 3;
+      optional int32 seqNumber = 4;
+      optional string type = 5;
+      required string message = 6;
+      optional EventSeverity severity = 7[default=INFO];
+    
+      optional string generationTimeUTC = 8;
+      optional string receptionTimeUTC = 9;
+      
+      optional string createdBy = 10; // Set by API when event was posted by a user
+    
+      extensions 100 to 10000;
+    }

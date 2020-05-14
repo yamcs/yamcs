@@ -112,7 +112,6 @@ message CommandAssignment {
 
 message CommandHistoryEntry {
   required CommandId commandId = 1;
-  //required string cmdName = 2; //removed because it's part of the CommandId
   repeated CommandHistoryAttribute attr = 3;
   optional string generationTimeUTC = 4;
   repeated CommandAssignment assignment = 5;

@@ -31,6 +31,6 @@ List all links for the given Yamcs instance::
 .. rubric:: Response Schema (protobuf)
 .. code-block:: proto
 
-    message ListLinkInfoResponse {
+    message ListLinksResponse {
       repeated yamcsManagement.LinkInfo links = 1;
     }

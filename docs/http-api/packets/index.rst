@@ -7,4 +7,3 @@ Packets
     list-packets
     get-packet
     export-packets
-    packet-updates

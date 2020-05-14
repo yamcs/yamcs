@@ -1,6 +1,8 @@
 Packet Updates
 ==============
 
+Subscribe to packets on a :doc:`../websocket` connection using the topic ``packets``. This will make your WebSocket connection receive instance-wide statistics on link activity.
+
 The `packets` resource type within the WebSocket API allows subscribing to telemetry packets (containers) updates.
 
 Subscribe to packets received on a given stream:

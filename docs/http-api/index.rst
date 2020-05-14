@@ -6,11 +6,11 @@ Yamcs HTTP API
     :maxdepth: 1
     :titlesonly:
 
-    general/index
+    general
+    websocket
     alarms/index
     buckets/index
     cfdp/index
-    clients/index
     commanding/index
     events/index
     indexes/index

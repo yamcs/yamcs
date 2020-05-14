@@ -6,4 +6,4 @@ Alarms
 
     list-alarms
     edit-alarm
-    alarm-notices
+    alarm-updates

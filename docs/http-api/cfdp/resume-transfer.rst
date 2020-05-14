@@ -1,5 +1,5 @@
-CFDP Resume
-===========
+Resume Transfer
+===============
 
 Resume a specific transfer::
 

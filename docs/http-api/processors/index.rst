@@ -9,3 +9,4 @@ Processors
     create-processor
     edit-processor
     delete-processor
+    processor-updates

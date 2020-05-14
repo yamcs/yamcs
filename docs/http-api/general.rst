@@ -7,12 +7,6 @@ Yamcs provides an HTTP API allowing external tools to integrate with Yamcs resou
 
     If you develop in Python consider using the `Python Client <https://yamcs.org/docs/yamcs-python/>`_ which provides an idiomatic mapping for most of the operations documented here.
 
-.. toctree::
-    :hidden:
-
-    management-updates
-    websocket
-
 
 .. rubric:: HTTP Verbs
 
@@ -40,12 +34,12 @@ All timestamps are returned as UTC and formatted according to ISO 8601. For exam
 
 When an exception is caught while handling an HTTP request, the server will try to give some feedback to the client by wrapping it in a generic exception message like so:
 
-.. code-block:: json
+.. code-block:: typescript
 
     {
       "exception" : {
-        "type": "<short>",
-        "msg": "<long>"
+        "type": string, // Short
+        "msg": string // Long
       }
     }
 

@@ -11,5 +11,5 @@ Commanding
     edit-command-queue
     list-queued-commands
     edit-queued-command
-    command-history-updates
-    command-queues-updates
+    command-updates
+    command-queue-updates
