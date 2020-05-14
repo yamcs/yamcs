@@ -137,7 +137,7 @@ public class TcpTcDataLinkTest {
             int seq1 = mypub.successful.get(i);
             int seq2 = mypub.successful.get(i + tcMaxRate);
             long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
-            assertTrue("gap is not right: " + gap, gap >= 990 && gap < 1010);
+            assertTrue("gap is not right: " + gap, gap >= 850 && gap < 1150);
         }
         dataLink.stopAsync();
     }

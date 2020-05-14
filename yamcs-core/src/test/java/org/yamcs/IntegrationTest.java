@@ -462,8 +462,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // assertEquals(2, pdata.getParameterCount());
         checkPvals(pdata.getParameterList(), packetGenerator);
 
-        // after 1.5 sec we should get an set of expired parameters
-        pdata = wsListener.parameterDataList.poll(3, TimeUnit.SECONDS);
+        // after 1500*1.9 millisec we should get an set of expired parameters
+        pdata = wsListener.parameterDataList.poll(4500, TimeUnit.MILLISECONDS);
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
         for (ParameterValue pv : pdata.getParameterList()) {
