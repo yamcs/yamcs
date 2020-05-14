@@ -33,7 +33,7 @@ processor (string)
     The name of the processor from which to use the parameter cache. Default: ``realtime``.
 
 source (string)
-    | Specifies how to retrieve the parameters. Either ``ParameterArchive`` or ``replay``. If ``replay`` is specified, a replay processor will be created and data will be processed with the active XTCEDB. Note that this is much slower than receiving data from the ParameterArchive.
+    | Specifies how to retrieve the parameters. Either ``ParameterArchive`` or ``replay``. If ``replay`` is specified, a replay processor will be created and data will be processed with the active Mission Database. Note that this is much slower than receiving data from the ParameterArchive.
     | Default: ``ParameterArchive``.
 
 

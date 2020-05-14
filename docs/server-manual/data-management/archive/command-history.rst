@@ -27,7 +27,7 @@ Where the columns are:
 * | **seqNum**
   | a sequence number provided by the originator. Each command originator is supposed to keep an independent sequence count for the commands it sends.
 * | **cmdName**
-  | the XTCE fully qualified name of the command.
+  | the fully qualified name of the command.
 * | **binary**
   | the binary packet contents.
 

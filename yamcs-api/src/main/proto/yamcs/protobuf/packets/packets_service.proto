@@ -50,6 +50,13 @@ service PacketsApi {
       get: "/api/archive/{instance}:exportPackets"
     };
   }
+  
+  // Subscribe to packets
+  rpc SubscribePackets(SubscribePacketsRequest) returns (stream TmPacketData) {
+    option (yamcs.api.websocket) = {
+      topic: "packets"
+    };
+  }
 }
 
 message ListPacketNamesRequest {
@@ -96,3 +103,7 @@ message ExportPacketsRequest {
   repeated string name = 4;
 }
 
+message SubscribePacketsRequest {
+  optional string instance = 1;
+  optional string stream = 2;
+}

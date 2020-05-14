@@ -111,7 +111,7 @@ parity (string)
 Mission Database
 ----------------
 
-The definition of TSE string commands is done in XTCE space systems resorting under ``/TSE``. The ``/TSE`` node is added by defining :javadoc:`org.yamcs.xtce.TseLoader` in the MDB loader tree. Example:
+The definition of TSE string commands is done in space systems resorting under ``/TSE``. The ``/TSE`` node is added by defining :javadoc:`org.yamcs.xtce.TseLoader` in the MDB loader tree. Example:
 
 .. code-block:: yaml
 
