@@ -36,7 +36,7 @@ public class SpaceSystem extends NameDescription {
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<>();
     private Map<String, CommandContainer> cmdContainers = new LinkedHashMap<>();
 
-    private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
+    private Map<String, SpaceSystem> subsystems = new LinkedHashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
     private HashMap<String, ArgumentType> argumentTypes = new HashMap<>();
 

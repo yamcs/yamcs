@@ -164,6 +164,7 @@ public class XtceDbFactory {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
                 if (seqc != null) {
                     db.setRootSequenceContainer(seqc);
+                    break;
                 }
             }
 
