@@ -229,7 +229,7 @@ public class PacketDecoder {
     }
 
     /**
-     * Skip or not the idle packets. If true (default), the idle packets are not being send to the consumers.
+     * Skip or not the idle packets. If true (default), the idle packets are not sent to the consumer.
      * 
      * @param skipIdlePackets
      */
