@@ -50,6 +50,18 @@ service RocksDbApi {
   }
 
   // Get a text-dump describing a database
+  //
+  // This operation can be used to debug the inner workings of RocksDB database.
+  // For example the property rocksdb.estimate-table-readers-mem will provide an
+  // estimation of how much memory is used by the index and filter cache of
+  // RocksDB (note that the memory used by RocksDB is outside the java heap space).
+  //
+  // See also: https://github.com/facebook/rocksdb/blob/master/include/rocksdb/db.h
+  //
+  // The response contains a dump of various rocksdb properties for each column
+  // family. The single value properties are presented in a "name: value" list.
+  // The multiline properties are preceded by a line including the property name
+  // between dashes.
   rpc DescribeDatabase(DescribeDatabaseRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/archive/rocksdb/{tablespace}/{dbpath**}:describe"

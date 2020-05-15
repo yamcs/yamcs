@@ -60,7 +60,7 @@ public class ProtobufRegistry {
     }
 
     public void importDefinitions(InputStream in) throws IOException {
-        if(in == null) {
+        if (in == null) {
             throw new NullPointerException("input stream cannot be null");
         }
         FileDescriptorSet proto = FileDescriptorSet.parseFrom(in, extensionRegistry);
@@ -105,10 +105,6 @@ public class ProtobufRegistry {
                 }
             }
         }
-    }
-
-    public void importMessageTypes() {
-
     }
 
     private void scanComments(FileDescriptorProto file) {

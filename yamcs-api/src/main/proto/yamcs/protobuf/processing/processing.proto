@@ -39,6 +39,8 @@ service ProcessingApi {
   }
   
   // Delete a processor
+  //
+  // Only replay processors can be removed.
   rpc DeleteProcessor(DeleteProcessorRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/processors/{instance}/{processor}"
@@ -69,6 +71,8 @@ service ProcessingApi {
   }
   
   // Set a parameter's value
+  //
+  // Only some type of parameters can be updated.
   rpc SetParameterValue(SetParameterValueRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       put: "/api/processors/{instance}/{processor}/parameters/{name*}"
@@ -97,6 +101,9 @@ service ProcessingApi {
   }
   
   // Issue a command
+  //
+  // After validating the input parameters, the command will be added to the appropriate
+  // command queue for further dispatch.
   rpc IssueCommand(IssueCommandRequest) returns (IssueCommandResponse) {
     option (yamcs.api.route) = {
       post: "/api/processors/{instance}/{processor}/commands/{name*}"
@@ -120,6 +127,9 @@ service ProcessingApi {
   }
   
   // Receive parameter updates
+  //
+  // The input message can be sent multiple types, allowing to alter a
+  // subscription with the ``action`` field.
   rpc SubscribeParameters(stream SubscribeParametersRequest) returns (stream SubscribeParametersData) {
     option (yamcs.api.websocket) = {
       topic: "parameters"
@@ -139,6 +149,7 @@ message ListProcessorTypesResponse {
 }
 
 message ListProcessorsRequest {
+  // Return only processors of this instance
   optional string instance = 1;
 }
 
@@ -152,7 +163,10 @@ message SubscribeTMStatisticsRequest {
 }
 
 message SubscribeProcessorsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
@@ -163,8 +177,12 @@ message SubscribeParametersRequest {
     REMOVE = 2;
   }
   
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+
   repeated NamedObjectId id = 3;
   
   // Send an error message if any parameter is invalid.
@@ -199,52 +217,107 @@ message SubscribeParametersData {
 }
 
 message GetProcessorRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
 message DeleteProcessorRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
 message CreateProcessorRequest {
+  // **Required.** The name of the Yamcs instance.
   optional string instance = 1;
+  
+  // **Required.** The name of the processor. Must be unique for the Yamcs instance.
   optional string name = 2;
+  
+  // The client IDs that should be connected to this processor.
   repeated int32 clientId = 3;
+  
+  // Keep the processor when terminated. Default: ``no``.
   optional bool persistent = 4;
+  
+  // **Required.** The type of the processor. The available values depend on how
+  // Yamcs Server is configured. Most Yamcs deployments support at least a type
+  // ``Archive`` which allows for the creation of processors replaying archived
+  // data.
   optional string type = 5;
+  
+  // Configuration options specific to the processor type. Note that this should
+  // be a string representation of a valid JSON structure.
   optional string config = 6;
 }
 
 message EditProcessorRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // The state this replay processor should be updated to. Either ``paused`` or
+  // ``running``.
   optional string state = 3;
+  
+  // The time where the processing needs to jump towards. Must be a date string
+  // in ISO 8601 format.
   optional google.protobuf.Timestamp seek = 4;
+  
+  // The speed of the processor. One of:
+  // * ``afap``
+  // * a speed factor relative to the original speed. Example: ``2x``
+  // * a fixed delay value in milliseconds. Example: ``2000``
   optional string speed = 5;
 }
 
 message GetParameterValueRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Parameter name. 
   optional string name = 3;
+
+  // Whether the latest cached value may be returned. Default: ``yes``.
   optional bool fromCache = 4;
   
-  // if not fromCache, wait this time (in milliseconds) to receive the parameter
+  // Time in milliseconds to wait on a value (only considered if
+  // ``fromCache=no``). When the timeout is met, the call will return
+  // with no or partial data. Default: ``10000``.
   optional uint64 timeout = 5;
 }
 
 message SetParameterValueRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Parameter name.
   optional string name = 3;
+  
+  // The new value.
   optional Value value = 4;
 }
 
 message BatchGetParameterValuesRequest {
+  // Yamcs instance name.
   optional string instance = 4;
+  
+  // Processor name.
   optional string processor = 5;
+  
   repeated NamedObjectId id = 1;
   optional bool fromCache = 2;
   
@@ -261,7 +334,11 @@ message BatchSetParameterValuesRequest {
     optional NamedObjectId id = 1;
     optional Value value = 2;
   }
+  
+  // Yamcs instance name.
   optional string instance = 2;
+  
+  // Processor name.
   optional string processor = 3;
   repeated SetParameterValueRequest request = 1;
 }
@@ -271,16 +348,37 @@ message IssueCommandRequest {
     optional string name = 1;
     optional string value = 2;
   }
+  
+  // Yamcs instance name.
   optional string instance = 6;
+  
+  // Processor name.
   optional string processor = 7;
+  
+  // Command name.
   optional string name = 8;
+  
+  // The name/value assignments for this command.
   repeated Assignment assignment = 1;
+  
+  // The origin of the command. Typically a hostname.
   optional string origin = 2;
+  
+  // The sequence number as specified by the origin. This gets
+  // communicated back in command history and command queue entries,
+  // thereby allowing clients to map local with remote command
+  // identities.
   optional int32 sequenceNumber = 3;
+  
+  // Whether a response will be returned without actually issuing
+  // the command. This is useful when debugging commands.
+  // Default ``no``
   optional bool dryRun = 4;
   
+  // Comment attached to this command.
   optional string comment = 5;
-  // other command options
+
+  // Other command options
   optional commanding.CommandOptions commandOptions = 10;
 }
 
@@ -298,8 +396,13 @@ message IssueCommandResponse {
 }
 
 message UpdateCommandHistoryRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Command name.
   optional string name = 3;
   optional string id = 4;
   repeated commanding.CommandHistoryAttribute attributes = 5;

@@ -61,7 +61,11 @@ enum AlarmSeverity {
   SEVERE = 5;
 }
 
-// Summary of an alarm applicable for Parameter or Event (possibly other in the future) alarms.
+// Summary of an alarm applicable for Parameter or Event (possibly
+// other in the future) alarms.
+// Contains detailed information on the value occurrence that initially
+// triggered the alarm, the most severe value since it originally triggered,
+// and the latest value at the time of your request.
 message AlarmData {
   optional AlarmType type = 1;
   optional google.protobuf.Timestamp triggerTime = 2 ;
@@ -93,7 +97,6 @@ message AlarmData {
 
   // Whether the alarm will stay triggered even when the process is OK
   optional bool latching = 12;
- 
 
   // if the process that generated the alarm is ok (i.e. parameter is within limits)
   optional bool processOK = 13;

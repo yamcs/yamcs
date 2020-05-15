@@ -66,7 +66,10 @@ service QueueApi {
 }
 
 message ListQueuesRequest {
+  // Yamcs instance namee.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
@@ -75,31 +78,54 @@ message ListQueuesResponse {
 }
 
 message SubscribeQueueStatisticsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
 message SubscribeQueueEventsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
 }
 
 message GetQueueRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Queue name.
   optional string name = 3;
 }
 
 message EditQueueRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Queue name.
   optional string name = 3;
+
+  // The state of the queue. Either ``enabled``, ``disabled`` or ``blocked``.
   optional string state = 4;
 }
 
 message ListQueueEntriesRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Queue name.
   optional string name = 3;
 }
 
@@ -108,9 +134,17 @@ message ListQueueEntriesResponse {
 }
 
 message EditQueueEntryRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 2;
+  
+  // Queue name.
   optional string name = 3;
+  
   optional string uuid = 4;
+  
+  // The state of the entry. Either ``released`` or ``rejected``.
   optional string state = 5;
 }
