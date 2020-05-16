@@ -537,7 +537,7 @@ public class TableDefinition {
                     e);
         }
 
-        return new Tuple(tdef, cols.toArray());
+        return new Tuple(tdef, cols);
     }
 
     public boolean isCompressed() {

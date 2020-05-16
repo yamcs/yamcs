@@ -1,6 +1,5 @@
 package org.yamcs.yarch;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.yamcs.ConfigurationException;
@@ -11,7 +10,7 @@ public class ProtobufDataType extends DataType {
 
 private final String className;
     protected ProtobufDataType(String className) {
-        super(_type.PROTOBUF);
+        super(_type.PROTOBUF, PROTOBUF_ID);
         this.className = className;
     }
     

@@ -15,26 +15,32 @@ import org.yamcs.parameter.ParameterValue;
  *
  */
 public class DataType {
-    private static final long serialVersionUID = 201101181144L;
     
     public enum _type {BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST}
     public final _type val;
     
-    public static final DataType BYTE = new DataType(_type.BYTE);
-    public static final DataType SHORT = new DataType(_type.SHORT);
-    public static final DataType INT = new DataType(_type.INT);
-    public static final DataType LONG = new DataType(_type.LONG);
-    public static final DataType DOUBLE = new DataType(_type.DOUBLE);
-    public static final DataType STRING = new DataType(_type.STRING);
-    public static final DataType BINARY = new DataType(_type.BINARY);
-    public static final DataType BOOLEAN = new DataType(_type.BOOLEAN);
-    public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP);
-    public static final DataType ENUM = new DataType(_type.ENUM);
-    public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE);
+    public static final DataType BYTE = new DataType(_type.BYTE, (byte)1);
+    public static final DataType SHORT = new DataType(_type.SHORT, (byte)2);
+    public static final DataType INT = new DataType(_type.INT, (byte)3);
+    public static final DataType LONG = new DataType(_type.LONG, (byte)4);
+    public static final DataType DOUBLE = new DataType(_type.DOUBLE, (byte)5);
+    public static final DataType STRING = new DataType(_type.STRING, (byte)6);
+    public static final DataType BINARY = new DataType(_type.BINARY, (byte)7);
+    public static final DataType BOOLEAN = new DataType(_type.BOOLEAN, (byte)8);
+    public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP, (byte)9);
+    public static final DataType ENUM = new DataType(_type.ENUM, (byte)10);
+    public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE, (byte)11);
 
+    public static final byte PROTOBUF_ID = 12;
+    public static final byte TUPLE_ID = 13;
+    public static final byte LIST_ID = 14;
+    
+    //the id has been added in Yamcs 4.11 - it will be stored on disk as 
+    private final byte id;
 
-    protected DataType(_type t) {
+    protected DataType(_type t, byte id) {
       this.val = t;
+      this.id = id;
     }
     
     public static DataType tuple(TupleDefinition td) {
@@ -311,5 +317,9 @@ public class DataType {
             return dt2.val==_type.STRING || dt2.val==_type.ENUM;
         }
         return false;
+    }
+
+    public byte getTypeId() {
+        return id;
     }
 }

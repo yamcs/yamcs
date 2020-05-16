@@ -1,11 +1,10 @@
 package org.yamcs.yarch;
 
-import org.yamcs.yarch.DataType._type;
 
 public class TupleDataType extends DataType {
     private final TupleDefinition td;
     protected TupleDataType(TupleDefinition td) {
-        super(_type.TUPLE);
+        super(_type.TUPLE, TUPLE_ID);
         this.td = td;
     }
 
