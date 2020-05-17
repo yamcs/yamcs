@@ -5,6 +5,7 @@ Version 4.11.0 released
   packet invalid
   local time used instead of spacecraft generation time extracted from packet
   do not archive
+- implemented a replication service
 
 Version 4.10.9 released 24-Apr-2020
 - reorganized the links by removing the DataLinkInitializer and creating a LinkManager 

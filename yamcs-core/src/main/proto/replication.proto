@@ -1,0 +1,46 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.replication.protobuf";
+option java_outer_classname = "ReplicationProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+
+
+//sent from Slave to Master directly when the Master is the TCP server 
+//or after a Wakeup when the Slave is the TCP server
+message Request {
+    enum Type {START_REPLAY = 1;};
+    optional string authToken = 1;
+    optional uint32 requestSeq = 2;//used to track back the response
+    optional string yamcsInstance =3;
+    optional Type type = 4;  //currently only START_REPLAY
+    optional uint64 startTxId = 5; //start replay with this transaction 
+}
+
+//sent from Master to Slave when the Slave is the TCP server
+//the Slave will send back a Request on the same socket
+message Wakeup {
+    optional string authToken = 1 ;
+    optional string yamcsInstance = 2; 
+}
+
+message Response {
+   optional uint32 requestSeq = 1;
+   optional int32 result = 2;
+   optional string errorMsg = 3;
+}
+
+message ColumnInfo {
+    optional uint32 id = 1;
+    optional string name = 2;  
+    optional string type = 3;
+    optional string protoClass = 4; //the name of the class implementing the proto object if the dataType=PROTOBUF
+}
+
+message StreamInfo {
+    optional uint32 id = 1;   //stream id 
+    optional string name = 2;  //stream name
+    repeated ColumnInfo columns = 3;
+}
