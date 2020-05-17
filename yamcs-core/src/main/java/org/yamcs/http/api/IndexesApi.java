@@ -20,7 +20,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.protobuf.AbstractIndexApi;
+import org.yamcs.protobuf.AbstractIndexesApi;
 import org.yamcs.protobuf.IndexEntry;
 import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.IndexResponse;
@@ -47,7 +47,7 @@ import org.yamcs.yarch.YarchException;
 
 import com.google.protobuf.Empty;
 
-public class IndexApi extends AbstractIndexApi<Context> {
+public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,

@@ -12,7 +12,7 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 
-service IndexApi {
+service IndexesApi {
 
   // List command history index
   rpc ListCommandHistoryIndex(ListCommandHistoryIndexRequest) returns (IndexResponse) {
