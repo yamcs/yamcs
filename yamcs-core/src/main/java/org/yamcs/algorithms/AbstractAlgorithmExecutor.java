@@ -2,9 +2,7 @@ package org.yamcs.algorithms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +46,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
      * @param items
      * @return true if the algorithm should run
      */
+    @Override
     public synchronized boolean updateParameters(List<ParameterValue> items) {
         boolean skipRun = false;
         List<InputParameter> l = algorithmDef.getInputList();
@@ -56,7 +55,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
             for (ParameterValue pval : items) {
-                if(pval.getAcquisitionStatus() == AcquisitionStatus.INVALID) {
+                if (pval.getAcquisitionStatus() == AcquisitionStatus.INVALID) {
                     continue;
                 }
                 if (pInstance.getParameter().equals(pval.getParameter())) {
@@ -91,8 +90,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 }
             }
         }
-        if(!skipRun && !triggered && log.isTraceEnabled()) {
-            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}", algorithmDef.getName(),
+        if (!skipRun && !triggered && log.isTraceEnabled()) {
+            log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
+                    algorithmDef.getName(),
                     algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
         }
         boolean shouldRun = (!skipRun && triggered);
@@ -100,9 +100,8 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     }
 
     /**
-     * Called when the given inputParameter receives a value.
-     * idx is the index of the inputParameter in the algorithm definition input list
-     * Note that all values are also collected in the inputList
+     * Called when the given inputParameter receives a value. idx is the index of the inputParameter in the algorithm
+     * definition input list Note that all values are also collected in the inputList
      * 
      * @param inputParameter
      * @param newValue
@@ -137,13 +136,6 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             }
         }
         return -min;
-    }
-
-    @Override
-    public Set<Parameter> getRequiredParameters() {
-        return algorithmDef.getInputList().stream()
-                .map(ip -> ip.getParameterInstance().getParameter())
-                .collect(Collectors.toSet());
     }
 
     @Override
