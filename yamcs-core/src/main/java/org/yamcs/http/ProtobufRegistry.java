@@ -86,18 +86,17 @@ public class ProtobufRegistry {
                     String methodName = method.getName();
                     DescriptorProto inputType = messageTypes.get(method.getInputType().substring(1));
                     DescriptorProto outputType = messageTypes.get(method.getOutputType().substring(1));
-                    String description = methodComments.get(method);
                     if (options.hasExtension(AnnotationsProto.route)) {
                         HttpRoute route = options.getExtension(AnnotationsProto.route);
                         RpcDescriptor descriptor = new RpcDescriptor(serviceName, methodName, inputType, outputType,
-                                route, description);
+                                route);
 
                         String qname = String.join(".", file.getPackage(), serviceName, methodName);
                         rpcs.put(qname, descriptor);
                     } else if (options.hasExtension(AnnotationsProto.websocket)) {
                         WebSocketTopic topic = options.getExtension(AnnotationsProto.websocket);
                         RpcDescriptor descriptor = new RpcDescriptor(serviceName, methodName, inputType, outputType,
-                                topic, description);
+                                topic);
 
                         String qname = String.join(".", file.getPackage(), serviceName, methodName);
                         rpcs.put(qname, descriptor);

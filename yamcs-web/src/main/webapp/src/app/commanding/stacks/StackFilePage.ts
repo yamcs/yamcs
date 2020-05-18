@@ -193,6 +193,7 @@ export class StackFilePage implements OnDestroy {
 
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
       assignment: entry.arguments,
+      extra: entry.extra,
     }).then(response => {
       entry.executionNumber = ++this.executionCounter;
       entry.id = response.id;
@@ -277,6 +278,7 @@ export class StackFilePage implements OnDestroy {
           name: result.command.qualifiedName,
           arguments: result.assignments,
           command: result.command,
+          extra: result.extra,
         };
 
         const relto = this.selectedEntry$.value;

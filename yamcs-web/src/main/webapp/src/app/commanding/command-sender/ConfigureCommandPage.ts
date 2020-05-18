@@ -100,11 +100,13 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
     const assignments = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
+    const extra = this.commandForm.getExtraOptions();
 
     const qname = this.command$.value!.qualifiedName;
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       assignment: assignments,
       comment,
+      extra,
     }).then(response => {
       this.router.navigate(['/commanding/report', response.id], {
         queryParams: {

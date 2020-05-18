@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import org.yamcs.CommandOption;
+import org.yamcs.CommandOption.CommandOptionType;
+import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
@@ -37,8 +40,7 @@ import org.yamcs.xtce.util.AggregateMemberNames;
  * Assembles TC packets into TC frames as per CCSDS 232.0-B-3 and sends them out via FOP1
  * 
  * <p>
- * Implements the FOP (transmitter) part of the Communications Operations Procedure-1
- * CCSDS 232.1-B-2 September 2010
+ * Implements the FOP (transmitter) part of the Communications Operations Procedure-1 CCSDS 232.1-B-2 September 2010
  * <p>
  * The FOP1 implementation is a little different than the standard: the "Initiate AD service with CLCW check" will wait
  * for the first CLCW and immediately set the vS to the nR in the CLCW. The standard specifies that the vS has somehow
@@ -48,6 +50,13 @@ import org.yamcs.xtce.util.AggregateMemberNames;
  *
  */
 public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
+
+    public static final CommandOption OPTION_BYPASS = new CommandOption("cop1Bypass", "COP-1 Bypass",
+            CommandOptionType.BOOLEAN).withHelp("Use BD mode even if AD was initiated.");
+
+    static {
+        YamcsServer.getServer().addCommandOption(OPTION_BYPASS);
+    }
 
     static final int OUT_QUEUE_SIZE = 20;
 
@@ -76,8 +85,6 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     TcVcManagedParameters vmp;
     TcFrameFactory frameFactory;
 
-    static final public String CMD_ATTRIBUTE_BYPASS = "cop1Bypass";
-
     // used to signal to the master channel when data is available on this VC
     private Semaphore dataAvailableSemaphore;
     final ScheduledThreadPoolExecutor executor;
@@ -86,12 +93,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     static final int INVALID_CLCW = -1;
     /**
-     * 1 - Active
-     * 2 - Retransmit without wait
-     * 3 - Retransmit with wait
-     * 4 - Initialising without BC Frame
-     * 5 - Initialising with BC Frame
-     * 6 - Initial
+     * 1 - Active 2 - Retransmit without wait 3 - Retransmit with wait 4 - Initialising without BC Frame 5 -
+     * Initialising with BC Frame 6 - Initial
      */
     int state = 6;
 
@@ -241,7 +244,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private boolean isBypass(PreparedCommand pc) {
-        CommandHistoryAttribute cha = pc.getAttribute(CMD_ATTRIBUTE_BYPASS);
+        CommandHistoryAttribute cha = pc.getAttribute(OPTION_BYPASS.getId());
         if (cha == null) {
             return false;
         } else {
@@ -337,8 +340,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * 
      * 
      * @param clcwCheck
-     *            - if true, a CLCW will be expected from the remote system and used to initialise the vS.
-     *            - If false, the current value of vS will be used.
+     *            - if true, a CLCW will be expected from the remote system and used to initialise the vS. - If false,
+     *            the current value of vS will be used.
      */
     public CompletableFuture<Void> initiateAD(boolean clcwCheck, long waitMillisec) {
         return doInExecutor(cf -> {
@@ -475,8 +478,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     /**
      * Set the timeout type. It can take two values:
      * <ul>
-     * <li><i>0:</i> when the timer expires and the transmission limit has been reached, then go to state 6 removing
-     * all
+     * <li><i>0:</i> when the timer expires and the transmission limit has been reached, then go to state 6 removing all
      * commands from the queue.</li>
      * <li><i>1:</i> when the timer expires and the transmission limit has been reached, then suspend the operation
      * remembering the state. The operations can be resumed by invoking the resume method.</li>
@@ -495,8 +497,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     /**
-     * Set the FOP sliding window with - that is the maximum number of commands that can be unacknoledged at one
-     * time.
+     * Set the FOP sliding window with - that is the maximum number of commands that can be unacknoledged at one time.
      * 
      * @param K
      * @return
@@ -998,7 +999,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private CompletableFuture<Void> queueForDownstream(QueuedFrame qf) {
-        qf.cf = new CompletableFuture<Void>();
+        qf.cf = new CompletableFuture<>();
         outQueue.add(qf);
 
         signalDataAvailable();
@@ -1062,6 +1063,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * 
      * @param dataAvailableSemaphore
      */
+    @Override
     public void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore) {
         this.dataAvailableSemaphore = dataAvailableSemaphore;
     }

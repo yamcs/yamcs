@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.ConsoleHandler;
@@ -51,6 +53,7 @@ import org.yamcs.protobuf.TemplateVariable;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.tctm.Link;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
@@ -133,6 +136,8 @@ public class YamcsServer {
 
     private YConfiguration config;
     private Map<String, Spec> sectionSpecs = new HashMap<>();
+
+    private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
@@ -286,6 +291,43 @@ public class YamcsServer {
 
     public byte[] getSecretKey() {
         return secretKey;
+    }
+
+    /**
+     * Registers the system-wide availability of a {@link CommandOption}. Command options represent additional arguments
+     * that commands may require, but that are not used by Yamcs in building telecommand binary.
+     * <p>
+     * An example use case would be a custom TC {@link Link} that may support additional arguments for controlling its
+     * behaviour.
+     * <p>
+     * While not enforced we recommend to call this method from a {@link Plugin#onLoad()} hook as this will avoid
+     * registering an option multiple times (attempts to do so would generate an error).
+     * 
+     * @param option
+     *            the new command option.
+     */
+    @Experimental
+    public void addCommandOption(CommandOption option) {
+        CommandOption previous = commandOptions.putIfAbsent(option.getId(), option);
+        if (previous != null) {
+            throw new IllegalArgumentException(
+                    "A command option with '" + option.getId() + "' was already registered with Yamcs");
+        }
+    }
+
+    /**
+     * Returns the command options registered to this instance.
+     */
+    public Collection<CommandOption> getCommandOptions() {
+        return commandOptions.values();
+    }
+
+    public boolean hasCommandOption(String id) {
+        return commandOptions.containsKey(id);
+    }
+
+    public CommandOption getCommandOption(String id) {
+        return commandOptions.get(id);
     }
 
     /**
@@ -463,33 +505,35 @@ public class YamcsServer {
      * 
      * @param name
      *            the name of the new instance
-
+     * 
      * @param metadata
      *            the metadata associated to this instance (labels or other attributes)
      * @param offline
      *            if true, the instance will be created offline and it does not need a config
-     *  @param config
+     * @param config
      *            the configuration for this instance (equivalent of yamcs.instance.yaml)
      * @return the newly created instance
      */
-    public synchronized YamcsServerInstance addInstance(String name, InstanceMetadata metadata, boolean offline, YConfiguration config) {
+    public synchronized YamcsServerInstance addInstance(String name, InstanceMetadata metadata, boolean offline,
+            YConfiguration config) {
         if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
-        LOG.info("Loading {} instance '{}'", offline?"offline":"online", name);
+        LOG.info("Loading {} instance '{}'", offline ? "offline" : "online", name);
         YamcsServerInstance ysi = new YamcsServerInstance(name, metadata);
 
         ysi.addStateListener(new InstanceStateListener() {
+            @Override
             public void failed(Throwable failure) {
                 LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
             }
         });
-        
+
         instances.put(name, ysi);
-        if(!offline) {
+        if (!offline) {
             ysi.init(config);
         }
-        
+
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }

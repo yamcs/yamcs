@@ -25,6 +25,7 @@ export interface GeneralInfo {
   revision: string;
   serverId: string;
   plugins: PluginInfo[];
+  commandOptions: CommandOption[];
 }
 
 export interface ListRoutesResponse {
@@ -68,6 +69,13 @@ export interface PluginInfo {
   description: string;
   version: string;
   vendor: string;
+}
+
+export interface CommandOption {
+  id: string;
+  verboseName: string;
+  type: 'BOOLEAN' | 'STRING' | 'NUMBER';
+  help: string;
 }
 
 export type ServiceState = 'NEW'

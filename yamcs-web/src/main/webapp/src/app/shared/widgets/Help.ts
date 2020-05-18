@@ -28,5 +28,9 @@ export class Help {
         content: this.sanitizer.bypassSecurityTrustHtml(html),
       }
     });
+
+    // Prevent further click handling.
+    // (for example because this component was used in a <label/>)
+    return false;
   }
 }

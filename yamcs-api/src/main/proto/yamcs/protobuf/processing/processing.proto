@@ -377,9 +377,27 @@ message IssueCommandRequest {
   
   // Comment attached to this command.
   optional string comment = 5;
-
-  // Other command options
-  optional commanding.CommandOptions commandOptions = 10;
+  
+  // Override the stream on which the command should be sent out.
+  // Requires elevated privilege.
+  optional string stream = 11;
+  
+  // Disable verification of all transmission constrains (if any
+  // specified in the MDB).
+  // Requires elevated privilege.
+  optional bool disableTransmissionConstraints = 12;
+  
+  // Disable all post transmission verifiers (if any specified in the MDB)
+  // Requires elevated privilege.
+  optional bool disableVerifiers = 13;
+  
+  // Override verifier configuration. Keyed by verifier name
+  // Requires elevated privilege.
+  map<string, commanding.VerifierConfig> verifierConfig = 14;
+  
+  // Specify custom options for interpretation by non-core extensions.
+  // Extensions must register these options against org.yamcs.YamcsServer
+  map<string, Value> extra = 15;
 }
 
 message IssueCommandResponse {
