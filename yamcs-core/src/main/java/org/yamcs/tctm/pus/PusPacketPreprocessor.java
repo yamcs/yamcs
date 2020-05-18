@@ -40,7 +40,7 @@ import static org.yamcs.tctm.pus.Constants.*;
  * <li>spare optional</li>
  * </ul>
  * <p>
- * The time packets have no secondary header and the apid set to 0. The data part consist of the current onboard time in
+ * The time packets have no secondary header and the apid set to 0. The data part consists of the current onboard time in
  * the same encoding like in the normal packets.
  * 
  * <p>
