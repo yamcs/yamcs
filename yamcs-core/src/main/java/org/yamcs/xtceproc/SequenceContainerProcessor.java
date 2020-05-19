@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
@@ -75,8 +76,21 @@ public class SequenceContainerProcessor {
                         }
                     }
                 } catch (BufferUnderflowException | BufferOverflowException | IndexOutOfBoundsException e) {
-                    log.warn("Got " + e.getClass().getName() + " when extracting from the buffer of length "
-                            + buf.sizeInBits() + " bits, bitPosition " + buf.getPosition() + " entry: " + se);
+                    if (se instanceof ParameterEntry) {
+                        ParameterEntry pe = (ParameterEntry) se;
+                        log.warn("Could not extract parameter " + pe.getParameter().getQualifiedName()
+                                + "from container " + se.getContainer().getQualifiedName() +
+                                " at position " + buf.getPosition()
+                                + " because it falls beyond the end of the container. Container size in bits: "
+                                + buf.sizeInBits());
+                    } else {
+                        log.warn("Could not extract entry " + se + "of size "
+                                + buf.sizeInBits() + "bits from container " + se.getContainer().getQualifiedName() +
+                                " position " + buf.getPosition()
+                                + "because it falls beyond the end of the container. Container size in bits: "
+                                + buf.sizeInBits());
+                    }
+
                     break;
                 }
                 if (buf.getPosition() > maxposition) {
