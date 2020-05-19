@@ -103,7 +103,10 @@ public class CcsdsTmIndex implements TmIndex {
     public void onTuple(Stream stream, Tuple tuple) {
         byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
         long time = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
-
+        if (packet.length < 7) {
+            log.warn("Short packet (size : {}) received by the CcsdsTmIndex Ignored.", packet.length);
+            return;
+        }
         short apid = CcsdsPacket.getAPID(packet);
         short seq = (short) CcsdsPacket.getSequenceCount(packet);
         try {
