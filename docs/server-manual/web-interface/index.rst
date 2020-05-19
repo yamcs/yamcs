@@ -11,6 +11,7 @@ Most pages (the homepage excluding) show data specific to a particular Yamcs ins
     :maxdepth: 1
     :caption: Table of Contents
 
+    configuration
     links
     telemetry
     events

@@ -41,7 +41,7 @@ import org.yamcs.http.api.Cop1Api;
 import org.yamcs.http.api.EventsApi;
 import org.yamcs.http.api.GeneralApi;
 import org.yamcs.http.api.IamApi;
-import org.yamcs.http.api.IndexApi;
+import org.yamcs.http.api.IndexesApi;
 import org.yamcs.http.api.ManagementApi;
 import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.PacketsApi;
@@ -248,7 +248,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new GeneralApi(this));
         addApi(new EventsApi());
         addApi(new IamApi());
-        addApi(new IndexApi());
+        addApi(new IndexesApi());
         addApi(new ManagementApi());
         addApi(new MdbApi());
         addApi(new PacketsApi());

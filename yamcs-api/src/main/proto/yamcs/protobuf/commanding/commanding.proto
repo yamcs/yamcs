@@ -87,17 +87,6 @@ message VerifierConfig {
   optional CheckWindow checkWindow = 3;
 }
 
-//can be sent together with the command to affect how the command is processed
-//requires elevated privilege
-message CommandOptions {
-  // on which stream the command should be sent out
-  optional string stream = 1;
-  repeated CommandHistoryAttribute attributes = 2;
-  optional bool disableTransmissionConstraints = 3; // disable verification of all transmission constrains (if any specified in the MDB)
-  optional bool disableVerifiers = 4; // disable all post transmission verifiers (if any specified in the MDB)
-  map<string, VerifierConfig> verifierConfig = 5; // keyed by verifier name
-}
-
 message CommandHistoryAttribute {
   optional string name = 1;
   optional Value value = 2;
@@ -112,7 +101,6 @@ message CommandAssignment {
 
 message CommandHistoryEntry {
   required CommandId commandId = 1;
-  //required string cmdName = 2; //removed because it's part of the CommandId
   repeated CommandHistoryAttribute attr = 3;
   optional string generationTimeUTC = 4;
   repeated CommandAssignment assignment = 5;

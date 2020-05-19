@@ -17,6 +17,16 @@ import "yamcs/protobuf/yamcs.proto";
 service ParameterArchiveApi {
 
   // Rebuild range
+  //
+  // The back filler has to be enabled for this purpose. The back filling process does not
+  // remove data but just overwrites it. That means that if the parameter replay returns
+  // less parameters than originally stored in the archive, the old parameters will still
+  // be found in the archive.
+  //
+  // It also means that if a replay returns the parameter of a different type than
+  // originally stored, the old ones will still be stored. This is because the parameter
+  // archive treats parameter with the same name but different type as different parameters.
+  // Each of them is given an id and the id is stored in the archive.
   rpc RebuildRange(RebuildRangeRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/parameterArchive:rebuild"
@@ -26,6 +36,8 @@ service ParameterArchiveApi {
   }
 
   // Delete partitions
+  //
+  // Response is of type string and list the partitions that have been removed.
   rpc DeletePartitions(DeletePartitionsRequest) returns (StringMessage) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/parameterArchive:deletePartitions"
@@ -41,6 +53,17 @@ service ParameterArchiveApi {
   }
   
   // Get parameter samples
+  //
+  // This divides the query interval in a number of intervals and returns aggregated
+  // statistics (max,min,avg) about each interval.
+  //
+  // This operation is useful when making high-level overviews (such as plots) of a
+  // parameter's value over large time intervals without having to retrieve each
+  // and every individual parameter value.
+  //
+  // By default this operation fetches data from the parameter archive and/or
+  // parameter cache. If these services are not configured, you can still get
+  // correct results by specifying the option ``source=replay`` as detailed below.
   rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameters/{name*}/samples"
@@ -48,6 +71,15 @@ service ParameterArchiveApi {
   }
   
   // Get parameter ranges
+  //
+  // A range is a tuple ``(start, stop, value, count)`` that represents the time
+  // interval for which the parameter has been steadily coming in with the same
+  // value. This request is useful for retrieving an overview for parameters that
+  // change unfrequently in a large time interval. For example an on/off status
+  // of a device, or some operational status. Two consecutive ranges containing
+  // the same value will be returned if there was a gap in the data. The gap is
+  // determined according to the parameter expiration time configured in the
+  // Mission Database.
   rpc GetParameterRanges(GetParameterRangesRequest) returns (pvalue.Ranges) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameters/{name*}/ranges"
@@ -62,15 +94,29 @@ service ParameterArchiveApi {
   }
 }
 
+// Note that the archive is built in segments of approximatively 70 minutes, therefore the
+// real start will be before the specified start and the real stop will be after the
+// specified stop.
 message RebuildRangeRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Start rebuilding from here. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 2;
+  
+  // Rebuild until here. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
 }
 
 message DeletePartitionsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Start with the partition that contains this timestamp. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 2;
+  
+  // Stop with the partition that contains this timestamp. The stop partition will be removed as
+  // well. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
 }
 
@@ -80,13 +126,36 @@ message GetArchivedParameterInfoRequest {
 }
 
 message GetParameterRangesRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
+  // Parameter name.
   optional string name = 2;
+  
+  // Filter the lower bound of the parameter's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 3;
+  
+  // Filter the upper bound of the parameter's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 4;
+  
+  // Time in milliseconds. Any gap (detected based on parameter expiration) smaller than
+  // this will be ignored. However if the parameter changes value, the ranges will still
+  // be split.
   optional int64 minGap = 5;
+  
+  // Time in milliseconds. If the distance between two subsequent values of the parameter
+  // is bigger than this value (but smaller than the parameter expiration), then an
+  // artificial gap will be constructed. This also applies if there is no parameter
+  // expiration defined for the parameter.
   optional int64 maxGap = 6;
+  
+  // Disable loading of parameters from the parameter cache. Default: ``false``.
   optional bool norealtime = 7;
+  
+  // The name of the processor from which to use the parameter cache. Default: ``realtime``.
   optional string processor = 8;
+
   optional string source = 9;
 }

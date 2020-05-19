@@ -95,11 +95,34 @@ message GetGeneralInfoResponse {
     optional string version = 3;
     optional string vendor = 4;
   }
+  message CommandOptionInfo {
+    optional string id = 1;
+    optional string verboseName = 2;
+    optional string type = 3;
+    optional string help = 4;
+  }
+  
+  // Yamcs version derived on build time.
   optional string yamcsVersion = 1;
+  
+  // Yamcs SHA-1 revision identifier. Set on
+  // build time, but only if the git command
+  // was available.
   optional string revision = 6;
+  
+  // An identifier for this server. Used in
+  // system parameters.
   optional string serverId = 2;
+  
+  // A default instance for this Yamcs installation.
+  // This is a calculated suggestion. UI clients may ignore.
   optional string defaultYamcsInstance = 3;
+  
+  // Plugins loaded within this server instance
   repeated PluginInfo plugins = 5;
+  
+  // Additional options available to commands
+  repeated CommandOptionInfo commandOptions = 7;
 }
 
 message ClientConnectionInfo {

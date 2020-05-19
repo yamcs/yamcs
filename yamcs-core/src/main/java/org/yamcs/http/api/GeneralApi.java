@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.CommandOption;
 import org.yamcs.Plugin;
 import org.yamcs.PluginManager;
 import org.yamcs.PluginMetadata;
@@ -25,6 +26,7 @@ import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
 import org.yamcs.protobuf.CloseConnectionRequest;
 import org.yamcs.protobuf.GetGeneralInfoResponse;
+import org.yamcs.protobuf.GetGeneralInfoResponse.CommandOptionInfo;
 import org.yamcs.protobuf.GetGeneralInfoResponse.PluginInfo;
 import org.yamcs.protobuf.ListClientConnectionsResponse;
 import org.yamcs.protobuf.ListRoutesResponse;
@@ -74,6 +76,10 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
             pluginInfos.add(pluginb.build());
         }
 
+        for (CommandOption option : YamcsServer.getServer().getCommandOptions()) {
+            responseb.addCommandOptions(toCommandOptionInfo(option));
+        }
+
         pluginInfos.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
         responseb.addAllPlugins(pluginInfos);
 
@@ -94,6 +100,19 @@ public class GeneralApi extends AbstractGeneralApi<Context> {
         }
 
         observer.complete(responseb.build());
+    }
+
+    public static CommandOptionInfo toCommandOptionInfo(CommandOption option) {
+        CommandOptionInfo.Builder infob = CommandOptionInfo.newBuilder();
+        infob.setId(option.getId());
+        infob.setType(option.getType().name());
+        if (option.getVerboseName() != null) {
+            infob.setVerboseName(option.getVerboseName());
+        }
+        if (option.getHelp() != null) {
+            infob.setHelp(option.getHelp());
+        }
+        return infob.build();
     }
 
     @Override

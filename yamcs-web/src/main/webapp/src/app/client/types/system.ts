@@ -2,11 +2,14 @@ import { Processor } from './processing';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
-  flow: AuthFlow[];
+  spnego: boolean;
+  openid?: OpenIDConnectInfo;
 }
 
-export interface AuthFlow {
-  type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
+export interface OpenIDConnectInfo {
+  clientId: string;
+  authorizationEndpoint: string;
+  scope: string;
 }
 
 export interface TokenResponse {
@@ -22,6 +25,7 @@ export interface GeneralInfo {
   revision: string;
   serverId: string;
   plugins: PluginInfo[];
+  commandOptions: CommandOption[];
 }
 
 export interface ListRoutesResponse {
@@ -65,6 +69,13 @@ export interface PluginInfo {
   description: string;
   version: string;
   vendor: string;
+}
+
+export interface CommandOption {
+  id: string;
+  verboseName: string;
+  type: 'BOOLEAN' | 'STRING' | 'NUMBER';
+  help: string;
 }
 
 export type ServiceState = 'NEW'

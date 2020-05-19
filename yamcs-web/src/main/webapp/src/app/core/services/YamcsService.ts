@@ -21,7 +21,6 @@ export class YamcsService {
 
   constructor(@Inject(APP_BASE_HREF) baseHref: string, private router: Router) {
     this.yamcsClient = new YamcsClient(baseHref);
-    this.yamcsClient.prepareWebSocketClient();
   }
 
   setContext(instanceId: string, processorId?: string) {

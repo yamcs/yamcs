@@ -26,6 +26,7 @@ import org.yamcs.protobuf.ListPacketNamesResponse;
 import org.yamcs.protobuf.ListPacketsRequest;
 import org.yamcs.protobuf.ListPacketsResponse;
 import org.yamcs.protobuf.StreamPacketsRequest;
+import org.yamcs.protobuf.SubscribePacketsRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -273,6 +274,34 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 observer.complete();
             }
         });
+    }
+
+    @Override
+    public void subscribePackets(Context ctx, SubscribePacketsRequest request, Observer<TmPacketData> observer) {
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        Stream stream = TableApi.verifyStream(ctx, ydb, request.getStream());
+        StreamSubscriber streamSubscriber = new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+                long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+                long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+                int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
+                TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
+                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
+                        .setSequenceNumber(seqNumber)
+                        .build();
+                observer.next(tm);
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+            }
+        };
+        observer.setCancelHandler(() -> stream.removeSubscriber(streamSubscriber));
+        stream.addSubscriber(streamSubscriber);
     }
 
     /**

@@ -25,7 +25,7 @@ Where the columns are:
 * | **packet**
   | the binary packet.
 * | **pname**
-  | the fully-qualified name XTCE name of the container. In the XTCE container hierarchy, one has to configure which containers are used as partitions. This can be done by setting a flag in the spreadsheet.
+  | the fully-qualified name name of the container. In a container hierarchy, one has to configure which containers are used as partitions. This can be done by setting a flag in the spreadsheet.
 
 If a packet arrives with the same time and sequence number as another packet already in the archive, it is considered duplicate and shall not be stored.
 

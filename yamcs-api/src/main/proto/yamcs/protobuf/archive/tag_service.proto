@@ -57,8 +57,15 @@ service TagApi {
 }
 
 message ListTagsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
+  // Filter the lower bound of the tag. Specify a date string
+  // in ISO 8601 format.
   optional google.protobuf.Timestamp start = 2;
+  
+  // Filter the upper bound of the tag. Specify a date string
+  // in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
 }
 
@@ -67,33 +74,59 @@ message ListTagsResponse {
 }
 
 message GetTagRequest {
+  // Yamcs instance name.
   optional string instance = 1;
   optional int64 tagTime = 2;
   optional int32 tagId = 3;
 }
 
 message CreateTagRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // **Required.** The name of the tag.
   optional string name = 2;
+  
+  // The start time of the tag. Default is unbounded.
   optional string start = 3;
+  
+  // The stop time of the tag. Default is unbounded.
   optional string stop = 4;
+  
+  // The description of the tag.
   optional string description = 5;
+  
+  // The color of the tag. Must be an RGB hex color, e.g. ``#ff0000``
   optional string color = 6;
 }
 
 message EditTagRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
   optional int64 tagTime = 2;
   optional int32 tagId = 3;
+
+  // The name of the tag.
   optional string name = 4;
+  
+  // The start time of the tag. Must be a date string in ISO 8601 format.
   optional string start = 5;
+  
+  // The stop time of the tag. Must be a date string in ISO 8601 format.
   optional string stop = 6;
+  
+  // The description of the tag.
   optional string description = 7;
+  
+  // The color of the tag. Must be an RGB hex color, e.g. ``#ff0000``.
   optional string color = 8;
 }
 
 message DeleteTagRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
   optional int64 tagTime = 2;
   optional int32 tagId = 3;
 }

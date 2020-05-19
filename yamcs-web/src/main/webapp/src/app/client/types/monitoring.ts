@@ -91,6 +91,7 @@ export interface IssueCommandOptions {
   dryRun?: boolean;
   assignment?: ArgumentAssignment[];
   comment?: string;
+  extra?: { [key: string]: Value; };
 }
 
 export interface IssueCommandResponse {

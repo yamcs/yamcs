@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { ArgumentAssignment, Command } from '../../client';
+import { ArgumentAssignment, Command, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandForm } from '../command-sender/CommandForm';
 
@@ -10,6 +10,7 @@ export interface CommandResult {
   command: Command;
   assignments: ArgumentAssignment[];
   comment?: string;
+  extra: { [key: string]: Value; };
 }
 
 @Component({
@@ -46,6 +47,7 @@ export class AddCommandDialog {
       command: this.selectedCommand$.value!,
       assignments: this.commandForm.getAssignments(),
       comment: this.commandForm.getComment(),
+      extra: this.commandForm.getExtraOptions(),
     };
     this.dialogRef.close(result);
   }

@@ -1,0 +1,18 @@
+==============
+Yamcs HTTP API
+==============
+
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
+
+    overview
+    websocket
+
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
+    :caption: Methods
+{% for link in service_links %}
+    {{ link }}
+{%- endfor %}

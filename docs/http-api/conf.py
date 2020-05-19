@@ -15,11 +15,14 @@ import pkg_resources
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('_ext'))
+sys.path.insert(0, os.path.abspath('../_ext'))
 
 # Read the latest Yamcs versions from the Maven pom.xml
 tree = ET.ElementTree()
-tree.parse('../../pom.xml')
+if os.path.exists('../../pom.xml'):
+    tree.parse('../../pom.xml')  # conf.py is used from its normal location
+elif os.path.exists('../../../pom.xml'):
+    tree.parse('../../../pom.xml')  # conf.py is used from within _auto/
 yamcs_version_el = tree.getroot().find('{http://maven.apache.org/POM/4.0.0}version')
 
 project = u'Yamcs'
@@ -35,6 +38,7 @@ release = version
 extensions = [
     'sphinx.ext.extlinks',
     'sphinxcontrib.fulltoc',
+    'proto',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

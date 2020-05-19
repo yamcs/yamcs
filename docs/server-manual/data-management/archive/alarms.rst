@@ -21,6 +21,6 @@ Where the columns are:
 * | **triggerTime**
   | the time when the alarm has been triggered. Until an alarm is acknowledged, there will not be a new alarm generated for that parameter (even if it were to go back in limits)
 * | **parameter**
-  | the fully qualified XTCE name of the parameter for which the alarm has been triggered.
+  | the fully qualified name of the parameter for which the alarm has been triggered.
 * | **seqNum**
   | a sequence number increasing with each new triggered alarm. The sequence number will reset to 0 at Yamcs restart.

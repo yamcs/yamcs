@@ -39,7 +39,6 @@ import org.yamcs.protobuf.BatchSetParameterValuesRequest.SetParameterValueReques
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.CreateEventRequest;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.IssueCommandRequest;
@@ -942,8 +941,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr).get(2, TimeUnit.SECONDS);
 
-        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstraints(true).build();
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
+        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder()
+                .setDisableTransmissionConstraints(true)
+                .build();
         byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
         IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
         assertTrue(commandResponse.hasBinary());
