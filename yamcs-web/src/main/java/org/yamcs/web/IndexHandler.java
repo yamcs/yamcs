@@ -10,14 +10,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.yamcs.CommandOption;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.Handler;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.api.GeneralApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.utils.TemplateProcessor;
@@ -108,6 +112,14 @@ public class IndexHandler extends Handler {
         String authJson = JsonFormat.printer().print(authInfo);
         Map<String, Object> authMap = new Gson().fromJson(authJson, Map.class);
         webConfig.put("auth", authMap);
+
+        List<Map<String, Object>> commandOptions = new ArrayList<>();
+        for (CommandOption option : YamcsServer.getServer().getCommandOptions()) {
+            String json = JsonFormat.printer().print(GeneralApi.toCommandOptionInfo(option));
+            commandOptions.add(new Gson().fromJson(json, Map.class));
+        }
+        webConfig.put("commandOptions", commandOptions);
+
         webConfig.put("serverId", YamcsServer.getServer().getServerId());
 
         Map<String, Object> args = new HashMap<>(4);

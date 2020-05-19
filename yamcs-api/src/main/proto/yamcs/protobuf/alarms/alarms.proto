@@ -61,26 +61,32 @@ enum AlarmSeverity {
   SEVERE = 5;
 }
 
-//the message contains a summary of an alarm applicable for Parameter or Event (possibly other in the future) alarms.
-// it is sent over websocket as result of subscription with the type SUMMARY
+// Summary of an alarm applicable for Parameter or Event (possibly
+// other in the future) alarms.
+// Contains detailed information on the value occurrence that initially
+// triggered the alarm, the most severe value since it originally triggered,
+// and the latest value at the time of your request.
 message AlarmData {
   optional AlarmType type = 1;
-  optional google.protobuf.Timestamp triggerTime =2 ;
+  optional google.protobuf.Timestamp triggerTime = 2 ;
 
-  //for the parameter alarms, this is the id of the parameters
-  // for the event alarms
-  //   - the id.namespace is /yamcs/event/<EVENT_SOURCE>, unless the EVENT_SOURCE starts with a "/" in which case the namespace is just the <EVENT_SOURCE>
+  // For parameter alarms, this is the id of the parameters
+  // For event alarms
+  //   - the id.namespace is /yamcs/event/<EVENT_SOURCE>, unless 
+  //     EVENT_SOURCE starts with a "/" in which case the namespace
+  //     is just the <EVENT_SOURCE>
   //   - the id.name is the <EVENT_TYPE>
   optional NamedObjectId id = 3;
 
-  //the sequence number allows to distinguish between multiple alarms for the same id
+  // Distinguisher between multiple alarms for the same id
   optional uint32 seqNum = 4;
 
   optional AlarmSeverity severity = 5;
 
-  //this represents the number of times the object was in alarm state
+  // Number of times the object was in alarm state
   optional uint32 violations = 6;
-  //this represents the number of samples received for the object
+
+  // Number of samples received for the object
   optional uint32 count = 7;
   
   optional AcknowledgeInfo acknowledgeInfo = 8;
@@ -89,9 +95,8 @@ message AlarmData {
   optional ParameterAlarmData parameterDetail = 10;
   optional EventAlarmData eventDetail = 11;
 
-  //latching means that the alarm will stay triggered even when the process is OK
+  // Whether the alarm will stay triggered even when the process is OK
   optional bool latching = 12;
- 
 
   // if the process that generated the alarm is ok (i.e. parameter is within limits)
   optional bool processOK = 13;
@@ -100,11 +105,10 @@ message AlarmData {
   // if the operator has acknowledged the alarm
   optional bool acknowledged = 15;
 
-  //if the alarm is shelved, then this will be filled in with the shelving information
+  // Details in case the alarm was shelved
   optional ShelveInfo shelveInfo = 16;
 
   optional ClearInfo clearInfo = 17;
-  
 }
 
 message ParameterAlarmData {

@@ -20,7 +20,7 @@ rv\ :sub:`i`
 ps\ :sub:`i`
     the parameter status of the parameter at the given time.
 
-The parameter status includes attributes such as out-of-limits indicators (alarms) and processing status. Yamcs Mission DatabaseXTCE provides a mechanism through which a parameter can change its alarm ranges depending on the context. For this reason the Parameter Archive also stores the parameter status and the applicable alarm ranges at the given time.
+The parameter status includes attributes such as out-of-limits indicators (alarms) and processing status. Yamcs Mission Database provides a mechanism through which a parameter can change its alarm ranges depending on the context. For this reason the Parameter Archive also stores the parameter status and the applicable alarm ranges at the given time.
 
 In order to speed up the retrieval, the Parameter Archive stores data in segments of approximately 70 minutes. That means that all engineering values for one parameter for the 70 minutes are stored together; same for raw values, parameter status and timestamps.
 

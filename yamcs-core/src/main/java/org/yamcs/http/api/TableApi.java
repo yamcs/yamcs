@@ -414,7 +414,7 @@ public class TableApi extends AbstractTableApi<Context> {
         observer.complete(responseb.build());
     }
 
-    private Stream verifyStream(Context ctx, YarchDatabaseInstance ydb, String streamName) {
+    public static Stream verifyStream(Context ctx, YarchDatabaseInstance ydb, String streamName) {
         Stream stream = ydb.getStream(streamName);
 
         if (stream != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, streamName)) {

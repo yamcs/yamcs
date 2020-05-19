@@ -145,15 +145,9 @@ export class AuthService {
     }
 
     // If server supports spnego, attempt browser negotiation.
-    // This is done before any other flows, because it does not
+    // This is done before any other auth attempts, because it does not
     // require user intervention when successful.
-    let spnego = false;
-    for (const flow of this.authInfo.flow) {
-      if (flow.type === 'SPNEGO') {
-        spnego = true;
-      }
-    }
-    if (spnego) {
+    if (this.authInfo.spnego) {
       return await this.loginWithSpnego();
     }
 
@@ -173,7 +167,7 @@ export class AuthService {
     });
   }
 
-  private loginWithAuthorizationCode(authorizationCode: string) {
+  public loginWithAuthorizationCode(authorizationCode: string) {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
 
@@ -236,6 +230,15 @@ export class AuthService {
     if (navigateToLoginPage) {
       this.router.navigate(['/login'], { queryParams: { next: '/' } });
     }
+  }
+
+  public buildOpenIDRedirectURI() {
+    let redirectURI = `${location.protocol}//${location.host}`;
+    if (this.baseHref !== '/') {
+      redirectURI += this.baseHref.substring(1);
+    }
+    redirectURI += '/oidc-browser-callback';
+    return redirectURI;
   }
 
   private extractClaims(jwt: string): Claims {

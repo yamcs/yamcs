@@ -1,8 +1,5 @@
-Starting with 3.0.0, we use the standard maven release plugin configured to push to nexus:
+You need:
 
-    mvn release:prepare release:perform
-
-In order for this to work, you need:
 - Sonatype Nexus credentials. These can be used to login to oss.sonatype.org (as well as issues.sonatype.org)
 - PGP key yamcs@spaceapplications.com
 

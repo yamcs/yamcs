@@ -11,7 +11,7 @@ To start developing your own Yamcs application, follow our [Getting Started](htt
 ## Documentation
 
 * Server Manual: https://yamcs.org/docs/yamcs-server-manual/
-* Javadoc: https://yamcs.github.io/yamcs/
+* Javadoc: https://yamcs.org/javadoc/yamcs/index.html?overview-summary.html
 
 
 ## License

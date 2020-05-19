@@ -51,7 +51,6 @@ import org.yamcs.protobuf.BatchGetParameterValuesResponse;
 import org.yamcs.protobuf.BatchSetParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.DeleteProcessorRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
@@ -459,9 +458,42 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             if (comment != null && !comment.trim().isEmpty()) {
                 preparedCommand.setComment(comment);
             }
-            if (request.hasCommandOptions()) {
+
+            if (request.getExtraCount() > 0) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                handleCommandOptions(preparedCommand, request.getCommandOptions());
+                request.getExtraMap().forEach((k, v) -> {
+                    if (!YamcsServer.getServer().hasCommandOption(k)) {
+                        throw new BadRequestException("Unknown command option '" + k + "'");
+                    }
+                    preparedCommand.addAttribute(CommandHistoryAttribute.newBuilder()
+                            .setName(k).setValue(v).build());
+                });
+            }
+
+            if (request.hasDisableVerifiers()) {
+                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
+                preparedCommand.disableCommandVerifiers(request.getDisableVerifiers());
+            }
+
+            if (request.hasDisableTransmissionConstraints()) {
+                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
+                preparedCommand.disableTransmissionContraints(request.getDisableTransmissionConstraints());
+            } else if (request.getVerifierConfigCount() > 0) {
+                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
+                List<String> invalidVerifiers = new ArrayList<>();
+                for (String stage : request.getVerifierConfigMap().keySet()) {
+                    if (!hasVerifier(cmd, stage)) {
+                        invalidVerifiers.add(stage);
+                    }
+                }
+                if (!invalidVerifiers.isEmpty()) {
+                    throw new BadRequestException(
+                            "The command does not have the following verifiers: " + invalidVerifiers.toString());
+                }
+
+                request.getVerifierConfigMap().forEach((k, v) -> {
+                    preparedCommand.addVerifierConfig(k, v);
+                });
             }
 
             // make the source - should perhaps come from the client
@@ -542,33 +574,6 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
 
         observer.complete(responseb.build());
-    }
-
-    private void handleCommandOptions(PreparedCommand preparedCommand, CommandOptions cmdOpt) {
-        cmdOpt.getAttributesList().forEach(cha -> preparedCommand.addAttribute(cha));
-        MetaCommand cmd = preparedCommand.getMetaCommand();
-
-        if (cmdOpt.hasDisableVerifiers()) {
-            preparedCommand.disableCommandVerifiers(cmdOpt.getDisableVerifiers());
-        }
-        if (cmdOpt.hasDisableTransmissionConstraints()) {
-            preparedCommand.disableTransmissionContraints(cmdOpt.getDisableTransmissionConstraints());
-        } else {
-            List<String> invalidVerifiers = new ArrayList<>();
-            for (String stage : cmdOpt.getVerifierConfigMap().keySet()) {
-                if (!hasVerifier(cmd, stage)) {
-                    invalidVerifiers.add(stage);
-                }
-            }
-            if (!invalidVerifiers.isEmpty()) {
-                throw new BadRequestException(
-                        "The command does not have the following verifiers: " + invalidVerifiers.toString());
-            }
-
-            cmdOpt.getVerifierConfigMap().forEach((k, v) -> {
-                preparedCommand.addVerifierConfig(k, v);
-            });
-        }
     }
 
     private boolean hasVerifier(MetaCommand cmd, String stage) {

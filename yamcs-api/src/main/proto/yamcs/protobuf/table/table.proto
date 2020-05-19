@@ -20,6 +20,9 @@ service TableApi {
   }
   
   // List streams
+  //
+  // Note that this will only list the fixed columns of the stream.
+  // Tuples may always have extra columns.
   rpc ListStreams(ListStreamsRequest) returns (ListStreamsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/streams"
@@ -48,6 +51,9 @@ service TableApi {
   }
   
   // List tables
+  //
+  // The response will only include fixed columns of the table. Tuples may always
+  // add extra value columns.
   rpc ListTables(ListTablesRequest) returns (ListTablesResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/tables"
@@ -69,6 +75,14 @@ service TableApi {
   }
   
   // Streams back the contents of all rows in key order
+  //
+  // The ``ColumnInfo`` message assigns an integer ``id`` for each column
+  // and the ``id`` is present in each cell belonging to that column (this
+  // is done in order to avoid sending the ``ColumnInfo`` with each ``Cell``).
+  // The column id starts from 0 and are incremented with each new column found.
+  // The ids are only valid during one single dump.
+  // The dumped data does not contain information on any table characteristics
+  // such as (primary) key, partitioning or other storage options.
   rpc ReadRows(ReadRowsRequest) returns (stream Row) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tables/{table}:readRows"
@@ -77,6 +91,26 @@ service TableApi {
   }
   
   // Imports a stream of rows
+  //
+  // The table has to exist in order to load data into it.
+  //
+  // As soon as the server detects an error with one of the written
+  // rows, it will forcefully close the connection and send back an
+  // early error message. The client should stop streaming and handle
+  // the error.
+  //
+  // Note that the erratic condition causes the connection to be closed
+  // even if the ``Keep-Alive`` request header was enabled.
+  //
+  // The error response is of type ``ExceptionMessage`` and contains a
+  // detail message of type ``WriteRowsExceptionDetail`` that provides
+  // the number of rows that were successfully written by the client.
+  // The client can use this information to link the error message to a
+  // row (i.e. the bad row is at position ``count + 1`` of the stream).
+  //
+  // One possible error could be that the table has defined a (primary)
+  // key and one of the loaded rows contains no value for one of the
+  // columns of the key.
   rpc WriteRows(stream WriteRowsRequest) returns (WriteRowsResponse) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}/tables/{table}:writeRows"
@@ -90,7 +124,9 @@ message Row {
     optional uint32 id = 1;
     optional string name = 2;  
     optional string type = 3;
-    optional string protoClass = 4; //the name of the class implementing the proto object if the dataType=PROTOBUF
+    
+    // The name of the class implementing the proto object if dataType is PROTOBUF
+    optional string protoClass = 4;
   }
 
   message Cell {
@@ -104,18 +140,29 @@ message Row {
 }  
 
 message ReadRowsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Table name.
   optional string table = 2;
+  
+  // The columns to be included in the result. If unspecified, all
+  // table and/or additional tuple columns will be included.
   repeated string cols = 3;
 }
 
 message WriteRowsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Table name.
   optional string table = 2;
+
   optional Row row = 3;
 }
 
 message WriteRowsResponse {
+  // The number of rows that were written
   optional uint32 count = 1;
 }
 
@@ -124,7 +171,10 @@ message WriteRowsExceptionDetail {
 }
 
 message ExecuteSqlRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // StreamSQL statement
   optional string statement = 2;
 }
 
@@ -133,6 +183,7 @@ message ExecuteSqlResponse {
 }
 
 message ListTablesRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
@@ -141,20 +192,39 @@ message ListTablesResponse {
 }
 
 message GetTableRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Table name.
   optional string name = 2;
 }
 
 message GetTableDataRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Table name.
   optional string name = 2;
+  
+  // The columns to be included in the result. If unspecified, all table
+  // and/or additional tuple columns will be included.
   repeated string cols = 3;
+  
+  // The zero-based row number at which to start outputting results. Default: ``0``
   optional int64 pos = 4;
+  
+  // The maximum number of returned records per page. Choose this value
+  // too high and you risk hitting the maximum response size limit
+  // enforced by the server. Default: ``100``
   optional int32 limit = 5;
+  
+  // The direction of the sort. Sorting is always done on the key of the
+  // table. Can be either ``asc`` or ``desc``. Default: ``desc``
   optional string order = 6;
 }
 
 message ListStreamsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 

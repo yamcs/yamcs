@@ -22,20 +22,20 @@ public class RpcDescriptor {
     private final List<WebSocketTopic> additionalWebSocketTopics = new ArrayList<>(1);
 
     public RpcDescriptor(String service, String method, DescriptorProto inputType, DescriptorProto outputType,
-            HttpRoute httpOptions, String description) {
+            HttpRoute httpOptions) {
         this.service = service;
         this.method = method;
         this.inputType = inputType;
         this.outputType = outputType;
-        this.description = description;
+        this.description = service + "." + method;
 
         httpRoute = httpOptions;
         additionalHttpRoutes.addAll(httpOptions.getAdditionalBindingsList());
     }
 
     public RpcDescriptor(String service, String method, DescriptorProto inputType, DescriptorProto outputType,
-            WebSocketTopic websocketTopic, String description) {
-        this(service, method, inputType, outputType, HttpServer.WEBSOCKET_ROUTE, description);
+            WebSocketTopic websocketTopic) {
+        this(service, method, inputType, outputType, HttpServer.WEBSOCKET_ROUTE);
         this.websocketTopic = websocketTopic;
         additionalWebSocketTopics.addAll(websocketTopic.getAdditionalBindingsList());
     }

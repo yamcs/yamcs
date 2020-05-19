@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { ClearContextGuard } from './core/guards/ClearContextGuard';
+import { OpenIDCallbackGuard } from './core/guards/OpenIDCallbackGuard';
 import { ContextSwitchPage } from './core/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './core/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './core/pages/CreateInstancePage2';
@@ -28,103 +29,90 @@ const routes: Routes = [
         component: HomePage,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: 'create-instance',
         pathMatch: 'full',
         component: CreateInstancePage1,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: 'create-instance/:template',
         component: CreateInstancePage2,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: 'context-switch/:context/:current',
         component: ContextSwitchPage,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: 'profile',
         component: ProfilePage,
         canActivate: [AuthGuard, ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: 'alarms',
         loadChildren: () => import('src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'archive',
         loadChildren: () => import('src/app/archive/ArchiveModule').then(m => m.ArchiveModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'admin',
         loadChildren: () => import('src/app/admin/AdminModule').then(m => m.AdminModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'cfdp',
         loadChildren: () => import('src/app/cfdp/CfdpModule').then(m => m.CfdpModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'commanding',
         loadChildren: () => import('src/app/commanding/CommandingModule').then(m => m.CommandingModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'events',
         loadChildren: () => import('src/app/events/EventsModule').then(m => m.EventsModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'instance',
         loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
         canActivate: [AuthGuard],
         data: { preload: true },
-      },
-      {
+      }, {
         path: 'links',
         loadChildren: () => import('src/app/links/LinksModule').then(m => m.LinksModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'telemetry',
         loadChildren: () => import('src/app/telemetry/TelemetryModule').then(m => m.TelemetryModule),
         canActivate: [AuthGuard],
         data: { preload: true },
-      },
-      {
+      }, {
         path: 'mdb',
         loadChildren: () => import('src/app/mdb/MdbModule').then(m => m.MdbModule),
         canActivate: [AuthGuard],
-      },
-      {
+      }, {
         path: 'login',
         component: LoginPage,
         canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
+        path: 'oidc-browser-callback',
+        canActivate: [ClearContextGuard, OpenIDCallbackGuard],
+        children: [],
+        data: { 'hasSidebar': false }
+      }, {
         path: 'down',
         component: ServerUnavailablePage,
         canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: '403',
         component: ForbiddenPage,
         canActivate: [ClearContextGuard],
         data: { 'hasSidebar': false }
-      },
-      {
+      }, {
         path: '**',
         component: NotFoundPage,
         canActivate: [ClearContextGuard],

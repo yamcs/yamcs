@@ -62,6 +62,15 @@
           </div>
           <div class="body">
             {{ entry.name }}
+            <mat-icon *ngIf="entry.comment"
+                      [matTooltip]="entry.comment"
+                      class="icon14"
+                      style="vertical-align: middle;">
+              comment
+            </mat-icon>
+            <span *ngFor="let item of entry.extra | keyvalue">
+              [{{ item.key}}: {{ item.value | value }}]
+            </span>
             <table class="args">
               <tr *ngFor="let arg of entry.arguments">
                 <td class="key" width="1">

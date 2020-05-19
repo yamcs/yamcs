@@ -24,6 +24,7 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
     protected int port;
     InetAddress address;
 
+    @Override
     public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, name, config);
         host = config.getString("host");
@@ -46,6 +47,7 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
         socket.close();
     }
 
+    @Override
     public void uplinkCommand(PreparedCommand pc) throws IOException {
         byte[] binary = cmdPostProcessor.process(pc);
         DatagramPacket packet = new DatagramPacket(binary, binary.length, address, port);

@@ -1,0 +1,26 @@
+{{ method.name | titlecase | heading(1) }}
+
+.. websocket:: {{ symbol }}
+
+.. rubric:: WebSocket
+
+This method requires to upgrade an HTTP connection to WebSocket. See details on :doc:`how Yamcs uses WebSocket <../websocket>`.
+
+Use the message type ``{{ websocket_options.topic }}``.
+
+{% if method.client_streaming %}
+This method supports client-streaming. The reply on the first message includes the call identifier assigned by Yamcs. Ensure to specify this call identifier on subsequent messages, or Yamcs will assume that you are making a new unrelated call.
+{% endif %}
+
+
+.. rubric:: Input Type
+.. rpc:: {{ symbol }}
+    :input:
+
+.. rubric:: Output Type
+.. rpc:: {{ symbol }}
+    :output:
+
+.. rubric:: Related Types
+.. rpc:: {{ symbol }}
+    :related:

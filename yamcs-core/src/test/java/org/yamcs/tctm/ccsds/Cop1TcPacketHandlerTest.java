@@ -727,7 +727,7 @@ public class Cop1TcPacketHandlerTest {
         CommandId id = CommandId.newBuilder().setOrigin("test").setGenerationTime(t).setSequenceNumber(seqNum).build();
         PreparedCommand pc = new PreparedCommand(id);
         if (bypass) {
-            pc.addAttribute(CommandHistoryAttribute.newBuilder().setName(Cop1TcPacketHandler.CMD_ATTRIBUTE_BYPASS)
+            pc.addAttribute(CommandHistoryAttribute.newBuilder().setName(Cop1TcPacketHandler.OPTION_BYPASS.getId())
                     .setValue(ValueHelper.newValue(true)).build());
         }
         pc.setBinary(new byte[length]);

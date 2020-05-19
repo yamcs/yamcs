@@ -6,10 +6,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -33,7 +36,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
@@ -265,7 +267,7 @@ public class AlgorithmManager extends AbstractYamcsService
         execCtx.addAlgorithm(algorithm, executor);
         try {
             ArrayList<Parameter> newItems = new ArrayList<>();
-            for (Parameter param : executor.getRequiredParameters()) {
+            for (Parameter param : getParametersOfInterest(algorithm)) {
                 if (!requiredInParams.contains(param)) {
                     requiredInParams.add(param);
                     // Recursively activate other algorithms on which this algorithm depends
@@ -329,12 +331,12 @@ public class AlgorithmManager extends AbstractYamcsService
             for (Iterator<AlgorithmExecutor> it = Lists.reverse(executionOrder).iterator(); it.hasNext();) {
                 AlgorithmExecutor engine = it.next();
                 Algorithm algo = engine.getAlgorithm();
-                boolean doRemove = true;
+                boolean keep = false;
 
-                // Don't remove if any other output parameters are still subscribed to
+                // Keep if any other output parameters are still subscribed to
                 for (OutputParameter oParameter : algo.getOutputSet()) {
                     if (requestedOutParams.contains(oParameter.getParameter())) {
-                        doRemove = false;
+                        keep = true;
                         break;
                     }
                 }
@@ -343,30 +345,23 @@ public class AlgorithmManager extends AbstractYamcsService
                     // For any of its outputs, check if it's still used by any algorithm
                     for (OutputParameter op : algo.getOutputSet()) {
                         if (requestedOutParams.contains(op.getParameter())) {
-                            doRemove = false;
+                            keep = true;
                             break;
                         }
                         for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
-                            for (InputParameter ip : otherAlgo.getInputSet()) {
-                                if (ip.getParameterInstance().getParameter() == op.getParameter()) {
-                                    doRemove = false;
-                                    break;
-                                }
-                            }
-                            if (!doRemove) {
+                            if (getParametersOfInterest(otherAlgo).contains(op.getParameter())) {
+                                keep = true;
                                 break;
                             }
                         }
                     }
                 }
 
-                if (doRemove) {
+                if (!keep) {
                     it.remove();
                     globalCtx.remove(algo);
                 } else {
-                    for (InputParameter p : algo.getInputSet()) {
-                        stillRequired.add(p.getParameterInstance().getParameter());
-                    }
+                    stillRequired.addAll(getParametersOfInterest(algo));
                 }
             }
             requiredInParams.retainAll(stillRequired);
@@ -496,5 +491,17 @@ public class AlgorithmManager extends AbstractYamcsService
         globalCtx.addAlgorithm(algOverr, executor);
         algoOverrides.put(calg, algOverr);
         executionOrder.add(executor);
+    }
+
+    /**
+     * Returns all the parameters that this algorithm want to receive updates on. This includes not only the input
+     * parameters, but also any parameters that are part of the trigger set.
+     */
+    private static Set<Parameter> getParametersOfInterest(Algorithm algorithm) {
+        Stream<Parameter> triggerParams = algorithm.getTriggerSet().getOnParameterUpdateTriggers().stream()
+                .map(t -> t.getParameter());
+        Stream<Parameter> inputParams = algorithm.getInputList().stream()
+                .map(ip -> ip.getParameterInstance().getParameter());
+        return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
     }
 }

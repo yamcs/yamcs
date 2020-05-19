@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
@@ -29,7 +29,7 @@ export default class YamcsClient implements HttpHandler {
 
   private interceptor: HttpInterceptor;
 
-  public connected$: Observable<boolean>;
+  readonly connected$ = new BehaviorSubject<boolean>(false);
   private webSocketClient?: WebSocketClient;
 
   constructor(readonly baseHref = '/') {
@@ -39,7 +39,6 @@ export default class YamcsClient implements HttpHandler {
   }
 
   createInstancesSubscription(observer: (instance: Instance) => void): InstancesSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('instances', {}, observer);
   }
 
@@ -385,77 +384,62 @@ export default class YamcsClient implements HttpHandler {
   }
 
   createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('time', options, observer);
   }
 
   createProcessorSubscription(options: SubscribeProcessorsRequest, observer: (processor: Processor) => void): ProcessorSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('processors', options, observer);
   }
 
   createCop1Subscription(options: SubscribeCop1Request, observer: (cop1Status: Cop1Status) => void): Cop1Subscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('cop1', options, observer);
   }
 
   createGlobalAlarmStatusSubscription(options: SubscribeGlobalAlarmStatusRequest, observer: (status: GlobalAlarmStatus) => void): GlobalAlarmStatusSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('global-alarm-status', options, observer);
   }
 
   createTMStatisticsSubscription(options: SubscribeTMStatisticsRequest, observer: (time: Statistics) => void): TMStatisticsSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('tmstats', options, observer);
   }
 
   createEventSubscription(options: SubscribeEventsRequest, observer: (event: Event) => void): EventSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('events', options, observer);
   }
 
   createLinkSubscription(options: SubscribeLinksRequest, observer: (linkEvent: LinkEvent) => void): LinkSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('links', options, observer);
   }
 
   createTransferSubscription(options: SubscribeTransfersRequest, observer: (transfer: Transfer) => void): TransferSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('cfdp-transfers', options, observer);
   }
 
   createParameterSubscription(options: SubscribeParametersRequest, observer: (data: SubscribeParametersData) => void): ParameterSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('parameters', options, observer);
   }
 
   createStreamStatisticsSubscription(options: SubscribeStreamStatisticsRequest, observer: (event: StreamEvent) => void): StreamStatisticsSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('stream-stats', options, observer);
   }
 
   createStreamSubscription(options: SubscribeStreamRequest, observer: (data: StreamData) => void): StreamSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('stream', options, observer);
   }
 
   createQueueStatisticsSubscription(options: SubscribeQueueStatisticsRequest, observer: (queue: CommandQueue) => void): QueueStatisticsSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('queue-stats', options, observer);
   }
 
   createQueueEventsSubscription(options: SubscribeQueueEventsRequest, observer: (event: CommandQueueEvent) => void): QueueEventsSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('queue-events', options, observer);
   }
 
   createAlarmSubscription(options: SubscribeAlarmsRequest, observer: (alarm: Alarm) => void): AlarmSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('alarms', options, observer);
   }
 
   createCommandSubscription(options: SubscribeCommandsRequest, observer: (entry: CommandHistoryEntry) => void): CommandSubscription {
-    this.prepareWebSocketClient();
     return this.webSocketClient!.createSubscription('commands', options, observer);
   }
 
@@ -999,7 +983,13 @@ export default class YamcsClient implements HttpHandler {
   prepareWebSocketClient() {
     if (!this.webSocketClient) {
       this.webSocketClient = new WebSocketClient(this.apiUrl);
-      this.connected$ = this.webSocketClient.connected$;
+      // Copy connection updates from the WebSocketConnection to the subject in
+      // this class. Our local subject must always be available even when the
+      // WebSocket was not yet set up (for example because auth is still
+      // required).
+      this.webSocketClient.connected$.subscribe(connected => {
+        this.connected$.next(connected);
+      });
     }
   }
 

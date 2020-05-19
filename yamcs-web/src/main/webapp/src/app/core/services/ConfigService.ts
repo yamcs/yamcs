@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthInfo } from '../../client';
+import { AuthInfo, CommandOption } from '../../client';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 
 export interface WebsiteConfig {
@@ -10,6 +10,7 @@ export interface WebsiteConfig {
   events?: EventsConfig;
   commandClearances: boolean;
   twoStageCommanding: boolean;
+  commandOptions: CommandOption[];
 }
 
 export interface FeaturesConfig {
@@ -54,6 +55,10 @@ export class ConfigService {
 
   getTag() {
     return this.websiteConfig.tag;
+  }
+
+  getCommandOptions() {
+    return this.websiteConfig.commandOptions;
   }
 
   getConfig() {

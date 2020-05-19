@@ -51,6 +51,9 @@ service ManagementApi {
   }
   
   // Get an instance
+  // 
+  // If an instance does not have web services enabled, it will be listed among the
+  // results, but none of its URLs will be filled in.
   rpc GetInstance(GetInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       get: "/api/instances/{instance}"
@@ -66,6 +69,9 @@ service ManagementApi {
   }
   
   // Start an instance
+  //
+  // If the instance is in the RUNNING state, this call will do nothing.
+  // Otherwise the instance will be started.
   rpc StartInstance(StartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:start"
@@ -73,6 +79,9 @@ service ManagementApi {
   }
   
   // Stop an instance
+  // 
+  // Stop all services of the instance. The instance state will be OFFLINE.
+  // If the instance state is already OFFLINE, this call will do nothing.
   rpc StopInstance(StopInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:stop"
@@ -80,6 +89,10 @@ service ManagementApi {
   }
   
   // Restart an instance
+  //
+  // If the instance state is RUNNING, the instance will be stopped and then
+  // restarted. Otherwise the instance will be started. Note that the Mission
+  // Database will also be reloaded before restart.
   rpc RestartInstance(RestartInstanceRequest) returns (YamcsInstance) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:restart"
@@ -108,6 +121,9 @@ service ManagementApi {
   }
   
   // Stop a service
+  //
+  // Once stopped, a service cannot be resumed. Instead a new service
+  // instance will be created and started.
   rpc StopService(StopServiceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/services/{instance}/{name}:stop"
@@ -168,6 +184,7 @@ message YamcsInstance {
     STOPPING = 5;
     FAILED = 6;
   }
+  // Instance name.
   optional string name = 1;
   optional mdb.MissionDatabase missionDatabase = 3;
   repeated ProcessorInfo processors = 4;
@@ -180,6 +197,7 @@ message YamcsInstance {
 }
 
 message InstanceTemplate {
+  // Template name.
   optional string name = 1;
   repeated TemplateVariable variables = 2;
 }
@@ -191,7 +209,10 @@ message TemplateVariable {
 }
 
 message ProcessorInfo {
-  optional string instance = 1; //yamcs instance
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
   optional string name = 2;
   optional string type = 3;
   optional string spec = 4;
@@ -210,7 +231,10 @@ message ProcessorInfo {
 
 message TmStatistics {
   reserved 3,4,7, 8;
+  
+  // Packet name.
   optional string packetName = 1;
+
   optional string qualifiedName = 9;
   optional int64 receivedPackets = 2;
   optional int32 subscribedParameterCount = 6;
@@ -222,8 +246,12 @@ message TmStatistics {
 
 message Statistics {
   reserved 2,4,5;
+  // Yamcs instance name.
   optional string instance = 1;
+  
+  // Processor name.
   optional string processor = 7;
+
   repeated TmStatistics tmstats = 3;
   optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update
 }
@@ -274,8 +302,13 @@ message LinkInfo {
 
 message LinkEvent {
   enum Type {
+    // A new link was registered. You also receive this event directly after you subscribe,
+    //  for every link that is registered at that time.
     REGISTERED = 1;
+    // A link was unregistered.
     UNREGISTERED = 2;
+    // A link was updated in one of its attributes, for example the dataCount has increased,
+    // or the status has changed.
     UPDATED = 3;
   }
   optional Type type = 1;
@@ -338,21 +371,31 @@ message RootDirectory {
 }
 
 message ListServicesRequest {
+  // Yamcs instance name. Or _global for system-wide services. 
   optional string instance = 1;
 }
 
 message GetServiceRequest {
+  // Yamcs instance name. Or _global for system-wide services.
   optional string instance = 1;
+
+  // Service name
   optional string name = 2;
 }
 
 message StartServiceRequest {
+  // Yamcs instance name. Or _global for system-wide services.
   optional string instance = 1;
+
+  // Service name
   optional string name = 2;
 }
 
 message StopServiceRequest {
+  // Yamcs instance name. Or _global for system-wide services.
   optional string instance = 1;
+
+  // Service name
   optional string name = 2;
 }
 
@@ -369,9 +412,18 @@ message ListInstancesResponse {
 }
 
 message CreateInstanceRequest {
+  // **Required.** The name of the instance.
   optional string name = 1;
+  
+  // **Required.** The name of the template for this instance.
   optional string template = 2;
+  
+  // Arguments for substitution in the template definition. Each entry is
+  // keyed by the argument name. The value must be a string.
   map<string, string> templateArgs = 3;
+  
+  // Labels assigned to this instance. Each entry is keyed by the tag name
+  // of the label. The value represent the label value for that tag.
   map<string, string> labels = 4;
 }
 
@@ -380,31 +432,38 @@ message ListInstanceTemplatesResponse {
 }
 
 message EditInstanceRequest {
+  // Yamcs instance name.
   optional string instance = 1;
   optional string state = 2;
 }
 
 message GetInstanceTemplateRequest {
+  // Template name.
   optional string template = 1;
 }
 
 message GetInstanceRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
 message StartInstanceRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
 message StopInstanceRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
 message RestartInstanceRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
 message ListLinksRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
@@ -413,13 +472,21 @@ message ListLinksResponse {
 }
 
 message GetLinkRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
+  // Link name. 
   optional string name = 2;
 }
 
 message EditLinkRequest {
+  // Yamcs instance name.
   optional string instance = 3;
+
+  // Link name.
   optional string name = 4;
+  
+  // The state of the link. Either ``enabled`` or ``disabled``.
   optional string state = 1;
   optional bool resetCounters = 2;
 }

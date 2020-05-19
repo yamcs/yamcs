@@ -1,76 +1,95 @@
 <form [formGroup]="form"
       class="ya-form"
       [class.showAll]="showAll$ | async">
-    <ng-container *ngFor="let argument of arguments; let first = first">
-        <br *ngIf="!first">
-        <ng-container [ngSwitch]="argument.type?.engType">
+  <ng-container *ngFor="let argument of arguments; let first = first">
+    <br *ngIf="!first">
+    <ng-container [ngSwitch]="argument.type?.engType">
 
-            <label *ngSwitchCase="'enumeration'">
-                {{ argument.name }}
-                <select [formControlName]="argument.name">
-                    <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-                        {{ enumValue.label }}</option>
-                </select>
-            </label>
+      <label *ngSwitchCase="'enumeration'">
+        {{ argument.name }}
+        <select [formControlName]="argument.name">
+          <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
+            {{ enumValue.label }}</option>
+        </select>
+      </label>
 
-            <label *ngSwitchCase="'boolean'">
-                {{ argument.name }}<br>
-                <input type="radio" [formControlName]="argument.name" value="true"> true
-                <input type="radio" [formControlName]="argument.name" value="false"> false
-            </label>
+      <label *ngSwitchCase="'boolean'">
+        {{ argument.name }}<br>
+        <input type="radio" [formControlName]="argument.name" value="true"> true
+        <input type="radio" [formControlName]="argument.name" value="false"> false
+      </label>
 
-            <label *ngSwitchCase="'binary'">
-                {{ argument.name }}
-                <app-binary-input [formControlName]="argument.name"></app-binary-input>
-            </label>
+      <label *ngSwitchCase="'binary'">
+        {{ argument.name }}
+        <app-binary-input [formControlName]="argument.name"></app-binary-input>
+      </label>
 
-            <label *ngSwitchDefault>
-                {{ argument.name }}
-                <input type="text" [formControlName]="argument.name">
-            </label>
+      <label *ngSwitchDefault>
+        {{ argument.name }}
+        <input type="text" [formControlName]="argument.name">
+      </label>
 
-        </ng-container>
     </ng-container>
+  </ng-container>
 
-    <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
-        <br class="hasInitial" *ngIf="!first || arguments.length">
-        <ng-container [ngSwitch]="argument.type?.engType">
+  <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
+    <br class="hasInitial" *ngIf="!first || arguments.length">
+    <ng-container [ngSwitch]="argument.type?.engType">
 
-            <label *ngSwitchCase="'enumeration'" class="hasInitial">
-                {{ argument.name }}
-                <select [formControlName]="argument.name">
-                    <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
-                        {{ enumValue.label }}</option>
-                </select>
-            </label>
+      <label *ngSwitchCase="'enumeration'" class="hasInitial">
+        {{ argument.name }}
+        <select [formControlName]="argument.name">
+          <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">
+            {{ enumValue.label }}</option>
+        </select>
+      </label>
 
-            <label *ngSwitchCase="'boolean'" class="hasInitial">
-                {{ argument.name }}<br>
-                <input type="radio" [formControlName]="argument.name" value="true"> true
-                <input type="radio" [formControlName]="argument.name" value="false"> false
-            </label>
+      <label *ngSwitchCase="'boolean'" class="hasInitial">
+        {{ argument.name }}<br>
+        <input type="radio" [formControlName]="argument.name" value="true"> true
+        <input type="radio" [formControlName]="argument.name" value="false"> false
+      </label>
 
-            <label *ngSwitchDefault class="hasInitial">
-                {{ argument.name }}
-                <input type="text" [formControlName]="argument.name">
-            </label>
+      <label *ngSwitchDefault class="hasInitial">
+        {{ argument.name }}
+        <input type="text" [formControlName]="argument.name">
+      </label>
 
-        </ng-container>
     </ng-container>
+  </ng-container>
 
-    <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
-        <br>
-        <app-text-action (click)="showAll$.next(true)"
-                         icon="double_arrow">
-            Show {{ argumentsWithInitial.length }}
-            argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
-        </app-text-action>
+  <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
+    <br>
+    <app-text-action (click)="showAll$.next(true)"
+                     icon="double_arrow">
+      Show {{ argumentsWithInitial.length }}
+      argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
+    </app-text-action>
+  </ng-container>
+
+  <p>&nbsp;</p>
+  <h3>Options</h3>
+  <ng-container *ngIf="showCommandOptions()">
+    <ng-container *ngFor="let extra of commandOptions">
+      <ng-container [ngSwitch]="extra.type">
+        <label *ngSwitchCase="'BOOLEAN'">
+          {{ extra.verboseName || extra.id }}
+          <app-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">{{ extra.help }}</app-help>
+          <br>
+          <input type="radio" [formControlName]="'extra__' + extra.id" value="true"> true
+          <input type="radio" [formControlName]="'extra__' + extra.id" value="false"> false
+        </label>
+
+        <label *ngSwitchDefault>
+          {{ extra.verboseName || extra.id }}
+          <input type="text" [formControlName]="'extra__' + extra.id">
+        </label>
+      </ng-container>
+      <br>
     </ng-container>
-
-    <p>&nbsp;</p>
-    <h3>Options</h3>
-    <label>
-        Comment <span class="hint">(optional)</span>
-        <textarea formControlName="_comment" rows="3" style="width: 100%; resize: none"></textarea>
-    </label>
+  </ng-container>
+  <label>
+    Comment <span class="hint">(optional)</span>
+    <textarea formControlName="extra__comment" rows="3" style="width: 100%; resize: none"></textarea>
+  </label>
 </form>

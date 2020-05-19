@@ -18,7 +18,6 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Commanding.CommandOptions;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Commanding.VerifierConfig.CheckWindow;
 import org.yamcs.protobuf.IssueCommandRequest;
@@ -89,8 +88,9 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testSendCommandDisableTransmissionConstraint() throws Exception {
-        CommandOptions co = CommandOptions.newBuilder().setDisableTransmissionConstraints(true).build();
-        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder().setCommandOptions(co).build();
+        IssueCommandRequest cmdreq = getCommand(6, "p1", "2").toBuilder()
+                .setDisableTransmissionConstraints(true)
+                .build();
         byte[] resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/CRITICAL_TC1", HttpMethod.POST, cmdreq);
         IssueCommandResponse commandResponse = IssueCommandResponse.parseFrom(resp);
         assertTrue(commandResponse.hasBinary());
@@ -227,11 +227,9 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandWithOneVerifierDisabled() throws Exception {
-        CommandOptions co = CommandOptions.newBuilder()
+        issueCommand(getCommand(8).toBuilder()
                 .putVerifierConfig("Execution", VerifierConfig.newBuilder().setDisable(true).build())
-                .build();
-
-        issueCommand(8, co);
+                .build());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -251,9 +249,7 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testCommandWithAllVerifiersDisabled() throws Exception {
-        CommandOptions co = CommandOptions.newBuilder().setDisableVerifiers(true).build();
-
-        issueCommand(9, co);
+        issueCommand(getCommand(9).toBuilder().setDisableVerifiers(true).build());
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -272,15 +268,15 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
     public void testCommandVerificationWithModifiedWindow() throws Exception {
         // modify the timeout for the Complete stage from 1000 (in refmdb.xls) to 5000 and sleep 1500 before sending the
         // ack
-        CommandOptions co = CommandOptions.newBuilder()
+        IssueCommandRequest cmdreq = getCommand(10);
+        cmdreq = cmdreq.toBuilder()
                 .putVerifierConfig("Complete", VerifierConfig.newBuilder()
                         .setCheckWindow(CheckWindow.newBuilder()
                                 .setTimeToStartChecking(0)
                                 .setTimeToStopChecking(5000))
                         .build())
                 .build();
-
-        issueCommand(10, co);
+        issueCommand(cmdreq);
 
         packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
@@ -299,24 +295,20 @@ public class CmdIntegrationTest extends AbstractIntegrationTest {
         checkNextCmdHistoryAttrStatusTime(CommandHistoryPublisher.CommandComplete_KEY, "OK");
     }
 
-    private void issueCommand(int id, CommandOptions co) throws Exception {
-        IssueCommandRequest cmdreq = getCommand(id);
-        if (co != null) {
-            cmdreq = cmdreq.toBuilder().setCommandOptions(co).build();
-        }
-
+    private void issueCommand(IssueCommandRequest cmdreq) throws Exception {
         byte[] resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
                 HttpMethod.POST, cmdreq).get();
         IssueCommandResponse response = IssueCommandResponse.parseFrom(resp);
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
-        assertEquals(id, cmdhist.getCommandId().getSequenceNumber());
+        assertEquals(cmdreq.getSequenceNumber(), cmdhist.getCommandId().getSequenceNumber());
     }
 
     public static class MyTcDataLink extends AbstractTcDataLink {
         static short seqNum = 5000;
 
+        @Override
         public void init(String yamcsInstance, String name, YConfiguration config) {
             super.init(yamcsInstance, name, config);
         }

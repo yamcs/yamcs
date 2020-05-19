@@ -10,6 +10,10 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "yamcs/api/annotations.proto";
+
+// CFDP (CCSDS File Delivery Protocol) is a protocol suitable for the
+// transmission (upload and download) of file to and from spacecraft.
+// The protocol includes file management services.
  
 service CfdpApi {
 
@@ -43,6 +47,9 @@ service CfdpApi {
   }
 
   // Cancel a transfer
+  //
+  // The ongoing transfer is aborted, partially uploaded/downloaded files
+  // are retained.
   rpc CancelTransfer(CancelTransferRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/cfdp/{instance}/transfers/{id}:cancel"
@@ -112,43 +119,74 @@ message TransferInfo {
 
 message CreateTransferRequest {
   message UploadOptions {
+    // Set to ``True`` if an already existing destination should be overwritten.
+    // Default: ``True``.
     optional bool overwrite = 1;
+    
+    // Set to ``True`` if the destination path should be created if it does not exist.
+    // Default: ``True``.
     optional bool createPath = 2;
+    
+    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
+    // otherwise unreliable (class 1). Default: ``False``.
     optional bool reliable = 3;
   }
   message DownloadOptions {
   }
 
   optional string instance = 1;
+
+  // **Required** One of ``UPLOAD`` or ``DOWNLOAD``.
   optional TransferDirection direction = 2;
+
+  // **Required** The bucket containing the local Yamcs object.
   optional string bucket = 3;
+  
+  // **Required** The object name in Yamcs bucket storage. For UPLOAD transfers,
+  // this object must exist and is what Yamcs will transfer to the remote
+  // CFDP entity. For DOWNLOAD transfers, it refers to the object that
+  // Yamcs will write to when downloading from a remote CFDP entity.
   optional string objectName = 4;
+  
+  // **Required** The path at the remote CFDP entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
+  
   optional DownloadOptions downloadOptions = 6;
+  
+  // Configuration options specific to ``UPLOAD`` transfers.
   optional UploadOptions uploadOptions = 7;
 }
 
 message PauseTransferRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message CancelTransferRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message ResumeTransferRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message ListTransfersRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
 message GetTransferRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+  // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
@@ -157,5 +195,6 @@ message ListTransfersResponse {
 }
 
 message SubscribeTransfersRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }

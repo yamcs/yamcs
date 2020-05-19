@@ -1,0 +1,19 @@
+{{ method.name | titlecase | heading(1) }}
+
+.. route:: {{ symbol }}
+
+{% if route_options.HasField('body') -%}
+.. rubric:: Request Body
+.. rpc:: {{ symbol }}
+    :input:
+{%- endif %}
+
+{% if method.output_type not in ('.google.protobuf.Empty', '.yamcs.api.HttpBody') -%}
+.. rubric:: Response Type
+.. rpc:: {{ symbol }}
+    :output:
+{%- endif %}
+
+.. rubric:: Related Types
+.. rpc:: {{ symbol }}
+    :related:
