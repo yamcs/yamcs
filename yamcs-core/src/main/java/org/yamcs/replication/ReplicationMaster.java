@@ -23,7 +23,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.StreamInfo;
-import org.yamcs.utils.ByteBufferDataOutputStream;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -207,6 +206,28 @@ public class ReplicationMaster extends AbstractYamcsService {
             }
         }
     }
+    
+    private Transaction getProtoTransaction(MessageLite msg) {
+        Transaction tx = new Transaction() {
+            @Override
+            public byte getType() {
+                return MessageType.STREAM_INFO;
+            }
+
+            @Override
+            public void marshall(ByteBuffer buf) {
+                try {
+                    CodedOutputStream cos = CodedOutputStream.newInstance(buf);
+                    msg.writeTo(cos);
+                    buf.position(buf.position() + cos.getTotalBytesWritten());
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        };
+        return tx;
+    }
+
 
     public ChannelHandler newChannelHandler(Request req) {
         return new MasterChannelHandler(this, req);
@@ -233,7 +254,6 @@ public class ReplicationMaster extends AbstractYamcsService {
                 public void marshall(ByteBuffer buf) {
 
                     buf.putInt(streamId);
-                    int position = buf.position();
                     TupleDefinition tdef = tuple.getDefinition();
                     for (int i = 0; i < tdef.size(); i++) {
                         ColumnDefinition cd = tdef.getColumn(i);
