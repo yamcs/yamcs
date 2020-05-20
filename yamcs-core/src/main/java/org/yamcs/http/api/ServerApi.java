@@ -21,13 +21,13 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.http.Topic;
-import org.yamcs.protobuf.AbstractGeneralApi;
+import org.yamcs.protobuf.AbstractServerApi;
 import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
 import org.yamcs.protobuf.CloseConnectionRequest;
-import org.yamcs.protobuf.GetGeneralInfoResponse;
-import org.yamcs.protobuf.GetGeneralInfoResponse.CommandOptionInfo;
-import org.yamcs.protobuf.GetGeneralInfoResponse.PluginInfo;
+import org.yamcs.protobuf.GetServerInfoResponse;
+import org.yamcs.protobuf.GetServerInfoResponse.CommandOptionInfo;
+import org.yamcs.protobuf.GetServerInfoResponse.PluginInfo;
 import org.yamcs.protobuf.ListClientConnectionsResponse;
 import org.yamcs.protobuf.ListRoutesResponse;
 import org.yamcs.protobuf.ListTopicsResponse;
@@ -42,17 +42,17 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 
-public class GeneralApi extends AbstractGeneralApi<Context> {
+public class ServerApi extends AbstractServerApi<Context> {
 
     private HttpServer httpServer;
 
-    public GeneralApi(HttpServer httpServer) {
+    public ServerApi(HttpServer httpServer) {
         this.httpServer = httpServer;
     }
 
     @Override
-    public void getGeneralInfo(Context ctx, Empty request, Observer<GetGeneralInfoResponse> observer) {
-        GetGeneralInfoResponse.Builder responseb = GetGeneralInfoResponse.newBuilder();
+    public void getServerInfo(Context ctx, Empty request, Observer<GetServerInfoResponse> observer) {
+        GetServerInfoResponse.Builder responseb = GetServerInfoResponse.newBuilder();
         responseb.setYamcsVersion(YamcsVersion.VERSION);
         responseb.setRevision(YamcsVersion.REVISION);
         responseb.setServerId(YamcsServer.getServer().getServerId());
