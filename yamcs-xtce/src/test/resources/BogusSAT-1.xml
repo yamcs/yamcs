@@ -167,7 +167,7 @@ limitations under the License.
 					</xtce:RestrictionCriteria>
 				</xtce:BaseContainer>
 			</xtce:SequenceContainer>
-				<!-- skipped - it makes references to unexisting parameters
+				<!-- skipped - it makes references to nonexistent parameters
 			<xtce:SequenceContainer abstract="true" name="CCSDSPUSTelemetryPacket">
 				<xtce:LongDescription>Super-container for all CCSDS/ECSS PUS telemetry packets.</xtce:LongDescription>
 				<xtce:EntryList>

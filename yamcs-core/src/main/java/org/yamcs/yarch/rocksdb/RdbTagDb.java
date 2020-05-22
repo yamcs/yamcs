@@ -157,7 +157,7 @@ public class RdbTagDb implements TagDb {
     public ArchiveTag updateTag(long tagTime, int tagId, ArchiveTag tag) throws YamcsException, IOException {
         try {
             if (tagId < 1) {
-                throw new YamcsException("Invalid or unexisting id");
+                throw new YamcsException("Invalid or nonexistent id");
             }
             tablespace.remove(key(tagTime, tagId));
             ArchiveTag newTag = ArchiveTag.newBuilder(tag).setId(tagId).build();
@@ -177,7 +177,7 @@ public class RdbTagDb implements TagDb {
     @Override
     public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException {
         if (tagId < 1) {
-            throw new YamcsException("Invalid or unexisting id");
+            throw new YamcsException("Invalid or nonexistent id");
         }
         try {
             byte[] k = key(tagTime, tagId);

@@ -95,7 +95,7 @@ public class Comparison implements MatchCriteria {
             ParameterType ptype1  = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
             if(ptype1 == null) {
                 throw new IllegalArgumentException("reference "+PathElement.pathToString(instanceRef.getMemberPath())
-                        +" points to un unexisting member inside the parameter type "+ptype.getName());
+                        +" points to a nonexistent member inside the parameter type "+ptype.getName());
             }
             ptype = ptype1;
         } 
