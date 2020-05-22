@@ -119,6 +119,7 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.TriggeredMathOperation;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumerationRange;
+import org.yamcs.xtce.util.DataTypeUtil;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.UnresolvedNameReference;
@@ -836,10 +837,10 @@ public class XtceStaxReader {
             needsScaling = true;
             scale = parseDouble(scales);
         }
-        if(needsScaling) {
+        if (needsScaling) {
             ptype.setScaling(offset, scale);
         }
-        
+
         DataEncoding dataEncoding = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1153,14 +1154,15 @@ public class XtceStaxReader {
         if (encoding != null) {
             stringDataEncoding.setEncoding(encoding);
         }
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 readStringSizeInBits(spaceSystem, stringDataEncoding);
             } else if (isEndElementWithName(XTCE_STRING_DATA_ENCODING)) {
-                if(stringDataEncoding.getSizeType() == null) {
-                    throw new XMLStreamException(XTCE_SIZE_IN_BITS+ " not specified for the StringDataEncoding", xmlEvent.getLocation());
+                if (stringDataEncoding.getSizeType() == null) {
+                    throw new XMLStreamException(XTCE_SIZE_IN_BITS + " not specified for the StringDataEncoding",
+                            xmlEvent.getLocation());
                 }
                 return stringDataEncoding;
             }
@@ -1500,7 +1502,8 @@ public class XtceStaxReader {
                     throw new XMLStreamException("Invalid context calibrator, no context specified");
                 }
                 if (calibrator == null) {
-                    throw new XMLStreamException("Invalid context calibrator, no calibrator specified", xmlEvent.getLocation());
+                    throw new XMLStreamException("Invalid context calibrator, no calibrator specified",
+                            xmlEvent.getLocation());
                 }
                 return new ContextCalibrator(context, calibrator);
             }
@@ -2257,7 +2260,7 @@ public class XtceStaxReader {
         final ArrayParameterEntry finalpe = parameterEntry;
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
             Parameter p = (Parameter) nd;
-            if(p.getParameterType()!=null) {
+            if (p.getParameterType() != null) {
                 finalpe.setParameter((Parameter) nd);
                 return true;
             } else {
@@ -2548,9 +2551,14 @@ public class XtceStaxReader {
             Parameter p = (Parameter) nd;
             instanceRef.setParameter((Parameter) nd);
             instanceRef.setMemberPath(path);
+
             if (p.getParameterType() == null) {
                 return false;
             }
+            if (path != null && DataTypeUtil.getMemberType(p.getParameterType(), path) == null) {
+                return false;
+            }
+
             comparison.resolveValueType();
             return true;
         });
