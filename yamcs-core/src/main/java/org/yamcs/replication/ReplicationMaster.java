@@ -48,10 +48,10 @@ import io.netty.channel.ChannelHandler;
  *
  */
 public class ReplicationMaster extends AbstractYamcsService {
+    private static final Pattern FILE_PATTERN = Pattern.compile("RPL_([0-9A-Fa-f]{16})\\.dat");
+
     ConcurrentSkipListMap<Long, ReplFileAccess> replFiles = new ConcurrentSkipListMap<>();
     volatile ReplicationFile currentFile = null;
-
-    private static final Pattern FILE_PATTERN = Pattern.compile("RPL_([0-9A-Fa-f]{16})\\.dat");
 
     int port;
     List<String> streamNames;
@@ -65,10 +65,12 @@ public class ReplicationMaster extends AbstractYamcsService {
     TcpRole tcpRole;
     List<SlaveServer> slaves;
     long reconnectionInterval;
-
+    int serverId;
+    
     @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
+        serverId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.Server);
         port = config.getInt("port", -1);
         expiration = (long) (config.getDouble("expirationDays", 7.0) * 24 * 3600 * 1000);
@@ -109,7 +111,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             Map.Entry<Long, ReplFileAccess> e = replFiles.lastEntry();
             long firstTxId = e.getKey();
             ReplFileAccess rfa = e.getValue();
-            rfa.file = currentFile = ReplicationFile.openReadWrite(yamcsInstance, replicationDir.toString(), firstTxId,
+            rfa.file = currentFile = ReplicationFile.openReadWrite(serverId, yamcsInstance, replicationDir.toString(), firstTxId,
                     maxFileSize);
             if (currentFile.isFull()) {
                 openNewFile(currentFile);
@@ -211,7 +213,7 @@ public class ReplicationMaster extends AbstractYamcsService {
         Transaction tx = new Transaction() {
             @Override
             public byte getType() {
-                return MessageType.STREAM_INFO;
+                return Message.STREAM_INFO;
             }
 
             @Override
@@ -223,6 +225,11 @@ public class ReplicationMaster extends AbstractYamcsService {
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
+            }
+
+            @Override
+            public int getInstanceId() {
+                return serverId;
             }
         };
         return tx;
@@ -271,7 +278,12 @@ public class ReplicationMaster extends AbstractYamcsService {
 
                 @Override
                 public byte getType() {
-                    return MessageType.DATA;
+                    return Message.DATA;
+                }
+
+                @Override
+                public int getInstanceId() {//in the future we may put this as part of the tuple
+                    return serverId;
                 }
             };
             writeToFile(tx);
@@ -344,7 +356,7 @@ public class ReplicationMaster extends AbstractYamcsService {
         ReplFileAccess rfa = e.getValue();
         synchronized (rfa) {
             if (rfa.file == null) {
-                rfa.file = ReplicationFile.openReadOnly(yamcsInstance, replicationDir.toString(), e.getKey());
+                rfa.file = ReplicationFile.openReadOnly(serverId, yamcsInstance, replicationDir.toString(), e.getKey());
                 rfa.lastAccess = System.currentTimeMillis();
             }
         }

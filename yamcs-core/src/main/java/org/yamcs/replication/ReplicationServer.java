@@ -1,5 +1,6 @@
 package org.yamcs.replication;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,12 +14,13 @@ import org.yamcs.YamcsException;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.Wakeup;
+import org.yamcs.utils.DecodingException;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,7 +33,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.ChannelInitializer;
-import static org.yamcs.replication.MessageType.*;
 
 /**
  * TCP replication server - works both on the master and on the slave side depending on the channel handler
@@ -47,7 +48,7 @@ public class ReplicationServer extends AbstractYamcsService {
     private Map<String, ReplicationMaster> masters = new HashMap<>();
     private Map<String, ReplicationSlave> slaves = new HashMap<>();
     Set<Channel> activeChannels = Collections.newSetFromMap(new ConcurrentHashMap<Channel, Boolean>());
-    
+
     @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
@@ -81,16 +82,16 @@ public class ReplicationServer extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
-        for(Channel ch: activeChannels) {
+        for (Channel ch : activeChannels) {
             ch.close();
         }
         notifyStopped();
     }
-    
+
     public void registerMaster(ReplicationMaster replicationMaster) {
         masters.put(replicationMaster.getYamcsInstance(), replicationMaster);
     }
-    
+
     public void registerSlave(ReplicationSlave replicationSlave) {
         slaves.put(replicationSlave.getYamcsInstance(), replicationSlave);
     }
@@ -99,87 +100,81 @@ public class ReplicationServer extends AbstractYamcsService {
         ChannelHandlerContext channelHandlerContext;
 
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            ByteBuf buf = (ByteBuf) msg;
-            int sizetype = buf.readInt();
-            byte msgType = (byte) (sizetype >> 24);
-            if (msgType == MessageType.WAKEUP) {// this is sent by a master when we are slave.
-                try {
-                    Wakeup wp = MessageType.nettyToProto(buf, Wakeup.newBuilder()).build();
-                    log.debug("Received wakeup message: {}", TextFormat.shortDebugString(wp));
-                    processWakeup(wp);
-                } catch (InvalidProtocolBufferException e) {
-                    log.warn("Failed to decode WAKEUP message", e);
-                    sendErrorReturn(0, "failed: "+e.getMessage());
-                }
-            } else if (msgType == MessageType.REQUEST) {
-                try {
-                    Request req = MessageType.nettyToProto(buf, Request.newBuilder()).build();
-                    processRequest(req);
-                } catch (InvalidProtocolBufferException e) {
-                    log.warn("Failed to decode REQUEST message", e);
-                    sendErrorReturn(0, "failed: "+e.getMessage());
-                }
+        public void channelRead(ChannelHandlerContext ctx, Object o) throws Exception {
+            ByteBuffer buf = ((ByteBuf) o).nioBuffer();
+            Message msg;
+            try {
+                msg = Message.decode(buf);
+            } catch (DecodingException e) {
+                log.warn("Failed to decode message", e);
+                sendErrorReturn(0, "Failed to decode message: " + e.getMessage());
+                return;
+            }
+
+            if (msg.type == Message.WAKEUP) {// this is sent by a master when we are slave.
+                processWakeup((Wakeup) msg.protoMsg);
+            } else if (msg.type == Message.REQUEST) {
+                processRequest((Request) msg.protoMsg);
             } else {
-                log.warn("Unexpected message type {} received, closing the connection", msgType);
+                log.warn("Unexpected message type {} received, closing the connection", msg.type);
                 ctx.close();
             }
         }
 
-        private void processWakeup(Wakeup wp) { //called when we are slave
+        private void processWakeup(Wakeup wp) { // called when we are slave
+            log.debug("Received wakeup message: {}", TextFormat.shortDebugString(wp));
+
             verifyAuth(wp.getAuthToken());
-            if(!wp.hasYamcsInstance()) {
+            if (!wp.hasYamcsInstance()) {
                 sendErrorReturn(0, "instance not present in the request");
                 return;
             }
             ReplicationSlave slave = slaves.get(wp.getYamcsInstance());
-            if(slave == null) {
-                log.warn( "No replication slave registered for instance '{}'", wp.getYamcsInstance());
-                sendErrorReturn(0, "No replication slave registered for instance '"+wp.getYamcsInstance()+"''");
+            if (slave == null) {
+                log.warn("No replication slave registered for instance '{}'", wp.getYamcsInstance());
+                sendErrorReturn(0, "No replication slave registered for instance '" + wp.getYamcsInstance() + "''");
                 return;
             }
             ChannelHandler sch;
             try {
                 sch = slave.newChannelHandler();
-            } catch (YamcsException e) { //this happens if the master connects twice to the same slave
-                log.warn("Got exception when creating a slave handler: "+e);
+            } catch (YamcsException e) { // this happens if the master connects twice to the same slave
+                log.warn("Got exception when creating a slave handler: " + e);
                 sendErrorReturn(0, e.toString());
                 return;
             }
-            
+
             ChannelPipeline pipeline = channelHandlerContext.channel().pipeline();
             pipeline.remove(this);
             pipeline.addLast(sch);
         }
-        
-        
-        private void processRequest(Request req) {//called when we are master to initiate a request
-            if(!req.hasYamcsInstance()) {
+
+        private void processRequest(Request req) {// called when we are master to initiate a request
+            if (!req.hasYamcsInstance()) {
                 sendErrorReturn(0, "instance not present in the request");
                 return;
             }
             ReplicationMaster master = masters.get(req.getYamcsInstance());
-            if(master == null) {
-                log.warn("Received a replication request for non registered master: {}", req);
-                sendErrorReturn(req.getRequestSeq(), "No replication master registered for instance '"+req.getYamcsInstance()+"''");
+            if (master == null) {
+                log.warn("Received a replication request for non registered master: {}", TextFormat.shortDebugString(req));
+                sendErrorReturn(req.getRequestSeq(),
+                        "No replication master registered for instance '" + req.getYamcsInstance() + "''");
                 return;
             }
-            log.debug("Received a replication request: {}, starting a new handler on the master", req);
+            log.debug("Received a replication request: {}, starting a new handler on the master", TextFormat.shortDebugString(req));
             ChannelPipeline pipeline = channelHandlerContext.channel().pipeline();
             pipeline.remove(this);
             pipeline.addLast(master.newChannelHandler(req));
         }
-        
-        
-        
+
         private void verifyAuth(String authToken) {
             // TODO Auto-generated method stub
-            
+
         }
 
         private void sendErrorReturn(int requestSeq, String error) {
             Response resp = Response.newBuilder().setRequestSeq(requestSeq).setResult(-1).setErrorMsg(error).build();
-            channelHandlerContext.writeAndFlush(protoToNetty(MessageType.RESPONSE, resp));
+            channelHandlerContext.writeAndFlush(Unpooled.wrappedBuffer(Message.get(resp).encode()));
         }
 
         @Override
@@ -200,5 +195,4 @@ public class ReplicationServer extends AbstractYamcsService {
         }
     }
 
- 
 }

@@ -6,11 +6,12 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.zip.CRC32;
 
 import org.junit.Test;
 
 import com.google.common.io.Files;
-import static org.yamcs.replication.MessageType.*;
+import static org.yamcs.replication.Message.*;
 
 public class ReplicationFileTest {
     static Random random = new Random();
@@ -25,12 +26,31 @@ public class ReplicationFileTest {
 
         assertNull(rf.tail(13));
         assertEquals(0, rf.tail(12).buf.remaining());
-        
-        long txid = rf.writeData(new MyTransaction(STREAM_INFO, 10));
+       
+        MyTransaction tx1 = new MyTransaction(STREAM_INFO, 10);
+        long txid = rf.writeData(tx1);
         assertEquals(12, txid);
         assertEquals(1, rf.numTx());
-
-        assertEquals(26, rf.tail(12).buf.remaining());
+        
+        ByteBuffer buf = rf.tail(12).buf;
+        ByteBuffer buf1 = buf.duplicate();
+        
+        assertEquals(34, buf.remaining());
+        assertEquals(0x0400001E, buf.getInt());//type size
+        assertEquals(tx1.getInstanceId(), buf.getInt()); //serverid
+        assertEquals(12l, buf.getLong());//transactionid
+        assertEquals(0, buf.getInt()); //next metadata pointer
+        byte[] b = new byte[buf.remaining()-4];
+        buf.get(b);
+        assertArrayEquals(tx1.b, b); //data
+        
+        //verify CRC
+        int crc = buf.getInt();
+        CRC32 crc32 = new CRC32();
+        byte[] b1 = new byte[buf1.remaining()-4];
+        buf1.get(b1);
+        crc32.update(b1);
+        assertEquals((int)crc32.getValue(), crc);
         
         long txid1 = rf.writeData(new MyTransaction(DATA, 200));
         assertEquals(-1, txid1);
@@ -61,10 +81,13 @@ public class ReplicationFileTest {
         assertEquals(13, meta1.txid);
         assertEquals(2, rf.numTx());
         
-        assertEquals(48, rf.tail(12).buf.remaining());
+        assertEquals(64, rf.tail(12).buf.remaining());
+        
+        
         ByteBuffer bb = rf.tail(13).buf;
-        assertEquals(26, bb.remaining());
-        assertEquals(22, bb.getInt()&0xFFFFFF);
+        assertEquals(34, bb.remaining());
+        assertEquals(30, bb.getInt()&0xFFFFFF);
+        assertEquals(meta1.instanceId, bb.getInt());
         assertEquals(13, bb.getLong());
         
 
@@ -76,14 +99,14 @@ public class ReplicationFileTest {
 
         rf.close();
 
-        ReplicationFile rf1 = ReplicationFile.openReadOnly("test",dir.getAbsolutePath(), 12);
+        ReplicationFile rf1 = ReplicationFile.openReadOnly(2, "test",dir.getAbsolutePath(), 12);
         assertEquals(2, rf1.numTx());
 
         verifyMetadata(rf1, meta1);
 
         rf1.close();
         
-        ReplicationFile rf2 = ReplicationFile.openReadWrite("test",dir.getAbsolutePath(), 12, 300);
+        ReplicationFile rf2 = ReplicationFile.openReadWrite(2, "test",dir.getAbsolutePath(), 12, 300);
         assertEquals(2, rf2.numTx());
 
         verifyMetadata(rf2, meta1);
@@ -133,7 +156,7 @@ public class ReplicationFileTest {
         verifyMetadata(rf, mm[0], mm[1], mm[30]);
         rf.close();
         
-        ReplicationFile rf1 = ReplicationFile.openReadWrite("test",dir.getAbsolutePath(), 0, 10000);
+        ReplicationFile rf1 = ReplicationFile.openReadWrite(3, "test",dir.getAbsolutePath(), 0, 10000);
         assertEquals(31, rf1.numTx());
         verifyMetadata(rf1, mm[0], mm[1], mm[30]);
         rf1.close();
@@ -164,7 +187,7 @@ public class ReplicationFileTest {
         rf.getNewData(rt);
         assertEquals(false, rt.eof);
         assertEquals(2, rt.nextTxId);
-        assertEquals(22, rt.buf.remaining());
+        assertEquals(30, rt.buf.remaining());
         for(int i=2; i<170; i++) {
             long txId = rf.writeData(new MyTransaction(DATA, 10));
             assertEquals(i, txId);
@@ -176,15 +199,15 @@ public class ReplicationFileTest {
         rf.getNewData(rt);
         assertEquals(true, rt.eof);
         assertEquals(170, rt.nextTxId);
-        assertEquals(22*169, rt.buf.remaining());
+        assertEquals(30*169, rt.buf.remaining());
         rf.close();
         
-        ReplicationFile rf1 = ReplicationFile.openReadOnly("test",dir.getAbsolutePath(), 0);
+        ReplicationFile rf1 = ReplicationFile.openReadOnly(4, "test",dir.getAbsolutePath(), 0);
         ReplicationTail rt1 = rf1.tail(0);
         assertEquals(true, rt1.eof);
         assertEquals(170, rt1.nextTxId);
-        assertEquals(22*170, rt1.buf.remaining());
-        assertEquals(0x05000012, rt1.buf.getInt());
+        assertEquals(30*170, rt1.buf.remaining());
+        assertEquals(0x0500001A, rt1.buf.getInt());
         
         rf1.close();
     }
@@ -194,36 +217,53 @@ public class ReplicationFileTest {
         for (int i = 0; i < metaRecords.length; i++) {
             MyTransaction meta = metaRecords[i];
             assertTrue(it.hasNext());
-            ByteBuffer buf1 = it.next();
+            ByteBuffer buf = it.next();
             
-            int typesize = buf1.getInt();
-            assertEquals(typesize&0xFFFFFF, buf1.remaining());
+            //verify CRC
+            checkCrc(buf.duplicate());
+            int typesize = buf.getInt();
+            assertEquals(typesize&0xFFFFFF, buf.remaining());
+            int instanceId = buf.getInt();
+            assertEquals(meta.instanceId, instanceId);
             
-            long txid = buf1.getLong();
+            long txid = buf.getLong();
            
             
             assertEquals(meta.txid, txid);
             
             assertEquals(meta.type, typesize >> 24);
-            assertEquals(meta.b.length + 12, typesize & 0xFFFF);
-            assertEquals(meta.b.length + 4, buf1.remaining());
-            buf1.getInt();//skip next metadata pointer
+            assertEquals(meta.b.length + 20, typesize & 0xFFFF);
+            assertEquals(meta.b.length + 8, buf.remaining());
+            buf.getInt();//skip next metadata pointer
             
             byte[] b1 = new byte[meta.b.length];
-            buf1.get(b1);
+            buf.get(b1);
             assertArrayEquals(meta.b, b1);
         }
+    }
+
+    private void checkCrc(ByteBuffer buf) {
+        buf.limit(buf.limit() - 4);
+        CRC32 crc = new CRC32();
+        crc.update(buf);
+        int ccrc = (int) crc.getValue();
+
+        buf.limit(buf.limit() + 4);
+        int rcrc = buf.getInt();
+        assertEquals(ccrc, rcrc);
     }
 
     class MyTransaction implements Transaction {
         byte[] b;
         long txid;
         byte type;
-
+        int instanceId;
+        
         MyTransaction(byte type, int size) {
             this.type = type;
             this.b = new byte[size];
             random.nextBytes(b);
+            this.instanceId = random.nextInt();
         }
 
         @Override
@@ -234,6 +274,11 @@ public class ReplicationFileTest {
         @Override
         public byte getType() {
             return type;
+        }
+
+        @Override
+        public int getInstanceId() {
+            return instanceId;
         }
     }
 

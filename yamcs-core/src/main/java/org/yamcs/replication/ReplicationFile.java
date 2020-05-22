@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.zip.CRC32;
 
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
@@ -53,10 +54,14 @@ import org.yamcs.utils.StringConverter;
  * <pre>
  * 
  * 1 byte type
- * 3 bytes - size of the data that follows = 8 + n (+4 for metadata)
- * 8 bytes txid
+ * 3 bytes - size of the data that follows
+ * 4 bytes server_id
+ * 8 bytes transaction_id
  * n bytes data
- * [next metadata position] - for metadata the first 4 bytes of the data is the position of the next metadata record
+ * 4 bytes CRC32 calculated over the data including the type and length
+ * 
+ *  for metadata the first 4 bytes of the data is the position of the next metadata record
+ *   
  * </pre>
  * 
  * <p>
@@ -78,7 +83,10 @@ import org.yamcs.utils.StringConverter;
 public class ReplicationFile implements Closeable {
     static final String RPL_FILENAME_PREFIX = "RPL";
     final static byte[] MAGIC = { 'Y', 'A', 'M', 'C', 'S', '_', 'S', 'T', 'R', 'E', 'A', 'M' };
-
+  
+    //the position inside the record where the metadata position pointer sits
+    //it is after size, instanceId, txid
+    final static int METADATA_POS_OFFSET = 16; 
     final Log log;
 
     ReadWriteLock rwlock = new ReentrantReadWriteLock();
@@ -93,7 +101,8 @@ public class ReplicationFile implements Closeable {
     File file;
     int syncNumTx = 500;
     int syncCount = syncNumTx;
-
+    CRC32 crc32 = new CRC32();
+    
     class Header1 { // this is the first part - fixed - of the header
 
         final static byte VERSION = 0;
@@ -261,7 +270,7 @@ public class ReplicationFile implements Closeable {
         this.lastMetadataPos = Header2.HDR_IDX_OFFSET - 4;
         int p;
         while ((p = buf.getInt(lastMetadataPos)) > 0) {
-            lastMetadataPos = p + 12;// txid+size
+            lastMetadataPos = p + METADATA_POS_OFFSET;
         }
 
         log.info("Opened for append {} pageSize: {}, maxPages:{}, num_tx: {}", file, hdr1.pageSize, hdr1.maxPages,
@@ -301,11 +310,11 @@ public class ReplicationFile implements Closeable {
         return new ReplicationFile(yamcsInstance, dir, firstTxId, pageSize, maxPages, maxFileSize);
     }
 
-    public static ReplicationFile openReadOnly(String yamcsInstance, String dir, long firstTxId) {
+    public static ReplicationFile openReadOnly(int serverId, String yamcsInstance, String dir, long firstTxId) {
         return new ReplicationFile(yamcsInstance, dir, firstTxId);
     }
 
-    public static ReplicationFile openReadWrite(String yamcsInstance, String dir, long firstTxId, int maxFileSize) {
+    public static ReplicationFile openReadWrite(int serverId, String yamcsInstance, String dir, long firstTxId, int maxFileSize) {
         return new ReplicationFile(yamcsInstance, dir, firstTxId, maxFileSize);
     }
 
@@ -349,14 +358,21 @@ public class ReplicationFile implements Closeable {
             log.trace("Writing transaction {} at position {}", txid, buf.position());
             int pos = buf.position();
             buf.putInt(0);// this is where the transaction header containing the type and size is written below
+            buf.putInt(tx.getInstanceId());
             buf.putLong(txid);
 
             byte type = tx.getType();
             if (Transaction.isMetadata(type)) {
                 log.trace("Wrote at offset {} the pointer to the next metadata at {}", lastMetadataPos, pos);
                 buf.putInt(lastMetadataPos, pos);
+                //update crc of the modified metadata record
+                if(lastMetadataPos>hdr2.endOffset()) {
+                    updateCrc(lastMetadataPos-METADATA_POS_OFFSET);
+                }
+                
                 lastMetadataPos = buf.position();
                 buf.putInt(0);
+                
             }
 
             try {
@@ -365,11 +381,14 @@ public class ReplicationFile implements Closeable {
                 return -1;
             }
 
-            int totalsize = buf.position() - pos;
-            buf.putInt(pos, (type << 24) | (totalsize - 4));
-
+            int size = buf.position() - pos;//size without size but with crc
+            buf.putInt(pos, (type << 24) | (size));
+            int crc = compute_crc(buf, pos);
+            buf.putInt(crc);
+            
+            
             hdr2.lastMod = System.currentTimeMillis();
-            log.trace("Wrote transaction {} of type {} at position {}, total size: {}", txid, type, pos, totalsize);
+            log.trace("Wrote transaction {} of type {} at position {}, total size: {}", txid, type, pos, size+4);
 
             hdr2.lastPageNumTx++;
             if (hdr2.lastPageNumTx == hdr1.pageSize) {
@@ -387,6 +406,31 @@ public class ReplicationFile implements Closeable {
         } finally {
             rwlock.writeLock().unlock();
         }
+    }
+
+    //update the CRC of the record starting at the position
+    private void updateCrc(int pos) {
+        ByteBuffer buf1 = buf.duplicate();
+        buf1.position(pos);
+        int size = buf1.getInt()&0xFFFFFF;
+        buf1.position(pos);
+        buf1.limit(pos+size);
+        crc32.reset();
+        crc32.update(buf1);
+        buf1.limit(buf1.limit()+4);
+        buf1.putInt((int)crc32.getValue());
+    }
+
+    //compute checksum from start to the current position
+    private  int compute_crc(ByteBuffer buf, int start) {
+        int prevLimit = buf.limit();
+        buf.limit(buf.position());
+        buf.position(start);
+        crc32.reset();
+        crc32.update(buf);
+        buf.limit(prevLimit);
+        
+        return (int) crc32.getValue();
     }
 
     /**
@@ -481,7 +525,7 @@ public class ReplicationFile implements Closeable {
 
     int skipTransaction(int pos, long expectedTxId) {
         int typeSize = buf.getInt(pos);
-        long txId = buf.getLong(pos + 4);
+        long txId = buf.getLong(pos + 8);
         if (txId != expectedTxId) {// consistency check
             throw new CorruptedFileException(file, "at offset " + pos + " expected txId " + expectedTxId
                     + " but found " + txId + " instead");
@@ -573,21 +617,30 @@ public class ReplicationFile implements Closeable {
         }
 
         /**
-         * Returns a ByteBuffer with the position set to where the header begins and the limit sets to where it
-         * ends (before the position of the next metadata record)
+         * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it
+         * ends
          * <p>
-         * The header is 1 byte type and 3 bytes length followed by 8 bytes txId
+         * The structure of the metadata is 
+         * <pre>
+         *  1 byte type
+         *  3 bytes size -size of data that follows( i.e. without the size itself) = n + 20
+         *  4 bytes serverId
+         *  8 bytes txId
+         *  4 bytes metadata next position (to be ignored, only relevant inside the file)
+         *   n bytes data
+         *  4 bytes crc 
+         * </pre>
          */
         @Override
         public ByteBuffer next() {
-            ByteBuffer buf1 = buf.duplicate();
+            ByteBuffer buf1 = buf.asReadOnlyBuffer();
             buf1.position(nextPos);
-            buf1 = buf1.slice();
-            int typesize = buf1.getInt(0);
-            nextPos = buf1.getInt(12);
-            int limit = 4 + (typesize & 0xFFFFFF);
+            int typesize = buf1.getInt(nextPos);
+            int limit = nextPos + 4 + (typesize & 0xFFFFFF);
             buf1.limit(limit);
-            return buf1.asReadOnlyBuffer();
+            nextPos = buf1.getInt(nextPos+METADATA_POS_OFFSET);
+            
+            return buf1;
         }
     }
 }

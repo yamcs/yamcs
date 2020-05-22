@@ -19,6 +19,8 @@ import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.StreamInfo;
+import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -29,14 +31,13 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import static org.yamcs.replication.MessageType.*;
 
 public class ReplicationSlave extends AbstractYamcsService {
     private TcpRole tcpRole;
@@ -50,9 +51,11 @@ public class ReplicationSlave extends AbstractYamcsService {
     List<String> streamNames;
     RandomAccessFile lastTxFile;
     Path txtfilePath;
+    int localInstanceId;
 
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
+        this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
         streamNames = config.getList("streams");
         tcpRole = config.getEnum("tcpRole", TcpRole.class, TcpRole.Client);
         if (tcpRole == TcpRole.Client) {
@@ -154,71 +157,69 @@ public class ReplicationSlave extends AbstractYamcsService {
         }
 
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        public void channelRead(ChannelHandlerContext ctx, Object o) {
             if (state() != State.RUNNING) {
                 return;
             }
-            ByteBuf buf = (ByteBuf) msg;
-            int sizetype = buf.readInt();
-            byte msgType = (byte) (sizetype >> 24);
-            int length = sizetype & 0xFFFF;
+            ByteBuffer buf = ((ByteBuf) o).nioBuffer();
+            Message msg;
+            try {
+                msg = Message.decode(buf);
+            } catch (DecodingException e) {
+                log.warn("Failed to decode message {}", StringConverter.byteBufferToHexString(buf), e);
+                ctx.close();
+                return;
+            }
 
-            if (msgType == MessageType.DATA) {
-                long txId = buf.readLong();
-                int streamId = buf.readInt();
+            if (msg.type == Message.DATA) {
+                TransactionMessage tmsg = (TransactionMessage) msg;
+                int streamId = tmsg.buf.getInt();
+
+                if (tmsg.instanceId == localInstanceId) {
+                    log.trace("Skipping data originating from myself (serverId: {})", tmsg.instanceId);
+                    return;
+                }
                 ByteBufToStream bbs = streamWriters.get(streamId);
                 if (bbs == null) {
-                    failService("TX" + txId + ": received data for an unknown stream " + streamId);
+                    log.trace("Skipping data for unknown stream {}", streamId);
                     return;
                 }
                 if (log.isTraceEnabled()) {
-                    log.trace("TX{} received data for stream {}, length {}", txId, msgType, bbs.stream.getName(),
-                            length);
+                    log.trace("TX{} received data for stream {}, length {}", tmsg.txId, bbs.stream.getName(),
+                            tmsg.buf.remaining());
                 }
-                bbs.processData(txId, buf);
-            } else if (msgType == MessageType.RESPONSE) {// this is sent by a master when we are slave.
-                log.debug("received Response, size {}", length);
-                try {
-                    Response resp = MessageType.nettyToProto(buf, Response.newBuilder()).build();
-                    if (resp.getResult() != 0) {
-                        failService("Received negative response: " + resp.getErrorMsg());
-                        return;
-                    } else {
-                        log.info("Received response {}", resp);
-                    }
-                } catch (InvalidProtocolBufferException e) {
-                    log.warn("Failed to decode RESPONSE message", e);
-                }
-            } else if (msgType == MessageType.STREAM_INFO) {
-                long txId = buf.readLong();
-                try {
-                    // skip pointer to the next metadata in the replication file
-                    buf.readInt();
 
-                    StreamInfo streamInfo = nettyToProto(buf, StreamInfo.newBuilder()).build();
-                    if (!streamInfo.hasName() || !streamInfo.hasId()) {
-                        failService("TX" + txId + ": received invalid stream info: " + streamInfo);
-                        return;
-                    }
-                    log.debug("TX{}: received stream info {}", txId, TextFormat.shortDebugString(streamInfo));
-                    String streamName = streamInfo.getName();
-                    if (!streamNames.contains(streamName)) {
-                        log.debug("TX{}Ignoring stream {} because it is not in the list configured", txId, streamName);
-                        return;
-                    }
-                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-                    Stream stream = ydb.getStream(streamName);
-                    if (stream == null) {
-                        log.warn("TX{}Received data for stream {} which does not exist", txId, streamName);
-                        return;
-                    }
-                    streamWriters.put(streamInfo.getId(), new ByteBufToStream(stream, streamInfo));
-                } catch (InvalidProtocolBufferException e) {
-                    failService("TX" + txId + ": failed to decode STREAM_INFO message: " + e.getMessage());
+                bbs.processData(tmsg.txId, tmsg.buf);
+            } else if (msg.type == Message.STREAM_INFO) {
+                TransactionMessage tmsg = (TransactionMessage) msg;
+                StreamInfo streamInfo = (StreamInfo) msg.protoMsg;
+                if (!streamInfo.hasName() || !streamInfo.hasId()) {
+                    failService("TX" + tmsg.txId + ": received invalid stream info: " + streamInfo);
                     return;
                 }
+                log.debug("TX{}: received stream info {}", tmsg.txId, TextFormat.shortDebugString(streamInfo));
+                String streamName = streamInfo.getName();
+                if (!streamNames.contains(streamName)) {
+                    log.debug("TX{}Ignoring stream {} because it is not in the list configured", tmsg.txId, streamName);
+                    return;
+                }
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+                Stream stream = ydb.getStream(streamName);
+                if (stream == null) {
+                    log.warn("TX{}Received data for stream {} which does not exist", tmsg.txId, streamName);
+                    return;
+                }
+                streamWriters.put(streamInfo.getId(), new ByteBufToStream(stream, streamInfo));
+            } else if (msg.type == Message.RESPONSE) {// this is sent by a master when we are slave.
+                Response resp = (Response) msg.protoMsg;
+                if (resp.getResult() != 0) {
+                    failService("Received negative response: " + resp.getErrorMsg());
+                    return;
+                } else {
+                    log.info("Received response {}", resp);
+                }
             } else {
-                failService("Unexpected message type " + msgType + " received from the master");
+                failService("Unexpected message type " + msg.type + " received from the master");
                 return;
             }
         }
@@ -247,8 +248,10 @@ public class ReplicationSlave extends AbstractYamcsService {
                 reqb.setStartTxId(lastTxId + 1);
             }
             Request req = reqb.build();
-            log.debug("Connection {} opened, sending request {}", channelHandlerContext.channel().remoteAddress(), req);
-            channelHandlerContext.writeAndFlush(protoToNetty(REQUEST, req));
+            log.debug("Connection {} opened, sending request {}", channelHandlerContext.channel().remoteAddress(),
+                    TextFormat.shortDebugString(req));
+            ByteBuf buf = Unpooled.wrappedBuffer(Message.get(req).encode());
+            channelHandlerContext.writeAndFlush(buf);
         }
 
         @Override
@@ -298,12 +301,11 @@ public class ReplicationSlave extends AbstractYamcsService {
             }
 
             @SuppressWarnings("rawtypes")
-            public void processData(long txId, ByteBuf buf) {
+            public void processData(long txId, ByteBuffer niobuf) {
                 TupleDefinition tdef = new TupleDefinition();
                 ArrayList<Object> cols = new ArrayList<>();
 
                 // deserialize the value
-                ByteBuffer niobuf = buf.nioBuffer();
                 try {
                     while (true) {
                         int id = niobuf.getInt(); // column index

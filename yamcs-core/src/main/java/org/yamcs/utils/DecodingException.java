@@ -11,4 +11,7 @@ public class DecodingException extends Exception {
         super(message, cause);
     }
 
+    public DecodingException(Throwable cause) {
+        super(cause);
+    }
 }

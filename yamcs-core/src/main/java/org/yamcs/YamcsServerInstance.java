@@ -53,6 +53,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     YConfiguration config;
     final Map<String, Processor> processors = new LinkedHashMap<>();
     LinkManager linkManager;
+    final int instanceId;
 
     YamcsServerInstance(String name) {
         this(name, new InstanceMetadata());
@@ -62,6 +63,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         this.name = name;
         this.metadata = metadata;
         log = new Log(getClass(), name);
+        this.instanceId = (YamcsServer.getServer().getServerId() + "." + name).hashCode();
     }
 
     public static Spec getSpec() {
@@ -90,8 +92,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("timeService", OptionType.ANY);
         spec.addOption("tmIndexer", OptionType.ANY);
         spec.addOption("eventDecoders", OptionType.ANY);
-        
-        //"anchors" is used to allow yaml anchors (reuse of blocks)
+
+        // "anchors" is used to allow yaml anchors (reuse of blocks)
         spec.addOption("anchors", OptionType.ANY);
         return spec;
     }
@@ -368,5 +370,9 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public LinkManager getLinkManager() {
         return linkManager;
+    }
+
+    public int getInstanceId() {
+        return instanceId;
     }
 }

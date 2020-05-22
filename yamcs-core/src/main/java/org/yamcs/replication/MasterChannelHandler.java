@@ -1,6 +1,5 @@
 package org.yamcs.replication;
 
-import static org.yamcs.replication.MessageType.protoToNetty;
 import static org.yamcs.replication.ReplicationServer.workerGroup;
 
 import java.nio.ByteBuffer;
@@ -12,8 +11,8 @@ import org.yamcs.replication.ReplicationMaster.SlaveServer;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.Wakeup;
+import org.yamcs.utils.DecodingException;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -54,37 +53,35 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf buf = (ByteBuf) msg;
-        int sizetype = buf.readInt();
-        byte msgType = (byte) (sizetype >> 24);
-        if (msgType == MessageType.REQUEST) {
-            try {
-                this.req = MessageType.nettyToProto(buf, Request.newBuilder()).build();
-                processRequest();
-            } catch (InvalidProtocolBufferException e) {
-                log.warn("Failed to decode REQUEST message", e);
-                ctx.close();
-            }
-        } else if (msgType == MessageType.RESPONSE) {
-            try {
-                Response resp = MessageType.nettyToProto(buf, Response.newBuilder()).build();
-                if (resp.getResult() != 0) {
-                    log.warn("Received negative response: {}", resp.getErrorMsg());
-                    return;
-                } else {
-                    log.info("Received response {}", resp);
-                }
-            } catch (InvalidProtocolBufferException e) {
-                log.warn("Failed to decode RESPONSE message", e);
+    public void channelRead(ChannelHandlerContext ctx, Object o) {
+        ByteBuffer buf = ((ByteBuf) o).nioBuffer();
+        Message msg;
+        try {
+            msg = Message.decode(buf);
+        } catch (DecodingException e) {
+            log.warn("Failed to decode message", e);
+            ctx.close();
+            return;
+        }
+
+        if (msg.type == Message.REQUEST) {
+            this.req = (Request) msg.protoMsg;
+            processRequest();
+        } else if (msg.type == Message.RESPONSE) {
+            Response resp = (Response) msg.protoMsg;
+            if (resp.getResult() != 0) {
+                log.warn("Received negative response: {}", resp.getErrorMsg());
+                return;
+            } else {
+                log.info("Received response {}", resp);
             }
         } else {
-            log.warn("Unexpected message type {} received, closing the connection", msgType);
+            log.warn("Unexpected message type {} received, closing the connection", msg.type);
             ctx.close();
         }
     }
 
-    //called when tcpRole=Server and we have been added to the pipeline by the ReplicationServer
+    // called when tcpRole=Server and we have been added to the pipeline by the ReplicationServer
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         super.handlerAdded(ctx);
@@ -144,7 +141,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     void sendMoreData() {
-        if(!channelHandlerContext.channel().isActive()) {
+        if (!channelHandlerContext.channel().isActive()) {
             return;
         }
         if (fileTail == null) {
@@ -187,7 +184,8 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         super.channelActive(ctx);
         log.debug("Connection {} opened, sending a wakeup message", ctx.channel().remoteAddress());
         Wakeup wp = Wakeup.newBuilder().setYamcsInstance(slaveServer.instance).build();
-        ctx.writeAndFlush(protoToNetty(MessageType.WAKEUP, wp));
+        Message msg = Message.get(wp);
+        ctx.writeAndFlush(Unpooled.wrappedBuffer(msg.encode()));
     }
 
     @Override
