@@ -19,10 +19,11 @@ import com.google.protobuf.MessageLite;
  * 
  * <p>Message format: 
  * <pre>
- * 1 byte type <br>
+ * 1 byte type
  * 3 bytes message size (size of data to follow) = n+4
  * n bytes data
- * 4 bytes CRC footer.
+ * 4 bytes CRC.
+ * </pre>
  * <p>
  * This is the same structure used in the replication file to be able to play it directly over the network.
  * <p>

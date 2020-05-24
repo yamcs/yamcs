@@ -1,7 +1,6 @@
 package org.yamcs.replication;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.BufferOverflowException;
@@ -9,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.Arrays;
@@ -36,12 +37,12 @@ import org.yamcs.utils.StringConverter;
  *  1 byte version
  *  3 bytes spare
  *  8 bytes first_id =  first transaction in the file = file_id - used for consistency check(if someone renames the file)
- *  4 bytes page_size - number of transactions on page 
+ *  4 bytes page_size - number of transactions per page 
  *  4 bytes max_pages - max number of pages (and the size of the index)
  * 
  *  8 bytes last_mod = last modification time
  *  4 bytes n =  number of full pages. If n=max_pages, the file is full, cannot be written to it
- *  4 bytes m = number of transactions on the page n
+ *  4 bytes m = number of transactions on page n
  *  4 bytes firstMetadataPos - position of the first metadata transaction
  *  (max_pages+1) x 4 bytes idx - transaction index 
  *      idx[i] (i=0..max_pages) - offset in the file where transaction with id id_first + i*m starts
@@ -55,13 +56,13 @@ import org.yamcs.utils.StringConverter;
  * 
  * 1 byte type
  * 3 bytes - size of the data that follows
- * 4 bytes server_id
+ * 4 bytes instance_id
  * 8 bytes transaction_id
  * n bytes data
  * 4 bytes CRC32 calculated over the data including the type and length
  * 
  *  for metadata the first 4 bytes of the data is the position of the next metadata record
- *   
+ * 
  * </pre>
  * 
  * <p>
@@ -73,7 +74,7 @@ import org.yamcs.utils.StringConverter;
  * IOException only in some limited situations and converted all these to {@link UncheckedIOException}..
  * 
  * <p>
- * The one occasion when Java crashes while no hardware failures are present is when the disk is full.
+ * The one occasion when Java may crash while no hardware failure is present is when the disk is full.
  * <p>
  * TODO: add a checker and stop writing data if the disk usage is above a threshold.
  * 
@@ -83,36 +84,38 @@ import org.yamcs.utils.StringConverter;
 public class ReplicationFile implements Closeable {
     static final String RPL_FILENAME_PREFIX = "RPL";
     final static byte[] MAGIC = { 'Y', 'A', 'M', 'C', 'S', '_', 'S', 'T', 'R', 'E', 'A', 'M' };
-  
-    //the position inside the record where the metadata position pointer sits
-    //it is after size, instanceId, txid
-    final static int METADATA_POS_OFFSET = 16; 
+
+    // the position inside the record where the metadata position pointer sits
+    // it is after size, instanceId, txid
+    final static int METADATA_POS_OFFSET = 16;
+    final static int MIN_RECORD_SIZE = 20; // size, instanceId, txId, crc
+
     final Log log;
 
     ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     private MappedByteBuffer buf;
-    private int lastMetadataPos;
+    private int lastMetadataTxStart;
     private FileChannel fc;
     final private boolean readOnly;
     final private Header1 hdr1;
     final private Header2 hdr2;
     private boolean fileFull = false;
-    File file;
+    final Path path;
     int syncNumTx = 500;
     int syncCount = syncNumTx;
     CRC32 crc32 = new CRC32();
-    
+
     class Header1 { // this is the first part - fixed - of the header
 
         final static byte VERSION = 0;
         final static int LENGTH = 32;
         final long firstId; // first transaction id
         final int pageSize, maxPages;
-        // this is written at the beginning of the file
 
-        Header1(long id, int pageSize, int maxPages) {
-            this.firstId = id;
+        // new file
+        Header1(long firstId, int pageSize, int maxPages) {
+            this.firstId = firstId;
             this.pageSize = pageSize;
             this.maxPages = maxPages;
             buf.put(MAGIC);
@@ -122,7 +125,8 @@ public class ReplicationFile implements Closeable {
             buf.putInt(maxPages);
         }
 
-        public Header1(long firstTxId) {
+        // open existing file
+        Header1(long firstTxId) {
             checkHdr1(firstTxId);
             firstId = firstTxId;
             pageSize = buf.getInt();
@@ -133,17 +137,17 @@ public class ReplicationFile implements Closeable {
             byte[] magic = new byte[MAGIC.length];
             buf.get(magic);
             if (!Arrays.equals(magic, MAGIC)) {
-                throw new CorruptedFileException(file,
+                throw new CorruptedFileException(path,
                         "bad file, magic entry does not match: " + StringConverter.arrayToHexString(magic)
                                 + ". Expected " + StringConverter.arrayToHexString(MAGIC));
             }
             int version = buf.getInt() >> 24;
             if (version != VERSION) {
-                throw new CorruptedFileException(file, "bad version: " + version + ". Expected " + VERSION);
+                throw new CorruptedFileException(path, "bad version: " + version + ". Expected " + VERSION);
             }
             long id = buf.getLong();
             if (id != firstTxId) {
-                throw new CorruptedFileException(file, "bad firstId " + id + " expected " + firstTxId);
+                throw new CorruptedFileException(path, "bad firstId " + id + " expected " + firstTxId);
             }
         }
 
@@ -204,6 +208,19 @@ public class ReplicationFile implements Closeable {
             buf.putInt(HDR_IDX_OFFSET + n * 4, txPos);
         }
 
+        void incrNumTx() {
+            hdr2.lastPageNumTx++;
+            if (hdr2.lastPageNumTx == hdr1.pageSize) {
+                hdr2.numFullPages++;
+                hdr2.lastPageNumTx = 0;
+                hdr2.writeIndex(hdr2.numFullPages, buf.position());
+            }
+        }
+
+        int numTx() {
+            return hdr1.pageSize * hdr2.numFullPages + hdr2.lastPageNumTx;
+        }
+
         @Override
         public String toString() {
             return "Header2 [numFullPages=" + numFullPages + ", lastPageNumTx=" + lastPageNumTx + ", lastMod="
@@ -225,22 +242,23 @@ public class ReplicationFile implements Closeable {
      * @param maxPages
      * @param maxFileSize
      */
-    private ReplicationFile(String yamcsInstance, String dir, long id, int pageSize, int maxPages, int maxFileSize) {
+    private ReplicationFile(String yamcsInstance, Path path, long id, int pageSize, int maxPages, int maxFileSize) {
         log = new Log(this.getClass(), yamcsInstance);
-        file = getFile(dir, id);
-        if (file.exists()) {
-            throw new IllegalArgumentException("File " + file + " exists. Refusing to overwrite");
+        this.path = path;
+        if (Files.exists(path)) {
+            throw new IllegalArgumentException("File " + path + " exists. Refusing to overwrite");
         }
         try {
-            fc = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+            fc = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
                     StandardOpenOption.READ);
             buf = fc.map(MapMode.READ_WRITE, 0, maxFileSize);
             hdr1 = new Header1(id, pageSize, maxPages);
             hdr2 = new Header2(true);
             this.readOnly = false;
-            this.lastMetadataPos = Header2.HDR_IDX_OFFSET - 4;
+            this.lastMetadataTxStart = Header2.HDR_IDX_OFFSET - METADATA_POS_OFFSET - 4;
             buf.position(hdr2.endOffset());
-            log.info("Created new replication file {} pageSize: {}, maxPages:{}", file, hdr1.pageSize, hdr1.maxPages);
+            log.info("Created new replication file {} pageSize: {}, maxPages:{}, maxFileSize: {}", path, hdr1.pageSize,
+                    hdr1.maxPages, maxFileSize);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -249,12 +267,12 @@ public class ReplicationFile implements Closeable {
     /**
      * Open an existing file for append
      */
-    private ReplicationFile(String yamcsInstance, String dir, long firstTxId, int maxFileSize) {
+    private ReplicationFile(String yamcsInstance, Path path, long firstTxId, int maxFileSize) {
         log = new Log(this.getClass(), yamcsInstance);
+        this.path = path;
         this.readOnly = false;
-        file = getFile(dir, firstTxId);
         try {
-            fc = FileChannel.open(file.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
+            fc = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE);
             buf = fc.map(MapMode.READ_WRITE, 0, maxFileSize);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -263,30 +281,38 @@ public class ReplicationFile implements Closeable {
         hdr2 = new Header2(false);
 
         log.debug("{}, {}", hdr1, hdr2);
-        // position the buffer at the end
-        buf.position(getPosition(numTx()));
+        // recover any non indexed good transactions at the end of the file and set the position at the end
+        recover();
 
+        long endOffset = buf.position();
         // find the offset where the next metadata has to be written
-        this.lastMetadataPos = Header2.HDR_IDX_OFFSET - 4;
-        int p;
-        while ((p = buf.getInt(lastMetadataPos)) > 0) {
-            lastMetadataPos = p + METADATA_POS_OFFSET;
+        lastMetadataTxStart = Header2.HDR_IDX_OFFSET - METADATA_POS_OFFSET - 4;
+        while (true) {
+            int nextMetadataTxStart = buf.getInt(lastMetadataTxStart + METADATA_POS_OFFSET);
+            if (nextMetadataTxStart == 0 || nextMetadataTxStart + METADATA_POS_OFFSET > endOffset) {
+                break;
+            }
+            if (nextMetadataTxStart <= lastMetadataTxStart) {
+                throw new UncheckedIOException(
+                        new IOException("Corrupted file " + path + " at position " + lastMetadataTxStart
+                                + " the metadata pointer points in the past"));
+            }
+            lastMetadataTxStart = nextMetadataTxStart;
         }
-
-        log.info("Opened for append {} pageSize: {}, maxPages:{}, num_tx: {}", file, hdr1.pageSize, hdr1.maxPages,
-                numTx());
+        log.info("Opened for append {} pageSize: {}, maxPages:{}, num_tx: {}", path, hdr1.pageSize, hdr1.maxPages,
+                hdr2.numTx());
     }
 
     /**
      * Open an existing file read only
      */
-    private ReplicationFile(String yamcsInstance, String dir, long firstTxId) {
+    private ReplicationFile(String yamcsInstance, Path path, long firstTxId) {
         log = new Log(this.getClass(), yamcsInstance);
         this.readOnly = true;
+        this.path = path;
 
-        file = getFile(dir, firstTxId);
         try {
-            fc = FileChannel.open(file.toPath(), StandardOpenOption.READ);
+            fc = FileChannel.open(path, StandardOpenOption.READ);
             buf = fc.map(MapMode.READ_ONLY, 0, fc.size());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -295,35 +321,38 @@ public class ReplicationFile implements Closeable {
         hdr2 = new Header2(false);
         log.debug("hdr1: {}, hdr2: {}", hdr1, hdr2);
 
-        this.lastMetadataPos = Header2.HDR_IDX_OFFSET - 4;
+        this.lastMetadataTxStart = Header2.HDR_IDX_OFFSET - 4;
 
-        // set the filefull and the buf position as if they were from a file that has filled up
+        // set the filefull
         this.fileFull = true;
-        buf.position(getPosition((int) (getNextTxId() - hdr1.firstId)));
+        recover();
 
-        log.info("Opened read-only {} pageSize: {}, maxPages:{}, num_tx: {}", file, hdr1.pageSize, hdr1.maxPages,
-                numTx());
+        log.info("Opened read-only {} pageSize: {}, maxPages:{}, num_tx: {}", path, hdr1.pageSize, hdr1.maxPages,
+                hdr2.numTx());
     }
 
-    public static ReplicationFile newFile(String yamcsInstance, String dir, long firstTxId, int pageSize, int maxPages,
+    public static ReplicationFile newFile(String yamcsInstance, Path path, long firstTxId, int pageSize, int maxPages,
             int maxFileSize) {
-        return new ReplicationFile(yamcsInstance, dir, firstTxId, pageSize, maxPages, maxFileSize);
+        checkSize(pageSize, maxPages, maxFileSize);
+        return new ReplicationFile(yamcsInstance, path, firstTxId, pageSize, maxPages, maxFileSize);
     }
 
-    public static ReplicationFile openReadOnly(int serverId, String yamcsInstance, String dir, long firstTxId) {
-        return new ReplicationFile(yamcsInstance, dir, firstTxId);
+    private static void checkSize(int pageSize, int maxPages, int maxFileSize) {
+        int minSize = headerSize(pageSize, maxPages) + MIN_RECORD_SIZE;
+        if (maxFileSize < minSize) {
+            throw new IllegalArgumentException(
+                    "maxFileSize=" + maxFileSize + " too small; " + minSize
+                            + " bytes required for storing an empty transaction");
+        }
+
     }
 
-    public static ReplicationFile openReadWrite(int serverId, String yamcsInstance, String dir, long firstTxId, int maxFileSize) {
-        return new ReplicationFile(yamcsInstance, dir, firstTxId, maxFileSize);
+    public static ReplicationFile openReadOnly(String yamcsInstance, Path path, long firstTxId) {
+        return new ReplicationFile(yamcsInstance, path, firstTxId);
     }
 
-    static File getFile(String dir, long firstTxId) {
-        return new File(String.format("%s/RPL_%016x.dat", dir, firstTxId));
-    }
-
-    public long writeData(Transaction tx) {
-        return writeData(tx, false);
+    public static ReplicationFile openReadWrite(String yamcsInstance, Path path, long firstTxId, int maxFileSize) {
+        return new ReplicationFile(yamcsInstance, path, firstTxId, maxFileSize);
     }
 
     /**
@@ -334,72 +363,91 @@ public class ReplicationFile implements Closeable {
      * @param tx
      * @return
      */
+    public long writeData(Transaction tx) {
+        return writeData(tx, false);
+    }
+
+    /**
+     * Write transaction to the file and returns the transaction id.
+     * <p>
+     * returns -1 if the transaction could not be written because the file is full.
+     * 
+     * @param tx
+     * @param sync
+     *            if true, forces the write to disk
+     * @return
+     */
     public long writeData(Transaction tx, boolean sync) {
         if (readOnly) {
             throw new IllegalStateException("Read only file");
         } else if (!fc.isOpen()) {
             throw new IllegalStateException("The file is closed");
         }
+
         rwlock.writeLock().lock();
         try {
+            int txStartPos = buf.position();
+
             if (fileFull) {
                 return -1;
             } else if (hdr2.numFullPages == hdr1.maxPages) {
-                fileFull = true;
-                doForceWrite();
-                return -1; // file full
-            } else if (buf.remaining() < 16) {
-                fileFull = true;
-                doForceWrite();
-                return -1;
+                return abortWriteFileFull(txStartPos);
+            } else if (buf.remaining() < MIN_RECORD_SIZE) {
+                return abortWriteFileFull(txStartPos);
             }
 
-            long txid = hdr1.firstId + numTx();
+            long txid = hdr1.firstId + hdr2.numTx();
             log.trace("Writing transaction {} at position {}", txid, buf.position());
-            int pos = buf.position();
-            buf.putInt(0);// this is where the transaction header containing the type and size is written below
+
+            buf.putInt(0);// this is where the the type and size is written below
             buf.putInt(tx.getInstanceId());
             buf.putLong(txid);
 
             byte type = tx.getType();
+
             if (Transaction.isMetadata(type)) {
-                log.trace("Wrote at offset {} the pointer to the next metadata at {}", lastMetadataPos, pos);
-                buf.putInt(lastMetadataPos, pos);
-                //update crc of the modified metadata record
-                if(lastMetadataPos>hdr2.endOffset()) {
-                    updateCrc(lastMetadataPos-METADATA_POS_OFFSET);
-                }
-                
-                lastMetadataPos = buf.position();
-                buf.putInt(0);
-                
+                buf.putInt(0);// next meatadata position
             }
 
             try {
                 tx.marshall(buf);
-            } catch (BufferOverflowException e) {// end of file
-                return -1;
+            } catch (BufferOverflowException | IndexOutOfBoundsException e) {// end of file
+                return abortWriteFileFull(txStartPos);
             }
 
-            int size = buf.position() - pos;//size without size but with crc
-            buf.putInt(pos, (type << 24) | (size));
-            int crc = compute_crc(buf, pos);
+            if (buf.remaining() < 4) {// no space left for CRC
+                return abortWriteFileFull(txStartPos);
+            }
+
+            int size = buf.position() - txStartPos;
+            buf.putInt(txStartPos, (type << 24) | (size));
+            int crc = compute_crc(buf, txStartPos);
             buf.putInt(crc);
-            
-            
-            hdr2.lastMod = System.currentTimeMillis();
-            log.trace("Wrote transaction {} of type {} at position {}, total size: {}", txid, type, pos, size+4);
 
-            hdr2.lastPageNumTx++;
-            if (hdr2.lastPageNumTx == hdr1.pageSize) {
-                hdr2.numFullPages++;
-                hdr2.lastPageNumTx = 0;
-                hdr2.writeIndex(hdr2.numFullPages, buf.position());
+            if (Transaction.isMetadata(type)) {
+                buf.putInt(lastMetadataTxStart + METADATA_POS_OFFSET, txStartPos);
+
+                // update crc of the modified metadata record
+                if (lastMetadataTxStart >= hdr2.endOffset()) {
+                    updateCrc(lastMetadataTxStart);
+                }
+                if (log.isTraceEnabled()) {
+                    log.trace("Wrote at offset {} the pointer to the next metadata at {}",
+                            lastMetadataTxStart + METADATA_POS_OFFSET, txStartPos);
+                }
+
+                lastMetadataTxStart = txStartPos;
             }
+
+            hdr2.lastMod = System.currentTimeMillis();
+            log.trace("Wrote transaction {} of type {} at position {}, total size: {}", txid, type, txStartPos,
+                    size + 4);
+            hdr2.incrNumTx();
 
             syncCount--;
             if (sync || syncCount == 0) {
                 doForceWrite();
+                syncCount = syncNumTx;
             }
 
             return txid;
@@ -408,46 +456,90 @@ public class ReplicationFile implements Closeable {
         }
     }
 
-    //update the CRC of the record starting at the position
+    // starts from latest known transaction (according to the header) and checks for new ones
+    private void recover() {
+        int n = hdr2.numTx();
+        int startTxPos = getPosition(n);
+        buf.position(startTxPos);
+        int k = 0;
+        while (buf.remaining() > MIN_RECORD_SIZE) {
+            n = hdr2.numTx();
+            startTxPos = buf.position();
+
+            int size = buf.getInt() & 0xFFFFFF;
+
+            if (size > buf.remaining() || size < 12) {
+                break;
+            }
+
+            buf.getInt();// serverId
+            long txId = buf.getLong();
+            if (txId != hdr1.firstId + n) {
+                break;
+            }
+            buf.position(startTxPos + size);
+            int crc = compute_crc(buf, startTxPos);
+            if (crc != buf.getInt()) {
+                log.debug("Trying to recover TX{}: CRC does not match", txId);
+                break;
+            }
+            log.debug("Recovered TX{}", txId);
+            hdr2.incrNumTx();
+            k++;
+        }
+        log.debug("Found {} transactions more than indicated in the header", k);
+        buf.position(startTxPos);
+    }
+
+    private int abortWriteFileFull(int txStartPos) {
+        fileFull = true;
+        buf.position(txStartPos);
+        doForceWrite();
+        log.debug("File {} full, numTx: {}", path, hdr2.numTx());
+        return -1;
+    }
+
+    // update the CRC of the record starting at the position
     private void updateCrc(int pos) {
         ByteBuffer buf1 = buf.duplicate();
         buf1.position(pos);
-        int size = buf1.getInt()&0xFFFFFF;
+        int size = buf1.getInt() & 0xFFFFFF;
         buf1.position(pos);
-        buf1.limit(pos+size);
+        buf1.limit(pos + size);
         crc32.reset();
         crc32.update(buf1);
-        buf1.limit(buf1.limit()+4);
-        buf1.putInt((int)crc32.getValue());
+        buf1.limit(buf1.limit() + 4);
+        buf1.putInt((int) crc32.getValue());
     }
 
-    //compute checksum from start to the current position
-    private  int compute_crc(ByteBuffer buf, int start) {
+    // compute checksum from start to the current position
+    private int compute_crc(ByteBuffer buf, int start) {
         int prevLimit = buf.limit();
         buf.limit(buf.position());
         buf.position(start);
         crc32.reset();
         crc32.update(buf);
         buf.limit(prevLimit);
-        
+
         return (int) crc32.getValue();
     }
 
     /**
      * Returns a {@link ReplicationTail} containing a read only {@link ByteBuffer} having the position on given txId and
-     * with the limit set to the current position of the file.
+     * with the limit set to the current end of tx data.
      * 
      * <p>
-     * the tail can be sent back in {@link #getNewData(ReplicationTail)} to obtain more data if available. If
-     * {@link ReplicationTail#eof} is true, it
-     * means the file is full so no more data will be available in the future.
+     * The tail can be sent back in {@link #getNewData(ReplicationTail)} to obtain more data if available.
+     * <p>
+     * {@link ReplicationTail#eof} = true means the file is full so no more data will be available in the future.
      *
      * <p>
      * if the txId is smaller than the first transaction of this file, an {@link IllegalArgumentException} is thrown.
      * <p>
-     * If the txId is greater than the highest transaction in this file , null is returned
+     * If the txId is greater than the highest transaction in this file plus 1, null is returned
      * <p>
-     * The returned tail can have 0 transactions; it can be used later to get more data.
+     * If the txId is the highest transaction in this file plus one, a tail with 0 transactions (i.e. position=limit in the buffer) is
+     * returned; it can be used later to get more data.
      * 
      * @param txId
      * @return
@@ -501,7 +593,7 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
-     * Get the position of the txNum th transaction in the file
+     * Get the position of the txNum th transaction in the file according to the index
      * return -1 if the transaction is beyond the end of the file.
      */
     private int getPosition(int txNum) {
@@ -523,11 +615,11 @@ public class ReplicationFile implements Closeable {
         return pos;
     }
 
-    int skipTransaction(int pos, long expectedTxId) {
+    private int skipTransaction(int pos, long expectedTxId) {
         int typeSize = buf.getInt(pos);
         long txId = buf.getLong(pos + 8);
         if (txId != expectedTxId) {// consistency check
-            throw new CorruptedFileException(file, "at offset " + pos + " expected txId " + expectedTxId
+            throw new CorruptedFileException(path, "at offset " + pos + " expected txId " + expectedTxId
                     + " but found " + txId + " instead");
         }
 
@@ -589,10 +681,6 @@ public class ReplicationFile implements Closeable {
         }
     }
 
-    int numTx() {
-        return hdr1.pageSize * hdr2.numFullPages + hdr2.lastPageNumTx;
-    }
-
     /**
      * Returns the last tx id from this file + 1.
      * <p>
@@ -601,7 +689,7 @@ public class ReplicationFile implements Closeable {
      * @return
      */
     public long getNextTxId() {
-        return hdr1.firstId + numTx();
+        return hdr1.firstId + hdr2.numTx();
     }
 
     class MetadataIterator implements Iterator<ByteBuffer> {
@@ -620,7 +708,8 @@ public class ReplicationFile implements Closeable {
          * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it
          * ends
          * <p>
-         * The structure of the metadata is 
+         * The structure of the metadata is
+         * 
          * <pre>
          *  1 byte type
          *  3 bytes size -size of data that follows( i.e. without the size itself) = n + 20
@@ -628,7 +717,7 @@ public class ReplicationFile implements Closeable {
          *  8 bytes txId
          *  4 bytes metadata next position (to be ignored, only relevant inside the file)
          *   n bytes data
-         *  4 bytes crc 
+         *  4 bytes crc
          * </pre>
          */
         @Override
@@ -638,9 +727,17 @@ public class ReplicationFile implements Closeable {
             int typesize = buf1.getInt(nextPos);
             int limit = nextPos + 4 + (typesize & 0xFFFFFF);
             buf1.limit(limit);
-            nextPos = buf1.getInt(nextPos+METADATA_POS_OFFSET);
-            
+            nextPos = buf1.getInt(nextPos + METADATA_POS_OFFSET);
+
             return buf1;
         }
+    }
+
+    public static int headerSize(int pageSize, int maxPages) {
+        return Header2.HDR_IDX_OFFSET + 4 * (maxPages + 1);
+    }
+
+    public int numTx() {
+        return hdr2.numTx();
     }
 }

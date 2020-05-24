@@ -19,10 +19,10 @@ import io.netty.channel.ChannelInitializer;
 import static org.yamcs.replication.ReplicationServer.workerGroup;
 
 /**
- * TCP client - works both on the master and on the slave side depending on the config
+ * Replication TCP client - works both on the master and on the slave side depending on the config
  * 
  */
-public class TcpClient {
+public class ReplicationClient {
     final String host;
     final int port;
     final Supplier<ChannelHandler> channelHandlerSupplier;
@@ -34,7 +34,7 @@ public class TcpClient {
     Bootstrap bootstrap;
     volatile boolean quitting = false;
 
-    public TcpClient(String yamcsInstance, String host, int port, long reconnectionInterval,
+    public ReplicationClient(String yamcsInstance, String host, int port, long reconnectionInterval,
             Supplier<ChannelHandler> channelHandlerSupplier) {
         this.port = port;
         this.host = host;

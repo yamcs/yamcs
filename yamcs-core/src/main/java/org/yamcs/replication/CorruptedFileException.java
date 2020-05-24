@@ -1,15 +1,15 @@
 package org.yamcs.replication;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class CorruptedFileException extends RuntimeException {
-    File file;
-    public CorruptedFileException(File file,String message) {
+    Path path;
+    public CorruptedFileException(Path path,String message) {
         super(message);
-        this.file = file;
+        this.path = path;
     }
     
     public String toString() {
-        return "Corrupted file "+file+": "+getMessage();
+        return "Corrupted file "+path+": "+getMessage();
     }
 }

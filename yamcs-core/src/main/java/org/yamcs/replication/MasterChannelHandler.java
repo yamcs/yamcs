@@ -13,7 +13,6 @@ import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.Wakeup;
 import org.yamcs.utils.DecodingException;
 
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -110,15 +109,16 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     void goToNextFile() {
+        log.trace("Looking for a new file for transaction {}", nextTxToSend);
         currentFile = replMaster.getFile(nextTxToSend);
         if (currentFile == null) {
-            log.warn("next TX to send {} is in the future, checking back in 5 seconds", nextTxToSend);
-            workerGroup.schedule(() -> goToNextFile(), 5, TimeUnit.SECONDS);
+            log.warn("next TX to send {} is in the future, checking back in 60 seconds", nextTxToSend);
+            workerGroup.schedule(() -> goToNextFile(), 60, TimeUnit.SECONDS);
             return;
         }
-
+        log.trace("Found file with firstTxId={} nextTxId={}", currentFile.getFirstId(), currentFile.getNextTxId());
         if (nextTxToSend < currentFile.getFirstId()) {
-            log.warn("Requested start from {} but first available transaction is {}. Replaying from there",
+            log.warn("Requested start from {} but the first available transaction is {}. Replaying from there",
                     nextTxToSend, currentFile.getFirstId());
             nextTxToSend = currentFile.getFirstId();
         } else if (nextTxToSend > currentFile.getFirstId()) {
@@ -126,12 +126,11 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
             Iterator<ByteBuffer> it = currentFile.metadataIterator();
             while (it.hasNext()) {
                 ByteBuffer buf = it.next();
-                long txId = buf.getLong(4);
+                long txId = buf.getLong(buf.position() + 8);
                 if (txId >= nextTxToSend) {
                     break;
                 }
-                log.debug("Sending metadata TX{} length: {} size inside: {}", txId, buf.remaining(),
-                        buf.getInt(0) & 0xFFFFFF);
+                log.debug("Sending metadata TX{} length: {} ", txId, buf.remaining());
                 ByteBuf bb = Unpooled.wrappedBuffer(buf);
                 channelHandlerContext.writeAndFlush(bb);
             }
@@ -139,6 +138,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         fileTail = null;
         sendMoreData();
     }
+
 
     void sendMoreData() {
         if (!channelHandlerContext.channel().isActive()) {
@@ -157,7 +157,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
             } else { // check back in 200 millisec
                 workerGroup.schedule(() -> sendMoreData(), 200, TimeUnit.MILLISECONDS);
             }
-        } else {// got some data, send it and check back for more
+        } else {// got some data, send it and check back for more once the data has been sent
             ByteBuf buf = Unpooled.wrappedBuffer(fileTail.buf);
             dataHandlingFuture = channelHandlerContext.writeAndFlush(buf).addListener(a -> {
                 fileTail.buf.position(fileTail.buf.limit());

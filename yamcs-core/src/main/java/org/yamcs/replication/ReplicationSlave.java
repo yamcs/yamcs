@@ -20,7 +20,6 @@ import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;
 import org.yamcs.replication.protobuf.StreamInfo;
 import org.yamcs.utils.DecodingException;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -34,6 +33,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.protobuf.TextFormat;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,7 +43,7 @@ public class ReplicationSlave extends AbstractYamcsService {
     private TcpRole tcpRole;
     int port;
     String host;
-    TcpClient tcpClient;
+    ReplicationClient tcpClient;
     long reconnectionInterval;
     String masterInstance;
     long lastTxId;
@@ -98,9 +98,8 @@ public class ReplicationSlave extends AbstractYamcsService {
     @Override
     protected void doStart() {
         if (tcpRole == TcpRole.Client) {
-            slaveChannelHandler = new SlaveChannelHandler(this);
-            tcpClient = new TcpClient(yamcsInstance, host, port, reconnectionInterval, () -> {
-                return slaveChannelHandler;
+            tcpClient = new ReplicationClient(yamcsInstance, host, port, reconnectionInterval, () -> {
+                return new SlaveChannelHandler(this);
             });
             tcpClient.start();
         }
@@ -166,13 +165,21 @@ public class ReplicationSlave extends AbstractYamcsService {
             try {
                 msg = Message.decode(buf);
             } catch (DecodingException e) {
-                log.warn("Failed to decode message {}", StringConverter.byteBufferToHexString(buf), e);
+                log.warn("TX{} Failed to decode message {}; closing connection", lastTxId,
+                        ByteBufUtil.hexDump((ByteBuf) o), e);
                 ctx.close();
                 return;
             }
 
             if (msg.type == Message.DATA) {
                 TransactionMessage tmsg = (TransactionMessage) msg;
+               
+                if (tmsg.txId <= lastTxId) {
+                    log.warn("Received data from the past txId={}, lastTxId={}", tmsg.txId, lastTxId);
+                } else {
+                    checkMissing(tmsg);
+                }
+                
                 int streamId = tmsg.buf.getInt();
 
                 if (tmsg.instanceId == localInstanceId) {
@@ -192,6 +199,10 @@ public class ReplicationSlave extends AbstractYamcsService {
                 bbs.processData(tmsg.txId, tmsg.buf);
             } else if (msg.type == Message.STREAM_INFO) {
                 TransactionMessage tmsg = (TransactionMessage) msg;
+                if (tmsg.txId > lastTxId) { //we expect to receive previous stream info transactions
+                    checkMissing(tmsg); 
+                }
+
                 StreamInfo streamInfo = (StreamInfo) msg.protoMsg;
                 if (!streamInfo.hasName() || !streamInfo.hasId()) {
                     failService("TX" + tmsg.txId + ": received invalid stream info: " + streamInfo);
@@ -224,6 +235,13 @@ public class ReplicationSlave extends AbstractYamcsService {
             }
         }
 
+        private void checkMissing(TransactionMessage tmsg) {
+            if(tmsg.txId != lastTxId + 1) {
+                log.warn("Transactions {} to {} are missing", lastTxId + 1, tmsg.txId - 1);
+            }
+            lastTxId = tmsg.txId;
+        }
+
         // called when tcpRole=Client and the connection is open
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -231,7 +249,7 @@ public class ReplicationSlave extends AbstractYamcsService {
             sendRequest();
         }
 
-        // called when tcpRole=Server and we have been added to the pipeline by the ReplicationServer
+        // called when tcpRole=Server and this handler is added to the pipeline by the ReplicationServer
         @Override
         public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
             super.handlerAdded(ctx);
@@ -337,15 +355,12 @@ public class ReplicationSlave extends AbstractYamcsService {
                     }
                     Tuple t = new Tuple(tdef, cols);
                     stream.emitTuple(t);
-                    lastTxId = txId;
                     updateLastTxFile();
 
                 } catch (Exception e) {
                     log.warn("Cannot deserialize data for stream {}", stream.getName(), e);
                 }
-
             }
-
         }
     }
 

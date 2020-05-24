@@ -9,3 +9,4 @@ Global Services
     http-server
     process-runner
     tse-commander
+    replication-server
