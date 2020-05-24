@@ -1,0 +1,14 @@
+package org.yamcs.client;
+
+import org.yamcs.protobuf.SubscribeEventsRequest;
+import org.yamcs.protobuf.Yamcs.Event;
+
+/**
+ * Subscription for receiving events.
+ */
+public class EventSubscription extends AbstractSubscription<SubscribeEventsRequest, Event> {
+
+    protected EventSubscription(WebSocketClient client) {
+        super(client, "events", Event.class);
+    }
+}

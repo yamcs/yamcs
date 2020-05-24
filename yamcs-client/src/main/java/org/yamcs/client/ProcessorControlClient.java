@@ -2,19 +2,17 @@ package org.yamcs.client;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.yamcs.protobuf.ClientInfo;
-import org.yamcs.protobuf.ClientInfo.ClientState;
 import org.yamcs.protobuf.CreateProcessorRequest;
 import org.yamcs.protobuf.EditClientRequest;
 import org.yamcs.protobuf.EditProcessorRequest;
 import org.yamcs.protobuf.ListProcessorsResponse;
 import org.yamcs.protobuf.ProcessorInfo;
-import org.yamcs.protobuf.ProcessorSubscriptionRequest;
 import org.yamcs.protobuf.ServiceState;
-import org.yamcs.protobuf.Statistics;
+import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -27,9 +25,12 @@ import io.netty.handler.codec.http.HttpMethod;
  * @author nm
  *
  */
-public class ProcessorControlClient implements ConnectionListener, WebSocketClientCallback, WebSocketResponseHandler {
-    YamcsClient client;
-    ProcessorListener processorListener;
+public class ProcessorControlClient implements ConnectionListener, WebSocketResponseHandler {
+
+    private static final Logger log = Logger.getLogger(ProcessorControlClient.class.getName());
+    private YamcsClient client;
+
+    private ProcessorListener processorListener;
 
     public ProcessorControlClient(YamcsClient client) {
         this.client = client;
@@ -65,7 +66,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         CompletableFuture<byte[]> cf = restClient.doRequest("/processors", HttpMethod.POST, cprb.build().toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                processorListener.log("Exception creating processor: " + exception.getMessage());
+                log.log(Level.SEVERE, "Exception creating processor", exception);
             }
         });
         return cf;
@@ -84,7 +85,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
             cfs[i] = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
             cfs[i].whenComplete((result, exception) -> {
                 if (exception != null) {
-                    processorListener.log("Exception connecting client to processor: " + exception.getMessage());
+                    log.log(Level.SEVERE, "Exception connecting client to processor", exception);
                 }
             });
         }
@@ -100,7 +101,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                processorListener.log("Exception pauysing the processor: " + exception.getMessage());
+                log.log(Level.SEVERE, "Exception pausing the processor", exception);
             }
         });
     }
@@ -113,7 +114,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                processorListener.log("Exception resuming the processor: " + exception.getMessage());
+                log.log(Level.SEVERE, "Exception resuming processor", exception);
             }
         });
     }
@@ -128,7 +129,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
-                processorListener.log("Exception seeking the processor: " + exception.getMessage());
+                log.log(Level.SEVERE, "Exception while seeking processor", exception);
             }
         });
     }
@@ -137,9 +138,18 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void connecting(String url) {
     }
 
-    private void receiveInitialConfig() {
-        WebSocketRequest wsr = new WebSocketRequest("management", "subscribe");
-        client.performSubscription(wsr, this, this);
+    @Override
+    public void connected(String url) {
+        ProcessorSubscription subscription = client.createProcessorSubscription();
+        subscription.addMessageListener(processor -> {
+            ServiceState servState = processor.getState();
+            if (servState == ServiceState.TERMINATED || servState == ServiceState.FAILED) {
+                processorListener.processorClosed(processor);
+            } else {
+                processorListener.processorUpdated(processor);
+            }
+        });
+        subscription.sendMessage(SubscribeProcessorsRequest.getDefaultInstance());
 
         client.getRestClient().doRequest("/processors", HttpMethod.GET).whenComplete((response, exc) -> {
             if (exc == null) {
@@ -152,43 +162,6 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
                 }
             }
         });
-
-        ProcessorSubscriptionRequest.Builder optionsb = ProcessorSubscriptionRequest.newBuilder();
-        optionsb.setAllInstances(true);
-        optionsb.setAllProcessors(true);
-        wsr = new WebSocketRequest("processor", "subscribe", optionsb.build());
-        client.performSubscription(wsr, this, this);
-    }
-
-    @Override
-    public void connected(String url) {
-        receiveInitialConfig();
-    }
-
-    @Override
-    public void onMessage(WebSocketSubscriptionData data) {
-        if (data.hasProcessorInfo()) {
-            ProcessorInfo procInfo = data.getProcessorInfo();
-            ServiceState servState = procInfo.getState();
-            if (servState == ServiceState.TERMINATED || servState == ServiceState.FAILED) {
-                processorListener.processorClosed(procInfo);
-            } else {
-                processorListener.processorUpdated(procInfo);
-            }
-        }
-        if (data.hasClientInfo()) {
-            ClientInfo cinfo = data.getClientInfo();
-            ClientState cstate = cinfo.getState();
-            if (cstate == ClientState.DISCONNECTED) {
-                processorListener.clientDisconnected(cinfo);
-            } else {
-                processorListener.clientUpdated(cinfo);
-            }
-        }
-        if (data.hasStatistics()) {
-            Statistics s = data.getStatistics();
-            processorListener.updateStatistics(s);
-        }
     }
 
     @Override
@@ -205,6 +178,6 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     @Override
     public void onException(WebSocketExceptionData e) {
-        processorListener.log("Exception when performing subscription:" + e.getMessage());
+        log.log(Level.SEVERE, "Exception when performing subscription", e);
     }
 }

@@ -1,7 +1,5 @@
 package org.yamcs.client;
 
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketSubscriptionData;
-
 public interface WebSocketClientCallback {
 
     /**
@@ -27,6 +25,4 @@ public interface WebSocketClientCallback {
      */
     default void disconnected() {
     }
-
-    void onMessage(WebSocketSubscriptionData data);
 }

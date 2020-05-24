@@ -166,7 +166,7 @@ message SubscribeParametersRequest {
   repeated NamedObjectId id = 3;
   
   // Send an error message if any parameter is invalid.
-  // Default: false
+  // Default: true
   optional bool abortOnInvalid = 4;
 
   // Send parameter updates when parameters expire.

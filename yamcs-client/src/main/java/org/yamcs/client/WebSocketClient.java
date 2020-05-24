@@ -1,25 +1,36 @@
 package org.yamcs.client;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.yamcs.protobuf.ConnectionInfo;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.api.ExceptionMessage;
+import org.yamcs.api.Observer;
+import org.yamcs.protobuf.CancelOptions;
+import org.yamcs.protobuf.ClientMessage;
+import org.yamcs.protobuf.Reply;
+import org.yamcs.protobuf.ServerMessage;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -35,6 +46,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
@@ -45,13 +57,17 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 
 /**
- * Netty-implementation of a Yamcs web socket client
+ * Netty-implementation of a Yamcs web socket client.
  */
 public class WebSocketClient {
 
     private static final Logger log = Logger.getLogger(WebSocketClient.class.getName());
-    private static final String SUBPROTOCOL_JSON = "json";
-    private static final String SUBPROTOCOL_PROTOBUF = "protobuf";
+    private Level messageLogging = Level.FINEST;
+
+    private String host;
+    private int port;
+    private boolean tls;
+    private String context;
 
     private WebSocketClientCallback callback;
 
@@ -59,50 +75,26 @@ public class WebSocketClient {
     private Channel nettyChannel;
     private String userAgent;
     private Integer timeoutMs;
-    private AtomicBoolean enableReconnection = new AtomicBoolean(true);
-    private AtomicInteger idSequence = new AtomicInteger(1);
-    private YamcsConnectionProperties yprops;
-    private String accessToken;
-    final boolean useProtobuf = true;
 
-    private ConnectionInfo connectionInfo;
-
-    private boolean tcpKeepAlive = false;
+    private boolean tcpKeepAlive;
     private boolean insecureTls;
-    KeyStore caKeyStore;
-
-    // if reconnection is enabled, how often to attempt to reconnect in case of failure
-    long reconnectionInterval = 1000;
-
-    // Keeps track of sent subscriptions, so that we can do a resend when we get
-    // an InvalidException on some of them :-(
-    private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
+    private KeyStore caKeyStore;
 
     private int maxFramePayloadLength = 65536;
 
-    public int getMaxFramePayloadLength() {
-        return maxFramePayloadLength;
-    }
+    private AtomicInteger idSequence = new AtomicInteger(1);
 
-    public void setMaxFramePayloadLength(int maxFramePayloadLength) {
-        this.maxFramePayloadLength = maxFramePayloadLength;
-    }
+    // Calls by client-assigned id
+    private Map<Integer, Call> calls = new ConcurrentHashMap<>();
+    // Calls by server-assigned id
+    private Map<Integer, Call> confirmedCalls = new ConcurrentHashMap<>();
 
-    public WebSocketClient(WebSocketClientCallback callback) {
-        this(null, callback);
-    }
-
-    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback) {
-        this.yprops = yprops;
+    public WebSocketClient(String host, int port, boolean tls, String context, WebSocketClientCallback callback) {
+        this.host = host;
+        this.port = port;
+        this.tls = tls;
+        this.context = context;
         this.callback = callback;
-    }
-
-    public WebSocketClient(YamcsConnectionProperties yprops) {
-        this.yprops = yprops;
-    }
-
-    public void setConnectionProperties(YamcsConnectionProperties yprops) {
-        this.yprops = yprops;
     }
 
     public void setUserAgent(String userAgent) {
@@ -114,34 +106,17 @@ public class WebSocketClient {
     }
 
     /**
-     * enable or disable reconnection in case of failure to connect or if the client is disconnected.
-     * 
-     * @param enableReconnection
+     * Enables logging of all inbound and outbound messages on the request logging level.
+     * <p>
+     * By default set to {@link Level#FINEST}
      */
-    public void enableReconnection(boolean enableReconnection) {
-        this.enableReconnection.set(enableReconnection);
+    public void setMessageLogging(Level level) {
+        messageLogging = level;
     }
 
     public ChannelFuture connect(String accessToken) throws SSLException, GeneralSecurityException {
         callback.connecting();
-        this.accessToken = accessToken;
         return createBootstrap(accessToken);
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    /**
-     * set the reconnection interval in milliseconds.
-     * 
-     * This value is used when the connection fails and after the client is disconnected. Make sure to use the
-     * {@link #enableReconnection(boolean)} to enable the recconnection.
-     * 
-     * @param reconnectionIntervalMillisec
-     */
-    public void setReconnectionInterval(long reconnectionIntervalMillisec) {
-        this.reconnectionInterval = reconnectionIntervalMillisec;
     }
 
     private ChannelFuture createBootstrap(String accessToken) throws SSLException, GeneralSecurityException {
@@ -154,14 +129,19 @@ public class WebSocketClient {
             String authorization = "Bearer " + accessToken;
             header.add(HttpHeaderNames.AUTHORIZATION, authorization);
         }
-        String subprotocol = SUBPROTOCOL_JSON;
-        if (useProtobuf) {
-            header.add(HttpHeaderNames.ACCEPT, "application/protobuf");
-            subprotocol = SUBPROTOCOL_PROTOBUF;
+        URI uri;
+        try {
+            if (context == null) {
+                uri = new URI(String.format("%s://%s:%s/api/websocket", (tls ? "wss" : "ws"), host, port));
+            } else {
+                uri = new URI(String.format("%s://%s:%s/%s/api/websocket", (tls ? "wss" : "ws"), host, port, context));
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
-        URI uri = yprops.webSocketURI();
+
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
-                subprotocol, false, header, maxFramePayloadLength);
+                "protobuf", false, header, maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()
@@ -173,7 +153,7 @@ public class WebSocketClient {
         if (timeoutMs != null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
         }
-        SslContext sslCtx = yprops.isTls() ? getSslContext() : null;
+        SslContext sslCtx = tls ? getSslContext() : null;
 
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
@@ -194,11 +174,6 @@ public class WebSocketClient {
             nettyChannel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
         } catch (Exception e) {
             callback.connectionFailed(e);
-            if (enableReconnection.get()) {
-                log.info("Attempting reconnect..");
-                callback.connecting();
-                group.schedule(() -> createBootstrap(accessToken), reconnectionInterval, TimeUnit.MILLISECONDS);
-            }
         }
 
         // Finish handshake, this may still catch something like a 401
@@ -206,66 +181,69 @@ public class WebSocketClient {
     }
 
     /**
-     * Performs the request in a different thread
-     * 
-     * @param request
-     * @return future that completes when the request is answered
+     * Initiates a new call. This does not yet communicate to Yamcs. Use the returned observer to send one or more
+     * messages.
      */
-    public CompletableFuture<WebSocketReplyData> sendRequest(WebSocketRequest request) {
-        CompletableFuture<WebSocketReplyData> cf = new CompletableFuture<>();
-        WebSocketResponseHandler wsr = new WebSocketResponseHandler() {
+    public <T extends Message> Observer<T> call(String type, DataObserver<? extends Message> observer) {
+        Call call = new Call(type, observer);
+        calls.put(call.correlationId, call);
+
+        return new Observer<T>() {
+
             @Override
-            public void onException(WebSocketExceptionData e) {
-                cf.completeExceptionally(new WebSocketExecutionException(e));
+            public void next(T message) {
+                try {
+                    call.write(message);
+                } catch (IOException e) {
+                    observer.completeExceptionally(e);
+                }
             }
 
             @Override
-            public void onCompletion(WebSocketReplyData reply) {
-                cf.complete(reply);
+            public void completeExceptionally(Throwable t) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void complete() {
+                try {
+                    cancelCall(call.callId);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
         };
-        group.execute(() -> doSendRequest(request, wsr));
-        return cf;
     }
 
-    public void sendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
-        group.execute(() -> doSendRequest(request, responseHandler));
-    }
-
-    /**
-     * Really does send the request upstream
-     */
-    private void doSendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
-        int id = idSequence.incrementAndGet();
-        requestResponsePairBySeqId.put(id, new RequestResponsePair(request, responseHandler));
-        log.fine("Sending request " + request);
-        nettyChannel.writeAndFlush(request.toWebSocketFrame(id));
-    }
-
-    RequestResponsePair getRequestResponsePair(int seqId) {
-        return requestResponsePairBySeqId.get(seqId);
-    }
-
-    RequestResponsePair removeUpstreamRequest(int seqId) {
-        return requestResponsePairBySeqId.remove(seqId);
-    }
-
-    boolean isReconnectionEnabled() {
-        return enableReconnection.get();
-    }
-
-    public boolean isUseProtobuf() {
-        return useProtobuf;
+    public void cancelCall(int callId) throws IOException {
+        Call call = confirmedCalls.remove(callId);
+        if (call != null) {
+            calls.remove(call.correlationId);
+        }
+        writeMessage(ClientMessage.newBuilder()
+                .setType("cancel")
+                .setOptions(Any.pack(CancelOptions.newBuilder().setCall(callId).build()))
+                .build());
     }
 
     public void disconnect() {
-        enableReconnection.set(false);
         log.info("WebSocket client sending close");
         nettyChannel.writeAndFlush(new CloseWebSocketFrame());
 
         // WebSocketClientHandler will close the channel when the server
         // responds to the CloseWebSocketFrame
         nettyChannel.closeFuture().awaitUninterruptibly();
+    }
+
+    private void writeMessage(Message message) throws IOException {
+        if (log.isLoggable(messageLogging)) {
+            log.log(messageLogging, ">>> " + message);
+        }
+        ByteBuf buf = nettyChannel.alloc().buffer();
+        try (ByteBufOutputStream bout = new ByteBufOutputStream(buf)) {
+            message.writeTo(bout);
+        }
+        nettyChannel.writeAndFlush(new BinaryWebSocketFrame(buf));
     }
 
     /**
@@ -279,6 +257,12 @@ public class WebSocketClient {
         tcpKeepAlive = enableTcpKeepAlive;
     }
 
+    void completeAll() {
+        calls.values().forEach(call -> call.serverObserver.complete());
+        calls.clear();
+        confirmedCalls.clear();
+    }
+
     /**
      * @return the Future which is notified when the executor has been terminated.
      */
@@ -286,26 +270,8 @@ public class WebSocketClient {
         return group.shutdownGracefully(0, 5, TimeUnit.SECONDS);
     }
 
-    static class RequestResponsePair {
-        WebSocketRequest request;
-        WebSocketResponseHandler responseHandler;
-
-        RequestResponsePair(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
-            this.request = request;
-            this.responseHandler = responseHandler;
-        }
-    }
-
     public boolean isConnected() {
         return nettyChannel.isOpen();
-    }
-
-    public ConnectionInfo getConnectionInfo() {
-        return connectionInfo;
-    }
-
-    void setConnectionInfo(ConnectionInfo connectionInfo) {
-        this.connectionInfo = connectionInfo;
     }
 
     private SslContext getSslContext() throws GeneralSecurityException, SSLException {
@@ -341,5 +307,90 @@ public class WebSocketClient {
      */
     public void setInsecureTls(boolean insecureTls) {
         this.insecureTls = insecureTls;
+    }
+
+    public int getMaxFramePayloadLength() {
+        return maxFramePayloadLength;
+    }
+
+    public void setMaxFramePayloadLength(int maxFramePayloadLength) {
+        this.maxFramePayloadLength = maxFramePayloadLength;
+    }
+
+    void handleReply(ServerMessage message) throws InvalidProtocolBufferException {
+        if (log.isLoggable(messageLogging)) {
+            log.log(messageLogging, "<<< " + message);
+        }
+        Reply reply = message.getData().unpack(Reply.class);
+        Call call = calls.get(reply.getReplyTo());
+        if (call != null) {
+            if (!reply.hasException()) {
+                confirmedCalls.put(message.getCall(), call);
+                call.assignCallId(message.getCall());
+            } else {
+                ExceptionMessage err = reply.getException();
+                log.severe(String.format("Server error: %s: %s", err.getType(), err.getMsg()));
+            }
+        } else {
+            log.warning("Received a reply for an unknown call: " + reply);
+        }
+    }
+
+    public void handleMessage(ServerMessage message) throws InvalidProtocolBufferException {
+        if (log.isLoggable(messageLogging)) {
+            log.log(messageLogging, "<<< " + message);
+        }
+        Call call = confirmedCalls.get(message.getCall());
+        if (call != null) {
+            call.serverObserver.unpackNext(message.getData());
+        } else {
+            log.warning("Received a message for an unknown call: " + message);
+        }
+    }
+
+    private class Call {
+
+        final String type;
+        final int correlationId = idSequence.getAndIncrement();
+        final DataObserver<? extends Message> serverObserver;
+
+        boolean first = true;
+        int callId;
+        CountDownLatch callIdLatch = new CountDownLatch(1);
+
+        Call(String type, DataObserver<? extends Message> serverObserver) {
+            this.type = type;
+            this.serverObserver = serverObserver;
+        }
+
+        void write(Message data) throws IOException {
+            if (first) {
+                ClientMessage clientMessage = ClientMessage.newBuilder()
+                        .setType(type)
+                        .setId(correlationId)
+                        .setOptions(Any.pack(data))
+                        .build();
+                writeMessage(clientMessage);
+                first = false;
+            } else {
+                try {
+                    callIdLatch.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                ClientMessage clientMessage = ClientMessage.newBuilder()
+                        .setType(type)
+                        .setCall(callId)
+                        .setOptions(Any.pack(data))
+                        .build();
+                writeMessage(clientMessage);
+            }
+        }
+
+        void assignCallId(int callId) {
+            this.callId = callId;
+            callIdLatch.countDown();
+        }
     }
 }
