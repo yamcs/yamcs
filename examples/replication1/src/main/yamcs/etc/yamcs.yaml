@@ -6,6 +6,8 @@ services:
   - class: org.yamcs.replication.ReplicationServer
     args:
        port: 8099
+       #tlsCert: /path/to/server.crt
+       #tlsKey: /path/to/server.key
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml

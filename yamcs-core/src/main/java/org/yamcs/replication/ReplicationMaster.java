@@ -19,6 +19,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.SSLException;
+
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -42,6 +44,8 @@ import com.google.protobuf.MessageLite;
 import com.google.protobuf.TextFormat;
 
 import io.netty.channel.ChannelHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
 /**
  * 
@@ -72,7 +76,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     List<SlaveServer> slaves;
     long reconnectionInterval;
     int instanceId;
-
+    SslContext sslCtx = null;
     // files not accessed longer than this will be closed
     private long fileCloseTime;
 
@@ -113,12 +117,23 @@ public class ReplicationMaster extends AbstractYamcsService {
             ReplicationServer server = servers.get(0);
             server.registerMaster(this);
         } else {
-            reconnectionInterval = config.getLong("reconnectionInterval", 5000);
+            reconnectionInterval = 1000 * config.getLong("reconnectionIntervalSec", 30);
             List<YConfiguration> clist = config.getConfigList("slaves");
             slaves = new ArrayList<>(clist.size());
             for (YConfiguration yc : clist) {
-                slaves.add(new SlaveServer(yc.getString("host"), yc.getInt("port"), yc.getString("instance")));
+                slaves.add(new SlaveServer(yc.getString("host"), yc.getInt("port"), yc.getString("instance"),
+                        yc.getBoolean("enableTls", false)));
             }
+            boolean enableTls = slaves.stream().map(s -> s.enableTls).filter(b -> b).findAny().isPresent();
+
+            if (enableTls) {
+                try {
+                    sslCtx = SslContextBuilder.forClient().build();
+                } catch (SSLException e) {
+                    throw new InitException("Failed to initialize the TLS: " + e.toString());
+                }
+            }
+
         }
         String dataDir = YarchDatabase.getDataDir();
         replicationDir = Paths.get(dataDir).resolve(yamcsInstance).resolve("replication");
@@ -179,7 +194,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         if (tcpRole == TcpRole.Client) {
             // connect to all slaves
             for (SlaveServer sa : slaves) {
-                sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port, reconnectionInterval,
+                sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port,
+                        sa.enableTls ? sslCtx : null, reconnectionInterval,
                         () -> {
                             return new MasterChannelHandler(this, sa);
                         });
@@ -284,7 +300,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                     CodedOutputStream cos = CodedOutputStream.newInstance(buf);
                     msg.writeTo(cos);
                     buf.position(buf.position() + cos.getTotalBytesWritten());
-                } catch(CodedOutputStream.OutOfSpaceException e) {
+                } catch (CodedOutputStream.OutOfSpaceException e) {
                     throw new BufferOverflowException();
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
@@ -542,11 +558,13 @@ public class ReplicationMaster extends AbstractYamcsService {
         int port;
         ReplicationClient client;
         String instance;
+        boolean enableTls = false;
 
-        public SlaveServer(String host, int port, String instance) {
+        public SlaveServer(String host, int port, String instance, boolean enableTls) {
             this.host = host;
             this.port = port;
             this.instance = instance;
+            this.enableTls = enableTls;
         }
 
     }

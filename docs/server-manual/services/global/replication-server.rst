@@ -27,6 +27,8 @@ This service is defined in ``etc/yamcs.yaml``. Example:
       - class: org.yamcs.replication.ReplicationServer
         args:
            port: 8099
+           tlsCert: /path/to/server.crt
+           tlsKey: /path/to/server.key
 
               
 Configuration Options
@@ -34,3 +36,9 @@ Configuration Options
 
 port  (integer)
     **Required** The port to listen for TCP connections.               
+
+tlsCert (string)
+    If specified, the server will be listening for TLS connections. The TLS is used for encrypting the data, client certificates are not supported. If TLS is enabled, all connections have to be encrypted, the server does not support TLS and non-TLS connections simultaneously.
+
+tlsKey (string)
+    **Required** if the tlsCert is specified. The key to the certificate.

@@ -29,7 +29,10 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
             masterHost: localhost
             masterPort: 8099
             masterInstance: node1
+            enableTls: false
+            reconnectionIntervalSec: 30
             streams: ["tm_realtime", "sys_param"]
+            
 
               
 Configuration Options
@@ -46,11 +49,14 @@ masterPort (integer)
     
 masterInstance (string)
     **Required** if the tcpRole is `client`. The instance of the master. When working in `server` tcp mode, the instance on which the master is configured determines the data which will be passed to the slave. If two masters try to connect to the same slave, only the first connection will be accepted. 
- 
+
+enableTls (boolean)
+     Used when tcpRole is `client`. If true, a TLS connection will be attempted. The server provided certificate will be checked against the trustStore in yamcs/etc/ directory. If the tcpRole is `server` the usage or not of TLS is determined by the configuration of the :doc:`../global/replication-server`.
+     
+reconnectionInterval (integer)
+    If the tcpRole is `client` this configures how often in seconds the slave will try to connect to the master if the connection is broken. A negative value means that no reconnection will take place.
+               
 streams (list of strings)
     The list of streams that will be processed. The master may send data from other streams but they will be filtered out.
 
     
-reconnectionInterval (integer)
-    If the tcpRole is `client` this configures how often in milliseconds the slave will try to connect to the master if the connection is broken. A negative value means that no reconnection will take place.
-               

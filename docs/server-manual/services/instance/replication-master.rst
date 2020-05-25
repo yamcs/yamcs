@@ -39,6 +39,7 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
                 - host: "localhost"
                   port: 8099
                   instance: "node2"
+                  enableTls: false
             reconnectionInterval: 5000
 
               
@@ -68,8 +69,9 @@ expirationDays (double)
  
  
 slaves (list of maps)
-    **Required** if the tcpRole is `client`. The list of slaves to connect to. Each slave is specified as a host/port and the slave instance name. The replication master will connect to the replication server on the remote host/port and will send a Wakeup message containing the salve instance name; the replication server will then redirect the connection to the corresponding replication slave if one has registered for the given instance.
+    **Required** if the tcpRole is `client`. The list of slaves to connect to. Each slave is specified as a host/port and the slave instance name. In addition, TLS (encrypted connections) can be specified for each slave individually using the enableTls option. 
+    The replication master will connect to the replication server on the remote host/port and will send a Wakeup message containing the salve instance name; the replication server will then redirect the connection to the corresponding replication slave if one has registered for the given instance.
 
-reconnectionInterval (integer)
-    If the tcpRole is `client` this configures how often in milliseconds the replication master will try to connect to the salve if the connection is broken. A negative value means that no reconnection will take place.
+reconnectionIntervalSec (integer)
+    If the tcpRole is `client` this configures how often in seconds the replication master will try to connect to the salve if the connection is broken. A negative value means that no reconnection will take place.
                

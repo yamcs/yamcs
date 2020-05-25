@@ -28,6 +28,7 @@ services:
   - class: org.yamcs.replication.ReplicationSlave
     args:
         tcpRole: client
+        enableTls: false
         masterHost: localhost
         masterPort: 8099
         masterInstance: node1

@@ -1,11 +1,14 @@
 package org.yamcs.replication;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.net.ssl.SSLException;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
@@ -31,6 +34,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.ChannelInitializer;
 
@@ -48,11 +53,23 @@ public class ReplicationServer extends AbstractYamcsService {
     private Map<String, ReplicationMaster> masters = new HashMap<>();
     private Map<String, ReplicationSlave> slaves = new HashMap<>();
     Set<Channel> activeChannels = Collections.newSetFromMap(new ConcurrentHashMap<Channel, Boolean>());
-
+    String tlsCert;
+    String tlsKey;
+    SslContext sslCtx = null;
+    
     @Override
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         port = config.getInt("port");
+        tlsCert = config.getString("tlsCert", null);
+        if (tlsCert != null) {
+            tlsKey = config.getString("tlsKey");
+            try {
+                sslCtx = SslContextBuilder.forServer(new File(tlsCert), new File(tlsKey)).build();
+            } catch (SSLException e) {
+                throw new InitException("Failed to initialize the TLS: "+e.toString());
+            }
+        }
     }
 
     @Override
@@ -63,6 +80,9 @@ public class ReplicationServer extends AbstractYamcsService {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        if (sslCtx != null) {
+                            ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
+                        }
                         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(8192, 1, 3));
                         ch.pipeline().addLast(new MyChannelHandler());
                     }
@@ -156,12 +176,14 @@ public class ReplicationServer extends AbstractYamcsService {
             }
             ReplicationMaster master = masters.get(req.getYamcsInstance());
             if (master == null) {
-                log.warn("Received a replication request for non registered master: {}", TextFormat.shortDebugString(req));
+                log.warn("Received a replication request for non registered master: {}",
+                        TextFormat.shortDebugString(req));
                 sendErrorReturn(req.getRequestSeq(),
                         "No replication master registered for instance '" + req.getYamcsInstance() + "''");
                 return;
             }
-            log.debug("Received a replication request: {}, starting a new handler on the master", TextFormat.shortDebugString(req));
+            log.debug("Received a replication request: {}, starting a new handler on the master",
+                    TextFormat.shortDebugString(req));
             ChannelPipeline pipeline = channelHandlerContext.channel().pipeline();
             pipeline.remove(this);
             pipeline.addLast(master.newChannelHandler(req));

@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
+
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
@@ -38,6 +40,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
 public class ReplicationSlave extends AbstractYamcsService {
     private TcpRole tcpRole;
@@ -52,7 +56,8 @@ public class ReplicationSlave extends AbstractYamcsService {
     RandomAccessFile lastTxFile;
     Path txtfilePath;
     int localInstanceId;
-
+    SslContext sslCtx = null;
+    
     public void init(String yamcsInstance, YConfiguration config) throws InitException {
         super.init(yamcsInstance, config);
         this.localInstanceId = YamcsServer.getServer().getInstance(yamcsInstance).getInstanceId();
@@ -61,7 +66,17 @@ public class ReplicationSlave extends AbstractYamcsService {
         if (tcpRole == TcpRole.Client) {
             host = config.getString("masterHost");
             port = config.getInt("masterPort");
-            reconnectionInterval = config.getLong("reconnectionInterval", 30000);
+            reconnectionInterval = 1000* config.getLong("reconnectionIntervalSec", 30);
+            boolean enableTls = config.getBoolean("enableTls", false);
+            
+            if (enableTls) {
+                try {
+                    sslCtx = SslContextBuilder.forClient().build();
+                } catch (SSLException e) {
+                    throw new InitException("Failed to initialize the TLS: "+e.toString());
+                }
+            }
+            
         } else {
             List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
             if (servers.isEmpty()) {
@@ -98,7 +113,7 @@ public class ReplicationSlave extends AbstractYamcsService {
     @Override
     protected void doStart() {
         if (tcpRole == TcpRole.Client) {
-            tcpClient = new ReplicationClient(yamcsInstance, host, port, reconnectionInterval, () -> {
+            tcpClient = new ReplicationClient(yamcsInstance, host, port, sslCtx, reconnectionInterval, () -> {
                 return new SlaveChannelHandler(this);
             });
             tcpClient.start();

@@ -1,8 +1,12 @@
 package org.yamcs.replication;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import javax.net.ssl.SSLException;
+
+import org.yamcs.InitException;
 import org.yamcs.logging.Log;
 
 import io.netty.bootstrap.Bootstrap;
@@ -11,6 +15,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.ScheduledFuture;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -28,20 +34,22 @@ public class ReplicationClient {
     final Supplier<ChannelHandler> channelHandlerSupplier;
     final Log log;
     final long reconnectionInterval;
-    
+
     Channel channel;
     ScheduledFuture<?> reconnectFuture;
     Bootstrap bootstrap;
     volatile boolean quitting = false;
+    SslContext sslCtx = null;
 
-    public ReplicationClient(String yamcsInstance, String host, int port, long reconnectionInterval,
+    public ReplicationClient(String yamcsInstance, String host, int port, SslContext sslCtx,
+            long reconnectionInterval,
             Supplier<ChannelHandler> channelHandlerSupplier) {
         this.port = port;
         this.host = host;
         this.channelHandlerSupplier = channelHandlerSupplier;
         this.reconnectionInterval = reconnectionInterval;
-
         log = new Log(getClass(), yamcsInstance);
+        this.sslCtx = sslCtx;
     }
 
     public void start() {
@@ -51,6 +59,9 @@ public class ReplicationClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
+                        if (sslCtx != null) {
+                            ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
+                        }
                         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(8192, 1, 3));
                         ch.pipeline().addLast(channelHandlerSupplier.get());
                     }
@@ -76,9 +87,9 @@ public class ReplicationClient {
             }
         });
     }
-    
+
     void scheduleReconnect() {
-        if(quitting || reconnectionInterval < 0) {
+        if (quitting || reconnectionInterval < 0) {
             return;
         }
 
