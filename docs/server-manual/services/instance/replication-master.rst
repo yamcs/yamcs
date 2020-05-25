@@ -2,7 +2,7 @@ Replication Master
 ==================
 
 
-Replicates data streams to remote Slave servers. Works both in TCP server and TCP client mode. In TCP server mode, it relies on the :doc:`../replication-server` to provide the TCP connectivity. 
+Replicates data streams to remote Slave servers. Works both in TCP server and TCP client mode. In TCP server mode, it relies on the :doc:`../global/replication-server` to provide the TCP connectivity. 
 In TCP client mode, it connects to a list of slaves specified in the configuration.
 
 The master works by storing stream of tuples serialized in memory mapped files :javadoc:`org.yamcs.tctm.replication.ReplicationFile`. Each tuple receives an 64 bit incremental transaction id. In addition to the tuple data, there are some metadata transactions storing information about the streams and allowing the data to be compressed. For example a parameter tuple has the potentially very long qualified parameter names as column names, these are only stored in the metadata and replaced in the data by 32 bit integers. The serialization mechanism is the same used for serializing tuples in the stream archive but there is no distinction between the key and the value.

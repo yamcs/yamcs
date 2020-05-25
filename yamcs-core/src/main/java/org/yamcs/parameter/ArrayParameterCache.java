@@ -22,8 +22,8 @@ import org.yamcs.xtce.Parameter;
 
 /**
  * This is another implementation of the parameter cache using arrays to store primitive values (instead of storing
- * Value).
- * 
+ * {@link Value}).
+ * <p>
  * It should consume less memory than {@link ParameterCacheImpl} in case of large number of parameter values.
  *
  */
