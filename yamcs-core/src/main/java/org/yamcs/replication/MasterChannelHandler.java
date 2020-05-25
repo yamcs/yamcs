@@ -53,7 +53,16 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object o) {
-        ByteBuffer buf = ((ByteBuf) o).nioBuffer();
+        ByteBuf nettyBuf = (ByteBuf) o;
+        try {
+            doChannelRead(ctx, nettyBuf);
+        } finally {
+            nettyBuf.release();
+        }
+    }
+
+    private void doChannelRead(ChannelHandlerContext ctx, ByteBuf nettyBuf) {
+        ByteBuffer buf = nettyBuf.nioBuffer();
         Message msg;
         try {
             msg = Message.decode(buf);
@@ -138,7 +147,6 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         fileTail = null;
         sendMoreData();
     }
-
 
     void sendMoreData() {
         if (!channelHandlerContext.channel().isActive()) {

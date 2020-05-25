@@ -157,16 +157,27 @@ public class ReplicationSlave extends AbstractYamcsService {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object o) {
+            ByteBuf nettybuf = (ByteBuf) o;
+            try {
+                doChannelRead(ctx, nettybuf);
+            } finally {
+                nettybuf.release();
+            }
+        }
+        
+        private void doChannelRead(ChannelHandlerContext ctx, ByteBuf nettybuf) {
+            ByteBuffer buf = nettybuf.nioBuffer();
+            
             if (state() != State.RUNNING) {
                 return;
             }
-            ByteBuffer buf = ((ByteBuf) o).nioBuffer();
+            
             Message msg;
             try {
                 msg = Message.decode(buf);
             } catch (DecodingException e) {
                 log.warn("TX{} Failed to decode message {}; closing connection", lastTxId,
-                        ByteBufUtil.hexDump((ByteBuf) o), e);
+                        ByteBufUtil.hexDump(nettybuf), e);
                 ctx.close();
                 return;
             }
@@ -235,6 +246,8 @@ public class ReplicationSlave extends AbstractYamcsService {
             }
         }
 
+        
+        
         private void checkMissing(TransactionMessage tmsg) {
             if(tmsg.txId != lastTxId + 1) {
                 log.warn("Transactions {} to {} are missing", lastTxId + 1, tmsg.txId - 1);
