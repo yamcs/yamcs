@@ -20,6 +20,7 @@ Configures Yamcs for simulation
 
 %install
 cd %{name}-%{version}-%{release}
+cd examples/simulation
 
 mkdir -p %{buildroot}/%{prefix}/lib
 cp simulation/target/simulation*.jar %{buildroot}/%{prefix}/lib

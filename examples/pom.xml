@@ -25,6 +25,7 @@
 
   <modules>
     <module>replication1</module>
+    <module>simulation</module>
   </modules>
 
   <build>
