@@ -52,6 +52,9 @@ public class Simulator extends AbstractService {
     ScheduledThreadPoolExecutor executor;
 
     static final int CFDP_APID = 2045;
+    static final int MAIN_APID = 1;
+    static final int PERF_TEST_APID = 2;
+    
     CfdpReceiver cfdpReceiver;
 
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
@@ -202,7 +205,7 @@ public class Simulator extends AbstractService {
     }
 
     private void sendFlightPacket() {
-        CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
+        CCSDSPacket flightpacket = new CCSDSPacket(MAIN_APID, 60, 33);
         flightDataHandler.fillPacket(flightpacket);
         transmitRealtimeTM(flightpacket);
     }
@@ -214,19 +217,19 @@ public class Simulator extends AbstractService {
     }
 
     private void sendHkTm() {
-        CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
+        CCSDSPacket powerpacket = new CCSDSPacket(MAIN_APID, 16, 1);
         powerDataHandler.fillPacket(powerpacket);
         transmitRealtimeTM(powerpacket);
 
-        CCSDSPacket packet = new CCSDSPacket(9, 2);
+        CCSDSPacket packet = new CCSDSPacket(MAIN_APID, 9, 2);
         dhsHandler.fillPacket(packet);
         transmitRealtimeTM(packet);
 
-        packet = new CCSDSPacket(36, 3);
+        packet = new CCSDSPacket(MAIN_APID, 36, 3);
         rcsHandler.fillPacket(packet);
         transmitRealtimeTM(packet);
 
-        packet = new CCSDSPacket(6, 4);
+        packet = new CCSDSPacket(MAIN_APID, 6, 4);
         epslvpduHandler.fillPacket(packet);
         transmitRealtimeTM(packet);
     }

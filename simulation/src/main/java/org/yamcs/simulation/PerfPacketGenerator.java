@@ -39,7 +39,7 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         CCSDSPacket[] packets = new CCSDSPacket[numPackets];
 
         for (int i = 0; i < numPackets; i++) {
-            CCSDSPacket packet = new CCSDSPacket(packetSize, PERF_TEST_PACKET_ID + i);
+            CCSDSPacket packet = new CCSDSPacket(Simulator.PERF_TEST_APID, packetSize, PERF_TEST_PACKET_ID + i);
             ByteBuffer bb = packet.getUserDataBuffer();
             while (bb.remaining() > 4) {
                 bb.putInt(r.nextInt());
@@ -57,9 +57,16 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
                 }
                 packet.setTime(TimeEncoding.getWallclockTime());
                 simulator.transmitRealtimeTM(packet);
+                packets[i] = duplicate(packet);
             }
             Thread.sleep(interval);
         }
+    }
+
+    private CCSDSPacket duplicate(CCSDSPacket packet) {
+        ByteBuffer bb = ByteBuffer.allocate(packet.buffer.capacity());
+        bb.put(packet.buffer.array());
+        return new CCSDSPacket(bb);
     }
 
 }

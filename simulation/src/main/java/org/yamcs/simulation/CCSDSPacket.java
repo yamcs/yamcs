@@ -6,6 +6,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class CCSDSPacket {
     final static byte SH_PKT_TYPE_CCSDS_MEMORY_LOAD_PACKET = 11;
     final static byte SH_PKT_TYPE_CCSDS_RESPONSE_PACKET = 12;
 
-    protected static HashMap<Integer, Integer> seqMap = new HashMap<>(2); // apid -> seq
+    protected static HashMap<Integer, AtomicInteger> seqMap = new HashMap<>(2); // apid -> seq
 
     protected ByteBuffer buffer;
 
@@ -73,20 +74,20 @@ public class CCSDSPacket {
         }
     }
 
-    public CCSDSPacket(int userDataLength, int packetid) {
-        this(userDataLength, packetid, true);
+    public CCSDSPacket(int apid, int userDataLength, int packetid) {
+        this(apid, userDataLength, packetid, true);
     }
 
-    public CCSDSPacket(int userDataLength, int packetid, boolean checksumPresent) {
-        this(userDataLength, SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET, packetid, checksumPresent);
+    public CCSDSPacket(int apid, int userDataLength, int packetid, boolean checksumPresent) {
+        this(apid, userDataLength, SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET, packetid, checksumPresent);
     }
 
-    public CCSDSPacket(int userDataLength, int packetType, int packetid) {
-        this(userDataLength, packetType, packetid, true);
+    public CCSDSPacket(int apid, int userDataLength, int packetType, int packetid) {
+        this(apid, userDataLength, packetType, packetid, true);
     }
 
-    public CCSDSPacket(int userDataLength, int packetType, int packetid, boolean checksumPresent) {
-        apid = 1;
+    public CCSDSPacket(int apid, int userDataLength, int packetType, int packetid, boolean checksumPresent) {
+        this.apid = apid;
         seq = 0;
         timeMillis = TimeEncoding.getWallclockTime(); // gps time as of 2017
         int dl = userDataLength + 16;
@@ -198,9 +199,8 @@ public class CCSDSPacket {
     }
 
     private static int getSeq(int apid) {
-        int seq = seqMap.containsKey(apid) ? seqMap.get(apid) : 0;
-        seqMap.put(apid, (seq + 1) & 0x3FFF);
-        return seq;
+        AtomicInteger seq = seqMap.computeIfAbsent(apid, a -> new AtomicInteger(0));
+        return seq.getAndIncrement() & 0x3FFFF;
     }
 
     public void fillChecksum() {
